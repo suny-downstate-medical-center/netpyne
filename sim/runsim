@@ -1,0 +1,15 @@
+#!/bin/bash
+# Runs simulation, including MPI.
+# Version: 2014feb21
+
+numprocesses=$1; if [ -z $numprocesses ]; then numprocesses=4; fi # Number of processes to use
+shift # Eliminate first argument
+
+mpiexec -f machinefile -n $numprocesses nrniv -python -mpi model.py $@ # Run the model
+
+# If on a local host, plot
+if [ -n "$DISPLAY" ]; then
+   if [ $HOSTNAME=="mompou" ]; then
+       python fileraster.py
+   fi
+fi

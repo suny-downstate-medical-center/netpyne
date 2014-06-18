@@ -1,0 +1,17 @@
+How to connect opto with Plexon and run?
+# Connect opto with Plexon
+- copy opto/sim/Client to Windows machine having MATLAB and Plexon software.
+- Open Client/plx_mat_interface.m on the Windows machine, and set up "remoteAddr" to the IP address opto runs on. In addition, set up "addapth" with the path for the library required for the Plexon software.
+- Set up parameters in opto/sim/config.py accordingly.
+  isOriginal|isCommunication|isQueueTest
+  a. 1 | x | x - To run the original opto (Cliff's parallelized model). X means don't care
+  b. 0 | 1 | 1 - To run opto w/o connection to Plexon, but with PMd spike files
+  c. 0 | 1 | 0 - To run opto, getting spikes from Plexon through the communicatino program
+
+# Run opto
+For a,
+
+For b,
+
+For c,
+

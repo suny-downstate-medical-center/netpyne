@@ -1,32 +1,6 @@
 * 14jun18 Created repo
 
 
-* 14jun19 Evidence for PMd -> M1 and S1->M1 connectivity
-** Shipp, 2005
-- Areas F2, F7 (PMd) -> superficial layers of M1
-- S1 -> deep layers of M1
-** Dancause, 2006
-
-* 14jun20 Comments to Gil on nsloc implementation
-** Chat to gil
-hi gil u there?
-been looking at your plx_model.py file
-you have implemented the PMd NSLOCs in the same way as cliff had his background noise
-this isn't wrong, but it would be better if we had them as an additional population of the model -- similar to how we had the DP/NSLOCs in the arm2d model -- so that for eg. when you plot a graph, you also see the PMd/NSLOC spikes 
-so it would be better to add the pmd/nsloc parameters to the cellpopdata.py file -- we can call the new population 'PMd'
-so for example we would have: popnames = ['ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6', 'PMd']
-and would define the weight there: connweights[PMd,ER2,AMPA]= 10
-this would be a more elegant and robust way of adding the PMd inputs, as cliffs code would already make the connections based on these parameters
-also, in your code it seems you set all 5 weights to the same value:
- for r in range(int(newcon.wcnt())): # There are 5 weights. 
-               newcon.weight[r] = ncWeight 
-each weight represents a type of receptor: receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin']
-0 and 1 are excitatory (positive), 2 and 3 are inhibitory (negative), and 4 is the optogenetic receptor!
-so we really just want to set weight 0
-maybe this is why you needed such high weight values - you were conencting simulatenously to excitatory+inhibitory synaptic receptors
-anyway, we can discuss more when you are around 
-
-
 ** TODO port msarm to M1 model
 *** TODO 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 *** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically, 

@@ -1,17 +1,27 @@
-How to connect opto with Plexon and run?
-# Connect opto with Plexon
-- copy opto/sim/Client to Windows machine having MATLAB and Plexon software.
-- Open Client/plx_mat_interface.m on the Windows machine, and set up "remoteAddr" to the IP address opto runs on. In addition, set up "addapth" with the path for the library required for the Plexon software.
-- Set up parameters in opto/sim/config.py accordingly.
+How to connect m1ms with Plexon and run?
+# Connect m1ms with Plexon
+- Copy m1ms/sim/Client to Windows machine having MATLAB and Plexon software.
+- Open Client/plx_mat_interface.m on the Windows machine, and set up "remoteAddr" to the IP address m1ms runs on. In addition, set up "addapth" with the path for the library required for the Plexon software.
+- Set up parameters in m1ms/sim/config.py accordingly.
   isOriginal|isCommunication|isQueueTest
-  a. 1 | x | x - To run the original opto (Cliff's parallelized model). X means don't care
-  b. 0 | 1 | 1 - To run opto w/o connection to Plexon, but with PMd spike files
-  c. 0 | 1 | 0 - To run opto, getting spikes from Plexon through the communicatino program
-
-# Run opto
-For a,
-
-For b,
+  a. 1 | x | x - To run the original m1ms (Cliff's parallelized model). X means don't care
+  b. 0 | 1 | 1 - To run m1ms w/o connection to Plexon, but with PMd spike files
+  c. 0 | 1 | 0 - To run m1ms, getting spikes from Plexon through the communication program
+  Note: for b and c, check if PMd spike file (spikePMd-6sec.txv) is in data/.
+# Run m1ms
+For a, b:
+$plx_runsim <# of workers>
 
 For c,
+1. Run client in the Windows machine.
+2. $plx_runsim <# of workers>
+3. Run the Plexon softsever.
+
+How to plot spikes?
+Spikes are stored in m1ms/sim/m1ms-spk.txt.
+$python quickplot.py or $python quickplot.py <filename> <scale> <duration for plot> <weight>
+<filename>: default is m1ms-spk.txt
+<scale>   : default is 10
+<duration>: default is 6 (sec)
+<weight>  : default is 0
 

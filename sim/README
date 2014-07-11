@@ -90,11 +90,7 @@ For 2.c,
 2. Run client in the Windows machine.
 3. Run the Plexon softsever.
 
-4. How to plot spikes?
-Spikes are stored in m1ms/sim/m1ms-spk.txt.
-$python quickplot.py or $python quickplot.py <filename> <scale> <duration for plot> <weight>
-<filename>: default is m1ms-spk.txt
-<scale>   : default is 10
-<duration>: default is 6 (sec)
-<weight>  : default is 0
-
+4. How to plot raster, lfp and power spectra?
+Spikes are stored in m1ms/sim/m1ms-spk.txt and m1ms-spk.txt.mat
+Just run python fileplots.py m1ms-spk.txt. It stores plots to files.
+$python fileplots.py m1ms-spk.txt

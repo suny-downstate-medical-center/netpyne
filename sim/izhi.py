@@ -39,6 +39,7 @@ def createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid):
     cell.d = d
     cell.celltype = celltype # Set cell celltype (used for setting celltype-specific dynamics)
     cell.cellid = cellid # Cell ID for keeping track which cell this is
+    cell.t0 = .0
     return cell
 
 ## Excitatory layer 2/3 pyramidal cell

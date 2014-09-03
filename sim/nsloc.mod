@@ -1,18 +1,19 @@
-: $Id: nsloc.mod,v 1.7 2012/10/12 17:46:22 billl Exp $
+: $Id: nsloc.mod,v 1.7 2013/06/20  salvad $
 : from nrn/src/nrnoc/netstim.mod
+: modified to use as proprioceptive units in arm2dms model
 
 NEURON	{ 
   ARTIFICIAL_CELL NSLOC
-  RANGE interval, number, start, xloc, yloc, zloc, id, type, subtype, fflag
+  RANGE interval, number, start, xloc, yloc, zloc, id, type, subtype, fflag, mlenmin, mlenmax, checkInterval
   RANGE noise
   THREADSAFE : only true if every instance has its own distinct Random
   POINTER donotuse
 }
 
 PARAMETER {
-	interval	= 10 (ms) <1e-9,1e9>: time between spikes (msec)
-	number	= 10 <0,1e9>	: number of spikes (independent of noise)
-	start		= 50 (ms)	: start of first spike
+	interval	= 100 (ms) <1e-9,1e9>: time between spikes (msec)
+	number	= 3000 <0,1e9>	: number of spikes (independent of noise)
+	start		= 1 (ms)	: start of first spike
 	noise		= 0 <0,1>	: amount of randomness (0.0 - 1.0)
         xloc = -1 
         yloc = -1 
@@ -21,10 +22,13 @@ PARAMETER {
         type = -1
         subtype = -1
         fflag           = 1             : don't change -- indicates that this is an artcell
+        check_interval = 1.0 (ms) : time between checking if interval has changed
 }
 
 ASSIGNED {
 	event (ms)
+	last_interval (ms)
+	transition
 	on
 	ispike
 	donotuse
@@ -144,19 +148,38 @@ NET_RECEIVE (w) {
 		if (on == 1) { : but ignore if turned off by external event
 			init_sequence(t)
 			net_send(0, 1)
+			net_send(2*check_interval,4)
 		}
 	}
 	if (flag == 1 && on == 1) {
 		ispike = ispike + 1
 		net_event(t)
 		next_invl()
+		transition = 0
 		if (on == 1) {
 			net_send(event, 1)
 		}
+	}	
+	if (flag == 5 && on == 1 && transition == 1) {         
+		ispike = ispike + 1
+        net_event(t)
+		next_invl()
+		if (on == 1) {
+			net_send(event, 5)
+		}
+    }	
+	if (flag == 4 && on == 1) { : check if interval has changed
+		if (interval < last_interval) { :if (2*interval < event || interval > 2*event) {
+			next_invl()
+			transition = 1
+			net_send(event,5)       
+		}
+		last_interval = interval
+		net_send(check_interval, 4) : next check interval event
 	}
-        if (flag == 1 && on == 0) {
-            net_event(t)
-        }
+    if (flag == 1 && on == 0) { : For external PMd inputs - .event(timeStamp, 1) in server.py
+        net_event(t)
+    }	
 }
 
 COMMENT

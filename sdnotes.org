@@ -1,7 +1,11 @@
 * 14jun18 Created repo
 ** TODO port msarm to M1 model
-*** TODO 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
+*** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 *** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically, 
+**** TODO replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
+**** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
+**** TODO RL and eligibility traces using George's PYNDL code
+
 *** TODO 3) Assign SPI subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
 ***  TODO 4) Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 *** TODO 5) Add the training, testing, and analysis functions
@@ -13,7 +17,7 @@
 - use SSM from Marius, and convert to Poisson(?) a la cliff
 - Train with SSM noise for each of the targets
 - Test with initial/preparatory  PMd input??
-* 14sep19 First improvements by Giljael
+* 14sep19 First improvements by Giljael and me
 ** README by Gil
 1.How to add new cell types in the model:
 <plx_cellpopdata.py>
@@ -114,11 +118,14 @@ $python fileplots.py m1ms-spk.txt
 
 
 
-** List of changes
+** List of changes by Gil
 - Added PMd population receiving external input 
 - Cells (inlcuidng PMd) distributed over workers using round-robin (each worker doesnt have same number of cells)
 - Cells not referenced by realtive id, so easier to add and reference cells
 - Master worker gets data from PMd cells and broadcasts it to other workers
 - With PMd data, 30 workers over 10 nodes, and 10 scale (7846 cells), this model (6sec sim) runs in real-time (6sec).
 - Added P population (proprioceptive from virtual arm) and udp interface to arm
+** List of changes by me
+- Tidied up code and merged with cliff's tutorial code
+- Included generic stimulation code based on classes, eg. class for 'natural touch', class for 'optogenetic'
 

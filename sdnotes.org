@@ -1,11 +1,11 @@
 * 14jun18 Created repo
 ** TODO port msarm to M1 model
 *** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
-*** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically, 
+*** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
+**** DONE Make plexon input be optional 
 **** TODO replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
 **** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
 **** TODO RL and eligibility traces using George's PYNDL code
-
 *** TODO 3) Assign SPI subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
 ***  TODO 4) Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 *** TODO 5) Add the training, testing, and analysis functions

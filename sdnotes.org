@@ -3,7 +3,7 @@
 *** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 *** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
 **** DONE Make plexon input be optional 
-**** TODO replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
+**** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
 **** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
 **** TODO RL and eligibility traces using George's PYNDL code
 *** TODO 3) Assign SPI subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
@@ -129,3 +129,9 @@ $python fileplots.py m1ms-spk.txt
 - Tidied up code and merged with cliff's tutorial code
 - Included generic stimulation code based on classes, eg. class for 'natural touch', class for 'optogenetic'
 
+* 14sep22 RL in M1 model
+** stdp.mod implementation
+- adapted from george's cleanmodel by cliff
+- includes STDP and RL as 2 diff mechanisms -- not dopamine-based STDP! - need to modify
+- To implement RL in model need to run reward_punish from each element of stdpmechs (instantiations of stdp.mod = weight adjuster)
+eg. every 100 ms: for s in stdpmechs: s.reward_punish

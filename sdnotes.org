@@ -1,22 +1,4 @@
 * 14jun18 Created repo
-** TODO port msarm to M1 model
-*** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
-*** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
-**** DONE Make plexon input be optional 
-**** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
-**** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
-**** TODO RL and eligibility traces using George's PYNDL code
-*** TODO 3) Assign SPI subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
-***  TODO 4) Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
-*** TODO 5) Add the training, testing, and analysis functions
-*** TODO decide where plasticity will happen
--should modify the connectivity and weights tuned to M1!?
--maybe avoid by adding plastic connections ONLY between proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles 
-*** TODO Encode target/PMd activity in input to L2/3 or in external noise input patterns 
-- PMd poisson from neural field model/SSM?)
-- use SSM from Marius, and convert to Poisson(?) a la cliff
-- Train with SSM noise for each of the targets
-- Test with initial/preparatory  PMd input??
 * 14sep19 First improvements by Giljael and me
 ** README by Gil
 1.How to add new cell types in the model:
@@ -135,3 +117,48 @@ $python fileplots.py m1ms-spk.txt
 - includes STDP and RL as 2 diff mechanisms -- not dopamine-based STDP! - need to modify
 - To implement RL in model need to run reward_punish from each element of stdpmechs (instantiations of stdp.mod = weight adjuster)
 eg. every 100 ms: for s in stdpmechs: s.reward_punish
+* 15jan11 Learning targets (reward signal)
+** reward-modulated STDP between biological neurons and model neurons
+- different reward signal to different L2 subpopulations depending on target
+- similar to Koca15
+- PMd population = 128 neurons = biological neurons
+- P population = proprioceptive = PPC / Thalamus (from virtual arm)
+- To speed up training: 1) play back vector of PMd inputs; 2) use simple kinematic arm (once working replace with
+  musculoskeletal and retrain)
+- Start with just 2 targets (left, right); if working move to 4 targets
+*** Training: different options from more realistic to more practical
+- Feed PMd data (for different targets) and for each one enforce exploratory movements over all targets
+- STDP + RL when hand getting closer to correct target
+- Plasticity only between PMd->L2; L5/CSP -> Spinal Cord; P->L2 ??
+- What connections will be reinforced: those linking PMd data corresponding to target X, with the arm movements to target X
+- Need to divide training and testing dataset?
+*** Connectivity: different options from more realistic/autonomous, to more hard-wired/easy to learn
+**** PMd -> L2 (all-to-all) overlapping with P -> L2 (all-to-all)
+**** PMd -> L2 (all-to-50%), P -> L2 (all-to-other 50%)
+
+* 15jan28 Focus on this model now - 2 months to final demo!
+** Debug msarm.py so can run model
+hostspikevecs,server, pc and cells 
+** Test mpi in mac
+** Make ppt diagram with ciruitry
+
+* TODO port msarm to M1 model
+** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
+** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
+**** DONE Make plexon input be optional 
+**** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
+**** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
+**** TODO RL and eligibility traces using George's PYNDL code
+** TODO 3) Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
+**  TODO 4) Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
+** TODO 5) Add the training, testing, and analysis functions
+** TODO decide where plasticity will happen
+-should modify the connectivity and weights tuned to M1!?
+-maybe avoid by adding plastic connections ONLY between proprioception to L2/3? and SPI to spinal cord interneurons; use
+spinal cord to project to muscles 
+- see 15jan11
+** TODO Encode target/PMd activity in input to L2/3 or in external noise input patterns 
+- PMd poisson from neural field model/SSM?)
+- use SSM from Marius, and convert to Poisson(?) a la cliff
+- Train with SSM noise for each of the targets
+- Test with initial/preparatory  PMd input??

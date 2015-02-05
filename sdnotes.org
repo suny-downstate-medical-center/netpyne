@@ -89,7 +89,7 @@ python fileplots.py m1ms-spk.txt. It stores plots to files.  $python fileplots.p
 - includes STDP and RL as 2 diff mechanisms -- not dopamine-based STDP! - need to modify
 - To implement RL in model need to run reward_punish from each element of stdpmechs (instantiations of stdp.mod = weight
 adjuster) eg. every 100 ms: for s in stdpmechs: s.reward_punish
-* 15jan11 Learning targets (reward signal)
+* 15jan11 Learning targets (reward signal)  :paper:
 ** reward-modulated STDP between biological neurons and model neurons
 - different reward signal to different L2 subpopulations depending on target
 - similar to Koca15
@@ -104,11 +104,18 @@ adjuster) eg. every 100 ms: for s in stdpmechs: s.reward_punish
 - Plasticity only between PMd->L2; L5/CSP -> Spinal Cord; P->L2 ??
 - What connections will be reinforced: those linking PMd data corresponding to target X, with the arm movements to target X
 - Need to divide training and testing dataset?
+- In L2/3, the accuracy of neuronal ensemble prediction of lever trajectory remained unchanged globally, with a subset of
+  individual neurons retaining high prediction accuracy throughout the training period. However, in L5a, the ensemble
+  prediction accuracy steadily improved, and one-third of neurons, including subcortical projection neurons, evolved to
+  contribute substantially to ensemble prediction in the late stage of learning. The L2/3 network may represent coordination
+  of signals from other areas throughout learning, whereas L5a may participate in the evolving network representing
+  well-learned movements.(Masamizu et al, 2014) 
+
 *** Connectivity: different options from more realistic/autonomous, to more hard-wired/easy to learn
 **** PMd -> L2 (all-to-all) overlapping with P -> L2 (all-to-all)
 **** PMd -> L2 (all-to-50%), P -> L2 (all-to-other 50%)
 
-* 15jan28 Focus on this model now - 2 months to final demo!
+* 15jan28 Focus on this model now (2 months to final demo) first steps: mpi, circuitry, conceptual framework
 ** Debug msarm.py so can run model
 - modified msarm to use self. for most variables in run method
 - 'randomOutput' arm runs fast, but dummyArm quite slow because has to search/collect spikes to generate motor command
@@ -185,7 +192,7 @@ found Trace/BPT trap
  ./configure --with-iv=$IVB/iv --prefix=$ND --with-nrnpython=dynamic CC='gcc-4.6'
  CCX='g++-4.6' --with-paranrn=/usr/local/Cellar/open-mpi/1.7.4/
 
-** Define inputs to M1 circuitry
+** Define inputs to M1 circuitry :paper:
 *** what layer do proprioceptive inputs (via spinal cord+thalamus) target?
 - thalamic inputs to upper layers (Weiler et al,2008; Kiritani et al, 2010)
 - Thalamocortical inputs from anterior, motor-related thalamic regions (VA/VL) with cerebellar afferents -> L2/3, L5A, L5B (IT+PT)
@@ -206,6 +213,17 @@ found Trace/BPT trap
 - Secondary motor cortex (M2) -> L5B
 - Inputs from OC and M2, areas associated with volitional and cognitive aspects of movements, bypass local circuitry and have
   direct monosynaptic access to neurons projecting to brainstem and thalamus.
+- In macaque input from PMd seems to go primarily to upper layers (layer 1?) and spread across the rest (based on fig 2 Shipp, 2005) 
+- In macaque PMd->M1 target ~55% deep layers and ~45% superficial layers (1-3) (Dum & Strick, 2005)
+- In rhesus monkey more than 90% of all labeled neurons within the premotor and motor cortices were found in layer 3; the rest in
+  layers 5 and 6 (Barbas & Panday, 1987)
+
+- "In L2/3, the accuracy of neuronal ensemble prediction of lever trajectory remained unchanged globally, with a subset of
+  individual neurons retaining high prediction accuracy throughout the training period. However, in L5a, the ensemble
+  prediction accuracy steadily improved, and one-third of neurons, including subcortical projection neurons, evolved to
+  contribute substantially to ensemble prediction in the late stage of learning. The L2/3 network may represent coordination
+  of signals from other areas throughout learning, whereas L5a may participate in the evolving network representing
+  well-learned movements" (Masamizu et al, 2014)
 
 ** Cell and neuron densities in the primary motor cortex of primates (Young,2013)
 ** Added new spinal cord populations
@@ -218,20 +236,104 @@ found Trace/BPT trap
 - PMd = input from PMd with target/reward information; NSLOCs; reproduces PMd recorded data
 - ASC = Ascending Spinal Cord; proprioceptive info; encode x-y speed (previously P population encoding muscle lengths); 
 - DSC = Descending Spinal Cord; muscle excitations; receives input from EB5 (all-to-all mapping)
+  
+** Proprioceptive population encodes cartesian direction and velocity :papers:
+*** From Roll04
+It is widely recognized nowadays that sensory information produced by muscle spindles constitutes a crucial part of
+proprioception (Cordo 1990; Gandevia 1996; Gandevia and Burke 1992; Roll 2003). As far as the sensory level is concerned, one
+might mention recent studies examining the coding of two-dimensional pointing and drawing movements, the results of which
+have shown that muscle spindle population activity is strongly correlated with both the direction and the velocity of the
+ongoing movement under both passive and active conditions (Bergenheim et al. 2000; Roll et al. 2000; Jones et al. 2001). In
+addition, these studies showed that each muscle spindle is sensitive to a specific range of movement directions (the
+so-called preferred sensory sector, PSS), and shows maximum sensitivity to a specific direction (denoted the preferred
+sensory direction, PSD). The PSS and the PSD of the various muscle spindles within a given muscle are quite similar, which
+makes it possible to calculate an average PSD and PSS for that muscle. Each muscle has its own PSD and PSS which differs from
+those of other muscles.  When examining the PSS of the muscle groups acting on the ankle joint, it was observed that they
+overlapped in such a way that, together, they covered the whole range of possible movement directions in that particular
+joint (Bergenheim et al. 2000; Roll et al. 2000). The authors of the latter studies concluded that the proprioceptive
+information arising from all muscles surrounding a joint was needed for accurate sensory and perceptual coding to be
+performed throughout the whole movement.  In other studies, using a similar population vector model to that used by Schwartz
+(1992, 1993) at the cortical level, it was established that the “sum vector” of all the oriented and weighted activity from
+the whole population of muscle spindles in all the muscles acting on a given joint, accurately describes the instantaneous
+direction and velocity of the ongoing movement in two dimensional space (Bergenheim et al. 2000; Roll et al. 2000; Jones et
+al. 2001; Ribot-Ciscar et al. 2002).
+
+*** From Bosc01 cited in Fran09
+XV. SUMMARY
+
+A.  Role of Limb Biomechanics in Global Limb Representations
+
+We have presentedhere a possible framework for interpreting proprioceptive signals at the spinal level. It is based on the
+premise that global limb information rather than localized receptor-like proprioceptive information is encoded by the nervous
+system. Within a basic global framework, information is encoded by a distributed system in which each neural element may
+still bias the global information according to some local detail. For example, the DSCT data suggest that details about
+stiffness at a single joint might be contained in a population signal that encodes a representation of the limb end point
+that may then depend on the joint covariance resulting from specific levels of joint stiffness.
+
+This global sensory representation is not organized entirely by the neural circuitry however. It begins in the periphery with
+the biomechanical structure of the limb. Biomechanical constraints ensure that theactivity from individual sensory receptors
+will be correlated in certain ways that depend on whole limb parameters. Therefore, even a minimum of central sensory
+convergence could lead to global representations with this peripheral apparatus (37,38, 281).
+
+B.  Significance of Kinematic-Based Representations
+
+We also suggest that this framework could be based on limb kinematics. If so, it is noteworthy that while many participating
+sensory receptors are associated with muscles and some even specifically tuned to muscle force, nevertheless their ensemble
+is capable of encoding limb kinematics. In other words, inputs from receptors located in individual muscles or associated
+deep structures as well as in the skin are assembled at very early stages of central processing to provide a representation
+of limb kinematics. Because this occurs at these earliest stages, it suggests that the peripheral apparatus may also in some
+way play a role in itsdetermination. The result, however, is that centrally directed sensory information may be encoded in a
+framework common to that of central motor activity that relates to limb kinematics. It may therefore be analogous to the
+situation in the superior colliculus where sensory information from various modalities is mapped congruently within a
+retinotopic map (227, 306) that may be modified or transformed by gaze (123, 124,157, 158); that is, the sensory information
+is combined and integrated through a common coding framework. Although the retinal projection may provide the basis for a
+common framework for eye, head, and body movement control, limb biomechanics and associated proprioceptors appear to provide
+the basis for a common framework for limb movement control.
+*** From Berg00
+The results show that each muscle spindle afferent, and likewise each muscle, has a specific preferred sensory direction, as
+well as a preferred sensory sector within which it is capable of sending sensory information to the central nervous
+system. Interestingly, the results also demonstrate that the preferred directions are the same as the directions of
+vibration-induced illusions. In addition, the results show that the neuronal population vector model describes the
+multipopulation proprioceptive coding of spatially oriented 2D limb movements, even at the peripheral sensory level, based on
+the sum vectors calculated from all the muscles involved in the movement.
+ 
+
+** PMd input with multiple targets requires new conceptual framework! :papers:
+- PMd provides preparation activity -- where to go; target info with respect to hand
+- Learning adpats weight to map different PMd activity to M1 activity that directs arm to different targets
+- ASC population encodes proprioceptive info from arm (direction and velocity) and visual feedback from eyes (arm position;
+  or arm - target position) 
+-- doesn't make sense because ASC (=spinal cord) doesn't contain vision; would have to call it PPC
+-- if only encode direction (population code for angle) and velocity (amplitude as firing rate), system shouldn't be able to
+tell difference if placed in different starting point; however this may not be required because input from PMd is guiding
+movement (ie. telling system, go to the right/left etc., not specifying target location!), so can argue hand/target position
+more relevant for PMd (?!)
+-- when pmd activity dies off (reached target), so should M1 activity?
+
+
+- "We demonstrate that an MI ensemble can reconstruct hand or joint trajectory more accurately than an equally sized PMd
+  ensemble.In contrast, PMd can more precisely predict the future occurrence of one of several discrete targets to be
+  reached.These results also support the hierarchical view that MI ensembles are involved in lower-level movement execution,
+  whereas PMd populations represent the early intention to move to visually presented targets." Hatsopoulos, 2004
+
+- Above also possible argument for developing model of M1 -- PMd activity itself doesn't provide accurate position/vel representation
 
 * TODO port msarm to M1 model
-** DONE 1) add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
-** TODO 2) Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
+** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
+** TODO reorganize definition of population/cell parameters
+*** DONE set z location based on new yfrac property (0 to 1) for each population
+** TODO Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
 **** DONE Make plexon input be optional 
 **** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
 **** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
 **** DONE RL and eligibility traces using George's PYNDL code
-** TODO 3) Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
-**  TODO 4) Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
-** TODO 5) Add the training, testing, and analysis functions
+** TODO Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
+**  TODO Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
+** TODO Add the training, testing, and analysis functions
 ** TODO decide where plasticity will happen
 -should modify the connectivity and weights tuned to M1!?  -maybe avoid by adding plastic connections ONLY between
 proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles - see 15jan11
 ** TODO Encode target/PMd activity in input to L2/3 or in external noise input patterns 
 - PMd poisson from neural field model/SSM?)  - use SSM from Marius, and convert to Poisson(?) a la cliff - Train with SSM
   noise for each of the targets - Test with initial/preparatory PMd input??
+  

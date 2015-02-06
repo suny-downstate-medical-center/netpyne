@@ -8,13 +8,13 @@ and defines functions to generate the stimuli
 
 from pylab import array
 
-import cellpopdata as cpd # Import population and connection data
-PMd, ASC, DSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops = cpd.names2inds() # Define populations
+import cellpopdata as p # Import population and connection data
+#PMd, ASC, DSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops = cpd.names2inds() # Define populations
 
 # Class with natural touch stimulus
 class touch:
     name = 'touch'
-    receptor = AMPA  # Set which receptor to stimulate
+    receptor = p.AMPA  # Set which receptor to stimulate
     isi = 0.5 # Interstimulus interval in s
     var = 0.0 # Variation in ISI in s
     width = 0.005 # Stimulus width in s
@@ -32,7 +32,7 @@ class touch:
 # class with optogenetic stimulus
 class opto:
     name = 'opto'
-    receptor = opsin # Set which receptor to stimulate
+    receptor = p.opsin # Set which receptor to stimulate
     isi = 0.100 # Interstimulus interval in s
     var = 0.0 # Variation in ISI
     width = 0.2 # Stimulus width in s
@@ -40,7 +40,7 @@ class opto:
     sta = 3 # Starting time in s
     fin = 6 # Finishing time in s
     shape = 'square' # Shape of stimulus
-    pops = [ER5, EB5, ER6]
+    pops = [p.ER5, p.EB5, p.ER6]
     fraction = 0.4 # No idea what this should be...
     rate = 500 # 500 is the highest rate that can be used without significantly slowing down the simulation
     noise = 0

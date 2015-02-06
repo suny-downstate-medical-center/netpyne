@@ -322,6 +322,7 @@ more relevant for PMd (?!)
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** TODO reorganize definition of population/cell parameters
 *** DONE set z location based on new yfrac property (0 to 1) for each population
+*** DONE population and receptor names within cellpopdata module imported as p (ER2 -> p.ER2)
 ** TODO Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
 **** DONE Make plexon input be optional 
 **** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!

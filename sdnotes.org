@@ -318,9 +318,15 @@ more relevant for PMd (?!)
 
 - Above also possible argument for developing model of M1 -- PMd activity itself doesn't provide accurate position/vel representation
 
+* 15feb06 dummyArm
+- dummyArm was independent python executable which used udp messages to communicate with model
+- udp obsolete (now pipes)
+- replaced dummyArm with same code but running within model (no udp or pipes)
+- requires all same RL apparatus; after that working test muscskel
+
 * TODO port msarm to M1 model
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
-** TODO reorganize definition of population/cell parameters
+** DONE reorganize definition of population/cell parameters
 *** DONE set z location based on new yfrac property (0 to 1) for each population
 *** DONE population and receptor names within cellpopdata module imported as p (ER2 -> p.ER2)
 ** TODO Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,

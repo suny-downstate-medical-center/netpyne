@@ -89,6 +89,12 @@ python fileplots.py m1ms-spk.txt. It stores plots to files.  $python fileplots.p
 - includes STDP and RL as 2 diff mechanisms -- not dopamine-based STDP! - need to modify
 - To implement RL in model need to run reward_punish from each element of stdpmechs (instantiations of stdp.mod = weight
 adjuster) eg. every 100 ms: for s in stdpmechs: s.reward_punish
+** RL interval?
+- error used RL rewards should include difference etween current and previous time step (eg. 5ms) or previous RL update (50
+  or 100 ms) ??
+- in arm2dms it was errro with previous time step (10 ms) -- but I think it should be prev RL update or maybe Eligibility
+  trace interval or motor command window !?
+- No EM lag because aready included in the musculoskeletal arm
 * 15jan11 Learning targets (reward signal)  :paper:
 ** reward-modulated STDP between biological neurons and model neurons
 - different reward signal to different L2 subpopulations depending on target
@@ -323,6 +329,23 @@ more relevant for PMd (?!)
 - udp obsolete (now pipes)
 - replaced dummyArm with same code but running within model (no udp or pipes)
 - requires all same RL apparatus; after that working test muscskel
+* 15feb09 differences when using mpi with different number of nodes
+** due to motor commands implementation
+- not present when arm is off
+- not present when proprio is off -> due to proprio -- not true, also present with propio off 
+- joint angles different in 1 vs 16 cores
+- not due to broadcasting error - same before and after
+- difference in motor commands! - maybe due to timing?
+- FOUND: error originates in these 2 lines used to speed up sim by removing past spikes from list:
+
+#self.hostspiketimes = self.hostspiketimes[self.hostspiketimes > (h.t - 2*max(self.shtimewin,self.eltimewin))] # remove unncessary old spikes
+#self.hostspikecells = self.hostspikecells[self.hostspiketimes > (h.t - 2*max(self.shtimewin,self.eltimewin))] # remove unncessary old spikes              
+
+JUST HAD TO SWITCH AROUND TO AVOID SPIKETIMES GETTING DELETED BEFORE USING IT TO SEARCH SPIKECELLS!!
+
+- still diffs when add RL
+** due to RL implementation
+- CHECK gidVec vs gidDic
 
 * TODO port msarm to M1 model
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
@@ -333,6 +356,7 @@ more relevant for PMd (?!)
 **** DONE Make plexon input be optional 
 **** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
 **** TODO implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
+**** DONE fix mpi bug - different motor commands for different nhosts (check if spikes diff as well!!!)
 **** DONE RL and eligibility traces using George's PYNDL code
 ** TODO Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
 **  TODO Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)

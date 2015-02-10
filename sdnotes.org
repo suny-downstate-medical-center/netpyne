@@ -115,7 +115,7 @@ adjuster) eg. every 100 ms: for s in stdpmechs: s.reward_punish
   prediction accuracy steadily improved, and one-third of neurons, including subcortical projection neurons, evolved to
   contribute substantially to ensemble prediction in the late stage of learning. The L2/3 network may represent coordination
   of signals from other areas throughout learning, whereas L5a may participate in the evolving network representing
-  well-learned movements.(Masamizu et al, 2014) 
+  well-learned movements.(Masamizu et al, 2014)
 
 *** Connectivity: different options from more realistic/autonomous, to more hard-wired/easy to learn
 **** PMd -> L2 (all-to-all) overlapping with P -> L2 (all-to-all)
@@ -146,26 +146,26 @@ which mpiexec /usr/local/bin/mpich3/bin/mpiexec
 ==> Installing dependencies for mpich2: cloog, gfortran Error: You must `brew link isl' before cloog can be installed
 Salvador-Duras-MacBook-Pro% brew link isl Linking /usr/local/Cellar/isl/0.12.1... 9 symlinks created
 Salvador-Duras-MacBook-Pro% brew install mpich ==> Installing dependencies for mpich2: cloog, gfortran ==> Installing mpich2
-dependency: cloog ==> Downloading
-https://downloads.sf.net/project/machomebrew/Bottles/cloog-0.18.1.mavericks.bottle.1.tar.gz ########################################################################
-100.0% ==> Pouring cloog-0.18.1.mavericks.bottle.1.tar.gz 🍺 /usr/local/Cellar/cloog/0.18.1: 33 files, 556K ==> Installing
-mpich2 dependency: gfortran ==> Downloading
-https://downloads.sf.net/project/machomebrew/Bottles/gfortran-4.8.2.mavericks.bottle.1.tar.gz ########################################################################
-100.0% ==> Pouring gfortran-4.8.2.mavericks.bottle.1.tar.gz ==> Caveats Formulae that require a Fortran compiler should use:
-depends_on :fortran ==> Summary 🍺 /usr/local/Cellar/gfortran/4.8.2: 960 files, 113M ==> Installing mpich2 ==> Using
-Homebrew-provided fortran compiler.  This may be changed by setting the FC environment variable.  ==> Downloading
-http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz ########################################################################
-100.0% ==>
-./configure --disable-silent-rules --prefix=/usr/local/Cellar/mpich2/3.1 --mandir=/usr/local/Cellar/mpich2/3.1/share/man ==>
-make ==> make install 🍺 /usr/local/Cellar/mpich2/3.1: 457 files, 15M, built in 3.3 minutes Salvador-Duras-MacBook-Pro%
+dependency: cloog ==> Downloading https://downloads.sf.net/project/machomebrew/Bottles/cloog-0.18.1.mavericks.bottle.1.tar.gz
+######################################################################## 100.0% ==> Pouring
+cloog-0.18.1.mavericks.bottle.1.tar.gz 🍺 /usr/local/Cellar/cloog/0.18.1: 33 files, 556K ==> Installing mpich2 dependency:
+gfortran ==> Downloading https://downloads.sf.net/project/machomebrew/Bottles/gfortran-4.8.2.mavericks.bottle.1.tar.gz
+######################################################################## 100.0% ==> Pouring
+gfortran-4.8.2.mavericks.bottle.1.tar.gz ==> Caveats Formulae that require a Fortran compiler should use: depends_on :fortran
+==> Summary 🍺 /usr/local/Cellar/gfortran/4.8.2: 960 files, 113M ==> Installing mpich2 ==> Using Homebrew-provided fortran
+compiler.  This may be changed by setting the FC environment variable.  ==> Downloading
+http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz
+######################################################################## 100.0% ==> ./configure --disable-silent-rules
+--prefix=/usr/local/Cellar/mpich2/3.1 --mandir=/usr/local/Cellar/mpich2/3.1/share/man ==> make ==> make install 🍺
+/usr/local/Cellar/mpich2/3.1: 457 files, 15M, built in 3.3 minutes Salvador-Duras-MacBook-Pro%
 *** Warning: detected user attempt to enable MPI, but MPI support was disabled at build time.
 
 ** Install NEURON in mac
 http://www.neuron.yale.edu/neuron/download/compilestd_osx
 
 brew install mpich build.sh config: ./configure --with-iv=$IVB --prefix=$ND --with-nrnpython=dynamic CC='gcc-4.6'
-CCX='g++-4.6' --with-paranrn https://discussions.apple.com/thread/3406578 make make install python setup.py
-install --home=/usr/arch/nrn/share/python
+CCX='g++-4.6' --with-paranrn https://discussions.apple.com/thread/3406578 make make install python setup.py install
+--home=/usr/arch/nrn/share/python
 
 *** clean steps from scratch
 - install required libraries via brew (list of libs?)
@@ -181,22 +181,21 @@ install --home=/usr/arch/nrn/share/python
 - python setup.py install --home=/usr/arch/nrn/share/python
 
 **** didnt work (see error here)
-Salvador-Duras-MacBook-Pro% m1ms Salvador-Duras-MacBook-Pro% /usr/local/Cellar/open-mpi/1.7.4/bin/mpirun -n 4
-nrniv -python -mpi model.py dyld: Library not loaded: /usr/local/lib/libpmpich.12.dylib Referenced from:
+Salvador-Duras-MacBook-Pro% m1ms Salvador-Duras-MacBook-Pro% /usr/local/Cellar/open-mpi/1.7.4/bin/mpirun -n 4 nrniv -python
+-mpi model.py dyld: Library not loaded: /usr/local/lib/libpmpich.12.dylib Referenced from:
 /usr/arch/nrn/x86_64/lib/libnrnoc.0.dylib Reason: image not found dyld: Library not loaded: /usr/local/lib/libpmpich.12.dylib
 Referenced from: /usr/arch/nrn/x86_64/lib/libnrnoc.0.dylib Reason: image not found dyld: Library not loaded:
 /usr/local/lib/libpmpich.12.dylib Referenced from: /usr/arch/nrn/x86_64/lib/libnrnoc.0.dylib Reason: image not found dyld:
 Library not loaded: /usr/local/lib/libpmpich.12.dylib Referenced from: /usr/arch/nrn/x86_64/lib/libnrnoc.0.dylib Reason:
-image not found
--------------------------------------------------------------------------- mpirun noticed that process rank 2 with PID 24333
-on node Salvador-Duras-MacBook-Pro exited on signal 5 (Trace/BPT trap: 5).
+image not found -------------------------------------------------------------------------- mpirun noticed that process rank 2
+with PID 24333 on node Salvador-Duras-MacBook-Pro exited on signal 5 (Trace/BPT trap: 5).
 -------------------------------------------------------------------------- Salvador-Duras-MacBook-Pro% nrniv dyld: Library
 not loaded: /usr/local/lib/libpmpich.12.dylib Referenced from: /usr/arch/nrn/x86_64/lib/libnrnoc.0.dylib Reason: image not
 found Trace/BPT trap
 
 **** try specifying open-mpi folder - worked!
- ./configure --with-iv=$IVB/iv --prefix=$ND --with-nrnpython=dynamic CC='gcc-4.6'
- CCX='g++-4.6' --with-paranrn=/usr/local/Cellar/open-mpi/1.7.4/
+ ./configure --with-iv=$IVB/iv --prefix=$ND --with-nrnpython=dynamic CC='gcc-4.6' CCX='g++-4.6'
+ --with-paranrn=/usr/local/Cellar/open-mpi/1.7.4/
 
 ** Define inputs to M1 circuitry :paper:
 *** what layer do proprioceptive inputs (via spinal cord+thalamus) target?
@@ -209,7 +208,8 @@ found Trace/BPT trap
 - VL axons in the cortex excited both IT and PT neurons (Yamawaki & Shepherd, 2015)
 - Area 2 receives its main input from area 1 as well as from the VPS, which is the main relay nucleus for proprioceptive
   information in the monkey. (Francis 2009); Until recently, the rat homolog of the VPS had not been identified, which is
-  surprising given the wide spread use of the rat as an animal model. (Francis 2009) --> In macaque proprioceptive info via VPS
+  surprising given the wide spread use of the rat as an animal model. (Francis 2009) --> In macaque proprioceptive info via
+  VPS
 - Mapped out a region in the rostral VPL of the rat that responds preferentially to joint manipulation and muscle palpation
   (Francis et al. 2008) --> In rat proprioceptive info via VPL
 
@@ -234,10 +234,10 @@ found Trace/BPT trap
 ** Cell and neuron densities in the primary motor cortex of primates (Young,2013)
 ** Added new spinal cord populations
 *** code
--popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
--popclasses =  [-1,  -1,     -1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
--popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
--popratios =  [numPMd, 48,  48,    150,   25,    25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+-popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6'] popclasses = [-1, -1,
+--1, 1, 2, 3, 1, 1, 2, 3, 1, 2, 3] # Izhikevich population type popEorI = [ 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1] # Whether
+-it's excitatory or inhibitory popratios = [numPMd, 48, 48, 150, 25, 25, 167, 72, 40, 40, 192, 32, 32] # Cell population
+-numbers
 *** description
 - PMd = input from PMd with target/reward information; NSLOCs; reproduces PMd recorded data
 - ASC = Ascending Spinal Cord; proprioceptive info; encode x-y speed (previously P population encoding muscle lengths); 
@@ -308,13 +308,11 @@ the sum vectors calculated from all the muscles involved in the movement.
 - PMd provides preparation activity -- where to go; target info with respect to hand
 - Learning adpats weight to map different PMd activity to M1 activity that directs arm to different targets
 - ASC population encodes proprioceptive info from arm (direction and velocity) and visual feedback from eyes (arm position;
-  or arm - target position) 
--- doesn't make sense because ASC (=spinal cord) doesn't contain vision; would have to call it PPC
--- if only encode direction (population code for angle) and velocity (amplitude as firing rate), system shouldn't be able to
-tell difference if placed in different starting point; however this may not be required because input from PMd is guiding
+  or arm - target position) -- doesn't make sense because ASC (=spinal cord) doesn't contain vision; would have to call it
+PPC -- if only encode direction (population code for angle) and velocity (amplitude as firing rate), system shouldn't be able
+to tell difference if placed in different starting point; however this may not be required because input from PMd is guiding
 movement (ie. telling system, go to the right/left etc., not specifying target location!), so can argue hand/target position
-more relevant for PMd (?!)
--- when pmd activity dies off (reached target), so should M1 activity?
+more relevant for PMd (?!)  -- when pmd activity dies off (reached target), so should M1 activity?
 
 
 - "We demonstrate that an MI ensemble can reconstruct hand or joint trajectory more accurately than an equally sized PMd
@@ -329,8 +327,24 @@ more relevant for PMd (?!)
 - udp obsolete (now pipes)
 - replaced dummyArm with same code but running within model (no udp or pipes)
 - requires all same RL apparatus; after that working test muscskel
-* 15feb09 differences when using mpi with different number of nodes
-** due to motor commands implementation
+* 15feb09 MPI issues: gidDic, motor commands, and RL
+** gidVec vs gidDic
+- CHECK gidVec vs gidDic
+- gidVec is vector local to each node, where index=local id, and value = gid
+- gidDic is dictionary local to each node, where key=global id, value = local id 
+- redundant! but using gidVec.index() to get the local id is very slow (~300x slower) -- so use gidDic to get local id
+*** speed comparison from gil
+gidvec.index() takes so long time.  Test for vec.index and dictionary import time import random vec = [] for c in
+range(10000): vec.append(c) dic = { x:x for x in range(10000)} seq = range(10000) random.shuffle(seq) measure = time.time()
+for c in seq: a = vec.index(c) measure = time.time() - measure print 'vec.index:', measure measure = time.time() for c in
+seq: b = dic[c] measure = time.time() - measure print 'dic:', measure
+
+vec.index: 1.80838108063 dic: 0.00332403182983
+
+*** speed comparison in m1 model
+10k cells, 1sec sim, 16 cores, with gidVec.index() = 153 sec 10k cells, 1sec sim, 16 cores, with gidDic = 25.9 sec = x5.9
+speedup
+** differences when using mpi with different number of nodes due to motor commands implementation
 - not present when arm is off
 - not present when proprio is off -> due to proprio -- not true, also present with propio off 
 - joint angles different in 1 vs 16 cores
@@ -338,14 +352,61 @@ more relevant for PMd (?!)
 - difference in motor commands! - maybe due to timing?
 - FOUND: error originates in these 2 lines used to speed up sim by removing past spikes from list:
 
-#self.hostspiketimes = self.hostspiketimes[self.hostspiketimes > (h.t - 2*max(self.shtimewin,self.eltimewin))] # remove unncessary old spikes
-#self.hostspikecells = self.hostspikecells[self.hostspiketimes > (h.t - 2*max(self.shtimewin,self.eltimewin))] # remove unncessary old spikes              
+#self.hostspiketimes = self.hostspiketimes[self.hostspiketimes > (h.t - 2*max(self.shtimewin,self.eltimewin))] # remove
+#unncessary old spikes self.hostspikecells = self.hostspikecells[self.hostspiketimes > (h.t - 
+2*max(self.shtimewin,self.eltimewin))] # remove unncessary old spikes
 
 JUST HAD TO SWITCH AROUND TO AVOID SPIKETIMES GETTING DELETED BEFORE USING IT TO SEARCH SPIKECELLS!!
 
 - still diffs when add RL
-** due to RL implementation
-- CHECK gidVec vs gidDic
+
+** differences when using mpi with different number of nodes due to RL
+- different num of spikes when using 1 vs >1 cores
+- was only changing weights in worker0
+- seems error related to STDP  -- also happens when RL off
+- doesn't happen when STDP off
+- also happens in cliff tutorial code
+- can reproduce easily with this code: http://neuron.yale.edu/neuron/static/courses/cns2014/large-scale.zip , scale=4,
+ duration=3, 1 vs 8 mpi cores 
+- also tested in neurosim (zn) /u/salvadord/Documents/ISB/Models/large-scale/
+- also happens when using scale=3, dur=3, 4 vs 12 cores (Spikes: 14031 vs 14003)
+- compared output: difference in weightchanges (38/83311), spikes (28/14031) and lfp; rest the same:
+        distances: [164138x1 double]
+             EorI: [3000x1 int64]
+          lfptime: [600x1 double]
+            ylocs: [3000x1 double]
+         cellpops: [3000x1 int64]
+         stimdata: []
+           delays: [164138x1 double]
+      cellclasses: [3000x1 int64]
+        cellnames: [3000x3 char]
+      connweights: [15x15x4 double]
+        connprobs: [15x15 double]
+      connections: [164138x2 double]
+            xlocs: [3000x1 double]
+          weights: [164138x4 double]
+          simcode: {7x1 cell}
+    weightchanges: {83311x1 cell}
+         stdpdata: [83311x3 double]
+        spikedata: [14031x2 double]
+            zlocs: [3000x1 double]
+             lfps: [600x6 double]
+*** chat with cliff
+cliff I find differences in the number of spikes when using 1 core vs >1 core did u have this problem?  I tested the sim you
+used for tutorial and also reproduced it there eg. 1 core = 19771 spikes; 8 cores = 19758 spikes Cliff Kerr hmm that's
+strange -- i used to have that problem but it got fixed at some point, could've gotten broken again though...  it had to do
+with the random seeds being initialized differently Salvador Dura so how did u fix? maybe I ahve old version hmm ok, I'll
+check that I was thinking it was stdp related cause doesn't seem to happen when stdp off -- but need to check more thoroughly
+was thinking maybe related to stdp happening between cells in different cores, but just speculation Cliff Kerr each cell
+should have its own random number generator linked to gid but it's possible i haven't checked for stdp Salvador Dura so the
+random generator error u had, was related to using different number of cores?  Cliff Kerr yeah Salvador Dura cause if I use
+the same number of cores, the result is always the same ok it seems when stdp off, error doesnt happen Cliff Kerr
+interesting...  Salvador Dura I'll check the rand gen and the stdp code, see if I can find anything Cliff Kerr anyway my
+feeling is that it's probably not a big deal, i.e. each one is equally valid, but yeah agree they should match Salvador Dura
+@equally valid - yeah probably, but just need for reproducibility of results -- small error could carry forward in time I
+guess
+sal:can reproduce easily with this code: http://neuron.yale.edu/neuron/static/courses/cns2014/large-scale.zip , scale=4, duration=3, 1 vs 8 mpi cores
+cliff: i guess you could check that the stdp connections and weights are the same in the 1 and 8 core cases?
 
 * TODO port msarm to M1 model
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 

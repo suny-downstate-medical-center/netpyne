@@ -48,7 +48,7 @@ def plotconn(p):
         for c2 in range(size(connprobs,1)):
             for w in range(p.nreceptors):
                 totalconns[c1,c2] += connprobs[c1,c2]*connweights[c1,c2,w]*(-1 if w>=2 else 1)
-    imshow(totalconns,interpolation='none',cmap=bicolormap(gap=0))
+    imshow(totalconns,cmap=bicolormap(gap=0))
 
     # Plot grid lines
     hold(True)

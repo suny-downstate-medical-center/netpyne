@@ -25,12 +25,11 @@ def plotraster(allspiketimes, allspikecells, EorI, ncells, connspercell, backgro
     ylim(0,ncells)
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)
-    show()
+    #show()
 
 
 ## For diagnostic purposes -- plot connectivity. Based on conndiagram.py.
 def plotconn(p):
-
     # Create plot
     figh = figure(figsize=(8,6))
     figh.subplots_adjust(left=0.02) # Less space on left
@@ -63,13 +62,43 @@ def plotconn(p):
     h.set_xticklabels(popnames)
     h.set_yticklabels(popnames)
     h.xaxis.set_ticks_position('top')
-    xlim(-0.5,p.npops-0.5)
+    xlim(-0.5,npops-0.5)
     ylim(npops-0.5,-0.5)
     clim(-abs(totalconns).max(),abs(totalconns).max())
     colorbar()
-    show()
+    #show()
 
 ## Plot weight changes
-def plotweightchanges(p):
-	pass
+def plotweightchanges(p, allconnections, stdpdata, weightchanges):
+	# create plot
+	figh = figure(figsize=(1.2*8,1.2*6))
+	figh.subplots_adjust(left=0.02) # Less space on left
+	figh.subplots_adjust(right=0.98) # Less space on right
+	figh.subplots_adjust(top=0.96) # Less space on bottom
+	figh.subplots_adjust(bottom=0.02) # Less space on bottom
+	figh.subplots_adjust(wspace=0) # More space between
+	figh.subplots_adjust(hspace=0) # More space between
+	h = axes()
 
+	# create data matrix
+	wcs = [x[-1][-1] for x in weightchanges]
+	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in stdpdata])
+	ncells = int(max(max(pre),max(post))+1)
+	wcmat = zeros([ncells, ncells])
+	for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
+		wcmat[ipre,ipost] = iwc *(-1 if irecep>=2 else 1)
+
+	# plot
+	imshow(wcmat,cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
+	xlabel('pre-synaptic cell id')
+	ylabel('post-synaptic cell id')
+	h.set_xticks(p.popGidStart)
+	h.set_yticks(p.popGidStart)
+	h.set_xticklabels(p.popnames)
+	h.set_yticklabels(p.popnames)
+	h.xaxis.set_ticks_position('top')
+	xlim(-0.5,ncells-0.5)
+	ylim(ncells-0.5,-0.5)
+	clim(-abs(wcmat).max(),abs(wcmat).max())
+	colorbar()
+	#show()

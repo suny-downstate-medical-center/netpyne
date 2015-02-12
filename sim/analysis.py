@@ -8,7 +8,6 @@ Version: 2014July9
 from pylab import scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
-from bicolormap import bicolormap
 from datetime import datetime
 from time import time
 

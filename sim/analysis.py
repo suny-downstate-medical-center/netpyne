@@ -90,8 +90,8 @@ def plotweightchanges(p, allconnections, stdpdata, weightchanges):
 
 	# plot
 	imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
-	xlabel('pre-synaptic cell id')
-	ylabel('post-synaptic cell id')
+	xlabel('post-synaptic cell id')
+	ylabel('pre-synaptic cell id')
 	h.set_xticks(p.popGidStart)
 	h.set_yticks(p.popGidStart)
 	h.set_xticklabels(p.popnames)

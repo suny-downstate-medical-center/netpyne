@@ -855,7 +855,7 @@ Saving output as data/m1ms...
 ***  DONE Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 
 *** TODO replace pc.post() with pc.py_alltoall() ?
-*** TODO make DSC an izhi population 
+*** DONE make DSC an izhi population and add connectivity to E5B
 *** TODO check if can have plasticity between NSLOC and izhi
 ** TODO Add the training and testing wrappers and modularize further -  17 Feb
 *** TODO Modularize parameters and pass as arguments using Bill's method

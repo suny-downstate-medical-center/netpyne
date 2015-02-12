@@ -97,15 +97,29 @@ PARAMETER {
 
 NET_RECEIVE (w) {
      deltaw = 0.0 : Default the weight change to 0.
-     
+
+    : Hebbian weight update happens 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+    if ((flag == -1) && (tlastpre != t-1)) {   
+        w = 0
+        deltaw = hebbwt * exp(-interval / tauhebb) : Use the Hebbian decay to set the Hebbian weight adjustment. 
+        if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
+        if (verbose > 0) { printf("Hebbian STDP event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on.
+        }
+
+    : Ant-hebbian weight update happens 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+    else if ((flag == 1) && (tlastpost != t-1)) { :update weight 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+        w = 0
+        deltaw = antiwt * exp(interval / tauanti) : Use the anti-Hebbian decay to set the anti-Hebbian weight adjustment.
+        if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
+        if (verbose > 0) { printf("anti-Hebbian STDP event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on. 
+        }
+
     : If we receive a non-negative weight value, we are receiving a pre-synaptic spike (and thus need to check for an anti-Hebbian event, since the post-synaptic weight must be earlier).
     if (w >= 0) {           
         interval = tlastpost - t  : Get the interval; interval is negative
         if  ((tlastpost > -1) && (interval != 0)) { : If we had a post-synaptic spike and a non-zero interval...
             if (STDPon == 1) { : If STDP learning is turned on...
-                deltaw = antiwt * exp(interval / tauanti) : Use the anti-Hebbian decay to set the anti-Hebbian weight adjustment.
-                if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
-                if (verbose > 0) { printf("anti-Hebbian STDP event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on. 
+                net_send(1,1) : instead of updating weight directly, use net_send to check if simultaneous spike occurred (otherwise bug when using mpi)
             }
             if ((RLon == 1) && (-interval <= RLwindanti)) { tlastantielig = t } : If RL and anti-Hebbian eligibility traces are turned on, and the interval falls within the maximum window for eligibility, remember the eligibilty trace start at the current time.
         }
@@ -116,9 +130,7 @@ NET_RECEIVE (w) {
         interval = t - tlastpre : Get the interval; interval is positive
         if  ((tlastpre > -1) && (interval != 0)) { : If we had a pre-synaptic spike and a non-zero interval...
             if (STDPon == 1) { : If STDP learning is turned on...
-                deltaw = hebbwt * exp(-interval / tauhebb) : Use the Hebbian decay to set the Hebbian weight adjustment. 
-                if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
-                if (verbose > 0) { printf("Hebbian STDP event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on.
+                net_send(1,-1) : instead of updating weight directly, use net_send to check if simultaneous spike occurred (otherwise bug when using mpi)
             }
             if ((RLon == 1) && (interval <= RLwindhebb)) { tlasthebbelig = t } : If RL and Hebbian eligibility traces are turned on, and the interval falls within the maximum window for eligibility, remember the eligibilty trace start at the current time.
         }

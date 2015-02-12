@@ -360,7 +360,7 @@ JUST HAD TO SWITCH AROUND TO AVOID SPIKETIMES GETTING DELETED BEFORE USING IT TO
 
 - still diffs when add RL
 
-** differences when using mpi with different number of nodes due to RL
+** differences when using mpi with different number of nodes due to RL (STDP BUG AND FIX)
 - different num of spikes when using 1 vs >1 cores
 - was only changing weights in worker0
 - seems error related to STDP  -- also happens when RL off
@@ -408,27 +408,475 @@ guess
 sal:can reproduce easily with this code: http://neuron.yale.edu/neuron/static/courses/cns2014/large-scale.zip , scale=4, duration=3, 1 vs 8 mpi cores
 cliff: i guess you could check that the stdp connections and weights are the same in the 1 and 8 core cases?
 
-* TODO port msarm to M1 model
+*** more systematic tests
+**** scale=2, dur=2, 1 vs 2 cores
+- differences in weightchanges:
+conn    pre    post     weightchanges (1 core)                          weightchanges (2 cores) gid (1core) gid (2cores)
+645	602	35	[0,2.63385014695182;1005,2.61453901661609]	[0,2.63385014695182]	[0,0]	[1,0]
+646	672	35	[0,0.486465429624879;1005,0.467154299289152]	[0,0.486465429624879]	[0,0]	[1,0]
+3326	532	178	[0,2.65632182511313;1005,2.64518027212770]	[0,2.65632182511313]	[0,0]	[1,0]
+3540	639	188	[0,1.82277902626864;1005,1.81531061995854]	[0,1.82277902626864]	[0,0]	[1,0]
+
+- weight decreases due to antiHebb learning
+- spike times:
+cell    spk time
+602	540
+
+35	514
+35	540
+
+672	540
+672	1278.50000000000
+672	1689.50000000000
+
+- occurs when spk time same in pre and post
+- fixed (do differences now) by changing stdp.mod :
+if  ((tlastpost > -1) && (interval != 0))  -->  if  ((tlastpost > -1) && (interval > 0.0))
+if  ((tlastpre > -1) && (interval != 0.0))  -->  if  ((tlastpre > -1) && (interval > 0.0)) 
+
+**** tested using scale=4, dur=4, 1 vs 16 cores --> >10k weightchange diffs and 82 more spikes
+
+**** test scale scale=2, dur=2, 1 vs 16 cores --> 22 wc diffs, 1 spike more:
+conn    pre    post     weightchanges (1 core)                          weightchanges (2 cores) gid (1core) gid (2cores)
+349	134	11	[0,2.86023987946172]	[0,2.86023987946172;1005,2.90268947422707]	[0,0]	[1,0]
+654	358	22	[0,0.149294195666084;1005,0.305054352280365]	[0,0.149294195666084]	[0,0]	[2,0]
+3246	536	106	[0,2.73408129675365]	[0,2.73408129675365;1005,2.73408129675365]	[0,0]	[4,0]
+3278	1269	107	[0,1.74122404294975]	[0,1.74122404294975;1005,1.74122404359625]	[0,0]	[10,0]
+6487	362	218	[0,1.34847151295259]	[0,1.34847151295259;1005,1.37991894621531]	[0,0]	[2,1]
+7360	499	249	[0,1.79714956561962]	[0,1.79714956561962;1005,1.85738840800206]	[0,0]	[3,1]
+8881	1203	300	[0,1.68536212703375]	[0,1.68536212703375;1005,1.74266308640579]	[0,0]	[9,2]
+17022	9	578	[0,1.61835650498962]	[0,1.61835650498962;1005,1.62882444617930]	[0,0]	[0,4]
+17023	22	578	[0,2.35002265490450]	[0,2.35002265490450;1005,2.36728137220437]	[0,0]	[0,4]
+17024	29	578	[0,1.70413279263212]	[0,1.70413279263212;1005,1.70487236537541]	[0,0]	[0,4]
+17025	121	578	[0,1.33952623608263]	[0,1.33952623608263;1005,1.34080810277188]	[0,0]	[0,4]
+17028	202	578	[0,1.07834345749672]	[0,1.07834345749672;1005,1.07920271843487]	[0,0]	[1,4]
+17029	217	578	[0,0.629349148726955]	[0,0.629349148726955;1005,0.648422981170065]	[0,0]	[1,4]
+17032	325	578	[0,1.41251536458843]	[0,1.41251536458843;1005,1.41367524553380]	[0,0]	[2,4]
+17033	363	578	[0,0.665475706621114]	[0,0.665475706621114;1005,0.666293060908807]	[0,0]	[2,4]
+17034	397	578	[0,2.45872497666071]	[0,2.45872497666071;1005,2.47285521927279]	[0,0]	[3,4]
+17036	434	578	[0,1.07763999597961]	[0,1.07763999597961;1005,1.07834349933459]	[0,0]	[3,4]
+17037	493	578	[0,0.145238375107857]	[0,0.145238375107857;1005,0.146015866556552]	[0,0]	[3,4]
+17038	525	578	[0,1.42405633633909]	[0,1.42405633633909;1005,1.42491559727724]	[0,0]	[4,4]
+17043	849	578	[0,20.7127766032884]	[0,20.7127766032884;1005,20.7249386158134]	[0,0]	[6,4]
+23626	896	827	[0,2.36270498436227]	[0,2.36270498436227;1005,2.36270498436295]	[0,0]	[7,6]
+30949	1285	1221	[0,0.0225237576864728]	[0,0.0225237576864728;1005,0.0225237576892504]	[0,0]	[10,9]
+
+- spike times:
+---------------- (same t)
+134	709
+134	724.500000000000 *
+134	1215
+134	1507.50000000000
+134	1522
+134	1936.50000000000
+
+11	704
+11	724.500000000000 *
+11	1220
+11	1502
+11	1522.50000000000
+11	1932
+
+-------------- (different t, but diff spikes)
+358	761.500000000000 *
+358	1264.50000000000
+358	1559
+
+(2 cores)
+22	728
+22	764 *
+22	1267
+22	1524
+22	1548
+
+(1 core)
+22	728
+22	756.500000000000
+22	1267
+22	1524
+22	1548
+
+---------------- (same t)
+536	553.500000000000 *
+536	570.500000000000
+536	902 *
+536	1198.50000000000
+
+106	546.500000000000 *
+106	902 *
+106	1202
+
+---------------- (same t)
+362	728 *
+362	1242
+362	1505
+362	1526
+362	1936
+
+218	728 *
+218	1139
+218	1216
+218	1524.50000000000
+
+*** tried modifying stdp.mod to increase interval
+if  ((tlastpre > -1) && (interval > 0.01)) - 22 diffs
+if  ((tlastpre > -1) && (interval > 0.1)) - 22 diffs 
+if  ((tlastpre > -1) && (interval > 1)) - 26 diffs
+if  ((tlastpre > -1) && (interval > 2.0)) - 26 diffs
+if  ((tlastpre > -1) && (interval > 2.0)) - 13 diffs
+
+*** found problem!
+17.47 found problem: when pre is in different node and happens same time as post, the pre net_receive event sometimes arrives after post, so pre time is still previous spike time of that cell and thus stdp happens this is quite common since all spk times interval of 0.5 ms !
+
+*** fixed problem!
+20.44 found fix for stdp bug: instead of updating w directly use net_send() to update 1ms later and check for simultaneous
+spike; tested with 10-sec 10k cell sim for 1 vs 10 cores and both identical; code here:
+/u/salvadord/Documents/ISB/Models/large-scale/stdp.mod  
+
+*** Code with fix for bug
+COMMENT
+
+STDP + RL weight adjuster mechanism
+
+Original STDP code adapted from:
+http://senselab.med.yale.edu/modeldb/showmodel.asp?model=64261&file=\bfstdp\stdwa_songabbott.mod
+
+Adapted to implement a "nearest-neighbor spike-interaction" model (see 
+Scholarpedia article on STDP) that just looks at the last-seen pre- and 
+post-synaptic spikes, and implementing a reinforcement learning algorithm based
+on (Chadderdon et al., 2012):
+http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0047251
+
+Modified by salvadord to avoid bug when simultaneous pre and post spikes occur in different nodes (with mpi)
+
+Example Python usage:
+
+from neuron import h
+
+## Create cells
+dummy = h.Section() # Create a dummy section to put the point processes in
+ncells = 2
+cells = []
+for c in range(ncells): cells.append(h.IntFire4(0,sec=dummy)) # Create the cells
+
+## Create synapses
+threshold = 10 # Set voltage threshold
+delay = 1 # Set connection delay
+singlesyn = h.NetCon(cells[0],cells[1], threshold, delay, 0.5) # Create a connection between the cells
+stdpmech = h.STDP(0,sec=dummy) # Create the STDP mechanism
+presyn = h.NetCon(cells[0],stdpmech, threshold, delay, 1) # Feed presynaptic spikes to the STDP mechanism -- must have weight >0
+pstsyn = h.NetCon(cells[1],stdpmech, threshold, delay, -1) # Feed postsynaptic spikes to the STDP mechanism -- must have weight <0
+h.setpointer(singlesyn._ref_weight[0],'synweight',stdpmech) # Point the STDP mechanism to the connection weight
+
+Version: 2013oct24 by cliffk
+
+ENDCOMMENT
+
+NEURON {
+    POINT_PROCESS STDP : Definition of mechanism
+    POINTER synweight : Pointer to the weight (in a NetCon object) to be adjusted.
+    RANGE tauhebb, tauanti : LTP/LTD decay time constants (in ms) for the Hebbian (pre-before-post-synaptic spikes), and anti-Hebbian (post-before-pre-synaptic) cases. 
+    RANGE potrate, deprate : Maximal adjustment (can be positive or negative) for Hebbian and anti-Hebbian cases (i.e., as inter-spike interval approaches zero).  This should be set positive for LTP and negative for LTD.
+    RANGE RLwindhebb, RLwindanti : Maximum interval between pre- and post-synaptic events for an starting an eligibility trace.  There are separate ones for the Hebbian and anti-Hebbian events.
+    RANGE useRLexp : Use exponentially decaying eligibility traces?  If 0, then the eligibility traces are binary, turning on at the beginning and completely off after time has passed corresponding to RLlen.
+    RANGE RLlenhebb, RLlenanti : Length of the eligibility Hebbian and anti-Hebbian eligibility traces, or the decay time constants if the traces are decaying exponentials.
+    RANGE RLpotrate, RLdeprate : Maximum gains to be applied to the reward or punishing signal by Hebbian and anti-Hebbian eligibility traces.  
+    RANGE wmax : The maximum weight for the synapse.
+    RANGE softthresh : Flag turning on "soft thresholding" for the maximal adjustment parameters.
+    RANGE STDPon : Flag for turning STDP adjustment on / off.
+    RANGE RLon : Flag for turning RL adjustment on / off.
+    RANGE verbose : Flag for turning off prints of weight update events for debugging.
+    RANGE tlastpre, tlastpost : Remembered times for last pre- and post-synaptic spikes.
+    RANGE tlasthebbelig, tlastantielig : Remembered times for Hebbian anti-Hebbian eligibility traces.
+    RANGE interval : Interval between current time t and previous spike.
+    RANGE deltaw : The calculated weight change.
+    RANGE newweight : New calculated weight.
+}
+
+ASSIGNED {
+    synweight        
+    tlastpre   (ms)    
+    tlastpost  (ms)   
+    tlasthebbelig   (ms)    
+    tlastantielig  (ms)        
+    interval    (ms)    
+    deltaw
+    newweight          
+}
+
+INITIAL {
+    tlastpre = -1            : no spike yet
+    tlastpost = -1           : no spike yet
+    tlasthebbelig = -1      : no eligibility yet
+    tlastantielig = -1  : no eligibility yet   
+    interval = 0
+    deltaw = 0
+    newweight = 0
+}
+
+PARAMETER {
+    tauhebb  = 10  (ms)   
+    tauanti  = 10  (ms)    
+    potrate = 1.0
+    deprate = -1.0
+    RLwindhebb = 10 (ms)
+    RLwindanti = 10 (ms)
+    useRLexp = 0   : default to using binary eligibility traces
+    RLlenhebb = 100 (ms)
+    RLlenanti = 100 (ms)
+    RLpotrate = 1.0
+    RLdeprate = -1.0
+    wmax  = 15.0
+    softthresh = 0
+    STDPon = 1
+    RLon = 1
+    verbose = 0
+}
+
+NET_RECEIVE (w) {
+     deltaw = 0.0 : Default the weight change to 0.
+
+    : Hebbian weight update happens 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+    if ((flag == -1) && (tlastpre != t-1)) {   
+        w = 0
+        deltaw = potrate * exp(-interval / tauhebb)   : Use the Hebbian decay to set the Hebbian weight adjustment. 
+        if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
+        if (verbose > 0) { printf("Hebbian STDP event: t = %f ms; tlastpre = %f ms; interval = %f; deltaw = %f\n",t,tlastpre,interval,deltaw) } : Show weight update information if debugging on.
+    }
+
+    : Ant-hebbian weight update happens 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+    else if ((flag == 1) && (tlastpost != t-1)) { :update weight 1ms later to check for simultaneous spikes (otherwise bug when using mpi)
+        w = 0
+        deltaw = deprate * exp(interval / tauanti) : Use the anti-Hebbian decay to set the anti-Hebbian weight adjustment.
+        if (softthresh == 1) { deltaw = softthreshold(deltaw) } : If we have soft-thresholding on, apply it.
+        if (verbose > 0) { printf("anti-Hebbian STDP event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on. 
+    }
+     
+    : If we receive a non-negative weight value, we are receiving a pre-synaptic spike (and thus need to check for an anti-Hebbian event, since the post-synaptic weight must be earlier).
+    if (w > 0) {           
+        interval = tlastpost - t  : Get the interval; interval is negative
+        if  ((tlastpost > -1) && (interval > 0.0)) { : If we had a post-synaptic spike and a non-zero interval...
+            if (STDPon == 1) { : If STDP learning is turned on...
+                net_send(1,1) : instead of updating weight directly, use net_send to check if simultaneous spike occurred (otherwise bug when using mpi)    
+            }
+            if ((RLon == 1) && (-interval <= RLwindanti)) { tlastantielig = t } : If RL and anti-Hebbian eligibility traces are turned on, and the interval falls within the maximum window for eligibility, remember the eligibilty trace start at the current time.
+        }
+        tlastpre = t : Remember the current spike time for next NET_RECEIVE.  
+    
+    : Else, if we receive a negative weight value, we are receiving a post-synaptic spike (and thus need to check for an anti-Hebbian event, since the post-synaptic weight must be earlier).    
+    } else if (w < 0) {            
+        interval = t - tlastpre : Get the interval; interval is positive
+        if  ((tlastpre > -1) && (interval > 1.0)) { : If we had a pre-synaptic spike and a non-zero interval...
+            if (STDPon == 1) { : If STDP learning is turned on...
+                net_send(1,-1) : instead of updating weight directly, use net_send to check if simultaneous spike occurred (otherwise bug when using mpi)
+            }
+            if ((RLon == 1) && (interval <= RLwindhebb)) { tlasthebbelig = t } : If RL and Hebbian eligibility traces are turned on, and the interval falls within the maximum window for eligibility, remember the eligibilty trace start at the current time.
+        }
+        tlastpost = t : Remember the current spike time for next NET_RECEIVE.
+    }
+    adjustweight(deltaw) : Adjust the weight.
+}
+
+PROCEDURE reward_punish(reinf) {
+    if (RLon == 1) { : If RL is turned on...
+        deltaw = 0.0 : Start the weight change as being 0.
+        deltaw = deltaw + reinf * hebbRL() : If we have the Hebbian eligibility traces on, add their effect in.   
+        deltaw = deltaw + reinf * antiRL() : If we have the anti-Hebbian eligibility traces on, add their effect in.
+        if (softthresh == 1) { deltaw = softthreshold(deltaw) }  : If we have soft-thresholding on, apply it.  
+        adjustweight(deltaw) : Adjust the weight.
+        if (verbose > 0) { printf("RL event: t = %f ms; deltaw = %f\n",t,deltaw) } : Show weight update information if debugging on.     
+    }
+}
+
+FUNCTION hebbRL() {
+    if ((RLon == 0) || (tlasthebbelig < 0.0)) { hebbRL = 0.0  } : If RL is turned off or eligibility has not occurred yet, return 0.0.
+    else if (useRLexp == 0) { : If we are using a binary (i.e. square-wave) eligibility traces...
+        if (t - tlasthebbelig <= RLlenhebb) { hebbRL = RLpotrate } : If we are within the length of the eligibility trace...
+        else { hebbRL = 0.0 } : Otherwise (outside the length), return 0.0.
+    } 
+    else { hebbRL = RLpotrate * exp((tlasthebbelig - t) / RLlenhebb) } : Otherwise (if we re using an exponential decay traces)...use the Hebbian decay to calculate the gain.
+      
+}
+
+FUNCTION antiRL() {
+    if ((RLon == 0) || (tlastantielig < 0.0)) { antiRL = 0.0 } : If RL is turned off or eligibility has not occurred yet, return 0.0.
+    else if (useRLexp == 0) { : If we are using a binary (i.e. square-wave) eligibility traces...
+        if (t - tlastantielig <= RLlenanti) { antiRL = RLdeprate } : If we are within the length of the eligibility trace...
+        else {antiRL = 0.0 } : Otherwise (outside the length), return 0.0.
+    }
+    else { antiRL = RLdeprate * exp((tlastantielig - t) / RLlenanti) } : Otherwise (if we re using an exponential decay traces), use the anti-Hebbian decay to calculate the gain.  
+}
+
+FUNCTION softthreshold(rawwc) {
+    if (rawwc >= 0) { softthreshold = rawwc * (1.0 - synweight / wmax) } : If the weight change is non-negative, scale by 1 - weight / wmax.
+    else { softthreshold = rawwc * synweight / wmax } : Otherwise (the weight change is negative), scale by weight / wmax.    
+}
+
+PROCEDURE adjustweight(wc) {
+   synweight = synweight + wc : apply the synaptic modification, and then clip the weight if necessary to make sure its between 0 and wmax.
+   if (synweight > wmax) { synweight = wmax }
+   if (synweight < 0) { synweight = 0 }
+}
+
+*** Time differences
+**** 1 core with fix
+  Done; run time = 129.9 s; real-time ratio: 0.08.
+
+Gathering spikes...
+  Done; gather time = 27.0 s.
+Minimum delay (time-step for queue exchange) is  10.0
+
+Analyzing...
+  Spikes: 189371 (1.89 Hz)
+  Connections: 1113133 (525384 STDP; 111.31 per cell)
+  Mean connection distance: 783.84 um
+  Mean connection delay: 17.84 ms
+Saving output as output1.0...
+  Done; time = 28.2 s
+
+Done; total time = 267.4 s.
+**** 10 cores with fix 
+  Done; run time = 33.7 s; real-time ratio: 0.30.
+
+Gathering spikes...
+  Done; gather time = 17.1 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Analyzing...
+  Spikes: 189371 (1.89 Hz)
+  Connections: 1113133 (525384 STDP; 111.31 per cell)
+  Mean connection distance: 783.84 um
+  Mean connection delay: 17.84 ms
+Saving output as output10.0...
+  Done; time = 54.2 s
+
+Done; total time = 118.2 s.
+**** 1 core without fix (bug)
+  Done; run time = 105.4 s; real-time ratio: 0.09.
+
+Gathering spikes...
+  Done; gather time = 71.0 s.
+Minimum delay (time-step for queue exchange) is  10.0
+
+Analyzing...
+  Spikes: 131236 (1.31 Hz)
+  Connections: 1113133 (525384 STDP; 111.31 per cell)
+  Mean connection distance: 783.84 um
+  Mean connection delay: 17.84 ms
+Saving output as output1.0...
+  Done; time = 55.1 s
+
+Done; total time = 271.1 s.
+**** 10 cores without fix (bug)
+  Done; run time = 34.0 s; real-time ratio: 0.29.
+
+Gathering spikes...
+  Done; gather time = 23.2 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Analyzing...
+  Spikes: 123575 (1.24 Hz)
+  Connections: 1113133 (525384 STDP; 111.31 per cell)
+  Mean connection distance: 783.84 um
+  Mean connection delay: 17.84 ms
+Saving output as output10.0...
+  Done; time = 56.8 s
+
+Done; total time = 129.3 s.
+* 15feb10 Sim working with STDP, RL + musculoskeletal arm in hpc (ma)
+** end of output from running in 'ma'
+Writing to MSM pipe: packetID=199.000000
+[0.5, -0.5, 0.5, -0.5]
+read from msm pipe: 184
+[0.128276, 0.0939427, 0.118085, 0.0700224, 0.201749, 0.185767, 0.244255, 0.0703298, 0.154234, 0.141332, 0.135775, 0.107342, 0.145956, 0.10446, 0.101539, 0.126831, 0.154701, 0.0776188]
+read from msm pipe: 19
+[-0.175841, 1.41304]
+Received packet 199.000000 from MSM: (0.128,0.094,0.118,0.070,0.202,0.186,0.244,0.070,0.154,0.141,0.136)
+Received packet 199.000000 from MSM: (-0.176,1.413)
+  t = 2.0 s (100%; time remaining: 0.0 s)
+
+Writing to MSM pipe: packetID=200.000000
+[0.5, -0.5, 0.5, -0.5]
+read from msm pipe: 184
+[0.128332, 0.0939427, 0.118054, 0.0700076, 0.201694, 0.185664, 0.244182, 0.0702832, 0.154242, 0.141379, 0.135819, 0.10737, 0.145849, 0.104454, 0.101537, 0.126407, 0.154472, 0.0776281]
+read from msm pipe: 19
+[-0.176098, 1.41247]
+Received packet 200.000000 from MSM: (0.128,0.094,0.118,0.070,0.202,0.186,0.244,0.070,0.154,0.141,0.136)
+Received packet 200.000000 from MSM: (-0.176,1.412)
+  Done; run time = 78.8 s; real-time ratio: 0.03.
+
+Gathering spikes...
+  Done; gather time = 5.1 s.
+
+Analyzing...
+  Run time: 78.8 s (2-s sim; 2 scale; 1838 cells; 1 workers)
+  Spikes: 25857 (7.03 Hz)
+  Connections: 45993 (45693 STDP; 25.02 per cell)
+  Mean connection distance: 794.83 um
+  Mean connection delay: 9.95 ms
+Saving output as data/m1ms...
+  Done; time = 5.4 s
+Plotting raster...
+  Done; time = 1.8 s
+Plotting connectivity matrix...
+Plotting weight changes...
+
+Done; total time = 398.9 s.
+** output with mpi
+ Done; run time = 9.1 s; real-time ratio: 0.22.
+
+Gathering spikes...
+  Done; gather time = 2.1 s.
+
+Analyzing...
+  Run time: 9.1 s (2-s sim; 2 scale; 1838 cells; 4 workers)
+  Spikes: 25870 (7.04 Hz)
+  Connections: 45993 (45693 STDP; 25.02 per cell)
+  Mean connection distance: 794.83 um
+  Mean connection delay: 9.95 ms
+Saving output as data/m1ms...
+  Done; time = 5.5 s
+  Plotting raster despite using too many cores (4)
+
+* TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters
 *** DONE set z location based on new yfrac property (0 to 1) for each population
 *** DONE population and receptor names within cellpopdata module imported as p (ER2 -> p.ER2)
 ** DONE Add RL: weight changes at synapses, eligibility traces, stdp-like rule, keep track of target location and arm position (receive via udp every 10ms) to calculate error periodically,
-**** DONE Make plexon input be optional 
-**** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
-**** DONE implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
-**** DONE fix mpi bug - different motor commands for different nhosts (check if spikes diff as well!!!)
-**** DONE RL and eligibility traces using George's PYNDL code
-**** TODO plot weightchanges 
-** TODO add interface to musculoskel arm (currently dummyArm)
-*** TODO Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
-***  TODO Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
+*** DONE Make plexon input be optional 
+*** DONE replace arminterface with arminterface_pipe.py - set an option so can use dummy virtual arm for testing!
+*** DONE implement msarm.hoc (arm apparatus such as target location, arm position, error etc) in new python-based M1 model
+*** DONE fix mpi bug - different motor commands for different nhosts (check if spikes diff as well!!!)
+*** DONE RL and eligibility traces using George's PYNDL code
+*** DONE plot weightchanges 
+** TODO add interface to musculoskel arm (currently dummyArm) - 15 Feb 
+*** DONE Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
+***  DONE Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 
-*** TODO make ASC=NSLOC and check if can have plasticity
-** TODO Add the training, testing, and analysis functions
-** TODO decide where plasticity will happen restrict learning to that subset of pops
--should modify the connectivity and weights tuned to M1!?  -maybe avoid by adding plastic connections ONLY between
+*** TODO replace pc.post() with pc.py_alltoall()
+*** TODO make DSC an izhi population 
+*** TODO check if can have plasticity between NSLOC and izhi
+** TODO Add the training and testing wrappers and modularize further -  17 Feb
+*** TODO Modularize parameters and pass as arguments using Bill's method
+** TODO decide where plasticity will happen restrict learning to that subset of pops - 19 Feb
+-should modify the connectivity and weights tuned to M1!?  
+-maybe avoid by adding plastic connections ONLY between
 proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles - see 15jan11
-** TODO Encode target/PMd activity in input to L2/3 or in external noise input patterns 
-- PMd poisson from neural field model/SSM?)  - use SSM from Marius, and convert to Poisson(?) a la cliff - Train with SSM
-noise for each of the targets - Test with initial/preparatory PMd input??
+** TODO Encode target using PMd activity as input - 25 Feb 
+*** Find good PMd data where target can be decoded
+*** Convert into vector of spikes (bill) that can be easily played back (trial/trial basis)
+*** Optionally use SSM, and have plasticity between SSM neurons (can argue equivalent to PMd activity !) 
+- PMd poisson from neural field model/SSM?)  
+- use SSM from Marius, and convert to Poisson(?) a la cliff - Train with SSM
+noise for each of the targets 
+** TODO Use evol alg to find optimum set of params (first with dummyArm, the musculoskel arm) - 5 Mar
+** TODO Test real-time with 10k cells, PMd input and virtual arm using BMI in HPC - 10 Mar
+** TODO Prepare final demo video - 20 Mar
+*** TODO Fix visualization of virtual arm in hpc!!
+*** TODO Make something like this:
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150211_013249.png][fig]]
+- NOTE: PMd input can be replaced with low-dim SSM representation (of PMd) and apply similar plasticity concept – maybe
+  can compare both methods -- if direct plasticity between bio+model neurons 
+** TODO If have time (doubt it!) simulate perturbation and repair - 30 Mar
+https://bbs.archlinux.org/viewtopic.php?pid=684936#p684936

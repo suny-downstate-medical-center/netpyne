@@ -48,7 +48,7 @@ def plotconn(p):
         for c2 in range(size(connprobs,1)):
             for w in range(p.nreceptors):
                 totalconns[c1,c2] += connprobs[c1,c2]*connweights[c1,c2,w]*(-1 if w>=2 else 1)
-    imshow(totalconns,cmap=bicolormap(gap=0))
+    imshow(totalconns,interpolation='nearest',cmap=bicolormap(gap=0))
 
     # Plot grid lines
     hold(True)
@@ -89,7 +89,7 @@ def plotweightchanges(p, allconnections, stdpdata, weightchanges):
 		wcmat[ipre,ipost] = iwc *(-1 if irecep>=2 else 1)
 
 	# plot
-	imshow(wcmat,cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
+	imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
 	xlabel('pre-synaptic cell id')
 	ylabel('post-synaptic cell id')
 	h.set_xticks(p.popGidStart)

@@ -854,7 +854,7 @@ Saving output as data/m1ms...
 *** DONE Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
 ***  DONE Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 
-*** TODO replace pc.post() with pc.py_alltoall()
+*** TODO replace pc.post() with pc.py_alltoall() ?
 *** TODO make DSC an izhi population 
 *** TODO check if can have plasticity between NSLOC and izhi
 ** TODO Add the training and testing wrappers and modularize further -  17 Feb

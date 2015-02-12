@@ -12,6 +12,36 @@ from bicolormap import bicolormap
 from datetime import datetime
 from time import time
 
+## Create colormap
+def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
+   from matplotlib.colors import LinearSegmentedColormap as makecolormap
+   
+   mng=mingreen; # Minimum amount of green to add into the colors
+   mix=redbluemix; # How much red to mix with the blue an vice versa
+   eps=epsilon; # How much of the center of the colormap to make gray
+   omg=1-gap # omg = one minus gap
+   
+   cdict = {'red': ((0.00000, 0.0, 0.0),
+                    (0.5-eps, mix, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, 1.0),
+                    (1.00000, 1.0, 1.0)),
+
+         'green':  ((0.00000, mng, mng),
+                    (0.5-eps, omg, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, omg),
+                    (1.00000, mng, mng)),
+
+         'blue':   ((0.00000, 1.0, 1.0),
+                    (0.5-eps, 1.0, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, mix),
+                    (1.00000, 0.0, 0.0))}
+   cmap = makecolormap('bicolormap',cdict,256)
+
+   return cmap
+
 def plotraster(allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
     plotstart = time() # See how long it takes to plot
     EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise

@@ -303,7 +303,6 @@ vibration-induced illusions. In addition, the results show that the neuronal pop
 multipopulation proprioceptive coding of spatially oriented 2D limb movements, even at the peripheral sensory level, based on
 the sum vectors calculated from all the muscles involved in the movement.
  
-
 ** PMd input with multiple targets requires new conceptual framework! :papers:
 - PMd provides preparation activity -- where to go; target info with respect to hand
 - Learning adpats weight to map different PMd activity to M1 activity that directs arm to different targets
@@ -850,13 +849,13 @@ Saving output as data/m1ms...
 *** DONE fix mpi bug - different motor commands for different nhosts (check if spikes diff as well!!!)
 *** DONE RL and eligibility traces using George's PYNDL code
 *** DONE plot weightchanges 
-** TODO add interface to musculoskel arm (currently dummyArm) - 15 Feb 
+** DONE add interface to musculoskel arm (currently dummyArm) - 15 Feb 
 *** DONE Assign SPI (spinal cord) subpopulations to different muscles (or maybe just random, which would make more realistic), convert from firing rates to muscle excitation (currently, just sum+threshold), and send udp packet with muscle excitations to arm every 10ms.
 ***  DONE Assign muscle lengths to the proprioceptive neurons and make them fire accordingly; requires updating muscle lengths every 10ms (via received udp messages)
 
-*** TODO replace pc.post() with pc.py_alltoall() ?
 *** DONE make DSC an izhi population and add connectivity to E5B
-*** TODO check if can have plasticity between NSLOC and izhi
+*** DONE check if can have plasticity between NSLOC and izhi -yes
+** TODO replace pc.post() with pc.py_alltoall() or other ?
 ** TODO Add the training and testing wrappers and modularize further -  17 Feb
 *** TODO Modularize parameters and pass as arguments using Bill's method
 ** TODO decide where plasticity will happen restrict learning to that subset of pops - 19 Feb

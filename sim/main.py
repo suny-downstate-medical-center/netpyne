@@ -1,6 +1,6 @@
 
 from neuron import h, init # Import NEURON
-import params as p
+from params import *
 import network
 import sys
 
@@ -17,6 +17,8 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
       raise Exception('Reading args from commandline: Variable "%s" not found' % arg[0])
   elif argv=='-mpi':   ismpi = True
   else:                pass # ignore -python 
+
+network.createNetwork()
 
 # if pc.id()==0: 
 #     pc.gid_clear()

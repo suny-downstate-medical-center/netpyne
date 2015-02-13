@@ -27,6 +27,9 @@ Version: 2014feb21 by cliffk
 
 from neuron import h, init # Import NEURON
 from params import *
+from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
+from nsloc import nsloc # NetStim with location unit type
+
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 

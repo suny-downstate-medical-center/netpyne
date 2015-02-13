@@ -27,7 +27,6 @@ Version: 2014feb21 by cliffk
 
 from neuron import h, init # Import NEURON
 from params import *
-from arm import Arm # Class with arm methods and variables
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 
@@ -290,6 +289,8 @@ def setupSim():
     ## Initialize STDP -- just for recording
     if usestdp:
         if pc.id()==0: print('\nSetting up STDP...')
+        if usestdp:
+            weightchanges = [[] for ps in range(nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
         for ps in range(nstdpconns): weightchanges[ps].append([0, stdpmechs[ps].synweight]) # Time of save (0=initial) and the weight
 
 

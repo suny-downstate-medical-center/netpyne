@@ -1,7 +1,7 @@
 """
 globals.py 
 
-list of model global paramaters and variables to be shared across modules
+list of model objects (paramaters and variables) to be shared across modules
 Can modified manually or via arguments from main.py
 
 Version: 2015feb12 by salvadord
@@ -11,13 +11,15 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES
 ###############################################################################
 
-from neuron import h # Import NEURON
-import cellpopdata as p # Import population and connection data
 from pylab import array, inf, zeros, seed
+from neuron import h # Import NEURON
+from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
+from nsloc import nsloc # NetStim with location unit type
 from arm import Arm # Class with arm methods and variables
+import server # Server for plexon interface
 from stimuli import touch, stimmod, makestim # for creating natural and artificial stimuli
-from plexonConfig import *
 from time import time
+
 
 
 ###############################################################################
@@ -28,7 +30,7 @@ from time import time
 popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [numPMd, 48,  48,    150,    25,     25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+popratios =  [server.numPMd, 48,  48,    150,    25,     25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.3,0.5], [0.3,0.5], [0.3,0.5], [0.6,0.7], [0.7,0.9], [0.6,0.7], [0.6,0.7], [0.9,1.0], [0.9,1.0], [0.9,1.0]]
 
 
@@ -48,7 +50,7 @@ cellclasses = [] # Store list of classes types for each cell -- e.g. pyramidal v
 EorI = [] # Store list of excitatory/inhibitory for each cell
 popnumbers = scale*array(popratios) # Number of neurons in each population
 if 'PMd' in popnames:    
-    popnumbers[popnames.index('PMd')] = numPMd # Number of PMds is fixed.
+    popnumbers[popnames.index('PMd')] = server.numPMd # Number of PMds is fixed.
 ncells = int(sum(popnumbers))# Calculate the total number of cells 
 
 
@@ -70,6 +72,8 @@ EorI = array(EorI)
 
 
 # Assign numbers to each of the different variables so they can be used in the other functions
+# initializes the following variables:
+# PMd, ASC, DSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops 
 for i,name in enumerate(popnames): exec(name+'=i') # Set population names to the integers
 for i,name in enumerate(receptornames): exec(name+'=i') # Set population names to the integers
 allpops = array(range(npops)) # Create an array with all the population numbers
@@ -198,9 +202,9 @@ limitmemory = False # Whether or not to limit RAM usage
 savemat = True # Whether or not to write spikes etc. to a .mat file
 savetxt = False # save spikes and conn to txt file
 savelfps = True # Whether or not to save LFPs
-lfppops = [[p.ER2], [p.ER5], [p.EB5], [p.ER6]] # Populations for calculating the LFP from
+lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 saveraw = False# Whether or not to record raw voltages etc.
-verbosity = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = 'data/m1ms'  # Set file output name
 plotraster = True # Whether or not to plot a raster
 plotconn = False # whether to plot conn matrix
@@ -219,8 +223,6 @@ receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
 toroidal = True # Whether or not to have toroidal topology
-connprobs = p.setconnprobs() # Set inter-population connection probabilities from data
-connweights = p.setconnweights() # Set inter-population connection weights from data
 if useconnprobdata == False: connprobs = array(connprobs>0,dtype='int') # Optionally cnvert from float data into binary yes/no
 if useconnweightdata == False: connweights = array(connweights>0,dtype='int') # Optionally convert from float data into binary yes/no
 ncWeight = 4 # weight of netcon between NSLOCs and ER2s
@@ -248,7 +250,7 @@ backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
-backgroundreceptor = p.NMDA # Which receptor to stimulate
+backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
@@ -341,10 +343,6 @@ pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
 nhosts = int(pc.nhost()) # Find number of hosts
 rank = int(pc.id())     # rank 0 will be the master
 
-
-## STDP recording
-weightchanges = []
-
 ## LFP recording
 lfptime = [] # List of times that the LFP was recorded at
 nlfps = len(lfppops) # Number of distinct LFPs to calculate
@@ -362,8 +360,11 @@ if rank==0: # Only act on a single host
     allspiketimes = array([])
     lfps = zeros((len(lfptime),nlfps)) # Create an empty array for appending LFP data; first entry is for time
     allconnections = [array([]) for i in range(nconnpars)] # Store all connections
-    allconnections[nconnpars-1] = zeros((0,p.nreceptors)) # Create an empty array for appending connections
+    allconnections[nconnpars-1] = zeros((0,nreceptors)) # Create an empty array for appending connections
     allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data
+    totalspikes = 0 # Keep a running tally of the number of spikes
+    totalconnections = 0 # Total number of connections
+    totalstdpconns = 0 # Total number of stdp connections
     if usestdp: weightchanges = []
     if saveraw: allraw = []
  

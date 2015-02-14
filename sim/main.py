@@ -1,8 +1,8 @@
-
-from neuron import h, init # Import NEURON
-import params as p
-import network
 import sys
+from neuron import h, init # Import NEURON
+import shared as s
+import network
+
 
 for argv in sys.argv[1:]: # Skip first argument, which is file name
   arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value

@@ -26,7 +26,7 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from params import *
+import shared as s
 from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
 from pylab import seed, rand, sqrt, exp, transpose, concatenate
@@ -53,68 +53,66 @@ def runSeq():
 ###############################################################################
 
 def createNetwork():
-    global cellsperhost, nstdpconns
-
     ## Set cell types
     celltypes=[]
-    for c in range(ncells): # Loop over each cell. ncells is all cells in the network.
-        if cellclasses[c]==1: celltypes.append(pyramidal) # Append a pyramidal cell
-        elif cellclasses[c]==2: celltypes.append(fastspiking) # Append a fast-spiking interneuron
-        elif cellclasses[c]==3: celltypes.append(lowthreshold) # Append a low-threshold-spiking interneuron
-        elif cellclasses[c]==4: celltypes.append(thalamocortical) # Append a thalamocortical cell
-        elif cellclasses[c]==5: celltypes.append(reticular) # Append a thalamocortical cell
-        elif cellclasses[c]==-1: celltypes.append(nsloc) # Append a nsloc
-        else: raise Exception('Undefined cell class "%s"' % cellclasses[c]) # No match? Cause an error
+    for c in range(g.ncells): # Loop over each cell. ncells is all cells in the network.
+        if g.cellclasses[c]==1: celltypes.append(g.pyramidal) # Append a pyramidal cell
+        elif g.cellclasses[c]==2: celltypes.append(g.fastspiking) # Append a fast-spiking interneuron
+        elif g.cellclasses[c]==3: celltypes.append(g.lowthreshold) # Append a low-threshold-spiking interneuron
+        elif g.cellclasses[c]==4: celltypes.append(g.thalamocortical) # Append a thalamocortical cell
+        elif g.cellclasses[c]==5: celltypes.append(g.reticular) # Append a thalamocortical cell
+        elif g.cellclasses[c]==-1: celltypes.append(g.nsloc) # Append a nsloc
+        else: raise Exception('Undefined cell class "%s"' % g.cellclasses[c]) # No match? Cause an error
 
 
     ## Set positions
-    seed(id32('%d'%randseed)) # Reset random number generator
-    xlocs = modelsize*rand(ncells) # Create random x locations
-    ylocs = modelsize*rand(ncells) # Create random y locations
-    zlocs = rand(ncells) # Create random z locations
-    for c in range(ncells): 
-        zlocs[c] = corticalthick * (zlocs[c]*(popyfrac[cellclasses[c]][1]-popyfrac[cellclasses[c]][0])) # calculate based on yfrac for population and corticalthick 
+    seed(id32('%d'%g.randseed)) # Reset random number generator
+    xlocs = g.modelsize*rand(g.ncells) # Create random x locations
+    ylocs = g.modelsize*rand(g.ncells) # Create random y locations
+    zlocs = rand(g.ncells) # Create random z locations
+    for c in range(g.ncells): 
+        zlocs[c] = g.corticalthick * (zlocs[c]*(g.popyfrac[g.cellclasses[c]][1]-g.popyfrac[g.cellclasses[c]][0])) # calculate based on yfrac for population and corticalthick 
 
 
     ## Actually create the cells
-    ninnclDic = len(innclDic) # number of PMd created in this worker
-    for c in xrange(int(pc.id()), ncells, nhosts):
-        dummies.append(h.Section()) # Create fake sections
+    ninnclDic = len(g.innclDic) # number of PMd created in this worker
+    for c in xrange(int(g.rank), g.ncells, g.nhosts):
+        g.dummies.append(h.Section()) # Create fake sections
         gid = c
-        if cellnames[gid] == 'PMd':
+        if g.cellnames[gid] == 'PMd':
             cell = celltypes[gid](cellid = gid) # create an NSLOC
-            inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
-            innclDic[gid - ncells - numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
+            g.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
+            g.innclDic[gid - g.ncells - g.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
             ninnclDic += 1
-        elif cellnames[gid] == 'ASC':
+        elif g.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
         else: 
-            if cellclasses[gid]==3: 
-                cell = fastspiking(dummies[cellsperhost], vt=-47, cellid=gid) # Don't use LTS cell, but instead a FS cell with a low threshold
+            if g.cellclasses[gid]==3: 
+                cell = fastspiking(g.dummies[g.cellsperhost], vt=-47, cellid=gid) # Don't use LTS cell, but instead a FS cell with a low threshold
             else: 
-                cell = celltypes[gid](dummies[cellsperhost], cellid=gid) # Create a new cell of the appropriate type (celltypes[gid]) and store it
-            if verbosity>0: cells[-1].useverbose(verbosity, filename+'log.txt') # Turn on diagnostic to file
-        cells.append(cell) 
-        gidVec.append(gid) # index = local id; value = global id
-        gidDic[gid] = cellsperhost # key = global id; value = local id -- used to get local id because gid.index() too slow!
-        pc.set_gid2node(gid, pc.id())
+                cell = celltypes[gid](g.dummies[g.cellsperhost], cellid=gid) # Create a new cell of the appropriate type (celltypes[gid]) and store it
+            if g.verbosity>0: g.cells[-1].useverbose(g.verbosity, g.filename+'log.txt') # Turn on diagnostic to file
+        g.cells.append(cell) 
+        g.gidVec.append(gid) # index = local id; value = global id
+        g.gidDic[gid] = g.cellsperhost # key = global id; value = local id -- used to get local id because gid.index() too slow!
+        g.pc.set_gid2node(gid, g.rank)
 
         spikevec = h.Vector()
-        hostspikevecs.append(spikevec)
+        g.hostspikevecs.append(spikevec)
         spikerecorder = h.NetCon(cell, None)
         spikerecorder.record(spikevec)
-        spikerecorders.append(spikerecorder)
-        pc.cell(gid, spikerecorders[cellsperhost])
-        cellsperhost += 1 # contain cell numbers per host including PMd and P
-    print('  Number of cells on node %i: %i ' % (pc.id(),len(cells)))
-    pc.barrier()
+        g.spikerecorders.append(spikerecorder)
+        g.pc.cell(gid, g.spikerecorders[g.cellsperhost])
+        g.cellsperhost += 1 # contain cell numbers per host including PMd and P
+    print('  Number of cells on node %i: %i ' % (g.rank,len(g.cells)))
+    g.pc.barrier()
 
 
     ## Calculate distances and probabilities
-    if pc.id()==0: print('Calculating connection probabilities (est. time: %i s)...' % (performance*cellsperhost**2/3e4))
-    conncalcstart = time() # See how long connecting the cells takes
+    if g.rank==0: print('Calculating connection probabilities (est. time: %i s)...' % (g.performance*g.cellsperhost**2/3e4))
+    conncalcstart = g.time() # See how long connecting the cells takes
     nPostCells = 0
-    for c in range(cellsperhost): # Loop over all postsynaptic cells on this host (has to be postsynaptic because of gid_connect)
+    for c in range(g.cellsperhost): # Loop over all postsynaptic cells on this host (has to be postsynaptic because of gid_connect)
         gid = gidVec[c] # Increment global identifier       
         if cellnames[gid] == 'PMd' or cellnames[gid] == 'ASC':
             # There are no presynaptic connections for PMd or ASC.
@@ -156,12 +154,12 @@ def createNetwork():
     for pp in range(nconnpars): conndata[pp] = array(concatenate([conndata[pp][c] for c in range(nPostCells)])) # Turn pre- and post- cell IDs lists into vectors
     nconnections = len(conndata[0]) # Find out how many connections we're going to make
     conncalctime = time()-conncalcstart # See how long it took
-    if pc.id()==0: print('  Done; time = %0.1f s' % conncalctime)
+    if g.rank==0: print('  Done; time = %0.1f s' % conncalctime)
 
 
     ## Actually make connections
-    if pc.id()==0: print('Making connections (est. time: %i s)...' % (performance*nconnections/9e2))
-    print('  Number of connections on host %i: %i' % (pc.id(), nconnections))
+    if g.rank==0: print('Making connections (est. time: %i s)...' % (performance*nconnections/9e2))
+    print('  Number of connections on host %i: %i' % (g.rank, nconnections))
     connstart = time() # See how long connecting the cells takes
     for con in range(nconnections): # Loop over each connection
         pregid = conndata[0][con] # GID of presynaptic cell    
@@ -199,8 +197,8 @@ def createNetwork():
                  
     nstdpconns = len(stdpconndata) # Get number of STDP connections
     conntime = time()-connstart # See how long it took
-    if usestdp: print('  Number of STDP connections on host %i: %i' % (pc.id(), nstdpconns))
-    if pc.id()==0: print('  Done; time = %0.1f s' % conntime)
+    if usestdp: print('  Number of STDP connections on host %i: %i' % (g.rank, nstdpconns))
+    if g.rank==0: print('  Done; time = %0.1f s' % conntime)
 
 
 ###############################################################################
@@ -218,7 +216,7 @@ def addStimulation():
             stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
             
             for c in range(cellsperhost):
-                gid = cellsperhost*int(pc.id())+c # For deciding E or I    
+                gid = cellsperhost*int(g.rank)+c # For deciding E or I    
                 seed(id32('%d'%(randseed+gid))) # Reset random number generator for this cell
                 if ts.fraction>rand(): # Don't do it for every cell necessarily
                     if any(cellpops[gid]==ts.pops) and xlocs[gid]>=ts.loc[0,0] and xlocs[gid]<=ts.loc[0,1] and ylocs[gid]>=ts.loc[1,0] and ylocs[gid]<=ts.loc[1,1]:
@@ -253,14 +251,14 @@ def addStimulation():
                             stimrecorder = h.NetCon(stimsource, None)
                             stimrecorder.record(stimspikevec) # Record simulation time
                             stimrecorders.append(stimrecorder)
-        print('  Number of stimuli created on host %i: %i' % (pc.id(), len(stimsources)))
+        print('  Number of stimuli created on host %i: %i' % (g.rank, len(stimsources)))
 
 
 ###############################################################################
 ### Add background inputs
 ###############################################################################
 def addBackground():
-    if pc.id()==0: print('Creating background inputs...')
+    if g.rank==0: print('Creating background inputs...')
     for c in range(cellsperhost): 
         gid = gidVec[c]
         if cellnames[gid] == 'ASC' or cellnames[gid] == 'DSC' or cellnames[gid] == 'PMd': # These pops won't receive background stimulations.
@@ -289,7 +287,7 @@ def addBackground():
             backgroundrecorder = h.NetCon(backgroundsource, None)
             backgroundrecorder.record(backgroundspikevec) # Record simulation time
             backgroundrecorders.append(backgroundrecorder)
-    print('  Number created on host %i: %i' % (pc.id(), len(backgroundsources)))
+    print('  Number created on host %i: %i' % (g.rank, len(backgroundsources)))
     pc.barrier()
 
 
@@ -298,10 +296,10 @@ def addBackground():
 ###############################################################################
 def setupSim():
     global nstdpconns
-    
+
     ## Initialize STDP -- just for recording
     if usestdp:
-        if pc.id()==0: print('\nSetting up STDP...')
+        if g.rank==0: print('\nSetting up STDP...')
         if usestdp:
             weightchanges = [[] for ps in range(nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
         for ps in range(nstdpconns): weightchanges[ps].append([0, stdpmechs[ps].synweight]) # Time of save (0=initial) and the weight
@@ -320,7 +318,7 @@ def setupSim():
 
     ## Set up raw recording
     if saveraw: 
-        if pc.id()==0: print('\nSetting up raw recording...')
+        if g.rank==0: print('\nSetting up raw recording...')
         nquantities = 4 # Number of variables from each cell to record from
         # Later this part should be modified because NSLOC doesn't have V, u and I.
         for c in range(cellsperhost):
@@ -337,7 +335,7 @@ def setupSim():
 
     ## Set up virtual arm
     if useArm != 'None':
-            arm.setup(duration, loopstep, RLinterval, pc, scale, popnumbers, p)
+            arm.setup()#duration, loopstep, RLinterval, pc, scale, popnumbers, p)
 
 
     ## Communication setup for plexon input
@@ -349,15 +347,15 @@ def setupSim():
         ''')
 
         if isOriginal == 0: # With communication program
-            if pc.id() == 0: 
-                s = server.Manager() # isDp in config.py = 0
-                s.start() # launch sever process
+            if g.rank == 0: 
+                server= server.Manager() # isDp in config.py = 0
+                server.start() # launch sever process
                 print "Server process completed and callback function initalized"
             e = server.Event() # Queue callback function in the NEURON queue
 
         
         # Wait for external spikes for PMd from Plexon  
-            if pc.id() == 0:
+            if g.rank == 0:
                 if isCommunication == 1:
                     getServerInfo() # show parameters of the server process
                     print "[Waiting for spikes; run the client on Windows machine...]"
@@ -370,7 +368,9 @@ def setupSim():
 ### Run Simulation
 ###############################################################################
 def runSim():
-    if pc.id() == 0:
+    global timeoflastsave
+
+    if g.rank == 0:
         print('\nRunning...')
     runstart = time() # See how long the run takes
     pc.set_maxstep(10) # MPI: Set the maximum integration time in ms -- not very important
@@ -379,9 +379,9 @@ def runSim():
     while round(h.t) < duration:
         pc.psolve(min(duration,h.t+loopstep)) # MPI: Get ready to run the simulation (it isn't actually run until pc.runworker() is called I think)
         if simMode == 0:
-            if pc.id()==0 and (round(h.t) % progupdate)==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/duration*100), (duration-h.t)*(time()-runstart)/h.t))
+            if g.rank==0 and (round(h.t) % progupdate)==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/duration*100), (duration-h.t)*(time()-runstart)/h.t))
         else:
-            if pc.id()==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/duration*100), (duration-h.t)*(time()-runstart)/h.t))
+            if g.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/duration*100), (duration-h.t)*(time()-runstart)/h.t))
 
         # Calculate LFP -- WARNING, need to think about how to optimize
         if savelfps:
@@ -412,7 +412,7 @@ def runSim():
             arm.run(h.t, pc, cells, gidVec, gidDic, cellsperhost, hostspikevecs) # run virtual arm apparatus (calculate command, move arm, feedback)
             if useRL and (h.t - timeoflastRL >= RLinterval): # if time for next RL
                 vec = h.Vector()
-                if pc.id() == 0:
+                if g.rank == 0:
                     critic = arm.RLcritic() # get critic signal (-1, 0 or 1)
                     pc.broadcast(vec.from_python([critic]), 0) # convert python list to hoc vector for broadcast data received from arm
                     print critic
@@ -420,9 +420,9 @@ def runSim():
                     pc.broadcast(vec, 0)
                     critic = vec.to_python()[0]
                 if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
-                    for s in stdpmechs: # for all connections in stdp conn list
+                    for stdp in stdpmechs: # for all connections in stdp conn list
                         pass
-                        s.reward_punish(float(critic)) # run stdp.mod method to update syn weights based on RL
+                        stdp.reward_punish(float(critic)) # run stdp.mod method to update syn weights based on RL
             # Synaptic scaling?
         
             armDur = time() - armStart
@@ -448,7 +448,7 @@ def runSim():
             h.dt = dtSave # Restore orignal dt   
                 
     runtime = time()-runstart # See how long it took
-    if pc.id()==0: print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, duration/1000/runtime))
+    if g.rank==0: print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, duration/1000/runtime))
     pc.barrier() # Wait for all hosts to get to this point
 
 
@@ -457,10 +457,10 @@ def runSim():
 ###############################################################################
 def finalizeSim():
     ## Pack data from all hosts
-    if pc.id()==0: print('\nGathering spikes...')
+    if g.rank==0: print('\nGathering spikes...')
     gatherstart = time() # See how long it takes to plot
     for host in range(nhosts): # Loop over hosts
-        if host==pc.id(): # Only act on a single host
+        if host==g.rank: # Only act on a single host
             hostspikecells=array([])
             hostspiketimes=array([])
             for c in range(len(hostspikevecs)):
@@ -477,7 +477,7 @@ def finalizeSim():
 
 
     ## Unpack data from all hosts
-    if pc.id()==0: # Only act on a single host
+    if g.rank==0: # Only act on a single host
         allspikecells = array([])
         allspiketimes = array([])
         lfps = zeros((len(lfptime),nlfps)) # Create an empty array for appending LFP data; first entry is for time
@@ -525,12 +525,12 @@ def finalizeSim():
             stimspikedata = transpose(vstack([allstimspikecells,allstimspiketimes]))
         else: stimspikedata = [] # For saving so no error
     gathertime = time()-gatherstart # See how long it took
-    if pc.id()==0: print('  Done; gather time = %0.1f s.' % gathertime)
+    if g.rank==0: print('  Done; gather time = %0.1f s.' % gathertime)
     pc.barrier()
 
-    print 'min delay for node ',pc.id(),' is ', pc.set_maxstep(10)
+    print 'min delay for node ',g.rank,' is ', pc.set_maxstep(10)
     mindelay = pc.allreduce(pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if pc.id()==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if g.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
 
     ## Run and clean up
     pc.runworker() # MPI: Start simulations running on each host
@@ -545,7 +545,7 @@ def finalizeSim():
     # terminate the server process
     if usePlexon:
       if isOriginal == 0:
-          s.stop()
+          server.stop()
 
     ## Print statistics
     print('\nAnalyzing...')

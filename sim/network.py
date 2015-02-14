@@ -29,7 +29,7 @@ from neuron import h, init # Import NEURON
 from params import *
 from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
-
+from pylab import seed, rand, sqrt, exp, transpose, concatenate
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 
@@ -37,8 +37,24 @@ def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 
 ###############################################################################
 ### CREATE MODEL
 ###############################################################################
+def runSeq():
+    createNetwork() 
+    addStimulation()
+    addBackground()
+    setupSim()
+    runSim()
+    finalizeSim()
+    saveData()
+    plotData()
+
+
+###############################################################################
+### Create Network
+###############################################################################
 
 def createNetwork():
+    global cellsperhost, nstdpconns
+
     ## Set cell types
     celltypes=[]
     for c in range(ncells): # Loop over each cell. ncells is all cells in the network.
@@ -188,63 +204,56 @@ def createNetwork():
 
 
 ###############################################################################
-### CREATE INPUTS
+### Add stimulation
 ###############################################################################
 
 ## IMPLEMENT STIMULATION
 def addStimulation():
-    stimrands=[] # Create input connections
-    stimsources=[] # Create empty list for storing synapses
-    stimconns=[] # Create input connections
-    stimtimevecs = [] # Create array for storing time vectors
-    stimweightvecs = [] # Create array for holding weight vectors
-    if saveraw: 
-        stimspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-        stimrecorders=[] # And for recording spikes
-    for stim in range(len(stimpars)): # Loop over each stimulus type
-        ts = stimpars[stim] # Stands for "this stimulus"
-        ts.loc = ts.loc * modelsize # scale cell locations to model size
-        stimvecs = makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
-        stimstruct.append([ts.name, stimvecs]) # Store for saving later
-        stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
+    if usestims:
+        for stim in range(len(stimpars)): # Loop over each stimulus type
+            ts = stimpars[stim] # Stands for "this stimulus"
+            ts.loc = ts.loc * modelsize # scale cell locations to model size
+            stimvecs = makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
+            stimstruct.append([ts.name, stimvecs]) # Store for saving later
+            stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
+            
+            for c in range(cellsperhost):
+                gid = cellsperhost*int(pc.id())+c # For deciding E or I    
+                seed(id32('%d'%(randseed+gid))) # Reset random number generator for this cell
+                if ts.fraction>rand(): # Don't do it for every cell necessarily
+                    if any(cellpops[gid]==ts.pops) and xlocs[gid]>=ts.loc[0,0] and xlocs[gid]<=ts.loc[0,1] and ylocs[gid]>=ts.loc[1,0] and ylocs[gid]<=ts.loc[1,1]:
+                        
+                        maxweightincrease = 20 # Otherwise could get infinitely high, infinitely close to the stimulus
+                        distancefromstimulus = sqrt(sum((array([xlocs[gid], ylocs[gid]])-modelsize*ts.falloff[0])**2))
+                        fallofffactor = min(maxweightincrease,(ts.falloff[1]/distancefromstimulus)**2)
+                        stimweightvecs.append(h.Vector().from_python(stimvecs[1]*fallofffactor)) # Scale by the fall-off factor
+                        
+                        stimrand = h.Random()
+                        stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
+                        stimrand.negexp(1)
+                        stimrand.seq(id32('%d'%(randseed+gid))*1e3) # Set the sequence i.e. seed
+                        stimrands.append(stimrand)
+                        
+                        stimsource = h.NetStim() # Create a NetStim
+                        stimsource.interval = ts.rate**-1*1e3 # Interval between spikes
+                        stimsource.number = 1e9 # Number of spikes
+                        stimsource.noise = ts.noise # Fractional noise in timing
+                        stimsource.noiseFromRandom(stimrand) # Set it to use this random number generator
+                        stimsources.append(stimsource) # Save this NetStim
+                        
+                        stimconn = h.NetCon(stimsource, cells[c]) # Connect this noisy input to a cell
+                        for r in range(p.nreceptors): stimconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+                        stimweightvecs[-1].play(stimconn._ref_weight[0], stimtimevecs[-1]) # Play most-recently-added vectors into weight
+                        stimconn.delay=mindelay # Specify the delay in ms -- shouldn't make a spot of difference
+                        stimconns.append(stimconn) # Save this connnection
         
-        for c in range(cellsperhost):
-            gid = cellsperhost*int(pc.id())+c # For deciding E or I    
-            seed(id32('%d'%(randseed+gid))) # Reset random number generator for this cell
-            if ts.fraction>rand(): # Don't do it for every cell necessarily
-                if any(cellpops[gid]==ts.pops) and xlocs[gid]>=ts.loc[0,0] and xlocs[gid]<=ts.loc[0,1] and ylocs[gid]>=ts.loc[1,0] and ylocs[gid]<=ts.loc[1,1]:
-                    
-                    maxweightincrease = 20 # Otherwise could get infinitely high, infinitely close to the stimulus
-                    distancefromstimulus = sqrt(sum((array([xlocs[gid], ylocs[gid]])-modelsize*ts.falloff[0])**2))
-                    fallofffactor = min(maxweightincrease,(ts.falloff[1]/distancefromstimulus)**2)
-                    stimweightvecs.append(h.Vector().from_python(stimvecs[1]*fallofffactor)) # Scale by the fall-off factor
-                    
-                    stimrand = h.Random()
-                    stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
-                    stimrand.negexp(1)
-                    stimrand.seq(id32('%d'%(randseed+gid))*1e3) # Set the sequence i.e. seed
-                    stimrands.append(stimrand)
-                    
-                    stimsource = h.NetStim() # Create a NetStim
-                    stimsource.interval = ts.rate**-1*1e3 # Interval between spikes
-                    stimsource.number = 1e9 # Number of spikes
-                    stimsource.noise = ts.noise # Fractional noise in timing
-                    stimsource.noiseFromRandom(stimrand) # Set it to use this random number generator
-                    stimsources.append(stimsource) # Save this NetStim
-                    
-                    stimconn = h.NetCon(stimsource, cells[c]) # Connect this noisy input to a cell
-                    for r in range(p.nreceptors): stimconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-                    stimweightvecs[-1].play(stimconn._ref_weight[0], stimtimevecs[-1]) # Play most-recently-added vectors into weight
-                    stimconn.delay=mindelay # Specify the delay in ms -- shouldn't make a spot of difference
-                    stimconns.append(stimconn) # Save this connnection
-    
-                    if saveraw:
-                        stimspikevec = h.Vector() # Initialize vector
-                        stimspikevecs.append(stimspikevec) # Keep all those vectors
-                        stimrecorder = h.NetCon(stimsource, None)
-                        stimrecorder.record(stimspikevec) # Record simulation time
-                        stimrecorders.append(stimrecorder)
-    print('  Number of stimuli created on host %i: %i' % (pc.id(), len(stimsources)))
+                        if saveraw:
+                            stimspikevec = h.Vector() # Initialize vector
+                            stimspikevecs.append(stimspikevec) # Keep all those vectors
+                            stimrecorder = h.NetCon(stimsource, None)
+                            stimrecorder.record(stimspikevec) # Record simulation time
+                            stimrecorders.append(stimrecorder)
+        print('  Number of stimuli created on host %i: %i' % (pc.id(), len(stimsources)))
 
 
 ###############################################################################
@@ -281,14 +290,15 @@ def addBackground():
             backgroundrecorder.record(backgroundspikevec) # Record simulation time
             backgroundrecorders.append(backgroundrecorder)
     print('  Number created on host %i: %i' % (pc.id(), len(backgroundsources)))
-
-pc.barrier()
+    pc.barrier()
 
 
 ###############################################################################
 ### Setup Simulation
 ###############################################################################
 def setupSim():
+    global nstdpconns
+    
     ## Initialize STDP -- just for recording
     if usestdp:
         if pc.id()==0: print('\nSetting up STDP...')

@@ -41,6 +41,7 @@ def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 
 ###############################################################################
 ### Sequences of commands to run full model
 ###############################################################################
+# standard sequence
 def runSeq():
     createNetwork() 
     addStimulation()
@@ -51,18 +52,27 @@ def runSeq():
     saveData()
     plotData()
 
-
+# training and testing phases
 def runTrainTest():
     createNetwork() 
     addStimulation()
     addBackground()
-    
+    s.arm.targetid = 0
+
     # train
+    s.usestdp = True # Whether or not to use STDP
+    s.useRL = True # Where or not to use RL
+    s.duration = s.trainTime # train time
+    s.backgroundrate = s.trainBackground # train background input
+    
     setupSim()
     runSim()
     finalizeSim()
 
     # test
+    s.duration = s.testTime # testing time
+    s.backgroundrate = s.testBackground # testing background input
+    
     setupSim()
     runSim()
     finalizeSim()

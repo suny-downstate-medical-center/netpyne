@@ -178,8 +178,8 @@ connweights[IL6,IF6,GABAB]=1.5
 connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
-connweights[ASC,ER2,AMPA]=2
-connweights[EB5,DSC,AMPA]=2
+connweights[ASC,ER2,AMPA]=4
+connweights[EB5,DSC,AMPA]=4
 connweights[PMd,ER5,AMPA]=1
 
 
@@ -188,6 +188,8 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
+trainTime = 10*1e3 # duration of traininig phase, in ms
+testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
@@ -213,10 +215,10 @@ maxspikestoplot = 3e6 # Maximum number of spikes to plot
 ## Connection parameters
 useconnprobdata = True # Whether or not to use INTF6 connectivity data
 useconnweightdata = True # Whether or not to use INTF6 weight data
-mindelay = 2 # Minimum connection delay, in ms
+mindelay = 10 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
-modelsize = 10000 # Size of network in um
-scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+modelsize = 500*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
+scaleconnweight = 1*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
@@ -234,7 +236,7 @@ corticalthick = 1740
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
 stdprates = 0.2*array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
-RLrates = 1*array([[0.025, -0.025], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
+RLrates = 1*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
 timeoflastRL = -inf # Never RL
 stdpwin = 20 # length of stdp window (ms)
@@ -248,10 +250,12 @@ timeoflastsave = -inf # Never saved
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
+trainBackground = 200 # background input for training phase
+testBackground = 100 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
-backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
+backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 

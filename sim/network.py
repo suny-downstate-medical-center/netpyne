@@ -26,10 +26,14 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp
-from time import time, datetime
+from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean
+from time import time
+from datetime import datetime
 import shared as s # Import all shared variables and parameters
 import analysis
+
+import warnings
+#warnings.simplefilter("error")
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 
@@ -67,11 +71,11 @@ def createNetwork():
 
     ## Set positions
     seed(id32('%d'%s.randseed)) # Reset random number generator
-    xlocs = s.modelsize*rand(s.ncells) # Create random x locations
-    ylocs = s.modelsize*rand(s.ncells) # Create random y locations
-    zlocs = rand(s.ncells) # Create random z locations
+    s.xlocs = s.modelsize*rand(s.ncells) # Create random x locations
+    s.ylocs = s.modelsize*rand(s.ncells) # Create random y locations
+    s.zlocs = rand(s.ncells) # Create random z locations
     for c in range(s.ncells): 
-        zlocs[c] = s.corticalthick * (zlocs[c]*(s.popyfrac[s.cellclasses[c]][1]-s.popyfrac[s.cellclasses[c]][0])) # calculate based on yfrac for population and corticalthick 
+        s.zlocs[c] = s.corticalthick * (s.zlocs[c]*(s.popyfrac[s.cellclasses[c]][1]-s.popyfrac[s.cellclasses[c]][0])) # calculate based on yfrac for population and corticalthick 
 
 
     ## Actually create the cells
@@ -82,7 +86,7 @@ def createNetwork():
         if s.cellnames[gid] == 'PMd':
             cell = celltypes[gid](cellid = gid) # create an NSLOC
             s.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
-            s.innclDic[gid - s.ncells - s.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
+            s.innclDic[gid - s.ncells - s.server.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
             ninnclDic += 1
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
@@ -119,14 +123,14 @@ def createNetwork():
             continue
         nPostCells += 1
         if s.toroidal: 
-            xpath=(abs(xlocs-xlocs[gid]))**2
-            xpath2=(s.modelsize-abs(xlocs-xlocs[gid]))**2
+            xpath=(abs(s.xlocs-s.xlocs[gid]))**2
+            xpath2=(s.modelsize-abs(s.xlocs-s.xlocs[gid]))**2
             xpath[xpath2<xpath]=xpath2[xpath2<xpath]
-            ypath=(abs(ylocs-ylocs[gid]))**2
-            ypath2=(s.modelsize-abs(ylocs-ylocs[gid]))**2
+            ypath=(abs(s.ylocs-s.ylocs[gid]))**2
+            ypath2=(s.modelsize-abs(s.ylocs-s.ylocs[gid]))**2
             ypath[ypath2<ypath]=ypath2[ypath2<ypath]
             distances = sqrt(xpath + ypath) # Calculate all pairwise distances
-        else: distances = sqrt((xlocs-xlocs[gid])**2 + (ylocs-ylocs[gid])**2) # Calculate all pairwise distances
+        else: distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[s.EorI,s.EorI[gid]] * s.connprobs[s.cellpops,s.cellpops[gid]] * exp(-distances/s.connfalloff[s.EorI]) # Calculate pairwise probabilities
         allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID
         seed(id32('%d'%(s.randseed+gid))) # Reset random number generator  
@@ -135,7 +139,7 @@ def createNetwork():
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
                 allrands[c] = 1
         if s.cellnames[gid] == 'ER5': 
-                PMdId = (gid % s.numPMd) + s.ncells - s.numPMd
+                PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd
                 allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
                 allrands[PMdId] = 0 # to make this connect to ER5
                 distances[PMdId] = 300 # to make delay 5 in conndata[3] 
@@ -195,9 +199,9 @@ def createNetwork():
                         else:
                             stdpmech.RLon = 0 # make sure RL is off
                  
-    nstdpconns = len(s.stdpconndata) # Get number of STDP connections
+    s.nstdpconns = len(s.stdpconndata) # Get number of STDP connections
     conntime = time()-connstart # See how long it took
-    if s.usestdp: print('  Number of STDP connections on host %i: %i' % (s.rank, nstdpconns))
+    if s.usestdp: print('  Number of STDP connections on host %i: %i' % (s.rank, s.nstdpconns))
     if s.rank==0: print('  Done; time = %0.1f s' % conntime)
 
 
@@ -295,14 +299,12 @@ def addBackground():
 ### Setup Simulation
 ###############################################################################
 def setupSim():
-    global nstdpconns
-
     ## Initialize STDP -- just for recording
     if s.usestdp:
         if s.rank==0: print('\nSetting up STDs...')
         if s.usestdp:
-            weightchanges = [[] for ps in range(s.nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
-        for ps in range(s.nstdpconns): weightchanges[ps].append([0, s.stdpmechs[ps].synweight]) # Time of save (0=initial) and the weight
+            s.weightchanges = [[] for ps in range(s.nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
+        for ps in range(s.nstdpconns): s.weightchanges[ps].append([0, s.stdpmechs[ps].synweight]) # Time of save (0=initial) and the weight
 
 
     ## Set up LFP recording
@@ -371,14 +373,14 @@ def runSim():
     global timeoflastsave
 
     if s.rank == 0:
-        print('\nRunnins...')
+        print('\nRunning...')
     runstart = time() # See how long the run takes
     s.pc.set_maxstep(10) # MPI: Set the maximum integration time in ms -- not very important
     init() # Initialize the simulation
 
     while round(h.t) < s.duration:
         s.pc.psolve(min(s.duration,h.t+s.loopstep)) # MPI: Get ready to run the simulation (it isn't actually run until pc.runworker() is called I think)
-        if s.simMode == 0:
+        if s.server.simMode == 0:
             if s.rank==0 and (round(h.t) % s.progupdate)==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
         else:
             if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
@@ -396,14 +398,15 @@ def runSim():
                         print "Nan or inf"
             s.hostlfps.append(tmplfps) # Add voltages
 
+
         # Periodic weight saves
         if s.usestdp: 
             timesincelastsave = h.t - s.timeoflastsave
-            if timesincelastsave>=s.timebetweensaves:
-                timeoflastsave = h.t
+            if timesincelastsave >= s.timebetweensaves:
+                s.timeoflastsave = h.t
                 for ps in range(s.nstdpconns):
                     if s.stdpmechs[ps].synweight != s.weightchanges[ps][-1][-1]: # Only store connections that changed; [ps] = this connection; [-1] = last entry; [-1] = weight
-                        s.weightchanges[ps].append([timeoflastsave, s.stdpmechs[ps].synweight])
+                        s.weightchanges[ps].append([s.timeoflastsave, s.stdpmechs[ps].synweight])
         
 
         ## Virtual arm 
@@ -415,7 +418,7 @@ def runSim():
                 if s.rank == 0:
                     critic = s.arm.RLcritic() # get critic signal (-1, 0 or 1)
                     s.pc.broadcast(vec.from_python([critic]), 0) # convert python list to hoc vector for broadcast data received from arm
-                    print critic
+                    #print critic
                 else: # other workers
                     s.pc.broadcast(vec, 0)
                     critic = vec.to_python()[0]
@@ -429,7 +432,7 @@ def runSim():
 
 
         ## Time adjustment for online mode simulation
-        if s.usePlexon and s.simMode == 1:                   
+        if s.usePlexon and s.server.simMode == 1:                   
             # To avoid izhi cell's over shooting when h.t moves forward because sim is slow.
             for c in range(s.cellsperhost): 
                 gid = s.gidVec[c]
@@ -446,8 +449,8 @@ def runSim():
                 h.cvode.active(1)         
             h.dt = dtSave # Restore orignal dt   
                 
-    runtime = time()-runstart # See how long it took
-    if s.rank==0: print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, s.duration/1000/runtime))
+    s.runtime = time()-runstart # See how long it took
+    if s.rank==0: print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (s.runtime, s.duration/1000/s.runtime))
     s.pc.barrier() # Wait for all hosts to get to this point
 
 
@@ -477,12 +480,13 @@ def finalizeSim():
 
     ## Unpack data from all hosts
     if s.rank==0: # Only act on a single host
+        s.lfps = zeros((len(s.lfptime),s.nlfps)) # Create an empty array for appending LFP data; first entry is for time
         for host in range(s.nhosts): # Loop over hosts
             s.pc.take(host) # Get the last message
             hostdata = s.pc.upkpyobj() # Unpack them
             s.allspiketimes = concatenate((s.allspiketimes, hostdata[0])) # Add spikes from this cell to the list
             s.allspikecells = concatenate((s.allspikecells, hostdata[1])) # Add this cell's ID to the list
-            if s.savelfps: lfps += array(hostdata[2]) # Sum LFP voltages
+            if s.savelfps: s.lfps += array(hostdata[2]) # Sum LFP voltages
             for pp in range(s.nconnpars): s.allconnections[pp] = concatenate((s.allconnections[pp], hostdata[3][pp])) # Append pre/post synapses
             if s.usestdp and len(hostdata[4]): # Using STDP and at least one STDP connection
                 s.allstdpconndata = concatenate((s.allstdpconndata, hostdata[4])) # Add data on STDP connections
@@ -536,11 +540,11 @@ def finalizeSim():
 
     ## Print statistics
     print('\nAnalyzins...')
-    firingrate = float(s.totalspikes)/s.ncells/s.duration*1e3 # Calculate firing rate -- confusing but cool Python trick for iterating over a list
-    connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
-    print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (s.runtime, s.duration/1e3, scale, s.ncells, s.nhosts))
-    print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, firingrate))
-    print('  Connections: %i (%i STDP; %0.2f per cell)' % (s.totalconnections, s.totalstdpconns, connspercell))
+    s.firingrate = float(s.totalspikes)/s.ncells/s.duration*1e3 # Calculate firing rate -- confusing but cool Python trick for iterating over a list
+    s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
+    print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (s.runtime, s.duration/1e3, s.scale, s.ncells, s.nhosts))
+    print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
+    print('  Connections: %i (%i STDP; %0.2f per cell)' % (s.totalconnections, s.totalstdpconns, s.connspercell))
     print('  Mean connection distance: %0.2f um' % mean(s.allconnections[2]))
     print('  Mean connection delay: %0.2f ms' % mean(s.allconnections[3]))
 
@@ -568,7 +572,7 @@ def saveData():
 
     ## Save to mat file
     if s.savemat:
-        print('Saving output as %s...' % filename)
+        print('Saving output as %s...' % s.filename)
         savestart = time() # See how long it takes to save
         from scipy.io import savemat # analysis:ignore -- because used in exec() statement
         
@@ -592,12 +596,12 @@ def saveData():
 
         # Save variables
         info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
-        variablestosave = ['info', 'simcode', 's.spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 's.connections', 's.distances', 's.delays', 's.weights', 's.EorI']
+        variablestosave = ['info', 'simcode', 'spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 'connections', 'distances', 'delays', 'weights', 's.EorI']
         if s.savelfps:  variablestosave.extend(['s.lfptime', 's.lfps'])   
-        if s.usestdp: variablestosave.extend(['s.stdpdata', 's.weightchanges'])
+        if s.usestdp: variablestosave.extend(['stdpdata', 's.weightchanges'])
         if s.saveraw: variablestosave.extend(['s.backgrounddata', 's.stimspikedata', 's.allraw'])
-        if s.usestims: variablestosave.extend(['s.stimdata'])
-        savecommand = "savemat(filename, {"
+        if s.usestims: variablestosave.extend(['stimdata'])
+        savecommand = "savemat(s.filename, {"
         for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var] + "':" + variablestosave[var] + ", " # Create command out of all the variables
         savecommand = savecommand[:-2] + "}, oned_as='column')" # Omit final comma-space and complete command
         exec(savecommand) # Actually perform the save

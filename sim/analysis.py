@@ -95,7 +95,7 @@ def plotconn():
     #show()
 
 ## Plot weight changes
-def plotweightchanges(): #p, allconnections, stdpdata, weightchanges):
+def plotweightchanges():
 	# create plot
 	figh = figure(figsize=(1.2*8,1.2*6))
 	figh.subplots_adjust(left=0.02) # Less space on left
@@ -108,7 +108,7 @@ def plotweightchanges(): #p, allconnections, stdpdata, weightchanges):
 
 	# create data matrix
 	wcs = [x[-1][-1] for x in s.weightchanges]
-	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.stdpdata])
+	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
 	ncells = int(max(max(pre),max(post))+1)
 	wcmat = zeros([ncells, ncells])
 	for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):

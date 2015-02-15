@@ -837,6 +837,14 @@ Saving output as data/m1ms...
   Done; time = 5.5 s
   Plotting raster despite using too many cores (4)
 
+* 15Feb14 Sharing variables between modules using shared.py
+- shared.py will contain all objects that need to be shared across modules (network.py, analysis.py, arm.py), including
+  static parameters (duration, popnames,...), and variables modified during runtime (cells, spikerecorders, ...)
+- https://docs.python.org/2/faq/programming.html#how-do-i-share-global-variables-across-modules
+- https://docs.python.org/2/faq/programming.html#what-are-the-best-practices-for-using-import-in-a-module
+- http://docs.python-guide.org/en/latest/writing/structure/#modules
+- http://stackoverflow.com/questions/19158339/python-why-are-global-variables-evil
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters
@@ -855,9 +863,9 @@ Saving output as data/m1ms...
 
 *** DONE make DSC an izhi population and add connectivity to E5B
 *** DONE check if can have plasticity between NSLOC and izhi -yes
-** TODO replace pc.post() with pc.py_alltoall() or other ?
-** TODO Add the training and testing wrappers and modularize further -  17 Feb
-*** TODO Modularize parameters and pass as arguments using Bill's method
+** TODO replace pc.post() with pc.py_alltoall() or other ?? - maybe not required
+** DONE Modularize using shared parameters+variables (shared.py)
+** TODO Add the training and testing wrappers  -  17 Feb
 ** TODO decide where plasticity will happen restrict learning to that subset of pops - 19 Feb
 -should modify the connectivity and weights tuned to M1!?  
 -maybe avoid by adding plastic connections ONLY between

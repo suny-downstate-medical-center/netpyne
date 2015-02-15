@@ -17,7 +17,6 @@ from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticula
 from nsloc import nsloc # NetStim with location unit type
 from arm import Arm # Class with arm methods and variables
 import server # Server for plexon interface
-from stimuli import touch, stimmod, makestim # for creating natural and artificial stimuli
 from time import time
 
 
@@ -27,14 +26,14 @@ from time import time
 ###############################################################################
 
 # Set population and receptor quantities
+scale = 1 # Size of simulation in thousands of cells
+
 popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
 popratios =  [server.numPMd, 48,  48,    150,    25,     25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.3,0.5], [0.3,0.5], [0.3,0.5], [0.6,0.7], [0.7,0.9], [0.6,0.7], [0.6,0.7], [0.9,1.0], [0.9,1.0], [0.9,1.0]]
 
-
-scale = 2 # Size of simulation in thousands of cells
 receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin'] # Names of the different receptors
 npops = len(popnames) # Number of populations
 nreceptors = len(receptornames) # Number of receptors
@@ -43,7 +42,7 @@ popGidEnd= [] # gid starts for each popnames
 popnumbers = []
 
     
-# Convert poptypes and EorI into vectors for each cell
+# Define params for each cell: cellpops, cellnames, cellclasses, EorI 
 cellpops = [] # Store list of populations for each cell -- e.g. 1=ER2 vs. 2=IF2
 cellnames = [] # Store list of names for each cell -- e.g. 'ER2' vs. 'IF2'
 cellclasses = [] # Store list of classes types for each cell -- e.g. pyramidal vs. interneuron
@@ -52,14 +51,10 @@ popnumbers = scale*array(popratios) # Number of neurons in each population
 if 'PMd' in popnames:    
     popnumbers[popnames.index('PMd')] = server.numPMd # Number of PMds is fixed.
 ncells = int(sum(popnumbers))# Calculate the total number of cells 
-
-
-# make popRatio dictionaly. Key is popname, and value is cell numbers. This dic will be used to get cell's gid range.
 for c in range(len(popnames)):
     start = sum(popnumbers[:c])
     popGidStart.append(start)
     popGidEnd.append(start + popnumbers[c] - 1)
-
 for pop in range(npops): # Loop over each population
     for c in range(int(popnumbers[pop])): # Loop over each cell in that population
         cellpops.append(pop) # Append this cell's population type to the list
@@ -80,7 +75,11 @@ allpops = array(range(npops)) # Create an array with all the population numbers
 Epops = allpops[array(popEorI)==0] # Pick out numbers corresponding to excitatory populations
 Ipops = allpops[array(popEorI)==1] # Pick out numbers corresponding to inhibitory populations
 
- 
+
+# for creating natural and artificial stimuli (need to import after init of population and receptor indices)
+from stimuli import touch, stimmod, makestim 
+
+
 # Define connectivity matrix (copied out of network.hoc; correct as of 11mar26)
 connprobs=zeros((npops,npops))
 connprobs[ER2,ER2]=0.2 # weak by wiring matrix in (Weiler et al., 2008)
@@ -190,7 +189,7 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-duration = 2*1e3 # Duration of the simulation, in ms
+duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 100 # How frequently to update progress, in ms
@@ -254,7 +253,7 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
-useArm = 'dummyArm' #'randomOutput' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
+useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = True # shows arm animation
 graphsArm = True # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 
@@ -358,7 +357,6 @@ rawrecordings = [] # A list for storing actual cell voltages (WARNING, slow!)
 if rank==0: # Only act on a single host
     allspikecells = array([])
     allspiketimes = array([])
-    lfps = zeros((len(lfptime),nlfps)) # Create an empty array for appending LFP data; first entry is for time
     allconnections = [array([]) for i in range(nconnpars)] # Store all connections
     allconnections[nconnpars-1] = zeros((0,nreceptors)) # Create an empty array for appending connections
     allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data

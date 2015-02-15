@@ -20,7 +20,6 @@ import server # Server for plexon interface
 from time import time
 
 
-
 ###############################################################################
 ### CELL AND POPULATION PARAMETERS
 ###############################################################################
@@ -198,16 +197,16 @@ limitmemory = False # Whether or not to limit RAM usage
 
 
 ## Saving and plotting parameters
-savemat = True # Whether or not to write spikes etc. to a .mat file
+savemat = False # Whether or not to write spikes etc. to a .mat file
 savetxt = False # save spikes and conn to txt file
-savelfps = True # Whether or not to save LFPs
+savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 saveraw = False# Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = 'data/m1ms'  # Set file output name
 plotraster = True # Whether or not to plot a raster
 plotconn = False # whether to plot conn matrix
-plotweightchanges = True # whether to plot weight changes (shown in conn matrix)
+plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
 maxspikestoplot = 3e6 # Maximum number of spikes to plot
 
 
@@ -227,6 +226,10 @@ if useconnweightdata == False: connweights = array(connweights>0,dtype='int') # 
 ncWeight = 4 # weight of netcon between NSLOCs and ER2s
 
 
+## Position parameters
+cortthaldist=3000 # CK: WARNING, KLUDGY -- Distance from relay nucleus to cortex -- ~1 cm = 10,000 um
+corticalthick = 1740
+
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
@@ -244,7 +247,7 @@ timeoflastsave = -inf # Never saved
 
 
 ## Background input parameters
-usebackground = True# Whether or not to use background stimuli
+usebackground = True # Whether or not to use background stimuli
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
@@ -261,10 +264,6 @@ arm = Arm(useArm, animArm, graphsArm)
 
 ## Plexon PMd inputs
 usePlexon = False
-vec = h.Vector() # temporary Neuron vectors
-emptyVec = h.Vector()
-inncl = h.List() # used to store the plexon-interfaced PMd units 
-innclDic = {}
 
 
 ## Stimulus parameters
@@ -285,11 +284,6 @@ gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
 gidDic = {} # Empyt dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
 celltypes=[]
 cellsperhost = 0
-
-## Position parameters
-cortthaldist=3000 # CK: WARNING, KLUDGY -- Distance from relay nucleus to cortex -- ~1 cm = 10,000 um
-#zlayerpositions = [1740+cortthaldist, (1740+1130)/2+cortthaldist, 1130+cortthaldist, 488+cortthaldist, 300, 0] # Can't remember where I got these distances from...
-corticalthick = 1740
 
 ## Spikes
 spikerecorders = [] # Empty list for storing spike-recording Netcons
@@ -332,6 +326,12 @@ if usebackground:
         backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
         backgroundrecorders=[] # And for recording spikes
 
+
+## Plexon
+vec = h.Vector() # temporary Neuron vectors
+emptyVec = h.Vector()
+inncl = h.List() # used to store the plexon-interfaced PMd units 
+innclDic = {}
 
 ###############################################################################
 ### SETUP SIMULATION AND RECORDING

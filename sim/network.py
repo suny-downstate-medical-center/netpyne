@@ -39,12 +39,30 @@ def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 
 
 
 ###############################################################################
-### CREATE MODEL
+### Sequences of commands to run full model
 ###############################################################################
 def runSeq():
     createNetwork() 
     addStimulation()
     addBackground()
+    setupSim()
+    runSim()
+    finalizeSim()
+    saveData()
+    plotData()
+
+
+def runTrainTest():
+    createNetwork() 
+    addStimulation()
+    addBackground()
+    
+    # train
+    setupSim()
+    runSim()
+    finalizeSim()
+
+    # test
     setupSim()
     runSim()
     finalizeSim()

@@ -19,7 +19,7 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
   else:                pass # ignore -python 
 
 
-network.runSeq()
+network.runTrainTest()
 
 # if pc.id()==0: 
 #     pc.gid_clear()

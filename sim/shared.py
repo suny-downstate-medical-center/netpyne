@@ -19,6 +19,14 @@ from arm import Arm # Class with arm methods and variables
 import server # Server for plexon interface
 from time import time
 
+## MPI
+pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+nhosts = int(pc.nhost()) # Find number of hosts
+rank = int(pc.id())     # rank 0 will be the master
+
+if rank==0: 
+    pc.gid_clear()
+    print('\nSetting parameters...')
 
 ###############################################################################
 ### CELL AND POPULATION PARAMETERS
@@ -188,7 +196,7 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 10*1e3 # duration of traininig phase, in ms
+trainTime = 5*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
@@ -206,7 +214,7 @@ lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP fro
 saveraw = False# Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = 'data/m1ms'  # Set file output name
-plotraster = True # Whether or not to plot a raster
+plotraster = False # Whether or not to plot a raster
 plotconn = False # whether to plot conn matrix
 plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
 maxspikestoplot = 3e6 # Maximum number of spikes to plot
@@ -215,17 +223,16 @@ maxspikestoplot = 3e6 # Maximum number of spikes to plot
 ## Connection parameters
 useconnprobdata = True # Whether or not to use INTF6 connectivity data
 useconnweightdata = True # Whether or not to use INTF6 weight data
-mindelay = 10 # Minimum connection delay, in ms
+mindelay = 2 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
-modelsize = 500*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
-scaleconnweight = 1*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+modelsize = 10000 # 1000*scale # 500 Size of network in um (~= 1000 neurons/column where column = 500um width)
+scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
-scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
+scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
 toroidal = True # Whether or not to have toroidal topology
 if useconnprobdata == False: connprobs = array(connprobs>0,dtype='int') # Optionally cnvert from float data into binary yes/no
 if useconnweightdata == False: connweights = array(connweights>0,dtype='int') # Optionally convert from float data into binary yes/no
-ncWeight = 4 # weight of netcon between NSLOCs and ER2s
 
 
 ## Position parameters
@@ -235,6 +242,7 @@ corticalthick = 1740
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
+plastConns = [[ASC,ER2], [EB5,DSC]] # list of plastic connections
 stdprates = 0.2*array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLrates = 1*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
@@ -255,19 +263,44 @@ testBackground = 100 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
-backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
 useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = True # shows arm animation
-graphsArm = True # shows graphs (arm trajectory etc) when finisheds
+graphsArm = False # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 
+
+minRLerror = 0.002 # minimum error change for RL (m)
+armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
+startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
+targetDist = 0.15 # target distance from center (15 cm)
+# motor command encoding
+shcellStart = popGidStart[DSC] # first DSC cell
+shcellEnd = popGidStart[DSC] + (popnumbers[DSC] / 2)
+elcellStart = popGidStart[DSC] + (popnumbers[DSC] / 2) + 1
+elcellEnd = popGidStart[DSC] + popnumbers[DSC]
+shmaxrate = 10.0 # maximum spikes for shoulder motor command (normalizing value)
+elmaxrate = 10.0 # maximum spikes for elbow motor command (normalizing value)
+shtimewin = 100 # spike time window for shoulder motor command (ms)
+eltimewin = 100 # spike time window for elbow motor command (ms)
+# proprioceptive encoding
+pStart = popGidStart[ASC] 
+numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
+minPval = radians(-10) # min angle to encode
+maxPval = radians(135) # max angle to encode
+minPrate = 0.1 # firing rate when angle not within range
+maxPrate = 200 # firing rate when angle within range
 
 
 ## Plexon PMd inputs
 usePlexon = False
+vec = h.Vector() # temporary Neuron vectors
+emptyVec = h.Vector()
+inncl = h.List() # used to store the plexon-interfaced PMd units 
+innclDic = {}
 
 
 ## Stimulus parameters
@@ -277,110 +310,6 @@ ziptimes = [10, 15] # Pre-microstim touch times
 stimpars = [stimmod(touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stimmod(touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
 
 
-###############################################################################
-### CREATE GLOBAL OBJECTS AND PARAMETERS
-###############################################################################
-
-## To store cell-related data
-cells=[] # Create empty list for storing cells
-dummies=[] # Create empty list for storing fake sections
-gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
-gidDic = {} # Empyt dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
-celltypes=[]
-cellsperhost = 0
-
-## Spikes
-spikerecorders = [] # Empty list for storing spike-recording Netcons
-hostspikevecs = [] # Empty list for storing host-specific spike vectors
-
-## Distances and probabilities
-nconnpars = 5 # Connection parameters: pre- and post- cell ID, weight, distances, delays
-
-## Connections
-conndata = [[] for i in range(nconnpars)] # List for storing connections
-connlist = [] # Create array for storing each of the connections
-stdpconndata = [] # Store data on STDP connections
-
-## STDP
-if usestdp: # STDP enabled?
-    stdpmechs = [] # Initialize array for STDP mechanisms
-    precons = [] # Initialize array for presynaptic spike counters
-    pstcons = [] # Initialize array for postsynaptic spike counters
-
-
-## Stimulation
-if usestims:
-    stimstruct = [] # For saving
-    stimrands=[] # Create input connections
-    stimsources=[] # Create empty list for storing synapses
-    stimconns=[] # Create input connections
-    stimtimevecs = [] # Create array for storing time vectors
-    stimweightvecs = [] # Create array for holding weight vectors
-    if saveraw: 
-        stimspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-        stimrecorders=[] # And for recording spikes
- 
-
-## Background inputs
-if usebackground:
-    backgroundsources=[] # Create empty list for storing synapses
-    backgroundrands=[] # Create random number generators
-    backgroundconns=[] # Create input connections
-    if saveraw:
-        backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-        backgroundrecorders=[] # And for recording spikes
-
-
-## Plexon
-vec = h.Vector() # temporary Neuron vectors
-emptyVec = h.Vector()
-inncl = h.List() # used to store the plexon-interfaced PMd units 
-innclDic = {}
-
-###############################################################################
-### SETUP SIMULATION AND RECORDING
-###############################################################################
-
-## MPI
-pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
-nhosts = int(pc.nhost()) # Find number of hosts
-rank = int(pc.id())     # rank 0 will be the master
-
-## LFP recording
-lfptime = [] # List of times that the LFP was recorded at
-nlfps = len(lfppops) # Number of distinct LFPs to calculate
-hostlfps = [] # Voltages for calculating LFP
-lfpcellids = [[] for pop in range(nlfps)] # Create list of lists of cell IDs
-
-
-## Set up raw recording
-rawrecordings = [] # A list for storing actual cell voltages (WARNING, slow!)
-    
-
-## Variables to unpack data from all hosts
-if rank==0: # Only act on a single host
-    allspikecells = array([])
-    allspiketimes = array([])
-    allconnections = [array([]) for i in range(nconnpars)] # Store all connections
-    allconnections[nconnpars-1] = zeros((0,nreceptors)) # Create an empty array for appending connections
-    allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data
-    totalspikes = 0 # Keep a running tally of the number of spikes
-    totalconnections = 0 # Total number of connections
-    totalstdpconns = 0 # Total number of stdp connections
-    if usestdp: weightchanges = []
-    if saveraw: allraw = []
- 
-
-    # Record input spike times
-    if saveraw and usebackground:
-        allbackgroundspikecells=array([])
-        allbackgroundspiketimes=array([])
-    else: backgrounddata = [] # For saving s no error
-    
-    if saveraw and usestims:
-        allstimspikecells=array([])
-        allstimspiketimes=array([])
-    else: stimspikedata = [] # For saving so no error
 
 
 ## Peform a mini-benchmarking test for future time estimates

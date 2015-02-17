@@ -2,13 +2,12 @@
 # Runs simulation, including MPI.
 # Version: 2014feb21
 
-echo "runsim with plexon system"
-rm *.pyc *.tsv  
+rm *.pyc 
 
 numprocesses=$1; if [ -z $numprocesses ]; then numprocesses=4; fi # Number of processes to use
 shift # Eliminate first argument
 
-mpiexec -np $numprocesses nrniv -python -mpi model.py $@ # Run the model
+mpiexec -np $numprocesses nrniv -python -mpi main.py $@ # Run the model
 
 # If on a local host, plot
 #if [ -n "$DISPLAY" ]; then

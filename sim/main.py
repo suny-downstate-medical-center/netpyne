@@ -21,14 +21,5 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
 
 network.runTrainTest()
 
-# if pc.id()==0: 
-#     pc.gid_clear()
-#     print('\nSetting parameters...')
 
-
-
-# ## Wrapping up
-# totaltime = time()-verystart # See how long it took in total
-# print('\nDone; total time = %0.1f s.' % totaltime)
-# if (plotraster==False and plotconn==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
 

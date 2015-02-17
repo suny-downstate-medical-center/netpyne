@@ -232,6 +232,7 @@ found Trace/BPT trap
   well-learned movements" (Masamizu et al, 2014)
 
 ** Cell and neuron densities in the primary motor cortex of primates (Young,2013)
+- 50,000 neurons / mm2
 ** Added new spinal cord populations
 *** code
 -popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6'] popclasses = [-1, -1,
@@ -865,7 +866,7 @@ Saving output as data/m1ms...
 *** DONE check if can have plasticity between NSLOC and izhi -yes
 ** TODO replace pc.post() with pc.py_alltoall() or other ?? - maybe not required
 ** DONE Modularize using shared parameters+variables (shared.py)
-** TODO Add the training and testing wrappers  -  17 Feb
+** DONE Add the training and testing wrappers  -  17 Feb
 ** TODO decide where plasticity will happen restrict learning to that subset of pops - 19 Feb
 -should modify the connectivity and weights tuned to M1!?  
 -maybe avoid by adding plastic connections ONLY between

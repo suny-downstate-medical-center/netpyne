@@ -3,6 +3,9 @@ from neuron import h, init # Import NEURON
 import shared as s
 import network
 
+###############################################################################
+### Update model parameters from command-line arguments
+###############################################################################
 
 for argv in sys.argv[1:]: # Skip first argument, which is file name
   arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
@@ -18,6 +21,10 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
   elif argv=='-mpi':   ismpi = True
   else:                pass # ignore -python 
 
+
+###############################################################################
+### Run model
+###############################################################################
 
 network.runTrainTest()
 

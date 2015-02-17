@@ -18,6 +18,7 @@ from nsloc import nsloc # NetStim with location unit type
 from arm import Arm # Class with arm methods and variables
 import server # Server for plexon interface
 from time import time
+from math import radians
 
 ## MPI
 pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -278,14 +279,10 @@ armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulna
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
-shcellStart = popGidStart[DSC] # first DSC cell
-shcellEnd = popGidStart[DSC] + (popnumbers[DSC] / 2)
-elcellStart = popGidStart[DSC] + (popnumbers[DSC] / 2) + 1
-elcellEnd = popGidStart[DSC] + popnumbers[DSC]
-shmaxrate = 10.0 # maximum spikes for shoulder motor command (normalizing value)
-elmaxrate = 10.0 # maximum spikes for elbow motor command (normalizing value)
-shtimewin = 100 # spike time window for shoulder motor command (ms)
-eltimewin = 100 # spike time window for elbow motor command (ms)
+motorCmdStartCell = popGidStart[DSC] # start cell for motor command
+motorCmdEndCell = popGidStart[DSC] + popnumbers[DSC] # end cell for motor command
+cmdmaxrate = 10.0 # maximum spikes for motor command (normalizing value)
+cmdtimewin = 100 # spike time window for motor command (ms)
 # proprioceptive encoding
 pStart = popGidStart[ASC] 
 numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
@@ -308,7 +305,6 @@ usestims = False # Whether or not to use stimuli at all
 ltptimes  = [5, 10] # Pre-microstim touch times
 ziptimes = [10, 15] # Pre-microstim touch times
 stimpars = [stimmod(touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stimmod(touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
-
 
 
 

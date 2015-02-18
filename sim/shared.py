@@ -269,7 +269,7 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
-useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
+useArm = 'None' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = True # shows arm animation
 graphsArm = False # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 

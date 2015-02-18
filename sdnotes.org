@@ -867,10 +867,12 @@ Saving output as data/m1ms...
 ** TODO replace pc.post() with pc.py_alltoall() or other ?? - maybe not required
 ** DONE Modularize using shared parameters+variables (shared.py)
 ** DONE Add the training and testing wrappers  -  17 Feb
-** TODO decide where plasticity will happen restrict learning to that subset of pops - 19 Feb
+** TODO decide where plasticity will happen and restrict learning to that subset of pops - 19 Feb
 -should modify the connectivity and weights tuned to M1!?  
 -maybe avoid by adding plastic connections ONLY between
 proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles - see 15jan11
+- demonstrate that it is enought to learn a target
+** TODO Test that can learn multiple targets with artificial PMd input
 ** TODO Encode target using PMd activity as input - 25 Feb 
 *** Find good PMd data where target can be decoded
 *** Convert into vector of spikes (bill) that can be easily played back (trial/trial basis)

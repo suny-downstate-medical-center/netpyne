@@ -197,8 +197,8 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 5*1e3 # duration of traininig phase, in ms
-testTime = 1*1e3 # duration of testing/evaluation phase, in ms
+trainTime = 20*1e3 # duration of traininig phase, in ms
+testTime = 2*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
@@ -243,7 +243,7 @@ corticalthick = 1740
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
-plastConns = [[ASC,ER2], [EB5,DSC]] # list of plastic connections
+plastConns = [[ASC,ER2], [EB5,DSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
 stdprates = 0.2*array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLrates = 1*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
@@ -259,8 +259,8 @@ timeoflastsave = -inf # Never saved
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
-trainBackground = 200 # background input for training phase
-testBackground = 100 # background input for testing phase
+trainBackground = 150 # background input for training phase
+testBackground = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
@@ -269,9 +269,9 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
-useArm = 'None' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
-animArm = True # shows arm animation
-graphsArm = False # shows graphs (arm trajectory etc) when finisheds
+useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
+animArm = False # shows arm animation
+graphsArm = True # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 
 
 minRLerror = 0.002 # minimum error change for RL (m)
@@ -286,7 +286,7 @@ cmdtimewin = 100 # spike time window for motor command (ms)
 # proprioceptive encoding
 pStart = popGidStart[ASC] 
 numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
-minPval = radians(-10) # min angle to encode
+minPval = radians(-30) # min angle to encode
 maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range

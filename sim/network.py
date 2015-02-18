@@ -66,7 +66,7 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.duration = s.trainTime # train time
+    s.duration = 30*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
     setupSim()
@@ -76,7 +76,9 @@ def runTrainTest():
     plotData()
 
     # test
-    s.duration = s.testTime # testing time
+    s.usestdp = 0 # Whether or not to use STDP
+    s.useRL = 0 # Where or not to use RL
+    s.duration = 5*1e3#s.testTime # testing time
     s.backgroundrate = s.testBackground # testing background input
     
     setupSim()

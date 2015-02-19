@@ -283,7 +283,7 @@ targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
 motorCmdStartCell = popGidStart[DSC] # start cell for motor command
 motorCmdEndCell = popGidStart[DSC] + popnumbers[DSC] # end cell for motor command
-cmdmaxrate = 10.0 # maximum spikes for motor command (normalizing value)
+cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
 cmdtimewin = 100 # spike time window for motor command (ms)
 # proprioceptive encoding
 pStart = popGidStart[ASC] 
@@ -292,7 +292,7 @@ minPval = radians(-30) # min angle to encode
 maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
-antagInh = 1 # firin
+antagInh = 1 # antagonist muscle inhibition
 explorMovs = 1 # exploratory movements
 explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments

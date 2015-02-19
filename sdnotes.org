@@ -883,8 +883,20 @@ http://www.izhikevich.org/publications/spikes.htm
 - added explor movs and antagonistic
 - difficult to tune by hand -- will try evol
 
-* 15feb19 Setup evol alg
- 
+* 15feb19 Added 3d distance for delays
+Added 3d distance:
+zpath=(abs(s.zlocs-s.zlocs[gid]))**2
+distances3d = sqrt(xpath + ypath + zpath)
+s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity))
+mean connection delay went from 10.83ms to 11.30ms
+in 1k cell 5-sec sim, spikes went from 40979 (8.48 Hz) to 33627 (6.95 Hz)
+raster shows pretty similar oscillations
+
+* 15feb20 Setup evol alg
+- test input parameters from main -- cannot use * !
+- copy over evol island and adapt 
+- add params automatically in a loop - make flexible
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

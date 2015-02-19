@@ -213,7 +213,7 @@ def createNetwork():
         s.conndata[0].append(preids) # Append pre-cell ID
         s.conndata[1].append(postids) # Append post-cell ID
         s.conndata[2].append(distances[preids]) # Distances
-        s.conndata[3].append(s.mindelay + distances[preids]/float(s.velocity)) # Calculate the delays
+        s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
         wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
         wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
         wt3 = s.receptorweight[:] # M receptor weights

@@ -206,6 +206,7 @@ loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the st
 progupdate = 100 # How frequently to update progress, in ms
 randseed = 0 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
+oufilestem = '' # filestem to save fitness result
 
 
 ## Saving and plotting parameters
@@ -297,7 +298,6 @@ explorMovs = 1 # exploratory movements
 explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
 timeoflastexplor = -inf # time when last exploratory movement was updated
-
 
 
 ## Plexon PMd inputs

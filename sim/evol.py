@@ -33,7 +33,7 @@ crossover = 0.5
 # parameter names and ranges
 paramNames = []
 paramRanges = []
-pNames.append('maxWscaling'); pRanges.append([0.7,1.5]) # maxWscaling, 0.8 (variable single) 
+pNames.append('trainTime'); pRanges.append([30,180]) # maxWscaling, 0.8 (variable single) 
 
 
 paramRanges.append([0.005,0.040]) # learnRate, 0.025 (variable single)
@@ -65,10 +65,10 @@ def bound_params(candidate, args):
         cBound.append(max(min(p, max(param1_range)), min(param1_range)))
 
     # need to be integer 
-    param12 = round(max(min(c[11], max(param12_range)), min(param12_range)))
+    #param12 = round(max(min(c[11], max(param12_range)), min(param12_range)))
   
     # fixed values from list
-    param14 = min(param14_range, key=lambda x:abs(x-c[13]))
+    #param14 = min(param14_range, key=lambda x:abs(x-c[13]))
 
   candidate = cBound
   return candidate
@@ -79,13 +79,14 @@ def bound_params(candidate, args):
 ###############################################################################  
 def generate_rastrigin(random, args):
     size = args.get('num_inputs', 10)
-    param1=random.uniform(min(param1_range),max(param1_range))#, (max(param1_range)-min(param1_range))/2)
+    params = []
+    for iparam in range(len(paramNames)):
+        paramsRand.append(random.uniform(min(paramRanges[iparam]),max(paramRange[iparam])))
 
     # fixed values from list
-    param14 = min(param14_range, key=lambda x:abs(x-param14))
+    #param[14] = min(param14_range, key=lambda x:abs(x-param14))
 
-    return [param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, \
-      param11, param12, param13, param14, param15,param16]
+    return paramsRand
 
 
 ###############################################################################
@@ -159,8 +160,7 @@ def parallel_evaluation_pbs(candidates, args):
             # load error from file
             try:
                 outfilestem=simdatadir+"/gen_"+str(ngen)+"_cand_"+str(i) # set filename
-                #print '%s_errortmp'% (outfilestem)
-                with open('%s_errortmp'% (outfilestem)) as f:
+                with open('%s_error'% (outfilestem)) as f:
                     error=pickle.load(f)
                     fitness[i] = error
                     jobs_completed+=1
@@ -236,11 +236,11 @@ def setInitial(simdatadir):
     initial_cs = [ind_cs[i] for i in range(len(ind_gens)) if ind_gens[i]==initial_gen]
     initial_fit = [ind_fits[i] for i in range(len(ind_gens)) if ind_gens[i]==initial_gen]
 
-  # set global variable to track number of gens to initial_gen
-  ngen = initial_gen
+    # set global variable to track number of gens to initial_gen
+    ngen = initial_gen
 
-  print initial_gen, initial_cs, initial_fit
-  return initial_gen, initial_cs, initial_fit
+    print initial_gen, initial_cs, initial_fit
+    return initial_gen, initial_cs, initial_fit
 
 
 ###############################################################################
@@ -255,11 +255,11 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
     # if individuals.csv already exists, continue from last generation
     if os.path.isfile(simdatadir+'/individuals.csv'):
-      initial_gen, initial_cs, initial_fit = setInitial(simdatadir)
+        initial_gen, initial_cs, initial_fit = setInitial(simdatadir)
     else:
-      initial_gen=0
-      initial_cs=[]
-      initial_fit=[]
+        initial_gen=0
+        initial_cs=[]
+        initial_fit=[]
 
     statfile = open(simdatadir+'/statistics.csv', 'a')
     indifile = open(simdatadir+'/individuals.csv', 'a')

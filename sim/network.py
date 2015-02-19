@@ -31,9 +31,7 @@ from time import time;
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
 import analysis
-
-import warnings
-#warnings.simplefilter("error")
+import pickle
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 
@@ -96,6 +94,62 @@ def runTrainTest():
     totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
     if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
+
+# training and testing phases
+def runTrainTest4targets():
+    targets = [0,1,2,3] # list of targets to be evaluated
+
+    s.plotraster = False # do not plot any graphs
+    s.plotconn = False
+    s.plotweightchanges = False
+    s.graphsArm = False
+
+    error = zeros(4) # to save error for each target 
+    for itarget in targets:
+        s.arm.targetid = itarget
+        verystart=time() # store initial time
+        createNetwork() 
+        addStimulation()
+        addBackground()
+
+        # train
+        s.usestdp = 1 # Whether or not to use STDP
+        s.useRL = 1 # Where or not to use RL
+        s.explorMovs = 1 # enable exploratory movements
+        s.backgroundrate = s.trainBackground # train background input
+        
+        setupSim()
+        runSim()
+        finalizeSim()
+
+        # test
+        s.usestdp = 0 # Whether or not to use STDP
+        s.useRL = 0 # Where or not to use RL
+        s.explorMovs = 0 # disable exploratory movements
+        s.testTime = 1e3 # evaluate for 1 second
+        s.duration = s.testTime # testing time
+        s.backgroundrate = s.testBackground # testing background input
+        
+        setupSim()
+        runSim()
+        finalizeSim()
+        saveData()
+        error[itarget] = sum(s.arm.errorAll)
+
+    # save error to be used as fitness measure for evol alg
+    if s.rank == 0:
+        errorAvg = mean(error) # calculate avg distance erro over 4 targets
+        print 'Target errors: ', error, ' avg: ', errorAvg 
+        with open('%s_error'% (s.outfilestem), 'w') as f: # save avg error over targets to outfilestem
+                pickle.dump(errorAvg, f)
+
+    ## Wrapping up
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+    h.quit() # Quit extra processes
+
 
 ###############################################################################
 ### Create Network
@@ -639,8 +693,9 @@ def finalizeSim():
 
     # terminate the server process
     if s.usePlexon:
-      if s.isOriginal == 0:
-          s.server.Manager.stop()
+        if s.isOriginal == 0:
+            s.server.Manager.stop()
+
 
     ## Print statistics
     if s.rank == 0:

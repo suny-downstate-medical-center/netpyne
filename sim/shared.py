@@ -40,7 +40,8 @@ popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5'
 popclasses =  [-1,  -1,     1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
 popratios =  [server.numPMd, 48,  48,    150,    25,     25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
-popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.3,0.5], [0.3,0.5], [0.3,0.5], [0.6,0.7], [0.7,0.9], [0.6,0.7], [0.6,0.7], [0.9,1.0], [0.9,1.0], [0.9,1.0]]
+popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.1,0.32], [0.1,0.32], [0.1,0.32], [0.32,0.47], [0.47,0.75], [0.32,0.75], [0.32,0.75], [0.75,1.0], [0.75,1.0], [0.75,1.0]] # data from Weiler et. al 2008
+
 
 receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin'] # Names of the different receptors
 npops = len(popnames) # Number of populations
@@ -199,7 +200,7 @@ connweights[PMd,ER5,AMPA]=1
 ## Simulation parameters
 trainTime = 20*1e3 # duration of traininig phase, in ms
 testTime = 2*1e3 # duration of testing/evaluation phase, in ms
-duration = 1*1e3 # Duration of the simulation, in ms
+duration = 5*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 100 # How frequently to update progress, in ms
@@ -215,7 +216,7 @@ lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP fro
 saveraw = False# Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = 'data/m1ms'  # Set file output name
-plotraster = False # Whether or not to plot a raster
+plotraster = True # Whether or not to plot a raster
 plotconn = False # whether to plot conn matrix
 plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
 maxspikestoplot = 3e6 # Maximum number of spikes to plot
@@ -259,7 +260,7 @@ timeoflastsave = -inf # Never saved
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
-trainBackground = 150 # background input for training phase
+trainBackground = 50 # background input for training phase
 testBackground = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
@@ -274,6 +275,7 @@ animArm = False # shows arm animation
 graphsArm = True # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 
 
+arm.targetid = 0
 minRLerror = 0.002 # minimum error change for RL (m)
 armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
@@ -290,6 +292,12 @@ minPval = radians(-30) # min angle to encode
 maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
+antagInh = 1 # firin
+explorMovs = 1 # exploratory movements
+explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
+explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
+timeoflastexplor = -inf # time when last exploratory movement was updated
+
 
 
 ## Plexon PMd inputs

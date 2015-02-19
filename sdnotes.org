@@ -838,7 +838,7 @@ Saving output as data/m1ms...
   Done; time = 5.5 s
   Plotting raster despite using too many cores (4)
 
-* 15Feb14 Sharing variables between modules using shared.py
+* 15feb14 Sharing variables between modules using shared.py
 - shared.py will contain all objects that need to be shared across modules (network.py, analysis.py, arm.py), including
   static parameters (duration, popnames,...), and variables modified during runtime (cells, spikerecorders, ...)
 - https://docs.python.org/2/faq/programming.html#how-do-i-share-global-variables-across-modules
@@ -846,6 +846,45 @@ Saving output as data/m1ms...
 - http://docs.python-guide.org/en/latest/writing/structure/#modules
 - http://stackoverflow.com/questions/19158339/python-why-are-global-variables-evil
 
+* 15feb17 Spinal cord motor neuron using Izhikevich
+** chat
+Salvador Dura
+trying to find what would be the best izhikevich parameters for spinal cord motor neuron… any ideas?
+[samnemo] suppose he doesn't describe those types of neurons in his paper...anything specific you want to capture in its firing pattern?
+Salvador Dura
+@types in paper — not specifically
+@capture - right now using pyramidal so thought might be better to make a bit more accurate
+also right now the spinal population following the L5B oscillations… so thought maybe different cell type would generate different output pattern to muscles
+[samnemo] @following - is it helpful for the performance to follow the oscillations?
+Salvador Dura
+@helpful - I don't really know yet, but doesn't happen in real-life right? (thats the whole hypothesis of m1 grant … oscillations -> rate coding)
+[samnemo] physiological (or parkinson's) tremor...@hypothesis - temporal -> rate code, true, but maybe it's wrong :) , does temporal -> rate code exclude all oscillations at the periphery?
+[samnemo] anyway, haven't worked with those neurons...maybe ben/bill can comment
+Salvador Dura
+@exclude osc - probably not (eg phys tremor) … but likely to be diff freqs — of course my model is a super simplification … missing eg. all interneurons and a thousand other things, so that also explains why sync to layer 5b
+thx
+[samnemo] k was just curious about whether osc. helped since that's one of the debates re. oscillations - whether they have a function
+Salvador Dura
+might do… I'm adapting model to run evol alg on hpc and tune params for reaching
+neurosim-isb@im.partych.at
+[samnemo] sounds cool
+** izhi links
+http://www.izhikevich.org/publications/spikes.pdf
+http://izhikevich.org/publications/nesb.pdf
+http://www.izhikevich.org/publications/hybrid_spiking_models.pdf
+http://www.izhikevich.org/publications/whichmod.htm
+http://www.izhikevich.org/publications/spikes.htm
+
+* 15feb18 Manually tuning network to learn 1 target
+- velsh = shflex - shext (by default flexes = increases = shflex higher)
+- velel = elflex - elext (by default extends = decreases = elext higher)
+- middle subpopulations higher activity -- some bias??
+- explor movs now change on a 10ms basis -- too fast 
+- added explor movs and antagonistic
+- difficult to tune by hand -- will try evol
+
+* 15feb19 Setup evol alg
+ 
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters
@@ -867,11 +906,19 @@ Saving output as data/m1ms...
 ** TODO replace pc.post() with pc.py_alltoall() or other ?? - maybe not required
 ** DONE Modularize using shared parameters+variables (shared.py)
 ** DONE Add the training and testing wrappers  -  17 Feb
-** TODO decide where plasticity will happen and restrict learning to that subset of pops - 19 Feb
+** TODO Train and test to reach single target
+*** DONE decide where plasticity will happen and restrict learning to that subset of pops - 19 Feb
 -should modify the connectivity and weights tuned to M1!?  
 -maybe avoid by adding plastic connections ONLY between
 proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles - see 15jan11
 - demonstrate that it is enought to learn a target
+*** TODO Set izhikevich neuron type for spinal cord
+*** DONE set yfrac appropriately
+*** DONE Add proper exploratory movements
+*** DONE Add antagonistic muscle inhibition?!
+*** DONE Check why target not plot in test phase!!!
+- targetid wasn't being setup
+*** TODO setup evol alg - find params for 1k cells, 1 target, dummy arm 
 ** TODO Test that can learn multiple targets with artificial PMd input
 ** TODO Encode target using PMd activity as input - 25 Feb 
 *** Find good PMd data where target can be decoded

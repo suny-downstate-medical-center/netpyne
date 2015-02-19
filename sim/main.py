@@ -26,7 +26,7 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
 ### Run model
 ###############################################################################
 
-network.runTrainTest()
-
+#network.runTrainTest()
+network.runSeq()
 
 

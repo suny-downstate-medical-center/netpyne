@@ -66,6 +66,8 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
+    s.explorMovs = 1 # enable exploratory movements
+    s.explorMovsFactor = 5 # max factor
     s.duration = 30*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
@@ -78,6 +80,7 @@ def runTrainTest():
     # test
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
+    s.explorMovs = 0 # disable exploratory movements
     s.duration = 5*1e3#s.testTime # testing time
     s.backgroundrate = s.testBackground # testing background input
     
@@ -188,7 +191,9 @@ def createNetwork():
             ypath=(abs(s.ylocs-s.ylocs[gid]))**2
             ypath2=(s.modelsize-abs(s.ylocs-s.ylocs[gid]))**2
             ypath[ypath2<ypath]=ypath2[ypath2<ypath]
+            zpath=(abs(s.zlocs-s.zlocs[gid]))**2
             distances = sqrt(xpath + ypath) # Calculate all pairwise distances
+            distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
         else: distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[s.EorI,s.EorI[gid]] * s.connprobs[s.cellpops,s.cellpops[gid]] * exp(-distances/s.connfalloff[s.EorI]) # Calculate pairwise probabilities
         allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID

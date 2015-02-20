@@ -330,7 +330,7 @@ def createNetwork():
                             stdpmech.RLon = 1 # make sure RL is on
                             stdpmech.RLhebbwt = s.RLrates[s.EorI[pregid],0] # Potentiation rate
                             stdpmech.RLantiwt = s.RLrates[s.EorI[pregid],1] # Depression rate
-                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp window length (ms)
+                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp time constant(ms)
                             stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
                             stdpmech.useRLexp = s.useRLexp # RL 
                             stdpmech.softthresh = s.useRLsoft # RL soft-thresholding

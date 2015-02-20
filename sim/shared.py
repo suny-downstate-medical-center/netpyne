@@ -252,10 +252,10 @@ RLfactor = 5
 RLrates = RLfactor*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
 timeoflastRL = -inf # Never RL
-stdpwin = 20 # length of stdp window (ms)
-eligwin = 50 # length of RL eligibility window (ms)
-useRLexp = 0 # Use binary or exp decaying eligibility trace
-useRLsoft = 0 # Use soft thresholding for RL
+stdpwin = 10 # length of stdp window (ms) (scholarpedia=10; Frem13=20(+),40(-))
+eligwin = 50 # length of RL eligibility window (ms) (Frem13=500ms)
+useRLexp = 1 # Use binary or exp decaying eligibility trace
+useRLsoft = 1 # Use soft thresholding 
 maxweight = 50 # Maximum synaptic weight
 timebetweensaves = 0.5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
 timeoflastsave = -inf # Never saved

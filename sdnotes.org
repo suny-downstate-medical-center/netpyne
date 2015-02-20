@@ -846,7 +846,7 @@ Saving output as data/m1ms...
 - http://docs.python-guide.org/en/latest/writing/structure/#modules
 - http://stackoverflow.com/questions/19158339/python-why-are-global-variables-evil
 
-* 15feb17 Spinal cord motor neuron using Izhikevich
+* 15feb17 Spinal cord motor neuron using Izhikevich and reciprocal inhibition to antagonistic
 ** chat
 Salvador Dura
 trying to find what would be the best izhikevich parameters for spinal cord motor neuron… any ideas?
@@ -874,6 +874,31 @@ http://izhikevich.org/publications/nesb.pdf
 http://www.izhikevich.org/publications/hybrid_spiking_models.pdf
 http://www.izhikevich.org/publications/whichmod.htm
 http://www.izhikevich.org/publications/spikes.htm
+
+** reciprocal inhib to antagon muscle
+- "The afferent of the muscle spindle bifurcates in the spinal cord. One branch innervates the alpha motor neuron that causes
+  the homonymous muscle to contract, producing the reflex. The other branch innervates the inhibitory interneuron, which in
+  turn innervates the alpha motor neuron that synapses onto the opposing muscle. Because the interneuron is inhibitory, it
+  prevents the opposing alpha motor neuron from firing, thereby reducing the contraction of the opposing muscle. "
+- Implemented programatically during readout of DSC pop:
+if s.antagInh: # antagonist inhibition
+                if self.motorCmd[SH_EXT] > self.motorCmd[SH_FLEX]: # sh ext > sh flex
+                    self.motorCmd[SH_FLEX] =  self.motorCmd[SH_FLEX]**2 / self.motorCmd[SH_EXT] / s.antagInh
+                elif self.motorCmd[SH_EXT] < self.motorCmd[SH_FLEX]: # sh flex > sh ext
+                    self.motorCmd[SH_EXT] = self.motorCmd[SH_EXT]**2 / self.motorCmd[SH_FLEX] / s.antagInh
+                if self.motorCmd[EL_EXT] > self.motorCmd[EL_FLEX]: # el ext > el flex
+                    self.motorCmd[EL_FLEX] = self.motorCmd[EL_FLEX]**2 / self.motorCmd[EL_EXT] / s.antagInh
+                elif self.motorCmd[EL_EXT] < self.motorCmd[EL_FLEX]: # el ext > el flex
+                    self.motorCmd[EL_EXT] = self.motorCmd[EL_EXT]**2 / self.motorCmd[EL_FLEX] / s.antagInh
+- Alternative would be to implement inhibitory interneuron
+** Burke 2013 Spinal motoneurons review
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150219_204957.png][fig]] - steady firing 20-60 Hz
+
+** ModelDB motoneurons
+- https://senselab.med.yale.edu/ModelDb/ModelList.cshtml?id=276&celldescr=no
+- maybe can try to tune izhi params to IF curve if have time!
+- online simulation of spinal network and muscles - http://remoto.leb.usp.br/remoto/index.html
+- firing rates 10-30 Hz
 
 * 15feb18 Manually tuning network to learn 1 target
 - velsh = shflex - shext (by default flexes = increases = shflex higher)
@@ -924,10 +949,12 @@ raster shows pretty similar oscillations
 -maybe avoid by adding plastic connections ONLY between
 proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to project to muscles - see 15jan11
 - demonstrate that it is enought to learn a target
-*** TODO Set izhikevich neuron type for spinal cord
+*** DONE Set izhikevich neuron type for spinal cord 
+- pyramidal for now, maybe tune rate
 *** DONE set yfrac appropriately
 *** DONE Add proper exploratory movements
-*** DONE Add antagonistic muscle inhibition?!
+*** DONE Add antagonistic muscle inhibition
+
 *** DONE Check why target not plot in test phase!!!
 - targetid wasn't being setup
 *** TODO setup evol alg - find params for 1k cells, 1 target, dummy arm 

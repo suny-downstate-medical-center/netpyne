@@ -33,7 +33,72 @@ crossover = 0.5
 # parameter names and ranges
 paramNames = []
 paramRanges = []
-pNames.append('trainTime'); pRanges.append([30,180]) # maxWscaling, 0.8 (variable single) 
+pNames.append('trainTime'); pRanges.append([30,180])
+pNames.append('plastConnsType'); pRanges.append([0,1,2,3,4])
+pNames.append('stdpFactor'); pRanges.append([0,1])
+pNames.append('RLfactor'); pRanges.append([0,4])
+
+
+
+## STDP and RL parameters
+usestdp = True # Whether or not to use STDP
+useRL = True #True # Where or not to use RL
+plastConns = [[ASC,ER2], [EB5,DSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
+stdpFactor = 1 # multiplier for stdprates
+stdprates = stdpFactor*array([[0.2, -0.25], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
+RLrates = 1*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
+RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
+timeoflastRL = -inf # Never RL
+stdpwin = 20 # length of stdp window (ms)
+eligwin = 50 # length of RL eligibility window (ms)
+useRLexp = 0 # Use binary or exp decaying eligibility trace
+useRLsoft = 0 # Use soft thresholding for RL
+maxweight = 50 # Maximum synaptic weight
+timebetweensaves = 0.5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
+timeoflastsave = -inf # Never saved
+
+
+## Background input parameters
+usebackground = True # Whether or not to use background stimuli
+trainBackground = 50 # background input for training phase
+testBackground = 150 # background input for testing phase
+backgroundrate = 100 # Rate of stimuli (in Hz)
+backgroundnumber = 1e9 # Number of spikes
+backgroundnoise = 1 # Fractional noise
+backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
+backgroundreceptor = NMDA # Which receptor to stimulate
+
+
+## Virtual arm parameters
+useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
+animArm = False # shows arm animation
+graphsArm = True # shows graphs (arm trajectory etc) when finisheds
+arm = Arm(useArm, animArm, graphsArm) 
+
+arm.targetid = 0
+minRLerror = 0.002 # minimum error change for RL (m)
+armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
+startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
+targetDist = 0.15 # target distance from center (15 cm)
+# motor command encoding
+motorCmdStartCell = popGidStart[DSC] # start cell for motor command
+motorCmdEndCell = popGidStart[DSC] + popnumbers[DSC] # end cell for motor command
+cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
+cmdtimewin = 100 # spike time window for motor command (ms)
+# proprioceptive encoding
+pStart = popGidStart[ASC] 
+numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
+minPval = radians(-30) # min angle to encode
+maxPval = radians(135) # max angle to encode
+minPrate = 0.1 # firing rate when angle not within range
+maxPrate = 200 # firing rate when angle within range
+antagInh = 1 # antagonist muscle inhibition
+explorMovs = 1 # exploratory movements
+explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
+explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
+timeoflastexplor = -inf # time when last exploratory movement was updated
+
+
 
 
 paramRanges.append([0.005,0.040]) # learnRate, 0.025 (variable single)

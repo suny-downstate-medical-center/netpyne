@@ -104,6 +104,20 @@ def runTrainTest4targets():
     s.plotweightchanges = False
     s.graphsArm = False
 
+    # set plastic connections based on plasConnsType (from evol alg)
+    if s.plastConnsType == 0:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC]] # only spinal cord 
+    elif s.plastConnsType == 1:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 2:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB6]] # + L6
+    elif s.plastConnsType == 3:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB6]] \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IB5], # + Inh
+
+
     error = zeros(4) # to save error for each target 
     for itarget in targets:
         s.arm.targetid = itarget

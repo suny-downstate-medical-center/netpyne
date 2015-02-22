@@ -53,6 +53,7 @@ num_inputs = len(pNames)
 
 # Set bounds and allowed ranges for params
 def bound_params(candidate, args):
+    cBound = []
     for p in candidate:
         cBound.append(max(min(p, max(param1_range)), min(param1_range)))
 
@@ -280,7 +281,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     ea = inspyred.ec.EvolutionaryComputation(prng)
     ea.selector = inspyred.ec.selectors.tournament_selection
     ea.variator = [inspyred.ec.variators.uniform_crossover, 
-                   inspyred.ec.variators.gaussian_mutation]
+                   inspyred.ec.variators.nonuniform_mutation]
     ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
     #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
     ea.terminator = inspyred.ec.terminators.generation_termination

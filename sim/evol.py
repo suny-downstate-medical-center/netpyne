@@ -136,7 +136,7 @@ def parallel_evaluation_pbs(candidates, args):
         %s""" % (job_name, walltime, processors, job_name, job_name, command)
 
         # Send job_string to qsub
-        #input.write(job_string)
+        input.write(job_string)
         input.close()
 
         # Print your job and the response to the screen

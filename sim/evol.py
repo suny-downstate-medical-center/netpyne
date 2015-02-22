@@ -18,13 +18,13 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-simdatadir = 'data/15feb19_evol' # folder to save sim results
+simdatadir = 'data/15feb21_evol' # folder to save sim results
 saveMuscles = 0
 num_islands = 10
 max_migrants = 1
-migration_interval = 10
+migration_interval = 5
 pop_size = 10
-num_elites = 2
+num_elites = 1
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
 mutation_rate = 0.4
@@ -33,8 +33,8 @@ crossover = 0.5
 # parameter names and ranges
 pNames = []
 pRanges = []
-pNames.append('trainTime'); pRanges.append([30,180])
-pNames.append('plastConnsType'); pRanges.append([0,1,2,3,4]) # int
+pNames.append('trainTime'); pRanges.append([30*1e3,180*1e3]) #int
+pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
 pNames.append('stdpFactor'); pRanges.append([0,1])
 pNames.append('RLfactor'); pRanges.append([0,4])
 #pNames.append('stdpwin'); pRanges.append([10,30])
@@ -57,13 +57,14 @@ def bound_params(candidate, args):
         cBound.append(max(min(p, max(param1_range)), min(param1_range)))
 
     # need to be integer 
-    #param12 = round(max(min(c[11], max(param12_range)), min(param12_range)))
+    cBound[0] = round(max(min(pRanges[0], max(pRanges[0])), min(pRanges[0])))
+    cBound[1] = round(max(min(pRanges[1], max(pRanges[1])), min(pRanges[1])))
   
     # fixed values from list
     #param14 = min(param14_range, key=lambda x:abs(x-c[13]))
 
-  candidate = cBound
-  return candidate
+    candidate = cBound
+    return candidate
 
 
 ###############################################################################
@@ -71,9 +72,13 @@ def bound_params(candidate, args):
 ###############################################################################  
 def generate_rastrigin(random, args):
     size = args.get('num_inputs', 10)
-    params = []
-    for iparam in range(len(paramNames)):
-        paramsRand.append(random.uniform(min(paramRanges[iparam]),max(paramRange[iparam])))
+    paramsRand = []
+    for iparam in range(len(pNames)):
+        paramsRand.append(random.uniform(min(pRanges[iparam]),max(pRanges[iparam])))
+
+    # need to be integer 
+    paramsRand[0] = round(paramsRand[0])
+    paramsRand[1] = round(paramsRand[1])
 
     # fixed values from list
     #param[14] = min(param14_range, key=lambda x:abs(x-param14))
@@ -109,7 +114,7 @@ def parallel_evaluation_pbs(candidates, args):
         outfilestem=simdatadir+"/gen_"+str(ngen)+"_cand_"+str(i) # set filename
         with open('%s_params'% (outfilestem), 'w') as f: # save current candidate params to file 
             pickle.dump(c, f)
-        command = 'mpiexec -np %d nrniv -python -mpi main.py outfilestem=%s'%(numproc, outfilestem) # set command to run
+        command = 'mpiexec -np %d nrniv -python -mpi main.py outfilestem="%s"'%(numproc, outfilestem) # set command to run
         for iparam, param in enumerate(c): # add all param names and values dynamically
             paramstring = ' %s=%r' % (pNames[iparam], param)
             command += paramstring
@@ -131,11 +136,12 @@ def parallel_evaluation_pbs(candidates, args):
         %s""" % (job_name, walltime, processors, job_name, job_name, command)
 
         # Send job_string to qsub
-        input.write(job_string)
+        #input.write(job_string)
         input.close()
 
         # Print your job and the response to the screen
-        print output.read()+": "+sys_str
+        print job_string
+        #print output.read()+": "+command
         total_jobs+=1
         sleep(0.1)
 
@@ -201,7 +207,7 @@ class MultiprocessingMigratorNoBlock(object):
                 self.migrants.put(old_migrant, block=False)
             except Queue.Full:
                 pass
-    return population
+        return population
 
 
 ###############################################################################
@@ -330,7 +336,7 @@ if __name__ == '__main__':
     mp_migrator = MultiprocessingMigratorNoBlock(max_migrants, migration_interval)
     rand_seed = int(time())
     jobs = []
-    for i in range(num_islands, stop=None, step=1):
+    for i in range(num_islands):
         p = multiprocessing.Process(target=create_island, args=(rand_seed + i, i, mp_migrator, simdatadir, \
          max_evaluations, max_generations, num_inputs, mutation_rate, crossover, pop_size, num_elites))
         p.start()

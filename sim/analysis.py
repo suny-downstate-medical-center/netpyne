@@ -10,7 +10,8 @@ from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
 from time import time
-import shared as s
+#import shared as s
+from mpl_toolkits.mplot3d import Axes3D
 
 ## Create colormap
 def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
@@ -129,3 +130,29 @@ def plotweightchanges():
     	clim(-abs(wcmat).max(),abs(wcmat).max())
     	colorbar()
     	#show()
+
+## plot 3d architecture:
+def plot3darch():
+    # create plot
+    figh = figure(figsize=(1.2*8,1.2*6))
+    # figh.subplots_adjust(left=0.02) # Less space on left
+    # figh.subplots_adjust(right=0.98) # Less space on right
+    # figh.subplots_adjust(top=0.98) # Less space on bottom
+    # figh.subplots_adjust(bottom=0.02) # Less space on bottom
+    ax = figh.add_subplot(1,1,1, projection='3d')
+    h = axes()
+
+    #print len(s.xlocs),len(s.ylocs),len(s.zlocs)
+    xlocs =[1,2,3]
+    ylocs=[3,2,1]
+    zlocs=[0.1,0.5,1.2]
+    ax.scatter(xlocs,ylocs, zlocs,  s=10, c=zlocs, edgecolors='none',cmap = 'jet_r' , linewidths=0.0, alpha=1, marker='o')
+    azim = 40  
+    elev = 60
+    ax.view_init(elev, azim) 
+    #xlim(min(s.xlocs),max(s.xlocs))
+    #ylim(min(s.ylocs),max(s.ylocs))
+    #ax.set_zlim(min(s.zlocs),max(s.zlocs))
+    xlabel('lateral distance (mm)')
+    ylabel('lateral distance (mm)')
+    ylabel('cortical depth (mm)')

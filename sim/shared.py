@@ -200,27 +200,29 @@ connweights[PMd,ER5,AMPA]=1
 ## Simulation parameters
 trainTime = 20*1e3 # duration of traininig phase, in ms
 testTime = 2*1e3 # duration of testing/evaluation phase, in ms
-duration = 5*1e3 # Duration of the simulation, in ms
+duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
-progupdate = 100 # How frequently to update progress, in ms
+progupdate = 5000 # How frequently to update progress, in ms
 randseed = 0 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
-oufilestem = '' # filestem to save fitness result
+outfilestem = '' # filestem to save fitness result
 
 
 ## Saving and plotting parameters
-savemat = False # Whether or not to write spikes etc. to a .mat file
+savemat = True # Whether or not to write spikes etc. to a .mat file
+armMinimalSave = True # save only arm data and spikes (for target reaching evol opt)
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 saveraw = False# Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = 'data/m1ms'  # Set file output name
-plotraster = True # Whether or not to plot a raster
+plotraster = False # Whether or not to plot a raster
+maxspikestoplot = 3e6 # Maximum number of spikes to plot
 plotconn = False # whether to plot conn matrix
 plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
-maxspikestoplot = 3e6 # Maximum number of spikes to plot
+plot3darch = True # plot 3d architecture
 
 
 ## Connection parameters
@@ -245,6 +247,7 @@ corticalthick = 1740
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
+plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
 plastConns = [[ASC,ER2], [EB5,DSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
 stdpFactor = 0.02 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
@@ -257,8 +260,9 @@ eligwin = 50 # length of RL eligibility window (ms) (Frem13=500ms)
 useRLexp = 1 # Use binary or exp decaying eligibility trace
 useRLsoft = 1 # Use soft thresholding 
 maxweight = 50 # Maximum synaptic weight
-timebetweensaves = 0.5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
+timebetweensaves = 5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
 timeoflastsave = -inf # Never saved
+weightchanges = [] # to periodically store weigth changes
 
 
 ## Background input parameters
@@ -275,7 +279,7 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 ## Virtual arm parameters
 useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = False # shows arm animation
-graphsArm = True # shows graphs (arm trajectory etc) when finisheds
+graphsArm = False # shows graphs (arm trajectory etc) when finisheds
 arm = Arm(useArm, animArm, graphsArm) 
 
 arm.targetid = 0

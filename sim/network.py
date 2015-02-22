@@ -32,6 +32,8 @@ from datetime import datetime
 import shared as s # Import all shared variables and parameters
 import analysis
 import pickle
+import warnings
+warnings.filterwarnings('error')
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
 
@@ -97,7 +99,7 @@ def runTrainTest():
 
 # training and testing phases
 def runTrainTest4targets():
-    targets = [0,1,2,3] # list of targets to be evaluated
+    targets = [0,1] # list of targets to be evaluated
 
     s.plotraster = False # do not plot any graphs
     s.plotconn = False
@@ -111,25 +113,31 @@ def runTrainTest4targets():
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
     elif s.plastConnsType == 2:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
-         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB6]] # + L6
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
     elif s.plastConnsType == 3:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
-         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB6]] \
-         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IB5], # + Inh
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
+    verystart=time() # store initial time
+    createNetwork() 
+    addStimulation()
+    addBackground()
 
-    error = zeros(4) # to save error for each target 
+    error = zeros(len(targets)) # to save error for each target 
     for itarget in targets:
-        s.arm.targetid = itarget
-        verystart=time() # store initial time
-        createNetwork() 
-        addStimulation()
-        addBackground()
+        s.arm.targetid = itarget # set target id
+
+        if itarget > 0: # restore original weights before training on next target
+            for ps in range(s.nstdpconns): 
+                s.stdpmechs[ps].synweight = s.weightchanges[ps][0][-1] # Time of save (0=initial) and the weight
 
         # train
-        s.usestdp = 1 # Whether or not to use STDP
-        s.useRL = 1 # Where or not to use RL
-        s.explorMovs = 1 # enable exploratory movements
+        s.savemat = False # do not save data during training
+        s.usestdp = True # Whether or not to use STDP
+        s.useRL = True # Where or not to use RL
+        s.explorMovs = True # enable exploratory movements
+        s.duration = s.trainTime # testing time
         s.backgroundrate = s.trainBackground # train background input
         
         setupSim()
@@ -137,8 +145,10 @@ def runTrainTest4targets():
         finalizeSim()
 
         # test
-        s.usestdp = 0 # Whether or not to use STDP
-        s.useRL = 0 # Where or not to use RL
+        s.savemat = True # save data during testing
+        s.armMinimalSave = True # save only arm related data
+        s.usestdp = False # Whether or not to use STDP
+        s.useRL = False # Where or not to use RL
         s.explorMovs = 0 # disable exploratory movements
         s.testTime = 1e3 # evaluate for 1 second
         s.duration = s.testTime # testing time
@@ -148,7 +158,7 @@ def runTrainTest4targets():
         runSim()
         finalizeSim()
         saveData()
-        error[itarget] = sum(s.arm.errorAll)
+        if s.rank == 0: error[itarget] = mean(s.arm.errorAll)
 
     # save error to be used as fitness measure for evol alg
     if s.rank == 0:
@@ -200,7 +210,7 @@ def createNetwork():
     s.ylocs = s.modelsize*rand(s.ncells) # Create random y locations
     s.zlocs = rand(s.ncells) # Create random z locations
     for c in range(s.ncells): 
-        s.zlocs[c] = s.corticalthick * (s.zlocs[c]*(s.popyfrac[s.cellclasses[c]][1]-s.popyfrac[s.cellclasses[c]][0])) # calculate based on yfrac for population and corticalthick 
+        s.zlocs[c] = s.corticalthick * (s.zlocs[c]*(s.popyfrac[s.cellpops[c]][1]-s.popyfrac[s.cellpops[c]][0]) + s.popyfrac[s.cellpops[c]][0])  # calculate based on yfrac for population and corticalthick 
 
 
     ## Actually create the cells
@@ -453,8 +463,8 @@ def addBackground():
 ###############################################################################
 def setupSim():
     ## Initialize STDP -- just for recording
-    s.weightchanges = []
     if s.usestdp:
+        s.weightchanges = []
         if s.rank==0: print('\nSetting up STDP...')
         if s.usestdp:
             s.weightchanges = [[] for ps in range(s.nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
@@ -558,7 +568,6 @@ def runSim():
                         print "Nan or inf"
             s.hostlfps.append(tmplfps) # Add voltages
 
-
         # Periodic weight saves
         if s.usestdp: 
             timesincelastsave = h.t - s.timeoflastsave
@@ -583,7 +592,6 @@ def runSim():
                     critic = vec.to_python()[0]
                 if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
                     for stdp in s.stdpmechs: # for all connections in stdp conn list
-                        pass
                         stdp.reward_punish(float(critic)) # run stds.mod method to update syn weights based on RL
             # Synaptic scaling?
         
@@ -608,7 +616,6 @@ def runSim():
                 h.cvode.active(1)         
             h.dt = dtSave # Restore orignal dt   
                 
-    
     if s.rank==0: 
         s.runtime = time()-runstart # See how long it took
         print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (s.runtime, s.duration/1000/s.runtime))
@@ -768,13 +775,42 @@ def saveData():
             weights = s.allconnections[4] # Pull out weights
             stdpdata = s.allstdpconndata # STDP connection data
             if s.usestims: stimdata = [vstack(s.stimstruct[c][1]).T for c in range(len(stimstruct))] # Only pull out vectors, not text, in stimdata
+            cellpops = s.cellpops  
+            cellnames = s.cellnames
+            cellclasses = s.cellclasses
+            xlocs = s.xlocs
+            ylocs = s.ylocs
+            zlocs = s.zlocs 
+            EorI = s.EorI
 
             # Save variables
             info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
-            variablestosave = ['info', 'simcode', 'spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 'connections', 'distances', 'delays', 'weights', 's.EorI']
-            if s.savelfps:  variablestosave.extend(['s.lfptime', 's.lfps'])   
-            if s.usestdp: variablestosave.extend(['stdpdata', 's.weightchanges'])
-            if s.saveraw: variablestosave.extend(['s.backgrounddata', 's.stimspikedata', 's.allraw'])
+            
+            if s.armMinimalSave: # save only data related to arm reaching (for evol alg)
+                s.filename = s.outfilestem+'_target_'+str(s.arm.targetid)
+                targetPos = s.arm.targetPos
+                handPosAll = s.arm.handPosAll
+                angAll = s.arm.angAll
+                motorCmdAll = s.arm.motorCmdAll 
+                targetidAll = s.arm.targetidAll 
+                errorAll = s.arm.errorAll 
+                criticAll = s.arm.criticAll
+                variablestosave = ['spikedata', 'targetPos', 'angAll', 'motorCmdAll', 'errorAll']
+            else:
+                variablestosave = ['info', 'simcode', 'spikedata', 'cellpops', 'cellnames', 'cellclasses', 'xlocs', 'ylocs', 'zlocs', 'connections', 'distances', 'delays', 'weights', 'EorI']
+            
+            if s.savelfps:  
+                lfptime = s.lfptime
+                lfps = s.lfps
+                variablestosave.extend(['lfptime', 'lfps'])   
+            if s.usestdp: 
+                weightchanges = s.weightchanges
+                variablestosave.extend(['stdpdata', 'weightchanges'])
+            if s.saveraw: 
+                backgrounddata = s.backgrounddata
+                stimspikedata = s.stimspikedata
+                allraw = s.allraw
+                variablestosave.extend(['backgrounddata', 'stimspikedata', 'allraw'])
             if s.usestims: variablestosave.extend(['stimdata'])
             savecommand = "savemat(s.filename, {"
             for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var] + "':" + variablestosave[var] + ", " # Create command out of all the variables
@@ -807,7 +843,11 @@ def plotData():
 
         if s.plotweightchanges:
             print('Plotting weight changes...')
-            analysis.plotweightchanges()#p, allconnections, allstdpconndata, weightchanges)
+            analysis.plotweightchanges()
+
+        if s.plot3darch:
+            print('Plotting 3d architecture...')
+            analysis.plot3darch()
 
         show(block=False)
 

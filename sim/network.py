@@ -26,7 +26,7 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean
+from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf
 from time import time; 
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
@@ -465,6 +465,11 @@ def addBackground():
 ### Setup Simulation
 ###############################################################################
 def setupSim():
+    ## reset time variables
+    s.timeoflastRL = -inf # Never RL
+    s.timeoflastsave = -inf # Never saved
+    s.timeoflastexplor = -inf # time when last exploratory movement was updated
+
     ## Initialize STDP -- just for recording
     if s.usestdp:
         s.weightchanges = []
@@ -545,8 +550,6 @@ def setupSim():
 ### Run Simulation
 ###############################################################################
 def runSim():
-    global timeoflastsave
-
     if s.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes

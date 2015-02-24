@@ -15,7 +15,6 @@ from pylab import array, inf, zeros, seed
 from neuron import h # Import NEURON
 from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
-from arm import Arm # Class with arm methods and variables
 import server # Server for plexon interface
 from time import time
 from math import radians
@@ -280,9 +279,8 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = False # shows arm animation
 graphsArm = False # shows graphs (arm trajectory etc) when finisheds
-arm = Arm(useArm, animArm, graphsArm) 
 
-arm.targetid = 0
+targetid = 0 # initial target 
 minRLerror = 0.002 # minimum error change for RL (m)
 armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position

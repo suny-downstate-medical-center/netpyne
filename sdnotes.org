@@ -922,6 +922,290 @@ raster shows pretty similar oscillations
 - copy over evol island and adapt 
 - add params automatically in a loop - make flexible
 
+* 15feb21 sim - 2 targets (single), 1k neurons, dummyArm 	    :results:
+** evol.py params
+imdatadir = 'data/15feb21_evol' # folder to save sim results
+saveMuscles = 0
+num_islands = 10 # number of islands
+numproc = 4 # number of cores per job
+max_migrants = 1 #
+migration_interval = 5
+pop_size = 10 # population size per island
+num_elites = 1 
+max_generations = 1000
+max_evaluations = max_generations *  num_islands * pop_size
+mutation_rate = 0.4
+crossover = 0.5
+
+# parameter names and ranges
+pNames = []
+pRanges = []
+pNames.append('trainTime'); pRanges.append([30*1e3,180*1e3]) #int
+pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
+pNames.append('stdpFactor'); pRanges.append([0,1])
+pNames.append('RLfactor'); pRanges.append([0,4])
+#pNames.append('stdpwin'); pRanges.append([10,30])
+pNames.append('eligwin'); pRanges.append([50,150])
+#pNames.append('RLinterval'); pRanges.append([50,100])
+#pNames.append('maxweight'); pRanges.append([15,75])
+pNames.append('trainBackground'); pRanges.append([50,200])
+pNames.append('testBackground'); pRanges.append([50,200])
+#pNames.append('minRLerror'); pRanges.append([0.0,0.01])
+pNames.append('cmdmaxrate'); pRanges.append([5,20])
+pNames.append('cmdtimewin'); pRanges.append([50,150])
+pNames.append('explorMovsFactor'); pRanges.append([1,10])
+#pNames.append('explorMovsDur'); pRanges.append([500,1500])
+
+** results
+-- bug: not calculating arm angles properly --due to self.startAng=self.ang and modifying self.ang -- need to use list(self.ang)
+* 15feb22 PMd data and decoders
+** Austin - Kernel method (60% 8 targets)
+*** chat with Adi
+i am running the pmd analysis right now
+Austin • 2/5/14, 1:50 PM
+soundsgood
+Aditya Tarigoppula
+Austin Brockmeier
+looks like I can get 60% using spike kernels to classifiy the first 0.5 s
+or closer to 50%
+actually
+Austin • 2/5/14, 1:50 PM
+and this center out ?
+Aditya Tarigoppula
+Austin Brockmeier
+yeah
+Austin • 2/5/14, 1:50 PM
+or reward?
+Aditya Tarigoppula
+Austin Brockmeier
+Zee
+Austin • 2/5/14, 1:50 PM
+ohh ok zee
+Aditya Tarigoppula
+Austin Brockmeier
+so 1/8 chance
+Austin • 2/5/14, 1:50 PM
+yeah
+Aditya Tarigoppula
+Austin Brockmeier
+what was marius getting?
+Austin • 2/5/14, 1:51 PM
+thats pretty good
+let me check
+whats the file name again
+?
+Aditya Tarigoppula
+Austin Brockmeier
+58% is what i got on this run across 20 monte carlos divisions of the trials into 2/3 for training and 1/3 for testing
+Austin • 2/5/14, 1:51 PM
+is it ZEE from march
+Aditya Tarigoppula
+Austin Brockmeier
+MAP2zee03252010003-01
+Austin • 2/5/14, 1:51 PM
+of 2010?
+ok
+Aditya Tarigoppula
+Austin Brockmeier
+yeah
+Austin • 2/5/14, 1:52 PM
+so here is what he said but I am not sure how much he got on this file specifically
+For the manual task, the decoder goes to about 25-30% at 300ms after the target appears, 300ms being the fixed time before the centre cue disappears and the NHP is free to move. Performance keeps improving to about 40-50% at 500ms and levels off at about this value. This kind of performance seems in line with what we were getting on the old center-out data from the Shenoy group. With 100 units and longer delay periods (500-1000ms), we typically decode around 60-70% (also out of 8 targets), though in the best dataset this goes up to 100% fairly quickly after target onset.
+so the ZEE march data was collected by pratik
+just FYI
+2/5/14, 1:53 PM
+Aditya Tarigoppula
+Austin Brockmeier
+ok
+i will get you the results and pretty plots by end of week?
+*** email to austin
+Hi Austin,
+
+How is it going? How's your new job in the UK?
+
+Here we are getting ready for DARPA's "super final demo" probably in a month or so. After that I'm starting in a new NIH project with Bill (modeling M1 in detail), so I'll stay in the cold NY a couple more years :)
+
+I'm trying to decode target position from PMd data to feed into our spiking models, and Adi forwarded me some of the results you were getting using the kernel method... here's what you said:
+
+"Austin Brockmeier
+looks like I can get 60% using spike kernels to classifiy the first 0.5 s
+Austin Brockmeier
+58% is what i got on this run across 20 monte carlos divisions of the trials into 2/3 for training and 1/3 for testing
+Austin • 2/5/14, 1:51 PM
+is it ZEE from march
+MAP2zee03252010003-01"
+
+It would be great if you could send me that code so I can try it out. Since Stanford/UCL are not the most collaborative guys, we might as well end up using our own code :) Of course if we end up using it for the final demo we will include your name in the paper.
+
+hope everything is going great
+cheers mate! ;)
+salva
+
+** Marius (UCL) - Poisson SSM, Recursive Linear Model (RLM) -- better+faster than GPFA
+*** email 1
+I am afraid I was not able to get any decoding at all out of the passive observation task. In this email I will tell you what I did, maybe you can tell me if I am not using the data correctly. First, some information about the decoder. 
+
+I used the (target) decoder that I have had most success with on some of the old datasets. I have found this type of decoder to work better than various neural network based decoders and SVM based decoders, mostly because it directly takes into account the temporal dynamics of the responses, both the dynamics in response to stimuli/behaviour, and the noisy and shared dynamics on a trial by trial basis. 
+
+The decoder models the spiking data with one of our Poisson state-space model (the RLM which I have been using in the work with Cliff as well), which has a different PSTH for each condition K, but the same dynamics model to account for the noise correlations. This model gives each trial a probability P(data(1:t) | condition) where t is any time index, and on test data we can decode by picking the condition which gives the data the highest probability.
+
+For the manual task, the decoder goes to about 25-30% at 300ms after the target appears, 300ms being the fixed time before the centre cue disappears and the NHP is free to move. Performance keeps improving to about 40-50% at 500ms and levels off at about this value. This kind of performance seems in line with what we were getting on the old center-out data from the Shenoy group. With 100 units and longer delay periods (500-1000ms), we typically decode around 60-70% (also out of 8 targets), though in the best dataset this goes up to 100% fairly quickly after target onset. 
+*** email 2
+Hi Adi,
+
+I thought I had replied to this, apparently not. Sorry about the delay. Please see my comments below!
+
+Cheers, Marius
+
+
+On 7 January 2014 17:23, Aditya Tarigoppula <aditya30887@gmail.com> wrote: Good Morning Marius,
+
+Happy New Year to you too! I have included Salva in this conversation because he will be directly involved in integrating
+SSMs with BMMs.
+
+The initial results stated by you are not entirely unexpected. The monkey from which I am recording now is naive with respect
+to the cursor. This monkey was never trained to manually perform the center out reaching task, hence he never got a chance to
+incorporate the cursor into his motor map (i.e form an association between the cursor and his hand's end point). These files
+were recorded as part of a different line of study which also requires us to see if the data showed any modulation with
+respect to target/direction.
+
+The preliminary results we have on the passive data are as follows: 
+
+To begin with, We treated it as a binary classification problem of left versus right (we excluded targets 3 and 4), targets
+1,5, and 8 were considered as right and targets 2,6,7 were considered left.  Austin (a PHd student in Dr. Principe's lab) ran
+multiple Monte Carlo divisions of the dataset into training and test sets of size 2/3 samples per class and 1/3 samples per
+class, respectively. He computed the average across 100 Monte Carlo divisions and also computed the chance rate. This work
+was done on LFPs of coupe of files and he is working on improving these results.
+
+On dataset 12/4 (which I can send over to you if you desire) file 1, both M1 and Pmd show above chance classification 58% for
+PmD and 57% for motor.
+
+Motor cortex shows 56% and 60% on files 12/4 file 2 and 12/9 file 3 respectively. All the rest of the classification rates
+are below chance.  If you can send these over I can tell you the performance of the RLM decoder on them, to make sure we are
+looking at the same data in similar ways. The RLM decoder can also take LFPs as input, and even combine the LFP information
+with the spiking information. However, maybe I'm missing some obvious information, or maybe the RLM decoder is for some
+reason crap on this kind of data --- we will know it If I cannot achieve your classification performance.
+
+Having said that, there is one thing that can be done to improve the quality of the input data. I should have included this
+information in my last email, sorry about that! Eye tracking was used to make sure that the cursor moved towards the target
+only when the monkey's gaze was maintained on the task plane (i.e. I am not sure if he looking at he cursor but I am sure
+that he is looking at the monitor where the cursor is moving). The trial is not aborted unless the maximum trial time alloted
+to the task runs out. Therefore, there is a possibility that you might have also used the neural data pertaining to the error
+trials while you performed your analysis. I would suggest considering the trials that end up with states greater than 8 as
+INVALID trials (its valid even for the file corresponding to the manual task). i.e. A successfully completed trial usually
+has the following sequence of states 1-2-3-4-5-6/7-8-0. If a given trial has a state above 8 or another way to put it is if a
+given trial does not have a state 8 then the trial was an incomplete/aborted trial.
+
+I have removed that already. 
+
+Do you think you have enough trials (statistically speaking) for each target? (for both manual and passive files) 
+
+There are enough trials to observe statistically significant differences, yes. I interpret the fact that the RLM decoder is
+completely insignificant on the previous data as saying there's really no information there, at least no linearly encoded
+information. I think almost all of the time even simple linear decoders will have some significant classification
+performance. Nonlinear / more fancy decoders can improve on this, but it's very rare in a classification task to have an
+insignificant linear decoder and a significant nonlinear decoder.
+
+I recently recorded a passive observation 2 target center out reaching task. This allows us to have atleast 40 trials for
+each target. Would you like to have a look at the PMd data for this file?
+ 
+Would you like to try your decoder on the M1 data to see if that gives a better performance. As far as the milestone is
+concerned it states that BMMs can use input from the unlesioned part of M1. This allows us to treat the M1 region that we
+recorded from as the unlesioned region.
+
+Sure, I can tell you if the RLM finds anything significant on both these PmD and M1 files, but as I said above, we should
+first make sure I calibrate it in comparison to your previous positive results for those M1 and PmD datasets.
+ 
+How would you compare RLM with other models that Dr. Sahani's lab has proposed in the past such as HSLDS?
+
+It's important to distinguish the use of the RLM as a statistical model of the spiking and as a decoder, although on the same
+data, the same RLM can be trained to perform both tasks.
+
+As a statistical model of the spiking, the RLM seems to do better than Poisson LDS, but we've never directly compared it to
+Biljana's hidden switching model (if that's what you meant by HSLDS). The RLM is however in the same broad class of hidden
+state space models, with the advantage of being much faster and direct to train. In particular we can optimize the model's
+likelihood exactly.
+
+As a decoder, on the old center-out data from the Shenoy lab, the RLM achieves 6.5mm average error, where our best previous
+decoder (mixture of trajectories model, Byron Yu's work, cover of J Neurphys methods a couple of years ago) achieved 11mm
+average error.
+
+I agree with your view on using a longer delay period. I also agree with your view on making the monkey more invested in the
+task and to basically make him aware of the task paradigm. We are moving towards it.
+
+Cool. I think it will be scientifically very interesting to see the passive and active neural activity in well-trained
+attentive monkeys.
+** Adi/John - Byron's GPFA, John's GLDS, PLDS
+*** email
+I believe all of you have access to my Google folder called "shared with Babak (Manual files)". This folder consists of the .plx files (M1 files), .mat files which contains information extracted from the plx files using code present in the sub folder 'loading routines', the definitions and description of the variables in the mat files are stated in the 'var_defs.txt' in the loading routines folder. Feel free to call me or email me if you have any further questions with regard to these files. 
+
+There are 8 targets in the task. The targets are located 45 deg apart from each other.The Target locations of each of the targets and the center circle can be found in the variable called "c3d_Struct.TP_TABLE.X_Global / Y_Global".
+
+c3d_Struct.TP_TABLE.X_Global(1), c3d_Struct.TP_TABLE.Y_Global(1) = center location
+
+Following which index 2 - 9 gives you location of the 8 targets. 
+ 
+% for visualization purposes of the targets
+for i = 1 : 8
+plot(c3dstruct.TARGET_TABLE.X_GLOBAL(c3dstruct.TP_TABLE.EndTarget(i)),c3dstruct.TARGET_TABLE.Y_GLOBAL(c3dstruct.TP_TABLE.EndTarget(i)),'*'); 
+pause();hold on;
+end
+
+targets are arranged as follows with respect to the center: 1 is to the right (0 deg), 2 is to the left (180), 3 is up (90), 4 is down (270), 5 is at 45 deg, and then move anticlockwise for 6 (135), 7 (225) and 8th (315) target. 
+
+There is more information about the target radius, task paradigm etc in c3d_struct. I will guide you to it if you ever need it.
+
+c3dstruct.CALIBRATION has the lengths of monkey arm. Look at 'Description' for more details. For each sub variable in struct "c3d_struct" there is description available. 
+
+Also attached is the GPFA code provided to us by Dr. Yu (Byron Yu). John developed codes for GLDS and PLDS using their papers as guide. Please ask John to send you those codes too. I am not sure if I applied GPFA to these files. But I can always apply it and send you the results when I do. 
+
+Please keep me posted on the evolving collaboration with Dr. Shenoy's group. I would like to help in any way possible to make
+this successful. 
+
+*** chat with john - bitbucket link 
+the farthest i got was applying it to predicting shoulder and elbow kinematics
+i think the top level scripts for testing were
+runEncodignModels.m
+and runEncodingModelsWithPos.m
+https://bitbucket.org/nasnysom/pldsglds
+
+i think it requires minFunc - http://www.cs.ubc.ca/~schmidtm/Software/minFunc.html
+also: http://research.microsoft.com/en-us/um/people/minka/software/lightspeed/
+*** GPFA code
+- well documented but many files/funcs
+- example script helpful
+- not target decoder -- models neural dyanmics in lower dim space (like jPCA)
+- can decode target using: " This model gives each trial a probability P(data(1:t) | condition) where t is any time index,
+  and on test data we can decode by picking the condition which gives the data the highest probability."
+- alternatively can use lower-dimension represntation as input to BMM - STDP between SSM output units and BMM
+
+*** Johns PLDS GLDS code
+- trouble isntalling lightspeed
+
+Compiling lightspeed 2.7 mex files...
+xcodebuild: error: SDK "macosx10.7" cannot be located.
+xcrun: error: unable to find utility "clang", not a developer tool or in PATH
+
+    mex: compile of ' "flops.c"' failed.
+
+tried: http://www.mathworks.com/matlabcentral/answers/103904-can-i-use-xcode-5-as-my-c-or-c-compiler-in-matlab-8-1-r2013a-or-matlab-8-2-r2013b
+
+now get:
+>> install_lightspeed
+Compiling lightspeed 2.7 mex files...
+/u/salvadord/.matlab/R2013a/mexopts.sh: line 176: unexpected EOF while looking for matching `''
+/u/salvadord/.matlab/R2013a/mexopts.sh: line 205: syntax error: unexpected end of file
+/u/salvadord/.matlab/R2013a/mexopts.sh: line 176: unexpected EOF while looking for matching `''
+/u/salvadord/.matlab/R2013a/mexopts.sh: line 205: syntax error: unexpected end of file
+/Applications/MATLAB_R2013a.app/bin/mex: line 1343: -c: command not found
+
+    mex: compile of ' "flops.c"' failed.
+
+Error using mex (line 206)
+Unable to complete successfully.
+
+Error in install_lightspeed (line 52)
+eval(['mex' flags '-c flops.c']);
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

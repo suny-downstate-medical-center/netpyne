@@ -18,13 +18,14 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-simdatadir = 'data/15feb21_evol' # folder to save sim results
+simdatadir = '../data/15feb21_evol' # folder to save sim results
 saveMuscles = 0
-num_islands = 10
-max_migrants = 1
+num_islands = 10 # number of islands
+numproc = 4 # number of cores per job
+max_migrants = 1 #
 migration_interval = 5
-pop_size = 10
-num_elites = 1
+pop_size = 10 # population size per island
+num_elites = 1 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
 mutation_rate = 0.4
@@ -107,7 +108,6 @@ def parallel_evaluation_pbs(candidates, args):
     ngen += 1 # increase number of generations
     maxiter_wait=args.get('maxiter_wait',1000) # 
     default_error=args.get('default_error',0.15)
-    numproc = 4
 
     #run pbs jobs
     total_jobs = 0

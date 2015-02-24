@@ -33,6 +33,7 @@ import shared as s # Import all shared variables and parameters
 import analysis
 import pickle
 import warnings
+from arm import Arm # Class with arm methods and variables
 warnings.filterwarnings('error')
 
 def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
@@ -58,9 +59,10 @@ def runTrainTest():
     createNetwork() 
     addStimulation()
     addBackground()
-    s.arm.targetid = 0
+    s.targetid = 0
     s.plotraster = 1
-    s.plotweightchanges = 1
+    s.plotweightchanges = 0
+    s.plot3darch = 0
     s.graphsArm = 1
 
     # train
@@ -68,7 +70,7 @@ def runTrainTest():
     s.useRL = 1 # Where or not to use RL
     s.explorMovs = 1 # enable exploratory movements
     s.explorMovsFactor = 5 # max factor
-    s.duration = 30*1e3 #s.trainTime # train time
+    s.duration = 5*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
     setupSim()
@@ -78,6 +80,7 @@ def runTrainTest():
     plotData()
 
     # test
+    s.graphsArm = 1
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
     s.explorMovs = 0 # disable exploratory movements
@@ -126,7 +129,7 @@ def runTrainTest4targets():
 
     error = zeros(len(targets)) # to save error for each target 
     for itarget in targets:
-        s.arm.targetid = itarget # set target id
+        s.targetid = itarget # set target id
 
         if itarget > 0: # restore original weights before training on next target
             for ps in range(s.nstdpconns): 
@@ -507,6 +510,8 @@ def setupSim():
     ## Set up virtual arm
     if s.useArm != 'None':
         if s.rank==0: print('\nSetting up virtual arm...')
+        s.arm = Arm(s.useArm, s.animArm, s.graphsArm) 
+        s.arm.targetid = s.targetid
         s.arm.setup(s)#duration, loopstep, RLinterval, pc, scale, popnumbers, p)
 
 
@@ -737,7 +742,7 @@ def saveData():
     if s.rank == 0:
         ## Save to txt file (spikes and conn)
         if s.savetxt: 
-            filename = 'data/m1ms-spk.txt'
+            filename = '../data/m1ms-spk.txt'
             fd = open(filename, "w")
             for c in range(len(s.allspiketimes)):
                 print >> fd, int(s.allspikecells[c]), s.allspiketimes[c], s.popNamesDic[s.cellnames[int(s.allspikecells[c])]]

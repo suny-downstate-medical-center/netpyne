@@ -36,6 +36,6 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
 ###############################################################################
 import network
 
-#network.runTrainTest4targets()
-network.runTrainTest()
+network.runTrainTest4targets()
+#network.runTrainTest()
 #network.runSeq()

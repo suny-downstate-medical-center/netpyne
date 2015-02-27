@@ -36,8 +36,6 @@ import warnings
 from arm import Arm # Class with arm methods and variables
 warnings.filterwarnings('error')
 
-def id32(obj): return hash(obj) & 0xffffffff # bitwise AND to retain only lower 32 bits, for consistency with 32-bit processors
-
 
 ###############################################################################
 ### Sequences of commands to run full model
@@ -61,7 +59,7 @@ def runTrainTest():
     addBackground()
     s.targetid = 0
     s.plotraster = 1
-    s.plotweightchanges = 0
+    s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
 
@@ -76,7 +74,7 @@ def runTrainTest():
     setupSim()
     runSim()
     finalizeSim()
-    saveData()
+    #saveData()
     plotData()
 
     # test
@@ -90,7 +88,7 @@ def runTrainTest():
     setupSim()
     runSim()
     finalizeSim()
-    saveData()
+    #saveData()
     plotData()
 
     ## Wrapping up
@@ -107,7 +105,18 @@ def runTrainTest4targets():
     s.plotraster = False # do not plot any graphs
     s.plotconn = False
     s.plotweightchanges = False
-    s.graphsArm = False
+    s.graphsArm = 1
+
+    s.trainTime=30000#180000.0
+    s.plastConnsType=3.0
+    s.stdpFactor=0
+    s.RLfactor=4
+    s.eligwin=102.96167326867445
+    s.trainBackground=78.96491328878155
+    s.testBackground=132.36448561938408
+    s.cmdmaxrate=17.369441210963718
+    s.cmdtimewin=52.541630731296245
+    s.explorMovsFactor=1.262821609816099
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -146,6 +155,7 @@ def runTrainTest4targets():
         setupSim()
         runSim()
         finalizeSim()
+        plotData()
 
         # test
         s.savemat = True # save data during testing
@@ -160,6 +170,7 @@ def runTrainTest4targets():
         setupSim()
         runSim()
         finalizeSim()
+        plotData()
         saveData()
         if s.rank == 0: error[itarget] = mean(s.arm.errorAll)
 
@@ -175,7 +186,7 @@ def runTrainTest4targets():
     s.pc.done() # MPI: Close MPI
     totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
-    h.quit() # Quit extra processes
+    #h.quit() # Quit extra processes
 
 
 ###############################################################################
@@ -208,7 +219,7 @@ def createNetwork():
 
 
     ## Set positions
-    seed(id32('%d'%s.randseed)) # Reset random number generator
+    seed(s.id32('%d'%s.randseed)) # Reset random number generator
     s.xlocs = s.modelsize*rand(s.ncells) # Create random x locations
     s.ylocs = s.modelsize*rand(s.ncells) # Create random y locations
     s.zlocs = rand(s.ncells) # Create random z locations
@@ -278,7 +289,7 @@ def createNetwork():
         else: distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[s.EorI,s.EorI[gid]] * s.connprobs[s.cellpops,s.cellpops[gid]] * exp(-distances/s.connfalloff[s.EorI]) # Calculate pairwise probabilities
         allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID
-        seed(id32('%d'%(s.randseed+gid))) # Reset random number generator  
+        seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator  
         allrands = rand(s.ncells) # Create an array of random numbers for checking each connection  
         if s.usePlexon:
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
@@ -381,7 +392,7 @@ def addStimulation():
             
             for c in range(s.cellsperhost):
                 gid = s.cellsperhost*int(s.rank)+c # For deciding E or I    
-                seed(id32('%d'%(s.randseed+gid))) # Reset random number generator for this cell
+                seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator for this cell
                 if ts.fraction>rand(): # Don't do it for every cell necessarily
                     if any(s.cellpops[gid]==ts.pops) and s.xlocs[gid]>=ts.loc[0,0] and s.xlocs[gid]<=ts.loc[0,1] and s.ylocs[gid]>=ts.loc[1,0] and s.ylocs[gid]<=ts.loc[1,1]:
                         
@@ -393,7 +404,7 @@ def addStimulation():
                         stimrand = h.Random()
                         stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
                         stimrand.negexp(1)
-                        stimrand.seq(id32('%d'%(s.randseed+gid))*1e3) # Set the sequence i.e. seed
+                        stimrand.seq(s.id32('%d'%(s.randseed+gid))*1e3) # Set the sequence i.e. seed
                         s.stimrands.append(stimrand)
                         
                         stimsource = h.NetStim() # Create a NetStim

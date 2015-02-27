@@ -18,6 +18,8 @@ from nsloc import nsloc # NetStim with location unit type
 import server # Server for plexon interface
 from time import time
 from math import radians
+def id32(obj): return hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
+
 
 ## MPI
 pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -136,7 +138,7 @@ connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
 connprobs[ASC,ER2]=0.6
-connprobs[EB5,DSC]=0.6
+connprobs[EB5,DSC]=2#0.6
 connprobs[PMd,ER5]=0.6
 
 
@@ -220,8 +222,8 @@ filename = 'data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
 maxspikestoplot = 3e6 # Maximum number of spikes to plot
 plotconn = False # whether to plot conn matrix
-plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
-plot3darch = True # plot 3d architecture
+plotweightchanges = True # whether to plot weight changes (shown in conn matrix)
+plot3darch = False # plot 3d architecture
 
 
 ## Connection parameters
@@ -276,7 +278,7 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 
 
 ## Virtual arm parameters
-useArm = 'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
+useArm =  'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = False # shows arm animation
 graphsArm = False # shows graphs (arm trajectory etc) when finisheds
 
@@ -298,7 +300,7 @@ maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
 antagInh = 1 # antagonist muscle inhibition
-explorMovs = 1 # exploratory movements
+explorMovs = 0 # exploratory movements
 explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
 timeoflastexplor = -inf # time when last exploratory movement was updated

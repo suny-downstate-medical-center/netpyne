@@ -121,8 +121,9 @@ def plotweightchanges():
     	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
     	ncells = int(max(max(pre),max(post))+1)
     	wcmat = zeros([ncells, ncells])
+
     	for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
-    		wcmat[ipre,ipost] = iwc *(-1 if irecep>=2 else 1)
+            wcmat[int(ipre),int(ipost)] = iwc *(-1 if irecep>=2 else 1)
 
     	# plot
     	imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))

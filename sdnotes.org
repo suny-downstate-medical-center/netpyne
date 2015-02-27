@@ -957,7 +957,219 @@ pNames.append('explorMovsFactor'); pRanges.append([1,10])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
 
 ** results
--- bug: not calculating arm angles properly --due to self.startAng=self.ang and modifying self.ang -- need to use list(self.ang)
+*** bug
+-- bug: not calculating arm angles properly --due to self.startAng=self.ang and modifying self.ang -- need to use
+list(self.ang)
+-- bug:  lasttimes were not reseted during setup
+*** island_3 gen_18_can_5 (Target errors:  [ 0.15352302  0.06460844]  avg:  0.109065727645)
+**** .run
+Warning: no access to tty (Bad file descriptor).
+Thus no job control in this shell.
+/tera/salvadord/m1ms/sim
+numprocs=4
+
+Setting parameters...
+Benchmarking...
+  Running at 45% default speed (182% total)
+  Setting outfilestem=../data/15feb21_evol_island_3/gen_18_cand_5
+  Setting trainTime=180000.0
+  Setting plastConnsType=3.0
+  Setting stdpFactor=0
+  Setting RLfactor=4
+  Setting eligwin=102.96167326867445
+  Setting trainBackground=78.96491328878155
+  Setting testBackground=132.36448561938408
+  Setting cmdmaxrate=17.369441210963718
+  Setting cmdtimewin=52.541630731296245
+  Setting explorMovsFactor=1.262821609816099
+
+Creating simulation of 967 cells for 1.0 s on 4 hosts...
+  Number of cells on node 2: 242 
+  Number of cells on node 1: 242 
+  Number of cells on node 3: 241 
+  Number of cells on node 0: 242 
+Calculating connection probabilities (est. time: 88 s)...
+  Number of connections on host 1: 3959
+  Number of connections on host 2: 3842
+  Number of connections on host 3: 3771
+  Done; time = 0.1 s
+Making connections (est. time: 198 s)...
+  Number of connections on host 0: 3938
+  Number of STDP connections on host 3: 1665
+  Number of STDP connections on host 2: 1715
+  Number created on host 3: 193
+  Number of STDP connections on host 1: 1797
+  Number of STDP connections on host 0: 1772
+  Done; time = 0.2 s
+Creating background inputs...
+  Number created on host 2: 194
+  Number created on host 1: 194
+  Number created on host 0: 194
+
+Setting up STDP...
+
+Setting up virtual arm...
+
+Running...
+  t = 5.0 s (2%; time remaining: 202.0 s)
+  t = 10.0 s (5%; time remaining: 160.3 s)
+  t = 15.0 s (8%; time remaining: 173.6 s)
+  t = 20.0 s (11%; time remaining: 185.0 s)
+  t = 25.0 s (13%; time remaining: 187.9 s)
+  t = 30.0 s (16%; time remaining: 193.1 s)
+  t = 35.0 s (19%; time remaining: 190.0 s)
+  t = 40.0 s (22%; time remaining: 186.2 s)
+  t = 45.0 s (25%; time remaining: 181.0 s)
+  t = 50.0 s (27%; time remaining: 177.9 s)
+  t = 55.0 s (30%; time remaining: 173.3 s)
+  t = 60.0 s (33%; time remaining: 167.8 s)
+  t = 65.0 s (36%; time remaining: 160.7 s)
+  t = 70.0 s (38%; time remaining: 153.0 s)
+  t = 75.0 s (41%; time remaining: 146.3 s)
+  t = 80.0 s (44%; time remaining: 139.7 s)
+  t = 85.0 s (47%; time remaining: 134.4 s)
+  t = 90.0 s (50%; time remaining: 127.3 s)
+  t = 95.0 s (52%; time remaining: 119.1 s)
+  t = 100.0 s (55%; time remaining: 112.2 s)
+  t = 105.0 s (58%; time remaining: 105.5 s)
+  t = 110.0 s (61%; time remaining: 98.2 s)
+  t = 115.0 s (63%; time remaining: 91.2 s)
+  t = 120.0 s (66%; time remaining: 84.1 s)
+  t = 125.0 s (69%; time remaining: 77.3 s)
+  t = 130.0 s (72%; time remaining: 70.5 s)
+  t = 135.0 s (75%; time remaining: 63.2 s)
+  t = 140.0 s (77%; time remaining: 56.0 s)
+  t = 145.0 s (80%; time remaining: 49.0 s)
+  t = 150.0 s (83%; time remaining: 41.8 s)
+  t = 155.0 s (86%; time remaining: 34.7 s)
+  t = 160.0 s (88%; time remaining: 27.8 s)
+  t = 165.0 s (91%; time remaining: 20.9 s)
+  t = 170.0 s (94%; time remaining: 13.9 s)
+  t = 175.0 s (97%; time remaining: 6.9 s)
+  t = 180.0 s (100%; time remaining: 0.0 s)
+  Done; run time = 247.7 s; real-time ratio: 0.73.
+
+Gathering spikes...
+  Done; gather time = 7.5 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 247.7 s (180-s sim; 1 scale; 967 cells; 4 workers)
+  Spikes: 4561007 (26.20 Hz)
+  Connections: 15510 (6949 STDP; 16.04 per cell)
+  Mean connection distance: 882.87 um
+  Mean connection delay: 13.51 ms
+
+Setting up virtual arm...
+
+Running...
+  Done; run time = 0.7 s; real-time ratio: 1.38.
+
+Gathering spikes...
+  Done; gather time = 3.7 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 0.7 s (1-s sim; 1 scale; 967 cells; 4 workers)
+  Spikes: 27777 (28.72 Hz)
+  Connections: 15510 (0 STDP; 16.04 per cell)
+  Mean connection distance: 882.87 um
+  Mean connection delay: 13.51 ms
+Saving output as data/m1ms...
+  Done; time = 0.0 s
+
+Setting up STDP...
+
+Setting up virtual arm...
+
+Running...
+  t = 5.0 s (2%; time remaining: 235.5 s)
+  t = 10.0 s (5%; time remaining: 242.3 s)
+  t = 15.0 s (8%; time remaining: 217.4 s)
+  t = 20.0 s (11%; time remaining: 208.3 s)
+  t = 25.0 s (13%; time remaining: 197.5 s)
+  t = 30.0 s (16%; time remaining: 186.5 s)
+  t = 35.0 s (19%; time remaining: 183.7 s)
+  t = 40.0 s (22%; time remaining: 175.9 s)
+  t = 45.0 s (25%; time remaining: 165.5 s)
+  t = 50.0 s (27%; time remaining: 158.3 s)
+  t = 55.0 s (30%; time remaining: 149.9 s)
+  t = 60.0 s (33%; time remaining: 145.8 s)
+  t = 65.0 s (36%; time remaining: 139.4 s)
+  t = 70.0 s (38%; time remaining: 132.3 s)
+  t = 75.0 s (41%; time remaining: 128.1 s)
+  t = 80.0 s (44%; time remaining: 124.3 s)
+  t = 85.0 s (47%; time remaining: 121.2 s)
+  t = 90.0 s (50%; time remaining: 116.5 s)
+  t = 95.0 s (52%; time remaining: 113.2 s)
+  t = 100.0 s (55%; time remaining: 107.3 s)
+  t = 105.0 s (58%; time remaining: 101.5 s)
+  t = 110.0 s (61%; time remaining: 96.1 s)
+  t = 115.0 s (63%; time remaining: 90.5 s)
+  t = 120.0 s (66%; time remaining: 85.3 s)
+  t = 125.0 s (69%; time remaining: 78.8 s)
+  t = 130.0 s (72%; time remaining: 72.0 s)
+  t = 135.0 s (75%; time remaining: 65.3 s)
+  t = 140.0 s (77%; time remaining: 58.9 s)
+  t = 145.0 s (80%; time remaining: 51.8 s)
+  t = 150.0 s (83%; time remaining: 44.5 s)
+  t = 155.0 s (86%; time remaining: 37.1 s)
+  t = 160.0 s (88%; time remaining: 29.8 s)
+  t = 165.0 s (91%; time remaining: 22.4 s)
+  t = 170.0 s (94%; time remaining: 15.0 s)
+  t = 175.0 s (97%; time remaining: 7.5 s)
+  t = 180.0 s (100%; time remaining: 0.0 s)
+  Done; run time = 271.1 s; real-time ratio: 0.66.
+
+Gathering spikes...
+  Done; gather time = 8.7 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 271.1 s (180-s sim; 1 scale; 967 cells; 4 workers)
+  Spikes: 4778774 (27.45 Hz)
+  Connections: 15510 (6949 STDP; 16.04 per cell)
+  Mean connection distance: 882.87 um
+  Mean connection delay: 13.51 ms
+
+Setting up virtual arm...
+
+Running...
+  Done; run time = 1.2 s; real-time ratio: 0.87.
+
+Gathering spikes...
+  Done; gather time = 3.4 s.
+Minimum delay (time-step for queue exchange) is  1.0
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 1.2 s (1-s sim; 1 scale; 967 cells; 4 workers)
+  Spikes: 26462 (27.37 Hz)
+  Connections: 15510 (0 STDP; 16.04 per cell)
+  Mean connection distance: 882.87 um
+  Mean connection delay: 13.51 ms
+Saving output as ../data/15feb21_evol_island_3/gen_18_cand_5_target_0...
+  Done; time = 0.0 s
+Target errors:  [ 0.15352302  0.06460844]  avg:  0.109065727645
+
+Done; total time = 544.6 s.
+
+**** right target consistently better
+- check what is issue by running locally with same params
+- output is different each time - maybe due to id32 hash in rand num generation -- NO (with hash
+  still reproducible); was due to arm explor moves randomness 
+- the amount of spikes was 50% or 25% x the hpc output -- could be just random
+- bias towards left target still present
+- Tried increasing EB5->DSC weight to 2.0
+- Need to check RL is updating weights properly -- do small systematic test
+
 * 15feb22 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)
 *** chat with Adi
@@ -1206,6 +1418,52 @@ Unable to complete successfully.
 
 Error in install_lightspeed (line 52)
 eval(['mex' flags '-c flops.c']);
+** EMG data
+*** Austin: MAP2zee03252010003-01
+- same as M1 data used in paper -- would be nice to use the same PMd data!!
+**** notes (Brandi)
+Brandi & Shaohua
+======================
+
+3/25/2010
+
+Task: Mar06NewAngF50cart4cmR50
+
+KinARM was recalibrated today by Mulugeta and Brandi.
+
+Zee spent about 20 minutes on the task before recording started. [110]
+File 1: about 7.5 minutes, Zee performs the task well. 75 rewards [185]
+File 2: about 7.5 minutes, performs the task well. about 70 rewards [260]
+File 3: about 10 minutes, performs the tasks well. about 95 rewards [361]
+File 4: about 9-10 minutes, performs the tasks well. about 95 rewards [458]
+File 5: about 8-9 minutes, performs the tasks well. about 80 rewards [543]
+File 6: about 8-9 minutes, performs the tasks well. about 80 rewards [628]
+File 7: about 9 minutes, performs the tasks well. about 90 rewards [725]
+
+video: zee20100325.
+
+c3d file saved today.
+
+She got about 140 ml water today.
+
+Brandi & Shaohua
+======================
+
+
+*** Gil: MAP2zee04292009002_6sec.plx
+** Playing back PMd data 
+*** vec.play
+- also vec.record
+- not sure why need patternStim -- seems to be a unit (similar to netstim / NSLOC)
+*** bill's new method?
+patternstim
+yes in my mpi example
+cellrun.py
+/u/billl/nrniv/talks/mpiHHnetTut/cellrun.py
+pattern = h.PatternStim() # /usr/site/nrniv/nrn/src/nrnoc/pattern.mod
+pattern.play(tvec, idvec)
+have to do things in correct order -- i messed that up first time around
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters
@@ -1242,6 +1500,7 @@ proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to 
 *** DONE Check why target not plot in test phase!!!
 - targetid wasn't being setup
 *** TODO setup evol alg - find params for 1k cells, 1 target, dummy arm 
+*** TODO Reproducibility - use same random seeds
 ** TODO Test that can learn multiple targets with artificial PMd input
 ** TODO Encode target using PMd activity as input - 25 Feb 
 *** Find good PMd data where target can be decoded

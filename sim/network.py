@@ -68,28 +68,28 @@ def runTrainTest():
     s.useRL = 1 # Where or not to use RL
     s.explorMovs = 1 # enable exploratory movements
     s.explorMovsFactor = 5 # max factor
-    s.duration = 5*1e3 #s.trainTime # train time
+    s.duration = 0.2*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
     setupSim()
     runSim()
     finalizeSim()
-    #saveData()
+    saveData()
     plotData()
 
     # test
-    s.graphsArm = 1
-    s.usestdp = 0 # Whether or not to use STDP
-    s.useRL = 0 # Where or not to use RL
-    s.explorMovs = 0 # disable exploratory movements
-    s.duration = 5*1e3#s.testTime # testing time
-    s.backgroundrate = s.testBackground # testing background input
+    # s.graphsArm = 1
+    # s.usestdp = 0 # Whether or not to use STDP
+    # s.useRL = 0 # Where or not to use RL
+    # s.explorMovs = 0 # disable exploratory movements
+    # s.duration = 5*1e3#s.testTime # testing time
+    # s.backgroundrate = s.testBackground # testing background input
     
-    setupSim()
-    runSim()
-    finalizeSim()
-    #saveData()
-    plotData()
+    # setupSim()
+    # runSim()
+    # finalizeSim()
+    # #saveData()
+    # plotData()
 
     ## Wrapping up
     s.pc.runworker() # MPI: Start simulations running on each host
@@ -676,6 +676,7 @@ def finalizeSim():
         s.allconnections = [array([]) for i in range(s.nconnpars)] # Store all connections
         s.allconnections[s.nconnpars-1] = zeros((0,s.nreceptors)) # Create an empty array for appending connections
         s.allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data
+        s.weightchanges = [] # empty list so weightchanges in this node don't appear twice
         s.totalspikes = 0 # Keep a running tally of the number of spikes
         s.totalconnections = 0 # Total number of connections
         s.totalstdpconns = 0 # Total number of stdp connections
@@ -862,7 +863,8 @@ def plotData():
 
         if s.plotweightchanges:
             print('Plotting weight changes...')
-            analysis.plotweightchanges()
+            #analysis.plotweightchanges()
+            analysis.plotmotorpopchanges()
 
         if s.plot3darch:
             print('Plotting 3d architecture...')

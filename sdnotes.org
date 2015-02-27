@@ -1169,6 +1169,8 @@ Done; total time = 544.6 s.
 - bias towards left target still present
 - Tried increasing EB5->DSC weight to 2.0
 - Need to check RL is updating weights properly -- do small systematic test
+- plotweightchanges was showing absolute final weight; not absolute change --> negative weight changes to RL working
+- check RL + error signal -- didn't seem to be consistent with target distance
 
 * 15feb22 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)

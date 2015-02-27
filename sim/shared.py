@@ -19,7 +19,7 @@ import server # Server for plexon interface
 from time import time
 from math import radians
 import hashlib
-def id32(obj): return  int(hashlib.md5(obj).hexdigest()[0:10],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
+def id32(obj): return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
 
 
 ## MPI
@@ -213,13 +213,13 @@ outfilestem = '' # filestem to save fitness result
 
 ## Saving and plotting parameters
 savemat = True # Whether or not to write spikes etc. to a .mat file
-armMinimalSave = True # save only arm data and spikes (for target reaching evol opt)
+armMinimalSave = False # save only arm data and spikes (for target reaching evol opt)
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 saveraw = False# Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
-filename = 'data/m1ms'  # Set file output name
+filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
 maxspikestoplot = 3e6 # Maximum number of spikes to plot
 plotconn = False # whether to plot conn matrix
@@ -246,6 +246,7 @@ if useconnweightdata == False: connweights = array(connweights>0,dtype='int') # 
 cortthaldist=3000 # CK: WARNING, KLUDGY -- Distance from relay nucleus to cortex -- ~1 cm = 10,000 um
 corticalthick = 1740
 
+
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
@@ -262,7 +263,7 @@ eligwin = 50 # length of RL eligibility window (ms) (Frem13=500ms)
 useRLexp = 1 # Use binary or exp decaying eligibility trace
 useRLsoft = 1 # Use soft thresholding 
 maxweight = 50 # Maximum synaptic weight
-timebetweensaves = 5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
+timebetweensaves = 0.1*1e3 # How many ms between saving weights(can't be smaller than loopstep)
 timeoflastsave = -inf # Never saved
 weightchanges = [] # to periodically store weigth changes
 

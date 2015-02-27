@@ -18,7 +18,7 @@ from nsloc import nsloc # NetStim with location unit type
 import server # Server for plexon interface
 from time import time
 from math import radians
-def id32(obj): return hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
+def id32(obj): return 0#hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
 
 
 ## MPI

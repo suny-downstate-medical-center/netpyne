@@ -68,7 +68,7 @@ def runTrainTest():
     s.useRL = 1 # Where or not to use RL
     s.explorMovs = 1 # enable exploratory movements
     s.explorMovsFactor = 5 # max factor
-    s.duration = 0.2*1e3 #s.trainTime # train time
+    s.duration = 1*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
     setupSim()

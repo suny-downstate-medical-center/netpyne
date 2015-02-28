@@ -5,7 +5,7 @@ Functions to plot and analyse results
 
 Version: 2014July9
 """
-from pylab import scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
+from pylab import mean, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -147,39 +147,29 @@ def plotmotorpopchanges():
     if s.usestdp:
         # create plot
         figh = figure(figsize=(1.2*8,1.2*6))
-        figh.subplots_adjust(left=0.02) # Less space on left
-        figh.subplots_adjust(right=0.98) # Less space on right
-        figh.subplots_adjust(top=0.96) # Less space on bottom
-        figh.subplots_adjust(bottom=0.02) # Less space on bottom
-        figh.subplots_adjust(wspace=0) # More space between
-        figh.subplots_adjust(hspace=0) # More space between
-        h = axes()
 
-        #shext = s.arm.motorCmdCellRange[0]
+        wpre =  []
+        wpost = []
+        wpreSum = []
+        wpostSum = [] 
+        
+        for imus in range(len(s.arm.motorCmdCellRange)):
+            wpre.append([x[0][-1] for (icon,x) in enumerate(s.weightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
+            wpost.append([x[-1][-1] for (icon,x) in enumerate(s.weightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
+            wpreSum.append(sum(wpre[imus]))
+            wpostSum.append(sum(wpost[imus]))
 
-        # create data matrix
-        wcs = [x[-1][-1] for x in s.weightchanges] # absolute final weight
-        wcs = [x[-1][-1]-x[0][-1] for x in s.weightchanges] # absolute weight change
-        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
-        ncells = int(max(max(pre),max(post))+1)
-        wcmat = zeros([ncells, ncells])
-
-        for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
-            wcmat[int(ipre),int(ipost)] = iwc *(-1 if irecep>=2 else 1)
+        print 'initial weights: ',wpreSum
+        print 'final weigths: ',wpostSum
+        print 'absolute difference: ',array(wpostSum) - array(wpreSum)
+        print 'relative difference: ',(array(wpostSum) - array(wpreSum)) / array(wpreSum)
 
         # plot
-        imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
-        xlabel('post-synaptic cell id')
-        ylabel('pre-synaptic cell id')
-        h.set_xticks(s.popGidStart)
-        h.set_yticks(s.popGidStart)
-        h.set_xticklabels(s.popnames)
-        h.set_yticklabels(s.popnames)
-        h.xaxis.set_ticks_position('top')
-        xlim(-0.5,ncells-0.5)
-        ylim(ncells-0.5,-0.5)
-        clim(-abs(wcmat).max(),abs(wcmat).max())
-        colorbar()
+        plot(vstack([wpreSum,wpostSum]), '-o', linewidth=2)
+        legend(['shext','shflex','elext','elflex'])
+        xlabel('time')
+        ylabel('absolute weight (all conns)')
+    
 
 ## plot 3d architecture:
 def plot3darch():

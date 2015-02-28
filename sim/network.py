@@ -67,8 +67,9 @@ def runTrainTest():
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
     s.explorMovs = 1 # enable exploratory movements
+    s.antagInh = 0 # enable exploratory movements
     s.explorMovsFactor = 5 # max factor
-    s.duration = 1*1e3 #s.trainTime # train time
+    s.duration = 5*1e3 #s.trainTime # train time
     s.backgroundrate = s.trainBackground # train background input
     
     setupSim()
@@ -442,19 +443,28 @@ def addBackground():
         s.backgroundrecorders=[] # And for recording spikes
     for c in range(s.cellsperhost): 
         gid = s.gidVec[c]
-        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'DSC' or s.cellnames[gid] == 'PMd': # These pops won't receive background stimulations.
+        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # These pops won't receive background stimulations.
             continue 
         backgroundrand = h.Random()
         backgroundrand.MCellRan4(gid,gid*2)
         backgroundrand.negexp(1)
         s.backgroundrands.append(backgroundrand)
         
-        backgroundsource = h.NetStim() # Create a NetStim
-        backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        if s.cellnames[gid] == 'DSC':
+            backgroundsource = h.NSLOC() # Create a NSLOC
+            backgroundsource.interval = 1**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        else:
+            backgroundsource = h.NetStim() # Create a NetStim
+            backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+            backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
         backgroundsource.number = s.backgroundnumber # Number of spikes
         backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
-        backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
         s.backgroundsources.append(backgroundsource) # Save this NetStim
+        
+        print backgroundsource
+        print backgroundsource.interval
+        print backgroundsource.type
+        print backgroundsource.fflag    
         
         backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
         for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks

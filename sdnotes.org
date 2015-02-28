@@ -1170,7 +1170,13 @@ Done; total time = 544.6 s.
 - Tried increasing EB5->DSC weight to 2.0
 - Need to check RL is updating weights properly -- do small systematic test
 - plotweightchanges was showing absolute final weight; not absolute change --> negative weight changes to RL working
-- check RL + error signal -- didn't seem to be consistent with target distance
+- check RL + error signal -- didn't seem to be consistent with target distance -- fixed small bug
+
+- Hypothesis of why RL not modifying weights selectively: all motor subpops getting activated similarly (= similar elig
+  traces), explor movements being implemented at the level of pop readout
+-- solution: implement explor movements by increasing background noise to motor subpops
+-- did that but couldn't modify rates on-the-fly because using NetStims instead of NSLOCs
+-- having issue with NSLOCs-- doesnt recognize some params -- cannot connect using netcon! compare with netstim.mod
 
 * 15feb22 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)

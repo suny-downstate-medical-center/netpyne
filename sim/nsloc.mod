@@ -15,14 +15,14 @@ PARAMETER {
 	number	= 3000 <0,1e9>	: number of spikes (independent of noise)
 	start		= 1 (ms)	: start of first spike
 	noise		= 0 <0,1>	: amount of randomness (0.0 - 1.0)
-        xloc = -1 
-        yloc = -1 
-        zloc = -1         : location
-        id = -1
-        type = -1
-        subtype = -1
-        fflag           = 1             : don't change -- indicates that this is an artcell
-        check_interval = 1.0 (ms) : time between checking if interval has changed
+    xloc = -1 
+    yloc = -1 
+    zloc = -1         : location
+    id = -1
+    type = -1
+    subtype = -1
+    fflag           = 1             : don't change -- indicates that this is an artcell
+    check_interval = 1.0 (ms) : time between checking if interval has changed
 }
 
 ASSIGNED {

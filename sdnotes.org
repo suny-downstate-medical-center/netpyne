@@ -1194,11 +1194,12 @@ Done; total time = 544.6 s.
 - Only solution left is to run on single target and sum targets in evol.py -- done
 
 - Check if higher conn for certain muscles is just random -- yes (start with low weights so it doesnt have major effect)
-* 15mar30 exploratory movements via E5B
-- now dont reuqire direct stimulation of each muscle group randomly, because E5B connected randomly to DSC so can just increase
+* 15mar30 exploratory movements via E5B and inhib spinal cord pop
+** explor movs via E5B noise
+- now dont require direct stimulation of each muscle group randomly, because E5B connected randomly to DSC so can just increase
 noise in E5B = more realistic
 - also better because makes more sense for RL+stdp: presyn spike before post
-
+** inhib spinal cord pop
 
 
 * 15feb22 PMd data and decoders

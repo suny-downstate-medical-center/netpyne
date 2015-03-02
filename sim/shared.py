@@ -200,7 +200,7 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 5*1e3 # duration of traininig phase, in ms
+trainTime = 50*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use

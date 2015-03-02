@@ -55,11 +55,11 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
-    s.plotraster = 1 # set plotting params
+    s.plotraster = 0 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 1
+    s.plotweightchanges = 0
     s.plot3darch = 0
-    s.graphsArm = 1
+    s.graphsArm = 0
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -90,7 +90,7 @@ def runTrainTest():
     runSim()
     finalizeSim()
     #saveData()
-    plotData()
+    #plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP

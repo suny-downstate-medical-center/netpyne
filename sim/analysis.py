@@ -5,7 +5,7 @@ Functions to plot and analyse results
 
 Version: 2014July9
 """
-from pylab import mean, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
+from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -117,8 +117,8 @@ def plotweightchanges():
     	h = axes()
 
     	# create data matrix
-        wcs = [x[-1][-1] for x in s.weightchanges] # absolute final weight
-    	wcs = [x[-1][-1]-x[0][-1] for x in s.weightchanges] # absolute weight change
+        wcs = [x[-1][-1] for x in s.allweightchanges] # absolute final weight
+    	wcs = [x[-1][-1]-x[0][-1] for x in s.allweightchanges] # absolute weight change
     	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
     	ncells = int(max(max(pre),max(post))+1)
     	wcmat = zeros([ncells, ncells])
@@ -147,15 +147,14 @@ def plotmotorpopchanges():
     if s.usestdp:
         # create plot
         figh = figure(figsize=(1.2*8,1.2*6))
-
         wpre =  []
         wpost = []
         wpreSum = []
         wpostSum = [] 
         
         for imus in range(len(s.arm.motorCmdCellRange)):
-            wpre.append([x[0][-1] for (icon,x) in enumerate(s.weightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
-            wpost.append([x[-1][-1] for (icon,x) in enumerate(s.weightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
+            wpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
+            wpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
             wpreSum.append(sum(wpre[imus]))
             wpostSum.append(sum(wpost[imus]))
 
@@ -165,11 +164,23 @@ def plotmotorpopchanges():
         print 'relative difference: ',(array(wpostSum) - array(wpreSum)) / array(wpreSum)
 
         # plot
-        plot(vstack([wpreSum,wpostSum]), '-o', linewidth=2)
-        legend(['shext','shflex','elext','elflex'])
-        xlabel('time')
-        ylabel('absolute weight (all conns)')
-    
+        ax1 = figh.add_subplot(2,1,1)
+        ind = arange(len(wpreSum))  # the x locations for the groups
+        width = 0.35       # the width of the bars
+        ax1.bar(ind, wpreSum, width, color='b')
+        ax1.bar(ind+width, wpostSum, width, color='r')
+        ax1.set_xticks(ind+width)
+        ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
+        legend(['pre','post'])
+        ax1.grid()
+
+        ax2 = figh.add_subplot(2,1,2)
+        width = 0.70       # the width of the bars
+        bar(ind,(array(wpostSum) - array(wpreSum)) / array(wpreSum), width, color='b')
+        ax2.set_xticks(ind+width/2)
+        ax2.set_xticklabels( ('shext','shflex','elext','elflex') )
+        ax2.grid()
+        
 
 ## plot 3d architecture:
 def plot3darch():

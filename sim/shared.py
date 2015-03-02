@@ -41,7 +41,7 @@ scale = 1 # Size of simulation in thousands of cells
 popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [server.numPMd, 48,  48,    150,    25,     25,   167,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+popratios =  [server.numPMd, 64, 64,    150,    25,     25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.1,0.32], [0.1,0.32], [0.1,0.32], [0.32,0.47], [0.47,0.75], [0.32,0.75], [0.32,0.75], [0.75,1.0], [0.75,1.0], [0.75,1.0]] # data from Weiler et. al 2008
 
 
@@ -139,7 +139,7 @@ connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
 connprobs[ASC,ER2]=0.6
-connprobs[EB5,DSC]=2#0.6
+connprobs[EB5,DSC]=2.0#0.6
 connprobs[PMd,ER5]=0.6
 
 
@@ -191,7 +191,7 @@ connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=4
-connweights[EB5,DSC,AMPA]=4
+connweights[EB5,DSC,AMPA]=0.5
 connweights[PMd,ER5,AMPA]=1
 
 
@@ -200,24 +200,26 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 20*1e3 # duration of traininig phase, in ms
-testTime = 2*1e3 # duration of testing/evaluation phase, in ms
+trainTime = 5*1e3 # duration of traininig phase, in ms
+testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 5000 # How frequently to update progress, in ms
-randseed = 0 # Random seed to use
+randseed = 20 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
-outfilestem = '' # filestem to save fitness result
+
 
 
 ## Saving and plotting parameters
+outfilestem = '' # filestem to save fitness result
 savemat = True # Whether or not to write spikes etc. to a .mat file
 armMinimalSave = False # save only arm data and spikes (for target reaching evol opt)
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
-saveraw = False# Whether or not to record raw voltages etc.
+savebackground = True # save background (NetStims) inputs
+saveraw = False # Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
@@ -252,9 +254,9 @@ usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
 plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
 plastConns = [[ASC,ER2], [EB5,DSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
-stdpFactor = 0.02 # multiplier for stdprates
+stdpFactor = 0.01 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
-RLfactor = 5
+RLfactor = 10
 RLrates = RLfactor*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
 timeoflastRL = -inf # Never RL
@@ -273,9 +275,11 @@ usebackground = True # Whether or not to use background stimuli
 trainBackground = 50 # background input for training phase
 testBackground = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
+backgroundrateExplor = 500 # weight for background input for exploratory movements
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
+backgroundweightExplor = 10 # weight for background input for exploratory movements
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 
@@ -303,7 +307,7 @@ minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
 antagInh = 1 # antagonist muscle inhibition
 explorMovs = 0 # exploratory movements
-explorMovsFactor = 5 # max factor by which to multiply specific muscle groups to enforce explor movs
+explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
 timeoflastexplor = -inf # time when last exploratory movement was updated
 

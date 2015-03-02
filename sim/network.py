@@ -27,7 +27,7 @@ Version: 2014feb21 by cliffk
 
 from neuron import h, init # Import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf
-from time import time; 
+from time import time, sleep
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
 import analysis
@@ -54,43 +54,61 @@ def runSeq():
 # training and testing phases
 def runTrainTest():
     verystart=time() # store initial time
-    createNetwork() 
-    addStimulation()
-    addBackground()
-    s.targetid = 0
-    s.plotraster = 1
+
+    s.plotraster = 1 # set plotting params
+    s.plotconn = 0
     s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
 
+    # set plastic connections based on plasConnsType (from evol alg)
+    if s.plastConnsType == 0:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC]] # only spinal cord 
+    elif s.plastConnsType == 1:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 2:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
+    elif s.plastConnsType == 3:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
+
+    # initialize network
+    createNetwork() 
+    addStimulation()
+    addBackground()
+
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.explorMovs = 1 # enable exploratory movements
+    s.explorMovs = 0 # enable exploratory movements
     s.antagInh = 0 # enable exploratory movements
-    s.explorMovsFactor = 5 # max factor
-    s.duration = 5*1e3 #s.trainTime # train time
-    s.backgroundrate = s.trainBackground # train background input
+    s.duration = s.trainTime # train time
+
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
+
+    # test
+    s.usestdp = 0 # Whether or not to use STDP
+    s.useRL = 0 # Where or not to use RL
+    s.explorMovs = 0 # disable exploratory movements
+    s.duration = s.testTime # testing time
     
     setupSim()
     runSim()
     finalizeSim()
-    saveData()
+    #saveData()
     plotData()
 
-    # test
-    # s.graphsArm = 1
-    # s.usestdp = 0 # Whether or not to use STDP
-    # s.useRL = 0 # Where or not to use RL
-    # s.explorMovs = 0 # disable exploratory movements
-    # s.duration = 5*1e3#s.testTime # testing time
-    # s.backgroundrate = s.testBackground # testing background input
-    
-    # setupSim()
-    # runSim()
-    # finalizeSim()
-    # #saveData()
-    # plotData()
+    if s.rank == 0: # save error to file
+        error = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error 
+        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+                pickle.dump(error, f)
 
     ## Wrapping up
     s.pc.runworker() # MPI: Start simulations running on each host
@@ -99,25 +117,18 @@ def runTrainTest():
     print('\nDone; total time = %0.1f s.' % totaltime)
     if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
 
-# training and testing phases
+# training and testing phases 
+# (doesn't work because can't reinitialize system after 1st target)
 def runTrainTest4targets():
-    targets = [0,1] # list of targets to be evaluated
+    targets = [0,0] # list of targets to be evaluated
 
-    s.plotraster = False # do not plot any graphs
+    s.plotraster = True # do not plot any graphs
     s.plotconn = False
-    s.plotweightchanges = False
+    s.plotweightchanges = True
     s.graphsArm = 1
 
-    s.trainTime=30000#180000.0
-    s.plastConnsType=3.0
-    s.stdpFactor=0
-    s.RLfactor=4
-    s.eligwin=102.96167326867445
-    s.trainBackground=78.96491328878155
-    s.testBackground=132.36448561938408
-    s.cmdmaxrate=17.369441210963718
-    s.cmdtimewin=52.541630731296245
-    s.explorMovsFactor=1.262821609816099
+    s.trainTime=1*1e3#180000.0
+    s.explorMovsFactor=10
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -133,47 +144,55 @@ def runTrainTest4targets():
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
     verystart=time() # store initial time
-    createNetwork() 
-    addStimulation()
-    addBackground()
+
 
     error = zeros(len(targets)) # to save error for each target 
     for itarget in targets:
         s.targetid = itarget # set target id
 
-        if itarget > 0: # restore original weights before training on next target
-            for ps in range(s.nstdpconns): 
-                s.stdpmechs[ps].synweight = s.weightchanges[ps][0][-1] # Time of save (0=initial) and the weight
+        #if itarget > 0: # restore original weights before training on next target   
+        
+        s.pc.gid_clear()
+        createNetwork() 
+        createConnections() 
+        addStimulation()
+        addBackground()
 
         # train
         s.savemat = False # do not save data during training
         s.usestdp = True # Whether or not to use STDP
-        s.useRL = True # Where or not to use RL
-        s.explorMovs = True # enable exploratory movements
-        s.duration = s.trainTime # testing time
-        s.backgroundrate = s.trainBackground # train background input
-        
-        setupSim()
-        runSim()
-        finalizeSim()
-        plotData()
-
-        # test
-        s.savemat = True # save data during testing
-        s.armMinimalSave = True # save only arm related data
-        s.usestdp = False # Whether or not to use STDP
         s.useRL = False # Where or not to use RL
-        s.explorMovs = 0 # disable exploratory movements
-        s.testTime = 1e3 # evaluate for 1 second
-        s.duration = s.testTime # testing time
-        s.backgroundrate = s.testBackground # testing background input
+        s.explorMovs = False # enable exploratory movements
+        s.duration = s.trainTime # testing time
         
         setupSim()
         runSim()
         finalizeSim()
-        plotData()
-        saveData()
+        #plotData()
+
+        ## Wrapping up
+       
+        # test
+        # s.savemat = True # save data during testing
+        # s.armMinimalSave = True # save only arm related data
+        # s.usestdp = False # Whether or not to use STDP
+        # s.useRL = False # Where or not to use RL
+        # s.explorMovs = 0 # disable exploratory movements
+        # s.testTime = 1e3 # evaluate for 1 second
+        # s.duration = s.testTime # testing time
+        
+        # setupSim()
+        # runSim()
+        # finalizeSim()
+        # plotData()
+        # saveData()
+
         if s.rank == 0: error[itarget] = mean(s.arm.errorAll)
+
+        s.pc.runworker() # MPI: Start simulations running on each host
+        s.pc.done() # MPI: Close MPI
+        totaltime = time()-verystart # See how long it took in total
+
 
     # save error to be used as fitness measure for evol alg
     if s.rank == 0:
@@ -182,10 +201,7 @@ def runTrainTest4targets():
         with open('%s_error'% (s.outfilestem), 'w') as f: # save avg error over targets to outfilestem
                 pickle.dump(errorAvg, f)
 
-    ## Wrapping up
-    s.pc.runworker() # MPI: Start simulations running on each host
-    s.pc.done() # MPI: Close MPI
-    totaltime = time()-verystart # See how long it took in total
+
     print('\nDone; total time = %0.1f s.' % totaltime)
     #h.quit() # Quit extra processes
 
@@ -195,7 +211,6 @@ def runTrainTest4targets():
 ###############################################################################
 
 def createNetwork():
-    
     ## Print diagnostic information
     if s.rank==0: print("\nCreating simulation of %i cells for %0.1f s on %i hosts..." % (sum(s.popnumbers),s.duration/1000.,s.nhosts)) 
     s.pc.barrier()
@@ -313,14 +328,14 @@ def createNetwork():
         finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
         s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
     for pp in range(s.nconnpars): s.conndata[pp] = array(concatenate([s.conndata[pp][c] for c in range(nPostCells)])) # Turn pre- and post- cell IDs lists into vectors
-    nconnections = len(s.conndata[0]) # Find out how many connections we're going to make
+    s.nconnections = len(s.conndata[0]) # Find out how many connections we're going to make
     conncalctime = time()-conncalcstart # See how long it took
     if s.rank==0: print('  Done; time = %0.1f s' % conncalctime)
 
-
+#def createConnections():
     ## Actually make connections
-    if s.rank==0: print('Making connections (est. time: %i s)...' % (s.performance*nconnections/9e2))
-    print('  Number of connections on host %i: %i' % (s.rank, nconnections))
+    if s.rank==0: print('Making connections (est. time: %i s)...' % (s.performance*s.nconnections/9e2))
+    print('  Number of connections on host %i: %i' % (s.rank, s.nconnections))
     connstart = time() # See how long connecting the cells takes
     s.connlist = [] # Create array for storing each of the connections
     s.stdpconndata = [] # Store data on STDP connections
@@ -328,7 +343,7 @@ def createNetwork():
         s.stdpmechs = [] # Initialize array for STDP mechanisms
         s.precons = [] # Initialize array for presynaptic spike counters
         s.pstcons = [] # Initialize array for postsynaptic spike counters
-    for con in range(nconnections): # Loop over each connection
+    for con in range(s.nconnections): # Loop over each connection
         pregid = s.conndata[0][con] # GID of presynaptic cell    
         pstgid = s.conndata[1][con] # Index of postsynaptic cell
         pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
@@ -438,46 +453,49 @@ def addBackground():
     s.backgroundsources=[] # Create empty list for storing synapses
     s.backgroundrands=[] # Create random number generators
     s.backgroundconns=[] # Create input connections
-    if s.saveraw:
+    s.backgroundgid=[] # Target cell gid for each input
+    if s.savebackground:
         s.backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
         s.backgroundrecorders=[] # And for recording spikes
     for c in range(s.cellsperhost): 
         gid = s.gidVec[c]
         if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # These pops won't receive background stimulations.
-            continue 
-        backgroundrand = h.Random()
-        backgroundrand.MCellRan4(gid,gid*2)
-        backgroundrand.negexp(1)
-        s.backgroundrands.append(backgroundrand)
-        
-        if s.cellnames[gid] == 'DSC':
-            backgroundsource = h.NSLOC() # Create a NSLOC
-            backgroundsource.interval = 1**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+            pass
         else:
-            backgroundsource = h.NetStim() # Create a NetStim
-            backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-            backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
-        backgroundsource.number = s.backgroundnumber # Number of spikes
-        backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
-        s.backgroundsources.append(backgroundsource) # Save this NetStim
+            backgroundrand = h.Random()
+            backgroundrand.MCellRan4(gid,gid*2)
+            backgroundrand.negexp(1)
+            s.backgroundrands.append(backgroundrand)
+            if s.cellnames[gid] == 'DSC':
+                backgroundsource = h.NSLOC() # Create a NSLOC  
+                backgroundsource.interval = 0.01**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+            elif s.cellnames[gid] == 'EB5':
+                backgroundsource = h.NSLOC() # Create a NSLOC  
+                backgroundsource.interval = s.backgroundrateExplor**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+            else:
+                backgroundsource = h.NetStim() # Create a NetStim
+                backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+                backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
+            backgroundsource.number = s.backgroundnumber # Number of spikes
+            backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
+            s.backgroundsources.append(backgroundsource) # Save this NetStim
+            s.backgroundgid.append(gid) # append cell gid associated to this netstim
+            
+            backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
+            for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+            if s.cellnames[gid] == 'DSC': # or s.cellnames[gid] == 'EB5':
+                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the DSC background input
+            else:
+                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+            backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+            s.backgroundconns.append(backgroundconn) # Save this connnection
         
-        print backgroundsource
-        print backgroundsource.interval
-        print backgroundsource.type
-        print backgroundsource.fflag    
-        
-        backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
-        for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-        s.backgroundconns.append(backgroundconn) # Save this connnection
-        
-        if s.saveraw:
-            backgroundspikevec = h.Vector() # Initialize vector
-            s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
-            backgroundrecorder = h.NetCon(backgroundsource, None)
-            backgroundrecorder.record(backgroundspikevec) # Record simulation time
-            s.backgroundrecorders.append(backgroundrecorder)
+            if s.savebackground:
+                backgroundspikevec = h.Vector() # Initialize vector
+                s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
+                backgroundrecorder = h.NetCon(backgroundsource, None)
+                backgroundrecorder.record(backgroundspikevec) # Record simulation time
+                s.backgroundrecorders.append(backgroundrecorder)
     print('  Number created on host %i: %i' % (s.rank, len(s.backgroundsources)))
     s.pc.barrier()
 
@@ -491,7 +509,7 @@ def setupSim():
     s.timeoflastsave = -inf # Never saved
     s.timeoflastexplor = -inf # time when last exploratory movement was updated
 
-    ## Initialize STDP -- just for recording
+    # Initialize STDP -- just for recording
     if s.usestdp:
         s.weightchanges = []
         if s.rank==0: print('\nSetting up STDP...')
@@ -621,7 +639,13 @@ def runSim():
                     critic = vec.to_python()[0]
                 if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
                     for stdp in s.stdpmechs: # for all connections in stdp conn list
+                        #print 'stdp_before: ', stdp.synweight
                         stdp.reward_punish(float(critic)) # run stds.mod method to update syn weights based on RL
+                        #print stdp.tlastpre
+                        #print stdp.tlastpost
+                        #stdp.adjustweight(float(0.5))
+                        #sleep(0.001)
+                        #print 'stdp_after: ', stdp.synweight
             # Synaptic scaling?
         
             #print(' Arm time = %0.4f s' % time() - armStart)
@@ -656,7 +680,7 @@ def runSim():
 ###############################################################################
 def finalizeSim():
         
-## Variables to unpack data from all hosts
+    ## Variables to unpack data from all hosts
 
     ## Pack data from all hosts
     if s.rank==0: print('\nGathering spikes...')
@@ -686,7 +710,7 @@ def finalizeSim():
         s.allconnections = [array([]) for i in range(s.nconnpars)] # Store all connections
         s.allconnections[s.nconnpars-1] = zeros((0,s.nreceptors)) # Create an empty array for appending connections
         s.allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data
-        s.weightchanges = [] # empty list so weightchanges in this node don't appear twice
+        if s.usestdp: s.allweightchanges = [] # empty list so weightchanges in this node don't appear twice
         s.totalspikes = 0 # Keep a running tally of the number of spikes
         s.totalconnections = 0 # Total number of connections
         s.totalstdpconns = 0 # Total number of stdp connections
@@ -700,7 +724,7 @@ def finalizeSim():
             for pp in range(s.nconnpars): s.allconnections[pp] = concatenate((s.allconnections[pp], hostdata[3][pp])) # Append pre/post synapses
             if s.usestdp and len(hostdata[4]): # Using STDP and at least one STDP connection
                 s.allstdpconndata = concatenate((s.allstdpconndata, hostdata[4])) # Add data on STDP connections
-                for ps in range(len(hostdata[4])): s.weightchanges.append(hostdata[5][ps]) # "ps" stands for "plastic synapse"
+                for ps in range(len(hostdata[4])): s.allweightchanges.append(hostdata[5][ps]) # "ps" stands for "plastic synapse"
             if s.saveraw:
                 for c in range(len(hostdata[6])): s.allraw.append(hostdata[6][c]) # Append cell-by-cell
 
@@ -709,32 +733,33 @@ def finalizeSim():
         s.totalstdpconns = len(s.allstdpconndata) # Total number of STDP connections
         
 
-        # Record input spike times
-        if s.saveraw and s.usebackground:
-            s.allbackgroundspikecells=array([])
-            s.allbackgroundspiketimes=array([])
-            for c in range(len(s.backgroundspikevecs)):
-                thesespikes = array(s.backgroundspikevecs[c])
-                s.allbackgroundspiketimes = concatenate((s.allbackgroundspiketimes, thesespikes)) # Add spikes from this stimulator to the list
-                s.allbackgroundspikecells = concatenate((s.allbackgroundspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
-            s.backgrounddata = transpose(vstack([s.allbackgroundspikecells,s.allbackgroundspiketimes]))
-        else: s.backgrounddata = [] # For saving s no error
-        
-        if s.saveraw and s.usestims:
-            s.allstimspikecells=array([])
-            s.allstimspiketimes=array([])
-            for c in range(len(s.stimspikevecs)):
-                thesespikes = array(s.stimspikevecs[c])
-                s.allstimspiketimes = concatenate((s.allstimspiketimes, thesespikes)) # Add spikes from this stimulator to the list
-                s.allstimspikecells = concatenate((s.allstimspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
-            s.stimspikedata = transpose(vstack([s.allstimspikecells,s.allstimspiketimes]))
-        else: s.stimspikedata = [] # For saving so no error
+    # Record background spike data (cliff: only for one node since takes too long to pack for all and just needed for debugging)
+    if s.savebackground and s.usebackground:
+        s.allbackgroundspikecells=array([])
+        s.allbackgroundspiketimes=array([])
+        for c in range(len(s.backgroundspikevecs)):
+            thesespikes = array(s.backgroundspikevecs[c])
+            s.allbackgroundspiketimes = concatenate((s.allbackgroundspiketimes, thesespikes)) # Add spikes from this stimulator to the list
+            s.allbackgroundspikecells = concatenate((s.allbackgroundspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
+        s.backgrounddata = transpose(vstack([s.allbackgroundspikecells,s.allbackgroundspiketimes]))
+    else: s.backgrounddata = [] # For saving s no error
+    
+    if s.saveraw and s.usestims:
+        s.allstimspikecells=array([])
+        s.allstimspiketimes=array([])
+        for c in range(len(s.stimspikevecs)):
+            thesespikes = array(s.stimspikevecs[c])
+            s.allstimspiketimes = concatenate((s.allstimspiketimes, thesespikes)) # Add spikes from this stimulator to the list
+            s.allstimspikecells = concatenate((s.allstimspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
+        s.stimspikedata = transpose(vstack([s.allstimspikecells,s.allstimspiketimes]))
+    else: s.stimspikedata = [] # For saving so no error
+
     gathertime = time()-gatherstart # See how long it took
     if s.rank==0: print('  Done; gather time = %0.1f s.' % gathertime)
     s.pc.barrier()
 
-    mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    #mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    #if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
 
 
     ## Finalize virtual arm (es. close pipes, saved data)
@@ -805,13 +830,6 @@ def saveData():
             weights = s.allconnections[4] # Pull out weights
             stdpdata = s.allstdpconndata # STDP connection data
             if s.usestims: stimdata = [vstack(s.stimstruct[c][1]).T for c in range(len(stimstruct))] # Only pull out vectors, not text, in stimdata
-            cellpops = s.cellpops  
-            cellnames = s.cellnames
-            cellclasses = s.cellclasses
-            xlocs = s.xlocs
-            ylocs = s.ylocs
-            zlocs = s.zlocs 
-            EorI = s.EorI
 
             # Save variables
             info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
@@ -827,23 +845,19 @@ def saveData():
                 criticAll = s.arm.criticAll
                 variablestosave = ['spikedata', 'targetPos', 'angAll', 'motorCmdAll', 'errorAll']
             else:
-                variablestosave = ['info', 'simcode', 'spikedata', 'cellpops', 'cellnames', 'cellclasses', 'xlocs', 'ylocs', 'zlocs', 'connections', 'distances', 'delays', 'weights', 'EorI']
+                variablestosave = ['info', 'simcode', 'spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 'connections', 'distances', 'delays', 'weights', 's.EorI']
             
             if s.savelfps:  
-                lfptime = s.lfptime
-                lfps = s.lfps
-                variablestosave.extend(['lfptime', 'lfps'])   
+                variablestosave.extend(['s.lfptime', 's.lfps'])   
             if s.usestdp: 
-                weightchanges = s.weightchanges
-                variablestosave.extend(['stdpdata', 'weightchanges'])
+                variablestosave.extend(['stdpdata', 's.sllweightchanges'])
+            if s.savebackground:
+                variablestosave.extend(['s.backgrounddata'])
             if s.saveraw: 
-                backgrounddata = s.backgrounddata
-                stimspikedata = s.stimspikedata
-                allraw = s.allraw
-                variablestosave.extend(['backgrounddata', 'stimspikedata', 'allraw'])
+                variablestosave.extend(['s.stimspikedata', 's.allraw'])
             if s.usestims: variablestosave.extend(['stimdata'])
             savecommand = "savemat(s.filename, {"
-            for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var] + "':" + variablestosave[var] + ", " # Create command out of all the variables
+            for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var].replace('s.','') + "':" + variablestosave[var] + ", " # Create command out of all the variables
             savecommand = savecommand[:-2] + "}, oned_as='column')" # Omit final comma-space and complete command
             exec(savecommand) # Actually perform the save
             

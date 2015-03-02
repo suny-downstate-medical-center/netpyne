@@ -962,7 +962,7 @@ pNames.append('explorMovsFactor'); pRanges.append([1,10])
 list(self.ang)
 -- bug:  lasttimes were not reseted during setup
 *** island_3 gen_18_can_5 (Target errors:  [ 0.15352302  0.06460844]  avg:  0.109065727645)
-**** .run
+*** .run
 Warning: no access to tty (Bad file descriptor).
 Thus no job control in this shell.
 /tera/salvadord/m1ms/sim
@@ -1161,7 +1161,7 @@ Target errors:  [ 0.15352302  0.06460844]  avg:  0.109065727645
 
 Done; total time = 544.6 s.
 
-**** right target consistently better
+*** right target consistently better (found multiple bugs)
 - check what is issue by running locally with same params
 - output is different each time - maybe due to id32 hash in rand num generation -- NO (with hash
   still reproducible); was due to arm explor moves randomness 
@@ -1176,7 +1176,30 @@ Done; total time = 544.6 s.
   traces), explor movements being implemented at the level of pop readout
 -- solution: implement explor movements by increasing background noise to motor subpops
 -- did that but couldn't modify rates on-the-fly because using NetStims instead of NSLOCs
--- having issue with NSLOCs-- doesnt recognize some params -- cannot connect using netcon! compare with netstim.mod
+-- having issue with NSLOCs-- doesnt recognize some params -- cannot connect using netcon! compare with netstim.mod -- not sure how fixed 
+- Added backgrundgid so can target specific netstim based on gid
+- EB5->DSC initial weight was too high (4) so modifying background noise didn't make much of a difference -- lowered to 0.5
+
+- Background input for train and test is the same -- not modified before testing because don't call addBackground
+
+- After first target something makes the stdpmechs stop working -- no change in synWeight
+-- not in finalizeSim() or plotData()
+-- found! after init() the pre and postcell of the stdpmech gets disconnected so tlastpost always = 0
+
+- Cannot restart sim -- weight changes are different second time around even if I do all same steps (+ clear_gid)
+-- even if only stdp (RL off and explor movs off) !! 
+-- doesn't even work properly on multiple hosts when restarting everything
+-- tried removing s and reloading shared again, but apparently python doesnt support unloading of modules
+
+- Only solution left is to run on single target and sum targets in evol.py -- done
+
+- Check if higher conn for certain muscles is just random -- yes (start with low weights so it doesnt have major effect)
+* 15mar30 exploratory movements via E5B
+- now dont reuqire direct stimulation of each muscle group randomly, because E5B connected randomly to DSC so can just increase
+noise in E5B = more realistic
+- also better because makes more sense for RL+stdp: presyn spike before post
+
+
 
 * 15feb22 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)
@@ -1507,8 +1530,10 @@ proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to 
 
 *** DONE Check why target not plot in test phase!!!
 - targetid wasn't being setup
+*** DONE Reproducibility - use same random seeds
+*** TODO add inhibitory spinal cord pop (IDSC)
+*** DONE make exploratory movements by increasing E5B noise
 *** TODO setup evol alg - find params for 1k cells, 1 target, dummy arm 
-*** TODO Reproducibility - use same random seeds
 ** TODO Test that can learn multiple targets with artificial PMd input
 ** TODO Encode target using PMd activity as input - 25 Feb 
 *** Find good PMd data where target can be decoded

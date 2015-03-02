@@ -153,8 +153,8 @@ def parallel_evaluation_pbs(candidates, args):
     num_iters = 0
     jobs_completed=0
     while jobs_completed < total_jobs:
-        print outfilestem
-        print str(jobs_completed)+" / "+str(total_jobs)+" jobs completed"
+        #print outfilestem
+        #print str(jobs_completed)+" / "+str(total_jobs)+" jobs completed"
         unfinished = [[(i,j) for j,y in enumerate(x) if y is None] for i, x in enumerate(targetFitness)]
         unfinished = [item for sublist in unfinished for item in sublist]
         #print "unfinished:"+str(unfinished)

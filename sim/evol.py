@@ -164,7 +164,7 @@ def parallel_evaluation_pbs(candidates, args):
                 outfilestem=simdatadir + "/gen_" + str(ngen) + "_cand_" + str(icand) + "_target_" + str(itarget) # set filename
                 with open('%s_error'% (outfilestem)) as f:
                     error=pickle.load(f)
-                    targetFitness[icand][itarget] = error
+                    targetFitness[itarget][icand] = error
                     jobs_completed+=1
                     print "icand:",icand," itarget:",itarget," error: "+str(error)
             except:
@@ -174,7 +174,7 @@ def parallel_evaluation_pbs(candidates, args):
         if num_iters>=maxiter_wait: #or (num_iters>maxiter_wait/2 and jobs_completed>(0.95*total_jobs)): 
             print "max iterations reached -- remaining jobs set to default error"
             for (itarget,icand) in unfinished:
-                targetFitness[icand][itarget] = default_error
+                targetFitness[itarget][icand] = default_error
                 jobs_completed+=1
         sleep(2) # sleep 2 seconds before checking agains
     print targetFitness

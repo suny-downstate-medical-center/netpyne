@@ -1199,6 +1199,10 @@ Done; total time = 544.6 s.
 - now dont require direct stimulation of each muscle group randomly, because E5B connected randomly to DSC so can just increase
 noise in E5B = more realistic
 - also better because makes more sense for RL+stdp: presyn spike before post
+- however since homog random noise, all neurons get excited similarly and benefits the initial biased connection to some
+  muscles
+-- stimulate up to 50% of the EB5 cells - with random duration, and fixed strength (s.backgroundrateExplor = 1000)
+-- still difficult to get good exploratory movements
 ** inhib spinal cord pop
 
 

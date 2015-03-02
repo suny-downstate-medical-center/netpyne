@@ -191,7 +191,7 @@ connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=4
-connweights[EB5,DSC,AMPA]=0.5
+connweights[EB5,DSC,AMPA]=1
 connweights[PMd,ER5,AMPA]=1
 
 
@@ -200,13 +200,13 @@ connweights[PMd,ER5,AMPA]=1
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 50*1e3 # duration of traininig phase, in ms
+trainTime = 10*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 5000 # How frequently to update progress, in ms
-randseed = 20 # Random seed to use
+randseed = 0 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
 
 
@@ -275,7 +275,8 @@ usebackground = True # Whether or not to use background stimuli
 trainBackground = 50 # background input for training phase
 testBackground = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
-backgroundrateExplor = 500 # weight for background input for exploratory movements
+backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
+backgroundrateExplor = 1000 # weight for background input for exploratory movements
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells

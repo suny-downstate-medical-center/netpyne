@@ -82,8 +82,8 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.explorMovs = 0 # enable exploratory movements
-    s.antagInh = 0 # enable exploratory movements
+    s.explorMovs = 2 # enable exploratory movements
+    s.antagInh = 1 # enable exploratory movements
     s.duration = s.trainTime # train time
 
     setupSim()
@@ -468,10 +468,10 @@ def addBackground():
             s.backgroundrands.append(backgroundrand)
             if s.cellnames[gid] == 'DSC':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
-                backgroundsource.interval = 0.01**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+                backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
             elif s.cellnames[gid] == 'EB5':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
-                backgroundsource.interval = s.backgroundrateExplor**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+                backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
             else:
                 backgroundsource = h.NetStim() # Create a NetStim
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms

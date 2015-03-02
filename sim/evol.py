@@ -157,7 +157,7 @@ def parallel_evaluation_pbs(candidates, args):
         print str(jobs_completed)+" / "+str(total_jobs)+" jobs completed"
         unfinished = [[(i,j) for j,y in enumerate(x) if y is None] for i, x in enumerate(targetFitness)]
         unfinished = [item for sublist in unfinished for item in sublist]
-        print "unfinished:"+str(unfinished)
+        #print "unfinished:"+str(unfinished)
         for (itarget,icand) in unfinished:
             # load error from file
             try:
@@ -166,7 +166,7 @@ def parallel_evaluation_pbs(candidates, args):
                     error=pickle.load(f)
                     targetFitness[icand][itarget] = error
                     jobs_completed+=1
-                    #print "error: "+str(error)
+                    print "icand:",icand," itarget:",itarget," error: "+str(error)
             except:
                 pass
             #print "Waiting for job: "+str(i)+" ... iteration:"+str(num_iters[i])
@@ -177,6 +177,7 @@ def parallel_evaluation_pbs(candidates, args):
                 targetFitness[icand][itarget] = default_error
                 jobs_completed+=1
         sleep(2) # sleep 2 seconds before checking agains
+    print targetFitness
     try:
         fitness = [mean(x) for x in targetFitness]
     except: 

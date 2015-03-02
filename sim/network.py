@@ -108,7 +108,7 @@ def runTrainTest():
         error = mean(s.arm.errorAll)
         print 'Target error for target ',s.targetid,' is:', error 
         with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
-                pickle.dump(error, f)
+            pickle.dump(error, f)
 
     ## Wrapping up
     s.pc.runworker() # MPI: Start simulations running on each host

@@ -923,6 +923,12 @@ raster shows pretty similar oscillations
 - add params automatically in a loop - make flexible
 
 * 15feb21 sim - 2 targets (single), 1k neurons, dummyArm 	    :results:
+** changeset
+changeset:   105:a993e07e853c
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Mon Feb 23 22:43:14 2015 -0500
+summary:     fixed bug - lasttimes were not reseted during setup
+
 ** evol.py params
 imdatadir = 'data/15feb21_evol' # folder to save sim results
 saveMuscles = 0
@@ -956,7 +962,7 @@ pNames.append('cmdtimewin'); pRanges.append([50,150])
 pNames.append('explorMovsFactor'); pRanges.append([1,10])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
 
-** results
+** results (bugs)
 *** bug
 -- bug: not calculating arm angles properly --due to self.startAng=self.ang and modifying self.ang -- need to use
 list(self.ang)
@@ -1194,7 +1200,8 @@ Done; total time = 544.6 s.
 - Only solution left is to run on single target and sum targets in evol.py -- done
 
 - Check if higher conn for certain muscles is just random -- yes (start with low weights so it doesnt have major effect)
-* 15mar30 exploratory movements via E5B; and inhib spinal cord pop
+
+* 15feb22 exploratory movements via E5B; and inhib spinal cord pop
 ** explor movs via E5B noise
 - now dont require direct stimulation of each muscle group randomly, because E5B connected randomly to DSC so can just increase
 noise in E5B = more realistic
@@ -1206,8 +1213,28 @@ noise in E5B = more realistic
 ** inhib spinal cord pop
 Ia inhibitory interneuron[edit]
 Role in reciprocal inhibition during the stretch reflex[edit]
-Joints are controlled by two opposing sets of muscles called extensors and flexors that must work in synchrony to allow proper and desired movement.[11] When a muscle spindle is stretched and the stretch reflex is activated, the opposing muscle group must be inhibited to prevent from working against the agonist muscle.[9][11] The spinal interneuron called Ia inhibitory interneuron is responsible for this inhibition of the antagonist muscle.[11] The Ia afferent of the muscle spindle enters the spinal cord, and one branch synapses on to the alpha motor neuron that causes the agonist muscle to contract.[11] Thus, it results in creating the behavioral reflex. At the same time, the other branch of the Ia afferent synapses on to the Ia inhibitory interneuron, which in turn synapses the alpha motor neuron of the antagonist muscle.[11] Since Ia interneuron is inhibitory, it prevents the opposing alpha motor neuron from firing. Thus, it prevents the antagonist muscle from contracting.[11] Without having this system of reciprocal inhibition, both groups of muscles may contract at the same time and work against each other. This results in spending a greater amount of energy as well. In addition, the reciprocal inhibition is important for mechanism underlying voluntary movement.[11] When the antagonist muscle relaxes during movement, this increases efficiency and speed. This prevents moving muscles from working against the contraction force of antagonist muscles.[11] Thus, during voluntary movement, the Ia inhibitory interneurons are used to coordinate muscle contraction. Further, the Ia inhibitory interneurons allow the higher centers to coordinate commands sent to the two muscles working opposite of each other at a single joint via a single command.[11] The interneuron receives the input command from the corticospinal descending axons in such a way that the descending signal, which activates the contraction of one muscle, causes relaxation of the other muscles.[9][10][11][12]
-* 15feb22 PMd data and decoders
+Joints are controlled by two opposing sets of muscles called extensors and flexors that must work in synchrony to allow
+proper and desired movement.[11] When a muscle spindle is stretched and the stretch reflex is activated, the opposing muscle
+group must be inhibited to prevent from working against the agonist muscle.[9][11] The spinal interneuron called Ia
+inhibitory interneuron is responsible for this inhibition of the antagonist muscle.[11] The Ia afferent of the muscle spindle
+enters the spinal cord, and one branch synapses on to the alpha motor neuron that causes the agonist muscle to contract.[11]
+Thus, it results in creating the behavioral reflex. At the same time, the other branch of the Ia afferent synapses on to the
+Ia inhibitory interneuron, which in turn synapses the alpha motor neuron of the antagonist muscle.[11] Since Ia interneuron
+is inhibitory, it prevents the opposing alpha motor neuron from firing. Thus, it prevents the antagonist muscle from
+contracting.[11] Without having this system of reciprocal inhibition, both groups of muscles may contract at the same time
+and work against each other. This results in spending a greater amount of energy as well. In addition, the reciprocal
+inhibition is important for mechanism underlying voluntary movement.[11] When the antagonist muscle relaxes during movement,
+this increases efficiency and speed. This prevents moving muscles from working against the contraction force of antagonist
+muscles.[11] Thus, during voluntary movement, the Ia inhibitory interneurons are used to coordinate muscle
+contraction. Further, the Ia inhibitory interneurons allow the higher centers to coordinate commands sent to the two muscles
+working opposite of each other at a single joint via a single command.[11] The interneuron receives the input command from
+the corticospinal descending axons in such a way that the descending signal, which activates the contraction of one muscle,
+causes relaxation of the other muscles.[9][10][11][12]
+
+Added IDSC
+E5B->IDSC = E5B->EDSC
+IDSC->EDSC = antagonistic muscle
+* 15feb23 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)
 *** chat with Adi
 i am running the pmd analysis right now
@@ -1533,6 +1560,16 @@ cellrun.py
 pattern = h.PatternStim() # /usr/site/nrniv/nrn/src/nrnoc/pattern.mod
 pattern.play(tvec, idvec)
 have to do things in correct order -- i messed that up first time around
+
+* 15mar01 sim - 2 targets (single), 1k neurons, dummyArm  :results:
+** changeset
+changeset:   119:07393792f1c7
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Mon Mar 02 01:59:52 2015 -0500
+summary:     prepared for 15mar01_evol - debug
+** description
+debugged 15feb21
+explor movs using E5B noise
 
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 

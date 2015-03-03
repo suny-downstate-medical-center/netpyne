@@ -26,7 +26,7 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf
+from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, append
 from time import time, sleep
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
@@ -55,22 +55,24 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
-    s.plotraster = 0 # set plotting params
+    s.plotraster = 1 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 0
+    s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 0
+    s.savemat = 0 # save data during testing
+    s.armMinimalSave = 0 # save only arm related data
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC]] # only spinal cord 
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC]] # only spinal cord 
     elif s.plastConnsType == 1:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
     elif s.plastConnsType == 2:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
     elif s.plastConnsType == 3:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
@@ -83,20 +85,21 @@ def runTrainTest():
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
     s.explorMovs = 2 # enable exploratory movements
-    s.antagInh = 1 # enable exploratory movements
+    s.antagInh = 0 # enable exploratory movements
     s.duration = s.trainTime # train time
 
     setupSim()
     runSim()
     finalizeSim()
-    #saveData()
-    #plotData()
+    saveData()
+    plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
     s.explorMovs = 0 # disable exploratory movements
     s.duration = s.testTime # testing time
+    s.armMinimalSave = 0 # save only arm related data
     
     setupSim()
     runSim()
@@ -280,12 +283,20 @@ def createNetwork():
     s.pc.barrier()
 
 
+    ## Calculate motor command cell ranges so can be used for EDSC and IDSC connectivity
+    nCells = s.motorCmdEndCell - s.motorCmdStartCell 
+    s.motorCmdCellRange = []
+    for i in range(s.nMuscles):
+        s.motorCmdCellRange.append(range(s.motorCmdStartCell + (nCells/s.nMuscles)*i, s.motorCmdStartCell + (nCells/s.nMuscles)*i + (nCells/s.nMuscles) )) # cells used to for shoulder motor command
+     
+
     ## Calculate distances and probabilities
     if s.rank==0: print('Calculating connection probabilities (est. time: %i s)...' % (s.performance*s.cellsperhost**2/3e4))
     conncalcstart = s.time() # See how long connecting the cells takes
     s.nconnpars = 5 # Connection parameters: pre- and post- cell ID, weight, distances, delays
     s.conndata = [[] for i in range(s.nconnpars)] # List for storing connections
     nPostCells = 0
+    EDSCpre = [] # to keep track of EB5->EDSC connection and replicate in EB5->IDSC
     for c in range(s.cellsperhost): # Loop over all postsynaptic cells on this host (has to be postsynaptic because of gid_connect)
         gid = s.gidVec[c] # Increment global identifier       
         if s.cellnames[gid] == 'PMd' or s.cellnames[gid] == 'ASC':
@@ -302,7 +313,9 @@ def createNetwork():
             zpath=(abs(s.zlocs-s.zlocs[gid]))**2
             distances = sqrt(xpath + ypath) # Calculate all pairwise distances
             distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
-        else: distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
+        else: 
+            distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
+            distances3d = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2 + (s.zlocs-s.zlocs[gid])**2) # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[s.EorI,s.EorI[gid]] * s.connprobs[s.cellpops,s.cellpops[gid]] * exp(-distances/s.connfalloff[s.EorI]) # Calculate pairwise probabilities
         allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID
         seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator  
@@ -310,13 +323,26 @@ def createNetwork():
         if s.usePlexon:
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
                 allrands[c] = 1
-        if s.cellnames[gid] == 'ER5': 
-                PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd
-                allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
-                allrands[PMdId] = 0 # to make this connect to ER5
-                distances[PMdId] = 300 # to make delay 5 in conndata[3] 
+        if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
+            PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
+            allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
+            allrands[PMdId] = 0 # to make this connect to ER5
+            distances[PMdId] = 300 # to make delay 5 in conndata[3] 
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+        if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
+            EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
+            print 'saving EDSCpre:',EDSCpre[-1]
+            subpopLen = len(s.motorCmdCellRange[0]) # motor subpop length
+            if gid in s.motorCmdCellRange[0] or gid in s.motorCmdCellRange[2]: # sh ext or el ext
+                IDSCpre = s.popGidStart[s.IDSC] + (gid - s.popGidStart[s.EDSC]) + subpopLen # presynaptic from sh flex or el flex (antagonistic)
+            if gid in s.motorCmdCellRange[1] or gid in s.motorCmdCellRange[3]: # sh flex or el flex
+                IDSCpre = s.popGidStart[s.IDSC] + (gid - s.popGidStart[s.EDSC]) - subpopLen # presynaptic from sh ext or el ext (antagonistic)
+            print 'IDSCpre:',IDSCpre
+            append(preids, IDSCpre) # add IDSC presynaptic input to EDSC 
+        elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
+            preids = array(EDSCpre.pop(0))
+            print 'loading EDSCpre:',preids
         postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
         s.conndata[0].append(preids) # Append pre-cell ID
         s.conndata[1].append(postids) # Append post-cell ID
@@ -332,7 +358,6 @@ def createNetwork():
     conncalctime = time()-conncalcstart # See how long it took
     if s.rank==0: print('  Done; time = %0.1f s' % conncalctime)
 
-#def createConnections():
     ## Actually make connections
     if s.rank==0: print('Making connections (est. time: %i s)...' % (s.performance*s.nconnections/9e2))
     print('  Number of connections on host %i: %i' % (s.rank, s.nconnections))
@@ -466,7 +491,7 @@ def addBackground():
             backgroundrand.MCellRan4(gid,gid*2)
             backgroundrand.negexp(1)
             s.backgroundrands.append(backgroundrand)
-            if s.cellnames[gid] == 'EDSC':
+            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
             elif s.cellnames[gid] == 'EB5':
@@ -483,7 +508,7 @@ def addBackground():
             
             backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            if s.cellnames[gid] == 'EDSC': # or s.cellnames[gid] == 'EB5':
+            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC background input
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
@@ -850,7 +875,7 @@ def saveData():
             if s.savelfps:  
                 variablestosave.extend(['s.lfptime', 's.lfps'])   
             if s.usestdp: 
-                variablestosave.extend(['stdpdata', 's.sllweightchanges'])
+                variablestosave.extend(['stdpdata', 's.allweightchanges'])
             if s.savebackground:
                 variablestosave.extend(['s.backgrounddata'])
             if s.saveraw: 

@@ -38,8 +38,8 @@ if rank==0:
 # Set population and receptor quantities
 scale = 1 # Size of simulation in thousands of cells
 
-popnames = ['PMd', 'ASC', 'EDSC', 'IEDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
-popclasses =  [-1,  -1,     1,      1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
+popnames = ['PMd', 'ASC', 'EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
+popclasses =  [-1,  -1,     1,      2,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
 popratios =  [server.numPMd, 64, 64, 64,  150,    25,    25,   168,    72,    40,    40,   192,    32,    32]# Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [-1,-1], [0.1,0.31], [0.1,0.31], [0.1,0.31], [0.31,0.52], [0.52,0.77], [0.31,0.77], [0.31,0.77], [0.77,1.0], [0.77,1.0], [0.77,1.0]] # data from Weiler et. al 2008 (updated from Ben's excel sheet)
@@ -139,7 +139,9 @@ connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
 connprobs[ASC,ER2]=0.6
-connprobs[EB5,EDSC]=2.0#0.6
+connprobs[EB5,EDSC]=2.0 #0.6
+connprobs[EB5,IDSC]=0.0 # hard-wire so receives same input as EB5->EDSC 
+connprobs[IDSC,EDSC]=0.0 # hard-wire so projects to antagonist muscle subpopulation
 connprobs[PMd,ER5]=0.6
 
 
@@ -190,9 +192,11 @@ connweights[IL6,IF6,GABAB]=1.5
 connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
-connweights[ASC,ER2,AMPA]=4
-connweights[EB5,EDSC,AMPA]=1
-connweights[PMd,ER5,AMPA]=1
+connweights[ASC,ER2,AMPA]=4.0
+connweights[EB5,EDSC,AMPA]=1.0
+connweights[EB5,IDSC,AMPA]=1.0 
+connweights[IDSC,EDSC,GABAA]=1.0 
+connweights[PMd,ER5,AMPA]=1.0
 
 
 ###############################################################################
@@ -292,6 +296,7 @@ graphsArm = False # shows graphs (arm trajectory etc) when finisheds
 targetid = 0 # initial target 
 minRLerror = 0.002 # minimum error change for RL (m)
 armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
+nMuscles = 4 # number of muscles
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
@@ -306,7 +311,7 @@ minPval = radians(-30) # min angle to encode
 maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
-antagInh = 1 # antagonist muscle inhibition
+antagInh = 0 # antagonist muscle inhibition
 explorMovs = 0 # exploratory movements
 explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments

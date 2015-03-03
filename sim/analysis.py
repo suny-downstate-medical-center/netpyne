@@ -144,31 +144,55 @@ def plotweightchanges():
 
 ## plot motor subpopulations connectivity changes
 def plotmotorpopchanges():
+    showInh = True
     if s.usestdp:
-        # create plot
-        figh = figure(figsize=(1.2*8,1.2*6))
-        wpre =  []
-        wpost = []
-        wpreSum = []
-        wpostSum = [] 
-        
-        for imus in range(len(s.arm.motorCmdCellRange)):
-            wpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
-            wpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.arm.motorCmdCellRange[imus]])
-            wpreSum.append(sum(wpre[imus]))
-            wpostSum.append(sum(wpost[imus]))
+        Ewpre =  []
+        Ewpost = []
+        EwpreSum = []
+        EwpostSum = []
+        if showInh: 
+            Iwpre =  []
+            Iwpost = []
+            IwpreSum = []
+            IwpostSum = [] 
+        print s.motorCmdCellRange
+        for imus in range(len(s.motorCmdCellRange)):
+            Ewpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
+            Ewpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
+            EwpreSum.append(sum(Ewpre[imus]))
+            EwpostSum.append(sum(Ewpost[imus]))
+       
 
-        print 'initial weights: ',wpreSum
-        print 'final weigths: ',wpostSum
-        print 'absolute difference: ',array(wpostSum) - array(wpreSum)
-        print 'relative difference: ',(array(wpostSum) - array(wpreSum)) / array(wpreSum)
+            if showInh:
+                motorInhCellRange = s.motorCmdCellRange[imus] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC]
+                Iwpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in motorInhCellRange])
+                Iwpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in motorInhCellRange])
+                IwpreSum.append(sum(Iwpre[imus]))
+                IwpostSum.append(sum(Iwpost[imus]))
+                print motorInhCellRange
+
+        print 'E imus=',imus,':',Ewpre
+        print '\nI imus=',imus,':',Iwpre
+
+        print '\ninitial E weights: ',EwpreSum
+        print 'final E weigths: ',EwpostSum
+        print 'absolute E difference: ',array(EwpostSum) - array(EwpreSum)
+        print 'relative E difference: ',(array(EwpostSum) - array(EwpreSum)) / array(EwpreSum)
+
+        if showInh:
+            print '\ninitial I weights: ',IwpreSum
+            print 'final I weigths: ',IwpostSum
+            print 'absolute I difference: ',array(IwpostSum) - array(IwpreSum)
+            print 'relative I difference: ',(array(IwpostSum) - array(IwpreSum)) / array(IwpreSum)
+            
 
         # plot
+        figh = figure(figsize=(1.2*8,1.2*6))
         ax1 = figh.add_subplot(2,1,1)
-        ind = arange(len(wpreSum))  # the x locations for the groups
+        ind = arange(len(EwpreSum))  # the x locations for the groups
         width = 0.35       # the width of the bars
-        ax1.bar(ind, wpreSum, width, color='b')
-        ax1.bar(ind+width, wpostSum, width, color='r')
+        ax1.bar(ind, EwpreSum, width, color='b')
+        ax1.bar(ind+width, EwpostSum, width, color='r')
         ax1.set_xticks(ind+width)
         ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
         legend(['pre','post'])
@@ -176,10 +200,29 @@ def plotmotorpopchanges():
 
         ax2 = figh.add_subplot(2,1,2)
         width = 0.70       # the width of the bars
-        bar(ind,(array(wpostSum) - array(wpreSum)) / array(wpreSum), width, color='b')
+        bar(ind,(array(EwpostSum) - array(EwpreSum)) / array(EwpreSum), width, color='b')
         ax2.set_xticks(ind+width/2)
         ax2.set_xticklabels( ('shext','shflex','elext','elflex') )
         ax2.grid()
+
+        if showInh:
+            figh = figure(figsize=(1.2*8,1.2*6))
+            ax1 = figh.add_subplot(2,1,1)
+            ind = arange(len(IwpreSum))  # the x locations for the groups
+            width = 0.35       # the width of the bars
+            ax1.bar(ind, IwpreSum, width, color='b')
+            ax1.bar(ind+width, IwpostSum, width, color='r')
+            ax1.set_xticks(ind+width)
+            ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
+            legend(['pre','post'])
+            ax1.grid()
+
+            ax2 = figh.add_subplot(2,1,2)
+            width = 0.70       # the width of the bars
+            bar(ind,(array(IwpostSum) - array(IwpreSum)) / array(IwpreSum), width, color='b')
+            ax2.set_xticks(ind+width/2)
+            ax2.set_xticklabels( ('shext','shflex','elext','elflex') )
+            ax2.grid()
         
 
 ## plot 3d architecture:

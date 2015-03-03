@@ -42,8 +42,7 @@ popnames = ['PMd', 'ASC', 'EDSC', 'IEDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'I
 popclasses =  [-1,  -1,     1,      1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
 popratios =  [server.numPMd, 92 # Cell population numbers 
-popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.1,0.32], [0.1,0.32], [0.1,0.32], [0.32,0.47], [0.47,0.75], [0.32,0.75], [0.32,0.75], [0.75,1.0], [0.75,1.0], [0.75,1.0]] # data from Weiler et. al 2008
-
+popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.1,0.31], [0.1,0.31], [0.1,0.31], [0.31,0.52], [0.52,0.77], [0.31,0.77], [0.31,0.77], [0.77,1.0], [0.77,1.0], [0.77,1.0]] # data from Weiler et. al 2008
 
 receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin'] # Names of the different receptors
 npops = len(popnames) # Number of populations

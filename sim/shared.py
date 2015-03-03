@@ -38,10 +38,10 @@ if rank==0:
 # Set population and receptor quantities
 scale = 1 # Size of simulation in thousands of cells
 
-popnames = ['PMd', 'ASC', 'DSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
-popclasses =  [-1,  -1,     1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
-popEorI =     [ 0,   0,     0,      0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [server.numPMd, 64, 64,    150,    25,     25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+popnames = ['PMd', 'ASC', 'EDSC', 'IEDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
+popclasses =  [-1,  -1,     1,      1,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
+popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
+popratios =  [server.numPMd, 92 # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [0.1,0.32], [0.1,0.32], [0.1,0.32], [0.32,0.47], [0.47,0.75], [0.32,0.75], [0.32,0.75], [0.75,1.0], [0.75,1.0], [0.75,1.0]] # data from Weiler et. al 2008
 
 
@@ -79,7 +79,7 @@ EorI = array(EorI)
 
 # Assign numbers to each of the different variables so they can be used in the other functions
 # initializes the following variables:
-# PMd, ASC, DSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops 
+# PMd, ASC, EDSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops 
 for i,name in enumerate(popnames): exec(name+'=i') # Set population names to the integers
 for i,name in enumerate(receptornames): exec(name+'=i') # Set population names to the integers
 allpops = array(range(npops)) # Create an array with all the population numbers
@@ -139,7 +139,7 @@ connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
 connprobs[ASC,ER2]=0.6
-connprobs[EB5,DSC]=2.0#0.6
+connprobs[EB5,EDSC]=2.0#0.6
 connprobs[PMd,ER5]=0.6
 
 
@@ -191,7 +191,7 @@ connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=4
-connweights[EB5,DSC,AMPA]=1
+connweights[EB5,EDSC,AMPA]=1
 connweights[PMd,ER5,AMPA]=1
 
 
@@ -253,7 +253,7 @@ corticalthick = 1740
 usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
 plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
-plastConns = [[ASC,ER2], [EB5,DSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
+plastConns = [[ASC,ER2], [EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
 stdpFactor = 0.01 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLfactor = 10
@@ -295,8 +295,8 @@ armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulna
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
-motorCmdStartCell = popGidStart[DSC] # start cell for motor command
-motorCmdEndCell = popGidStart[DSC] + popnumbers[DSC] # end cell for motor command
+motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
+motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
 cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
 cmdtimewin = 100 # spike time window for motor command (ms)
 # proprioceptive encoding

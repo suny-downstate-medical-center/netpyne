@@ -63,14 +63,14 @@ def runTrainTest():
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC]] # only spinal cord 
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC]] # only spinal cord 
     elif s.plastConnsType == 1:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
     elif s.plastConnsType == 2:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
     elif s.plastConnsType == 3:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
@@ -132,14 +132,14 @@ def runTrainTest4targets():
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC]] # only spinal cord 
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC]] # only spinal cord 
     elif s.plastConnsType == 1:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
     elif s.plastConnsType == 2:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
     elif s.plastConnsType == 3:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.DSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
@@ -466,7 +466,7 @@ def addBackground():
             backgroundrand.MCellRan4(gid,gid*2)
             backgroundrand.negexp(1)
             s.backgroundrands.append(backgroundrand)
-            if s.cellnames[gid] == 'DSC':
+            if s.cellnames[gid] == 'EDSC':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
             elif s.cellnames[gid] == 'EB5':
@@ -483,8 +483,8 @@ def addBackground():
             
             backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            if s.cellnames[gid] == 'DSC': # or s.cellnames[gid] == 'EB5':
-                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the DSC background input
+            if s.cellnames[gid] == 'EDSC': # or s.cellnames[gid] == 'EB5':
+                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC background input
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
             backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference

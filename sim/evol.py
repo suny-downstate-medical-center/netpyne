@@ -25,7 +25,7 @@ num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
 max_migrants = 1 #
 migration_interval = 5
-pop_size = 2 # population size per island
+pop_size = 100 # population size per island
 num_elites = 1 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
@@ -36,10 +36,10 @@ targets_eval = [0,1] # center-out reaching target to evaluate
 # parameter names and ranges
 pNames = []
 pRanges = []
-pNames.append('trainTime'); pRanges.append([20*1e3,150*1e3]) #int
+pNames.append('trainTime'); pRanges.append([10*1e3,120*1e3]) #int
 pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
 #pNames.append('stdpFactor'); pRanges.append([0,1])
-pNames.append('RLfactor'); pRanges.append([2,15])
+pNames.append('RLfactor'); pRanges.append([1,10])
 #pNames.append('stdpwin'); pRanges.append([10,30])
 pNames.append('eligwin'); pRanges.append([50,150])
 #pNames.append('RLinterval'); pRanges.append([50,100])
@@ -47,7 +47,7 @@ pNames.append('eligwin'); pRanges.append([50,150])
 pNames.append('backgroundrate'); pRanges.append([50,200])
 pNames.append('backgroundrateExplor'); pRanges.append([500,2000])
 #pNames.append('minRLerror'); pRanges.append([0.0,0.01])
-pNames.append('cmdmaxrate'); pRanges.append([5,20])
+pNames.append('cmdmaxrate'); pRanges.append([10,30])
 #pNames.append('cmdtimewin'); pRanges.append([50,150])
 #pNames.append('explorMovsFactor'); pRanges.append([1,10])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
@@ -155,10 +155,10 @@ def parallel_evaluation_pbs(candidates, args):
     jobs_completed=0
     while jobs_completed < total_jobs:
         #print outfilestem
-        #print str(jobs_completed)+" / "+str(total_jobs)+" jobs completed"
+        print str(jobs_completed)+" / "+str(total_jobs)+" jobs completed"
         unfinished = [[(i,j) for j,y in enumerate(x) if y is None] for i, x in enumerate(targetFitness)]
         unfinished = [item for sublist in unfinished for item in sublist]
-        #print "unfinished:"+str(unfinished)
+        print "unfinished:"+str(unfinished)
         for (itarget,icand) in unfinished:
             # load error from file
             try:
@@ -325,16 +325,14 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
         ea = inspyred.ec.GA(prng)
         ea.terminator = inspyred.ec.terminators.evaluation_termination
         ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
-        final_pop = ea.evolve(generator=problem.generator,
-                          evaluator=pparallel_evaluation_pbs,
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                          evaluator=parallel_evaluation_pbs,
                           pop_size=pop_size,
                           bounder=bound_params,
                           maximize=False,
                           max_evaluations=max_evaluations,
                           max_generations=max_generations,
                           num_inputs=num_inputs,
-                          maximize=False,
-                          bounder=problem.bounder,
                           num_elites=num_elites,
                           simdatadir=simdatadir,
                           statistics_file=statfile,
@@ -399,12 +397,12 @@ if __name__ == '__main__':
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)    
 
-    # run multiple islands
+    # run single population or multiple islands
+    rand_seed = int(time())
     if num_islands == 1:
-
+        create_island(rand_seed, 1, [], simdatadir, max_evaluations, max_generations, num_inputs, mutation_rate, crossover, pop_size, num_elites)
     else:
         mp_migrator = MultiprocessingMigratorNoBlock(max_migrants, migration_interval)
-        rand_seed = int(time())
         jobs = []
         for i in range(num_islands):
             p = multiprocessing.Process(target=create_island, args=(rand_seed + i, i, mp_migrator, simdatadir, \

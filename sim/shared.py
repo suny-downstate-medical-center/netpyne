@@ -269,7 +269,7 @@ eligwin = 50 # length of RL eligibility window (ms) (Frem13=500ms)
 useRLexp = 1 # Use binary or exp decaying eligibility trace
 useRLsoft = 1 # Use soft thresholding 
 maxweight = 50 # Maximum synaptic weight
-timebetweensaves = 0.1*1e3 # How many ms between saving weights(can't be smaller than loopstep)
+timebetweensaves = 5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
 timeoflastsave = -inf # Never saved
 weightchanges = [] # to periodically store weigth changes
 

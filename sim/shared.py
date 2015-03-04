@@ -193,8 +193,8 @@ connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=2.0
-connweights[EB5,EDSC,AMPA]=0.01
-connweights[EB5,IDSC,AMPA]=0.01
+connweights[EB5,EDSC,AMPA]=2.0
+connweights[EB5,IDSC,AMPA]=1.0
 connweights[IDSC,EDSC,GABAA]=1.0 
 connweights[PMd,ER5,AMPA]=1.0
 
@@ -204,7 +204,7 @@ connweights[PMd,ER5,AMPA]=1.0
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 10*1e3 # duration of traininig phase, in ms
+trainTime = 20*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
@@ -301,7 +301,7 @@ targetDist = 0.15 # target distance from center (15 cm)
 initArmMovement = 100 # time after which to start moving arm (adds initial delay to avoid using initial burst of activity due to background noise init)
 motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
 motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
-cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
+cmdmaxrate = scale*20.0 # maximum spikes for motor command (normalizing value)
 cmdtimewin = 100 # spike time window for motor command (ms)
 antagInh = 0 # antagonist muscle inhibition
 # proprioceptive encoding
@@ -317,6 +317,7 @@ explorMovsFactor = 10 # max factor by which to multiply specific muscle groups t
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
 backgroundrateExplor = 1000 # rate for background input for exploratory movements (changed during sim)
 backgroundweightExplor = 5 # weight for background input for exploratory movements (fixed)
+backgroundnoiseExplor = 0.1 # Fractional noise in timing durin explor mov
 explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time during explor movs
 timeoflastexplor = -inf # time when last exploratory movement was updated
 

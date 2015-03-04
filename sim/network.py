@@ -493,6 +493,7 @@ def addBackground():
             elif s.cellnames[gid] == 'EB5':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+                backgroundsource.noise = s.backgroundnoiseExplor # Fractional noise in timing
             else:
                 backgroundsource = h.NetStim() # Create a NetStim
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms

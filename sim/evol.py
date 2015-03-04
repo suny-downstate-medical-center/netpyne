@@ -256,13 +256,16 @@ def setInitial(simdatadir):
 ###############################################################################
 def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluations, max_generations, \
     num_inputs, mutation_rate, crossover, pop_size, num_elites):   
-    # create folder       
-    simdatadir = simdatadir+'_island_'+str(i)
+    global num_islands
+
+    # create folder     
+    if num_islands > 1: 
+        simdatadir = simdatadir+'_island_'+str(i)
     mdir_str='mkdir %s' % (simdatadir)
     os.system(mdir_str) 
 
     # if individuals.csv already exists, continue from last generation
-    if os.path.isfile(simdatadir+'/individuals.csv!!!!!!'):
+    if os.path.isfile(simdatadir+'/individuals.csv'):
         initial_gen, initial_cs, initial_fit = setInitial(simdatadir)
     else:
         initial_gen=0
@@ -280,44 +283,48 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     prng = Random()
     prng.seed(my_seed) 
 
-    # custom evolutionary algorithm based on Krichmar's params:
-    # Ten SNN configurations ran in parallel. To evolve V1 simple cell responses, 
-    # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
-    # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50% crossover. 
-    # Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the worst fitness 
-    # individual of the offspring population with the best fitness individual of the parent population. 
 
-    ea = inspyred.ec.EvolutionaryComputation(prng)
-    ea.selector = inspyred.ec.selectors.tournament_selection
-    ea.variator = [inspyred.ec.variators.uniform_crossover, 
-                   inspyred.ec.variators.gaussian_mutation]
-    ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
-    #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
-    ea.terminator = inspyred.ec.terminators.generation_termination
-    ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
-    ea.migrator = mp_migrator
+    if evolAlgorithm == 'krichmarCustom':
+        # custom evolutionary algorithm based on Krichmar's params:
+        # Ten SNN configurations ran in parallel. To evolve V1 simple cell responses, 
+        # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
+        # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50% crossover. 
+        # Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the worst fitness 
+        # individual of the offspring population with the best fitness individual of the parent population. 
 
-    final_pop = ea.evolve(generator=generate_rastrigin, 
-                          evaluator=parallel_evaluation_pbs,
-                          pop_size=pop_size, 
-                          bounder=bound_params,
-                          maximize=False,
-                          max_evaluations=max_evaluations,
-                          max_generations=max_generations,
-                          num_inputs=num_inputs,
-                          mutation_rate=mutation_rate,
-                          crossover=crossover,
-                          tournament_size=2,
-                          num_selected=pop_size,
-                          num_elites=num_elites,
-                          simdatadir=simdatadir,
-                          statistics_file=statfile,
-                          individuals_file=indifile,
-                          evaluate_migrant=False,
-                          initial_gen=initial_gen,
-                          initial_cs=initial_cs,
-                          initial_fit=initial_fit)
+        ea = inspyred.ec.EvolutionaryComputation(prng)
+        ea.selector = inspyred.ec.selectors.tournament_selection
+        ea.variator = [inspyred.ec.variators.uniform_crossover, 
+                       inspyred.ec.variators.gaussian_mutation]
+        ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
+        #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        ea.migrator = mp_migrator
+
+        final_pop = ea.evolve(generator=generate_rastrigin, 
+                              evaluator=parallel_evaluation_pbs,
+                              pop_size=pop_size, 
+                              bounder=bound_params,
+                              maximize=False,
+                              max_evaluations=max_evaluations,
+                              max_generations=max_generations,
+                              num_inputs=num_inputs,
+                              mutation_rate=mutation_rate,
+                              crossover=crossover,
+                              tournament_size=2,
+                              num_selected=pop_size,
+                              num_elites=num_elites,
+                              simdatadir=simdatadir,
+                              statistics_file=statfile,
+                              individuals_file=indifile,
+                              evaluate_migrant=False,
+                              initial_gen=initial_gen,
+                              initial_cs=initial_cs,
+                              initial_fit=initial_fit)
     
+    elif evolAlgorithm == 'krichmarCustom':
+
     if display:
         best = max(final_pop) 
         print('Best Solution: \n{0}'.format(str(best)))
@@ -343,13 +350,16 @@ if __name__ == '__main__':
     logger.addHandler(file_handler)    
 
     # run multiple islands
-    mp_migrator = MultiprocessingMigratorNoBlock(max_migrants, migration_interval)
-    rand_seed = int(time())
-    jobs = []
-    for i in range(num_islands):
-        p = multiprocessing.Process(target=create_island, args=(rand_seed + i, i, mp_migrator, simdatadir, \
-         max_evaluations, max_generations, num_inputs, mutation_rate, crossover, pop_size, num_elites))
-        p.start()
-        jobs.append(p)
-    for j in jobs:
-        j.join()
+    if num_islands == 1:
+
+    else:
+        mp_migrator = MultiprocessingMigratorNoBlock(max_migrants, migration_interval)
+        rand_seed = int(time())
+        jobs = []
+        for i in range(num_islands):
+            p = multiprocessing.Process(target=create_island, args=(rand_seed + i, i, mp_migrator, simdatadir, \
+             max_evaluations, max_generations, num_inputs, mutation_rate, crossover, pop_size, num_elites))
+            p.start()
+            jobs.append(p)
+        for j in jobs:
+            j.join()

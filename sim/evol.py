@@ -19,12 +19,13 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-simdatadir = '../data/15mar01_evol' # folder to save sim results
-num_islands = 10 # number of islands
+simdatadir = '../data/15mar04_evol' # folder to save sim results
+evolAlgorithm = 'genetic'
+num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
 max_migrants = 1 #
 migration_interval = 5
-pop_size = 10 # population size per island
+pop_size = 2 # population size per island
 num_elites = 1 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
@@ -35,9 +36,9 @@ targets_eval = [0,1] # center-out reaching target to evaluate
 # parameter names and ranges
 pNames = []
 pRanges = []
-pNames.append('trainTime'); pRanges.append([30*1e3,180*1e3]) #int
+pNames.append('trainTime'); pRanges.append([20*1e3,150*1e3]) #int
 pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
-pNames.append('stdpFactor'); pRanges.append([0,1])
+#pNames.append('stdpFactor'); pRanges.append([0,1])
 pNames.append('RLfactor'); pRanges.append([2,15])
 #pNames.append('stdpwin'); pRanges.append([10,30])
 pNames.append('eligwin'); pRanges.append([50,150])
@@ -47,7 +48,7 @@ pNames.append('backgroundrate'); pRanges.append([50,200])
 pNames.append('backgroundrateExplor'); pRanges.append([500,2000])
 #pNames.append('minRLerror'); pRanges.append([0.0,0.01])
 pNames.append('cmdmaxrate'); pRanges.append([5,20])
-pNames.append('cmdtimewin'); pRanges.append([50,150])
+#pNames.append('cmdtimewin'); pRanges.append([50,150])
 #pNames.append('explorMovsFactor'); pRanges.append([1,10])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
 
@@ -265,7 +266,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     os.system(mdir_str) 
 
     # if individuals.csv already exists, continue from last generation
-    if os.path.isfile(simdatadir+'/individuals.csv'):
+    if os.path.isfile(simdatadir+'/individuals.csv !!'): # disabled by adding '!!'
         initial_gen, initial_cs, initial_fit = setInitial(simdatadir)
     else:
         initial_gen=0
@@ -284,13 +285,12 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     prng.seed(my_seed) 
 
 
+    # Custom algorithm based on Krichmar's params
     if evolAlgorithm == 'krichmarCustom':
-        # custom evolutionary algorithm based on Krichmar's params:
-        # Ten SNN configurations ran in parallel. To evolve V1 simple cell responses, 
         # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
-        # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50% crossover. 
-        # Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the worst fitness 
-        # individual of the offspring population with the best fitness individual of the parent population. 
+        # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50%
+        # crossover. Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the 
+        # worst fitness individual of the offspring population with the best fitness individual of the parent population. 
 
         ea = inspyred.ec.EvolutionaryComputation(prng)
         ea.selector = inspyred.ec.selectors.tournament_selection
@@ -298,9 +298,6 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                        inspyred.ec.variators.gaussian_mutation]
         ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
         #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
-        ea.terminator = inspyred.ec.terminators.generation_termination
-        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
-        ea.migrator = mp_migrator
 
         final_pop = ea.evolve(generator=generate_rastrigin, 
                               evaluator=parallel_evaluation_pbs,
@@ -323,7 +320,60 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                               initial_cs=initial_cs,
                               initial_fit=initial_fit)
     
-    elif evolAlgorithm == 'krichmarCustom':
+    # Genetic
+    elif evolAlgorithm == 'genetic':
+        ea = inspyred.ec.GA(prng)
+        ea.terminator = inspyred.ec.terminators.evaluation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        final_pop = ea.evolve(generator=problem.generator,
+                          evaluator=pparallel_evaluation_pbs,
+                          pop_size=pop_size,
+                          bounder=bound_params,
+                          maximize=False,
+                          max_evaluations=max_evaluations,
+                          max_generations=max_generations,
+                          num_inputs=num_inputs,
+                          maximize=False,
+                          bounder=problem.bounder,
+                          num_elites=num_elites,
+                          simdatadir=simdatadir,
+                          statistics_file=statfile,
+                          individuals_file=indifile)
+
+    # Evolution Strategy
+    elif evolAlgorithm == 'evolutionStrategy':
+        ea = inspyred.ec.ES(prng)
+        final_pop = ea.evolve(generator=generate_rastrigin, 
+                              evaluator=parallel_evaluation_pbs,
+                              pop_size=10, 
+                              bounder=bound_params,
+                              maximize=False,
+                              max_evaluations=10000,
+                              max_generations=1000,
+                              num_inputs=16,
+                              simdatadir=simdatadir,
+                              statistics_file=statfile,
+                              individuals_file=indifile,
+                              evaluate_migrant=False,
+                              initial_gen=initial_gen,
+                              initial_cs=initial_cs,
+                              initial_fit=initial_fit)
+
+
+# - genetic 
+# - evolution strategy
+# - simulated annealing
+# - differential evolution
+# - Estimation of Distribution 
+# - particle swarm optimization
+# - ant colony optimization
+
+
+    # common to all algorithms
+    ea.terminator = inspyred.ec.terminators.generation_termination
+    ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+    if num_islands > 1: ea.migrator = mp_migrator
+
 
     if display:
         best = max(final_pop) 

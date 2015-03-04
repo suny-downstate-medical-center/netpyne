@@ -57,11 +57,11 @@ def runTrainTest():
 
     s.plotraster = 1 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 1
+    s.plotweightchanges = 0
     s.plot3darch = 0
-    s.graphsArm = 1
+    s.graphsArm = 0
     s.savemat = 0 # save data during testing
-    s.armMinimalSave = 0 # save only arm related data
+    s.armMinimalSave = 1 # save only arm related data
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -91,8 +91,8 @@ def runTrainTest():
     setupSim()
     runSim()
     finalizeSim()
-    saveData()
-    plotData()
+    #saveData()
+    #plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP
@@ -104,8 +104,8 @@ def runTrainTest():
     setupSim()
     runSim()
     finalizeSim()
-    #saveData()
-    plotData()
+    saveData()
+    #plotData()
 
     if s.rank == 0: # save error to file
         error = mean(s.arm.errorAll)

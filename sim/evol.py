@@ -19,8 +19,9 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-simdatadir = '../data/15mar04_evol' # folder to save sim results
-evolAlgorithm = 'genetic'
+evolAlgorithm = 'krichmarCustom'#'genetic'
+simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
+
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
 max_migrants = 1 #

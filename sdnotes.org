@@ -1606,6 +1606,23 @@ summary:     prepared for 15mar01_evol - debug
 debugged 15feb21
 explor movs using E5B noise
 
+* 15mar04 sim - 2 targets (single), 1k neurons, dummyArm - testing different algorithms  :results:
+** changeset
+** description
+debugged 15mar01
+explor moves via EDSC+IDSC
+reduced num params being optim
+testing different optim methods from inspyred
+** results
+*** genetic 
+*** evolution strategy
+*** simulated annealing
+*** differential evolution
+*** Estimation of Distribution 
+*** particle swarm optimization
+*** ant colony optimization
+
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

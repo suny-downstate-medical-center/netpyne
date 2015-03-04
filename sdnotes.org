@@ -1607,7 +1607,20 @@ debugged 15feb21
 explor movs using E5B noise
 
 * 15mar04 sim - 2 targets (single), 1k neurons, dummyArm - testing different algorithms  :results:
-** changeset
+** changesets
+*** genetic
+changeset:   129:f3d6287f5a3d
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Wed Mar 04 01:12:08 2015 -0500
+summary:     prepared for 15mar04_sim
+*** krichmarEvol
+changeset:   130:d525bfa9242b
+tag:         tip
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Wed Mar 04 10:47:18 2015 -0500
+summary:     prepared for 15mar04_sim_krichmarEvol
+
+
 ** description
 debugged 15mar01
 explor moves via EDSC+IDSC
@@ -1615,6 +1628,10 @@ reduced num params being optim
 testing different optim methods from inspyred
 ** results
 *** genetic 
+0, 2, 0.300133783635, 0.146268855105, 0.22320131937, 0.22320131937, 0.0769324642647
+50, 2, 0.20004290363, 0.146268855105, 0.173155879368, 0.173155879368, 0.0268870242623
+80, 2, 0.20004290363, 0.146268855105, 0.173155879368, 0.173155879368, 0.0268870242623
+*** krichmarEvol
 *** evolution strategy
 *** simulated annealing
 *** differential evolution

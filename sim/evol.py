@@ -299,7 +299,8 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                        inspyred.ec.variators.gaussian_mutation]
         ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
         #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
-
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
         final_pop = ea.evolve(generator=generate_rastrigin, 
                               evaluator=parallel_evaluation_pbs,
                               pop_size=pop_size, 
@@ -342,6 +343,8 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     # Evolution Strategy
     elif evolAlgorithm == 'evolutionStrategy':
         ea = inspyred.ec.ES(prng)
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
         final_pop = ea.evolve(generator=generate_rastrigin, 
                               evaluator=parallel_evaluation_pbs,
                               pop_size=10, 
@@ -369,14 +372,11 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # common to all algorithms
-    ea.terminator = inspyred.ec.terminators.generation_termination
-    ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+    
     if num_islands > 1: ea.migrator = mp_migrator
 
-
-    if display:
-        best = max(final_pop) 
-        print('Best Solution: \n{0}'.format(str(best)))
+    best = max(final_pop) 
+    print('Best Solution: \n{0}'.format(str(best)))
 
     return ea
 

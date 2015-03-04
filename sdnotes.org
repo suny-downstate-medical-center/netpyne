@@ -1257,6 +1257,8 @@ perform varied exploratory movements.
 -- maybe becasue each IDSC inhibits a single EDSC unit and that unit may not be the one active -- should inhibit all units of
 antagonistic pop -- yes, that worked
 
+- Works well wehn use exploratory movement directly in ESDC -- but had to set noise to 0 so all neurons were recruited!!
+  [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150303_215937.png][fig]]
 
 
 

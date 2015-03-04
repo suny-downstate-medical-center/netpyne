@@ -489,6 +489,7 @@ def addBackground():
             if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+                backgroundsource.noise = 0 # Fractional noise in timing
             elif s.cellnames[gid] == 'EB5':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
@@ -496,8 +497,8 @@ def addBackground():
                 backgroundsource = h.NetStim() # Create a NetStim
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
                 backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
+                backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
             backgroundsource.number = s.backgroundnumber # Number of spikes
-            backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
             s.backgroundsources.append(backgroundsource) # Save this NetStim
             s.backgroundgid.append(gid) # append cell gid associated to this netstim
             

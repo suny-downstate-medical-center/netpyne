@@ -193,8 +193,8 @@ connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=2.0
-connweights[EB5,EDSC,AMPA]=4.0
-connweights[EB5,IDSC,AMPA]=0.5
+connweights[EB5,EDSC,AMPA]=0.01
+connweights[EB5,IDSC,AMPA]=0.01
 connweights[IDSC,EDSC,GABAA]=1.0 
 connweights[PMd,ER5,AMPA]=1.0
 
@@ -298,7 +298,7 @@ nMuscles = 4 # number of muscles
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
-initArmMovement = 200 # time after which to start moving arm (adds initial delay to avoid using initial burst of activity due to background noise init)
+initArmMovement = 100 # time after which to start moving arm (adds initial delay to avoid using initial burst of activity due to background noise init)
 motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
 motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
 cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
@@ -314,9 +314,9 @@ maxPrate = 200 # firing rate when angle within range
 # exploratory movements
 explorMovs = 0 # exploratory movements; 1 = noise to EDSC+IDSC; 2 = noise to E5B
 explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs (only used if explorMovs=1)
-explorMovsDur = 2000 # max duration of each excitation to each muscle during exploratory movments
-backgroundrateExplor = 3000 # rate for background input for exploratory movements (changed during sim)
-backgroundweightExplor = 10 # weight for background input for exploratory movements (fixed)
+explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
+backgroundrateExplor = 1000 # rate for background input for exploratory movements (changed during sim)
+backgroundweightExplor = 5 # weight for background input for exploratory movements (fixed)
 explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time during explor movs
 timeoflastexplor = -inf # time when last exploratory movement was updated
 

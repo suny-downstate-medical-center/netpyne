@@ -1234,6 +1234,39 @@ causes relaxation of the other muscles.[9][10][11][12]
 Added IDSC
 E5B->IDSC = E5B->EDSC
 IDSC->EDSC = antagonistic muscle
+*** playing with params
+-Aim is to excite subsets of E5B that excite EDSC+IDSC and activate different muscles (+inhibit antagonistic muscle) to
+perform varied exploratory movements.
+
+- One issue is that each E5B neuron projects to different muscles so there is coactivation and little movement.
+-- exciting only 2 E5B neuron at a time seems to produce better results. eg. one E5B excites 2 IDSC of ext+flex, so both EDSC
+-- will be inhibited
+-- maybe can generate random list without repetition so chance to excite all
+
+- Other issue is that oscillatory activity seems to dominate E5B and thus EDSC 
+-- if disconnect E5R->E5B and E2R->E5B works better
+-- to avoid, increased E5B->DSC background weight to backgroundWeightExplor = 10 and backgroundrateExplor = 3000
+
+- Also EDSC pyramidal neurons slower to respond to E5B input (if replace with inh FS, response is faster)
+-- increased connweights[EB5,EDSC,AMPA]=8.0 compared to connweights[EB5,IDSC,AMPA]=3.0
+
+- Initial burst of excitatory activity due to transitory regime (delay E5B->IDSC->EDSC)
+-- start moving arm only 100 ms after onset
+
+- Inhibition IDSC->EDSC not working 
+-- maybe becasue each IDSC inhibits a single EDSC unit and that unit may not be the one active -- should inhibit all units of
+antagonistic pop -- yes, that worked
+
+
+
+
+backgroundrateExplor = 3000 # weight for background input for exploratory movements
+backgroundweightExplor = 10 # weight for background input for exploratory movements (fixed)
+explorCellsFraction = 0.1 # fraction of E5B cells to be actiavated at a time during explor movs
+connweights[EB5,EDSC,AMPA]=8.0
+connweights[EB5,IDSC,AMPA]=3.0
+connweights[IDSC,EDSC,GABAA]=4.0 
+
 * 15feb23 PMd data and decoders
 ** Austin - Kernel method (60% 8 targets)
 *** chat with Adi

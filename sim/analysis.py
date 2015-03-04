@@ -155,7 +155,6 @@ def plotmotorpopchanges():
             Iwpost = []
             IwpreSum = []
             IwpostSum = [] 
-        print s.motorCmdCellRange
         for imus in range(len(s.motorCmdCellRange)):
             Ewpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
             Ewpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
@@ -169,10 +168,6 @@ def plotmotorpopchanges():
                 Iwpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in motorInhCellRange])
                 IwpreSum.append(sum(Iwpre[imus]))
                 IwpostSum.append(sum(Iwpost[imus]))
-                print motorInhCellRange
-
-        print 'E imus=',imus,':',Ewpre
-        print '\nI imus=',imus,':',Iwpre
 
         print '\ninitial E weights: ',EwpreSum
         print 'final E weigths: ',EwpostSum

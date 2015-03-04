@@ -139,7 +139,7 @@ connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
 connprobs[ASC,ER2]=0.6
-connprobs[EB5,EDSC]=2.0 #0.6
+connprobs[EB5,EDSC]=1.0 #0.6
 connprobs[EB5,IDSC]=0.0 # hard-wire so receives same input as EB5->EDSC 
 connprobs[IDSC,EDSC]=0.0 # hard-wire so projects to antagonist muscle subpopulation
 connprobs[PMd,ER5]=0.6
@@ -192,9 +192,9 @@ connweights[IL6,IF6,GABAB]=1.5
 connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
-connweights[ASC,ER2,AMPA]=4.0
-connweights[EB5,EDSC,AMPA]=1.0
-connweights[EB5,IDSC,AMPA]=1.0 
+connweights[ASC,ER2,AMPA]=2.0
+connweights[EB5,EDSC,AMPA]=4.0
+connweights[EB5,IDSC,AMPA]=0.5
 connweights[IDSC,EDSC,GABAA]=1.0 
 connweights[PMd,ER5,AMPA]=1.0
 
@@ -210,7 +210,7 @@ duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 5000 # How frequently to update progress, in ms
-randseed = 0 # Random seed to use
+randseed = 1 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
 
 
@@ -280,11 +280,10 @@ trainBackground = 50 # background input for training phase
 testBackground = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
-backgroundrateExplor = 1000 # weight for background input for exploratory movements
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
-backgroundweightExplor = 10 # weight for background input for exploratory movements
+
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 
@@ -292,7 +291,6 @@ backgroundreceptor = NMDA # Which receptor to stimulate
 useArm =  'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
 animArm = False # shows arm animation
 graphsArm = False # shows graphs (arm trajectory etc) when finisheds
-
 targetid = 0 # initial target 
 minRLerror = 0.002 # minimum error change for RL (m)
 armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
@@ -300,10 +298,12 @@ nMuscles = 4 # number of muscles
 startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 targetDist = 0.15 # target distance from center (15 cm)
 # motor command encoding
+initArmMovement = 200 # time after which to start moving arm (adds initial delay to avoid using initial burst of activity due to background noise init)
 motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
 motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
 cmdmaxrate = scale*10.0 # maximum spikes for motor command (normalizing value)
 cmdtimewin = 100 # spike time window for motor command (ms)
+antagInh = 0 # antagonist muscle inhibition
 # proprioceptive encoding
 pStart = popGidStart[ASC] 
 numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
@@ -311,10 +311,13 @@ minPval = radians(-30) # min angle to encode
 maxPval = radians(135) # max angle to encode
 minPrate = 0.1 # firing rate when angle not within range
 maxPrate = 200 # firing rate when angle within range
-antagInh = 0 # antagonist muscle inhibition
-explorMovs = 0 # exploratory movements
-explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs
-explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
+# exploratory movements
+explorMovs = 0 # exploratory movements; 1 = noise to EDSC+IDSC; 2 = noise to E5B
+explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs (only used if explorMovs=1)
+explorMovsDur = 2000 # max duration of each excitation to each muscle during exploratory movments
+backgroundrateExplor = 3000 # rate for background input for exploratory movements (changed during sim)
+backgroundweightExplor = 10 # weight for background input for exploratory movements (fixed)
+explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time during explor movs
 timeoflastexplor = -inf # time when last exploratory movement was updated
 
 

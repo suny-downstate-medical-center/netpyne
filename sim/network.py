@@ -26,7 +26,7 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, append
+from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
@@ -59,7 +59,7 @@ def runTrainTest():
     s.plotconn = 0
     s.plotweightchanges = 1
     s.plot3darch = 0
-    s.graphsArm = 0
+    s.graphsArm = 1
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 
@@ -84,7 +84,7 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.explorMovs = 2 # enable exploratory movements
+    s.explorMovs = 1 # enable exploratory movements
     s.antagInh = 0 # enable exploratory movements
     s.duration = s.trainTime # train time
 
@@ -332,17 +332,12 @@ def createNetwork():
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
             EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
-            print 'saving EDSCpre:',EDSCpre[-1]
-            subpopLen = len(s.motorCmdCellRange[0]) # motor subpop length
-            if gid in s.motorCmdCellRange[0] or gid in s.motorCmdCellRange[2]: # sh ext or el ext
-                IDSCpre = s.popGidStart[s.IDSC] + (gid - s.popGidStart[s.EDSC]) + subpopLen # presynaptic from sh flex or el flex (antagonistic)
-            if gid in s.motorCmdCellRange[1] or gid in s.motorCmdCellRange[3]: # sh flex or el flex
-                IDSCpre = s.popGidStart[s.IDSC] + (gid - s.popGidStart[s.EDSC]) - subpopLen # presynaptic from sh ext or el ext (antagonistic)
-            print 'IDSCpre:',IDSCpre
-            append(preids, IDSCpre) # add IDSC presynaptic input to EDSC 
+            #subpopLen = len(s.motorCmdCellRange[0]) # motor subpop length
+            invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
+            IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
+            preids=concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
         elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
             preids = array(EDSCpre.pop(0))
-            print 'loading EDSCpre:',preids
         postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
         s.conndata[0].append(preids) # Append pre-cell ID
         s.conndata[1].append(postids) # Append post-cell ID
@@ -508,7 +503,7 @@ def addBackground():
             
             backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
+            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC' or s.cellnames[gid] == 'EB5':
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC background input
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation

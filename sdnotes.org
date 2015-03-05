@@ -1652,9 +1652,13 @@ testing different optim methods from inspyred
 
 97, 2, 0.120482750696, 0.120428230984, 0.12045549084, 0.12045549084, 2.72598558803e-05
 *** simulated annealing
-Note: not parallelize; population size = 1
+Note: population size is fixed to 1
 *** differential evolution
+Note: population size is fixed to 2
+0, 2, 0.302776430427, 0.148740419821, 0.225758425124, 0.225758425124, 0.0770180053034
+50, 2, 0.361121064674, 0.215502442399, 0.288311753537, 0.288311753537, 0.0728093111373
 *** Estimation of Distribution 
+
 *** particle swarm optimization
 *** ant colony optimization
 

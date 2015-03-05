@@ -1626,7 +1626,12 @@ tag:         tip
 user:        Salvador Dura <salvadordura@gmail.com>
 date:        Wed Mar 04 22:27:27 2015 -0500
 summary:     15mar04_sim evolutionStrategy
-
+*** simulatedAnnealing
+changeset:   133:dfce13a74937
+tag:         tip
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Thu Mar 05 11:42:16 2015 -0500
+summary:     15mar04 simulatedAnnealing
 ** description
 debugged 15mar01
 explor moves via EDSC+IDSC
@@ -1647,7 +1652,7 @@ testing different optim methods from inspyred
 
 97, 2, 0.120482750696, 0.120428230984, 0.12045549084, 0.12045549084, 2.72598558803e-05
 *** simulated annealing
-
+Note: not parallelize; population size = 1
 *** differential evolution
 *** Estimation of Distribution 
 *** particle swarm optimization

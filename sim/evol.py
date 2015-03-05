@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'simulatedAnnealing' #'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands

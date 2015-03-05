@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'krichmarCustom'#'genetic'
+evolAlgorithm = 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -27,11 +27,11 @@ numproc = 4 # number of cores per job
 max_migrants = 1 #
 migration_interval = 5
 pop_size = 100 # population size per island
-num_elites = 1 
+num_elites = 1 # num of top individuals kept each generation - maybe set to pop_size/10? 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
-mutation_rate = 0.4
-crossover = 0.5
+mutation_rate = 0.4 # only for custom EC  
+crossover = 0.5 # only for custom EC
 targets_eval = [0,1] # center-out reaching target to evaluate
 
 # parameter names and ranges
@@ -325,55 +325,144 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
     # Genetic
     elif evolAlgorithm == 'genetic':
         ea = inspyred.ec.GA(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.evaluation_termination
         ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
         final_pop = ea.evolve(generator=generate_rastrigin,
-                          evaluator=parallel_evaluation_pbs,
-                          pop_size=pop_size,
-                          bounder=bound_params,
-                          maximize=False,
-                          max_evaluations=max_evaluations,
-                          max_generations=max_generations,
-                          num_inputs=num_inputs,
-                          num_elites=num_elites,
-                          simdatadir=simdatadir,
-                          statistics_file=statfile,
-                          individuals_file=indifile)
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            num_elites=num_elites,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile)
 
     # Evolution Strategy
     elif evolAlgorithm == 'evolutionStrategy':
         ea = inspyred.ec.ES(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
         ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
         final_pop = ea.evolve(generator=generate_rastrigin, 
-                              evaluator=parallel_evaluation_pbs,
-                              pop_size=10, 
-                              bounder=bound_params,
-                              maximize=False,
-                              max_evaluations=10000,
-                              max_generations=1000,
-                              num_inputs=16,
-                              simdatadir=simdatadir,
-                              statistics_file=statfile,
-                              individuals_file=indifile,
-                              evaluate_migrant=False,
-                              initial_gen=initial_gen,
-                              initial_cs=initial_cs,
-                              initial_fit=initial_fit)
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            num_elites=num_elites,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile,
+                            initial_gen=initial_gen,
+                            initial_cs=initial_cs,
+                            initial_fit=initial_fit)
+
+    # Simulated Annealing
+    elif evolAlgorithm == 'simulatedAnnealing':
+        ea = inspyred.ec.SA(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            num_elites=num_elites,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile)
+
+    # Differential Evolution
+    elif evolAlgorithm == 'diffEvolution':
+        ea = inspyred.ec.DEA(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            num_elites=num_elites,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile)
+
+    # Estimation of Distribution
+    elif evolAlgorithm == 'estimationDist':
+        ea = inspyred.ec.EDA(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            num_elites=num_elites,
+                            num_selected=pop_size/2,
+                            num_offspring=pop_size,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile)
 
 
-# - genetic 
-# - evolution strategy
-# - simulated annealing
-# - differential evolution
-# - Estimation of Distribution 
-# - particle swarm optimization
-# - ant colony optimization
+    # Particle Swarm optimization
+    elif evolAlgorithm == 'particleSwarm':
+        ea = inspyred.swarm.PSO(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        ea.topology = inspyred.swarm.topologies.ring_topology
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile,
+                            neighborhood_size=5)
+
+    # Ant colony optimization
+    elif evolAlgorithm == 'antColony':
+        ea = inspyred.swarm.ACS(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        ea.topology = inspyred.swarm.topologies.ring_topology
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile)
 
 
-    # common to all algorithms
-    
-    if num_islands > 1: ea.migrator = mp_migrator
 
     best = max(final_pop) 
     print('Best Solution: \n{0}'.format(str(best)))

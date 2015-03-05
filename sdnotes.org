@@ -1620,6 +1620,7 @@ user:        Salvador Dura <salvadordura@gmail.com>
 date:        Wed Mar 04 10:47:18 2015 -0500
 summary:     prepared for 15mar04_sim_krichmarEvol
 
+*** evolutionStrategy
 
 ** description
 debugged 15mar01
@@ -1632,7 +1633,8 @@ testing different optim methods from inspyred
 50, 2, 0.20004290363, 0.146268855105, 0.173155879368, 0.173155879368, 0.0268870242623
 80, 2, 0.20004290363, 0.146268855105, 0.173155879368, 0.173155879368, 0.0268870242623
 *** krichmarEvol
-*** evolution strategy
+
+*** evolutionStrategy
 *** simulated annealing
 *** differential evolution
 *** Estimation of Distribution 
@@ -1676,7 +1678,7 @@ proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to 
 *** DONE Check why target not plot in test phase!!!
 - targetid wasn't being setup
 *** DONE Reproducibility - use same random seeds
-*** TODO add inhibitory spinal cord pop (IDSC)
+*** DONE add inhibitory spinal cord pop (IDSC)
 *** DONE make exploratory movements by increasing E5B noise
 *** TODO setup evol alg - find params for 1k cells, 1 target, dummy arm 
 ** TODO Test that can learn multiple targets with artificial PMd input
@@ -1689,7 +1691,8 @@ proprioception to L2/3? and SPI to spinal cord interneurons; use spinal cord to 
 noise for each of the targets 
 ** TODO Use evol alg to find optimum set of params (first with dummyArm, the musculoskel arm) - 5 Mar
 *** TODO Perform short comparison of different types of algos in inspyred:
-- genetic 
+- Krichmar custom - done
+- genetic - done
 - evolution strategy
 - simulated annealing
 - differential evolution

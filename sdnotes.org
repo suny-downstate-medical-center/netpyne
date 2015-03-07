@@ -1672,10 +1672,15 @@ Changed num_selected to 100
 *** Estimation of Distribution 
 0, 2, 0.291259623486, 0.144390895694, 0.21782525959, 0.21782525959, 0.0734343638961
 35, 2, 0.16158109519, 0.144390895694, 0.152985995442, 0.152985995442, 0.00859509974791
-*** particle swarm optimization (pop=2)
+*** particle swarm optimization (pop=2) 
 0, 2, 0.310104614953, 0.149800351062, 0.229952483008, 0.229952483008, 0.0801521319456
 48, 2, 0.265234153844, 0.125961663225, 0.195597908535, 0.195597908535, 0.0696362453097
 200, 2, 0.298458511621, 0.143756170165, 0.221107340893, 0.221107340893, 0.0773511707283
+*** particle swarm optimization (pop=100)  - FOUND BUG THAT COULD AFFECT ALL PREV RESULTS!
+
+**** BUG
+cand and target were wrong way around in parallel_eval (polling from file)
+
 *** ant colony optimization
 
 

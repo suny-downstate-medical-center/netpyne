@@ -120,6 +120,7 @@ def parallel_evaluation_pbs(candidates, args):
             with open('%s_params'% (outfilestem), 'w') as f: # save current candidate params to file 
                 pickle.dump(c, f)
             command = 'mpiexec -np %d nrniv -python -mpi main.py outfilestem="%s" targetid=%d'%(numproc, outfilestem, itarget) # set command to run
+            #c[0] = 1000 # temporarily set train time to 1 second to debug !!! 
             for iparam, param in enumerate(c): # add all param names and values dynamically
                 paramstring = ' %s=%r' % (pNames[iparam], param)
                 command += paramstring
@@ -144,6 +145,8 @@ def parallel_evaluation_pbs(candidates, args):
             input.write(job_string)
             input.close()
 
+            #os.system('screen '+command) # temporarily run commands to debug !!!
+
             # Print your job and the response to the screen
             print job_string
             #print output.read()+": "+command
@@ -151,7 +154,7 @@ def parallel_evaluation_pbs(candidates, args):
             sleep(0.1)
 
     #read results from file
-    targetFitness = [[None for j in range(len(candidates))] for i in targets_eval]
+    targetFitness = [[None for j in targets_eval] for i in range(len(candidates))]
     num_iters = 0
     jobs_completed=0
     while jobs_completed < total_jobs:
@@ -160,13 +163,13 @@ def parallel_evaluation_pbs(candidates, args):
         unfinished = [[(i,j) for j,y in enumerate(x) if y is None] for i, x in enumerate(targetFitness)]
         unfinished = [item for sublist in unfinished for item in sublist]
         print "unfinished:"+str(unfinished)
-        for (itarget,icand) in unfinished:
+        for (icand,itarget) in unfinished:
             # load error from file
             try:
                 outfilestem=simdatadir + "/gen_" + str(ngen) + "_cand_" + str(icand) + "_target_" + str(itarget) # set filename
                 with open('%s_error'% (outfilestem)) as f:
                     error=pickle.load(f)
-                    targetFitness[itarget][icand] = error
+                    targetFitness[icand][itarget] = error
                     jobs_completed+=1
                     print "icand:",icand," itarget:",itarget," error: "+str(error)
             except:
@@ -175,8 +178,8 @@ def parallel_evaluation_pbs(candidates, args):
         num_iters+=1
         if num_iters>=maxiter_wait: #or (num_iters>maxiter_wait/2 and jobs_completed>(0.95*total_jobs)): 
             print "max iterations reached -- remaining jobs set to default error"
-            for (itarget,icand) in unfinished:
-                targetFitness[itarget][icand] = default_error
+            for (icand,itarget) in unfinished:
+                targetFitness[icand][itarget] = default_error
                 jobs_completed+=1
         sleep(2) # sleep 2 seconds before checking agains
     print targetFitness
@@ -312,7 +315,8 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                               mutation_rate=mutation_rate,
                               crossover=crossover,
                               tournament_size=2,
-                              num_selected=pop_size,
+                              num_selected=pop_size/2,
+                              num_offspring=pop_size,
                               num_elites=num_elites,
                               simdatadir=simdatadir,
                               statistics_file=statfile,
@@ -425,7 +429,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Particle Swarm optimization
-    elif evolAlgorithm == 'particleSwarm100':
+    elif evolAlgorithm == 'particleSwarm':
         ea = inspyred.swarm.PSO(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
@@ -437,6 +441,28 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             num_offspring=pop_size,
                             num_selected=pop_size/2,
                             bounder=bound_params,
+                            maximize=False,
+                            max_evaluations=max_evaluations,
+                            max_generations=max_generations,
+                            num_inputs=num_inputs,
+                            simdatadir=simdatadir,
+                            statistics_file=statfile,
+                            individuals_file=indifile,
+                            neighborhood_size=5)
+
+
+
+    # Particle Swarm optimization
+    elif evolAlgorithm == 'particleSwarm100':
+        ea = inspyred.swarm.PSO(prng)
+        if num_islands > 1: ea.migrator = mp_migrator
+        ea.terminator = inspyred.ec.terminators.generation_termination
+        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+        ea.topology = inspyred.swarm.topologies.ring_topology
+        final_pop = ea.evolve(generator=generate_rastrigin,
+                            evaluator=parallel_evaluation_pbs,
+                            pop_size=pop_size,
+                            num_offspring=pop_size,
                             maximize=False,
                             max_evaluations=max_evaluations,
                             max_generations=max_generations,

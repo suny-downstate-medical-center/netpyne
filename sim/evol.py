@@ -435,7 +435,6 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             evaluator=parallel_evaluation_pbs,
                             pop_size=pop_size,
                             num_offspring=pop_size,
-                            num_selected=pop_size/2,
                             bounder=bound_params,
                             maximize=False,
                             max_evaluations=max_evaluations,

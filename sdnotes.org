@@ -1735,7 +1735,7 @@ noise for each of the targets
 - differential evolution
 - Estimation of Distribution 
 - particle swarm optimization
-- ant colony optimization
+- ant colony optimization 
 
 ** TODO Test real-time with 10k cells, PMd input and virtual arm using BMI in HPC - 10 Mar
 ** TODO Prepare final demo video - 20 Mar

@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'particleSwarm'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -434,6 +434,8 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
         final_pop = ea.evolve(generator=generate_rastrigin,
                             evaluator=parallel_evaluation_pbs,
                             pop_size=pop_size,
+                            num_offspring=pop_size,
+                            num_selected=pop_size/2,
                             bounder=bound_params,
                             maximize=False,
                             max_evaluations=max_evaluations,

@@ -425,7 +425,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Particle Swarm optimization
-    elif evolAlgorithm == 'particleSwarm':
+    elif evolAlgorithm == 'particleSwarm100':
         ea = inspyred.swarm.PSO(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
@@ -435,6 +435,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             evaluator=parallel_evaluation_pbs,
                             pop_size=pop_size,
                             num_offspring=pop_size,
+                            num_selected=pop_size/2,
                             bounder=bound_params,
                             maximize=False,
                             max_evaluations=max_evaluations,

@@ -1632,6 +1632,12 @@ tag:         tip
 user:        Salvador Dura <salvadordura@gmail.com>
 date:        Thu Mar 05 11:42:16 2015 -0500
 summary:     15mar04 simulatedAnnealing
+*** diffEvolution
+changeset:   135:ce27a7a92f0f
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Thu Mar 05 17:12:15 2015 -0500
+summary:     15mar04 diffEvolution
+
 ** description
 debugged 15mar01
 explor moves via EDSC+IDSC
@@ -1660,13 +1666,14 @@ Note: population size is fixed to 1
 Note: population size was 2
 0, 2, 0.302776430427, 0.148740419821, 0.225758425124, 0.225758425124, 0.0770180053034
 50, 2, 0.361121064674, 0.215502442399, 0.288311753537, 0.288311753537, 0.0728093111373
-
 Changed num_selected to 100
 0, 2, 0.302776430427, 0.148740419821, 0.225758425124, 0.225758425124, 0.0770180053034
 35, 2, 0.378108681455, 0.190169327724, 0.28413900459, 0.28413900459, 0.0939696768656
 *** Estimation of Distribution 
-
+0, 2, 0.291259623486, 0.144390895694, 0.21782525959, 0.21782525959, 0.0734343638961
+35, 2, 0.16158109519, 0.144390895694, 0.152985995442, 0.152985995442, 0.00859509974791
 *** particle swarm optimization
+
 *** ant colony optimization
 
 

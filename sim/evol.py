@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'genetic_2'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'krichmarCustom_2' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -290,7 +290,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Custom algorithm based on Krichmar's params
-    if evolAlgorithm == 'krichmarCustom':
+    if evolAlgorithm == 'krichmarCustom_2':
         # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
         # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50%
         # crossover. Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the 
@@ -327,7 +327,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                               initial_fit=initial_fit)
     
     # Genetic
-    elif evolAlgorithm == 'genetic_2':
+    elif evolAlgorithm == 'genetic':
         ea = inspyred.ec.GA(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.evaluation_termination

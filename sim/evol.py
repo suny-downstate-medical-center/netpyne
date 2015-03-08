@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'genetic_2'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -327,7 +327,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                               initial_fit=initial_fit)
     
     # Genetic
-    elif evolAlgorithm == 'genetic':
+    elif evolAlgorithm == 'genetic_2':
         ea = inspyred.ec.GA(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.evaluation_termination
@@ -430,30 +430,6 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
     # Particle Swarm optimization
     elif evolAlgorithm == 'particleSwarm':
-        ea = inspyred.swarm.PSO(prng)
-        if num_islands > 1: ea.migrator = mp_migrator
-        ea.terminator = inspyred.ec.terminators.generation_termination
-        ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
-        ea.topology = inspyred.swarm.topologies.ring_topology
-        final_pop = ea.evolve(generator=generate_rastrigin,
-                            evaluator=parallel_evaluation_pbs,
-                            pop_size=pop_size,
-                            num_offspring=pop_size,
-                            num_selected=pop_size/2,
-                            bounder=bound_params,
-                            maximize=False,
-                            max_evaluations=max_evaluations,
-                            max_generations=max_generations,
-                            num_inputs=num_inputs,
-                            simdatadir=simdatadir,
-                            statistics_file=statfile,
-                            individuals_file=indifile,
-                            neighborhood_size=5)
-
-
-
-    # Particle Swarm optimization
-    elif evolAlgorithm == 'particleSwarm100':
         ea = inspyred.swarm.PSO(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination

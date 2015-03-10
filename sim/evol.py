@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'evolutionStrategy_2' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'diffEvolution_2' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -345,7 +345,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             individuals_file=indifile)
 
     # Evolution Strategy
-    elif evolAlgorithm == 'evolutionStrategy_2':
+    elif evolAlgorithm == 'evolutionStrategy':
         ea = inspyred.ec.ES(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
@@ -386,7 +386,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             individuals_file=indifile)
 
     # Differential Evolution
-    elif evolAlgorithm == 'diffEvolution':
+    elif evolAlgorithm == 'diffEvolution_2':
         ea = inspyred.ec.DEA(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination

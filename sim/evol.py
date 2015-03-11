@@ -19,7 +19,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'antColony'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'estimationDist_2' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -406,7 +406,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             individuals_file=indifile)
 
     # Estimation of Distribution
-    elif evolAlgorithm == 'estimationDist':
+    elif evolAlgorithm == 'estimationDist_2':
         ea = inspyred.ec.EDA(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
@@ -420,7 +420,6 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             max_generations=max_generations,
                             num_inputs=num_inputs,
                             num_elites=num_elites,
-                            num_selected=pop_size/2,
                             num_offspring=pop_size,
                             simdatadir=simdatadir,
                             statistics_file=statfile,
@@ -428,7 +427,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Particle Swarm optimization
-    elif evolAlgorithm == 'particleSwarm_2':
+    elif evolAlgorithm == 'particleSwarm':
         ea = inspyred.swarm.PSO(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination
@@ -449,7 +448,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             individuals_file=indifile,
                             neighborhood_size=5)
 
-    # Ant colony optimization
+    # Ant colony optimization (requires components)
     elif evolAlgorithm == 'antColony':
         ea = inspyred.swarm.ACS(prng)
         if num_islands > 1: ea.migrator = mp_migrator

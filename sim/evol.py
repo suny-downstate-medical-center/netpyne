@@ -28,7 +28,7 @@ num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
 max_migrants = 1 #
 migration_interval = 5
-pop_size = 100 # population size per island
+pop_size = 2 # population size per island
 num_elites = 1 # num of top individuals kept each generation - maybe set to pop_size/10? 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
@@ -119,12 +119,14 @@ def nonuniform_bounds_mutation(random, candidate, args):
       values correspond to greater variation (default 1)
     
     """
-    bounder = args['_ec'].bounder
-    num_gens = args['_ec'].num_generations
+    #bounder = args['_ec'].bounder
+    #num_gens = args['_ec'].num_generations
+    lower_bound = [x[0] for x in pRanges]
+    upper_bound = [x[1] for x in pRanges]
     strength = args.setdefault('mutation_strength', 1)
     exponent = strength
     mutant = copy.copy(candidate)
-    for i, (c, lo, hi) in enumerate(zip(candidate, bounder.lower_bound, bounder.upper_bound)):
+    for i, (c, lo, hi) in enumerate(zip(candidate, lower_bound, upper_bound)):
         if random.random() <= 0.5:
             new_value = c + (hi - c) * (1.0 - random.random() ** exponent)
         else:

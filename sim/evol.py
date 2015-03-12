@@ -6,6 +6,7 @@ import os, sys
 from numpy import mean
 import csv
 import copy
+from inspyred.ec.variators import mutator
 from random import Random
 from time import time, sleep
 import inspyred

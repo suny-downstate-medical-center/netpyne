@@ -5,6 +5,7 @@
 import os, sys
 from numpy import mean
 import csv
+import copy
 from random import Random
 from time import time, sleep
 import inspyred
@@ -19,7 +20,7 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'estimationDist_2' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+evolAlgorithm = 'krichmarCustom_3' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
 simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
@@ -101,6 +102,34 @@ def my_observer(population, num_generations, num_evaluations, args):
                                       best.fitness, 
                                       str(best.candidate)))
 
+###############################################################################
+### Custom mutator (nonuniform taking into account bounds)
+###############################################################################  
+@mutator
+def nonuniform_bounds_mutation(random, candidate, args):
+    """Return the mutants produced by nonuniform mutation on the candidates.
+    .. Arguments:
+       random -- the random number generator object
+       candidate -- the candidate solution
+       args -- a dictionary of keyword arguments
+    Required keyword arguments in args:       
+    Optional keyword arguments in args:    
+    - *mutation_strength* -- the strength of the mutation, where higher
+      values correspond to greater variation (default 1)
+    
+    """
+    bounder = args['_ec'].bounder
+    num_gens = args['_ec'].num_generations
+    strength = args.setdefault('mutation_strength', 1)
+    exponent = strength
+    mutant = copy.copy(candidate)
+    for i, (c, lo, hi) in enumerate(zip(candidate, bounder.lower_bound, bounder.upper_bound)):
+        if random.random() <= 0.5:
+            new_value = c + (hi - c) * (1.0 - random.random() ** exponent)
+        else:
+            new_value = c - (c - lo) * (1.0 - random.random() ** exponent)
+        mutant[i] = new_value
+    return mutant
 
 ###############################################################################
 ### Parallel evaluation
@@ -290,7 +319,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Custom algorithm based on Krichmar's params
-    if evolAlgorithm == 'krichmarCustom':
+    if evolAlgorithm == 'krichmarCustom_3':
         # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
         # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50%
         # crossover. Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the 
@@ -298,8 +327,8 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
         ea = inspyred.ec.EvolutionaryComputation(prng)
         ea.selector = inspyred.ec.selectors.tournament_selection
-        ea.variator = [inspyred.ec.variators.uniform_crossover, 
-                       inspyred.ec.variators.gaussian_mutation]
+        ea.variator = [inspyred.ec.variators.uniform_crossover, nonuniform_bounds_mutation] 
+                       #inspyred.ec.variators.gaussian_mutation]
         ea.replacer = inspyred.ec.replacers.generational_replacement#inspyred.ec.replacers.plus_replacement
         #inspyred.ec.replacers.truncation_replacement (with num_selected=50)
         ea.terminator = inspyred.ec.terminators.generation_termination

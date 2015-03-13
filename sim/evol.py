@@ -58,7 +58,7 @@ pNames.append('cmdmaxrate'); pRanges.append([10,30])
 num_inputs = len(pNames)
 
 # Set bounds and allowed ranges for params
-def bound_params(candidate, args):
+def bound_params(candidate, args = []):
     cBound = []
     for i,p in enumerate(candidate):
         cBound.append(max(min(p, max(pRanges[i])), min(pRanges[i])))

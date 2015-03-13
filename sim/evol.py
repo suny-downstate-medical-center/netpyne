@@ -132,7 +132,8 @@ def nonuniform_bounds_mutation(random, candidate, args):
         else:
             new_value = c - (c - lo) * (1.0 - random.random() ** exponent)
         mutant[i] = new_value
-    return mutant
+    mutant_bounded = bound_params(mutant)
+    return mutant_bounded
 
 ###############################################################################
 ### Parallel evaluation

@@ -41,7 +41,7 @@ scale = 1 # Size of simulation in thousands of cells
 popnames = ['PMd', 'ASC', 'EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,      2,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [server.numPMd, 64, 64, 64,  150,    25,    25,   168,    72,    40,    40,   192,    32,    32]# Cell population numbers 
+popratios =  [92 , 64, 64, 64,  150,    25,    25,   168,    72,    40,    40,   192,    32,    32]# Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [-1,-1], [0.1,0.31], [0.1,0.31], [0.1,0.31], [0.31,0.52], [0.52,0.77], [0.31,0.77], [0.31,0.77], [0.77,1.0], [0.77,1.0], [0.77,1.0]] # data from Weiler et. al 2008 (updated from Ben's excel sheet)
 
 
@@ -51,6 +51,7 @@ nreceptors = len(receptornames) # Number of receptors
 popGidStart = [] # gid starts for each popnames
 popGidEnd= [] # gid starts for each popnames
 popnumbers = []
+PMdinput = 'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
 
     
 # Define params for each cell: cellpops, cellnames, cellclasses, EorI 
@@ -59,7 +60,8 @@ cellnames = [] # Store list of names for each cell -- e.g. 'ER2' vs. 'IF2'
 cellclasses = [] # Store list of classes types for each cell -- e.g. pyramidal vs. interneuron
 EorI = [] # Store list of excitatory/inhibitory for each cell
 popnumbers = scale*array(popratios) # Number of neurons in each population
-if 'PMd' in popnames:    
+if PMdinput == 'Plexon' and 'PMd' in popnames:    
+    popratios[popnames.index('PMd')] = server.numPMd
     popnumbers[popnames.index('PMd')] = server.numPMd # Number of PMds is fixed.
 ncells = int(sum(popnumbers))# Calculate the total number of cells 
 for c in range(len(popnames)):
@@ -283,7 +285,6 @@ backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
-
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 
@@ -322,12 +323,12 @@ explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time du
 timeoflastexplor = -inf # time when last exploratory movement was updated
 
 
-## Plexon PMd inputs
-usePlexon = False
-vec = h.Vector() # temporary Neuron vectors
-emptyVec = h.Vector()
-inncl = h.List() # used to store the plexon-interfaced PMd units 
-innclDic = {}
+## PMd inputs 
+if s.PMdinput == 'Plexon':
+    vec = h.Vector() # temporary Neuron vectors
+    emptyVec = h.Vector()
+    inncl = h.List() # used to store the plexon-interfaced PMd units 
+    innclDic = {}
 
 
 ## Stimulus parameters

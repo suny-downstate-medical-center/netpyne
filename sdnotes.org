@@ -1653,7 +1653,7 @@ testing different optim methods from inspyred
 **** pop=100
 0, 100, 0.317487304691, 0.159470073482, 0.216980743021, 0.222929138415, 0.0367570158357
 21, 100, 0.151096833862, 0.151096833862, 0.151096833862, 0.151096833862, 2.22044604925e-16
-*** krichmarEvol (0.138,0.139)
+*** krichmarEvol (0.138,0.139=BUG)
 **** pop=2
 0, 2, 0.300332272954, 0.143344059494, 0.221838166224, 0.221838166224, 0.0784941067298
 50, 2, 0.141606055411, 0.138317739195, 0.139961897303, 0.139961897303, 0.00164415810839
@@ -1662,6 +1662,15 @@ testing different optim methods from inspyred
 50, 100, 0.193492181148, 0.139979383936, 0.171605491955, 0.171018238002, 0.00812888089593
 
 75, 100, 0.192731596366, 0.139979383936, 0.172123326834, 0.171688023346, 0.0079540669261
+**** BUG!
+If one of the target errors = 0 (sim not finished properly), then avg error is calculated assuming default err=0.15, which is
+pretty low here! solution: increase default err
+*** KrichmarEvol with bounded mutator (0.1545)
+**** pop=100
+0        100 0.30978758 0.16042155 0.20957367 0.21569889 0.03283971 (accidently deleted statistics.csv at gen=38!)
+40       4100 0.29206774 0.15454827 0.19410129 0.20143793 0.02955027
+46       4700 0.28441597 0.15454827 0.19902363 0.20592142 0.02894483
+75       7600 0.29819550 0.15454827 0.20035971 0.21092550 0.03551816
 *** evolutionStrategy (0.120, 0.149)
 **** pop=2
 0, 2, 0.29309852766, 0.14321209304, 0.21815531035, 0.21815531035, 0.0749432173103
@@ -1690,11 +1699,11 @@ Changed num_selected to 100
 0, 100, 0.315004100446, 0.152035007756, 0.2148703177, 0.220430208369, 0.0354757774148
 30, 100, 0.187584364802, 0.149097688801, 0.170677041856, 0.170903622147, 0.00694698013731
 50, 100, 0.19157735916, 0.157253114409, 0.172914206251, 0.172316661561, 0.00703620612567
-*** Estimation of Distribution 
+*** Estimation of Distribution (0.144, 0.157)
 **** pop=2
 0, 2, 0.291259623486, 0.144390895694, 0.21782525959, 0.21782525959, 0.0734343638961
 35, 2, 0.16158109519, 0.144390895694, 0.152985995442, 0.152985995442, 0.00859509974791
-**** pop=100
+**** pop=100 
 0, 100, 0.323931911202, 0.164463760049, 0.213415702307, 0.222954408408, 0.0385806163163
 50, 100, 0.21248057311, 0.157877607753, 0.191605110845, 0.192939702229, 0.00969933129319
 
@@ -1713,8 +1722,23 @@ Changed num_selected to 100
 **** BUG - fixed
 cand and target were wrong way around in parallel_eval (polling from file)
 
-*** ant colony optimization (requires components=
+*** ant colony optimization (requires components)
 requires initialization of 'components' - not clear what this means for our problem
+
+* 15mar14 Learning to reach 2 targets
+** Check best results for single target
+- need to be able to reach 2 different targets by training individually, before can move to learning 2 simult targets
+** connectivity
+*** Split PMd inputs into 2 subpopulations, each of which only get activated for one target 
+- simplest method
+*** Different input spiking patterns for each target
+
+** training
+*** exploratory movements with time intervals to alternate each target
+- extreme case is half the time to one target, and rest change to other target
+- Change intervals can vary in duration - eg. 1 sec, 10 sec, 30 sec etc
+*** single reaching trials to each target 
+-  required when using PMd data
 
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 

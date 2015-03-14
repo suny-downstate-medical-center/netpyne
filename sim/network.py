@@ -55,13 +55,22 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
+    s.targetid = 0
+    s.trainTime=120000.0
+    s.plastConnsType=3.0
+    s.RLfactor=3.252843536382365
+    s.eligwin=112.83953280360103
+    s.backgroundrate=76.78980652066235
+    s.backgroundrateExplor=1567.712912493038
+    s.cmdmaxrate=25.70078356927193
+
     s.plotraster = 1 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 0
+    s.plotweightchanges = 1
     s.plot3darch = 0
-    s.graphsArm = 0
+    s.graphsArm = 1
     s.savemat = 0 # save data during testing
-    s.armMinimalSave = 1 # save only arm related data
+    s.armMinimalSave = 0 # save only arm related data
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -92,7 +101,7 @@ def runTrainTest():
     runSim()
     finalizeSim()
     #saveData()
-    #plotData()
+    plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP
@@ -105,7 +114,7 @@ def runTrainTest():
     runSim()
     finalizeSim()
     saveData()
-    #plotData()
+    plotData()
 
     if s.rank == 0: # save error to file
         error = mean(s.arm.errorAll)
@@ -250,15 +259,18 @@ def createNetwork():
     s.spikerecorders = [] # Empty list for storing spike-recording Netcons
     s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
     s.cellsperhost = 0
-    ninnclDic = len(s.innclDic) # number of PMd created in this worker
+    if s.PMdinput == 'Plexon': ninnclDic = len(s.innclDic) # number of PMd created in this worker
     for c in xrange(int(s.rank), s.ncells, s.nhosts):
         s.dummies.append(h.Section()) # Create fake sections
         gid = c
         if s.cellnames[gid] == 'PMd':
-            cell = celltypes[gid](cellid = gid) # create an NSLOC
-            s.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
-            s.innclDic[gid - s.ncells - s.server.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
-            ninnclDic += 1
+            if s.PMdinput == 'Plexon':
+                cell = celltypes[gid](cellid = gid) # create an NSLOC
+                s.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
+                s.innclDic[gid - s.ncells - s.server.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
+                ninnclDic += 1
+            elif s.PMdInput == 'targetSplit':
+                cell = celltypes[gid](cellid = gid) # create an NSLOC
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
         else: 
@@ -320,7 +332,7 @@ def createNetwork():
         allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID
         seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator  
         allrands = rand(s.ncells) # Create an array of random numbers for checking each connection  
-        if s.usePlexon:
+        if s.PMdinput == 'Plexon':
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
                 allrands[c] = 1
         if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
@@ -479,7 +491,7 @@ def addBackground():
         s.backgroundrecorders=[] # And for recording spikes
     for c in range(s.cellsperhost): 
         gid = s.gidVec[c]
-        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # These pops won't receive background stimulations.
+        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd' : # These pops won't receive background stimulations.
             pass
         else:
             backgroundrand = h.Random()
@@ -489,7 +501,7 @@ def addBackground():
             if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-                backgroundsource.noise = 0 # Fractional noise in timing
+                backgroundsource.noise = s.backgroundnoiseExplor # Fractional noise in timing
             elif s.cellnames[gid] == 'EB5':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
@@ -499,14 +511,17 @@ def addBackground():
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
                 backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
                 backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
+
             backgroundsource.number = s.backgroundnumber # Number of spikes
             s.backgroundsources.append(backgroundsource) # Save this NetStim
             s.backgroundgid.append(gid) # append cell gid associated to this netstim
             
             backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC' or s.cellnames[gid] == 'EB5':
-                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC background input
+            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
+                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC, IDSC and PMd background input
+            elif s.cellnames[gid] == 'EB5' and s.explorMovs == 2: 
+                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Weight for EB5 input if explor movs via EB5 
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
             backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
@@ -582,7 +597,7 @@ def setupSim():
 
 
     ## Communication setup for plexon input
-    if s.usePlexon:
+    if s.PMdinput == 'Plexon':
         h('''
             objref cvode
             cvode = new CVode()
@@ -674,7 +689,7 @@ def runSim():
 
 
         ## Time adjustment for online mode simulation
-        if s.usePlexon and s.server.simMode == 1:                   
+        if s.PMdinput == 'Plexon' and s.server.simMode == 1:                   
             # To avoid izhi cell's over shooting when h.t moves forward because sim is slow.
             for c in range(s.cellsperhost): 
                 gid = s.gidVec[c]
@@ -790,7 +805,7 @@ def finalizeSim():
 
 
     # terminate the server process
-    if s.usePlexon:
+    if s.PMdinput == 'Plexon':
         if s.isOriginal == 0:
             s.server.Manager.stop()
 

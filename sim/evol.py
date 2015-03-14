@@ -143,7 +143,7 @@ def parallel_evaluation_pbs(candidates, args):
     simdatadir = args.get('simdatadir') # load params
     ngen += 1 # increase number of generations
     maxiter_wait=args.get('maxiter_wait',1000) # 
-    default_error=args.get('default_error',0.15)
+    default_error=args.get('default_error',0.3)
 
     #run pbs jobs
     total_jobs = 0

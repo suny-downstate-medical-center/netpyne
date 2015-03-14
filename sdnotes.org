@@ -1728,6 +1728,16 @@ requires initialization of 'components' - not clear what this means for our prob
 * 15mar14 Learning to reach 2 targets
 ** Check best results for single target
 - need to be able to reach 2 different targets by training individually, before can move to learning 2 simult targets
+*** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
+  Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76
+  Setting targetid=0
+  Setting trainTime=120000.0
+  Setting plastConnsType=3.0
+  Setting RLfactor=3.252843536382365
+  Setting eligwin=112.83953280360103
+  Setting backgroundrate=76.78980652066235
+  Setting backgroundrateExplor=1567.712912493038
+  Setting cmdmaxrate=25.70078356927193
 ** connectivity
 *** Split PMd inputs into 2 subpopulations, each of which only get activated for one target 
 - simplest method

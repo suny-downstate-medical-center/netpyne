@@ -269,7 +269,7 @@ def createNetwork():
                 s.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
                 s.innclDic[gid - s.ncells - s.server.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
                 ninnclDic += 1
-            elif s.PMdInput == 'targetSplit':
+            elif s.PMdinput == 'targetSplit':
                 cell = celltypes[gid](cellid = gid) # create an NSLOC
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
@@ -520,7 +520,7 @@ def addBackground():
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
             if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC, IDSC and PMd background input
-            elif s.cellnames[gid] == 'EB5' and s.explorMovs == 2: 
+            elif s.cellnames[gid] == 'EB5':# and s.explorMovs == 2: 
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Weight for EB5 input if explor movs via EB5 
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation

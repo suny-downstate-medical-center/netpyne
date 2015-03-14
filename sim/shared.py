@@ -324,7 +324,7 @@ timeoflastexplor = -inf # time when last exploratory movement was updated
 
 
 ## PMd inputs 
-if s.PMdinput == 'Plexon':
+if PMdinput == 'Plexon':
     vec = h.Vector() # temporary Neuron vectors
     emptyVec = h.Vector()
     inncl = h.List() # used to store the plexon-interfaced PMd units 

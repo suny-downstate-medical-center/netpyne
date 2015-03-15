@@ -321,6 +321,9 @@ backgroundweightExplor = 5 # weight for background input for exploratory movemen
 backgroundnoiseExplor = 0.1 # Fractional noise in timing durin explor mov
 explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time during explor movs
 timeoflastexplor = -inf # time when last exploratory movement was updated
+# reset arm every trial
+trialReset = True # whether to reset the arm after every trial time
+timeoflastreset = 0 # time when arm was last reseted (start from center etc. to simulate trials)
 
 
 ## PMd inputs 

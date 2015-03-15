@@ -55,9 +55,9 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
-    s.targetid = 0
-    s.trainTime=120000.0
-    s.plastConnsType=3.0
+    s.targetid = 1
+    s.trainTime=30*1e3 #120*1e3
+    s.plastConnsType=1.0 #3.0
     s.RLfactor=3.252843536382365
     s.eligwin=112.83953280360103
     s.backgroundrate=76.78980652066235
@@ -69,6 +69,7 @@ def runTrainTest():
     s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
+    s.animArm = 1
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 
@@ -93,7 +94,7 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.explorMovs = 1 # enable exploratory movements
+    s.explorMovs = 0 # enable exploratory movements
     s.antagInh = 0 # enable exploratory movements
     s.duration = s.trainTime # train time
 
@@ -101,7 +102,7 @@ def runTrainTest():
     runSim()
     finalizeSim()
     #saveData()
-    #plotData()
+    plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP
@@ -114,7 +115,7 @@ def runTrainTest():
     runSim()
     finalizeSim()
     saveData()
-    #plotData()
+    plotData()
 
     if s.rank == 0: # save error to file
         error = mean(s.arm.errorAll)
@@ -335,11 +336,11 @@ def createNetwork():
         if s.PMdinput == 'Plexon':
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
                 allrands[c] = 1
-        if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
-            PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
-            allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
-            allrands[PMdId] = 0 # to make this connect to ER5
-            distances[PMdId] = 300 # to make delay 5 in conndata[3] 
+            if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
+                PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
+                allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
+                allrands[PMdId] = 0 # to make this connect to ER5
+                distances[PMdId] = 300 # to make delay 5 in conndata[3] 
         if s.PMdinput == 'targetSplit':
             pass
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made

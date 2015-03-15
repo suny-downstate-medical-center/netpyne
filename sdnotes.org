@@ -1728,12 +1728,20 @@ requires initialization of 'components' - not clear what this means for our prob
 * 15mar14 Learning to reach 2 targets
 ** Check best results for single target
 - need to be able to reach 2 different targets by training individually, before can move to learning 2 simult targets
-- found bug that changed output (ER5 inputs, despite PMd not spiking!):
+- found bug that changed output (ER5 inputs, despite PMd not spiking! -- actually spikes every 10 sec due to NSLOC sync):
         if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
             PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
             allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
             allrands[PMdId] = 0 # to make this connect to ER5
             distances[PMdId] = 300 # to make delay 5 in conndata[3] 
+- looked into target 0 and target 1 -- seems more random than real learning of sensorimotor mapping - very sensitive to
+  parameter variations
+- Try 1-second single trials 
+- Maybe strengthen weights
+- One problem seems to be oscillatory nature of cortex and how to transform to spinal cord rate code 
+-- Motoneuron paper shows how neuron keeps spiking after short current input 
+-- testing izhi cell params using izhikevich.m -- difficult to tune
+-- trying EDSC = LTS cell -- higher firing rate (faster movs), but not sure if sustained without input -- still see oscillations
 
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76

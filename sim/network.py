@@ -66,11 +66,11 @@ def runTrainTest():
 
     s.plotraster = 1 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 0
+    s.plotweightchanges = 1
     s.plot3darch = 0
-    s.graphsArm = 0
+    s.graphsArm = 1
     s.savemat = 0 # save data during testing
-    s.armMinimalSave = 1 # save only arm related data
+    s.armMinimalSave = 0 # save only arm related data
 
     # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
@@ -335,11 +335,11 @@ def createNetwork():
         if s.PMdinput == 'Plexon':
             for c in xrange(s.popGidStart[s.PMd], s.popGidEnd[s.PMd] + 1):
                 allrands[c] = 1
-            if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
-                PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
-                allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
-                allrands[PMdId] = 0 # to make this connect to ER5
-                distances[PMdId] = 300 # to make delay 5 in conndata[3] 
+        if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
+            PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
+            allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
+            allrands[PMdId] = 0 # to make this connect to ER5
+            distances[PMdId] = 300 # to make delay 5 in conndata[3] 
         if s.PMdinput == 'targetSplit':
             pass
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made

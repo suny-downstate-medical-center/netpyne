@@ -1728,8 +1728,13 @@ requires initialization of 'components' - not clear what this means for our prob
 * 15mar14 Learning to reach 2 targets
 ** Check best results for single target
 - need to be able to reach 2 different targets by training individually, before can move to learning 2 simult targets
-- found bug - turning on some plotting/saving functions modifies output!
-s.graphsArm = 1
+- found bug that changed output (ER5 inputs, despite PMd not spiking!):
+        if s.cellnames[gid] == 'ER5': # PMd->ER5 conn (full conn)
+            PMdId = (gid % s.server.numPMd) + s.ncells - s.server.numPMd #CHECK THIS!
+            allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
+            allrands[PMdId] = 0 # to make this connect to ER5
+            distances[PMdId] = 300 # to make delay 5 in conndata[3] 
+
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76
   Setting targetid=0

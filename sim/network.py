@@ -55,21 +55,21 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
-    s.targetid = 1
-    s.trainTime=30*1e3 #120*1e3
-    s.plastConnsType=1.0 #3.0
-    s.RLfactor=3.252843536382365
-    s.eligwin=112.83953280360103
-    s.backgroundrate=76.78980652066235
-    s.backgroundrateExplor=1567.712912493038
-    s.cmdmaxrate=25.70078356927193
+    # s.targetid = 0
+    # s.trainTime = 30*1e3 #120*1e3
+    # s.plastConnsType = 1.0 #3.0
+    # s.RLfactor = 3.0
+    # s.eligwin = 50 
+    # s.backgroundrate = 50
+    # s.backgroundrateExplor = 1000.00
+    # s.cmdmaxrate=25.0
 
-    s.plotraster = 1 # set plotting params
+    s.plotraster = 0 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 1
+    s.plotweightchanges = 0
     s.plot3darch = 0
-    s.graphsArm = 1
-    s.animArm = 1
+    s.graphsArm = 0
+    s.animArm = 0
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 
@@ -94,7 +94,7 @@ def runTrainTest():
     # train
     s.usestdp = 1 # Whether or not to use STDP
     s.useRL = 1 # Where or not to use RL
-    s.explorMovs = 0 # enable exploratory movements
+    s.explorMovs = 1 # enable exploratory movements
     s.antagInh = 0 # enable exploratory movements
     s.duration = s.trainTime # train time
 
@@ -102,20 +102,20 @@ def runTrainTest():
     runSim()
     finalizeSim()
     #saveData()
-    plotData()
+    #plotData()
 
     # test
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
     s.explorMovs = 0 # disable exploratory movements
     s.duration = s.testTime # testing time
-    s.armMinimalSave = 0 # save only arm related data
+    s.armMinimalSave = 1 # save only arm related data
     
     setupSim()
     runSim()
     finalizeSim()
     saveData()
-    plotData()
+    #plotData()
 
     if s.rank == 0: # save error to file
         error = mean(s.arm.errorAll)
@@ -508,7 +508,7 @@ def addBackground():
             elif s.cellnames[gid] == 'EB5':
                 backgroundsource = h.NSLOC() # Create a NSLOC  
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-                backgroundsource.noise = s.backgroundnoiseExplor # Fractional noise in timing
+                backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
             else:
                 backgroundsource = h.NetStim() # Create a NetStim
                 backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
@@ -523,7 +523,7 @@ def addBackground():
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
             if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC, IDSC and PMd background input
-            elif s.cellnames[gid] == 'EB5':# and s.explorMovs == 2: 
+            elif s.cellnames[gid] == 'EB5' and s.explorMovs == 2: 
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Weight for EB5 input if explor movs via EB5 
             else:
                 backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
@@ -671,7 +671,7 @@ def runSim():
             if s.useRL and (h.t - s.timeoflastRL >= s.RLinterval): # if time for next RL
                 vec = h.Vector()
                 if s.rank == 0:
-                    critic = s.arm.RLcritic() # get critic signal (-1, 0 or 1)
+                    critic = s.arm.RLcritic(h.t) # get critic signal (-1, 0 or 1)
                     s.pc.broadcast(vec.from_python([critic]), 0) # convert python list to hoc vector for broadcast data received from arm
                     #print critic
                 else: # other workers

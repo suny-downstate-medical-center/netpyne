@@ -196,7 +196,7 @@ connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
 connweights[ASC,ER2,AMPA]=2.0
 connweights[EB5,EDSC,AMPA]=2.0
-connweights[EB5,IDSC,AMPA]=1.0
+connweights[EB5,IDSC,AMPA]=0.5
 connweights[IDSC,EDSC,GABAA]=1.0 
 connweights[PMd,ER5,AMPA]=1.0
 
@@ -260,7 +260,7 @@ usestdp = True # Whether or not to use STDP
 useRL = True #True # Where or not to use RL
 plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
 plastConns = [[ASC,ER2], [EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
-stdpFactor = 0.01 # multiplier for stdprates
+stdpFactor = 0.001 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 RLfactor = 10
 RLrates = RLfactor*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
@@ -284,7 +284,7 @@ backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
-backgroundweight = 4.0*array([1,0.1]) # Weight for background input for E cells and I cells
+backgroundweight = 2.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundreceptor = NMDA # Which receptor to stimulate
 
 
@@ -317,9 +317,9 @@ explorMovs = 0 # exploratory movements; 1 = noise to EDSC+IDSC; 2 = noise to E5B
 explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs (only used if explorMovs=1)
 explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
 backgroundrateExplor = 1000 # rate for background input for exploratory movements (changed during sim)
-backgroundweightExplor = 5 # weight for background input for exploratory movements (fixed)
+backgroundweightExplor = 4.0 # weight for background input for exploratory movements (fixed)
 backgroundnoiseExplor = 0.1 # Fractional noise in timing durin explor mov
-explorCellsFraction = 0.05 # fraction of E5B cells to be actiavated at a time during explor movs
+explorCellsFraction = 0.05 # fraction of E5B cells to be activated at a time during explor movs
 timeoflastexplor = -inf # time when last exploratory movement was updated
 # reset arm every trial
 trialReset = True # whether to reset the arm after every trial time

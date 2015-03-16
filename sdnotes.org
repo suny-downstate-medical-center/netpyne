@@ -1741,7 +1741,22 @@ requires initialization of 'components' - not clear what this means for our prob
 - One problem seems to be oscillatory nature of cortex and how to transform to spinal cord rate code 
 -- Motoneuron paper shows how neuron keeps spiking after short current input 
 -- testing izhi cell params using izhikevich.m -- difficult to tune
--- trying EDSC = LTS cell -- higher firing rate (faster movs), but not sure if sustained without input -- still see oscillations
+-- trying EDSC = LTS cell -- higher firing rate (faster movs), but not sure if sustained without input -- still see
+-- oscillations
+- check RL - weights EB5->EDSC+IDSC being increased even when arm is always moving away? why? (IDSC more increase -- probably
+  due to more firing)
+-- maybe due to error = accumulative over several timesteps, so when reset seems like error improved
+-- maybe due to simple STDP
+-- NOTE: initialArmMov not preventing arm from moving after 1st trial; also not preventing inclusion in error calculation
+  (this last one makes sense) -- fixed
+- Now weights being decreased but very homogeneously becasue noise is activating all muscles similarly -- try explor movs
+- Trying noise to EDSC+IDSC population - better, although its curious that despite similar reward+punish, the weights show
+  drastic increase
+-- if enforce sh ext (away from target so punish), EB5->IDSC weights decrease more for elbow flexor neurons, which haven't almost
+spiked! - check why!
+-- weight EB5->IDSC was too high, so high firing rate during short reward periods counterbalanced punishment
+- found bug -- explor movs weren't using explor mov rate
+
 
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76
@@ -1764,6 +1779,15 @@ requires initialization of 'components' - not clear what this means for our prob
 - Change intervals can vary in duration - eg. 1 sec, 10 sec, 30 sec etc
 *** single reaching trials to each target 
 -  required when using PMd data
+
+* 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
+** changesets
+** description
+manually tuned and debugged network eg. trial-based training -- see 15mar14
+explor moves still via EDSC+IDSC
+also reduced range of params
+** results
+
 
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 

@@ -21,15 +21,15 @@ ngen = -1 #global variable keeping number of generations
 ###############################################################################
 ### Simulation options
 ###############################################################################  
-evolAlgorithm = 'krichmarCustom_3' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
-simdatadir = '../data/15mar04_evol_'+evolAlgorithm # folder to save sim results
+evolAlgorithm = 'evolutionStrategy' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
+simdatadir = '../data/15mar16_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
 max_migrants = 1 #
 migration_interval = 5
 pop_size = 100 # population size per island
-num_elites = 1 # num of top individuals kept each generation - maybe set to pop_size/10? 
+num_elites = pop_size/10 # num of top individuals kept each generation - maybe set to pop_size/10? 
 max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
 mutation_rate = 0.4 # only for custom EC  
@@ -42,13 +42,13 @@ pRanges = []
 pNames.append('trainTime'); pRanges.append([10*1e3,120*1e3]) #int
 pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
 #pNames.append('stdpFactor'); pRanges.append([0,1])
-pNames.append('RLfactor'); pRanges.append([1,10])
+pNames.append('RLfactor'); pRanges.append([0.5,5])
 #pNames.append('stdpwin'); pRanges.append([10,30])
-pNames.append('eligwin'); pRanges.append([50,150])
+pNames.append('eligwin'); pRanges.append([50,100])
 #pNames.append('RLinterval'); pRanges.append([50,100])
 #pNames.append('maxweight'); pRanges.append([15,75])
-pNames.append('backgroundrate'); pRanges.append([50,200])
-pNames.append('backgroundrateExplor'); pRanges.append([500,2000])
+pNames.append('backgroundrate'); pRanges.append([30,100])
+pNames.append('backgroundrateExplor'); pRanges.append([500,1500])
 #pNames.append('minRLerror'); pRanges.append([0.0,0.01])
 pNames.append('cmdmaxrate'); pRanges.append([10,30])
 #pNames.append('cmdtimewin'); pRanges.append([50,150])

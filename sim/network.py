@@ -26,7 +26,7 @@ Version: 2014feb21 by cliffk
 ###############################################################################
 
 from neuron import h, init # Import NEURON
-from pylab import seed, rand, sqrt, exp, transpose, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
+from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
 from datetime import datetime
 import shared as s # Import all shared variables and parameters
@@ -124,11 +124,15 @@ def runTrainTest():
 # training and testing phases 
 # (doesn't work because can't reinitialize system after 1st target)
 def runTrainTest2targets():
-    targets = [0,1] # list of targets to be evaluated
-    
-    s.targetid=0
-    s.trainTime=120000.0
-    s.plastConnsType=3.0
+
+    s.trainTime=20000.0
+    numTrials = ceil(s.trainTime/1000)
+    s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    print s.trialTargets
+    s.targetid=s.trialTargets[0]
+    s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
+    print s.targetPMdInputs
+    s.plastConnsType=1.0
     s.RLfactor=5
     s.eligwin=85.63069916781706
     s.backgroundrate=51.6480997331155
@@ -327,13 +331,15 @@ def createNetwork():
                 allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
                 allrands[PMdId] = 0 # to make this connect to ER5
                 distances[PMdId] = 300 # to make delay 5 in conndata[3] 
-        if s.PMdinput == 'targetSplit':
-            pass
+        elif s.PMdinput == 'targetSplit': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
+            if s.cellnames[gid] == 'ER5':
+                prePMd = gid - s.popGidStart[s.ER5] + s.popGidStart[s.PMd]
+                allconnprobs[prePMd] = 1
+
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
             EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
-            #subpopLen = len(s.motorCmdCellRange[0]) # motor subpop length
             invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
             IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
             preids=concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 

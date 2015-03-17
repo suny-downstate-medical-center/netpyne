@@ -1757,7 +1757,7 @@ spiked! - check why!
 -- weight EB5->IDSC was too high, so high firing rate during short reward periods counterbalanced punishment
 - found bug -- explor movs weren't using explor mov rate
 
-- rerun sim with changes (15mar16) -- now using results from gen_84_cand_1 - 0.09 (right) and 0.11 (left):
+- rerun sim with changes (15mar16) -- now using results from gen_84_cand_1 - 0.099 (right) and 0.11 (left):
     s.targetid=0
     s.trainTime=120000.0
     s.plastConnsType=1.0
@@ -1767,8 +1767,13 @@ spiked! - check why!
     s.backgroundrateExplor=596.3726207812871
     s.cmdmaxrate=10
 - changeset:
+changeset:   168:b7f777eb11a7
+tag:         tip
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Tue Mar 17 01:21:41 2015 -0400
+summary:     testing learning 2 targets simult using best results for single target - 14mar06_evol gen_84_cand_1
 
-- Changed 
+- Changed s.plastConnsType=3.0 to 1.0 and got similar error: 0.102
 
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76
@@ -1781,8 +1786,15 @@ spiked! - check why!
   Setting backgroundrateExplor=1567.712912493038
   Setting cmdmaxrate=25.70078356927193
 ** connectivity
-*** Split PMd inputs into 2 subpopulations, each of which only get activated for one target 
+*** Split PMd inputs into 2 subpopulations, each of which only get activated for one target (actually project to half of target pop cells!)
 - simplest method
+- missing the point here! whats the conn to target pop? each PMd subpop should project only to subset of ER5
+- eg. PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
+- code:
+        elif s.PMdinput == 'targetSplit': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
+            if s.cellnames[gid] == 'ER5':
+                prePMd = gid - s.popGidStart[s.ER5] + s.popGidStart[s.PMd]
+                allconnprobs[prePMd] = 1
 *** Different input spiking patterns for each target
 
 ** training
@@ -1791,6 +1803,14 @@ spiked! - check why!
 - Change intervals can vary in duration - eg. 1 sec, 10 sec, 30 sec etc
 *** single reaching trials to each target 
 -  required when using PMd data
+- implemented by restarting arm from center every trial and reseting arm variables (not sure what I'll do with virtual arm!)
+TODO:
+- first trial PMd input
+- with 120 sec, some periods no input
+- maxPMdrate variables
+- reduce minNoise so no sync spikes every 10 sec! or increase noisefraction
+- increase noise fraction so spikes not synced
+- check PMD->ER5 connections -- seems similar acitivty for both targets
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

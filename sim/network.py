@@ -55,15 +55,6 @@ def runSeq():
 def runTrainTest():
     verystart=time() # store initial time
 
-    # s.targetid = 0
-    # s.trainTime = 30*1e3 #120*1e3
-    # s.plastConnsType = 1.0 #3.0
-    # s.RLfactor = 3.0
-    # s.eligwin = 50 
-    # s.backgroundrate = 50
-    # s.backgroundrateExplor = 1000.00
-    # s.cmdmaxrate=25.0
-
     s.plotraster = 0 # set plotting params
     s.plotconn = 0
     s.plotweightchanges = 0
@@ -132,91 +123,86 @@ def runTrainTest():
 
 # training and testing phases 
 # (doesn't work because can't reinitialize system after 1st target)
-def runTrainTest4targets():
-    targets = [0,0] # list of targets to be evaluated
-
-    s.plotraster = True # do not plot any graphs
-    s.plotconn = False
-    s.plotweightchanges = True
-    s.graphsArm = 1
-
-    s.trainTime=1*1e3#180000.0
-    s.explorMovsFactor=10
-
-    # set plastic connections based on plasConnsType (from evol alg)
-    if s.plastConnsType == 0:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC]] # only spinal cord 
-    elif s.plastConnsType == 1:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
-    elif s.plastConnsType == 2:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
-         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
-    elif s.plastConnsType == 3:
-        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
-         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
-         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
+def runTrainTest2targets():
+    targets = [0,1] # list of targets to be evaluated
+    
+    s.targetid=0
+    s.trainTime=120000.0
+    s.plastConnsType=3.0
+    s.RLfactor=5
+    s.eligwin=85.63069916781706
+    s.backgroundrate=51.6480997331155
+    s.ackgroundrateExplor=596.3726207812871
+    s.cmdmaxrate=10
 
     verystart=time() # store initial time
 
+    s.plotraster = 1 # set plotting params
+    s.plotconn = 0
+    s.plotweightchanges = 0
+    s.plot3darch = 0
+    s.graphsArm = 1
+    s.animArm = 0
+    s.savemat = 0 # save data during testing
+    s.armMinimalSave = 0 # save only arm related data
 
-    error = zeros(len(targets)) # to save error for each target 
-    for itarget in targets:
-        s.targetid = itarget # set target id
+    # set plastic connections based on plasConnsType (from evol alg)
+    if s.plastConnsType == 0:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC]] # only spinal cord 
+    elif s.plastConnsType == 1:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 2:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
+    elif s.plastConnsType == 3:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
 
-        #if itarget > 0: # restore original weights before training on next target   
-        
-        s.pc.gid_clear()
-        createNetwork() 
-        createConnections() 
-        addStimulation()
-        addBackground()
+    # initialize network
+    createNetwork() 
+    addStimulation()
+    addBackground()
 
-        # train
-        s.savemat = False # do not save data during training
-        s.usestdp = True # Whether or not to use STDP
-        s.useRL = False # Where or not to use RL
-        s.explorMovs = False # enable exploratory movements
-        s.duration = s.trainTime # testing time
-        
-        setupSim()
-        runSim()
-        finalizeSim()
-        #plotData()
+    # train
+    s.usestdp = 1 # Whether or not to use STDP
+    s.useRL = 1 # Where or not to use RL
+    s.explorMovs = 1 # enable exploratory movements
+    s.antagInh = 0 # enable exploratory movements
+    s.duration = s.trainTime # train time
 
-        ## Wrapping up
-       
-        # test
-        # s.savemat = True # save data during testing
-        # s.armMinimalSave = True # save only arm related data
-        # s.usestdp = False # Whether or not to use STDP
-        # s.useRL = False # Where or not to use RL
-        # s.explorMovs = 0 # disable exploratory movements
-        # s.testTime = 1e3 # evaluate for 1 second
-        # s.duration = s.testTime # testing time
-        
-        # setupSim()
-        # runSim()
-        # finalizeSim()
-        # plotData()
-        # saveData()
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
 
-        if s.rank == 0: error[itarget] = mean(s.arm.errorAll)
+    # test
+    s.usestdp = 0 # Whether or not to use STDP
+    s.useRL = 0 # Where or not to use RL
+    s.explorMovs = 0 # disable exploratory movements
+    s.duration = s.testTime # testing time
+    s.armMinimalSave = 0 # save only arm related data
+    
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
 
-        s.pc.runworker() # MPI: Start simulations running on each host
-        s.pc.done() # MPI: Close MPI
-        totaltime = time()-verystart # See how long it took in total
+    if s.rank == 0: # save error to file
+        error = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error 
+        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+            pickle.dump(error, f)
 
-
-    # save error to be used as fitness measure for evol alg
-    if s.rank == 0:
-        errorAvg = mean(error) # calculate avg distance erro over 4 targets
-        print 'Target errors: ', error, ' avg: ', errorAvg 
-        with open('%s_error'% (s.outfilestem), 'w') as f: # save avg error over targets to outfilestem
-                pickle.dump(errorAvg, f)
-
-
+    ## Wrapping up
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
-    #h.quit() # Quit extra processes
+    if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
+
 
 
 ###############################################################################

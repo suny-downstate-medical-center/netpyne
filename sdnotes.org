@@ -1757,6 +1757,18 @@ spiked! - check why!
 -- weight EB5->IDSC was too high, so high firing rate during short reward periods counterbalanced punishment
 - found bug -- explor movs weren't using explor mov rate
 
+- rerun sim with changes (15mar16) -- now using results from gen_84_cand_1 - 0.09 (right) and 0.11 (left):
+    s.targetid=0
+    s.trainTime=120000.0
+    s.plastConnsType=1.0
+    s.RLfactor=5
+    s.eligwin=85.63069916781706
+    s.backgroundrate=51.6480997331155
+    s.backgroundrateExplor=596.3726207812871
+    s.cmdmaxrate=10
+- changeset:
+
+- Changed 
 
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76

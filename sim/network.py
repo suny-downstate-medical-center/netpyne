@@ -132,7 +132,7 @@ def runTrainTest2targets():
     s.RLfactor=5
     s.eligwin=85.63069916781706
     s.backgroundrate=51.6480997331155
-    s.ackgroundrateExplor=596.3726207812871
+    s.backgroundrateExplor=596.3726207812871
     s.cmdmaxrate=10
 
     verystart=time() # store initial time

@@ -1906,6 +1906,12 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
 -- test phase: s.backgroundrate=250 - 0.133 (nice straight line)
 -- train 40 sec instead 20: test phase: s.backgroundrate=300 0.137194853422 (motor commands look good)
 -- try s.scaleconnweight = 1.9*array([[2, 2], [2, 0.1]])  because not enough I spikes -- increase L5 I spikes but not L2
+-- tested target 0 and worked ok (straight line to target), but need higher amplitude of movement
+
+- THINGS TO TRY NEXT:
+-- something ot increase L2 inh spikes
+-- longer training times to increase weight difference -> mov amplitude
+-- increasing EB5 inputs during testing without increasing overall background rate - eg. PMd inputs? only background EB5 netstims?
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

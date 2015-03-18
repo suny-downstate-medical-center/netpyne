@@ -127,7 +127,7 @@ def runTrainTest2targets():
 
     s.trainTime=40000.0
     numTrials = ceil(s.trainTime/1000)
-    s.trialTargets = [0 if i < numTrials/2 else 0 for i in range(int(numTrials+1))] # set target for each trial
+    s.trialTargets = [1 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
@@ -189,7 +189,7 @@ def runTrainTest2targets():
 
     # test
     s.backgroundrate=300
-    s.cmdmaxrate=50
+    s.cmdmaxrate=25
     addBackground()
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL

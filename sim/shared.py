@@ -144,7 +144,7 @@ connprobs[ASC,ER2]=0.6
 connprobs[EB5,EDSC]=1.0 #0.6
 connprobs[EB5,IDSC]=0.0 # hard-wire so receives same input as EB5->EDSC 
 connprobs[IDSC,EDSC]=0.0 # hard-wire so projects to antagonist muscle subpopulation
-connprobs[PMd,ER5]=0.6
+connprobs[PMd,ER5]=0.0
 
 
 # Define weights (copied out of network.hoc on 11mar27)
@@ -198,7 +198,7 @@ connweights[ASC,ER2,AMPA]=2.0
 connweights[EB5,EDSC,AMPA]=2.0
 connweights[EB5,IDSC,AMPA]=0.5
 connweights[IDSC,EDSC,GABAA]=1.0 
-connweights[PMd,ER5,AMPA]=1.0
+connweights[PMd,ER5,AMPA]=2.0
 
 
 ###############################################################################
@@ -330,8 +330,14 @@ timeoflastreset = 0 # time when arm was last reseted (start from center etc. to 
 if PMdinput == 'Plexon':
     vec = h.Vector() # temporary Neuron vectors
     emptyVec = h.Vector()
-    inncl = h.List() # used to store the plexon-interfaced PMd units 
-    innclDic = {}
+    inncl = h.List() # used to store the plexon-interfaced PMd Netcons
+    innclDic = {} # dictionary to relate global and local PMd netcons
+if PMdinput == 'targetSplit':
+    trialTargets = [] # target id for each trial
+    targetPMdInputs = [] # PMd units active for each trial
+    maxPMdRate = 500
+    minPMdRate = 0.1
+    PMdNoiseRatio = 0.1 
 
 
 ## Stimulus parameters

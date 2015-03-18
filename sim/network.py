@@ -262,6 +262,7 @@ def createNetwork():
                 ninnclDic += 1
             elif s.PMdinput == 'targetSplit':
                 cell = celltypes[gid](cellid = gid) # create an NSLOC
+                cell.noise = s.PMdNoiseRatio
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
         else: 
@@ -331,18 +332,18 @@ def createNetwork():
                 allconnprobs[PMdId] = s.connprobs[s.PMd,s.ER5] # to make this connected to ER5
                 allrands[PMdId] = 0 # to make this connect to ER5
                 distances[PMdId] = 300 # to make delay 5 in conndata[3] 
-        elif s.PMdinput == 'targetSplit': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
-            if s.cellnames[gid] == 'ER5':
-                prePMd = gid - s.popGidStart[s.ER5] + s.popGidStart[s.PMd]
-                allconnprobs[prePMd] = 1
-
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+        if s.PMdinput == 'targetSplit' and s.cellnames[gid] == 'ER5': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
+            prePMd = [gid - s.popGidStart[s.ER5] + s.popGidStart[s.PMd]]        
+            if prePMd < s.popGidEnd[s.PMd]: 
+                print 'prePMd=%d to ER5=%d:'%(prePMd[0],gid)
+                preids = concatenate([preids, prePMd])
         if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
             EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
             invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
             IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
-            preids=concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
+            preids = concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
         elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
             preids = array(EDSCpre.pop(0))
         postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs

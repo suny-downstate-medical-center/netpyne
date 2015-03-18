@@ -1805,12 +1805,12 @@ summary:     testing learning 2 targets simult using best results for single tar
 -  required when using PMd data
 - implemented by restarting arm from center every trial and reseting arm variables (not sure what I'll do with virtual arm!)
 TODO:
-- first trial PMd input
+- first trial PMd input - ok
 - with 120 sec, some periods no input
-- maxPMdrate variables
-- reduce minNoise so no sync spikes every 10 sec! or increase noisefraction
-- increase noise fraction so spikes not synced
-- check PMD->ER5 connections -- seems similar acitivty for both targets
+- maxPMdrate variables - ok
+- reduce minNoise so no sync spikes every 10 sec! or increase noisefraction - ok 
+- increase noise fraction so spikes not synced - ok
+- check PMD->ER5 connections -- seems similar acitivty for both targets -ok 
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

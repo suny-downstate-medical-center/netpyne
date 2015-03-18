@@ -39,6 +39,8 @@ targets_eval = [0,1] # center-out reaching target to evaluate
 # parameter names and ranges
 pNames = []
 pRanges = []
+
+# single target 
 pNames.append('trainTime'); pRanges.append([10*1e3,120*1e3]) #int
 pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
 #pNames.append('stdpFactor'); pRanges.append([0,1])
@@ -54,6 +56,17 @@ pNames.append('cmdmaxrate'); pRanges.append([10,30])
 #pNames.append('cmdtimewin'); pRanges.append([50,150])
 #pNames.append('explorMovsFactor'); pRanges.append([1,10])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
+
+# multiple targets simultaenously
+pNames.append('trainTime'); pRanges.append([20*1e3,150*1e3]) #int
+pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
+pNames.append('RLfactor'); pRanges.append([0.5,5])
+pNames.append('eligwin'); pRanges.append([50,100])
+pNames.append('backgroundrate'); pRanges.append([30,100])
+pNames.append('backgroundrateExplor'); pRanges.append([500,1500])
+pNames.append('cmdmaxrate'); pRanges.append([10,30])
+pNames.append('maxPMdRate'); pRanges.append([20,100])
+
 
 num_inputs = len(pNames)
 

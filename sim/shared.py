@@ -198,7 +198,7 @@ connweights[ASC,ER2,AMPA]=2.0
 connweights[EB5,EDSC,AMPA]=2.0
 connweights[EB5,IDSC,AMPA]=0.5
 connweights[IDSC,EDSC,GABAA]=1.0 
-connweights[PMd,ER5,AMPA]=2.0
+connweights[PMd,ER5,AMPA]=0.0
 
 
 ###############################################################################
@@ -335,7 +335,7 @@ if PMdinput == 'Plexon':
 if PMdinput == 'targetSplit':
     trialTargets = [] # target id for each trial
     targetPMdInputs = [] # PMd units active for each trial
-    maxPMdRate = 500
+    maxPMdRate = 0.1
     minPMdRate = 0.1
     PMdNoiseRatio = 0.1 
 

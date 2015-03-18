@@ -125,19 +125,17 @@ def runTrainTest():
 # (doesn't work because can't reinitialize system after 1st target)
 def runTrainTest2targets():
 
-    s.trainTime=20000.0
+    s.trainTime=120000.0
     numTrials = ceil(s.trainTime/1000)
-    s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
-    print s.trialTargets
+    s.trialTargets = [1 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
-    print s.targetPMdInputs
     s.plastConnsType=1.0
     s.RLfactor=5
     s.eligwin=85.63069916781706
     s.backgroundrate=51.6480997331155
     s.backgroundrateExplor=596.3726207812871
-    s.cmdmaxrate=10
+    s.cmdmaxrate=20
 
     verystart=time() # store initial time
 
@@ -162,6 +160,8 @@ def runTrainTest2targets():
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
          [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
+    elif s.plastConnsType == 4:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] # only spinal cord 
 
     # initialize network
     createNetwork() 
@@ -188,6 +188,20 @@ def runTrainTest2targets():
     s.duration = s.testTime # testing time
     s.armMinimalSave = 0 # save only arm related data
     
+    # s.targetid = 0
+    # setupSim()
+    # runSim()
+    # finalizeSim()
+    # #saveData()
+    # plotData()
+
+    # if s.rank == 0: # save error to file
+    #     error = mean(s.arm.errorAll)
+    #     print 'Target error for target ',s.targetid,' is:', error 
+    #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+    #         pickle.dump(error, f)
+
+    s.targetid = 1
     setupSim()
     runSim()
     finalizeSim()
@@ -335,9 +349,9 @@ def createNetwork():
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         if s.PMdinput == 'targetSplit' and s.cellnames[gid] == 'ER5': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
-            prePMd = [gid - s.popGidStart[s.ER5] + s.popGidStart[s.PMd]]        
-            if prePMd < s.popGidEnd[s.PMd]: 
-                print 'prePMd=%d to ER5=%d:'%(prePMd[0],gid)
+            prePMd = [x - s.popGidStart[s.ER5] + s.popGidStart[s.PMd] for x in range(gid, gid+2)] # input from 2 PMds       
+            if array(prePMd).all() < s.popGidEnd[s.PMd]: 
+                #print 'prePMd=%d to ER5=%d:'%(prePMd[0],gid)
                 preids = concatenate([preids, prePMd])
         if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
             EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input

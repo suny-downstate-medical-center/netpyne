@@ -1775,6 +1775,21 @@ summary:     testing learning 2 targets simult using best results for single tar
 
 - Changed s.plastConnsType=3.0 to 1.0 and got similar error: 0.102
 
+- Testing new set of params with slightly lower error:
+gen=138
+cand=93, target=0: error = 0.087229
+cand=93, target=1: error = 0.115298
+avg error: 0.101263 
+ 
+  Setting targetid=0
+  Setting trainTime=120000.0
+  Setting plastConnsType=3.0
+  Setting RLfactor=5
+  Setting eligwin=63.36861356899377
+  Setting backgroundrate=93.45211273720386
+  Setting backgroundrateExplor=624.4772397851636
+  Setting cmdmaxrate=13.107045956431962
+
 *** checking 15mar04_evol_evolutionStrategy_2/gen_29_cand_76 (error: 0.149)
   Setting outfilestem=../data/15mar04_evol_evolutionStrategy_2/gen_29_cand_76
   Setting targetid=0
@@ -1804,13 +1819,29 @@ summary:     testing learning 2 targets simult using best results for single tar
 *** single reaching trials to each target 
 -  required when using PMd data
 - implemented by restarting arm from center every trial and reseting arm variables (not sure what I'll do with virtual arm!)
-TODO:
+** plasticity
+added 2 relevant plastic connections: 
+elif s.plastConnsType == 4:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] 
+** TODO
 - first trial PMd input - ok
-- with 120 sec, some periods no input
+- with 120 sec, some periods no input - ok
 - maxPMdrate variables - ok
 - reduce minNoise so no sync spikes every 10 sec! or increase noisefraction - ok 
 - increase noise fraction so spikes not synced - ok
 - check PMD->ER5 connections -- seems similar acitivty for both targets -ok 
+- during testing have PMd input corresponding to target - ok
+- increase ER5 input -- now input from 2 PMds
+- only learning target=0 (0.10), but target=1 (0.22)
+-- try reverse training (60 trials target 1, then 60 trials target 0) - no effect (0.10,0.22)
+-- try training just target 1 to check its making a difference - no! (0.11, 0.22) - checking why
+--- if get backgroundrate back to 50 (from 40), and plasttype=1, get (0.15, 017) -- this indicates original solution very unstable
+--- if set backrate to 51, and plasttype=3, and connweights[PMd,ER5,AMPA]=0.0, maxPMdRate=0, get (0.153, 0.159)
+--- plasttype=1 -> (0.149, 0.143)
+--- cmdmaxrate=20 (from 10) -> (0.14, 0.16)
+-- try increasing range of target ER5 (currently just 96 in total) -- excite all?
+-- try projecting to layer E5B
+
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

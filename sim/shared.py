@@ -51,7 +51,7 @@ nreceptors = len(receptornames) # Number of receptors
 popGidStart = [] # gid starts for each popnames
 popGidEnd= [] # gid starts for each popnames
 popnumbers = []
-PMdinput = 'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
+PMdinput = 'none'#'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
 
     
 # Define params for each cell: cellpops, cellnames, cellclasses, EorI 

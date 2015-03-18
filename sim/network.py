@@ -125,23 +125,28 @@ def runTrainTest():
 # (doesn't work because can't reinitialize system after 1st target)
 def runTrainTest2targets():
 
-    s.trainTime=120000.0
+    s.trainTime=20000.0
     numTrials = ceil(s.trainTime/1000)
     s.trialTargets = [1 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
-    s.plastConnsType=1.0
+
+    # gen_138_cand_93
+    s.plastConnsType=3.0
     s.RLfactor=5
-    s.eligwin=85.63069916781706
-    s.backgroundrate=51.6480997331155
-    s.backgroundrateExplor=596.3726207812871
-    s.cmdmaxrate=20
+    s.eligwin=63.36861356899377
+    s.backgroundrate=93.45211273720386
+    s.backgroundrateExplor=624.4772397851636
+    s.cmdmaxrate=50#13.107045956431962
+    s.backgroundweightExplor = 4.0 
+    s.backgroundrateExplor = 1000
+    s.connweights[IDSC,EDSC,GABAA]=1.0 
 
     verystart=time() # store initial time
 
     s.plotraster = 1 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 0
+    s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
     s.animArm = 0
@@ -277,6 +282,8 @@ def createNetwork():
             elif s.PMdinput == 'targetSplit':
                 cell = celltypes[gid](cellid = gid) # create an NSLOC
                 cell.noise = s.PMdNoiseRatio
+            else:
+                cell = celltypes[gid](cellid = gid) # create an NSLOC
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
         else: 

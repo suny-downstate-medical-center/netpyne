@@ -190,7 +190,7 @@ def plotmotorpopchanges():
         ax1.bar(ind+width, EwpostSum, width, color='r')
         ax1.set_xticks(ind+width)
         ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
-        legend(['pre','post'])
+        #legend(['pre','post'])
         ax1.grid()
 
         ax2 = figh.add_subplot(2,1,2)

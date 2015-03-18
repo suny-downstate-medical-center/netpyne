@@ -1832,16 +1832,42 @@ elif s.plastConnsType == 4:
 - check PMD->ER5 connections -- seems similar acitivty for both targets -ok 
 - during testing have PMd input corresponding to target - ok
 - increase ER5 input -- now input from 2 PMds
-- only learning target=0 (0.10), but target=1 (0.22)
+*** only learning target=0 (0.10), but target=1 (0.22)
 -- try reverse training (60 trials target 1, then 60 trials target 0) - no effect (0.10,0.22)
--- try training just target 1 to check its making a difference - no! (0.11, 0.22) - checking why
+-- try training just target 1 to check its making a difference - no! (0.11, 0.22) - checking why (only diff is sync input
+ from PMd->ER5)  
 --- if get backgroundrate back to 50 (from 40), and plasttype=1, get (0.15, 017) -- this indicates original solution very unstable
 --- if set backrate to 51, and plasttype=3, and connweights[PMd,ER5,AMPA]=0.0, maxPMdRate=0, get (0.153, 0.159)
 --- plasttype=1 -> (0.149, 0.143)
 --- cmdmaxrate=20 (from 10) -> (0.14, 0.16)
 -- try increasing range of target ER5 (currently just 96 in total) -- excite all?
 -- try projecting to layer E5B
-
+*** trying new set of params from gen138_cand93 (0.08, 0.11)
+- target1= 0.156381221575 -- big difference from 0.11 !! 
+- target0= 0.10 -- different from 0.08
+-- set PMdinput = none and PMd conn and weight as original --> PMd connectivity and rates should go back to original
+-- ok!! got original values:  targets=(0.087228673029, 0.115297868634)
+-- 30 sec with and w/o PMd (target1) = (0.143, 0.146)
+-- 60 sec with and w/o PMd (target1) = (0.152, 0.154)
+-- 90 sec with and w/o PMd (target1) = (0.14314928838,0.152573779435)
+-- 120 sec with and w/o PMd (target1) = (0.115297868634,0.18198232555):
+--- without PMd  Spikes: 9624 (9.05 Hz),  Connections: 16635 (0 STDP; 15.63 per cell)
+--- with PMd   Spikes: 9248 (8.69 Hz)  Connections: 17288 (0 STDP; 16.25 per cell)
+--- Interestingly PMd input lead to less spikes (maybe PMd->ER5->EB5->IDSC) - which shows how even small variation can lead
+ to big behavioral changes (actually opposite directions!)
+- difference is always due to weight changes - compare fig below: right (with PMd, good result), left (without PMd, bad
+  result), bottom (EB5->EDSC weight changeS), top (EB5->IDSC weight changes)
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150318_171829.png][fig]] - cweight comparison
+- Conclusion:
+1) EB5->EDSC don't get enough weight change (spikes within elig trace and stdp win) to overcome the initial bias (shflex
+   increases but not enough) -- maybe due to proprioception not modulating acvity enough to distinguish position of hand
+   relative to target; so contradictory info reaches synapses, ie reward and punish for same movement direction=same muscles
+   (towards target=reward, and after surpass target, away from target=punishment)
+2) EB5->IDSC increases weights of wrong muscle group (ext vs flex) -- maybe due to too high firing rates of IDSC, difficult
+   to assign responsability of reward/punish to subset of cells
+- Possible solutions:
+-- increse s.cmdmaxrate=50 (from 20) -- so arm doesnt go past target (smaller movements)
+-- decrease explor movs amplitude -- so arm doesnt go past target
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

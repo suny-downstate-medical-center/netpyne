@@ -1866,8 +1866,46 @@ elif s.plastConnsType == 4:
 2) EB5->IDSC increases weights of wrong muscle group (ext vs flex) -- maybe due to too high firing rates of IDSC, difficult
    to assign responsability of reward/punish to subset of cells
 - Possible solutions:
--- increse s.cmdmaxrate=50 (from 20) -- so arm doesnt go past target (smaller movements)
--- decrease explor movs amplitude -- so arm doesnt go past target
+-- Set s.trainTime=20000.0 so can test quickly
+-- increse s.cmdmaxrate=50 (from 20) -- so arm doesnt go past target (smaller movements) - not enough
+-- decrease explor movs amplitude -- so arm doesnt go past target: - explor movs still past target + ext weight>flex (0.148)
+    s.backgroundweightExplor = 2.0 
+    s.backgroundrateExplor = 500
+-- s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 - explor movs still past target + ext weight>flex; more spikes becasue less Inh (0.174)
+--  s.cmdmaxrate=80 #13.107045956431962 - explor movs dont reach target! good ... but extW>flexW; (0.162 - small mov)
+    s.backgroundweightExplor = 1.5 
+    s.backgroundrateExplor = 200
+-- try s.plastConnsType=1.0 - same
+problem is that explor movs dont activate muscles differentially -- all muscles activated very similarly, so difficult to
+ reinforce specific one
+--     s.backgroundrate=50 (lowered from 97) -- still no distinct activation of submotor pops and extW>flexW (0.158 - small mov)
+    s.backgroundweightExplor = 1.5  
+    s.backgroundrateExplor = 400 (increased from 200)
+-- s.backgroundweight = 1.0*array([1,0.1]) (lowered from 2.0) - similar
+-- s.scaleconnweight = 4*array([[1, 1], [1, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively - similar
+--    s.eligwin=50 (reduced) - similar extW>flexW
+    s.cmdmaxrate=100 (increased)
+    s.backgroundrate=30 (reduced)
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.backgroundweightExplor = 2 (increased)
+    s.backgroundrateExplor = 400
+    s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
+    s.scaleconnweight = 4*array([[2, 1], [2, 0.1]]) (back to original)
+--     s.scaleconnweight = 1*array([[2, 1], [2, 0.1]]) (reduced) -- aha! this worked: no Inh spikes in cortical layers; but
+ flexW>extW; EDSC+IDSC clearly dominated by explor movs -- (0.14 - small mov due to low noise) -- would require more
+ backgroudn noise during testing
+-- s.scaleconnweight = 1.5*array([[2, 1], [2, 0.1]]) (half way) = 0.146942480777 - still no I spikes
+-- s.scaleconnweight = 1.0*array([[2, 2], [2, 0.5]]) (increase ->I W ratio) -0.134387178083 still no I spikes 
+--s.scaleconnweight = 1.5*array([[2, 2], [2, 0.5]]) = 0.148  -- I spikes in L5 but not L2 or L6
+-- s.scaleconnweight = 1.5*array([[2, 2], [2, 0.2]]) - similar
+-- s.scaleconnweight = 1.5*array([[2, 1.5], [2, 0.1]])  
+--     s.scaleconnweight = 1.8*array([[2, 2], [2, 0.1]])  - yey! 0.138910395922, I spikes + flexW>extW
+-- test phase: s.backgroundrate=100 - small movement! BUG - noise not changing
+-- test phase: s.backgroundrate=400 - 0.138 (oscillations back during testing - no diff of EDSC output - all get equally
+ excited, despite flex increased W )
+-- test phase: s.backgroundrate=250 - 0.133 (nice straight line)
+-- train 40 sec instead 20: test phase: s.backgroundrate=300 0.137194853422 (motor commands look good)
+-- try s.scaleconnweight = 1.9*array([[2, 2], [2, 0.1]])  because not enough I spikes -- increase L5 I spikes but not L2
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

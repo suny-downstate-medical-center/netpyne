@@ -125,22 +125,23 @@ def runTrainTest():
 # (doesn't work because can't reinitialize system after 1st target)
 def runTrainTest2targets():
 
-    s.trainTime=20000.0
+    s.trainTime=40000.0
     numTrials = ceil(s.trainTime/1000)
-    s.trialTargets = [1 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    s.trialTargets = [0 if i < numTrials/2 else 0 for i in range(int(numTrials+1))] # set target for each trial
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
     # gen_138_cand_93
-    s.plastConnsType=3.0
+    s.plastConnsType=1.0
     s.RLfactor=5
-    s.eligwin=63.36861356899377
-    s.backgroundrate=93.45211273720386
-    s.backgroundrateExplor=624.4772397851636
-    s.cmdmaxrate=50#13.107045956431962
-    s.backgroundweightExplor = 4.0 
-    s.backgroundrateExplor = 1000
-    s.connweights[IDSC,EDSC,GABAA]=1.0 
+    s.eligwin=50
+    s.cmdmaxrate=100 
+    s.backgroundrate=30
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.backgroundweightExplor = 2
+    s.backgroundrateExplor = 400
+    s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
+    s.scaleconnweight = 1.8*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 
     verystart=time() # store initial time
 
@@ -187,6 +188,9 @@ def runTrainTest2targets():
     plotData()
 
     # test
+    s.backgroundrate=300
+    s.cmdmaxrate=50
+    addBackground()
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
     s.explorMovs = 0 # disable exploratory movements
@@ -206,7 +210,7 @@ def runTrainTest2targets():
     #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
     #         pickle.dump(error, f)
 
-    s.targetid = 1
+    s.targetid = 0
     setupSim()
     runSim()
     finalizeSim()

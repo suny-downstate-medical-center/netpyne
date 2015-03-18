@@ -210,7 +210,7 @@ def runTrainTest2targets():
     #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
     #         pickle.dump(error, f)
 
-    s.targetid = 0
+    s.targetid = 1
     setupSim()
     runSim()
     finalizeSim()

@@ -1911,7 +1911,9 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
 - THINGS TO TRY NEXT:
 -- something ot increase L2 inh spikes
 -- longer training times to increase weight difference -> mov amplitude
--- increasing EB5 inputs during testing without increasing overall background rate - eg. PMd inputs? only background EB5 netstims?
+-- increasing EB5 inputs during testing without increasing overall background rate - eg. PMd inputs? only background EB5
+ netstims?
+-- something to avoid oscillations in EDSC?
 
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets

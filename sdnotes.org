@@ -1832,7 +1832,7 @@ elif s.plastConnsType == 4:
 - check PMD->ER5 connections -- seems similar acitivty for both targets -ok 
 - during testing have PMd input corresponding to target - ok
 - increase ER5 input -- now input from 2 PMds
-*** only learning target=0 (0.10), but target=1 (0.22)
+*** only learning target=0 (0.10), but target=1 (0.22) 
 -- try reverse training (60 trials target 1, then 60 trials target 0) - no effect (0.10,0.22)
 -- try training just target 1 to check its making a difference - no! (0.11, 0.22) - checking why (only diff is sync input
  from PMd->ER5)  
@@ -1842,7 +1842,7 @@ elif s.plastConnsType == 4:
 --- cmdmaxrate=20 (from 10) -> (0.14, 0.16)
 -- try increasing range of target ER5 (currently just 96 in total) -- excite all?
 -- try projecting to layer E5B
-*** trying new set of params from gen138_cand93 (0.08, 0.11)
+*** trying new set of params from gen138_cand93 (0.08, 0.11) - - manually tuning
 - target1= 0.156381221575 -- big difference from 0.11 !! 
 - target0= 0.10 -- different from 0.08
 -- set PMdinput = none and PMd conn and weight as original --> PMd connectivity and rates should go back to original
@@ -1907,7 +1907,10 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
 -- train 40 sec instead 20: test phase: s.backgroundrate=300 0.137194853422 (motor commands look good)
 -- try s.scaleconnweight = 1.9*array([[2, 2], [2, 0.1]])  because not enough I spikes -- increase L5 I spikes but not L2
 -- tested target 0 and worked ok (straight line to target), but need higher amplitude of movement
+-- if reduce cmdmaxrate to 25 - great result (target1= 0.103418745252, target0= 0.114322980568) -- both straight trajectory 
+-- if 15 -> target0= 0.0946032275338
 
+*** got improved result (see above) - further manual tuning
 - THINGS TO TRY NEXT:
 -- something ot increase L2 inh spikes
 -- longer training times to increase weight difference -> mov amplitude
@@ -1915,6 +1918,11 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
  netstims?
 -- something to avoid oscillations in EDSC?
 
+-s.scaleconnweight = 1.9*array([[2, 2], [2, 0.1]]) - target0 = 0.0853974505576 , target1=  0.110104162377  still missing I in
+layer 2)
+- s.scaleconnweight = 1.9*array([[2, 1], [2, 0.1]]) - target0=  0.109734844284
+- s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) - targets= 0.99, 0.94 - with a loops but ok
+- maxPrate = 100 targets=(0.12, 0.10)
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets
 ** description

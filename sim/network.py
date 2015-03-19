@@ -141,7 +141,7 @@ def runTrainTest2targets():
     s.backgroundweightExplor = 2
     s.backgroundrateExplor = 400
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
-    s.scaleconnweight = 1.8*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 
     verystart=time() # store initial time
 
@@ -189,7 +189,7 @@ def runTrainTest2targets():
 
     # test
     s.backgroundrate=300
-    s.cmdmaxrate=25
+    s.cmdmaxrate=15
     addBackground()
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL

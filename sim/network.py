@@ -127,7 +127,7 @@ def runTrainTest2targets():
 
     s.trainTime=40000.0
     numTrials = ceil(s.trainTime/1000)
-    s.trialTargets = [1 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    s.trialTargets = [0 if i < numTrials/2 else 0 for i in range(int(numTrials+1))] # set target for each trial
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
@@ -142,6 +142,8 @@ def runTrainTest2targets():
     s.backgroundrateExplor = 400
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
     s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.backgroundweight = 1.5*array([1,0.3])
+    s.maxPMdRate = 50
 
     verystart=time() # store initial time
 
@@ -210,7 +212,7 @@ def runTrainTest2targets():
     #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
     #         pickle.dump(error, f)
 
-    s.targetid = 1
+    s.targetid = 0
     setupSim()
     runSim()
     finalizeSim()

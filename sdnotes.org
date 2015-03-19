@@ -1912,8 +1912,8 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
 
 *** got improved result (see above) - further manual tuning
 - THINGS TO TRY NEXT:
--- something ot increase L2 inh spikes
--- longer training times to increase weight difference -> mov amplitude
+-- something ot increase L2 inh spikes - not priority since likely to change 
+-- longer training times to increase weight difference -> mov amplitude - can tune via evol
 -- increasing EB5 inputs during testing without increasing overall background rate - eg. PMd inputs? only background EB5
  netstims?
 -- something to avoid oscillations in EDSC?
@@ -1922,7 +1922,20 @@ problem is that explor movs dont activate muscles differentially -- all muscles 
 layer 2)
 - s.scaleconnweight = 1.9*array([[2, 1], [2, 0.1]]) - target0=  0.109734844284
 - s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) - targets= 0.99, 0.94 - with a loops but ok
-- maxPrate = 100 targets=(0.12, 0.10)
+changeset:   176:9819e4540031
+tag:         tip
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Thu Mar 19 13:07:33 2015 -0400
+summary:     manually tuned good params for training to 2 individual targets
+
+- maxPrate = 100 targets=(0.12, 0.10) 
+- PMdinput = 'targetSplit' - only a few PMd spikes (maxPMdRate = 0.1) but still target1=0.13923396797, due to more noise, less clear diff of mus
+  act during explor -- maybe requies more time?
+- maxPMdRate = 50 - 0.138885258858 (similar)
+- s.backgroundweight = 1.5*array([1,0.3]) - targets= 0.109571057654, 0.0923334714042
+- s.backgroundweight = 1.0*array([1,0.3]) -  0.097377773176
+- 
+
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets
 ** description

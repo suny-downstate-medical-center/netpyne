@@ -278,8 +278,8 @@ weightchanges = [] # to periodically store weigth changes
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
-trainBackground = 50 # background input for training phase
-testBackground = 150 # background input for testing phase
+backgroundTrain = 50 # background input for training phase
+backgroundTest = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes
@@ -302,6 +302,7 @@ initArmMovement = 100 # time after which to start moving arm (adds initial delay
 motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
 motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
 cmdmaxrate = scale*20.0 # maximum spikes for motor command (normalizing value)
+cmdmaxrateTest = scale*20.0 # maximum spikes for motor command (normalizing value)
 cmdtimewin = 100 # spike time window for motor command (ms)
 antagInh = 0 # antagonist muscle inhibition
 # proprioceptive encoding

@@ -121,18 +121,19 @@ def runTrainTest():
     print('\nDone; total time = %0.1f s.' % totaltime)
     if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
 
-# training and testing phases 
-# (doesn't work because can't reinitialize system after 1st target)
-def runTrainTest2targets():
+# training and testing phases  - Manual param tuning
+def runTrainTest2targetsManual():
 
-    s.trainTime=40000.0
+    s.trainTime=120000.0
     numTrials = ceil(s.trainTime/1000)
-    s.trialTargets = [0 if i < numTrials/2 else 0 for i in range(int(numTrials+1))] # set target for each trial
+    #s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    s.trialTargets = [i%2 for i in range(int(numTrials+1))] # set target for each trial
+    
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
     # gen_138_cand_93
-    s.plastConnsType=1.0
+    s.plastConnsType=4.0
     s.RLfactor=5
     s.eligwin=50
     s.cmdmaxrate=100 
@@ -143,7 +144,8 @@ def runTrainTest2targets():
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
     s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
     s.backgroundweight = 1.5*array([1,0.3])
-    s.maxPMdRate = 50
+    s.maxPMdRate = 400
+    s.connweights[s.PMd,s.ER5,s.AMPA]=4.0
 
     verystart=time() # store initial time
 
@@ -189,7 +191,7 @@ def runTrainTest2targets():
     #saveData()
     plotData()
 
-    # test
+    #test
     s.backgroundrate=300
     s.cmdmaxrate=15
     addBackground()
@@ -199,20 +201,20 @@ def runTrainTest2targets():
     s.duration = s.testTime # testing time
     s.armMinimalSave = 0 # save only arm related data
     
-    # s.targetid = 0
-    # setupSim()
-    # runSim()
-    # finalizeSim()
-    # #saveData()
-    # plotData()
-
-    # if s.rank == 0: # save error to file
-    #     error = mean(s.arm.errorAll)
-    #     print 'Target error for target ',s.targetid,' is:', error 
-    #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
-    #         pickle.dump(error, f)
-
     s.targetid = 0
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
+
+    if s.rank == 0: # save error to file
+        error = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error 
+        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+            pickle.dump(error, f)
+
+    s.targetid = 1
     setupSim()
     runSim()
     finalizeSim()
@@ -232,6 +234,117 @@ def runTrainTest2targets():
     print('\nDone; total time = %0.1f s.' % totaltime)
     if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
 
+# training and testing via evol
+def runTrainTest2targets():
+
+    numTrials = ceil(s.trainTime/1000)
+    #s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    s.trialTargets = [i%2 for i in range(int(numTrials+1))] # set target for each trial
+    
+    s.targetid=s.trialTargets[0]
+    s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
+
+    # gen_138_cand_93
+    s.plastConnsType=4.0
+    s.RLfactor=5
+    s.eligwin=50
+    s.cmdmaxrate=100 
+    s.backgroundrate=30
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.backgroundweightExplor = 2
+    s.backgroundrateExplor = 400
+    s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
+    s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.backgroundweight = 1.5*array([1,0.3])
+    s.maxPMdRate = 400
+    s.connweights[s.PMd,s.ER5,s.AMPA]=4.0
+
+    verystart=time() # store initial time
+
+    s.plotraster = 1 # set plotting params
+    s.plotconn = 0
+    s.plotweightchanges = 1
+    s.plot3darch = 0
+    s.graphsArm = 1
+    s.animArm = 0
+    s.savemat = 0 # save data during testing
+    s.armMinimalSave = 0 # save only arm related data
+
+    # set plastic connections based on plasConnsType (from evol alg)
+    if s.plastConnsType == 0:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC]] # only spinal cord 
+    elif s.plastConnsType == 1:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 2:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5]] # + L6
+    elif s.plastConnsType == 3:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
+    elif s.plastConnsType == 4:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] # only spinal cord 
+
+    # initialize network
+    createNetwork() 
+    addStimulation()
+    addBackground()
+
+    # train
+    s.usestdp = 1 # Whether or not to use STDP
+    s.useRL = 1 # Where or not to use RL
+    s.explorMovs = 1 # enable exploratory movements
+    s.antagInh = 0 # enable exploratory movements
+    s.duration = s.trainTime # train time
+
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
+
+    #test
+    s.backgroundrate=300
+    s.cmdmaxrate=15
+    addBackground()
+    s.usestdp = 0 # Whether or not to use STDP
+    s.useRL = 0 # Where or not to use RL
+    s.explorMovs = 0 # disable exploratory movements
+    s.duration = s.testTime # testing time
+    s.armMinimalSave = 0 # save only arm related data
+    
+    s.targetid = 0
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
+
+    if s.rank == 0: # save error to file
+        error = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error 
+        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+            pickle.dump(error, f)
+
+    s.targetid = 1
+    setupSim()
+    runSim()
+    finalizeSim()
+    #saveData()
+    plotData()
+
+    if s.rank == 0: # save error to file
+        error = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error 
+        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+            pickle.dump(error, f)
+
+    ## Wrapping up
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+    if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
 
 
 ###############################################################################
@@ -362,7 +475,11 @@ def createNetwork():
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         if s.PMdinput == 'targetSplit' and s.cellnames[gid] == 'ER5': # PMds 0-47 -> ER5 0-47 ; PMds 48-95 -> ER5 48-95
-            prePMd = [x - s.popGidStart[s.ER5] + s.popGidStart[s.PMd] for x in range(gid, gid+2)] # input from 2 PMds       
+            #prePMd = [x - s.popGidStart[s.ER5] + s.popGidStart[s.PMd] for x in range(gid, gid+2)] # input from 2 PMds       
+            if gid < s.popGidStart[s.ER5] + s.popnumbers[s.ER5]/2:
+                prePMd = [(x - s.popGidStart[s.ER5])%(s.popnumbers[s.PMd]/2) + s.popGidStart[s.PMd] for x in range(gid, gid+1)] # input from 2 PMds  
+            else:
+                prePMd = [(x - s.popGidStart[s.ER5])%(s.popnumbers[s.PMd]/2) + s.popGidStart[s.PMd] + s.popnumbers[s.PMd]/2 for x in range(gid, gid+1)] # input from 2 PMds  
             if array(prePMd).all() < s.popGidEnd[s.PMd]: 
                 #print 'prePMd=%d to ER5=%d:'%(prePMd[0],gid)
                 preids = concatenate([preids, prePMd])
@@ -597,17 +714,22 @@ def setupSim():
     s.rawrecordings = [] # A list for storing actual cell voltages (WARNING, slow!)
     if s.saveraw: 
         if s.rank==0: print('\nSetting up raw recording...')
-        nquantities = 4 # Number of variables from each cell to record from
+        s.nquantities = 9 # Number of variables from each cell to record from
         # Later this part should be modified because NSLOC doesn't have V, u and I.
         for c in range(s.cellsperhost):
             gid = s.gidVec[c] # Get this cell's GID
             if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # NSLOC doesn't have V, u and I
                 continue 
-            recvecs = [h.Vector() for q in range(nquantities)] # Initialize vectors
+            recvecs = [h.Vector() for q in range(s.nquantities)] # Initialize vectors
             recvecs[0].record(h._ref_t) # Record simulation time
             recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
             recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
             recvecs[3].record(s.cells[c]._ref_I) # Record cell current
+            recvecs[4].record(s.cells[c]._ref_gAMPA)
+            recvecs[5].record(s.cells[c]._ref_gNMDA)
+            recvecs[6].record(s.cells[c]._ref_gGABAA)
+            recvecs[7].record(s.cells[c]._ref_gGABAB)
+            recvecs[8].record(s.cells[c]._ref_gOpsin)
             s.rawrecordings.append(recvecs) # Keep all those vectors
 
 
@@ -749,7 +871,7 @@ def finalizeSim():
         if host==s.rank: # Only act on a single host
             hostspikecells=array([])
             hostspiketimes=array([])
-            for c in range(len(s.hostspikevecs)):
+            for c in range(len(s.hostspikevecs)): # fails when saving raw
                 thesespikes = array(s.hostspikevecs[c]) # Convert spike times to an array
                 nthesespikes = len(thesespikes) # Find out how many of spikes there were for this cell
                 hostspiketimes = concatenate((hostspiketimes, thesespikes)) # Add spikes from this cell to the list

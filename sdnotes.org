@@ -1823,7 +1823,7 @@ avg error: 0.101263
 added 2 relevant plastic connections: 
 elif s.plastConnsType == 4:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] 
-** TODO
+** Manual parameter tuning
 - first trial PMd input - ok
 - with 120 sec, some periods no input - ok
 - maxPMdrate variables - ok
@@ -1934,8 +1934,75 @@ summary:     manually tuned good params for training to 2 individual targets
 - maxPMdRate = 50 - 0.138885258858 (similar)
 - s.backgroundweight = 1.5*array([1,0.3]) - targets= 0.109571057654, 0.0923334714042
 - s.backgroundweight = 1.0*array([1,0.3]) -  0.097377773176
-- 
+- TODO currently requires cmdmaxrate different during training (100) and testing (15) - justified as gain control mech? good if
+  can find alternative solution using rates/weights
 
+*** testing 2 target simult with new params
+-     s.trainTime=40000.0
+    numTrials = ceil(s.trainTime/1000)
+    s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
+    s.targetid=s.trialTargets[0]
+    s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
+
+    # gen_138_cand_93
+    s.plastConnsType=1.0
+    s.RLfactor=5
+    s.eligwin=50
+    s.cmdmaxrate=100 
+    s.backgroundrate=30
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.backgroundweightExplor = 2
+    s.backgroundrateExplor = 400
+    s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
+    s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.backgroundweight = 1.5*array([1,0.3])
+    s.maxPMdRate = 50
+
+    # test
+    s.backgroundrate=300
+    s.cmdmaxrate=15
+    addBackground()
+    s.usestdp = 0 # Whether or not to use STDP
+    s.useRL = 0 # Where or not to use RL
+    s.explorMovs = 0 # disable exploratory movements
+    s.duration = s.testTime # testing time
+    s.armMinimalSave = 0 # save only arm related data
+
+- train seq = 0,1 ; test seq = 0,1 --> 0.115844295748, 0.188942301951 (results always shown as target0,target1)
+- train seq = 0,1 ; test seq = 1,0 --> 0.117981198836,  0.184840979175
+- train seq = 1,0 ; test seq = 0,1 --> 0.227255204128,0.0878047609185
+- trainseq=0,1; traintime=120 -->0.112026315795,0.190797769314
+- trainseq=0,1; traintime=120 ,s.maxPMdRate = 100 --> 0.13295838616,0.157784587263
+- s.maxPMdRate = 25 --> 0.125935859475,0.184367942309
+- s.maxPMdRate=100; PMd->ER5 now convers all 192 ER5 cells: --> 0.134127466404,0.160127195212
+            if gid < s.popGidStart[s.ER5] + s.popnumbers[s.ER5]/2:
+                prePMd = [(x - s.popGidStart[s.ER5])%(s.popnumbers[s.PMd]/2) + s.popGidStart[s.PMd] for x in range(gid, gid+2)] # input from 2 PMds  
+            else:
+                prePMd = [(x - s.popGidStart[s.ER5])%(s.popnumbers[s.PMd]/2) + s.popGidStart[s.PMd] + s.popnumbers[s.PMd]/2 for x in range(gid, gid+2)] # input from 2 PMds  
+            if array(prePMd).all() < s.popGidEnd[s.PMd]: 
+- no visible difference in ER5 during testing! - difference not so visible due to increased background noise during testing
+- s.connweights[s.PMd,s.ER5,s.AMPA]=2.0 (from 1.0) --> 0.125592312444, 0.179047145048
+- check still working with 1 target at a time! (train to target0 only) 0.124168093, 0.177591768439 - ~ok
+- s.connweights[s.PMd,s.ER5,s.AMPA]=3.0 -> 0.128091173195,0.168522263229
+- s.connweights[s.PMd,s.ER5,s.AMPA]=4.0 -> 0.112962290221,0.168414842114
+- s.connweights[s.PMd,s.ER5,s.AMPA]=5.0 -> 0.109558881166,0.184846433745
+- s.connweights[s.PMd,s.ER5,s.AMPA]=6.0 -> 0.115029110223,0.196152691726
+-prePMd = [(x - s.popGidStart[s.ER5])%(s.popnumbers[s.PMd]/2) + s.popGidStart[s.PMd] for x in range(gid, gid+1)] (instead of
+gid+2) - (0.135846528302,0.161628997419)
+- s.maxPMdRate = 200 - 0.117764933802, 0.162524442976
+- s.maxPMdRate = 400 
+- add plasticity to ER5->ERB ! -0.106916823513, 0.192076829175 
+- test alternating trials - 0.129370591289,0.161842442536 (good, almost 2 diff directions) 
+- alternating without plasticity -  0.13223740198, 0.171596354519 (worse, both same direction, so keep plasticity
+- s.maxPMdRate = back to 200 - 0.151714363559, 0.138038425351 (changed direction, now both to left)
+- alternating+plasticity+maxPMdrate=200 -> 0.108899870345,0.195044311131
+- alternating+plasticity+maxPMdrate=400 -> 0.129370591289,0.161842442536
+- alternating+plasticity+maxPMdrate=600 -> 0.135180421073, 0.17617637466
+
+** Things to try
+- smaller subsets of ER5
+- plastic connection types 1,2,3 + ER5->EB5
+- Targeting EB5 directly (last option)
 * 15mar16 sim -  2 targets (single), 1k neurons, dummyArm - after manually tuning params :results:
 ** changesets
 ** description
@@ -1944,7 +2011,100 @@ explor moves still via EDSC+IDSC
 also reduced range of params
 ** results
 
+* 15mar19 checking izhi traces
+** V >80 mV for >50% of cells (1 sec sim)
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150319_185150.png][fig]] - example of 4 cell traces (V,u,I,gNDMA)
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150319_190500.png][fig]] - summed conductances - g=gAMPA+gNMDA+gGABAA+gGABAB+gOpsin
+** chat with bill
+oh ok
+so the v looks reasonable
+that's all we care about
+great
+maybe check all of them via a min and max and make sure nobody going nuts
+(this was a problem in the intf sim that i took over from ash which is why i didn't pursue it further)
+Salvador Dura
+udpated labels: /u/salvadord/Downloads/izhi_traces.png
+@max min - ok
+William Lytton
+generallywhen you graph v make all between eg -75,50 mV so can compare
+but this fine -- i can see what's going on here
+Salvador Dura
+min =   -76.3631 
+but max = 163.0450 which too high right?
+will check trace
+William Lytton
+yes 163 too high -- 50 would be highest ~erev of Na
+Salvador Dura
+>50% of cells have peak spike voltages >80mv (these includes pyramidal, FS and LTS) 
+is this a problem?
+William Lytton
+any idea why happening? -- are these spikes or are they synaptic inputs?
+let's look at some of the worse offenders to see what is going on
+@prob certainly more of a bug than a feature
+the I shows a spike-like shape which not sure if normal
+William Lytton
+I'm not quite understanding how this works since generally the spike is just a paste on i thought so the V itself never goes up
 
+** equivalence of both izhi models
+*** Izhi 2003 paper and izh.mod implementation (original)
+-From Izhikevich, 2003 cell paper
+v' = 0.04*v*v + 5*v + 140 - u + I
+u' = a*(b*v - u)
+
+- izh.mod (original)
+V = V + delta * (0.04*V*V + f*V + g - u + I - gsyn*(V-erev));
+V' = 0.04*V*V + f*V + g - u + I - gsyn*(V-erev);
+
+u = u + delta * (a*(b*vv-u));
+u' = a*(b*vv-u); 
+
+*** Izhikevich 2008 network paper and izhi.mod (cliffs)
+- From Izhikevich, 2008 network paper
+Cv  = k(v−vr)(v−vt)−u+I 
+u ̇ = a{b(v−vr)−u}
+
+- izhi.mod (cliff) 
+V = V + delta*(V + k*(V-vr)*(V-vt) - u - I)/C;  % note I = -Isyn
+u = u + delta*a*(b*(V-vr)-u); % Calculate recovery variable
+
+- in izhi.mod there is an extra V!? ... should be:
+V  = V + delta*(k(V−vr)(V−vt)−u+I) / C
+
+*** Equivalence between Izhi,2003 and Izhi,2008 
+- if vr=-60; vt=-40; C=100; k=7  --> from Izhi book:
+V' = (7*V^2)/100 + 7*V + I/100 - u/100 + 168
+V' = 0.07*V*V + 7V + 168 - u/100 + I/100
+ 
+- if k = 3; vr = -60;  vt = -50; C=100; k=3 --> from Cliff:
+V' = (3*V^2)/100 + (33*V)/10 + I/100 - u/100 + 90
+V' = 0.03*V*V + 0.33V + 90 - u/100 + I/100
+
+***  Izhikevich 2007 Book code
+C=100; vr=-60; vt=-40; k=0.7;
+a=0.03; b=-2; c=-50; d=100;
+vpeak=35;
+% parameters used for RS
+% neocortical pyramidal neurons
+% spike cutoff
+T=1000; tau=1;
+n=round(T/tau);
+v=vr*ones(1,n);  u=0*v;
+I=[zeros(1,0.1*n),70*ones(1,0.9*n)];% pulse of input DC current
+for i=1:n-1                         % forward Euler method
+    v(i+1)=v(i)+tau*(k*(v(i)-vr)*(v(i)-vt)-u(i)+I(i))/C;
+    u(i+1)=u(i)+tau*a*(b*(v(i)-vr)-u(i));
+    if v(i+1)>=vpeak
+        v(i)=vpeak;
+        v(i+1)=c;
+        u(i+1)=u(i+1)+d;
+    end;
+end;
+plot(tau*(1:n), v);
+% a spike is fired!
+% padding the spike amplitude
+% membrane voltage reset
+% recovery variable update
+% plot the result
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

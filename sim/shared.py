@@ -209,7 +209,7 @@ connweights[PMd,ER5,AMPA]=1.0
 trainTime = 20*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
-h.dt = 0.5 # Internal integration timestep to use
+h.dt = 0.025 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 5000 # How frequently to update progress, in ms
 randseed = 1 # Random seed to use
@@ -225,7 +225,7 @@ savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 savebackground = True # save background (NetStims) inputs
-saveraw = False # Whether or not to record raw voltages etc.
+saveraw = True # Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
@@ -286,7 +286,6 @@ backgroundnumber = 1e9 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 2.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundreceptor = NMDA # Which receptor to stimulate
-
 
 ## Virtual arm parameters
 useArm =  'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)

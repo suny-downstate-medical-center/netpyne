@@ -22,7 +22,7 @@ ngen = -1 #global variable keeping number of generations
 ### Simulation options
 ###############################################################################  
 evolAlgorithm = 'evolutionStrategy' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
-simdatadir = '../data/15mar20_evol_'+evolAlgorithm # folder to save sim results
+simdatadir = '../data/15mar20_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
@@ -336,7 +336,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
 
 
     # Custom algorithm based on Krichmar's params
-    if evolAlgorithm == 'krichmarCustom_3':
+    if evolAlgorithm == 'krichmarCustom':
         # a real-valued optimization algo- rithm called Evolution Strategies (De Jong, 2002) 
         # was used with deterministic tournament selection, weak-elitism replacement, 40% Gaussian mutation and 50%
         # crossover. Weak-elitism ensures the overall fitness monotonically increases each generation by replacing the 
@@ -452,7 +452,7 @@ def create_island(rand_seed, island_number, mp_migrator, simdatadir, max_evaluat
                             individuals_file=indifile)
 
     # Estimation of Distribution
-    elif evolAlgorithm == 'estimationDist_2':
+    elif evolAlgorithm == 'estimationDist':
         ea = inspyred.ec.EDA(prng)
         if num_islands > 1: ea.migrator = mp_migrator
         ea.terminator = inspyred.ec.terminators.generation_termination

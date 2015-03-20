@@ -110,7 +110,6 @@ def runTrainTest():
 
     if s.rank == 0: # save error to file
         error = mean(s.arm.errorAll)
-        s.targetid = 0 # so saves to correct file name (error of both targets saved to single file ending in target_0_error)
         print 'Target error for target ',s.targetid,' is:', error 
         with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
             pickle.dump(error, f)
@@ -339,6 +338,8 @@ def runTrainTest2targets():
         print 'Target error for target ',s.targetid,' is:', error1 
         error = (error0+error1)/2
         print 'Mean error = ',error
+        
+        s.targetid = 0 # so saves to correct file name (error of both targets saved to single file ending in target_0_error)
         with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
             pickle.dump(error, f)
 

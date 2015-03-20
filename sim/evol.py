@@ -22,7 +22,7 @@ ngen = -1 #global variable keeping number of generations
 ### Simulation options
 ###############################################################################  
 evolAlgorithm = 'evolutionStrategy' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
-simdatadir = '../data/15mar16_evol_'+evolAlgorithm # folder to save sim results
+simdatadir = '../data/15mar20_evol_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
@@ -34,7 +34,7 @@ max_generations = 1000
 max_evaluations = max_generations *  num_islands * pop_size
 mutation_rate = 0.4 # only for custom EC  
 crossover = 0.5 # only for custom EC
-targets_eval = [0,1] # center-out reaching target to evaluate
+targets_eval = [0] # center-out reaching target to evaluate
 
 # parameter names and ranges
 pNames = []
@@ -58,15 +58,15 @@ pNames.append('cmdmaxrate'); pRanges.append([10,30])
 #pNames.append('explorMovsDur'); pRanges.append([500,1500])
 
 # multiple targets simultaenously
-pNames.append('trainTime'); pRanges.append([20*1e3,150*1e3]) #int
-pNames.append('plastConnsType'); pRanges.append([0,1,2,3]) # int
-pNames.append('RLfactor'); pRanges.append([0.5,5])
-pNames.append('eligwin'); pRanges.append([50,100])
-pNames.append('backgroundrate'); pRanges.append([30,100])
-pNames.append('backgroundrateExplor'); pRanges.append([500,1500])
+pNames.append('trainTime'); pRanges.append([40*1e3,160*1e3]) #int
+pNames.append('plastConnsType'); pRanges.append([4,5,6,7]) # int
+pNames.append('RLfactor'); pRanges.append([3,6])
+pNames.append('backgroundrate'); pRanges.append([20,50])
+pNames.append('backgroundrateExplor'); pRanges.append([300,600])
+pNames.append('backgroundrateTest'); pRanges.append([30,100])
 pNames.append('cmdmaxrate'); pRanges.append([10,30])
-pNames.append('maxPMdRate'); pRanges.append([20,100])
-
+pNames.append('cmdmaxrateTest'); pRanges.append([10,30])
+pNames.append('maxPMdRate'); pRanges.append([300,500])
 
 num_inputs = len(pNames)
 

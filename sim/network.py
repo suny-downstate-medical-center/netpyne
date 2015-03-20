@@ -245,27 +245,20 @@ def runTrainTest2targets():
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
     # gen_138_cand_93
-    s.plastConnsType=4.0
-    s.RLfactor=5
-    s.eligwin=50
-    s.cmdmaxrate=100 
-    s.backgroundrate=30
-    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
     s.backgroundweightExplor = 2
-    s.backgroundrateExplor = 400
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
     s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
     s.backgroundweight = 1.5*array([1,0.3])
-    s.maxPMdRate = 400
     s.connweights[s.PMd,s.ER5,s.AMPA]=4.0
 
     verystart=time() # store initial time
 
-    s.plotraster = 1 # set plotting params
+    s.plotraster = 0 # set plotting params
     s.plotconn = 0
-    s.plotweightchanges = 1
+    s.plotweightchanges = 0
     s.plot3darch = 0
-    s.graphsArm = 1
+    s.graphsArm = 0
     s.animArm = 0
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
@@ -284,6 +277,15 @@ def runTrainTest2targets():
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
     elif s.plastConnsType == 4:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] # only spinal cord 
+    elif s.plastConnsType == 5:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5], [s.ER5,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 6:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], [s.ER5,s.EB5]] # + L6
+    elif s.plastConnsType == 7:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5], [s.ER5,s.EB5]] # + Inh
 
     # initialize network
     createNetwork() 
@@ -301,11 +303,11 @@ def runTrainTest2targets():
     runSim()
     finalizeSim()
     #saveData()
-    plotData()
+    #plotData()
 
     #test
-    s.backgroundrate=300
-    s.cmdmaxrate=15
+    s.backgroundrates=s.backgroundrateTest # 300
+    s.cmdmaxrate=s.cmdmaxrateTest # 15
     addBackground()
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
@@ -318,24 +320,24 @@ def runTrainTest2targets():
     runSim()
     finalizeSim()
     #saveData()
-    plotData()
+    #plotData()
 
     if s.rank == 0: # save error to file
-        error = mean(s.arm.errorAll)
-        print 'Target error for target ',s.targetid,' is:', error 
-        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
-            pickle.dump(error, f)
+        error0 = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error0 
 
     s.targetid = 1
     setupSim()
     runSim()
     finalizeSim()
-    #saveData()
-    plotData()
+    saveData()
+    #plotData()
 
     if s.rank == 0: # save error to file
-        error = mean(s.arm.errorAll)
-        print 'Target error for target ',s.targetid,' is:', error 
+        error1 = mean(s.arm.errorAll)
+        print 'Target error for target ',s.targetid,' is:', error1 
+        error = (error0+error1)/2
+        print 'Mean error = ',error
         with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
             pickle.dump(error, f)
 

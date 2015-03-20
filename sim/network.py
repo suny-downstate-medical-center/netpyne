@@ -405,6 +405,7 @@ def createNetwork():
                 cell.noise = s.PMdNoiseRatio
             else:
                 cell = celltypes[gid](cellid = gid) # create an NSLOC
+            cell.number = s.backgroundnumber
         elif s.cellnames[gid] == 'ASC':
             cell = celltypes[gid](cellid = gid) #create an NSLOC    
         else: 

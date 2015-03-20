@@ -278,8 +278,8 @@ weightchanges = [] # to periodically store weigth changes
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
-backgroundTrain = 50 # background input for training phase
-backgroundTest = 150 # background input for testing phase
+backgroundrateTrain = 50 # background input for training phase
+backgroundrateTest = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e9 # Number of spikes

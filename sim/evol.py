@@ -15,6 +15,7 @@ from popen2 import popen2
 import pickle
 import multiprocessing
 import Queue
+import socket
 
 ngen = -1 #global variable keeping number of generations
 
@@ -22,7 +23,7 @@ ngen = -1 #global variable keeping number of generations
 ### Simulation options
 ###############################################################################  
 evolAlgorithm = 'evolutionStrategy' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
-simdatadir = '../data/15mar20_'+evolAlgorithm # folder to save sim results
+simdatadir = '../data/15mar20b_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job
@@ -176,16 +177,21 @@ def parallel_evaluation_pbs(candidates, args):
             walltime = "01:00:00"
             processors = "nodes=1:ppn=%d"%(numproc)
 
+            if socket.gethostname()[0:2] == 'ma': 
+                queueName == 'longq'
+            elif socket.gethostname()[0:2] == 'do': 
+                queueName == 'batch'
+
             job_string = """#!/bin/bash 
             #PBS -N %s
             #PBS -l walltime=%s
-            #PBS -q longq
+            #PBS -q %s
             #PBS -l %s
             #PBS -o %s.run
             #PBS -e %s.err
             cd $PBS_O_WORKDIR
             echo $PBS_O_WORKDIR
-            %s""" % (job_name, walltime, processors, job_name, job_name, command)
+            %s""" % (job_name, walltime, queueName processors, job_name, job_name, command)
 
             # Send job_string to qsub
             input.write(job_string)

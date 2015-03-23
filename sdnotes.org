@@ -2436,6 +2436,56 @@ plot(tau*(1:n), v);
 % membrane voltage reset
 % recovery variable update
 % plot the result
+*** chat with cliff - maybe not equivalent
+ok, well hopefuly doesnt make too much of  difference 😃
+also do u happen to know how to derive the old izhi eqn (2003 paper) from the generalized formulation (2008 network paper)?
+v' = 0.04*v*v + 5*v + 140 - u + I
+Cv  = k(v−vr)(v−vt)−u+I 
+bill and I are going nuts to find equivalence
+17 mins
+Salvador Dura
+Cliff Kerr
+i'm not so sure they are equivalent
+he didn't actually explain it very well in his 2008 paper where it was derived from, and i haven't seen them used very much elsewhere, the 2003 formulatino is more common
+Cliff • 7 mins
+oh really? in the network paper he cites the 2003 paper and doesnt say there are any changes
+7 mins
+Salvador Dura
+Cliff Kerr
+the reason i used 2008 is because it has the additional ionic currents
+ok, well hopefuly doesnt make too much of  difference 😃
+also do u happen to know how to derive the old izhi eqn (2003 paper) from the generalized formulation (2008 network paper)?
+v' = 0.04*v*v + 5*v + 140 - u + I
+Cv  = k(v−vr)(v−vt)−u+I 
+bill and I are going nuts to find equivalence
+17 mins
+Salvador Dura
+Cliff Kerr
+i'm not so sure they are equivalent
+he didn't actually explain it very well in his 2008 paper where it was derived from, and i haven't seen them used very much elsewhere, the 2003 formulatino is more common
+Cliff • 7 mins
+oh really? in the network paper he cites the 2003 paper and doesnt say there are any changes
+7 mins
+Salvador Dura
+Cliff Kerr
+the reason i used 2008 is because it has the additional ionic currents
+ok, well hopefuly doesnt make too much of  difference 😃
+also do u happen to know how to derive the old izhi eqn (2003 paper) from the generalized formulation (2008 network paper)?
+v' = 0.04*v*v + 5*v + 140 - u + I
+Cv  = k(v−vr)(v−vt)−u+I 
+bill and I are going nuts to find equivalence
+17 mins
+Salvador Dura
+Cliff Kerr
+i'm not so sure they are equivalent
+he didn't actually explain it very well in his 2008 paper where it was derived from, and i haven't seen them used very much elsewhere, the 2003 formulatino is more common
+Cliff • 7 mins
+oh really? in the network paper he cites the 2003 paper and doesnt say there are any changes
+7 mins
+Salvador Dura
+Cliff Kerr
+the reason i used 2008 is because it has the additional ionic currents
+
 ** Fixed extra V in cliff eqn
 *** chat with cliff
 seems there is a diff between your izhi implementation and the one shown in the 2008 paper and the 2007 book
@@ -2448,7 +2498,7 @@ Cliff Kerr
 oh!!! that's interesting! um, i can't think of any reason, V = V + delta*V doesn't make sense
 Cliff • 19 mins
 *** comparing diff in sim
-**** with old model 
+**** with bugged izhi model 
 Analyzing...
   Run time: 61.2 s (120-s sim; 1 scale; 1064 cells; 4 workers)
   Spikes: 957111 (7.50 Hz)
@@ -2514,6 +2564,118 @@ Plotting weight changes...
 Target error for target  1  is: 0.161842442536
 
 Done; total time = 101.1 s
+**** with corrected izhi model
+Analyzing...
+  Run time: 62.9 s (120-s sim; 1 scale; 1064 cells; 4 workers)
+  Spikes: 1026664 (8.04 Hz)
+  Connections: 16803 (1612 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (4)
+  Done; time = 17.4 s
+Plotting weight changes...
+
+initial E weights:  [488.0, 360.0, 528.0, 568.0]
+final E weigths:  [375.0829811586976, 261.5880149319242, 371.3416474511743, 399.6792800923642]
+absolute E difference:  [-112.91701884  -98.41198507 -156.65835255 -168.32071991]
+relative E difference:  [-0.23138733 -0.27336663 -0.29670143 -0.2963393 ]
+
+initial I weights:  [122.0, 90.0, 132.0, 142.0]
+final I weigths:  [99.7652838244063, 68.77564870238115, 113.89333282369523, 130.7753127447615]
+absolute I difference:  [-22.23471618 -21.2243513  -18.10666718 -11.22468726]
+relative I difference:  [-0.18225177 -0.23582613 -0.13717172 -0.07904709]
+Creating background inputs...
+  Number created on host 0: 226
+
+Setting up virtual arm...
+
+Running...
+  Done; run time = 0.5 s; real-time ratio: 1.94.
+
+Gathering spikes...
+  Done; gather time = 0.2 s.
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 0.5 s (1-s sim; 1 scale; 1064 cells; 4 workers)
+  Spikes: 17762 (16.69 Hz)
+  Connections: 16803 (0 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (4)
+  Done; time = 0.3 s
+Plotting weight changes...
+Target error for target  1  is: 0.126373968529
+
+Setting up virtual arm...
+
+Running...
+  Done; run time = 0.5 s; real-time ratio: 1.94.
+
+Gathering spikes...
+  Done; gather time = 0.2 s.
+
+Closing dummy virtual arm ...
+
+Analyzing...
+  Run time: 0.5 s (1-s sim; 1 scale; 1064 cells; 4 workers)
+  Spikes: 17928 (16.85 Hz)
+  Connections: 16803 (0 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (4)
+  Done; time = 0.3 s
+Plotting weight changes...
+Target error for target  1  is: 0.166514907959
+
+Done; total time = 106.9 s.
+* 15mar20 running sims on 'do'
+** error running nrniv from nodes
+~/.tcshrc
+source /act/Modules/3.2.6/init/tcsh
+module load neuron-gnu
+setenv SITE /usr/site
+setenv PATH /home/salvadord/local/scripts:/home/share/anaconda/bin:/home/share/neuron-gnu/nrn/x86_64/bin:/home/share/neuron-gnu/iv/x86_64/bin:/home/share/python/epd-7.0-2-rh5-x86_64/bin:/home/share/bin:/usr/local/python2.7/bin:/usr/kerberos/bin:/usr/local/bin:/bin:/usr/bin:/usr/X11R6/bin:$PATH
+~
+** error running nrnivmodl
+~/.tcshrc
+setenv SITE /home/billl/site
+set path = ($SITE/bin $path)
+setenv PAGER cat
+source $SITE/config/csh_defaults
+setenv MAIL /var/spool/mail/billl
+# source /usr/site/nrniv/simctrl/nrnenv-epd
+# unlimit coredumpsize
+
+#source $SITE/config/csh_aliases
+unsetenv XINITRC
+setenv RTF2LATEX2E_DIR /usr/local/rtf2latex2e
+setenv HOC_LIBRARY_PATH "$HOC_LIBRARY_PATH /u/billl/nrniv/hoc"
+setenv MODL_INCLUDE $MODL_INCLUDE":/u/billl/nrniv/migliore/ca3_2002"
+setenv LIBS -ldl
+# setenv CVS_RSH nrncvs
+setenv CVS_RSH ssh
+
+** error importing neuron
+downstate-cluster% nrniv -python -mpi
+numprocs=1
+NEURON -- VERSION 7.4 (1239:f59924c59c5a) 2015-03-20
+Duke, Yale, and the BlueBrain Project -- Copyright 1984-2015
+See http://www.neuron.yale.edu/neuron/credits
+
+loading membrane mechanisms from x86_64/.libs/libnrnmech.so
+Additional mechanisms from files
+ izhi.mod nsloc.mod stdp.mod
+>>> from neuron import h
+Traceback (most recent call last):
+  File "stdin", line 1, in <module>
+  File "/home/share/python-gnu/local/lib/python2.7/site-packages/neuron/__init__.py", line 81, in <module>
+    import neuron.hoc
+ImportError: /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/hoc.so: undefined symbol: nrn_wrap_mpi_init
+
+- tried:
+ downstate-cluster% setenv PATH /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/:$PATH
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters
@@ -2573,6 +2735,8 @@ noise for each of the targets
 - ant colony optimization 
 
 ** TODO Test real-time with 10k cells, PMd input and virtual arm using BMI in HPC - 10 Mar
+*** TODO check firing rates and LFP are not too far away from plausible
+compare with firing rate per layer description in gmgs natneu 2015 paper 
 ** TODO Prepare final demo video - 20 Mar
 *** TODO Fix visualization of virtual arm in hpc!!
 *** TODO Make something like this:

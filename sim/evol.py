@@ -177,6 +177,7 @@ def parallel_evaluation_pbs(candidates, args):
             walltime = "01:00:00"
             processors = "nodes=1:ppn=%d"%(numproc)
 
+            queueName = 'default'
             if socket.gethostname()[0:2] == 'ma': 
                 queueName == 'longq'
             elif socket.gethostname()[0:2] == 'do': 
@@ -191,7 +192,7 @@ def parallel_evaluation_pbs(candidates, args):
             #PBS -e %s.err
             cd $PBS_O_WORKDIR
             echo $PBS_O_WORKDIR
-            %s""" % (job_name, walltime, queueName processors, job_name, job_name, command)
+            %s""" % (job_name, walltime, queueName, processors, job_name, job_name, command)
 
             # Send job_string to qsub
             input.write(job_string)

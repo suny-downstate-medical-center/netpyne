@@ -179,9 +179,9 @@ def parallel_evaluation_pbs(candidates, args):
 
             queueName = 'default'
             if socket.gethostname()[0:2] == 'ma': 
-                queueName == 'longq'
+                queueName = 'longq'
             elif socket.gethostname()[0:2] == 'do': 
-                queueName == 'batch'
+                queueName = 'batch'
 
             job_string = """#!/bin/bash 
             #PBS -N %s

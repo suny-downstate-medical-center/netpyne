@@ -2676,6 +2676,19 @@ ImportError: /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/hoc
 
 - tried:
  downstate-cluster% setenv PATH /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/:$PATH
+* 15mar21 sim - 2 targets (simult), 1k neurons, dummyArm :results:
+** changeset
+changeset:   187:75879f04a030
+tag:         tip
+user:        Salvador Dura <salvadordura@gmail.com>
+date:        Fri Mar 20 14:44:10 2015 -0400
+summary:     changed output folder name
+** description
+- train to 2 targets in alternating trials
+BUG ! - targetid was changing but didn't update targetPos
+** results
+BUG !! 
+a (ma), b (do) , c(ma)
 * 15mar23 Generating raster, traces, LFP for report
 - 10k cells
 - run for 2 seconds but use only sec 1-2 because 0-1 looks strange (too much sync)
@@ -2718,7 +2731,7 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
 
 * 15mar24 Progress report 
 ** corrections
-- B.6, 3: whether there may be need for further -> needed ?
+- B.6, 3: whether there may be need for further -> needed ? -- no, misread, my bad!
 - B.2, Aim 3 (network): add cell locations were determined based on yfrac ranges for each layer derived from experimental
   data
 - C.5.b: File uploaded: aa.pdf ??
@@ -2741,6 +2754,12 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
  other passive parameters)
 -- Ih (HCN) dependent sag, and
 -- voltage onset/offset under current injection.
+
+* 15mar25 sim - 2 targets (simult), 1k neurons, dummyArm 	    :results:
+** changest
+** description
+- same as 15mar21 without bugs
+- trains on alternating targets
 
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 

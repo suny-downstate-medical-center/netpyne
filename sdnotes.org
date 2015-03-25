@@ -2676,6 +2676,72 @@ ImportError: /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/hoc
 
 - tried:
  downstate-cluster% setenv PATH /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/:$PATH
+* 15mar23 Generating raster, traces, LFP for report
+- 10k cells
+- run for 2 seconds but use only sec 1-2 because 0-1 looks strange (too much sync)
+- psd for each E pop and total - not sure if matches phys enough
+- for V trace had to set h.dt=0.05 to get max V right
+** code
+def runReportFig():
+    verystart=time() # store initial time
+
+    s.duration = 2000
+    s.plotraster = 1
+    s.useArm = 'None'
+    s.usestdp = 0
+    s.useRL = 0
+    s.explorMovs = 0
+    s.savelfps = 1
+    s.plotpsd = 1
+    s.saveraw = 1
+
+    s.savemat = 1
+
+    createNetwork() 
+    addStimulation()
+    addBackground()
+    setupSim()
+    runSim()
+    finalizeSim()
+    saveData()
+    plotData()
+
+    ## Wrapping up
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+    if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
+
+
+popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+
+* 15mar24 Progress report 
+** corrections
+- B.6, 3: whether there may be need for further -> needed ?
+- B.2, Aim 3 (network): add cell locations were determined based on yfrac ranges for each layer derived from experimental
+  data
+- C.5.b: File uploaded: aa.pdf ??
+** interesting!
+- All model neurons included the same set of ion channels: 
+-- INa and IKdr for action potential generation; 
+-- IKa for rapid repolarization following an action potential; 
+-- IKm and IKd for afterhyperpolarization; 
+-- Ih for resonance, sag, excitability, and contribution to RMP; 
+-- calcium channels (L, N, T-type) for bursting, excitability modulation, and contribution to backpropagating action
+ potentials
+-- calcium-activated potassium channels for regulating excitability after depolarization-induced calcium influx.
+
+- Fitness functions include
+-- differences in spike timing, 
+-- spike frequency, 
+-- interspike interval (ISI) voltage trajectory, (K and Ca channels)
+-- spike shape, (Na/K channels)
+-- resting membrane potential (RMP), (depends on: reversal potentials (K, HCN), axial resistivity, leak conductance, and
+ other passive parameters)
+-- Ih (HCN) dependent sag, and
+-- voltage onset/offset under current injection.
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

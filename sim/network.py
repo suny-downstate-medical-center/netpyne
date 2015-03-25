@@ -51,6 +51,39 @@ def runSeq():
     saveData()
     plotData()
 
+# generate raster and lfp 
+def runReportFig():
+    verystart=time() # store initial time
+
+    s.duration = 2000
+    s.plotraster = 1
+    s.useArm = 'None'
+    s.usestdp = 0
+    s.useRL = 0
+    s.explorMovs = 0
+    s.savelfps = 1
+    s.plotpsd = 1
+    s.saveraw = 1
+
+    s.savemat = 1
+
+    createNetwork() 
+    addStimulation()
+    addBackground()
+    setupSim()
+    runSim()
+    finalizeSim()
+    saveData()
+    plotData()
+
+    ## Wrapping up
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+    if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
+
+
 # training and testing phases
 def runTrainTest():
     verystart=time() # store initial time
@@ -124,7 +157,18 @@ def runTrainTest():
 # training and testing phases  - Manual param tuning
 def runTrainTest2targetsManual():
 
-    s.trainTime=120000.0
+    # params from 15mar20c_evolutionStrategy gen 389cand 28
+    s.targetid=0
+    s.trainTime=160000.0
+    s.plastConnsType=7.0
+    s.RLfactor=6
+    s.backgroundrate=50
+    s.backgroundrateExplor=312.01679650873933
+    s.backgroundrateTest=76.7331994463257
+    s.cmdmaxrate=30
+    s.cmdmaxrateTest=10
+    s.maxPMdRate=300
+
     numTrials = ceil(s.trainTime/1000)
     #s.trialTargets = [0 if i < numTrials/2 else 1 for i in range(int(numTrials+1))] # set target for each trial
     s.trialTargets = [i%2 for i in range(int(numTrials+1))] # set target for each trial
@@ -132,19 +176,12 @@ def runTrainTest2targetsManual():
     s.targetid=s.trialTargets[0]
     s.targetPMdInputs = [[i for i in range(s.popGidStart[s.PMd], int(s.popGidEnd[s.PMd]/2)+1)], [i for i in range(int(s.popGidEnd[s.PMd]/2)+1, s.popGidEnd[s.PMd]+1)]]
 
-    # gen_138_cand_93
-    s.plastConnsType=4.0
-    s.RLfactor=5
-    s.eligwin=50
-    s.cmdmaxrate=100 
-    s.backgroundrate=30
-    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    # Fixed params
     s.backgroundweightExplor = 2
-    s.backgroundrateExplor = 400
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
     s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
     s.backgroundweight = 1.5*array([1,0.3])
-    s.maxPMdRate = 400
     s.connweights[s.PMd,s.ER5,s.AMPA]=4.0
 
     verystart=time() # store initial time
@@ -158,7 +195,7 @@ def runTrainTest2targetsManual():
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 
-    # set plastic connections based on plasConnsType (from evol alg)
+ # set plastic connections based on plasConnsType (from evol alg)
     if s.plastConnsType == 0:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC]] # only spinal cord 
     elif s.plastConnsType == 1:
@@ -172,6 +209,15 @@ def runTrainTest2targetsManual():
          [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5]] # + Inh
     elif s.plastConnsType == 4:
         s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.PMd,s.ER5], [s.ER5,s.EB5]] # only spinal cord 
+    elif s.plastConnsType == 5:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5], [s.ER5,s.EB5]] # + L2-L5
+    elif s.plastConnsType == 6:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], [s.ER5,s.EB5]] # + L6
+    elif s.plastConnsType == 7:
+        s.plastConns = [[s.ASC,s.ER2], [s.EB5,s.EDSC], [s.EB5,s.IDSC], [s.ER2,s.ER5], [s.ER5,s.EB5], [s.ER2,s.EB5],\
+         [s.ER5,s.ER2], [s.ER5,s.ER6], [s.ER6,s.ER5], [s.ER6,s.EB5], \
+         [s.ER2,s.IL2], [s.ER2,s.IF2], [s.ER5,s.IL5], [s.ER5,s.IF5], [s.EB5,s.IL5], [s.EB5,s.IF5], [s.ER5,s.EB5]] # + Inh
 
     # initialize network
     createNetwork() 
@@ -192,8 +238,8 @@ def runTrainTest2targetsManual():
     plotData()
 
     #test
-    s.backgroundrate=300
-    s.cmdmaxrate=15
+    s.backgroundrates=s.backgroundrateTest # 300
+    s.cmdmaxrate=s.cmdmaxrateTest # 15
     addBackground()
     s.usestdp = 0 # Whether or not to use STDP
     s.useRL = 0 # Where or not to use RL
@@ -338,7 +384,7 @@ def runTrainTest2targets():
         print 'Target error for target ',s.targetid,' is:', error1 
         error = (error0+error1)/2
         print 'Mean error = ',error
-        
+
         s.targetid = 0 # so saves to correct file name (error of both targets saved to single file ending in target_0_error)
         with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
             pickle.dump(error, f)
@@ -613,7 +659,7 @@ def addStimulation():
                         stimconn.delay=s.mindelay # Specify the delay in ms -- shouldn't make a spot of difference
                         s.stimconns.append(stimconn) # Save this connnection
         
-                        if s.saveraw:
+                        if s.saveraw and c <=100:
                             stimspikevec = h.Vector() # Initialize vector
                             s.stimspikevecs.append(stimspikevec) # Keep all those vectors
                             stimrecorder = h.NetCon(stimsource, None)
@@ -719,9 +765,9 @@ def setupSim():
     s.rawrecordings = [] # A list for storing actual cell voltages (WARNING, slow!)
     if s.saveraw: 
         if s.rank==0: print('\nSetting up raw recording...')
-        s.nquantities = 9 # Number of variables from each cell to record from
+        s.nquantities = 4 # Number of variables from each cell to record from
         # Later this part should be modified because NSLOC doesn't have V, u and I.
-        for c in range(s.cellsperhost):
+        for c in range(100):#range(s.cellsperhost):
             gid = s.gidVec[c] # Get this cell's GID
             if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # NSLOC doesn't have V, u and I
                 continue 
@@ -730,11 +776,11 @@ def setupSim():
             recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
             recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
             recvecs[3].record(s.cells[c]._ref_I) # Record cell current
-            recvecs[4].record(s.cells[c]._ref_gAMPA)
-            recvecs[5].record(s.cells[c]._ref_gNMDA)
-            recvecs[6].record(s.cells[c]._ref_gGABAA)
-            recvecs[7].record(s.cells[c]._ref_gGABAB)
-            recvecs[8].record(s.cells[c]._ref_gOpsin)
+            # recvecs[4].record(s.cells[c]._ref_gAMPA)
+            # recvecs[5].record(s.cells[c]._ref_gNMDA)
+            # recvecs[6].record(s.cells[c]._ref_gGABAA)
+            # recvecs[7].record(s.cells[c]._ref_gGABAB)
+            # recvecs[8].record(s.cells[c]._ref_gOpsin)
             s.rawrecordings.append(recvecs) # Keep all those vectors
 
 
@@ -882,8 +928,9 @@ def finalizeSim():
                 hostspiketimes = concatenate((hostspiketimes, thesespikes)) # Add spikes from this cell to the list
                 #hostspikecells = concatenate((hostspikecells, (c+host*s.cellsperhost)*ones(nthesespikes))) # Add this cell's ID to the list
                 hostspikecells = concatenate((hostspikecells, s.gidVec[c]*ones(nthesespikes))) # Add this cell's ID to the list
-                if s.saveraw:
-                    for q in range(s.nquantities):
+            if s.saveraw:
+                for c in range(len(s.rawrecordings)):
+                    for q in range(len(s.rawrecordings[c])):
                         s.rawrecordings[c][q] = array(s.rawrecordings[c][q])
             messageid=s.pc.pack([hostspiketimes, hostspikecells, s.hostlfps, s.conndata, s.stdpconndata, s.weightchanges, s.rawrecordings]) # Create a mesage ID and store this value
             s.pc.post(host,messageid) # Post this message
@@ -1071,6 +1118,10 @@ def plotData():
         if s.plotconn:
             print('Plotting connectivity matrix...')
             analysis.plotconn()
+
+        if s.plotpsd:
+            print('Plotting power spectral density')
+            analysis.plotpsd()
 
         if s.plotweightchanges:
             print('Plotting weight changes...')

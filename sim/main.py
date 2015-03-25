@@ -4,15 +4,10 @@ from time import time
 import pickle
 from neuron import h# Import NEURON
 import shared as s
-import argparse
 
 ###############################################################################
 ### Update model parameters from command-line arguments
 ###############################################################################
-
-# parser = argparse.ArgumentParser()
-# args = parser.parse_args()
-# print args
 
 for argv in sys.argv[1:]: # Skip first argument, which is file name
     arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
@@ -39,6 +34,8 @@ for argv in sys.argv[1:]: # Skip first argument, which is file name
 ###############################################################################
 import network
 
-network.runTrainTest2targets()
+#network.runReportFig()
+network.runTrainTest2targetsManual()
+#network.runTrainTest2targets()
 #network.runTrainTest()
 #network.runSeq()

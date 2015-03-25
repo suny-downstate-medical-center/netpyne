@@ -5,7 +5,7 @@ Functions to plot and analyse results
 
 Version: 2014July9
 """
-from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap
+from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap, psd
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -14,7 +14,6 @@ import csv
 import pickle
 import shared as s
 from mpl_toolkits.mplot3d import Axes3D
-
 ###############################################################################
 ### Simulation-related graph plotting functions
 ###############################################################################
@@ -59,11 +58,49 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     xlabel('Time (ms)')
     ylabel('Cell ID')
     title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,s.backgroundweight[0],s.firingrate),fontsize=12)
-    xlim(0,s.duration)
+    xlim(1000,s.duration)
     ylim(0,s.ncells)
+    h = axes()
+    h.set_xticks(range(1000,2100,100))
+    h.set_xticklabels(range(0,1100,100))
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)
     #show()
+
+## Plot power spectra density
+def plotpsd():
+    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
+
+    lfpv=[[] for c in range(len(s.lfppops))]    
+    # Get last modified .mat file if no input and plot
+    for c in range(len(s.lfppops)):
+        lfpv[c] = s.lfps[200:,c]    
+    lfptot = sum(lfpv)
+        
+    # plot pops separately
+    plotPops = 1
+    if plotPops:    
+        figure() # Open a new figure
+        for p in range(len(s.lfppops)):
+            psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
+            xlabel('Frequency (Hz)')
+            ylabel('Power')
+            h=axes()
+            h.set_yticklabels([])
+        legend(['L2/3','L5A', 'L5B', 'L6'])
+
+    # plot overall psd
+    figure() # Open a new figure
+    psd(lfptot,Fs=200, linewidth= 2)
+    xlabel('Frequency (Hz)')
+    ylabel('Power')
+    h=axes()
+    h.set_yticklabels([])
+
+    show()
+
+    #matplotlib.mlab.psd(x, NFFT=None, Fs=None, detrend=None, window=None, noverlap=None, pad_to=None, sides=None, scale_by_freq=None)
+    #psd(x, NFFT=256, Fs=2, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=0, pad_to=None,sides='default', scale_by_freq=None)
 
 
 ## Plot connectivityFor diagnostic purposes . Based on conndiagram.py.

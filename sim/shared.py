@@ -36,14 +36,15 @@ if rank==0:
 ###############################################################################
 
 # Set population and receptor quantities
-scale = 1 # Size of simulation in thousands of cells
+scale = 14 # Size of simulation in thousands of cells
 
 popnames = ['PMd', 'ASC', 'EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,      2,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type
 popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [96,   64,    64,     64,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [-1,-1], [0.1,0.31], [0.1,0.31], [0.1,0.31], [0.31,0.52], [0.52,0.77], [0.31,0.77], [0.31,0.77], [0.77,1.0], [0.77,1.0], [0.77,1.0]] # data from Weiler et. al 2008 (updated from Ben's excel sheet)
 
+#popratios =  [96,   64,    64,     64,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 
 receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin'] # Names of the different receptors
 npops = len(popnames) # Number of populations
@@ -51,7 +52,7 @@ nreceptors = len(receptornames) # Number of receptors
 popGidStart = [] # gid starts for each popnames
 popGidEnd= [] # gid starts for each popnames
 popnumbers = []
-PMdinput = 'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
+PMdinput = 'None'#'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
 
     
 # Define params for each cell: cellpops, cellnames, cellclasses, EorI 
@@ -140,7 +141,7 @@ connprobs[IL6,IF6]=0.53
 connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
-connprobs[ASC,ER2]=0.6
+connprobs[ASC,ER2]=0.6 
 connprobs[EB5,EDSC]=1.0 #0.6
 connprobs[EB5,IDSC]=0.0 # hard-wire so receives same input as EB5->EDSC 
 connprobs[IDSC,EDSC]=0.0 # hard-wire so projects to antagonist muscle subpopulation
@@ -210,7 +211,7 @@ trainTime = 20*1e3 # duration of traininig phase, in ms
 testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
-loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
+loopstep = 5 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
 progupdate = 5000 # How frequently to update progress, in ms
 randseed = 1 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
@@ -224,11 +225,12 @@ armMinimalSave = False # save only arm data and spikes (for target reaching evol
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
-savebackground = True # save background (NetStims) inputs
+savebackground = False # save background (NetStims) inputs
 saveraw = False # Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
+plotpsd = False # plot power spectral density
 maxspikestoplot = 3e8 # Maximum number of spikes to plot
 plotconn = False # whether to plot conn matrix
 plotweightchanges = True # whether to plot weight changes (shown in conn matrix)

@@ -157,7 +157,7 @@ def runTrainTest():
 # training and testing phases  - Manual param tuning
 def runTrainTest2targetsManual():
 
-    # params from 15mar20c_evolutionStrategy gen 389cand 28
+    # params from 15mar20c_evolutionStrategy gen 389 cand 28
     s.targetid=0
     s.trainTime=160000.0
     s.plastConnsType=7.0

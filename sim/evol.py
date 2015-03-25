@@ -23,7 +23,7 @@ ngen = -1 #global variable keeping number of generations
 ### Simulation options
 ###############################################################################  
 evolAlgorithm = 'evolutionStrategy' #'diffEvolution' # 'evolutionStrategy' #'krichmarCustom' #'genetic'#'particleSwarm100'#'estimationDist' #'diffEvolution' # 'evolutionStrategy' # 'krichmarCustom', 'genetic'
-simdatadir = '../data/15mar20b_'+evolAlgorithm # folder to save sim results
+simdatadir = '../data/15mar25_'+evolAlgorithm # folder to save sim results
 
 num_islands = 1 # number of islands
 numproc = 4 # number of cores per job

@@ -191,7 +191,7 @@ def runTrainTest2targetsManual():
     s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
-    s.animArm = 1
+    s.animArm = 0
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 

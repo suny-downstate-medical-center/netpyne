@@ -36,7 +36,7 @@ if rank==0:
 ###############################################################################
 
 # Set population and receptor quantities
-scale = 14 # Size of simulation in thousands of cells
+scale = 1 # Size of simulation in thousands of cells
 
 popnames = ['PMd', 'ASC', 'EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
 popclasses =  [-1,  -1,     1,      2,     1,     2,     3,     1,     1,     2,     3,     1,     2,     3] # Izhikevich population type

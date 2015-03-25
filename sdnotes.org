@@ -2676,7 +2676,7 @@ ImportError: /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/hoc
 
 - tried:
  downstate-cluster% setenv PATH /home/share/python-gnu/local/lib/python2.7/site-packages/neuron/:$PATH
-* 15mar21 sim - 2 targets (simult), 1k neurons, dummyArm :results:
+* 15mar20 sim - 2 targets (simult), 1k neurons, dummyArm 	    :results:
 ** changeset
 changeset:   187:75879f04a030
 tag:         tip
@@ -2757,6 +2757,7 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
 
 * 15mar25 sim - 2 targets (simult), 1k neurons, dummyArm 	    :results:
 ** changest
+
 ** description
 - same as 15mar21 without bugs
 - trains on alternating targets

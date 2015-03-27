@@ -2630,6 +2630,67 @@ Plotting weight changes...
 Target error for target  1  is: 0.166514907959
 
 Done; total time = 106.9 s.
+** Found another bug in cliff implementation (b sign)
+def pyramidal(section, C=100, k=3, vr=-60, vt=-50, vpeak=30, a=0.01, b=-5, c=-60, d=400, celltype=1, cellid=-1):
+def fastspiking(section, C=20, k=1, vr=-55, vt=-40, vpeak=25, a=0.15, b=-8, c=-55, d=200, celltype=2, cellid=-1):
+b should be neg else all same
+*** comparison of m1ms model after change
+before:
+  Run time: 9.1 s (16-s sim; 1 scale; 1064 cells; 8 workers)
+  Spikes: 221212 (12.99 Hz)
+  Connections: 16803 (7381 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (8)
+  Done; time = 4.1 s
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_190051.png][fig]]
+
+after:
+  Run time: 9.1 s (16-s sim; 1 scale; 1064 cells; 8 workers)
+  Spikes: 228569 (13.43 Hz)
+  Connections: 16803 (7381 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (8)
+  Done; time = 3.9 s
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_190109.png][fig]]
+
+- significant changes in background activity
+
+- going to try changing also LTS b to negative:
+def lowthreshold(section, C=100, k=3, vr=-56, vt=-42, vpeak=40, a=0.03, b=-8, c=-50, d=20, celltype=3, cellid=-1):
+
+  Run time: 9.3 s (16-s sim; 1 scale; 1064 cells; 8 workers)
+  Spikes: 228569 (13.43 Hz)
+  Connections: 16803 (7381 STDP; 15.79 per cell)
+  Mean connection distance: 1133.21 um
+  Mean connection delay: 15.21 ms
+  Plotting raster despite using too many cores (8)
+  Done; time = 4.3 s
+
+no apparent effect; raster looks identical to above after.
+
+*** check these params in izhi matlab code from book
+- using the -b, RS and FS neurons respond to I=70; but using b they dont
+- if increase to I=170, both -b and b fire, but -b has higher rate
+- so the -b seems to have effect of lowering firing threshold
+
+figs (left=using b, right=using -b, top=v, bottom=u)
+I=70:
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_192635.png][fig]]
+
+I=90:
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_192742.png][fig]]
+
+I=150:
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_192900.png][fig]]
+
+I=400:
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_193039.png][fig]]
+
+f-I curve
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_194908.png][fig]]
+
 * 15mar20 running sims on 'do'
 ** error running nrniv from nodes
 ~/.tcshrc
@@ -2756,7 +2817,7 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
 -- voltage onset/offset under current injection.
 
 * 15mar25 sim - 2 targets (simult), 1k neurons, dummyArm 	    :results:
-** changest
+** changeset
 
 ** description
 - same as 15mar21 without bugs

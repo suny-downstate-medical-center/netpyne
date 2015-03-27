@@ -159,7 +159,7 @@ def runTrainTest2targetsManual():
 
     # params from 15mar20c_evolutionStrategy gen 389 cand 28
     s.targetid=0
-    s.trainTime=160000.0
+    s.trainTime=16000.0
     s.plastConnsType=7.0
     s.RLfactor=6
     s.backgroundrate=50
@@ -191,7 +191,7 @@ def runTrainTest2targetsManual():
     s.plotweightchanges = 1
     s.plot3darch = 0
     s.graphsArm = 1
-    s.animArm = 1
+    s.animArm = 0
     s.savemat = 0 # save data during testing
     s.armMinimalSave = 0 # save only arm related data
 

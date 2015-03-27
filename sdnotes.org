@@ -2691,6 +2691,41 @@ I=400:
 f-I curve
 [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150326_194908.png][fig]]
 
+** Tested i-F curve in cliff model
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150327_142320.png][fig]]
+/u/salvadord/Documents/ISB/Models/m1ms/sim/izhitest.py
+** Trying to fix Izhi demo GUI for modeldb
+*** chat with bill
+/u/billl/nrniv/m1sim/izh.py can you fix this thing? -- then i can post -- if can make it show a traj that is in the izhi book
+i have an Iin as the final param:
+typeB = collections.OrderedDict([
+# C k vr vt vpeak a b c d celltype, Iin
+('pyramidal', (100, 3, -60, -50, 30, 0.01, 5, -60, 400, 1, 200)),
+('fastspiking', (20, 1, -55, -40, 25, 0.15, 8, -55, 200, 2, 200)),
+('lowthreshold', (100, 3, -56, -42, 40, 0.03, 8, -50, 20, 3, 200)),
+('thalamocortical', (200, 0.5, -60, -50, 40, 0.10, 0, -60, 10, 4, 200)),
+('reticular', (40, 0.25, -65, -45, 0, 0.015, 10, -55, 50, 5, 200))])
+
+thanks -- please ask questions --- robert helped me fix this up -- just the button stuff is pretty complicated
+python -i izh.py
+winup('Networking model') # brings up the cliff parameters
+
+if change the params -- eg Iin -- after run the first time then just hit run button (or do h.run() ) so don't reset the params back to where they started
+also has I0 and I1 to do an initial hyperpolarization
+*** obtaining reference traces to reproduce from 2007 Book
+**** RS pyramidal (L4 or L5)
+- fig8.12 p283
+- 200ms = 135 pixels
+- duration of stimulus = 680-338 px = 500 ms
+
+- I = 60 -> 2 spk
+- I = 70 -> 3 spk
+- I = 85 -> 5 spk
+- I = 100 -> 7 spk
+
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150327_161803.png][fig]] 
+[[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150327_161955.png][fig]]
+
 * 15mar20 running sims on 'do'
 ** error running nrniv from nodes
 ~/.tcshrc

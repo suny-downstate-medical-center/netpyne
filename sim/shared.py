@@ -13,7 +13,7 @@ Version: 2015feb12 by salvadord
 
 from pylab import array, inf, zeros, seed
 from neuron import h # Import NEURON
-from izhi import pyramidal, fastspiking, lowthreshold, thalamocortical, reticular # Import Izhikevich model
+from izhi import RS, IB, CH, LTS, FS, TC, RTN# Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
 import server # Server for plexon interface
 from time import time

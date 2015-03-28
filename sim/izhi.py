@@ -79,12 +79,12 @@ def FS(section, C=20, k=1, vr=-55, vt=-40, vpeak=25, a=0.2, b=-2, c=-45, d=-55, 
     return cell
 
 ## Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-def TC_book(section, C=200, k=1.6, vr=-60, vt=-50, vpeak=35, a=0.01, b=15, c=-60, d=10, celltype=6, cellid=-1):
+def TC(section, C=200, k=1.6, vr=-60, vt=-50, vpeak=35, a=0.01, b=15, c=-60, d=10, celltype=6, cellid=-1):
     cell = createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
     return cell
 
 ## Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-def RTN_book(section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.15, b=10, c=-55, d=50, celltype=7, cellid=-1):
+def RTN(section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.15, b=10, c=-55, d=50, celltype=7, cellid=-1):
     cell = createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
     return cell
 

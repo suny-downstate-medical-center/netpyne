@@ -416,11 +416,13 @@ def createNetwork():
     ## Set cell types
     celltypes=[]
     for c in range(s.ncells): # Loop over each cell. ncells is all cells in the network.
-        if s.cellclasses[c]==1: celltypes.append(s.pyramidal) # Append a pyramidal cell
-        elif s.cellclasses[c]==2: celltypes.append(s.fastspiking) # Append a fast-spiking interneuron
-        elif s.cellclasses[c]==3: celltypes.append(s.lowthreshold) # Append a low-threshold-spiking interneuron
-        elif s.cellclasses[c]==4: celltypes.append(s.thalamocortical) # Append a thalamocortical cell
-        elif s.cellclasses[c]==5: celltypes.append(s.reticular) # Append a thalamocortical cell
+        if s.cellclasses[c]==1: celltypes.append(s.RS) # Append a regular spiking pyramidal cell
+        elif s.cellclasses[c]==2: celltypes.append(s.IB) # Append an intrinsically bursting pyramidal cell
+        elif s.cellclasses[c]==3: celltypes.append(s.CH) # Append a chattering cell
+        elif s.cellclasses[c]==4: celltypes.append(s.LTS) # Append a low-threshold spiking interneuron
+        elif s.cellclasses[c]==5: celltypes.append(s.FS) # Append a fast-spiking interneuron
+        elif s.cellclasses[c]==4: celltypes.append(s.TC) # Append a thalamocortical cell
+        elif s.cellclasses[c]==5: celltypes.append(s.RTN) # Append a reticular thalamic nucleus cell
         elif s.cellclasses[c]==-1: celltypes.append(s.nsloc) # Append a nsloc
         else: raise Exception('Undefined cell class "%s"' % s.cellclasses[c]) # No match? Cause an error
 

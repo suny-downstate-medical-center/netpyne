@@ -157,9 +157,11 @@ def runTrainTest():
 # training and testing phases  - Manual param tuning
 def runTrainTest2targetsManual():
 
+    s.useArm = 'None'
+
     # params from 15mar20c_evolutionStrategy gen 389 cand 28
     s.targetid=0
-    s.trainTime=16000.0
+    s.trainTime=3000.0
     s.plastConnsType=7.0
     s.RLfactor=6
     s.backgroundrate=50
@@ -178,15 +180,17 @@ def runTrainTest2targetsManual():
 
     # Fixed params
     s.backgroundweightExplor = 2
-    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.backgroundweight = 1.0*array([1,1]) # Weight for background input for E cells and I cells
     s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
-    s.scaleconnweight = 2.0*array([[2, 2], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
-    s.backgroundweight = 1.5*array([1,0.3])
-    s.connweights[s.PMd,s.ER5,s.AMPA]=4.0
+    s.scaleconnweight = 1.0*array([[2, 2], [2, 0.5]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.backgroundweight = 1.0*array([1,1])
+    s.connweights[s.PMd,s.ER5,s.AMPA]=2.0
 
     verystart=time() # store initial time
 
     s.plotraster = 1 # set plotting params
+    s.savelfps = 1
+    s.plotpsd = 1
     s.plotconn = 0
     s.plotweightchanges = 1
     s.plot3darch = 0
@@ -237,41 +241,41 @@ def runTrainTest2targetsManual():
     #saveData()
     plotData()
 
-    #test
-    s.backgroundrates=s.backgroundrateTest # 300
-    s.cmdmaxrate=s.cmdmaxrateTest # 15
-    addBackground()
-    s.usestdp = 0 # Whether or not to use STDP
-    s.useRL = 0 # Where or not to use RL
-    s.explorMovs = 0 # disable exploratory movements
-    s.duration = s.testTime # testing time
-    s.armMinimalSave = 0 # save only arm related data
+    # #test
+    # s.backgroundrates=s.backgroundrateTest # 300
+    # s.cmdmaxrate=s.cmdmaxrateTest # 15
+    # addBackground()
+    # s.usestdp = 0 # Whether or not to use STDP
+    # s.useRL = 0 # Where or not to use RL
+    # s.explorMovs = 0 # disable exploratory movements
+    # s.duration = s.testTime # testing time
+    # s.armMinimalSave = 0 # save only arm related data
     
-    s.targetid = 0
-    setupSim()
-    runSim()
-    finalizeSim()
-    #saveData()
-    plotData()
+    # s.targetid = 0
+    # setupSim()
+    # runSim()
+    # finalizeSim()
+    # #saveData()
+    # plotData()
 
-    if s.rank == 0: # save error to file
-        error = mean(s.arm.errorAll)
-        print 'Target error for target ',s.targetid,' is:', error 
-        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
-            pickle.dump(error, f)
+    # if s.rank == 0: # save error to file
+    #     error = mean(s.arm.errorAll)
+    #     print 'Target error for target ',s.targetid,' is:', error 
+    #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+    #         pickle.dump(error, f)
 
-    s.targetid = 1
-    setupSim()
-    runSim()
-    finalizeSim()
-    #saveData()
-    plotData()
+    # s.targetid = 1
+    # setupSim()
+    # runSim()
+    # finalizeSim()
+    # #saveData()
+    # plotData()
 
-    if s.rank == 0: # save error to file
-        error = mean(s.arm.errorAll)
-        print 'Target error for target ',s.targetid,' is:', error 
-        with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
-            pickle.dump(error, f)
+    # if s.rank == 0: # save error to file
+    #     error = mean(s.arm.errorAll)
+    #     print 'Target error for target ',s.targetid,' is:', error 
+    #     with open('%s_target_%d_error'% (s.outfilestem,s.targetid), 'w') as f: # save avg error over targets to outfilestem
+    #         pickle.dump(error, f)
 
     ## Wrapping up
     s.pc.runworker() # MPI: Start simulations running on each host

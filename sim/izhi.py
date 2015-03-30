@@ -84,7 +84,7 @@ def TC(section, C=200, k=1.6, vr=-60, vt=-50, vpeak=35, a=0.01, b=15, c=-60, d=1
     return cell
 
 ## Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-def RTN(section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.15, b=10, c=-55, d=50, celltype=7, cellid=-1):
+def RTN(section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.015, b=10, c=-55, d=50, celltype=7, cellid=-1):
     cell = createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
     return cell
 

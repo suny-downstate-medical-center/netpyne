@@ -13,7 +13,7 @@ Version: 2015feb12 by salvadord
 
 from pylab import array, inf, zeros, seed
 from neuron import h # Import NEURON
-from izhi import RS, IB, CH, LTS, FS, TC, RTN# Import Izhikevich model
+from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
 import server # Server for plexon interface
 from time import time
@@ -50,7 +50,7 @@ nreceptors = len(receptornames) # Number of receptors
 popGidStart = [] # gid starts for each popnames
 popGidEnd= [] # gid starts for each popnames
 popnumbers = []
-PMdinput = 'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
+PMdinput = 'None'#'targetSplit' # 'Plexon', 'spikes', 'SSM', 'targetSplit'
 
     
 # Define params for each cell: cellpops, cellnames, cellclasses, EorI 

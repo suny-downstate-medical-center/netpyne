@@ -2858,6 +2858,27 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
 - same as 15mar21 without bugs
 - trains on alternating targets
 
+* 15mar28 Updated izhi cell types - trying to restore decent network behavior
+** params 
+- need to increase I activity
+    s.backgroundweightExplor = 2
+    s.backgroundweight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
+    s.connweights[s.IDSC,s.EDSC,s.GABAA]=0.5 
+    s.scaleconnweight = 1.0*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+    s.backgroundweight = 1.0*array([1,0.3])
+    s.connweights[s.PMd,s.ER5,s.AMPA]=2.0
+
+- s.scaleconnweight = 1.0*array([[2, 2], [2, 0.5]])
+
+- s.backgroundweight = 1.0*array([1,0.6]) - lead to increase in I
+
+-     s.backgroundweight = 1.0*array([1,1]) - no osc
+
+- s.backgroundweight = 1.0*array([1,0.5]) - no osc
+
+- s.backgroundweight = 1.0*array([1,1]) #
+
+- use evo to tune firing rate and psd??
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

@@ -2342,7 +2342,7 @@ ma% cat ../data/15mar16_evol_evolutionStrategy/statistics.csv
 327, 100, 0.114453486081, 0.100431209674, 0.112104523636, 0.111248048735, 0.00288279735821
 328, 100, 0.114453486081, 0.100431209674, 0.112104523636, 0.111248048735, 0.00288279735821
 329, 100, 0.11440715242, 0.100431209674, 0.112104523636, 0.111231157758, 0.00286888129382
-* 15mar19 checking izhi traces
+* 15mar19 checking izhi traces and adding new izhi demo to modeldb
 ** V >80 mV for >50% of cells (1 sec sim)
 [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150319_185150.png][fig]] - example of 4 cell traces (V,u,I,gNDMA)
 [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150319_190500.png][fig]] - summed conductances - g=gAMPA+gNMDA+gGABAA+gGABAB+gOpsin
@@ -2726,6 +2726,16 @@ also has I0 and I1 to do an initial hyperpolarization
 [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150327_161803.png][fig]] 
 [[file+sys:/u/salvadord/Documents/ISB/Models_linux/m1ms/gif/20150327_161955.png][fig]]
 
+** Consolidating model and updating modeldb
+*** consolidating in /usr/site/nrniv/local/sim/izhikevich
+no% cat convert_filemap.txt 
+exclude "."
+include "izh.py"
+include "izhi.py"
+rename "izh.py" "izhiGUI.py"
+rename "izhi.py" "izhiWrapper.py"
+
+hg convert --filemap convert_filemap.txt /u/salvadord/Documents/ISB/Models/m1sim izhikevich
 * 15mar20 running sims on 'do'
 ** error running nrniv from nodes
 ~/.tcshrc
@@ -2879,6 +2889,7 @@ popratios =  [0,   0,    0,     0,   150,    25,    25,   168,    72,    40,    
 - s.backgroundweight = 1.0*array([1,1]) #
 
 - use evo to tune firing rate and psd??
+
 * TODO port msarm to M1 model and prepare final demo
 ** DONE add the input Proprioceptive population, which is actually really a set of netstims with location (NSLOCs), and connect them to layer 2 
 ** DONE reorganize definition of population/cell parameters

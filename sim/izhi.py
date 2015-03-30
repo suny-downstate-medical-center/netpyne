@@ -1,29 +1,27 @@
 """
 IZHI
 
-Python wrappers for the different celltypes of Izhikevich neuron. Parameter values
-taken from the appendix to
-   Izhikevich EM, Edelman GM (2008).
-   "Large-scale model of mammalian thalamocortical systems." 
-   PNAS 105(9) 3593-3598.
+Python wrappers for the different celltypes of Izhikevich neuron. 
 
-Neuron celltypes available are:
-A) Cell types based on Izhikevich, 2007 book:
-    1. Layer 5 regular spiking (RS) pyramidal cell (fig 8.12 from 2007 book)
-    2. Layer 5 intrinsically bursting (IB) cell (fig 8.19 from 2007 book)
-    3. Cat primary visual cortex chattering (CH) cell (fig8.23 from 2007 book)
-    4. Rat barrel cortex Low-threshold  spiking (LTS) interneuron (fig8.25 from 2007 book)
-    5. Rat visual cortex layer 5 fast-spiking (FS) interneuron (fig8.27 from 2007 book)
-    6. Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-    7. Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
+Equations and parameter values taken from
+  Izhikevich EM (2007).
+  "Dynamical systems in neuroscience"
+  MIT Press
 
-B) Cell types based on Izhikevich, 2008 paper (wrong parameters cause cells in that paper where multicompartment):
-    1. "pyramidal" (layer 2/3 pyramidal cell) 
-    2. "fastspiking" (fast-spiking interneuron)
-    3. "lowthreshold" (low-threshold-spiking interneuron)
-    4. "thalamocortical" (thalamocortical relay cell)
-    5. "reticular" (thalamic reticular 
-interneuron).
+Equation for synaptic inputs taken from
+  Izhikevich EM, Edelman GM (2008).
+  "Large-scale model of mammalian thalamocortical systems." 
+  PNAS 105(9) 3593-3598.
+
+Cell types available are based on Izhikevich, 2007 book:
+    1. RS - Layer 5 regular spiking pyramidal cell (fig 8.12 from 2007 book)
+    2. IB - Layer 5 intrinsically bursting cell (fig 8.19 from 2007 book)
+    3. CH - Cat primary visual cortex chattering cell (fig8.23 from 2007 book)
+    4. LTS - Rat barrel cortex Low-threshold  spiking interneuron (fig8.25 from 2007 book)
+    5. FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
+    6. TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
+    7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
+
 
 Usage example:
     from neuron import h
@@ -32,6 +30,7 @@ Usage example:
     cell = pyramidal(dummy)
 
 Version: 2013oct16 by cliffk
+Version: 2015mar30 by Salvador Dura-Bernal (salvadordura@gmail.com)
 """
 
 ## Create basic Izhikevich neuron with default parameters -- not to be called directly, only via one of the other functions

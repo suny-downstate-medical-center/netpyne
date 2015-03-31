@@ -2736,6 +2736,22 @@ rename "izh.py" "izhiGUI.py"
 rename "izhi.py" "izhiWrapper.py"
 
 hg convert --filemap convert_filemap.txt /u/salvadord/Documents/ISB/Models/m1sim izhikevich
+
+scp /u/salvadord/Models_linux/m1ms/sim/izhitest.py izhi2007Figs.py
+
+no% pwd
+/usr/site/nrniv/local/mod
+no% hg log -l2
+changeset:   723:50cc319a055c
+tag:         tip
+user:        salvadord
+date:        Mon Mar 30 15:20:47 2015 -0400
+summary:     renamed Izh1.mod izhi2003b.mod
+
+changeset:   722:f32ae5d12a19
+user:        salvadord
+date:        Mon Mar 30 14:43:17 2015 -0400
+summary:     renamed old izh.mod to izhi2003.mod; and added new izhi model from 2007 book to izhi2007.mod
 * 15mar20 running sims on 'do'
 ** error running nrniv from nodes
 ~/.tcshrc

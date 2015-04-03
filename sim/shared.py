@@ -231,7 +231,7 @@ plotraster = False # Whether or not to plot a raster
 plotpsd = False # plot power spectral density
 maxspikestoplot = 3e8 # Maximum number of spikes to plot
 plotconn = False # whether to plot conn matrix
-plotweightchanges = True # whether to plot weight changes (shown in conn matrix)
+plotweightchanges = False # whether to plot weight changes (shown in conn matrix)
 plot3darch = False # plot 3d architecture
 
 

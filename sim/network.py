@@ -51,6 +51,32 @@ def runSeq():
     saveData()
     plotData()
 
+# standard sequence to tune network dynamics
+def runTuneParams():
+    verystart=time() # store initial time
+
+    s.useArm = 'None' # turn off virtual arm 
+    s.PMdinput = 'None' # turn off PMd inputs
+    s.useRL = False # turn off RL
+    s.plotraster = True # plot raster
+    s.plotpsd = True # plot psd
+    s.savelfps = True # save lfp data
+    s.duration = 1e3 # duration in ms
+
+    createNetwork() 
+    addStimulation()
+    addBackground()
+    setupSim()
+    runSim()
+    finalizeSim()
+    saveData()
+    plotData()
+
+    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+
 # generate raster and lfp 
 def runReportFig():
     verystart=time() # store initial time
@@ -82,7 +108,6 @@ def runReportFig():
     totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
     if (s.plotraster==False and s.plotconn==False and s.plotweightchanges==False): h.quit() # Quit extra processes, or everything if plotting wasn't requested (since assume non-interactive)
-
 
 # training and testing phases
 def runTrainTest():
@@ -1054,7 +1079,7 @@ def saveData():
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
             
             # Save simulation code
-            filestosave = ['main.py', 'shared.py', 'network.py', 'arm.py', 'arminterface.py', 'server.py', 'izhi.py', 'izhi.mod', 'stdp.mod', 'nsloc.py', 'nsloc.mod'] # Files to save
+            filestosave = ['main.py', 'shared.py', 'network.py', 'arm.py', 'arminterface.py', 'server.py', 'izhi.py', 'izhi2007.mod', 'stdp.mod', 'nsloc.py', 'nsloc.mod'] # Files to save
             argv = [];
             simcode = [argv, filestosave] # Start off with input parameters, if any, and then the list of files being saved
             for f in range(len(filestosave)): # Loop over each file
@@ -1131,8 +1156,8 @@ def plotData():
 
         if s.plotweightchanges:
             print('Plotting weight changes...')
-            #analysis.plotweightchanges()
-            analysis.plotmotorpopchanges()
+            analysis.plotweightchanges()
+            #analysis.plotmotorpopchanges()
 
         if s.plot3darch:
             print('Plotting 3d architecture...')

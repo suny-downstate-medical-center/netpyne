@@ -60,9 +60,6 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,s.backgroundweight[0],s.firingrate),fontsize=12)
     xlim(0,s.duration)
     ylim(0,s.ncells)
-    #h = axes()
-    #h.set_xticks(range(1000,2100,100))
-    #h.set_xticklabels(range(0,1100,100))
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)
     #show()
@@ -74,11 +71,11 @@ def plotpsd():
     lfpv=[[] for c in range(len(s.lfppops))]    
     # Get last modified .mat file if no input and plot
     for c in range(len(s.lfppops)):
-        lfpv[c] = s.lfps[200:,c]    
+        lfpv[c] = s.lfps[:,c]    
     lfptot = sum(lfpv)
         
     # plot pops separately
-    plotPops = 1
+    plotPops = ''
     if plotPops:    
         figure() # Open a new figure
         for p in range(len(s.lfppops)):
@@ -98,9 +95,6 @@ def plotpsd():
     h.set_yticklabels([])
 
     show()
-
-    #matplotlib.mlab.psd(x, NFFT=None, Fs=None, detrend=None, window=None, noverlap=None, pad_to=None, sides=None, scale_by_freq=None)
-    #psd(x, NFFT=256, Fs=2, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=0, pad_to=None,sides='default', scale_by_freq=None)
 
 
 ## Plot connectivityFor diagnostic purposes . Based on conndiagram.py.

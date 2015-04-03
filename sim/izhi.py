@@ -36,7 +36,7 @@ Version: 2015mar30 by Salvador Dura-Bernal (salvadordura@gmail.com)
 ## Create basic Izhikevich neuron with default parameters -- not to be called directly, only via one of the other functions
 def createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid):
     from neuron import h # Open NEURON
-    cell = h.Izhi(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
+    cell = h.Izhi2007(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
     cell.C = C # Capacitance
     cell.k = k
     cell.vr = vr # Resting membrane potential

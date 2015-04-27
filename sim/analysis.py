@@ -75,7 +75,7 @@ def plotpsd():
     lfptot = sum(lfpv)
         
     # plot pops separately
-    plotPops = ''
+    plotPops = 0
     if plotPops:    
         figure() # Open a new figure
         for p in range(len(s.lfppops)):

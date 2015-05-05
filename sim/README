@@ -1,8 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-"m1ms" is an Izhikevich cell-based model of primary motor cortex (M1) which can optionally:
-1) be interfaced with a virtual arm and use reinforcement learning to learn to reach a target
-2) receive inputs from dorsal premotor cortex (PMd) cells (potentially in real time via Plexon)
-3) simulate different types of external stimulation (eg. electrical or optogenetic)
+"m1" is an Izhikevich cell-based model of primary motor cortex (M1) w
 
 developed by Salvador Dura-Bernal (salvadordura@gmail.com) and Cliff Kerr (cliff@thekerrlab.com) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,17 +18,7 @@ List of remaining files:
 
 - analysis.py: functions to plot and analyse data
 
-- arm.py: Class containing all the virtual arm, target and RL critic apparatus.
-
-- armGraphs: Supporting functions for the virtual musculoskeletal arm
-
-- arminterface.py: Pipes interface with the virtual musculoskeletal arm
-
-- dummyArm.py: simple virtual arm that can run independently and communicate via UDP
-
 - evol.py: Functions to run evolutionary algorithms (using inspyred) to optimize model parameters
-
-- fileplots.py: Plot graphs from data saved in files
 
 - izhi2007.mod: NMODL definition of Izhikevich 2007 neuron model
 
@@ -40,10 +27,6 @@ List of remaining files:
 - nsloc.mod: NMODL for Netstim with location and adapted so interval can be modified during execution (used for proprioceptive and PMd inputs)
 
 - nsloc.py: Python wrapper for NSLOC units
-
-- server.py: Functions to interface the model with Plexon recording system in real time
-
-- simmovie.py: Generate movie of model output
 
 - stdp.mod: NMODL for STDP implementation
 

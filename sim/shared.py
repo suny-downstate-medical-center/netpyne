@@ -15,7 +15,6 @@ from pylab import array, inf, zeros, seed
 from neuron import h # Import NEURON
 from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 from nsloc import nsloc # NetStim with location unit type
-import server # Server for plexon interface
 from time import time
 from math import radians
 import hashlib
@@ -38,10 +37,10 @@ if rank==0:
 # Set population and receptor quantities
 scale = 1 # Size of simulation in thousands of cells
 
-popnames = ['PMd', 'ASC', 'EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
-popclasses =  [-1,  -1,     1,      5,     1,     5,     4,     1,     1,     4,     5,     1,     5,     4] # Izhikevich population type
-popEorI =     [ 0,   0,     0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
-popratios =  [96,   64,    64,     64,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
+popnames =    ['EDSC', 'IDSC', 'ER2', 'IF2', 'IL2', 'ER5', 'EB5', 'IF5', 'IL5', 'ER6', 'IF6', 'IL6']
+popclasses =  [    1,      5,     1,     5,     4,     1,     1,     4,     5,     1,     5,     4] # Izhikevich population type
+popEorI =     [    0,      1,     0,     1,     1,     0,     0,     1,     1,     0,     1,     1] # Whether it's excitatory or inhibitory
+popratios =   [   64,     64,   150,    25,    25,   168,    72,    40,    40,   192,    32,    32] # Cell population numbers 
 popyfrac =   [[-1,-1], [-1,-1], [-1,-1], [-1,-1], [0.1,0.31], [0.1,0.31], [0.1,0.31], [0.31,0.52], [0.52,0.77], [0.31,0.77], [0.31,0.77], [0.77,1.0], [0.77,1.0], [0.77,1.0]] # data from Weiler et. al 2008 (updated from Ben's excel sheet)
 
 receptornames = ['AMPA', 'NMDA', 'GABAA', 'GABAB', 'opsin'] # Names of the different receptors
@@ -59,9 +58,6 @@ cellnames = [] # Store list of names for each cell -- e.g. 'ER2' vs. 'IF2'
 cellclasses = [] # Store list of classes types for each cell -- e.g. pyramidal vs. interneuron
 EorI = [] # Store list of excitatory/inhibitory for each cell
 popnumbers = scale*array(popratios) # Number of neurons in each population
-if PMdinput == 'Plexon' and 'PMd' in popnames:    
-    popratios[popnames.index('PMd')] = server.numPMd
-    popnumbers[popnames.index('PMd')] = server.numPMd # Number of PMds is fixed.
 ncells = int(sum(popnumbers))# Calculate the total number of cells 
 for c in range(len(popnames)):
     start = sum(popnumbers[:c])
@@ -80,7 +76,7 @@ EorI = array(EorI)
 
 # Assign numbers to each of the different variables so they can be used in the other functions
 # initializes the following variables:
-# PMd, ASC, EDSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops 
+# EDSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops 
 for i,name in enumerate(popnames): exec(name+'=i') # Set population names to the integers
 for i,name in enumerate(receptornames): exec(name+'=i') # Set population names to the integers
 allpops = array(range(npops)) # Create an array with all the population numbers
@@ -139,11 +135,10 @@ connprobs[IL6,IF6]=0.53
 connprobs[IF6,ER6]=0.44
 connprobs[IF6,IL6]=0.34
 connprobs[IF6,IF6]=0.62
-connprobs[ASC,ER2]=0.6 
 connprobs[EB5,EDSC]=1.0 #0.6
 connprobs[EB5,IDSC]=0.0 # hard-wire so receives same input as EB5->EDSC 
 connprobs[IDSC,EDSC]=0.0 # hard-wire so projects to antagonist muscle subpopulation
-connprobs[PMd,ER5]=0.0
+
 
 
 # Define weights (copied out of network.hoc on 11mar27)
@@ -193,11 +188,10 @@ connweights[IL6,IF6,GABAB]=1.5
 connweights[IF6,ER6,GABAA]=1.5
 connweights[IF6,IL6,GABAA]=1.5
 connweights[IF6,IF6,GABAA]=1.5
-connweights[ASC,ER2,AMPA]=2.0
 connweights[EB5,EDSC,AMPA]=2.0
 connweights[EB5,IDSC,AMPA]=0.5
 connweights[IDSC,EDSC,GABAA]=1.0 
-connweights[PMd,ER5,AMPA]=1.0
+
 
 
 ###############################################################################
@@ -205,8 +199,6 @@ connweights[PMd,ER5,AMPA]=1.0
 ###############################################################################
 
 ## Simulation parameters
-trainTime = 20*1e3 # duration of traininig phase, in ms
-testTime = 1*1e3 # duration of testing/evaluation phase, in ms
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
@@ -215,11 +207,9 @@ randseed = 1 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage
 
 
-
 ## Saving and plotting parameters
 outfilestem = '' # filestem to save fitness result
 savemat = True # Whether or not to write spikes etc. to a .mat file
-armMinimalSave = False # save only arm data and spikes (for target reaching evol opt)
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
 lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
@@ -257,19 +247,11 @@ corticalthick = 1740
 
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
-useRL = True #True # Where or not to use RL
 plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
-plastConns = [[ASC,ER2], [EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
+plastConns = [[EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
 stdpFactor = 0.001 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
-RLfactor = 10
-RLrates = RLfactor*array([[0.25, -0.25], [0.0, 0.0]]) # RL potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
-RLinterval = 50 # interval between sending reward/critic signal (set equal to motorCmdWin/2)(ms)
-timeoflastRL = -inf # Never RL
 stdpwin = 10 # length of stdp window (ms) (scholarpedia=10; Frem13=20(+),40(-))
-eligwin = 50 # length of RL eligibility window (ms) (Frem13=500ms)
-useRLexp = 1 # Use binary or exp decaying eligibility trace
-useRLsoft = 1 # Use soft thresholding 
 maxweight = 50 # Maximum synaptic weight
 timebetweensaves = 5*1e3 # How many ms between saving weights(can't be smaller than loopstep)
 timeoflastsave = -inf # Never saved
@@ -278,66 +260,12 @@ weightchanges = [] # to periodically store weigth changes
 
 ## Background input parameters
 usebackground = True # Whether or not to use background stimuli
-backgroundrateTrain = 50 # background input for training phase
-backgroundrateTest = 150 # background input for testing phase
 backgroundrate = 100 # Rate of stimuli (in Hz)
 backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e10 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 2.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundreceptor = NMDA # Which receptor to stimulate
-
-## Virtual arm parameters
-useArm =  'dummyArm' # what type of arm to use: 'randomOutput', 'dummyArm' (simple python arm), 'musculoskeletal' (C++ full arm model)
-animArm = False # shows arm animation
-graphsArm = False # shows graphs (arm trajectory etc) when finisheds
-targetid = 1 # initial target 
-minRLerror = 0.002 # minimum error change for RL (m)
-armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
-nMuscles = 4 # number of muscles
-startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
-targetDist = 0.15 # target distance from center (15 cm)
-# motor command encoding
-initArmMovement = 100 # time after which to start moving arm (adds initial delay to avoid using initial burst of activity due to background noise init)
-motorCmdStartCell = popGidStart[EDSC] # start cell for motor command
-motorCmdEndCell = popGidStart[EDSC] + popnumbers[EDSC] # end cell for motor command
-cmdmaxrate = scale*20.0 # maximum spikes for motor command (normalizing value)
-cmdmaxrateTest = scale*20.0 # maximum spikes for motor command (normalizing value)
-cmdtimewin = 100 # spike time window for motor command (ms)
-antagInh = 0 # antagonist muscle inhibition
-# proprioceptive encoding
-pStart = popGidStart[ASC] 
-numPcells = popnumbers[ASC] # number of proprioceptive (P) cells to encode shoulder and elbow angles
-minPval = radians(-30) # min angle to encode
-maxPval = radians(135) # max angle to encode
-minPrate = 0.1 # firing rate when angle not within range
-maxPrate = 200 # firing rate when angle within range
-# exploratory movements
-explorMovs = 0 # exploratory movements; 1 = noise to EDSC+IDSC; 2 = noise to E5B
-explorMovsFactor = 10 # max factor by which to multiply specific muscle groups to enforce explor movs (only used if explorMovs=1)
-explorMovsDur = 1000 # max duration of each excitation to each muscle during exploratory movments
-backgroundrateExplor = 1000 # rate for background input for exploratory movements (changed during sim)
-backgroundweightExplor = 4.0 # weight for background input for exploratory movements (fixed)
-backgroundnoiseExplor = 0.1 # Fractional noise in timing durin explor mov
-explorCellsFraction = 0.05 # fraction of E5B cells to be activated at a time during explor movs
-timeoflastexplor = -inf # time when last exploratory movement was updated
-# reset arm every trial
-trialReset = True # whether to reset the arm after every trial time
-timeoflastreset = 0 # time when arm was last reseted (start from center etc. to simulate trials)
-
-
-## PMd inputs 
-if PMdinput == 'Plexon':
-    vec = h.Vector() # temporary Neuron vectors
-    emptyVec = h.Vector()
-    inncl = h.List() # used to store the plexon-interfaced PMd Netcons
-    innclDic = {} # dictionary to relate global and local PMd netcons
-if PMdinput == 'targetSplit':
-    trialTargets = [] # target id for each trial
-    targetPMdInputs = [] # PMd units active for each trial
-    maxPMdRate = 0.1
-    minPMdRate = 0.1
-    PMdNoiseRatio = 0.1 
 
 
 ## Stimulus parameters

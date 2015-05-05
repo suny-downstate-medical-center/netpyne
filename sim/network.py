@@ -158,13 +158,6 @@ def createNetwork():
     s.pc.barrier()
 
 
-    ## Calculate motor command cell ranges so can be used for EDSC and IDSC connectivity
-    nCells = s.motorCmdEndCell - s.motorCmdStartCell 
-    s.motorCmdCellRange = []
-    for i in range(s.nMuscles):
-        s.motorCmdCellRange.append(range(s.motorCmdStartCell + (nCells/s.nMuscles)*i, s.motorCmdStartCell + (nCells/s.nMuscles)*i + (nCells/s.nMuscles) )) # cells used to for shoulder motor command
-     
-
     ## Calculate distances and probabilities
     if s.rank==0: print('Calculating connection probabilities (est. time: %i s)...' % (s.performance*s.cellsperhost**2/3e4))
     conncalcstart = s.time() # See how long connecting the cells takes
@@ -199,13 +192,13 @@ def createNetwork():
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         
-        if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
-            EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
-            invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
-            IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
-            preids = concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
-        elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
-            preids = array(EDSCpre.pop(0))
+        #if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
+        #    EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
+        #    invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
+            #IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
+            #preids = concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
+        #elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
+        #    preids = array(EDSCpre.pop(0))
         postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
         s.conndata[0].append(preids) # Append pre-cell ID
         s.conndata[1].append(postids) # Append post-cell ID
@@ -365,12 +358,7 @@ def addBackground():
             
             backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
             for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
-                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Specify the weight for the EDSC, IDSC and PMd background input
-            elif s.cellnames[gid] == 'EB5' and s.explorMovs == 2: 
-                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweightExplor # Weight for EB5 input if explor movs via EB5 
-            else:
-                backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+            backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
             backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
             s.backgroundconns.append(backgroundconn) # Save this connnection
         
@@ -452,10 +440,8 @@ def runSim():
 
     while round(h.t) < s.duration:
         s.pc.psolve(min(s.duration,h.t+s.loopstep)) # MPI: Get ready to run the simulation (it isn't actually run until pc.runworker() is called I think)
-        if s.server.simMode == 0:
-            if s.rank==0 and (round(h.t) % s.progupdate)==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
-        else:
-            if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
+      
+        if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
 
         # Calculate LFP -- WARNING, need to think about how to optimize
         if s.savelfps:

@@ -118,30 +118,14 @@ def createNetwork():
     s.spikerecorders = [] # Empty list for storing spike-recording Netcons
     s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
     s.cellsperhost = 0
-    if s.PMdinput == 'Plexon': ninnclDic = len(s.innclDic) # number of PMd created in this worker
     for c in xrange(int(s.rank), s.ncells, s.nhosts):
         s.dummies.append(h.Section()) # Create fake sections
         gid = c
-        if s.cellnames[gid] == 'PMd':
-            if s.PMdinput == 'Plexon':
-                cell = celltypes[gid](cellid = gid) # create an NSLOC
-                s.inncl.append(h.NetCon(None, cell))  # This netcon receives external spikes
-                s.innclDic[gid - s.ncells - s.server.numPMd] = ninnclDic # This dictionary works in case that PMd's gid starts from 0.
-                ninnclDic += 1
-            elif s.PMdinput == 'targetSplit':
-                cell = celltypes[gid](cellid = gid) # create an NSLOC
-                cell.noise = s.PMdNoiseRatio
-            else:
-                cell = celltypes[gid](cellid = gid) # create an NSLOC
-            cell.number = s.backgroundnumber
-        elif s.cellnames[gid] == 'ASC':
-            cell = celltypes[gid](cellid = gid) #create an NSLOC    
+        if s.cellclasses[gid]==3: 
+            cell = s.fastspiking(s.dummies[s.cellsperhost], vt=-47, cellid=gid) # Don't use LTS cell, but instead a FS cell with a low threshold
         else: 
-            if s.cellclasses[gid]==3: 
-                cell = s.fastspiking(s.dummies[s.cellsperhost], vt=-47, cellid=gid) # Don't use LTS cell, but instead a FS cell with a low threshold
-            else: 
-                cell = celltypes[gid](s.dummies[s.cellsperhost], cellid=gid) # Create a new cell of the appropriate type (celltypes[gid]) and store it
-            if s.verbose>0: s.cells[-1].useverbose(s.verbose, s.filename+'los.txt') # Turn on diagnostic to file
+            cell = celltypes[gid](s.dummies[s.cellsperhost], cellid=gid) # Create a new cell of the appropriate type (celltypes[gid]) and store it
+        if s.verbose>0: s.cells[-1].useverbose(s.verbose, s.filename+'los.txt') # Turn on diagnostic to file
         s.cells.append(cell) 
         s.gidVec.append(gid) # index = local id; value = global id
         s.gidDic[gid] = s.cellsperhost # key = global id; value = local id -- used to get local id because gid.index() too slow!

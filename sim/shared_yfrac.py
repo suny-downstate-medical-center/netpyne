@@ -11,9 +11,10 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES
 ###############################################################################
 
-from pylab import array, inf, zeros, seed
+from pylab import array, inf, zeros, seed,rand
 from neuron import h # Import NEURON
-from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
+#from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
+import izhi
 from nsloc import nsloc # NetStim with location unit type
 from time import time
 from math import radians
@@ -31,87 +32,78 @@ if rank==0:
     print('\nSetting parameters...')
 
 # Class to store equivalence between names and values so can be used as indices
-# class Dicts:
-#     # can use dicts
-#     EorI = {'E': 0, 'I':1}
-#     topClass = {'IT': 0, 'PT': 1, 'CT': 2, 'HTR':3, 'Pva':4, 'Sst':5}
-#     subClass = {'L4':0, 'other':1, 'Vip':2, 'Nglia':3, 'Basket':4, 'Chand':5, 'Marti':6, 'L4Sst':7} 
-#     model = {'Izhi2007':0, 'Friesen':1, 'HH':2}
+class Labels:
+    AMPA=0; NMDA=1; GABAA=2; GABAB=3; opsin=4  # synaptic receptors
+    E=0; I=1  # excitatory vs inhibitory
+    IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5  # cell/pop top class 
+    L4=0; other=1; Vip=2; Nglia=3; Basket=4; Chand=5; Marti=6; L4Sst=7  # cell/pop sub class
+    Izhi2007=0; Friesen=1; HH=2  # types of cell model
 
-#     # or maybe simply variable names
-#     E=0, I=1
-#     IT=0, PT=1, CT=2, HTR=3, Pva=4, Sst=5
-#     L4=0, other=1, Vip=2, Nglia=3, Basket=4, Chand=5, Marti=6, L4Sst=7
-#     Izhi2007=0, Friesen=1, HH=2 
-
-# d = Dicts()
-
-# or single dict
-d = {'E': 0, 'I':1, \
-    'IT': 0, 'PT': 1, 'CT': 2, 'HTR':3, 'Pva':4, 'Sst':5, \
-    'L4':0, 'other':1, 'Vip':2, 'Nglia':3, 'Basket':4, 'Chand':5, 'Marti':6, 'L4Sst':7, \
-    'Izhi2007':0, 'Friesen':1, 'HH':2}
+l = Labels() # instantiate object of class Labels
 
 
 ###############################################################################
 ### CELL CLASS
 ###############################################################################
 
-# definition of python class ‘Cell' used to instantiate individual neurons
+# definition of python class 'Cell' used to instantiate individual neurons
 # based on (Harrison & Sheperd, 2105)
 class Cell:
-    def __init__(self, gid, EorI, topClass, subClass, yfrac, xloc, yloc, model):
+    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc, cellModel):
         self.gid = gid  # global cell id 
         self.popid = popid  # id of population
         self.EorI = EorI # excitatory or inhibitory 
         self.topClass = topClass # top-level class (IT, PT, CT,...) 
         self.subClass = subClass # subclass (L4, Basket, ...)
         self.yfrac = yfrac  # normalized cortical depth
-        self.xloc = xloc  # normalized x location 
-        self.yloc = yloc  # normalized y location 
-        self.model = model  # type of model (eg. Izhikevich, Friesen, HH ...)
-        #self.[other properties] = 
+        self.xloc = xloc  # x location in um
+        self.zloc = zloc  # y location in um 
+        self.cellModel = cellModel  # type of cell model (eg. Izhikevich, Friesen, HH ...)
+        self.m = []  # NEURON object containing cell model
 
-        # instantiate actual cell model (eg. Izhi2007 point process, or HH MC)
-        if model == d['Izhi2007']:
-            dummy = h.Section()
+        # Instantiate cell model (eg. Izhi2007 point process, HH MC, ...)
+        if cellModel == l.Izhi2007: # Izhikevich 2007 neuron model
+            self.dummy = h.Section()
             if topClass in range(0,3): # if excitatory cell use RS
-                self.m = RS(0, gid)
-            elif topClass == d['Pva']: # if Pva use FS
-                self.m = FS(0, gid)
-            elif topClass == d['Sst']: # if Sst us LTS
-                self.m = LTS(0, gid)
+                self.m = izhi.RS(self.dummy, cellid=gid)
+            elif topClass == l.Pva: # if Pva use FS
+                self.m = izhi.FS(self.dummy, cellid=gid)
+            elif topClass == l.Sst: # if Sst us LTS
+                self.m = izhi.LTS(self.dummy, cellid=gid)
         else:
-            print('Selected cell model %d not yet implemented' % (model))
+            print('Selected cell model %d not yet implemented' % (cellModel))
 
 
 ###############################################################################
 ### POP CLASS
 ###############################################################################
 
-# definition of python class ‘Pop’ used to instantiate the network population
+# definition of python class 'Pop' used to instantiate the network population
 class Pop:
-    def __init__(self, gid, EorI, topClass, subClass, yfracRange, ratio, model):
-        self.gid = gid
-        self.type = topClass
-        self.topClass = topClass
-        self.subClass = subClass
-        self.yfracRange = yfracRange
-        self.ratio = ratio
-        self.model = model
-        self.cellgids = []
+    def __init__(self, gid, EorI, topClass, subClass, yfracRange, density, cellModel):
+        self.gid = gid  # id of population
+        self.EorI = EorI  # excitatory or inhibitory 
+        self.topClass = topClass  # top-level class (IT, PT, CT,...) 
+        self.subClass = subClass  # subclass (L4, Basket, ...)
+        self.yfracRange = yfracRange  # normalized cortical depth
+        self.density = density  # cell density (for now constant, but could be func of yfrac) (units?)
+        self.model = cellModel  # cell model for this population
+        self.cellgids = []  # list of cell gids in this population
 
-    def createCells(self, lastGid, scale):
+    # Function to instantiate Cell objects based on the characteristics of this population
+    def createCells(self, lastGid, scale, modelsize, sparseness):
         cells = []
-        gid = lastGid
-        seed(id32('%d' % randseed)) # Reset random number generator
-        randLocs = rand(scale*self.ratio, 3) # Create random x,y,z locations
+        gid = lastGid  # continue assigning gids from last one
+        numCells = scale*self.density*modelsize^2*(self.yfracRange[1]*self.yfracRange[2]) # calculate num of cells based on scale, density, modelsize and yfracRange
+        seed(id32('%d' % randseed))  # reset random number generator
+        randLocs = rand(numCells, 3)  # create random x,y,z locations
         for i in range(scale*self.ratio):
-            gid = gid + 1
-            yfrac =  self.yfracRange[0] + (sel.yfracRange[1] - sel.yfracRange[0]) *  
-            self.cellgid.append(gid)  # add gid list of cells belonging to this population
-            cells.append(Cell(gid, self.type, self.topClass, self.subClass, yfrac, randLocs[i,1], randLocs[i,2], self.model))
-
+            gid = gid+1
+            self.cellgids.append(gid)  # add gid list of cells belonging to this population
+            yfrac = self.yfracRange[0] + ((self.yfracRange[1]-sel.yfracRange[0])) * randLocs[i,2] # calculate yfrac 
+            x = modelsize * randLocs[i,1] # calculate x location (um)
+            z = modelsize * randLocs[i,3] # calculate y location (um) 
+            cells.append(Cell(gid, self.type, self.topClass, self.subClass, yfrac, x, z, self.cellModel)) # instantiate Cell object
         return cells
 
 
@@ -120,36 +112,42 @@ class Pop:
 ###############################################################################
 
 # definition of python class 'Conn' to store and calcualte connections
-class Conn:
-  def __init__(cellPre, cellPost):
-    self.preid = cellPre.gid
-    self.postid = cellPost.gid
-    self.weight = connWeight(cellPre, cellPost)
-    self.delay = connDelay(cellPre, cellPost)
+# class Conn:
+#     def __init__(cellPre, cellPost):
+#         self.preid = cellPre.gid
+#         self.postid = cellPost.gid
+#         self.weight = connWeight(cellPre, cellPost)
+#         self.delay = connDelay(cellPre, cellPost)
 
-  def connectWeight(cellPre, cellPost):
-    [calculate as a func of cellPre.type, cellPre.class, cellPre.yfrac, cellPost.type, cellPost.class, cellPost.yfrac]
-  return weight
+    # def connectWeight(cellPre, cellPost):
+    #   [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
+    # return weight
 
-  def connectDelay(cellPre, cellPost):
-    [calculate as a func of cellPre.type, cellPre.class, cellPre.yfrac, cellPost.type, cellPost.class, cellPost.yfrac]
-  return delay
+    # def connectDelay(cellPre, cellPost):
+    #   [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
+    #return delay
 
 
 
-# # Instantiation of objects of class ‘Pop’ (network populations)
-# E_IT_2 = Pop('E', 'IT, [0.1,0.31])
-# or pops[0] = Pop('E', 'IT, [0.1,0.31])
+###############################################################################
+### Instantiate network populations (objects of class 'Pop')
+###############################################################################
 
-# # Instantiation of objects of class ‘Cell’ (network cells) based on ‘Pop’ objects
-# for ipop in pops:
-#  cells.append(pops[ipop].createCells)
+pops = []  # list to store populations ('Pop' objects)
 
-# # Connect object cells based on pre and post cell's type, class and yfrac
-# for ipre in cells:
-#  for ipost in cells:
-#    conn[i] = Conn(cells[ipre], cells[ipost]
-
+            # gid,  EorI,   topClass,   subClass,   yfracRange,     density,    cellModel):
+pops.append(Pop(0,   l.E,    l.IT,       l.other,    [0.1, 0.26],    2,          l.Izhi2007)) #  L2/3 IT
+pops.append(Pop(1,   l.E,    l.IT,       l.other,    [0.26, 0.31],   2,          l.Izhi2007)) #  L4 IT
+pops.append(Pop(2,   l.E,    l.IT,       l.other,    [0.31, 0.52],   2,          l.Izhi2007)) #  L5A IT
+pops.append(Pop(3,   l.E,    l.IT,       l.other,    [0.52, 0.77],   1,          l.Izhi2007)) #  L5B IT
+pops.append(Pop(4,   l.E,    l.PT,       l.other,    [0.52, 0.77],   1,          l.Izhi2007)) #  L5B PT
+pops.append(Pop(5,   l.E,    l.IT,       l.other,    [0.77, 1.0],    1,          l.Izhi2007)) #  L6 IT
+pops.append(Pop(6,   l.I,    l.Pva,      l.other,    [0.1, 0.31],    0.5,        l.Izhi2007)) #  L2/3 Pva (FS)
+pops.append(Pop(7,   l.I,    l.Sst,      l.other,    [0.1, 0.31],    0.5,        l.Izhi2007)) #  L2/3 Sst (LTS)
+pops.append(Pop(8,   l.I,    l.Pva,      l.other,    [0.31, 0.77],   0.5,        l.Izhi2007)) #  L5 Pva (FS)
+pops.append(Pop(9,   l.I,    l.Sst,      l.other,    [0.31, 0.77],   0.5,        l.Izhi2007)) #  L5 Sst (LTS)
+pops.append(Pop(10,   l.I,    l.Pva,     l.other,    [0.77, 1.0],    0.5,        l.Izhi2007)) #  L6 Pva (FS)
+pops.append(Pop(11,   l.I,    l.Sst,     l.other,    [0.77, 1.0],    0.5,        l.Izhi2007)) #  L6 Sst (LTS)
 
 
 ###############################################################################
@@ -157,6 +155,7 @@ class Conn:
 ###############################################################################
 
 ## Simulation parameters
+scale = 1 # Size of simulation in thousands of cells
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
 loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
@@ -170,7 +169,7 @@ outfilestem = '' # filestem to save fitness result
 savemat = True # Whether or not to write spikes etc. to a .mat file
 savetxt = False # save spikes and conn to txt file
 savelfps = False # Whether or not to save LFPs
-lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
+#lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 savebackground = False # save background (NetStims) inputs
 saveraw = False # Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
@@ -188,7 +187,8 @@ useconnprobdata = True # Whether or not to use INTF6 connectivity data
 useconnweightdata = True # Whether or not to use INTF6 weight data
 mindelay = 2 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
-modelsize = 10000 # 1000*scale # 500 Size of network in um (~= 1000 neurons/column where column = 500um width)
+modelsize = 1000*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
+sparseness = 100 # one out of how many neurons are represented (num neurons = density * modelsize / sparseness)
 scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
@@ -206,7 +206,7 @@ corticalthick = 1740 # rename to corticalThick
 ## STDP and RL parameters
 usestdp = True # Whether or not to use STDP
 plastConnsType = 0 # predefined sets of plastic connections (use with evol alg)
-plastConns = [[EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
+#plastConns = [[EB5,EDSC], [ER2,ER5], [ER5,EB5]] # list of plastic connections
 stdpFactor = 0.001 # multiplier for stdprates
 stdprates = stdpFactor * array([[1, -1.3], [0, 0]])#0.1*array([[0.025, -0.025], [0.025, -0.025]])#([[0, 0], [0, 0]]) # STDP potentiation/depression rates for E->anything and I->anything, e.g. [0,:] is pot/dep for E cells
 stdpwin = 10 # length of stdp window (ms) (scholarpedia=10; Frem13=20(+),40(-))
@@ -223,14 +223,14 @@ backgroundrateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundnumber = 1e10 # Number of spikes
 backgroundnoise = 1 # Fractional noise
 backgroundweight = 2.0*array([1,0.1]) # Weight for background input for E cells and I cells
-backgroundreceptor = NMDA # Which receptor to stimulate
+backgroundreceptor = l.NMDA # Which receptor to stimulate
 
 
 ## Stimulus parameters
-usestims = False # Whether or not to use stimuli at all
-ltptimes  = [5, 10] # Pre-microstim touch times
-ziptimes = [10, 15] # Pre-microstim touch times
-stimpars = [stimmod(touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stimmod(touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
+# usestims = False # Whether or not to use stimuli at all
+# ltptimes  = [5, 10] # Pre-microstim touch times
+# ziptimes = [10, 15] # Pre-microstim touch times
+# stimpars = [stimmod(touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stimmod(touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
 
 
 

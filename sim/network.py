@@ -29,7 +29,7 @@ from neuron import h, init # Import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
 from datetime import datetime
-import shared as s # Import all shared variables and parameters
+import shared_yfrac as s # Import all shared variables and parameters
 import analysis
 import pickle
 import warnings
@@ -42,13 +42,13 @@ warnings.filterwarnings('error')
 # standard sequence
 def runSeq():
     createNetwork() 
-    addStimulation()
-    addBackground()
-    setupSim()
-    runSim()
-    finalizeSim()
-    saveData()
-    plotData()
+    # addStimulation()
+    # addBackground()
+    # setupSim()
+    # runSim()
+    # finalizeSim()
+    # saveData()
+    # plotData()
 
 # standard sequence to tune network dynamics
 def runTuneParams():
@@ -74,16 +74,41 @@ def runTuneParams():
     print('\nDone; total time = %0.1f s.' % totaltime)
 
 
-
 ###############################################################################
 ### Create Network
 ###############################################################################
-
 def createNetwork():
     ## Print diagnostic information
-    if s.rank==0: print("\nCreating simulation of %i cells for %0.1f s on %i hosts..." % (sum(s.popnumbers),s.duration/1000.,s.nhosts)) 
+    #if s.rank==0: print("\nCreating simulation of %i cells for %0.1f s on %i hosts..." % (sum(s.popnumbers),s.duration/1000.,s.nhosts)) 
     s.pc.barrier()
-    
+
+
+
+    ###############################################################################
+    ### Instantiate network cells (objects of class 'Cell')
+    ###############################################################################
+    s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
+    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
+ 
+    s.cells = []
+    for ipop in s.pops:
+        lastGid = len(s.cells)  # set initial cell gid
+        s.cells.append(ipop.createCells(lastGid, s.scale, s.modelsize, s.sparseness))
+
+    ###############################################################################
+    ### Instantiate network connections (objects of class 'Conn')
+    ###############################################################################
+
+    # # Connect object cells based on pre and post cell's type, class and yfrac
+    # for ipre in cells:
+    #  for ipost in cells:
+    #    conn[i] = Conn(cells[ipre], cells[ipost]
+
+
+
+
+# Old create network
+def createNetworkOld():
     ## Create empty data structures
     s.cells=[] # Create empty list for storing cells
     s.dummies=[] # Create empty list for storing fake sections
@@ -113,7 +138,7 @@ def createNetwork():
     for c in range(s.ncells): 
         s.zlocs[c] = s.corticalthick * (s.zlocs[c]*(s.popyfrac[s.cellpops[c]][1]-s.popyfrac[s.cellpops[c]][0]) + s.popyfrac[s.cellpops[c]][0])  # calculate based on yfrac for population and corticalthick 
 
-
+ 
     ## Actually create the cells
     s.spikerecorders = [] # Empty list for storing spike-recording Netcons
     s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
@@ -292,7 +317,7 @@ def addStimulation():
                         stimconn.delay=s.mindelay # Specify the delay in ms -- shouldn't make a spot of difference
                         s.stimconns.append(stimconn) # Save this connnection
         
-                        if s.saveraw and c <=100:
+                        if s.saveraw:# and c <=100:
                             stimspikevec = h.Vector() # Initialize vector
                             s.stimspikevecs.append(stimspikevec) # Keep all those vectors
                             stimrecorder = h.NetCon(stimsource, None)
@@ -395,7 +420,7 @@ def setupSim():
         if s.rank==0: print('\nSetting up raw recording...')
         s.nquantities = 4 # Number of variables from each cell to record from
         # Later this part should be modified because NSLOC doesn't have V, u and I.
-        for c in range(100):#range(s.cellsperhost):
+        for c in range(s.cellsperhost):
             gid = s.gidVec[c] # Get this cell's GID
             if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # NSLOC doesn't have V, u and I
                 continue 

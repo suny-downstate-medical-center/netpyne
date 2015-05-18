@@ -94,7 +94,7 @@ class Pop:
     def createCells(self, lastGid, scale, modelsize, sparseness):
         cells = []
         gid = lastGid  # continue assigning gids from last one
-        numCells = scale*self.density*modelsize^2*(self.yfracRange[1]*self.yfracRange[2]) # calculate num of cells based on scale, density, modelsize and yfracRange
+        numCells = scale*self.density*modelsize^2*(self.yfracRange[1]-self.yfracRange[0]) # calculate num of cells based on scale, density, modelsize and yfracRange
         seed(id32('%d' % randseed))  # reset random number generator
         randLocs = rand(numCells, 3)  # create random x,y,z locations
         for i in range(scale*self.ratio):

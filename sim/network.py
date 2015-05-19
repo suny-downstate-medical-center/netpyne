@@ -123,7 +123,7 @@ def createNetwork():
     # Connect object cells based on pre and post cell's type, class and yfrac
     s.conns = []
     for ipost in s.cells:
-        newConns = s.Conn.connect(s.cells, s.cells[ipost], s)
+        newConns = s.Conn.connect(s.cells, ipost, s)
         s.conns.extend(newConns) 
 
 

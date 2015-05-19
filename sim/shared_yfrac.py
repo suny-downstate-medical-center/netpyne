@@ -178,15 +178,58 @@ class Conn:
     def connect(cls, cellsPre, cellPost):
         newConns = Conn()
         [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
+    
+        if s.toroidal: 
+            xpath=(abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
+            xpath2=(s.modelsize-abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
+            xpath[xpath2<xpath]=xpath2[xpath2<xpath]
+            ypath=(abs([x.yfrac*s.corticalthick for x in cellsPre]-cellPost.yfrac*s.corticalthick)))**2
+            zpath=(abs([x.zloc for x in cellsPre]-cellPost.zloc))**2
+            zpath2=(s.modelsize-abs([x.zloc for x in cellsPre]-cellPost.zlocs))**2
+            zpath[zpath2<zpath]=zpath2[zpath2<zpath]
+            distances = sqrt(xpath + ypath) # Calculate all pairwise distances
+            distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
+        else: 
+            distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
+            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
+        allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] * connProbs[[x.topClass for x in  cellsPre], cellPost.topClass] * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
+        allconnprobs[gid] = 0  # Prohibit self-connections using the cell's GID
+        seed(s.id32('%d'%(s.randseed+gid)))  # Reset random number generator  
+        allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
+      
+        makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
+        preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
 
-    def __init__(cellPre, cellPost):
+        postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
+        s.conndata[0].append(preids) # Append pre-cell ID
+        s.conndata[1].append(postids) # Append post-cell ID
+        s.conndata[2].append(distances[preids]) # Distances
+        s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
+        wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
+        wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
+        wt3 = s.receptorweight[:] # M receptor weights
+        finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
+          s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
+        
+        pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
+        newcon = s.pc.gid_connect(pregid, s.cells[pstid]) # Create a connection
+        newcon.delay = s.conndata[3][con] # Set delay
+        for r in range(s.nreceptors): newcon.weight[r] = s.conndata[4][con][r] # Set weight of connection
+        s.connlist.append(newcon) # Connect the two cells
+
+
+        return newConns
+
+
+
+
+    def __init__(self, cellPre, cellPost):
         self.preid = cellPre.gid
         self.postid = cellPost.gid
         self.weight = [] # connWeight(cellPre, cellPost)
         self.delay = [] # connDelay(cellPre, cellPost)
 
 
-    return newConns
 
 
 ###############################################################################

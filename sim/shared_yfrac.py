@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, integrate, arange
+from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange
 from neuron import h # Import NEURON
 #from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
@@ -99,18 +99,24 @@ class Pop:
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self, lastGid, s):
         cells = []
-        volume = int(s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
+        volume = s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
         densityInterval = 0.001
-        maxDensity = max(map(self.density, (arange(self.yFracRange[0],self.yFracRange[1], densityInterval))))
+        print self.density(self.yfracRange[0]), self.density(self.yfracRange[1])
+        maxDensity = max(map(self.density, (arange(self.yfracRange[0],self.yfracRange[1], densityInterval))))
         maxCells = volume * maxDensity
         seed(id32('%d' % randseed))  # reset random number generator
-        randYfracs = rand(maxCells, 1)
-        yfracs = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randYfracs # calculate yfrac 
-        yfracsProb = map(self.density, yfracs) / maxDensity
+        randYfracs = rand(int(maxCells), 1)
+        yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randYfracs # calculate yfrac 
+        yfracsProb = array(map(self.density, yfracsAll)) / maxDensity
+        # print 'yfracs',yfracsAll
+        # print 'yfracsProb',yfracsProb
+
         allrands = rand(len(yfracsProb))  # Create an array of random numbers for checking each yfrac pos 
         makethiscell = yfracsProb>allrands # Perform test to see whether or not this cell should be made
-        yfracs = [yfracs[i] for i in range(len(yfracs)) if i in array(makethiscell.nonzero()[0],dtype='int')] # Return True elements of that array for presynaptic cell IDs
+        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # Return True elements of that array for presynaptic cell IDs
         self.numCells = len(yfracs)    
+
+        if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
         
         randLocs = rand(self.numCells, 2)  # create random x,z locations
         for i in xrange(int(rank), self.numCells, s.nhosts):
@@ -201,7 +207,7 @@ class Conn:
     @classmethod
     def connect(cls, cellsPre, cellPost, s):
         #calculate as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac etc (IN PROGRESS!!)
-        if s.toroidal: 
+        if s.toroidal: # CHECK IMPLEMENTATION OF TOROIDAL
             xpath=(abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
             xpath2=(s.modelsize-abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
             xpath[xpath2<xpath]=xpath2[xpath2<xpath]
@@ -212,8 +218,8 @@ class Conn:
             distances = sqrt(xpath + ypath) # Calculate all pairwise distances
             distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
         else: 
-            distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
+            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
+            distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
         
         allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
                 * [cls.connProbs[i][cellPost.topClass](cellPost.yfrac) for i in [x.topClass for x in  cellsPre]] \
@@ -224,7 +230,7 @@ class Conn:
         allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-        delays =s.mindelay + distances3d[preids]/float(s.velocity) # Calculate the delays
+        delays = s.mindelay + distances[preids]/float(s.velocity) # Calculate the delays
         wt1 = s.scaleconnweight[[x.EorI for x in [cellsPre[i] for i in preids]], cellPost.EorI] # N weight scale factors
         wt2 = cls.connWeights[[x.topClass for x in [cellsPre[i] for i in preids]], cellPost.topClass] # NxM inter-population weights
         wt3 = s.receptorweight[:] # M receptor weights
@@ -300,7 +306,7 @@ scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, I
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
-toroidal = True # Whether or not to have toroidal topology
+toroidal = False # Whether or not to have toroidal topology
 if useconnprobdata == False: connprobs = array(connprobs>0,dtype='int') # Optionally cnvert from float data into binary yes/no
 if useconnweightdata == False: connweights = array(connweights>0,dtype='int') # Optionally convert from float data into binary yes/no
 

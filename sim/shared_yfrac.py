@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES
 ###############################################################################
 
-from pylab import array, inf, zeros, seed,rand
+from pylab import array, inf, zeros, seed, rand
 from neuron import h # Import NEURON
 #from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
@@ -20,7 +20,7 @@ from time import time
 from math import radians
 import hashlib
 def id32(obj): return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
-
+#verbose = 1
 
 ## MPI
 pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -80,31 +80,34 @@ class Cell:
 
 # definition of python class 'Pop' used to instantiate the network population
 class Pop:
-    def __init__(self, gid, EorI, topClass, subClass, yfracRange, density, cellModel):
-        self.gid = gid  # id of population
+    def __init__(self, popgid, EorI, topClass, subClass, yfracRange, density, cellModel):
+        self.popgid = popgid  # id of population
         self.EorI = EorI  # excitatory or inhibitory 
         self.topClass = topClass  # top-level class (IT, PT, CT,...) 
         self.subClass = subClass  # subclass (L4, Basket, ...)
         self.yfracRange = yfracRange  # normalized cortical depth
-        self.density = density  # cell density (for now constant, but could be func of yfrac) (units?)
-        self.model = cellModel  # cell model for this population
-        self.cellgids = []  # list of cell gids in this population
+        self.density = density  # cell density (for now constant, but could be func of yfrac) (in mm^3?)
+        self.cellModel = cellModel  # cell model for this population
+        self.cellGids = []  # list of cell gids in this population
+        self.numCells = 0  # number of cells in this population
 
     # Function to instantiate Cell objects based on the characteristics of this population
-    def createCells(self, lastGid, scale, modelsize, sparseness):
+    def createCells(self, lastGid, scale, modelsize, sparseness, rank, nhosts):
         cells = []
-        gid = lastGid  # continue assigning gids from last one
-        numCells = scale*self.density*modelsize^2*(self.yfracRange[1]-self.yfracRange[0]) # calculate num of cells based on scale, density, modelsize and yfracRange
+        #gid = lastGid  # continue assigning gids from last one
+        self.numCells = int(scale*sparseness*self.density*(modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
         seed(id32('%d' % randseed))  # reset random number generator
-        randLocs = rand(numCells, 3)  # create random x,y,z locations
-        for i in range(scale*self.ratio):
-            gid = gid+1
-            self.cellgids.append(gid)  # add gid list of cells belonging to this population
-            yfrac = self.yfracRange[0] + ((self.yfracRange[1]-sel.yfracRange[0])) * randLocs[i,2] # calculate yfrac 
-            x = modelsize * randLocs[i,1] # calculate x location (um)
-            z = modelsize * randLocs[i,3] # calculate y location (um) 
-            cells.append(Cell(gid, self.type, self.topClass, self.subClass, yfrac, x, z, self.cellModel)) # instantiate Cell object
-        return cells
+        randLocs = rand(self.numCells, 3)  # create random x,y,z locations
+        for i in xrange(int(rank), self.numCells, nhosts):
+            gid = lastGid+i
+            print('host=%d, gid=%d'%(rank, gid))
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population
+            yfrac = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randLocs[i,1] # calculate yfrac 
+            x = modelsize * randLocs[i,0] # calculate x location (um)
+            z = modelsize * randLocs[i,2] # calculate z location (um) 
+            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfrac, x, z, self.cellModel)) # instantiate Cell object
+            if verbose: print('Cell %d/%d of pop %d on node %d'%(i, self.numCells, self.popgid, rank))
+        return cells, lastGid+self.numCells
 
 
 ###############################################################################
@@ -136,18 +139,18 @@ class Pop:
 pops = []  # list to store populations ('Pop' objects)
 
             # gid,  EorI,   topClass,   subClass,   yfracRange,     density,    cellModel):
-pops.append(Pop(0,   l.E,    l.IT,       l.other,    [0.1, 0.26],    2,          l.Izhi2007)) #  L2/3 IT
-pops.append(Pop(1,   l.E,    l.IT,       l.other,    [0.26, 0.31],   2,          l.Izhi2007)) #  L4 IT
-pops.append(Pop(2,   l.E,    l.IT,       l.other,    [0.31, 0.52],   2,          l.Izhi2007)) #  L5A IT
-pops.append(Pop(3,   l.E,    l.IT,       l.other,    [0.52, 0.77],   1,          l.Izhi2007)) #  L5B IT
-pops.append(Pop(4,   l.E,    l.PT,       l.other,    [0.52, 0.77],   1,          l.Izhi2007)) #  L5B PT
-pops.append(Pop(5,   l.E,    l.IT,       l.other,    [0.77, 1.0],    1,          l.Izhi2007)) #  L6 IT
-pops.append(Pop(6,   l.I,    l.Pva,      l.other,    [0.1, 0.31],    0.5,        l.Izhi2007)) #  L2/3 Pva (FS)
-pops.append(Pop(7,   l.I,    l.Sst,      l.other,    [0.1, 0.31],    0.5,        l.Izhi2007)) #  L2/3 Sst (LTS)
-pops.append(Pop(8,   l.I,    l.Pva,      l.other,    [0.31, 0.77],   0.5,        l.Izhi2007)) #  L5 Pva (FS)
-pops.append(Pop(9,   l.I,    l.Sst,      l.other,    [0.31, 0.77],   0.5,        l.Izhi2007)) #  L5 Sst (LTS)
-pops.append(Pop(10,   l.I,    l.Pva,     l.other,    [0.77, 1.0],    0.5,        l.Izhi2007)) #  L6 Pva (FS)
-pops.append(Pop(11,   l.I,    l.Sst,     l.other,    [0.77, 1.0],    0.5,        l.Izhi2007)) #  L6 Sst (LTS)
+pops.append(Pop(0,   l.E,    l.IT,       l.other,    [0.1, 0.26],    2e3,          l.Izhi2007)) #  L2/3 IT
+pops.append(Pop(1,   l.E,    l.IT,       l.other,    [0.26, 0.31],   2e3,          l.Izhi2007)) #  L4 IT
+pops.append(Pop(2,   l.E,    l.IT,       l.other,    [0.31, 0.52],   2e3,          l.Izhi2007)) #  L5A IT
+pops.append(Pop(3,   l.E,    l.IT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B IT
+pops.append(Pop(4,   l.E,    l.PT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B PT
+pops.append(Pop(5,   l.E,    l.IT,       l.other,    [0.77, 1.0],    1e3,          l.Izhi2007)) #  L6 IT
+pops.append(Pop(6,   l.I,    l.Pva,      l.other,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
+pops.append(Pop(7,   l.I,    l.Sst,      l.other,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
+pops.append(Pop(8,   l.I,    l.Pva,      l.other,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
+pops.append(Pop(9,   l.I,    l.Sst,      l.other,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
+pops.append(Pop(10,   l.I,    l.Pva,     l.other,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
+pops.append(Pop(11,   l.I,    l.Sst,     l.other,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
 
 
 ###############################################################################
@@ -172,7 +175,7 @@ savelfps = False # Whether or not to save LFPs
 #lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 savebackground = False # save background (NetStims) inputs
 saveraw = False # Whether or not to record raw voltages etc.
-verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+verbose = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
 plotpsd = False # plot power spectral density
@@ -188,7 +191,7 @@ useconnweightdata = True # Whether or not to use INTF6 weight data
 mindelay = 2 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
 modelsize = 1000*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
-sparseness = 100 # one out of how many neurons are represented (num neurons = density * modelsize / sparseness)
+sparseness = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
 scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed

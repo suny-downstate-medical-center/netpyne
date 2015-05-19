@@ -3,7 +3,7 @@ from numpy import mean, zeros
 from time import time
 import pickle
 from neuron import h# Import NEURON
-import shared as s
+import shared_yfrac as s
 
 ###############################################################################
 ### Update model parameters from command-line arguments

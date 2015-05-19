@@ -89,11 +89,34 @@ def createNetwork():
     ###############################################################################
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
+    s.spikerecorders = [] # Empty list for storing spike-recording Netcons
+    s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
  
     s.cells = []
+    lastGid = 0
+    localid = 0
     for ipop in s.pops:
-        lastGid = len(s.cells)  # set initial cell gid
-        s.cells.append(ipop.createCells(lastGid, s.scale, s.modelsize, s.sparseness))
+        newCells, lastGid = ipop.createCells(lastGid, s.scale, s.modelsize, s.sparseness, s.rank, s.nhosts) # create cells for this pop using Pop method
+        s.cells.extend(newCells)  # add to list of cells
+        
+        if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))
+        s.gidVec.extend([x.gid for x in newCells]) # index = local id; value = global id
+        for c in newCells:
+            s.gidDic[c.gid] = localid  # key = global id; value = local id -- used to get local id because gid.index() too slow!
+            s.pc.set_gid2node(c.gid, s.rank)  # associate cells gid with this node
+            spikevec = h.Vector()  # Vector to store spikes
+            s.hostspikevecs.append(spikevec)  
+            spikerecorder = h.NetCon(c.m, None)  # add netcon to record spikes
+            spikerecorder.record(spikevec) 
+            s.spikerecorders.append(spikerecorder)
+            s.pc.cell(c.gid, s.spikerecorders[localid])
+            localid += 1
+
+    print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))
+    s.pc.barrier()
+
+
+    print 'NODE: ', s.rank, '\n', s.gidVec, '\n', s.gidDic, 
 
     ###############################################################################
     ### Instantiate network connections (objects of class 'Conn')

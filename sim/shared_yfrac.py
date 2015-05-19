@@ -8,7 +8,7 @@ Version: 2015feb12 by salvadord
 """
 
 ###############################################################################
-### IMPORT MODULES
+### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
 from pylab import array, inf, zeros, seed, rand
@@ -30,6 +30,11 @@ rank = int(pc.id())     # rank 0 will be the master
 if rank==0: 
     pc.gid_clear()
     print('\nSetting parameters...')
+
+
+###############################################################################
+### LABELS CLASS
+###############################################################################
 
 # Class to store equivalence between names and values so can be used as indices
 class Labels:
@@ -119,9 +124,9 @@ class Conn:
 
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=zeros((l.numTopClass,l.numTopClass))
-    connProbs[l.IT][l.IT]   = 1
-    connProbs[l.IT][l.PT]   = 1
-    connProbs[l.IT][l.CT]   = 1
+    connProbs[l.IT][l.IT]   = (lambda x: 1/x)  # example of yfrac-dep function
+    connProbs[l.IT][l.PT]   = (lambda x: 0.2*x if (x>0.5 and x<0.8))
+    connProbs[l.IT][l.CT]   = (lambda x: 1)  # constant function
     connProbs[l.IT][l.Pva]  = 1
     connProbs[l.IT][l.Sst]  = 1
     connProbs[l.PT][l.IT]   = 0
@@ -177,8 +182,7 @@ class Conn:
     @classmethod
     def connect(cls, cellsPre, cellPost):
         newConns = Conn()
-        [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
-    
+        #calculate as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac etc (IN PROGRESS!!)
         if s.toroidal: 
             xpath=(abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
             xpath2=(s.modelsize-abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
@@ -192,35 +196,35 @@ class Conn:
         else: 
             distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
             distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-        allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] * connProbs[[x.topClass for x in  cellsPre], cellPost.topClass] * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
-        allconnprobs[gid] = 0  # Prohibit self-connections using the cell's GID
-        seed(s.id32('%d'%(s.randseed+gid)))  # Reset random number generator  
-        allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
-      
-        makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
-        preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+            allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
+                    * connProbs[[x.topClass for x in  cellsPre], cellPost.topClass](cellPost.yfrac) \
+                    * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
+            allconnprobs[gid] = 0  # Prohibit self-connections using the cell's GID
+            seed(s.id32('%d'%(s.randseed+gid)))  # Reset random number generator  
+            allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
+          
+            # makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
+            # preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
 
-        postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
-        s.conndata[0].append(preids) # Append pre-cell ID
-        s.conndata[1].append(postids) # Append post-cell ID
-        s.conndata[2].append(distances[preids]) # Distances
-        s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
-        wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
-        wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
-        wt3 = s.receptorweight[:] # M receptor weights
-        finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
-          s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
-        
-        pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
-        newcon = s.pc.gid_connect(pregid, s.cells[pstid]) # Create a connection
-        newcon.delay = s.conndata[3][con] # Set delay
-        for r in range(s.nreceptors): newcon.weight[r] = s.conndata[4][con][r] # Set weight of connection
-        s.connlist.append(newcon) # Connect the two cells
+            # postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
+            # s.conndata[0].append(preids) # Append pre-cell ID
+            # s.conndata[1].append(postids) # Append post-cell ID
+            # s.conndata[2].append(distances[preids]) # Distances
+            # s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
+            # wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
+            # wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
+            # wt3 = s.receptorweight[:] # M receptor weights
+            # finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
+            #   s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
+            
+            # pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
+            # newcon = s.pc.gid_connect(pregid, s.cells[pstid]) # Create a connection
+            # newcon.delay = s.conndata[3][con] # Set delay
+            # for r in range(s.nreceptors): newcon.weight[r] = s.conndata[4][con][r] # Set weight of connection
+            # s.connlist.append(newcon) # Connect the two cells
 
 
         return newConns
-
-
 
 
     def __init__(self, cellPre, cellPost):

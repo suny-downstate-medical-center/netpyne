@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp
+from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, integrate, arange
 from neuron import h # Import NEURON
 #from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
@@ -91,7 +91,7 @@ class Pop:
         self.topClass = topClass  # top-level class (IT, PT, CT,...) 
         self.subClass = subClass  # subclass (L4, Basket, ...)
         self.yfracRange = yfracRange  # normalized cortical depth
-        self.density = density  # cell density (for now constant, but could be func of yfrac) (in mm^3?)
+        self.density = density  # cell density function (of yfrac) (in mm^3?)
         self.cellModel = cellModel  # cell model for this population
         self.cellGids = []  # list of cell gids in this population
         self.numCells = 0  # number of cells in this population
@@ -99,17 +99,26 @@ class Pop:
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self, lastGid, s):
         cells = []
-        #gid = lastGid  # continue assigning gids from last one
-        self.numCells = int(s.scale*s.sparseness*self.density*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
+        volume = int(s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
+        densityInterval = 0.001
+        maxDensity = max(map(self.density, (arange(self.yFracRange[0],self.yFracRange[1], densityInterval))))
+        maxCells = volume * maxDensity
         seed(id32('%d' % randseed))  # reset random number generator
-        randLocs = rand(self.numCells, 3)  # create random x,y,z locations
+        randYfracs = rand(maxCells, 1)
+        yfracs = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randYfracs # calculate yfrac 
+        yfracsProb = map(self.density, yfracs) / maxDensity
+        allrands = rand(len(yfracsProb))  # Create an array of random numbers for checking each yfrac pos 
+        makethiscell = yfracsProb>allrands # Perform test to see whether or not this cell should be made
+        yfracs = [yfracs[i] for i in range(len(yfracs)) if i in array(makethiscell.nonzero()[0],dtype='int')] # Return True elements of that array for presynaptic cell IDs
+        self.numCells = len(yfracs)    
+        
+        randLocs = rand(self.numCells, 2)  # create random x,z locations
         for i in xrange(int(rank), self.numCells, s.nhosts):
             gid = lastGid+i
-            self.cellGids.append(gid)  # add gid list of cells belonging to this population
-            yfrac = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randLocs[i,1] # calculate yfrac 
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population    
             x = s.modelsize * randLocs[i,0] # calculate x location (um)
-            z = s.modelsize * randLocs[i,2] # calculate z location (um) 
-            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfrac, x, z, self.cellModel)) # instantiate Cell object
+            z = s.modelsize * randLocs[i,1] # calculate z location (um) 
+            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel)) # instantiate Cell object
             if verbose: print('Cell %d/%d (gid=%d) of pop %d on node %d'%(i, self.numCells, gid, self.popgid, s.rank))
         return cells, lastGid+self.numCells
 
@@ -120,7 +129,6 @@ class Pop:
 
 # definition of python class 'Conn' to store and calcualte connections
 class Conn:
-
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=[[(lambda x: 0)]*l.numTopClass]*l.numTopClass
     connProbs[l.IT][l.IT]   = (lambda x: 0.1/x)  # example of yfrac-dep function
@@ -176,7 +184,19 @@ class Conn:
     connWeights[l.Sst][l.CT][l.GABAB]  = 1
     connWeights[l.Sst][l.Pva][l.GABAB] = 1
     connWeights[l.Sst][l.Sst][l.GABAB] = 1
-                 
+
+
+    def __init__(self, preGid, cellPost, delay, weight, s):
+        self.preid = preGid  # 
+        self.postid = cellPost.gid
+        self.delay = delay
+        self.weight = weight
+        self.netcon = s.pc.gid_connect(preGid, cellPost.m)  # create Netcon between global gid and local cell object
+        self.netcon.delay = delay  # set Netcon delay
+        for i in range(l.numReceptors): self.netcon.weight[i] = weight[i]  # set Netcon weights
+        if verbose: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
+            %(preGid, cellPost.gid, delay, weight[0], weight[1], weight[2], weight[3] ))
+               
 
     @classmethod
     def connect(cls, cellsPre, cellPost, s):
@@ -214,19 +234,6 @@ class Conn:
         return newConns
 
 
-    def __init__(self, preGid, cellPost, delay, weight, s):
-        self.preid = preGid  # 
-        self.postid = cellPost.gid
-        self.delay = delay
-        self.weight = weight
-        self.netcon = s.pc.gid_connect(preGid, cellPost.m)  # create Netcon between global gid and local cell object
-        self.netcon.delay = delay  # set Netcon delay
-        for i in range(l.numReceptors): self.netcon.weight[i] = weight[i]  # set Netcon weights
-        if verbose: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
-            %(preGid, cellPost.gid, delay, weight[0], weight[1], weight[2], weight[3] ))
-
-
-
 
 
 ###############################################################################
@@ -235,19 +242,19 @@ class Conn:
 
 pops = []  # list to store populations ('Pop' objects)
 
-            # gid,  EorI,   topClass,   subClass,   yfracRange,     density,    cellModel):
-pops.append(Pop(0,   l.E,    l.IT,       l.other,    [0.1, 0.26],    2e3,          l.Izhi2007)) #  L2/3 IT
-pops.append(Pop(1,   l.E,    l.IT,       l.other,    [0.26, 0.31],   2e3,          l.Izhi2007)) #  L4 IT
-pops.append(Pop(2,   l.E,    l.IT,       l.other,    [0.31, 0.52],   2e3,          l.Izhi2007)) #  L5A IT
-pops.append(Pop(3,   l.E,    l.IT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B IT
-pops.append(Pop(4,   l.E,    l.PT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B PT
-pops.append(Pop(5,   l.E,    l.IT,       l.other,    [0.77, 1.0],    1e3,          l.Izhi2007)) #  L6 IT
-pops.append(Pop(6,   l.I,    l.Pva,      l.Basket,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
-pops.append(Pop(7,   l.I,    l.Sst,      l.Marti,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
-pops.append(Pop(8,   l.I,    l.Pva,      l.Basket,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
-pops.append(Pop(9,   l.I,    l.Sst,      l.Marti,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
-pops.append(Pop(10,   l.I,    l.Pva,     l.Basket,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
-pops.append(Pop(11,   l.I,    l.Sst,     l.Marti,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
+            #   gid,    EorI,   topClass,   subClass,   yfracRange,     density,                cellModel):
+pops.append(Pop(0,      l.E,    l.IT,       l.other,    [0.1, 0.26],    lambda x:2e3*x,        l.Izhi2007)) #  L2/3 IT
+pops.append(Pop(1,      l.E,    l.IT,       l.other,    [0.26, 0.31],   lambda x:2e3*x,        l.Izhi2007)) #  L4 IT
+pops.append(Pop(2,      l.E,    l.IT,       l.other,    [0.31, 0.52],   lambda x:2e3*x,        l.Izhi2007)) #  L5A IT
+pops.append(Pop(3,      l.E,    l.IT,       l.other,    [0.52, 0.77],   lambda x:1e3*x,        l.Izhi2007)) #  L5B IT
+pops.append(Pop(4,      l.E,    l.PT,       l.other,    [0.52, 0.77],   lambda x:1e3,          l.Izhi2007)) #  L5B PT
+pops.append(Pop(5,      l.E,    l.IT,       l.other,    [0.77, 1.0],    lambda x:1e3,          l.Izhi2007)) #  L6 IT
+pops.append(Pop(6,      l.I,    l.Pva,      l.Basket,   [0.1, 0.31],    lambda x:0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
+pops.append(Pop(7,      l.I,    l.Sst,      l.Marti,    [0.1, 0.31],    lambda x:0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
+pops.append(Pop(8,      l.I,    l.Pva,      l.Basket,   [0.31, 0.77],   lambda x:0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
+pops.append(Pop(9,      l.I,    l.Sst,      l.Marti,    [0.31, 0.77],   lambda x:0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
+pops.append(Pop(10,     l.I,    l.Pva,      l.Basket,   [0.77, 1.0],    lambda x:0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
+pops.append(Pop(11,     l.I,    l.Sst,      l.Marti,    [0.77, 1.0],    lambda x:0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
 
 
 ###############################################################################

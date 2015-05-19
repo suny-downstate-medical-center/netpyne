@@ -35,7 +35,7 @@ if rank==0:
 class Labels:
     AMPA=0; NMDA=1; GABAA=2; GABAB=3; opsin=4  # synaptic receptors
     E=0; I=1  # excitatory vs inhibitory
-    IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5  # cell/pop top class 
+    IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5; numTopClass=6  # cell/pop top class 
     L4=0; other=1; Vip=2; Nglia=3; Basket=4; Chand=5; Marti=6; L4Sst=7  # cell/pop sub class
     Izhi2007=0; Friesen=1; HH=2  # types of cell model
 
@@ -115,21 +115,78 @@ class Pop:
 ###############################################################################
 
 # definition of python class 'Conn' to store and calcualte connections
-# class Conn:
-#     def __init__(cellPre, cellPost):
-#         self.preid = cellPre.gid
-#         self.postid = cellPost.gid
-#         self.weight = connWeight(cellPre, cellPost)
-#         self.delay = connDelay(cellPre, cellPost)
+class Conn:
 
-    # def connectWeight(cellPre, cellPost):
-    #   [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
-    # return weight
+    # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
+    connProbs=zeros((l.numTopClass,l.numTopClass))
+    connProbs[l.IT][l.IT]   = 1
+    connProbs[l.IT][l.PT]   = 1
+    connProbs[l.IT][l.CT]   = 1
+    connProbs[l.IT][l.Pva]  = 1
+    connProbs[l.IT][l.Sst]  = 1
+    connProbs[l.PT][l.IT]   = 0
+    connProbs[l.PT][l.PT]   = 1
+    connProbs[l.PT][l.CT]   = 0
+    connProbs[l.PT][l.Pva]  = 1
+    connProbs[l.PT][l.Sst]  = 1
+    connProbs[l.CT][l.IT]   = 1
+    connProbs[l.CT][l.PT]   = 0
+    connProbs[l.CT][l.CT]   = 1
+    connProbs[l.CT][l.Pva]  = 1
+    connProbs[l.CT][l.Sst]  = 1
+    connProbs[l.Pva][l.IT]  = 1
+    connProbs[l.Pva][l.PT]  = 1
+    connProbs[l.Pva][l.CT]  = 1
+    connProbs[l.Pva][l.Pva] = 1
+    connProbs[l.Pva][l.Sst] = 1
+    connProbs[l.Sst][l.IT]  = 1
+    connProbs[l.Sst][l.PT]  = 1
+    connProbs[l.Sst][l.CT]  = 1
+    connProbs[l.Sst][l.Pva] = 1
+    connProbs[l.Sst][l.Sst] = 1
 
-    # def connectDelay(cellPre, cellPost):
-    #   [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
-    #return delay
+    # class variables to store matrix of connection weights (constant or function) for pre and post cell topClass
+    connWeights=zeros((l.numTopClass,l.numTopClass))
+    connWeights[l.IT][l.IT]   = 1
+    connWeights[l.IT][l.PT]   = 1
+    connWeights[l.IT][l.CT]   = 1
+    connWeights[l.IT][l.Pva]  = 1
+    connWeights[l.IT][l.Sst]  = 1
+    connWeights[l.PT][l.IT]   = 0
+    connWeights[l.PT][l.PT]   = 1
+    connWeights[l.PT][l.CT]   = 0
+    connWeights[l.PT][l.Pva]  = 1
+    connWeights[l.PT][l.Sst]  = 1
+    connWeights[l.CT][l.IT]   = 1
+    connWeights[l.CT][l.PT]   = 0
+    connWeights[l.CT][l.CT]   = 1
+    connWeights[l.CT][l.Pva]  = 1
+    connWeights[l.CT][l.Sst]  = 1
+    connWeights[l.Pva][l.IT]  = 1
+    connWeights[l.Pva][l.PT]  = 1
+    connWeights[l.Pva][l.CT]  = 1
+    connWeights[l.Pva][l.Pva] = 1
+    connWeights[l.Pva][l.Sst] = 1
+    connWeights[l.Sst][l.IT]  = 1
+    connWeights[l.Sst][l.PT]  = 1
+    connWeights[l.Sst][l.CT]  = 1
+    connWeights[l.Sst][l.Pva] = 1
+    connWeights[l.Sst][l.Sst] = 1
+                 
 
+    @classmethod
+    def connect(cls, cellsPre, cellPost):
+        newConns = Conn()
+        [calculate as a func of cellPre.type, cellPre.topClass, cellPre.yfrac, cellPost.type, cellPost.topClass, cellPost.yfrac]
+
+    def __init__(cellPre, cellPost):
+        self.preid = cellPre.gid
+        self.postid = cellPost.gid
+        self.weight = [] # connWeight(cellPre, cellPost)
+        self.delay = [] # connDelay(cellPre, cellPost)
+
+
+    return newConns
 
 
 ###############################################################################
@@ -145,12 +202,12 @@ pops.append(Pop(2,   l.E,    l.IT,       l.other,    [0.31, 0.52],   2e3,       
 pops.append(Pop(3,   l.E,    l.IT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B IT
 pops.append(Pop(4,   l.E,    l.PT,       l.other,    [0.52, 0.77],   1e3,          l.Izhi2007)) #  L5B PT
 pops.append(Pop(5,   l.E,    l.IT,       l.other,    [0.77, 1.0],    1e3,          l.Izhi2007)) #  L6 IT
-pops.append(Pop(6,   l.I,    l.Pva,      l.other,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
-pops.append(Pop(7,   l.I,    l.Sst,      l.other,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
-pops.append(Pop(8,   l.I,    l.Pva,      l.other,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
-pops.append(Pop(9,   l.I,    l.Sst,      l.other,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
-pops.append(Pop(10,   l.I,    l.Pva,     l.other,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
-pops.append(Pop(11,   l.I,    l.Sst,     l.other,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
+pops.append(Pop(6,   l.I,    l.Pva,      l.Basket,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
+pops.append(Pop(7,   l.I,    l.Sst,      l.Marti,    [0.1, 0.31],    0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
+pops.append(Pop(8,   l.I,    l.Pva,      l.Basket,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
+pops.append(Pop(9,   l.I,    l.Sst,      l.Marti,    [0.31, 0.77],   0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
+pops.append(Pop(10,   l.I,    l.Pva,     l.Basket,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
+pops.append(Pop(11,   l.I,    l.Sst,     l.Marti,    [0.77, 1.0],    0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
 
 
 ###############################################################################

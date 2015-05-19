@@ -83,7 +83,6 @@ def createNetwork():
     s.pc.barrier()
 
 
-
     ###############################################################################
     ### Instantiate network cells (objects of class 'Cell')
     ###############################################################################
@@ -98,8 +97,9 @@ def createNetwork():
     for ipop in s.pops:
         newCells, lastGid = ipop.createCells(lastGid, s.scale, s.modelsize, s.sparseness, s.rank, s.nhosts) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
-        
         if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))
+        
+        # MPI and recording
         s.gidVec.extend([x.gid for x in newCells]) # index = local id; value = global id
         for c in newCells:
             s.gidDic[c.gid] = localid  # key = global id; value = local id -- used to get local id because gid.index() too slow!
@@ -116,16 +116,15 @@ def createNetwork():
     s.pc.barrier()
 
 
-    print 'NODE: ', s.rank, '\n', s.gidVec, '\n', s.gidDic, 
-
     ###############################################################################
     ### Instantiate network connections (objects of class 'Conn')
     ###############################################################################
 
-    # # Connect object cells based on pre and post cell's type, class and yfrac
-    # for ipre in cells:
-    #  for ipost in cells:
-    #    conn[i] = Conn(cells[ipre], cells[ipost]
+    # Connect object cells based on pre and post cell's type, class and yfrac
+    s.conns = []
+    for ipost in s.cells:
+        newConns = s.Conn.connect(s.cells, s.cells[ipost])
+        s.conns.extend(newConns) 
 
 
 
@@ -136,7 +135,7 @@ def createNetworkOld():
     s.cells=[] # Create empty list for storing cells
     s.dummies=[] # Create empty list for storing fake sections
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
-    s.gidDic = {} # Empyt dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
+    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
     
 
     ## Set cell types
@@ -196,12 +195,8 @@ def createNetworkOld():
     s.nconnpars = 5 # Connection parameters: pre- and post- cell ID, weight, distances, delays
     s.conndata = [[] for i in range(s.nconnpars)] # List for storing connections
     nPostCells = 0
-    EDSCpre = [] # to keep track of EB5->EDSC connection and replicate in EB5->IDSC
     for c in range(s.cellsperhost): # Loop over all postsynaptic cells on this host (has to be postsynaptic because of gid_connect)
         gid = s.gidVec[c] # Increment global identifier       
-        if s.cellnames[gid] == 'PMd' or s.cellnames[gid] == 'ASC':
-            # There are no presynaptic connections for PMd or ASC.
-            continue
         nPostCells += 1
         if s.toroidal: 
             xpath=(abs(s.xlocs-s.xlocs[gid]))**2
@@ -223,14 +218,7 @@ def createNetworkOld():
       
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-        
-        #if s.cellnames[gid] == 'EDSC': # save EDSC presyn cells to replicate in IDSC, and add inputs from IDSC
-        #    EDSCpre.append(array(preids)) # save EDSC presyn cells before adding IDSC input
-        #    invPops = [1, 0, 3, 2] # each postsyn ESDC cell will receive input from all the antagonistic muscle IDSCs
-            #IDSCpre = [s.motorCmdCellRange[invPops[i]] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC] for i in range(s.nMuscles) if gid in s.motorCmdCellRange[i]][0]
-            #preids = concatenate([preids, IDSCpre]) # add IDSC presynaptic input to EDSC 
-        #elif s.cellnames[gid] == 'IDSC': # use same presyn cells as for EDSC (antagonistic inhibition)
-        #    preids = array(EDSCpre.pop(0))
+
         postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
         s.conndata[0].append(preids) # Append pre-cell ID
         s.conndata[1].append(postids) # Append post-cell ID

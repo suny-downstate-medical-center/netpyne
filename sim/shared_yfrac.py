@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from pylab import array, inf, zeros, seed, rand
+from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp
 from neuron import h # Import NEURON
 #from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
@@ -38,7 +38,7 @@ if rank==0:
 
 # Class to store equivalence between names and values so can be used as indices
 class Labels:
-    AMPA=0; NMDA=1; GABAA=2; GABAB=3; opsin=4  # synaptic receptors
+    AMPA=0; NMDA=1; GABAA=2; GABAB=3; opsin=4; numReceptors=5  # synaptic receptors
     E=0; I=1  # excitatory vs inhibitory
     IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5; numTopClass=6  # cell/pop top class 
     L4=0; other=1; Vip=2; Nglia=3; Basket=4; Chand=5; Marti=6; L4Sst=7  # cell/pop sub class
@@ -97,21 +97,21 @@ class Pop:
         self.numCells = 0  # number of cells in this population
 
     # Function to instantiate Cell objects based on the characteristics of this population
-    def createCells(self, lastGid, scale, modelsize, sparseness, rank, nhosts):
+    def createCells(self, lastGid, s):
         cells = []
         #gid = lastGid  # continue assigning gids from last one
-        self.numCells = int(scale*sparseness*self.density*(modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
+        self.numCells = int(s.scale*s.sparseness*self.density*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3)) # calculate num of cells based on scale, density, modelsize and yfracRange
         seed(id32('%d' % randseed))  # reset random number generator
         randLocs = rand(self.numCells, 3)  # create random x,y,z locations
-        for i in xrange(int(rank), self.numCells, nhosts):
+        for i in xrange(int(rank), self.numCells, s.nhosts):
             gid = lastGid+i
-            print('host=%d, gid=%d'%(rank, gid))
+            print('host=%d, gid=%d'%(s.rank, gid))
             self.cellGids.append(gid)  # add gid list of cells belonging to this population
             yfrac = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randLocs[i,1] # calculate yfrac 
-            x = modelsize * randLocs[i,0] # calculate x location (um)
-            z = modelsize * randLocs[i,2] # calculate z location (um) 
+            x = s.modelsize * randLocs[i,0] # calculate x location (um)
+            z = s.modelsize * randLocs[i,2] # calculate z location (um) 
             cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfrac, x, z, self.cellModel)) # instantiate Cell object
-            if verbose: print('Cell %d/%d of pop %d on node %d'%(i, self.numCells, self.popgid, rank))
+            if verbose: print('Cell %d/%d of pop %d on node %d'%(i, self.numCells, self.popgid, s.rank))
         return cells, lastGid+self.numCells
 
 
@@ -125,69 +125,69 @@ class Conn:
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=zeros((l.numTopClass,l.numTopClass))
     connProbs[l.IT][l.IT]   = (lambda x: 1/x)  # example of yfrac-dep function
-    connProbs[l.IT][l.PT]   = (lambda x: 0.2*x if (x>0.5 and x<0.8))
+    connProbs[l.IT][l.PT]   = (lambda x: 0.2*x if (x>0.5 and x<0.8) else 0)
     connProbs[l.IT][l.CT]   = (lambda x: 1)  # constant function
-    connProbs[l.IT][l.Pva]  = 1
-    connProbs[l.IT][l.Sst]  = 1
-    connProbs[l.PT][l.IT]   = 0
-    connProbs[l.PT][l.PT]   = 1
-    connProbs[l.PT][l.CT]   = 0
-    connProbs[l.PT][l.Pva]  = 1
-    connProbs[l.PT][l.Sst]  = 1
-    connProbs[l.CT][l.IT]   = 1
-    connProbs[l.CT][l.PT]   = 0
-    connProbs[l.CT][l.CT]   = 1
-    connProbs[l.CT][l.Pva]  = 1
-    connProbs[l.CT][l.Sst]  = 1
-    connProbs[l.Pva][l.IT]  = 1
-    connProbs[l.Pva][l.PT]  = 1
-    connProbs[l.Pva][l.CT]  = 1
-    connProbs[l.Pva][l.Pva] = 1
-    connProbs[l.Pva][l.Sst] = 1
-    connProbs[l.Sst][l.IT]  = 1
-    connProbs[l.Sst][l.PT]  = 1
-    connProbs[l.Sst][l.CT]  = 1
-    connProbs[l.Sst][l.Pva] = 1
-    connProbs[l.Sst][l.Sst] = 1
+    connProbs[l.IT][l.Pva]  = (lambda x: 1)
+    connProbs[l.IT][l.Sst]  = (lambda x: 1)
+    connProbs[l.PT][l.IT]   = (lambda x: 0)
+    connProbs[l.PT][l.PT]   = (lambda x: 1)
+    connProbs[l.PT][l.CT]   = (lambda x: 0)
+    connProbs[l.PT][l.Pva]  = (lambda x: 1)
+    connProbs[l.PT][l.Sst]  = (lambda x: 1)
+    connProbs[l.CT][l.IT]   = (lambda x: 1)
+    connProbs[l.CT][l.PT]   = (lambda x: 0)
+    connProbs[l.CT][l.CT]   = (lambda x: 1)
+    connProbs[l.CT][l.Pva]  = (lambda x: 1)
+    connProbs[l.CT][l.Sst]  = (lambda x: 1)
+    connProbs[l.Pva][l.IT]  = (lambda x: 1)
+    connProbs[l.Pva][l.PT]  = (lambda x: 1)
+    connProbs[l.Pva][l.CT]  = (lambda x: 1)
+    connProbs[l.Pva][l.Pva] = (lambda x: 1)
+    connProbs[l.Pva][l.Sst] = (lambda x: 1)
+    connProbs[l.Sst][l.IT]  = (lambda x: 1)
+    connProbs[l.Sst][l.PT]  = (lambda x: 1)
+    connProbs[l.Sst][l.CT]  = (lambda x: 1)
+    connProbs[l.Sst][l.Pva] = (lambda x: 1)
+    connProbs[l.Sst][l.Sst] = (lambda x: 1)
 
     # class variables to store matrix of connection weights (constant or function) for pre and post cell topClass
-    connWeights=zeros((l.numTopClass,l.numTopClass))
-    connWeights[l.IT][l.IT]   = 1
-    connWeights[l.IT][l.PT]   = 1
-    connWeights[l.IT][l.CT]   = 1
-    connWeights[l.IT][l.Pva]  = 1
-    connWeights[l.IT][l.Sst]  = 1
-    connWeights[l.PT][l.IT]   = 0
-    connWeights[l.PT][l.PT]   = 1
-    connWeights[l.PT][l.CT]   = 0
-    connWeights[l.PT][l.Pva]  = 1
-    connWeights[l.PT][l.Sst]  = 1
-    connWeights[l.CT][l.IT]   = 1
-    connWeights[l.CT][l.PT]   = 0
-    connWeights[l.CT][l.CT]   = 1
-    connWeights[l.CT][l.Pva]  = 1
-    connWeights[l.CT][l.Sst]  = 1
-    connWeights[l.Pva][l.IT]  = 1
-    connWeights[l.Pva][l.PT]  = 1
-    connWeights[l.Pva][l.CT]  = 1
-    connWeights[l.Pva][l.Pva] = 1
-    connWeights[l.Pva][l.Sst] = 1
-    connWeights[l.Sst][l.IT]  = 1
-    connWeights[l.Sst][l.PT]  = 1
-    connWeights[l.Sst][l.CT]  = 1
-    connWeights[l.Sst][l.Pva] = 1
-    connWeights[l.Sst][l.Sst] = 1
+    connWeights=zeros((l.numTopClass,l.numTopClass,l.numReceptors))
+    connWeights[l.IT][l.IT][l.AMPA]   = 1
+    connWeights[l.IT][l.PT][l.AMPA]   = 1
+    connWeights[l.IT][l.CT][l.AMPA]   = 1
+    connWeights[l.IT][l.Pva][l.AMPA]  = 1
+    connWeights[l.IT][l.Sst][l.AMPA]  = 1
+    connWeights[l.PT][l.IT][l.AMPA]   = 0
+    connWeights[l.PT][l.PT][l.AMPA]   = 1
+    connWeights[l.PT][l.CT][l.AMPA]   = 0
+    connWeights[l.PT][l.Pva][l.AMPA]  = 1
+    connWeights[l.PT][l.Sst][l.AMPA]  = 1
+    connWeights[l.CT][l.IT][l.AMPA]   = 1
+    connWeights[l.CT][l.PT][l.AMPA]   = 0
+    connWeights[l.CT][l.CT][l.AMPA]   = 1
+    connWeights[l.CT][l.Pva][l.AMPA]  = 1
+    connWeights[l.CT][l.Sst][l.AMPA]  = 1
+    connWeights[l.Pva][l.IT][l.GABAA]  = 1
+    connWeights[l.Pva][l.PT][l.GABAA]  = 1
+    connWeights[l.Pva][l.CT][l.GABAA]  = 1
+    connWeights[l.Pva][l.Pva][l.GABAA] = 1
+    connWeights[l.Pva][l.Sst][l.GABAA] = 1
+    connWeights[l.Sst][l.IT][l.GABAB]  = 1
+    connWeights[l.Sst][l.PT][l.GABAB]  = 1
+    connWeights[l.Sst][l.CT][l.GABAB]  = 1
+    connWeights[l.Sst][l.Pva][l.GABAB] = 1
+    connWeights[l.Sst][l.Sst][l.GABAB] = 1
                  
 
     @classmethod
-    def connect(cls, cellsPre, cellPost):
+    def connect(cls, cellsPre, cellPost, s):
         newConns = Conn()
         #calculate as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac etc (IN PROGRESS!!)
         if s.toroidal: 
             xpath=(abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
             xpath2=(s.modelsize-abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
             xpath[xpath2<xpath]=xpath2[xpath2<xpath]
-            ypath=(abs([x.yfrac*s.corticalthick for x in cellsPre]-cellPost.yfrac*s.corticalthick)))**2
+            ypath=(abs([x.yfrac*s.corticalthick for x in cellsPre]-cellPost.yfrac*s.corticalthick))**2
             zpath=(abs([x.zloc for x in cellsPre]-cellPost.zloc))**2
             zpath2=(s.modelsize-abs([x.zloc for x in cellsPre]-cellPost.zlocs))**2
             zpath[zpath2<zpath]=zpath2[zpath2<zpath]
@@ -196,42 +196,35 @@ class Conn:
         else: 
             distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
             distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-            allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
-                    * connProbs[[x.topClass for x in  cellsPre], cellPost.topClass](cellPost.yfrac) \
-                    * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
-            allconnprobs[gid] = 0  # Prohibit self-connections using the cell's GID
-            seed(s.id32('%d'%(s.randseed+gid)))  # Reset random number generator  
-            allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
-          
-            # makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
-            # preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-
-            # postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
-            # s.conndata[0].append(preids) # Append pre-cell ID
-            # s.conndata[1].append(postids) # Append post-cell ID
-            # s.conndata[2].append(distances[preids]) # Distances
-            # s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
-            # wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
-            # wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
-            # wt3 = s.receptorweight[:] # M receptor weights
-            # finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
-            #   s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
             
-            # pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
-            # newcon = s.pc.gid_connect(pregid, s.cells[pstid]) # Create a connection
-            # newcon.delay = s.conndata[3][con] # Set delay
-            # for r in range(s.nreceptors): newcon.weight[r] = s.conndata[4][con][r] # Set weight of connection
-            # s.connlist.append(newcon) # Connect the two cells
-
-
+            allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
+                    * cls.connProbs[[x.topClass for x in  cellsPre], cellPost.topClass](cellPost.yfrac) \
+                    * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
+            allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
+            
+            seed(s.id32('%d'%(s.randseed+cellPost.gid)))  # Reset random number generator  
+            allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
+            makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
+            preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+            #postids = array(cellPost.gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
+            delays =s.mindelay + distances3d[preids]/float(s.velocity) # Calculate the delays
+            wt1 = s.scaleconnweight[[x.EorI for x in [cellsPre[i] for i in preids]], cellPost.EorI] # N weight scale factors
+            wt2 = cls.connWeights[[x.topClass for x in [cellsPre[i] for i in preids]], cellPost.topClas] # NxM inter-population weights
+            wt3 = s.receptorweight[:] # M receptor weights
+            finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
+            # create list of Conn objects
+            newConns = [Conn(preGid=preids[i], cellPost=cellPost, delay=delays[i], weight=finalweights[i], s=s) for i in range(len(preids))]
         return newConns
 
 
-    def __init__(self, cellPre, cellPost):
-        self.preid = cellPre.gid
+    def __init__(self, preGid, cellPost, delay, weight, s):
+        self.preid = preGid  # 
         self.postid = cellPost.gid
-        self.weight = [] # connWeight(cellPre, cellPost)
-        self.delay = [] # connDelay(cellPre, cellPost)
+        self.delay = delay
+        self.weight = weight
+        self.netcon = s.pc.gid_connet(preGid, cellPost)  # create Netcon between global gid and local cell object
+        self.netcon.delay = delay  # set Netcon delay
+        self.netcon.weight = weight  # set Netcon weights
 
 
 

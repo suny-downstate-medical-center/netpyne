@@ -95,7 +95,7 @@ def createNetwork():
     lastGid = 0
     localid = 0
     for ipop in s.pops:
-        newCells, lastGid = ipop.createCells(lastGid, s.scale, s.modelsize, s.sparseness, s.rank, s.nhosts) # create cells for this pop using Pop method
+        newCells, lastGid = ipop.createCells(lastGid, s) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
         if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))
         
@@ -123,7 +123,7 @@ def createNetwork():
     # Connect object cells based on pre and post cell's type, class and yfrac
     s.conns = []
     for ipost in s.cells:
-        newConns = s.Conn.connect(s.cells, s.cells[ipost])
+        newConns = s.Conn.connect(s.cells, s.cells[ipost], s)
         s.conns.extend(newConns) 
 
 

@@ -227,6 +227,8 @@ def createNetworkOld():
         wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
         wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
         wt3 = s.receptorweight[:] # M receptor weights
+
+        print wt2
         finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
         s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
     for pp in range(s.nconnpars): s.conndata[pp] = array(concatenate([s.conndata[pp][c] for c in range(nPostCells)])) # Turn pre- and post- cell IDs lists into vectors

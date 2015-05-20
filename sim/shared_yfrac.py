@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange
+from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange, asarray
 from neuron import h # Import NEURON
 #from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
@@ -100,21 +100,16 @@ class Pop:
     def createCells(self, lastGid, s):
         cells = []
         volume = s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
-        densityInterval = 0.001
-        print self.density(self.yfracRange[0]), self.density(self.yfracRange[1])
-        maxDensity = max(map(self.density, (arange(self.yfracRange[0],self.yfracRange[1], densityInterval))))
-        maxCells = volume * maxDensity
+        yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
+        maxDensity = max(map(self.density, (arange(self.yfracRange[0],self.yfracRange[1], yfracInterval)))) # max cell density 
+        maxCells = volume * maxDensity  # max number of cells based on max value of density func 
         seed(id32('%d' % randseed))  # reset random number generator
-        randYfracs = rand(int(maxCells), 1)
-        yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * randYfracs # calculate yfrac 
-        yfracsProb = array(map(self.density, yfracsAll)) / maxDensity
-        # print 'yfracs',yfracsAll
-        # print 'yfracsProb',yfracsProb
-
-        allrands = rand(len(yfracsProb))  # Create an array of random numbers for checking each yfrac pos 
-        makethiscell = yfracsProb>allrands # Perform test to see whether or not this cell should be made
-        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # Return True elements of that array for presynaptic cell IDs
-        self.numCells = len(yfracs)    
+        yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * rand(int(maxCells), 1) # random yfrac values 
+        yfracsProb = array(map(self.density, yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+        allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
+        makethiscell = yfracsProb>allrands # perform test to see whether or not this cell should be included (pruning based on density func)
+        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
+        self.numCells = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
 
         if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
         
@@ -137,59 +132,60 @@ class Pop:
 class Conn:
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=[[(lambda x: 0)]*l.numTopClass]*l.numTopClass
-    connProbs[l.IT][l.IT]   = (lambda x: 0.1/x)  # example of yfrac-dep function
-    connProbs[l.IT][l.PT]   = (lambda x: 0.2*x if (x>0.5 and x<0.8) else 0)
-    connProbs[l.IT][l.CT]   = (lambda x: 1)  # constant function
-    connProbs[l.IT][l.Pva]  = (lambda x: 1)
-    connProbs[l.IT][l.Sst]  = (lambda x: 1)
-    connProbs[l.PT][l.IT]   = (lambda x: 0)
-    connProbs[l.PT][l.PT]   = (lambda x: 1)
-    connProbs[l.PT][l.CT]   = (lambda x: 0)
-    connProbs[l.PT][l.Pva]  = (lambda x: 1)
-    connProbs[l.PT][l.Sst]  = (lambda x: 1)
-    connProbs[l.CT][l.IT]   = (lambda x: 1)
-    connProbs[l.CT][l.PT]   = (lambda x: 0)
-    connProbs[l.CT][l.CT]   = (lambda x: 1)
-    connProbs[l.CT][l.Pva]  = (lambda x: 1)
-    connProbs[l.CT][l.Sst]  = (lambda x: 1)
-    connProbs[l.Pva][l.IT]  = (lambda x: 1)
-    connProbs[l.Pva][l.PT]  = (lambda x: 1)
-    connProbs[l.Pva][l.CT]  = (lambda x: 1)
-    connProbs[l.Pva][l.Pva] = (lambda x: 1)
-    connProbs[l.Pva][l.Sst] = (lambda x: 1)
-    connProbs[l.Sst][l.IT]  = (lambda x: 1)
-    connProbs[l.Sst][l.PT]  = (lambda x: 1)
-    connProbs[l.Sst][l.CT]  = (lambda x: 1)
-    connProbs[l.Sst][l.Pva] = (lambda x: 1)
-    connProbs[l.Sst][l.Sst] = (lambda x: 1)
+    connProbs[l.IT][l.IT]   = (lambda x,y: 0.1/ypre)  # example of yfrac-dep function (x=presyn yfrac, y=postsyn yfrac)
+    connProbs[l.IT][l.PT]   = (lambda x,y: 0.2*x if (x>0.5 and x<0.8) else 0)
+    connProbs[l.IT][l.CT]   = (lambda x,y: 1)  # constant function
+    connProbs[l.IT][l.Pva]  = (lambda x,y: 1)
+    connProbs[l.IT][l.Sst]  = (lambda x,y: 1)
+    connProbs[l.PT][l.IT]   = (lambda x,y: 0)
+    connProbs[l.PT][l.PT]   = (lambda x,y: 1)
+    connProbs[l.PT][l.CT]   = (lambda x,y: 0)
+    connProbs[l.PT][l.Pva]  = (lambda x,y: 1)
+    connProbs[l.PT][l.Sst]  = (lambda x,y: 1)
+    connProbs[l.CT][l.IT]   = (lambda x,y: 1)
+    connProbs[l.CT][l.PT]   = (lambda x,y: 0)
+    connProbs[l.CT][l.CT]   = (lambda x,y: 1)
+    connProbs[l.CT][l.Pva]  = (lambda x,y: 1)
+    connProbs[l.CT][l.Sst]  = (lambda x,y: 1)
+    connProbs[l.Pva][l.IT]  = (lambda x,y: 1)
+    connProbs[l.Pva][l.PT]  = (lambda x,y: 1)
+    connProbs[l.Pva][l.CT]  = (lambda x,y: 1)
+    connProbs[l.Pva][l.Pva] = (lambda x,y: 1)
+    connProbs[l.Pva][l.Sst] = (lambda x,y: 1)
+    connProbs[l.Sst][l.IT]  = (lambda x,y: 1)
+    connProbs[l.Sst][l.PT]  = (lambda x,y: 1)
+    connProbs[l.Sst][l.CT]  = (lambda x,y: 1)
+    connProbs[l.Sst][l.Pva] = (lambda x,y: 1)
+    connProbs[l.Sst][l.Sst] = (lambda x,y: 1)
 
     # class variables to store matrix of connection weights (constant or function) for pre and post cell topClass
-    connWeights=zeros((l.numTopClass,l.numTopClass,l.numReceptors))
-    connWeights[l.IT][l.IT][l.AMPA]   = 1
-    connWeights[l.IT][l.PT][l.AMPA]   = 1
-    connWeights[l.IT][l.CT][l.AMPA]   = 1
-    connWeights[l.IT][l.Pva][l.AMPA]  = 1
-    connWeights[l.IT][l.Sst][l.AMPA]  = 1
-    connWeights[l.PT][l.IT][l.AMPA]   = 0
-    connWeights[l.PT][l.PT][l.AMPA]   = 1
-    connWeights[l.PT][l.CT][l.AMPA]   = 0
-    connWeights[l.PT][l.Pva][l.AMPA]  = 1
-    connWeights[l.PT][l.Sst][l.AMPA]  = 1
-    connWeights[l.CT][l.IT][l.AMPA]   = 1
-    connWeights[l.CT][l.PT][l.AMPA]   = 0
-    connWeights[l.CT][l.CT][l.AMPA]   = 1
-    connWeights[l.CT][l.Pva][l.AMPA]  = 1
-    connWeights[l.CT][l.Sst][l.AMPA]  = 1
-    connWeights[l.Pva][l.IT][l.GABAA]  = 1
-    connWeights[l.Pva][l.PT][l.GABAA]  = 1
-    connWeights[l.Pva][l.CT][l.GABAA]  = 1
-    connWeights[l.Pva][l.Pva][l.GABAA] = 1
-    connWeights[l.Pva][l.Sst][l.GABAA] = 1
-    connWeights[l.Sst][l.IT][l.GABAB]  = 1
-    connWeights[l.Sst][l.PT][l.GABAB]  = 1
-    connWeights[l.Sst][l.CT][l.GABAB]  = 1
-    connWeights[l.Sst][l.Pva][l.GABAB] = 1
-    connWeights[l.Sst][l.Sst][l.GABAB] = 1
+    #connWeights=zeros((l.numTopClass,l.numTopClass,l.numReceptors))
+    connWeights=[[[(lambda x,y: 0)]*l.numReceptors]*l.numTopClass]*l.numTopClass    
+    connWeights[l.IT][l.IT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.IT][l.PT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.IT][l.CT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.IT][l.Pva][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.IT][l.Sst][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.PT][l.IT][l.AMPA]   = (lambda x,y: 0)
+    connWeights[l.PT][l.PT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.PT][l.CT][l.AMPA]   = (lambda x,y: 0)
+    connWeights[l.PT][l.Pva][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.PT][l.Sst][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.CT][l.IT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.CT][l.PT][l.AMPA]   = (lambda x,y: 0)
+    connWeights[l.CT][l.CT][l.AMPA]   = (lambda x,y: 1)
+    connWeights[l.CT][l.Pva][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.CT][l.Sst][l.AMPA]  = (lambda x,y: 1)
+    connWeights[l.Pva][l.IT][l.GABAA]  = (lambda x,y: 1)
+    connWeights[l.Pva][l.PT][l.GABAA]  = (lambda x,y: 1)
+    connWeights[l.Pva][l.CT][l.GABAA]  = (lambda x,y: 1)
+    connWeights[l.Pva][l.Pva][l.GABAA] = (lambda x,y: 1)
+    connWeights[l.Pva][l.Sst][l.GABAA] = (lambda x,y: 1)
+    connWeights[l.Sst][l.IT][l.GABAB]  = (lambda x,y: 1)
+    connWeights[l.Sst][l.PT][l.GABAB]  = (lambda x,y: 1)
+    connWeights[l.Sst][l.CT][l.GABAB]  = (lambda x,y: 1)
+    connWeights[l.Sst][l.Pva][l.GABAB] = (lambda x,y: 1)
+    connWeights[l.Sst][l.Sst][l.GABAB] = (lambda x,y: 1)
 
 
     def __init__(self, preGid, cellPost, delay, weight, s):
@@ -207,22 +203,23 @@ class Conn:
     @classmethod
     def connect(cls, cellsPre, cellPost, s):
         #calculate as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac etc (IN PROGRESS!!)
-        if s.toroidal: # CHECK IMPLEMENTATION OF TOROIDAL
-            xpath=(abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
-            xpath2=(s.modelsize-abs([x.xloc for x in cellsPre]-cellPost.xloc))**2
+        if s.toroidal: 
+            xpath=[(x.xloc-cellPost.xloc)**2 for x in cellsPre]
+            xpath2=[(s.modelsize - abs(x.xloc-cellPost.xloc))**2 for x in cellsPre]
             xpath[xpath2<xpath]=xpath2[xpath2<xpath]
-            ypath=(abs([x.yfrac*s.corticalthick for x in cellsPre]-cellPost.yfrac*s.corticalthick))**2
-            zpath=(abs([x.zloc for x in cellsPre]-cellPost.zloc))**2
-            zpath2=(s.modelsize-abs([x.zloc for x in cellsPre]-cellPost.zloc))**2
+            xpath=array(xpath)
+            ypath=array([((x.yfrac-cellPost.yfrac)*s.corticalthick)**2 for x in cellsPre])
+            zpath=[(x.zloc-cellPost.zloc)**2 for x in cellsPre]
+            zpath2=[(s.modelsize - abs(x.zloc-cellPost.zloc))**2 for x in cellsPre]
             zpath[zpath2<zpath]=zpath2[zpath2<zpath]
-            distances = sqrt(xpath + ypath) # Calculate all pairwise distances
-            distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
+            zpath=array(zpath)
+            distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
+            distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
         else: 
-            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-            distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-        
+           distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
+           distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
-                * [cls.connProbs[i][cellPost.topClass](cellPost.yfrac) for i in [x.topClass for x in  cellsPre]] \
+                * [cls.connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] \
                 * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
         allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
         
@@ -232,9 +229,10 @@ class Conn:
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         delays = s.mindelay + distances[preids]/float(s.velocity) # Calculate the delays
         wt1 = s.scaleconnweight[[x.EorI for x in [cellsPre[i] for i in preids]], cellPost.EorI] # N weight scale factors
-        wt2 = cls.connWeights[[x.topClass for x in [cellsPre[i] for i in preids]], cellPost.topClass] # NxM inter-population weights
+        wt2 = [[cls.connWeights[x.topClass][cellPost.topClass][iReceptor](x.yfrac, cellPost.yfrac) \
+            for iReceptor in range(l.numReceptors)] for x in [cellsPre[i] for i in preids]] # NxM inter-population weights
         wt3 = s.receptorweight[:] # M receptor weights
-        finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
+        finalweights = transpose(wt1*transpose(array(wt2)*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
         # create list of Conn objects
         newConns = [Conn(preGid=preids[i], cellPost=cellPost, delay=delays[i], weight=finalweights[i], s=s) for i in range(len(preids))]
         return newConns

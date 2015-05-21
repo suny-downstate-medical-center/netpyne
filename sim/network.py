@@ -29,10 +29,10 @@ from neuron import h, init # Import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
 from datetime import datetime
-import shared_yfrac as s # Import all shared variables and parameters
-import analysis
 import pickle
 import warnings
+import analysis
+import shared as s # Import all shared variables and parameters
 warnings.filterwarnings('error')
 
 

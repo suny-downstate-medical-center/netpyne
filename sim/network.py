@@ -41,39 +41,22 @@ warnings.filterwarnings('error')
 ###############################################################################
 # standard sequence
 def runSeq():
+    verystart=time() # store initial time
     createCells()
     connectCells() 
-    # addBackground()
-    # addStimulation()
-    # setupSim()
+    addBackground()
+    addStimulation()
+    setupRecording()
     # runSim()
     # finalizeSim()
     # saveData()
     # plotData()
 
-# standard sequence to tune network dynamics
-def runTuneParams():
-    verystart=time() # store initial time
-
-    s.plotraster = True # plot raster
-    s.plotpsd = True # plot psd
-    s.savelfps = True # save lfp data
-    s.duration = 1e3 # duration in ms
-
-    createCells()
-    connectCells() 
-    addBackground()
-    addStimulation()
-    setupSim()
-    runSim()
-    finalizeSim()
-    saveData()
-    plotData()
-
-    s.pc.runworker() # MPI: Start simulations running on each host
+    s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
     s.pc.done() # MPI: Close MPI
     totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
+
 
 
 ###############################################################################
@@ -82,7 +65,6 @@ def runTuneParams():
 def createCells():
     ## Print diagnostic information
     if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),s.duration/1000.,s.nhosts)) 
-
     # Instantiate network cells (objects of class 'Cell')
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
@@ -91,44 +73,9 @@ def createCells():
         newCells = ipop.createCells(s) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
         if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
+    s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
-
-            # p.acc.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
-            # pc.spike_record(-1, p.acc['spkt'], p.acc['spkid'])
-
-            # # NEW MPI METHOD TO RUN
-            # h.cvode.event(p.savestep,savenow)
-            # pc.psolve(h.tstop)
-
-
-            # NEW MPI METHOD TO GATHER DATA
-            # def post_data ():
-            #   global gather # dict to p.accumulate vectors to be passed
-            #   data=[None]*p.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
-            #   data[0]={} # make a new dict
-            #   for k,v in p.acc.iteritems():  data[0][k] = v 
-            #   if p.DEBUG: data[0]['dbxd']=p.dbxd
-            #   gather=pc.py_alltoall(data)
-            #   pc.barrier()
-            #   for v in p.acc.itervalues(): v.resize(0)
-
-            # ## report_data; only called using master
-            # lastt=0
-            # def report_data (): 
-            #   global lastt,idout,tout
-            #   idout,tout = [h.Vector(1e4).resize(0) for i in [0,1]]
-            #   if h.t <= round(lastt)+1: return None # don't save a file at the end if just saved
-            #   else: lastt = h.t
-            #   gdict = {}
-            #   [gdict.update(d) for d in gather] # ??this will now repeatedly needlessly overwrite 'spkt' and 'spkid'
-            #   gdict.update({'spkt' : np.concatenate([d['spkt']  for d in gather]), 
-            #                'spkid': np.concatenate([d['spkid'] for d in gather])})
-
-
-
-
     
-
 
 ###############################################################################
 ### Connect Cells
@@ -136,24 +83,19 @@ def createCells():
 def connectCells():
     # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
     if s.rank==0: print('Making connections...'); connstart = time()
-
     s.conns = []  # list to store connections
     data = [s.cells]*s.nhosts  # send cells data to other nodes
     gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     s.pc.barrier()
     allCells = []
     for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
-    #print allCells
-    #print s.cells[0]
     for ipost in s.cells: # for each postsynaptic cell in this node
         newConns = s.Conn.connect(allCells, ipost, s)  # calculate all connections
         s.conns.extend(newConns)  # add to list of connections in this node
     del gather, data  # removed unnecesary variables
-
     print('  Number of connections on host %i: %i ' % (s.rank, len(s.conns)))
     s.pc.barrier()
     if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
-
 
 
 ###############################################################################
@@ -168,45 +110,30 @@ def addBackground():
     if s.savebackground:
         s.backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
         s.backgroundrecorders=[] # And for recording spikes
-    for c in range(s.cellsperhost): 
-        gid = s.gidVec[c]
-        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd' : # These pops won't receive background stimulations.
-            pass
-        else:
-            backgroundrand = h.Random()
-            backgroundrand.MCellRan4(gid,gid*2)
-            backgroundrand.negexp(1)
-            s.backgroundrands.append(backgroundrand)
-            if s.cellnames[gid] == 'EDSC' or s.cellnames[gid] == 'IDSC':
-                backgroundsource = h.NSLOC() # Create a NSLOC  
-                backgroundsource.interval = s.backgroundrateMin**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-                backgroundsource.noise = 0 # Fractional noise in timing
-            elif s.cellnames[gid] == 'EB5':
-                backgroundsource = h.NSLOC() # Create a NSLOC  
-                backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-                backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
-            else:
-                backgroundsource = h.NetStim() # Create a NetStim
-                backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-                backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
-                backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
-
-            backgroundsource.number = s.backgroundnumber # Number of spikes
-            s.backgroundsources.append(backgroundsource) # Save this NetStim
-            s.backgroundgid.append(gid) # append cell gid associated to this netstim
-            
-            backgroundconn = h.NetCon(backgroundsource, s.cells[c]) # Connect this noisy input to a cell
-            for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-            backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-            backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-            s.backgroundconns.append(backgroundconn) # Save this connnection
-        
-            if s.savebackground:
-                backgroundspikevec = h.Vector() # Initialize vector
-                s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
-                backgroundrecorder = h.NetCon(backgroundsource, None)
-                backgroundrecorder.record(backgroundspikevec) # Record simulation time
-                s.backgroundrecorders.append(backgroundrecorder)
+    for c in s.cells: 
+        gid = c.gid
+        backgroundrand = h.Random()
+        backgroundrand.MCellRan4(gid,gid*2)
+        backgroundrand.negexp(1)
+        s.backgroundrands.append(backgroundrand)
+        backgroundsource = h.NetStim() # Create a NetStim
+        backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
+        backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
+        backgroundsource.number = s.backgroundnumber # Number of spikes
+        s.backgroundsources.append(backgroundsource) # Save this NetStim
+        s.backgroundgid.append(gid) # append cell gid associated to this netstim
+        backgroundconn = h.NetCon(backgroundsource, c.m) # Connect this noisy input to a cell
+        for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+        s.backgroundconns.append(backgroundconn) # Save this connnection
+        if s.savebackground:
+            backgroundspikevec = h.Vector() # Initialize vector
+            s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
+            backgroundrecorder = h.NetCon(backgroundsource, None)
+            backgroundrecorder.record(backgroundspikevec) # Record simulation time
+            s.backgroundrecorders.append(backgroundrecorder)
     print('  Number created on host %i: %i' % (s.rank, len(s.backgroundsources)))
     s.pc.barrier()
 
@@ -231,37 +158,31 @@ def addStimulation():
             stimvecs = s.makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
             s.stimstruct.append([ts.name, stimvecs]) # Store for saving later
             s.stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
-            
-            for c in range(s.cellsperhost):
-                gid = s.cellsperhost*int(s.rank)+c # For deciding E or I    
+            for c in s.cells:
+                gid = c.gid #s.cellsperhost*int(s.rank)+c # For deciding E or I    
                 seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator for this cell
                 if ts.fraction>rand(): # Don't do it for every cell necessarily
                     if any(s.cellpops[gid]==ts.pops) and s.xlocs[gid]>=ts.loc[0,0] and s.xlocs[gid]<=ts.loc[0,1] and s.ylocs[gid]>=ts.loc[1,0] and s.ylocs[gid]<=ts.loc[1,1]:
-                        
                         maxweightincrease = 20 # Otherwise could get infinitely high, infinitely close to the stimulus
                         distancefromstimulus = sqrt(sum((array([s.xlocs[gid], s.ylocs[gid]])-s.modelsize*ts.falloff[0])**2))
                         fallofffactor = min(maxweightincrease,(ts.falloff[1]/distancefromstimulus)**2)
                         s.stimweightvecs.append(h.Vector().from_python(stimvecs[1]*fallofffactor)) # Scale by the fall-off factor
-                        
                         stimrand = h.Random()
                         stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
                         stimrand.negexp(1)
                         stimrand.seq(s.id32('%d'%(s.randseed+gid))*1e3) # Set the sequence i.e. seed
                         s.stimrands.append(stimrand)
-                        
                         stimsource = h.NetStim() # Create a NetStim
                         stimsource.interval = ts.rate**-1*1e3 # Interval between spikes
                         stimsource.number = 1e9 # Number of spikes
                         stimsource.noise = ts.noise # Fractional noise in timing
                         stimsource.noiseFromRandom(stimrand) # Set it to use this random number generator
                         s.stimsources.append(stimsource) # Save this NetStim
-                        
                         stimconn = h.NetCon(stimsource, s.cells[c]) # Connect this noisy input to a cell
                         for r in range(s.nreceptors): stimconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
                         s.stimweightvecs[-1].play(stimconn._ref_weight[0], s.stimtimevecs[-1]) # Play most-recently-added vectors into weight
                         stimconn.delay=s.mindelay # Specify the delay in ms -- shouldn't make a spot of difference
                         s.stimconns.append(stimconn) # Save this connnection
-        
                         if s.saveraw:# and c <=100:
                             stimspikevec = h.Vector() # Initialize vector
                             s.stimspikevecs.append(stimspikevec) # Keep all those vectors
@@ -272,59 +193,28 @@ def addStimulation():
 
 
 ###############################################################################
-### Setup Simulation
+### Setup Recording
 ###############################################################################
-def setupSim():
-    ## reset time variables
-    s.timeoflastRL = -inf # Never RL
-    s.timeoflastsave = -inf # Never saved
-    s.timeoflastexplor = -inf # time when last exploratory movement was updated
+def setupRecording():
+    # ## spike recording
+    # s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
-    # Initialize STDP -- just for recording
-    if s.usestdp:
-        s.weightchanges = []
-        if s.rank==0: print('\nSetting up STDP...')
-        if s.usestdp:
-            s.weightchanges = [[] for ps in range(s.nstdpconns)] # Create an empty list for each STDP connection -- warning, slow with large numbers of connections!
-        for ps in range(s.nstdpconns): s.weightchanges[ps].append([0, s.stdpmechs[ps].synweight]) # Time of save (0=initial) and the weight
+    # ## intrinsic cell variables recording
+    # for c in s.cells: c.record()
 
+    # ## Set up LFP recording
+    # s.lfptime = [] # List of times that the LFP was recorded at
+    # s.nlfps = len(s.lfppops) # Number of distinct LFPs to calculate
+    # s.hostlfps = [] # Voltages for calculating LFP
+    # s.lfpcellids = [[] for pop in range(s.nlfps)] # Create list of lists of cell IDs
+    # for c in range(s.cellsperhost): # Loop over each cell and decide which LFP population, if any, it belongs to
+    #     gid = s.gidVec[c] # Get this cell's GID
+    #     for pop in range(s.nlfps): # Loop over each LFP population
+    #         thispop = s.cellpops[gid] # Population of this cell
+    #         if sum(s.lfppops[pop]==thispop)>0: # There's a match
+    #             s.lfpcellids[pop].append(gid) # Flag this cell as belonging to this LFP population
 
-    ## Set up LFP recording
-    s.lfptime = [] # List of times that the LFP was recorded at
-    s.nlfps = len(s.lfppops) # Number of distinct LFPs to calculate
-    s.hostlfps = [] # Voltages for calculating LFP
-    s.lfpcellids = [[] for pop in range(s.nlfps)] # Create list of lists of cell IDs
-    for c in range(s.cellsperhost): # Loop over each cell and decide which LFP population, if any, it belongs to
-        gid = s.gidVec[c] # Get this cell's GID
-        if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # 'ER2' won't be fired by background stimulations.
-                continue 
-        for pop in range(s.nlfps): # Loop over each LFP population
-            thispop = s.cellpops[gid] # Population of this cell
-            if sum(s.lfppops[pop]==thispop)>0: # There's a match
-                s.lfpcellids[pop].append(gid) # Flag this cell as belonging to this LFP population
-
-
-    ## Set up raw recording
-    s.rawrecordings = [] # A list for storing actual cell voltages (WARNING, slow!)
-    if s.saveraw: 
-        if s.rank==0: print('\nSetting up raw recording...')
-        s.nquantities = 4 # Number of variables from each cell to record from
-        # Later this part should be modified because NSLOC doesn't have V, u and I.
-        for c in range(s.cellsperhost):
-            gid = s.gidVec[c] # Get this cell's GID
-            if s.cellnames[gid] == 'ASC' or s.cellnames[gid] == 'PMd': # NSLOC doesn't have V, u and I
-                continue 
-            recvecs = [h.Vector() for q in range(s.nquantities)] # Initialize vectors
-            recvecs[0].record(h._ref_t) # Record simulation time
-            recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
-            recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
-            recvecs[3].record(s.cells[c]._ref_I) # Record cell current
-            # recvecs[4].record(s.cells[c]._ref_gAMPA)
-            # recvecs[5].record(s.cells[c]._ref_gNMDA)
-            # recvecs[6].record(s.cells[c]._ref_gGABAA)
-            # recvecs[7].record(s.cells[c]._ref_gGABAB)
-            # recvecs[8].record(s.cells[c]._ref_gOpsin)
-            s.rawrecordings.append(recvecs) # Keep all those vectors
+    pass
 
 
 ###############################################################################
@@ -474,6 +364,32 @@ def finalizeSim():
 ###############################################################################
 ### Save data
 ###############################################################################
+
+# NEW MPI METHOD TO GATHER DATA
+    # def post_data ():
+    #   global gather # dict to p.accumulate vectors to be passed
+    #   data=[None]*p.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
+    #   data[0]={} # make a new dict
+    #   for k,v in p.acc.iteritems():  data[0][k] = v 
+    #   if p.DEBUG: data[0]['dbxd']=p.dbxd
+    #   gather=pc.py_alltoall(data)
+    #   pc.barrier()
+    #   for v in p.acc.itervalues(): v.resize(0)
+
+    # ## report_data; only called using master
+    # lastt=0
+    # def report_data (): 
+    #   global lastt,idout,tout
+    #   idout,tout = [h.Vector(1e4).resize(0) for i in [0,1]]
+    #   if h.t <= round(lastt)+1: return None # don't save a file at the end if just saved
+    #   else: lastt = h.t
+    #   gdict = {}
+    #   [gdict.update(d) for d in gather] # ??this will now repeatedly needlessly overwrite 'spkt' and 'spkid'
+    #   gdict.update({'spkt' : np.concatenate([d['spkt']  for d in gather]), 
+    #                'spkid': np.concatenate([d['spkid'] for d in gather])})
+
+
+
 def saveData():
     if s.rank == 0:
         ## Save to txt file (spikes and conn)

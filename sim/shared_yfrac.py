@@ -94,6 +94,20 @@ class Cell:
         # print "node:",s.rank
         # print "gid:",self.gid
 
+    def record(self):
+        # set up voltage recording; acc and recdict will be taken from global context
+        # for k,v in recdict.iteritems():
+        # try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+        # except: print 'bad state variable pointer: ',v
+        # acc[(k, self.gid)] = h.Vector(h.tstop/Dt+10).resize(0)
+        # acc[(k, self.gid)].record(ptr, Dt)
+        # recvecs = [h.Vector() for q in range(s.nquantities)] # Initialize vectors
+        # recvecs[0].record(h._ref_t) # Record simulation time
+        # recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
+        # recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
+        # recvecs[3].record(s.cells[c]._ref_I) # Record cell current
+        pass
+
 
     def __getstate__(self):
         ''' Removes self.m and self.dummy so can be pickled and sent via py_alltoall'''

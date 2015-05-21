@@ -81,43 +81,21 @@ def runTuneParams():
 ###############################################################################
 def createCells():
     ## Print diagnostic information
-    #if s.rank==0: print("\nCreating simulation of %i cells for %0.1f s on %i hosts..." % (sum(s.popnumbers),s.duration/1000.,s.nhosts)) 
-    s.pc.barrier()
+    if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),s.duration/1000.,s.nhosts)) 
 
     # Instantiate network cells (objects of class 'Cell')
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
-    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
-    s.spikerecorders = [] # Empty list for storing spike-recording Netcons
-    s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
- 
+    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.cells = []
-    lastGid = 0
-    localid = 0
+    #lastGid = 0
+    #localid = 0
     for ipop in s.pops:
-        newCells, lastGid = ipop.createCells(lastGid, s) # create cells for this pop using Pop method
+        newCells = ipop.createCells(s) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
-        if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))
-        
-        # MPI and recording
-        s.gidVec.extend([x.gid for x in newCells]) # index = local id; value = global id
-        for c in newCells:
-            s.gidDic[c.gid] = localid  # key = global id; value = local id -- used to get local id because gid.index() too slow!
-            s.pc.set_gid2node(c.gid, s.rank)  # associate cells gid with this node
-            spikevec = h.Vector()  # Vector to store spikes
-            s.hostspikevecs.append(spikevec)  
-            spikerecorder = h.NetCon(c.m, None)  # add netcon to record spikes
-            spikerecorder.record(spikevec) 
-            s.spikerecorders.append(spikerecorder)
-            s.pc.cell(c.gid, s.spikerecorders[localid])
+        #for c in newCells: s.gidDic[c.gid] = localid;   localid += 1  # key = global id; value = local id -- used to get local id because gid.index() too slow!
+        if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
 
-
-
-            # # NEW MPI METHOD TO RECORD(BILL)
-            # pc.set_gid2node(self.gid, p.rank) # this is the key call that assigns cell gid to a particular node
-            # nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike p.threshold but then discarded
-            # nc.threshold = p.threshold
-            # pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-            # del nc # discard netcon
+    print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
 
             # p.acc.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
             # pc.spike_record(-1, p.acc['spkt'], p.acc['spkid'])
@@ -150,10 +128,10 @@ def createCells():
             #   gdict.update({'spkt' : np.concatenate([d['spkt']  for d in gather]), 
             #                'spkid': np.concatenate([d['spkid'] for d in gather])})
 
-            localid += 1
 
-    print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))
-    s.pc.barrier()
+
+
+    
 
 
 ###############################################################################
@@ -161,22 +139,25 @@ def createCells():
 ###############################################################################
 def connectCells():
     # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
-    s.conns = []
-    #allCells = gather cells from all nodes
+    if s.rank==0: print('Making connections...'); connstart = time()
 
-    data = [s.cells]*s.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
-    gather=s.pc.py_alltoall(data)
+    s.conns = []  # list to store connections
+    data = [s.cells]*s.nhosts  # send cells data to other nodes
+    gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     s.pc.barrier()
-    print 'Sent from Node',s.rank, data
     allCells = []
-    print 'Received on Node',s.rank, gather
-    for x in gather: 
-        allCells.extend(x)
-    for ipost in s.cells:
-        newConns = s.Conn.connect(allCells, ipost, s)
-        s.conns.extend(newConns) 
+    for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
+    #print allCells
+    #print s.cells[0]
+    for ipost in s.cells: # for each postsynaptic cell in this node
+        newConns = s.Conn.connect(allCells, ipost, s)  # calculate all connections
+        s.conns.extend(newConns)  # add to list of connections in this node
+    del gather, data  # removed unnecesary variables
 
-    print('  Number of connections on host %i: %i' % (s.rank, len(s.conns)))
+    print('  Number of connections on host %i: %i ' % (s.rank, len(s.conns)))
+    s.pc.barrier()
+    if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
+
 
 
 ###############################################################################

@@ -19,7 +19,6 @@ from time import time
 from math import radians
 import hashlib
 def id32(obj): return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
-#verbose = 1
 
 ## MPI
 pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -53,7 +52,7 @@ l = Labels() # instantiate object of class Labels
 # definition of python class 'Cell' used to instantiate individual neurons
 # based on (Harrison & Sheperd, 2105)
 class Cell:
-    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc, cellModel):
+    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc, cellModel, s):
         self.gid = gid  # global cell id 
         self.popid = popid  # id of population
         self.EorI = EorI # excitatory or inhibitory 
@@ -64,18 +63,44 @@ class Cell:
         self.zloc = zloc  # y location in um 
         self.cellModel = cellModel  # type of cell model (eg. Izhikevich, Friesen, HH ...)
         self.m = []  # NEURON object containing cell model
+        
+        self.make()  # create cell 
+        self.associateGid(s) # register cell for this node
 
+    def make (self):
         # Instantiate cell model (eg. Izhi2007 point process, HH MC, ...)
-        if cellModel == l.Izhi2007: # Izhikevich 2007 neuron model
+        if self.cellModel == l.Izhi2007: # Izhikevich 2007 neuron model
             self.dummy = h.Section()
-            if topClass in range(0,3): # if excitatory cell use RS
-                self.m = izhi.RS(self.dummy, cellid=gid)
-            elif topClass == l.Pva: # if Pva use FS
-                self.m = izhi.FS(self.dummy, cellid=gid)
-            elif topClass == l.Sst: # if Sst us LTS
-                self.m = izhi.LTS(self.dummy, cellid=gid)
+            if self.topClass in range(0,3): # if excitatory cell use RS
+                self.m = izhi.RS(self.dummy, cellid=self.gid)
+            elif self.topClass == l.Pva: # if Pva use FS
+                self.m = izhi.FS(self.dummy, cellid=self.gid)
+            elif self.topClass == l.Sst: # if Sst us LTS
+                self.m = izhi.LTS(self.dummy, cellid=self.gid)
         else:
-            print('Selected cell model %d not yet implemented' % (cellModel))
+            print('Selected cell model %d not yet implemented' % (self.cellModel))
+
+    def associateGid (self, s, threshold = 10.0):
+        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
+        if self.cellModel == l.Izhi2007:
+            nc = h.NetCon(self.m, None) 
+        else:
+            nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.m) # nc determines spike threshold but then discarded
+        nc.threshold = threshold
+        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+        s.gidVec.append(self.gid) # index = local id; value = global id
+        s.gidDic[self.gid] = len(s.gidVec)
+        del nc # discard netcon
+        # print "node:",s.rank
+        # print "gid:",self.gid
+
+
+    def __getstate__(self):
+        ''' Removes self.m and self.dummy so can be pickled and sent via py_alltoall'''
+        odict = self.__dict__.copy() # copy the dict since we change it
+        del odict['m']  # remove fields that cannot be pickled
+        del odict['dummy']              
+        return odict
 
 
 ###############################################################################
@@ -96,7 +121,7 @@ class Pop:
         self.numCells = 0  # number of cells in this population
 
     # Function to instantiate Cell objects based on the characteristics of this population
-    def createCells(self, lastGid, s):
+    def createCells(self, s):
         cells = []
         volume = s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
         yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
@@ -113,12 +138,19 @@ class Pop:
         if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
         
         randLocs = rand(self.numCells, 2)  # create random x,z locations
+        if s.gidVec: 
+            lastGid = s.gidVec[-1]+1
+        else:
+            lastGid = 0
+        # print "node:", rank
+        # print "pop:",self.popgid
+        # print "lastGid:", lastGid
         for i in xrange(int(rank), self.numCells, s.nhosts):
             gid = lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population    
             x = s.modelsize * randLocs[i,0] # calculate x location (um)
             z = s.modelsize * randLocs[i,1] # calculate z location (um) 
-            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel)) # instantiate Cell object
+            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel, s)) # instantiate Cell object
             if verbose: print('Cell %d/%d (gid=%d) of pop %d on node %d'%(i, self.numCells, gid, self.popgid, s.rank))
         return cells, lastGid+self.numCells
 
@@ -131,7 +163,7 @@ class Pop:
 class Conn:
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=[[(lambda x: 0)]*l.numTopClass]*l.numTopClass
-    connProbs[l.IT][l.IT]   = (lambda x,y: 0.1/ypre)  # example of yfrac-dep function (x=presyn yfrac, y=postsyn yfrac)
+    connProbs[l.IT][l.IT]   = (lambda x,y: 0.1*x+0.1/y)  # example of yfrac-dep function (x=presyn yfrac, y=postsyn yfrac)
     connProbs[l.IT][l.PT]   = (lambda x,y: 0.2*x if (x>0.5 and x<0.8) else 0)
     connProbs[l.IT][l.CT]   = (lambda x,y: 1)  # constant function
     connProbs[l.IT][l.Pva]  = (lambda x,y: 1)
@@ -282,7 +314,7 @@ savelfps = False # Whether or not to save LFPs
 #lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 savebackground = False # save background (NetStims) inputs
 saveraw = False # Whether or not to record raw voltages etc.
-verbose = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
 plotpsd = False # plot power spectral density
@@ -298,7 +330,7 @@ useconnweightdata = True # Whether or not to use INTF6 weight data
 mindelay = 2 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
 modelsize = 1000*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
-sparseness = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
+sparseness = 1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
 scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed

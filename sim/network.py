@@ -41,9 +41,10 @@ warnings.filterwarnings('error')
 ###############################################################################
 # standard sequence
 def runSeq():
-    createNetwork() 
-    # addStimulation()
+    createCells()
+    connectCells() 
     # addBackground()
+    # addStimulation()
     # setupSim()
     # runSim()
     # finalizeSim()
@@ -59,9 +60,10 @@ def runTuneParams():
     s.savelfps = True # save lfp data
     s.duration = 1e3 # duration in ms
 
-    createNetwork() 
-    addStimulation()
+    createCells()
+    connectCells() 
     addBackground()
+    addStimulation()
     setupSim()
     runSim()
     finalizeSim()
@@ -75,17 +77,14 @@ def runTuneParams():
 
 
 ###############################################################################
-### Create Network
+### Create Cells
 ###############################################################################
-def createNetwork():
+def createCells():
     ## Print diagnostic information
     #if s.rank==0: print("\nCreating simulation of %i cells for %0.1f s on %i hosts..." % (sum(s.popnumbers),s.duration/1000.,s.nhosts)) 
     s.pc.barrier()
 
-
-    ###############################################################################
-    ### Instantiate network cells (objects of class 'Cell')
-    ###############################################################################
+    # Instantiate network cells (objects of class 'Cell')
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
     s.spikerecorders = [] # Empty list for storing spike-recording Netcons
@@ -110,233 +109,74 @@ def createNetwork():
             spikerecorder.record(spikevec) 
             s.spikerecorders.append(spikerecorder)
             s.pc.cell(c.gid, s.spikerecorders[localid])
+
+
+
+            # # NEW MPI METHOD TO RECORD(BILL)
+            # pc.set_gid2node(self.gid, p.rank) # this is the key call that assigns cell gid to a particular node
+            # nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike p.threshold but then discarded
+            # nc.threshold = p.threshold
+            # pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+            # del nc # discard netcon
+
+            # p.acc.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
+            # pc.spike_record(-1, p.acc['spkt'], p.acc['spkid'])
+
+            # # NEW MPI METHOD TO RUN
+            # h.cvode.event(p.savestep,savenow)
+            # pc.psolve(h.tstop)
+
+
+            # NEW MPI METHOD TO GATHER DATA
+            # def post_data ():
+            #   global gather # dict to p.accumulate vectors to be passed
+            #   data=[None]*p.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
+            #   data[0]={} # make a new dict
+            #   for k,v in p.acc.iteritems():  data[0][k] = v 
+            #   if p.DEBUG: data[0]['dbxd']=p.dbxd
+            #   gather=pc.py_alltoall(data)
+            #   pc.barrier()
+            #   for v in p.acc.itervalues(): v.resize(0)
+
+            # ## report_data; only called using master
+            # lastt=0
+            # def report_data (): 
+            #   global lastt,idout,tout
+            #   idout,tout = [h.Vector(1e4).resize(0) for i in [0,1]]
+            #   if h.t <= round(lastt)+1: return None # don't save a file at the end if just saved
+            #   else: lastt = h.t
+            #   gdict = {}
+            #   [gdict.update(d) for d in gather] # ??this will now repeatedly needlessly overwrite 'spkt' and 'spkid'
+            #   gdict.update({'spkt' : np.concatenate([d['spkt']  for d in gather]), 
+            #                'spkid': np.concatenate([d['spkid'] for d in gather])})
+
             localid += 1
 
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))
     s.pc.barrier()
 
 
-    ###############################################################################
-    ### Instantiate network connections (objects of class 'Conn')
-    ###############################################################################
-
-    # Connect object cells based on pre and post cell's type, class and yfrac
+###############################################################################
+### Connect Cells
+###############################################################################
+def connectCells():
+    # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
     s.conns = []
+    #allCells = gather cells from all nodes
+
+    data = [s.cells]*s.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
+    gather=s.pc.py_alltoall(data)
+    s.pc.barrier()
+    print 'Sent from Node',s.rank, data
+    allCells = []
+    print 'Received on Node',s.rank, gather
+    for x in gather: 
+        allCells.extend(x)
     for ipost in s.cells:
-        newConns = s.Conn.connect(s.cells, ipost, s)
+        newConns = s.Conn.connect(allCells, ipost, s)
         s.conns.extend(newConns) 
 
-
-
-
-# Old create network
-def createNetworkOld():
-    ## Create empty data structures
-    s.cells=[] # Create empty list for storing cells
-    s.dummies=[] # Create empty list for storing fake sections
-    s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
-    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()
-    
-
-    ## Set cell types
-    celltypes=[]
-    for c in range(s.ncells): # Loop over each cell. ncells is all cells in the network.
-        if s.cellclasses[c]==1: celltypes.append(s.RS) # Append a regular spiking pyramidal cell
-        elif s.cellclasses[c]==2: celltypes.append(s.IB) # Append an intrinsically bursting pyramidal cell
-        elif s.cellclasses[c]==3: celltypes.append(s.CH) # Append a chattering cell
-        elif s.cellclasses[c]==4: celltypes.append(s.LTS) # Append a low-threshold spiking interneuron
-        elif s.cellclasses[c]==5: celltypes.append(s.FS) # Append a fast-spiking interneuron
-        elif s.cellclasses[c]==4: celltypes.append(s.TC) # Append a thalamocortical cell
-        elif s.cellclasses[c]==5: celltypes.append(s.RTN) # Append a reticular thalamic nucleus cell
-        elif s.cellclasses[c]==-1: celltypes.append(s.nsloc) # Append a nsloc
-        else: raise Exception('Undefined cell class "%s"' % s.cellclasses[c]) # No match? Cause an error
-
-
-    ## Set positions
-    seed(s.id32('%d'%s.randseed)) # Reset random number generator
-    s.xlocs = s.modelsize*rand(s.ncells) # Create random x locations
-    s.ylocs = s.modelsize*rand(s.ncells) # Create random y locations
-    s.zlocs = rand(s.ncells) # Create random z locations
-    for c in range(s.ncells): 
-        s.zlocs[c] = s.corticalthick * (s.zlocs[c]*(s.popyfrac[s.cellpops[c]][1]-s.popyfrac[s.cellpops[c]][0]) + s.popyfrac[s.cellpops[c]][0])  # calculate based on yfrac for population and corticalthick 
-
- 
-    ## Actually create the cells
-    s.spikerecorders = [] # Empty list for storing spike-recording Netcons
-    s.hostspikevecs = [] # Empty list for storing host-specific spike vectors
-    s.cellsperhost = 0
-    for c in xrange(int(s.rank), s.ncells, s.nhosts):
-        s.dummies.append(h.Section()) # Create fake sections
-        gid = c
-        if s.cellclasses[gid]==3: 
-            cell = s.fastspiking(s.dummies[s.cellsperhost], vt=-47, cellid=gid) # Don't use LTS cell, but instead a FS cell with a low threshold
-        else: 
-            cell = celltypes[gid](s.dummies[s.cellsperhost], cellid=gid) # Create a new cell of the appropriate type (celltypes[gid]) and store it
-        if s.verbose>0: s.cells[-1].useverbose(s.verbose, s.filename+'los.txt') # Turn on diagnostic to file
-        s.cells.append(cell) 
-        s.gidVec.append(gid) # index = local id; value = global id
-        s.gidDic[gid] = s.cellsperhost # key = global id; value = local id -- used to get local id because gid.index() too slow!
-        s.pc.set_gid2node(gid, s.rank)
-
-        spikevec = h.Vector()
-        s.hostspikevecs.append(spikevec)
-        spikerecorder = h.NetCon(cell, None)
-        spikerecorder.record(spikevec)
-        s.spikerecorders.append(spikerecorder)
-        s.pc.cell(gid, s.spikerecorders[s.cellsperhost])
-        s.cellsperhost += 1 # contain cell numbers per host including PMd and P
-    print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))
-    s.pc.barrier()
-
-
-    ## Calculate distances and probabilities
-    if s.rank==0: print('Calculating connection probabilities (est. time: %i s)...' % (s.performance*s.cellsperhost**2/3e4))
-    conncalcstart = s.time() # See how long connecting the cells takes
-    s.nconnpars = 5 # Connection parameters: pre- and post- cell ID, weight, distances, delays
-    s.conndata = [[] for i in range(s.nconnpars)] # List for storing connections
-    nPostCells = 0
-    for c in range(s.cellsperhost): # Loop over all postsynaptic cells on this host (has to be postsynaptic because of gid_connect)
-        gid = s.gidVec[c] # Increment global identifier       
-        nPostCells += 1
-        if s.toroidal: 
-            xpath=(abs(s.xlocs-s.xlocs[gid]))**2
-            xpath2=(s.modelsize-abs(s.xlocs-s.xlocs[gid]))**2
-            xpath[xpath2<xpath]=xpath2[xpath2<xpath]
-            ypath=(abs(s.ylocs-s.ylocs[gid]))**2
-            ypath2=(s.modelsize-abs(s.ylocs-s.ylocs[gid]))**2
-            ypath[ypath2<ypath]=ypath2[ypath2<ypath]
-            zpath=(abs(s.zlocs-s.zlocs[gid]))**2
-            distances = sqrt(xpath + ypath) # Calculate all pairwise distances
-            distances3d = sqrt(xpath + ypath + zpath) # Calculate all pairwise 3d distances
-        else: 
-            distances = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2) # Calculate all pairwise distances
-            distances3d = sqrt((s.xlocs-s.xlocs[gid])**2 + (s.ylocs-s.ylocs[gid])**2 + (s.zlocs-s.zlocs[gid])**2) # Calculate all pairwise distances
-        allconnprobs = s.scaleconnprob[s.EorI,s.EorI[gid]] * s.connprobs[s.cellpops,s.cellpops[gid]] * exp(-distances/s.connfalloff[s.EorI]) # Calculate pairwise probabilities
-        allconnprobs[gid] = 0 # Prohibit self-connections using the cell's GID
-        seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator  
-        allrands = rand(s.ncells) # Create an array of random numbers for checking each connection  
-      
-        makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
-        preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-
-        postids = array(gid+zeros(len(preids)),dtype='int') # Post-synaptic cell IDs
-        s.conndata[0].append(preids) # Append pre-cell ID
-        s.conndata[1].append(postids) # Append post-cell ID
-        s.conndata[2].append(distances[preids]) # Distances
-        s.conndata[3].append(s.mindelay + distances3d[preids]/float(s.velocity)) # Calculate the delays
-        wt1 = s.scaleconnweight[s.EorI[preids],s.EorI[postids]] # N weight scale factors -- WARNING, might be flipped
-        wt2 = s.connweights[s.cellpops[preids],s.cellpops[postids],:] # NxM inter-population weights
-        wt3 = s.receptorweight[:] # M receptor weights
-
-        print wt2
-        finalweights = transpose(wt1*transpose(wt2*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
-        s.conndata[4].append(finalweights) # Initialize weights to 0, otherwise get memory leaks
-    for pp in range(s.nconnpars): s.conndata[pp] = array(concatenate([s.conndata[pp][c] for c in range(nPostCells)])) # Turn pre- and post- cell IDs lists into vectors
-    s.nconnections = len(s.conndata[0]) # Find out how many connections we're going to make
-    conncalctime = time()-conncalcstart # See how long it took
-    if s.rank==0: print('  Done; time = %0.1f s' % conncalctime)
-
-    ## Actually make connections
-    if s.rank==0: print('Making connections (est. time: %i s)...' % (s.performance*s.nconnections/9e2))
-    print('  Number of connections on host %i: %i' % (s.rank, s.nconnections))
-    connstart = time() # See how long connecting the cells takes
-    s.connlist = [] # Create array for storing each of the connections
-    s.stdpconndata = [] # Store data on STDP connections
-    if s.usestdp: # STDP enabled?
-        s.stdpmechs = [] # Initialize array for STDP mechanisms
-        s.precons = [] # Initialize array for presynaptic spike counters
-        s.pstcons = [] # Initialize array for postsynaptic spike counters
-    for con in range(s.nconnections): # Loop over each connection
-        pregid = s.conndata[0][con] # GID of presynaptic cell    
-        pstgid = s.conndata[1][con] # Index of postsynaptic cell
-        pstid = s.gidDic[pstgid]# Index of postynaptic cell -- convert from GID to local
-        newcon = s.pc.gid_connect(pregid, s.cells[pstid]) # Create a connection
-        newcon.delay = s.conndata[3][con] # Set delay
-        for r in range(s.nreceptors): newcon.weight[r] = s.conndata[4][con][r] # Set weight of connection
-        s.connlist.append(newcon) # Connect the two cells
-        if s.usestdp and ([s.cellpops[pregid],s.cellpops[pstgid]] in s.plastConns): # If using STDP and these pops are set to be plastic connections
-            if sum(abs(s.stdprates[s.EorI[pregid],:]))>0 or sum(abs(s.RLrates[s.EorI[pregid],:]))>0: # Don't create an STDP connection if the learning rates are zero
-                for r in range(s.nreceptors): # Need a different STDP instances for each receptor
-                    if newcon.weight[r]>0: # Only make them for nonzero connections
-                        stdpmech = h.STDP(0,sec=s.dummies[pstid]) # Create STDP adjuster
-                        stdpmech.hebbwt = s.stdprates[s.EorI[pregid],0] # Potentiation rate
-                        stdpmech.antiwt = s.stdprates[s.EorI[pregid],1] # Depression rate
-                        stdpmech.wmax = s.maxweight # Maximum synaptic weight
-                        precon = s.pc.gid_connect(pregid,stdpmech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
-                        pstcon = s.pc.gid_connect(pstgid,stdpmech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
-                        h.setpointer(s.connlist[-1]._ref_weight[r],'synweight',stdpmech) # Associate the STDP adjuster with this weight
-                        s.stdpmechs.append(stdpmech) # Save STDP adjuster
-                        s.precons.append(precon) # Save presynaptic spike source
-                        s.pstcons.append(pstcon) # Save postsynaptic spike source
-                        s.stdpconndata.append([pregid,pstgid,r]) # Store presynaptic cell ID, postsynaptic, and receptor
-                        stdpmech.RLon = 0 # make sure RL is off
-                 
-    s.nstdpconns = len(s.stdpconndata) # Get number of STDP connections
-    conntime = time()-connstart # See how long it took
-    if s.usestdp: print('  Number of STDP connections on host %i: %i' % (s.rank, s.nstdpconns))
-    if s.rank==0: print('  Done; time = %0.1f s' % conntime)
-
-
-###############################################################################
-### Add stimulation
-###############################################################################
-
-## IMPLEMENT STIMULATION
-def addStimulation():
-    if s.usestims:
-        s.stimstruct = [] # For saving
-        s.stimrands=[] # Create input connections
-        s.stimsources=[] # Create empty list for storing synapses
-        s.stimconns=[] # Create input connections
-        s.stimtimevecs = [] # Create array for storing time vectors
-        s.stimweightvecs = [] # Create array for holding weight vectors
-        if s.saveraw: 
-            s.stimspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-            s.stimrecorders=[] # And for recording spikes
-        for stim in range(len(s.stimpars)): # Loop over each stimulus type
-            ts = s.stimpars[stim] # Stands for "this stimulus"
-            ts.loc = ts.loc * s.modelsize # scale cell locations to model size
-            stimvecs = s.makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
-            s.stimstruct.append([ts.name, stimvecs]) # Store for saving later
-            s.stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
-            
-            for c in range(s.cellsperhost):
-                gid = s.cellsperhost*int(s.rank)+c # For deciding E or I    
-                seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator for this cell
-                if ts.fraction>rand(): # Don't do it for every cell necessarily
-                    if any(s.cellpops[gid]==ts.pops) and s.xlocs[gid]>=ts.loc[0,0] and s.xlocs[gid]<=ts.loc[0,1] and s.ylocs[gid]>=ts.loc[1,0] and s.ylocs[gid]<=ts.loc[1,1]:
-                        
-                        maxweightincrease = 20 # Otherwise could get infinitely high, infinitely close to the stimulus
-                        distancefromstimulus = sqrt(sum((array([s.xlocs[gid], s.ylocs[gid]])-s.modelsize*ts.falloff[0])**2))
-                        fallofffactor = min(maxweightincrease,(ts.falloff[1]/distancefromstimulus)**2)
-                        s.stimweightvecs.append(h.Vector().from_python(stimvecs[1]*fallofffactor)) # Scale by the fall-off factor
-                        
-                        stimrand = h.Random()
-                        stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
-                        stimrand.negexp(1)
-                        stimrand.seq(s.id32('%d'%(s.randseed+gid))*1e3) # Set the sequence i.e. seed
-                        s.stimrands.append(stimrand)
-                        
-                        stimsource = h.NetStim() # Create a NetStim
-                        stimsource.interval = ts.rate**-1*1e3 # Interval between spikes
-                        stimsource.number = 1e9 # Number of spikes
-                        stimsource.noise = ts.noise # Fractional noise in timing
-                        stimsource.noiseFromRandom(stimrand) # Set it to use this random number generator
-                        s.stimsources.append(stimsource) # Save this NetStim
-                        
-                        stimconn = h.NetCon(stimsource, s.cells[c]) # Connect this noisy input to a cell
-                        for r in range(s.nreceptors): stimconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-                        s.stimweightvecs[-1].play(stimconn._ref_weight[0], s.stimtimevecs[-1]) # Play most-recently-added vectors into weight
-                        stimconn.delay=s.mindelay # Specify the delay in ms -- shouldn't make a spot of difference
-                        s.stimconns.append(stimconn) # Save this connnection
-        
-                        if s.saveraw:# and c <=100:
-                            stimspikevec = h.Vector() # Initialize vector
-                            s.stimspikevecs.append(stimspikevec) # Keep all those vectors
-                            stimrecorder = h.NetCon(stimsource, None)
-                            stimrecorder.record(stimspikevec) # Record simulation time
-                            s.stimrecorders.append(stimrecorder)
-        print('  Number of stimuli created on host %i: %i' % (s.rank, len(s.stimsources)))
+    print('  Number of connections on host %i: %i' % (s.rank, len(s.conns)))
 
 
 ###############################################################################
@@ -392,6 +232,66 @@ def addBackground():
                 s.backgroundrecorders.append(backgroundrecorder)
     print('  Number created on host %i: %i' % (s.rank, len(s.backgroundsources)))
     s.pc.barrier()
+
+
+###############################################################################
+### Add stimulation
+###############################################################################
+def addStimulation():
+    if s.usestims:
+        s.stimstruct = [] # For saving
+        s.stimrands=[] # Create input connections
+        s.stimsources=[] # Create empty list for storing synapses
+        s.stimconns=[] # Create input connections
+        s.stimtimevecs = [] # Create array for storing time vectors
+        s.stimweightvecs = [] # Create array for holding weight vectors
+        if s.saveraw: 
+            s.stimspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
+            s.stimrecorders=[] # And for recording spikes
+        for stim in range(len(s.stimpars)): # Loop over each stimulus type
+            ts = s.stimpars[stim] # Stands for "this stimulus"
+            ts.loc = ts.loc * s.modelsize # scale cell locations to model size
+            stimvecs = s.makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
+            s.stimstruct.append([ts.name, stimvecs]) # Store for saving later
+            s.stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
+            
+            for c in range(s.cellsperhost):
+                gid = s.cellsperhost*int(s.rank)+c # For deciding E or I    
+                seed(s.id32('%d'%(s.randseed+gid))) # Reset random number generator for this cell
+                if ts.fraction>rand(): # Don't do it for every cell necessarily
+                    if any(s.cellpops[gid]==ts.pops) and s.xlocs[gid]>=ts.loc[0,0] and s.xlocs[gid]<=ts.loc[0,1] and s.ylocs[gid]>=ts.loc[1,0] and s.ylocs[gid]<=ts.loc[1,1]:
+                        
+                        maxweightincrease = 20 # Otherwise could get infinitely high, infinitely close to the stimulus
+                        distancefromstimulus = sqrt(sum((array([s.xlocs[gid], s.ylocs[gid]])-s.modelsize*ts.falloff[0])**2))
+                        fallofffactor = min(maxweightincrease,(ts.falloff[1]/distancefromstimulus)**2)
+                        s.stimweightvecs.append(h.Vector().from_python(stimvecs[1]*fallofffactor)) # Scale by the fall-off factor
+                        
+                        stimrand = h.Random()
+                        stimrand.MCellRan4() # If everything has the same seed, should happen at the same time
+                        stimrand.negexp(1)
+                        stimrand.seq(s.id32('%d'%(s.randseed+gid))*1e3) # Set the sequence i.e. seed
+                        s.stimrands.append(stimrand)
+                        
+                        stimsource = h.NetStim() # Create a NetStim
+                        stimsource.interval = ts.rate**-1*1e3 # Interval between spikes
+                        stimsource.number = 1e9 # Number of spikes
+                        stimsource.noise = ts.noise # Fractional noise in timing
+                        stimsource.noiseFromRandom(stimrand) # Set it to use this random number generator
+                        s.stimsources.append(stimsource) # Save this NetStim
+                        
+                        stimconn = h.NetCon(stimsource, s.cells[c]) # Connect this noisy input to a cell
+                        for r in range(s.nreceptors): stimconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+                        s.stimweightvecs[-1].play(stimconn._ref_weight[0], s.stimtimevecs[-1]) # Play most-recently-added vectors into weight
+                        stimconn.delay=s.mindelay # Specify the delay in ms -- shouldn't make a spot of difference
+                        s.stimconns.append(stimconn) # Save this connnection
+        
+                        if s.saveraw:# and c <=100:
+                            stimspikevec = h.Vector() # Initialize vector
+                            s.stimspikevecs.append(stimspikevec) # Keep all those vectors
+                            stimrecorder = h.NetCon(stimsource, None)
+                            stimrecorder.record(stimspikevec) # Record simulation time
+                            s.stimrecorders.append(stimrecorder)
+        print('  Number of stimuli created on host %i: %i' % (s.rank, len(s.stimsources)))
 
 
 ###############################################################################

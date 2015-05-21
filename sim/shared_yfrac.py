@@ -13,7 +13,6 @@ Version: 2015feb12 by salvadord
 
 from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange, asarray
 from neuron import h # Import NEURON
-#from izhi import RS, IB, CH, LTS, FS, TC, RTN # Import Izhikevich model
 import izhi
 from nsloc import nsloc # NetStim with location unit type
 from time import time
@@ -246,7 +245,7 @@ class Conn:
 
 pops = []  # list to store populations ('Pop' objects)
 
-            #   gid,    EorI,   topClass,   subClass,   yfracRange,     density,                cellModel):
+            # popid,    EorI,   topClass,   subClass,   yfracRange,     density,                cellModel
 pops.append(Pop(0,      l.E,    l.IT,       l.other,    [0.1, 0.26],    lambda x:2e3*x,        l.Izhi2007)) #  L2/3 IT
 pops.append(Pop(1,      l.E,    l.IT,       l.other,    [0.26, 0.31],   lambda x:2e3*x,        l.Izhi2007)) #  L4 IT
 pops.append(Pop(2,      l.E,    l.IT,       l.other,    [0.31, 0.52],   lambda x:2e3*x,        l.Izhi2007)) #  L5A IT

@@ -314,7 +314,8 @@ pops.append(Pop(11,     l.I,    l.Sst,      l.Marti,    [0.77, 1.0],    lambda x
 scale = 1 # Size of simulation in thousands of cells
 duration = 1*1e3 # Duration of the simulation, in ms
 h.dt = 0.5 # Internal integration timestep to use
-loopstep = 10 # Step size in ms for simulation loop -- not coincidentally the step size for the LFP
+saveStep = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
+saveFileStep = 1000 # step size in ms to save data to disk
 progupdate = 5000 # How frequently to update progress, in ms
 randseed = 1 # Random seed to use
 limitmemory = False # Whether or not to limit RAM usage

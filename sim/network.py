@@ -47,13 +47,13 @@ def runSeq():
     addBackground()
     addStimulation()
     setupRecording()
-    # runSim()
-    # finalizeSim()
-    # saveData()
-    # plotData()
+    runSim()
+    gatherData()
+    #saveData()
+    #plotData()
 
-    s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
-    s.pc.done() # MPI: Close MPI
+    #s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
+    #s.pc.done() # MPI: Close MPI
     totaltime = time()-verystart # See how long it took in total
     print('\nDone; total time = %0.1f s.' % totaltime)
 
@@ -197,7 +197,7 @@ def addStimulation():
 ###############################################################################
 def setupRecording():
     # ## spike recording
-    # s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
+    s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
     # ## intrinsic cell variables recording
     # for c in s.cells: c.record()
@@ -224,130 +224,48 @@ def runSim():
     if s.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
-    s.pc.set_maxstep(10) # MPI: Set the maximum integration time in ms -- not very important
-    init() # Initialize the simulation
-
-    while round(h.t) < s.duration:
-        s.pc.psolve(min(s.duration,h.t+s.loopstep)) # MPI: Get ready to run the simulation (it isn't actually run until pc.runworker() is called I think)
-      
-        if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))
-
-        # Calculate LFP -- WARNING, need to think about how to optimize
-        if s.savelfps:
-            s.lfptime.append(h.t) # Append current time
-            tmplfps = zeros((s.nlfps)) # Create empty array for storing LFP voltages
-            for pop in range(s.nlfps):
-                for c in range(len(s.lfpcellids[pop])):
-                    id = s.gidDic[s.lfpcellids[pop][c]]# Index of postynaptic cell -- convert from GID to local
-                    tmplfps[pop] += s.cells[id].V # Add voltage to LFP estimate
-                if s.verbose:
-                    if s.server.Manager.ns.isnan(tmplfps[pop]) or s.server.Manager.ns.isinf(tmplfps[pop]):
-                        print "Nan or inf"
-            s.hostlfps.append(tmplfps) # Add voltages
-
-        # Periodic weight saves
-        if s.usestdp: 
-            timesincelastsave = h.t - s.timeoflastsave
-            if timesincelastsave >= s.timebetweensaves:
-                s.timeoflastsave = h.t
-                for ps in range(s.nstdpconns):
-                    if s.stdpmechs[ps].synweight != s.weightchanges[ps][-1][-1]: # Only store connections that changed; [ps] = this connection; [-1] = last entry; [-1] = weight
-                        s.weightchanges[ps].append([s.timeoflastsave, s.stdpmechs[ps].synweight])
-                       
-                
+    s.pc.set_maxstep(10)
+    mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    h.stdinit() # diff with h.init()?
+    #h.cvode.event(s.savestep,savenow)
+    s.pc.psolve(h.tstop)
+    #if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))      
     if s.rank==0: 
         s.runtime = time()-runstart # See how long it took
         print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (s.runtime, s.duration/1000/s.runtime))
     s.pc.barrier() # Wait for all hosts to get to this point
 
 
-###############################################################################
-### Finalize Simulation  (gather data from nodes, etc.)
-###############################################################################
-def finalizeSim():
-        
-    ## Variables to unpack data from all hosts
 
+###############################################################################
+### Gather data from nodes
+###############################################################################
+def gatherData():
     ## Pack data from all hosts
-    if s.rank==0: print('\nGathering spikes...')
-    gatherstart = time() # See how long it takes to plot
-    for host in range(s.nhosts): # Loop over hosts
-        if host==s.rank: # Only act on a single host
-            hostspikecells=array([])
-            hostspiketimes=array([])
-            for c in range(len(s.hostspikevecs)): # fails when saving raw
-                thesespikes = array(s.hostspikevecs[c]) # Convert spike times to an array
-                nthesespikes = len(thesespikes) # Find out how many of spikes there were for this cell
-                hostspiketimes = concatenate((hostspiketimes, thesespikes)) # Add spikes from this cell to the list
-                #hostspikecells = concatenate((hostspikecells, (c+host*s.cellsperhost)*ones(nthesespikes))) # Add this cell's ID to the list
-                hostspikecells = concatenate((hostspikecells, s.gidVec[c]*ones(nthesespikes))) # Add this cell's ID to the list
-            if s.saveraw:
-                for c in range(len(s.rawrecordings)):
-                    for q in range(len(s.rawrecordings[c])):
-                        s.rawrecordings[c][q] = array(s.rawrecordings[c][q])
-            messageid=s.pc.pack([hostspiketimes, hostspikecells, s.hostlfps, s.conndata, s.stdpconndata, s.weightchanges, s.rawrecordings]) # Create a mesage ID and store this value
-            s.pc.post(host,messageid) # Post this message
+    if s.rank==0: 
+        print('\nGathering spikes...')
+        gatherstart = time() # See how long it takes to plot
 
+        data=[None]*s.nhosts # using None is important for mem and perf of pc.alltoall() when data is sparse
+        data[0]={} # make a new dict
+        for k,v in s.simdata.iteritems():  data[0][k] = v 
+        gather=s.pc.py_alltoall(data)
+        s.pc.barrier()
+        for v in s.simdata.itervalues(): v.resize(0)
 
-    ## Unpack data from all hosts
-    if s.rank==0: # Only act on a single host
-        s.allspikecells = array([])
-        s.allspiketimes = array([])
-        s.lfps = zeros((len(s.lfptime),s.nlfps)) # Create an empty array for appending LFP data; first entry is for time
-        s.allconnections = [array([]) for i in range(s.nconnpars)] # Store all connections
-        s.allconnections[s.nconnpars-1] = zeros((0,s.nreceptors)) # Create an empty array for appending connections
-        s.allstdpconndata = zeros((0,3)) # Create an empty array for appending STDP connection data
-        if s.usestdp: s.allweightchanges = [] # empty list so weightchanges in this node don't appear twice
-        s.totalspikes = 0 # Keep a running tally of the number of spikes
-        s.totalconnections = 0 # Total number of connections
-        s.totalstdpconns = 0 # Total number of stdp connections
-        if s.saveraw: s.allraw = []        
-        for host in range(s.nhosts): # Loop over hosts
-            s.pc.take(host) # Get the last message
-            hostdata = s.pc.upkpyobj() # Unpack them
-            s.allspiketimes = concatenate((s.allspiketimes, hostdata[0])) # Add spikes from this cell to the list
-            s.allspikecells = concatenate((s.allspikecells, hostdata[1])) # Add this cell's ID to the list
-            if s.savelfps: s.lfps += array(hostdata[2]) # Sum LFP voltages
-            for pp in range(s.nconnpars): s.allconnections[pp] = concatenate((s.allconnections[pp], hostdata[3][pp])) # Append pre/post synapses
-            if s.usestdp and len(hostdata[4]): # Using STDP and at least one STDP connection
-                s.allstdpconndata = concatenate((s.allstdpconndata, hostdata[4])) # Add data on STDP connections
-                for ps in range(len(hostdata[4])): s.allweightchanges.append(hostdata[5][ps]) # "ps" stands for "plastic synapse"
-            if s.saveraw:
-                for c in range(len(hostdata[6])): s.allraw.append(hostdata[6][c]) # Append cell-by-cell
+        gdict = {}
+        [gdict.update(d) for d in gather] # this will now repeated needlessly overwrite 'spkt' and 'spkid'
+        gdict.update({'spkt' : concatenate([d['spkt']  for d in gather]), 
+               'spkid': concatenate([d['spkid'] for d in gather])})
+        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':s.saveStep, 'dt':h.dt, 'randseed':s.randseed, 'tstop':h.tstop}}) # eventually save full params (p)
+                                                 # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
+        gdict.update({'t':h.t, 'walltime':datetime.datetime.now().ctime()})
 
-        s.totalspikes = len(s.allspiketimes) # Keep a running tally of the number of spikes
-        s.totalconnections = len(s.allconnections[0]) # Total number of connections
-        s.totalstdpconns = len(s.allstdpconndata) # Total number of STDP connections
-        
-
-    # Record background spike data (cliff: only for one node since takes too long to pack for all and just needed for debugging)
-    if s.savebackground and s.usebackground:
-        s.allbackgroundspikecells=array([])
-        s.allbackgroundspiketimes=array([])
-        for c in range(len(s.backgroundspikevecs)):
-            thesespikes = array(s.backgroundspikevecs[c])
-            s.allbackgroundspiketimes = concatenate((s.allbackgroundspiketimes, thesespikes)) # Add spikes from this stimulator to the list
-            s.allbackgroundspikecells = concatenate((s.allbackgroundspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
-        s.backgrounddata = transpose(vstack([s.allbackgroundspikecells,s.allbackgroundspiketimes]))
-    else: s.backgrounddata = [] # For saving s no error
-    
-    if s.saveraw and s.usestims:
-        s.allstimspikecells=array([])
-        s.allstimspiketimes=array([])
-        for c in range(len(s.stimspikevecs)):
-            thesespikes = array(s.stimspikevecs[c])
-            s.allstimspiketimes = concatenate((s.allstimspiketimes, thesespikes)) # Add spikes from this stimulator to the list
-            s.allstimspikecells = concatenate((s.allstimspikecells, c+zeros(len(thesespikes)))) # Add this cell's ID to the list
-        s.stimspikedata = transpose(vstack([s.allstimspikecells,s.allstimspiketimes]))
-    else: s.stimspikedata = [] # For saving so no error
-
-    gathertime = time()-gatherstart # See how long it took
-    if s.rank==0: print('  Done; gather time = %0.1f s.' % gathertime)
+    if s.rank==0: 
+        gathertime = time()-gatherstart # See how long it took
+        print('  Done; gather time = %0.1f s.' % gathertime)
     s.pc.barrier()
-
-    #mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    #if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
-
 
     ## Print statistics
     if s.rank == 0:
@@ -364,32 +282,6 @@ def finalizeSim():
 ###############################################################################
 ### Save data
 ###############################################################################
-
-# NEW MPI METHOD TO GATHER DATA
-    # def post_data ():
-    #   global gather # dict to p.accumulate vectors to be passed
-    #   data=[None]*p.nhost # using None is important for mem and perf of pc.alltoall() when data is sparse
-    #   data[0]={} # make a new dict
-    #   for k,v in p.acc.iteritems():  data[0][k] = v 
-    #   if p.DEBUG: data[0]['dbxd']=p.dbxd
-    #   gather=pc.py_alltoall(data)
-    #   pc.barrier()
-    #   for v in p.acc.itervalues(): v.resize(0)
-
-    # ## report_data; only called using master
-    # lastt=0
-    # def report_data (): 
-    #   global lastt,idout,tout
-    #   idout,tout = [h.Vector(1e4).resize(0) for i in [0,1]]
-    #   if h.t <= round(lastt)+1: return None # don't save a file at the end if just saved
-    #   else: lastt = h.t
-    #   gdict = {}
-    #   [gdict.update(d) for d in gather] # ??this will now repeatedly needlessly overwrite 'spkt' and 'spkid'
-    #   gdict.update({'spkt' : np.concatenate([d['spkt']  for d in gather]), 
-    #                'spkid': np.concatenate([d['spkid'] for d in gather])})
-
-
-
 def saveData():
     if s.rank == 0:
         ## Save to txt file (spikes and conn)
@@ -466,26 +358,19 @@ def plotData():
         if s.plotraster: # Whether or not to plot
             if (s.totalspikes>s.maxspikestoplot): 
                 disp('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
-            elif s.nhosts>1: 
-                disp('  Plotting raster despite using too many cores (%i)' % s.nhosts) 
-                analysis.plotraster()#;allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
             else: 
                 print('Plotting raster...')
                 analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
-
         if s.plotconn:
             print('Plotting connectivity matrix...')
             analysis.plotconn()
-
         if s.plotpsd:
             print('Plotting power spectral density')
             analysis.plotpsd()
-
         if s.plotweightchanges:
             print('Plotting weight changes...')
             analysis.plotweightchanges()
             #analysis.plotmotorpopchanges()
-
         if s.plot3darch:
             print('Plotting 3d architecture...')
             analysis.plot3darch()

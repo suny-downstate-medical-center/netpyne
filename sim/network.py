@@ -87,14 +87,10 @@ def createCells():
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.cells = []
-    #lastGid = 0
-    #localid = 0
     for ipop in s.pops:
         newCells = ipop.createCells(s) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
-        #for c in newCells: s.gidDic[c.gid] = localid;   localid += 1  # key = global id; value = local id -- used to get local id because gid.index() too slow!
         if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
-
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
 
             # p.acc.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})

@@ -152,7 +152,7 @@ class Pop:
             z = s.modelsize * randLocs[i,1] # calculate z location (um) 
             cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel, s)) # instantiate Cell object
             if verbose: print('Cell %d/%d (gid=%d) of pop %d on node %d'%(i, self.numCells, gid, self.popgid, s.rank))
-        return cells, lastGid+self.numCells
+        return cells
 
 
 ###############################################################################

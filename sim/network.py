@@ -124,8 +124,8 @@ def addBackground():
         s.backgroundsources.append(backgroundsource) # Save this NetStim
         s.backgroundgid.append(gid) # append cell gid associated to this netstim
         backgroundconn = h.NetCon(backgroundsource, c.m) # Connect this noisy input to a cell
-        for r in range(s.nreceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[s.EorI[gid]] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        for r in range(s.l.numReceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[c.EorI] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
         s.backgroundconns.append(backgroundconn) # Save this connnection
         if s.savebackground:
@@ -224,12 +224,13 @@ def runSim():
     if s.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
+    #h.tstop = s.duration
     s.pc.set_maxstep(10)
     mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
-    h.stdinit() # diff with h.init()?
+    init() # diff with h.init()?
     #h.cvode.event(s.savestep,savenow)
-    s.pc.psolve(h.tstop)
+    s.pc.psolve(s.duration)#h.tstop)
     #if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))      
     if s.rank==0: 
         s.runtime = time()-runstart # See how long it took
@@ -258,9 +259,9 @@ def gatherData():
         [gdict.update(d) for d in gather] # this will now repeated needlessly overwrite 'spkt' and 'spkid'
         gdict.update({'spkt' : concatenate([d['spkt']  for d in gather]), 
                'spkid': concatenate([d['spkid'] for d in gather])})
-        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':s.saveStep, 'dt':h.dt, 'randseed':s.randseed, 'tstop':h.tstop}}) # eventually save full params (p)
+        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':s.saveStep, 'dt':h.dt, 'randseed':s.randseed, 'duration':s.duration}}) # eventually save full params (p)
                                                  # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
-        gdict.update({'t':h.t, 'walltime':datetime.datetime.now().ctime()})
+        gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
     if s.rank==0: 
         gathertime = time()-gatherstart # See how long it took
@@ -270,13 +271,17 @@ def gatherData():
     ## Print statistics
     if s.rank == 0:
         print('\nAnalyzing...')
-        s.firingrate = float(s.totalspikes)/s.ncells/s.duration*1e3 # Calculate firing rate -- confusing but cool Python trick for iterating over a list
+        s.totalspikes = len(gdict['spkt'])    
+        s.totalconnections = len(s.conns)
+        s.ncells = len(s.cells)
+
+        s.firingrate = float(s.totalspikes)/len(s.cells)/s.duration*1e3 # Calculate firing rate -- confusing but cool Python trick for iterating over a list
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
         print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (s.runtime, s.duration/1e3, s.scale, s.ncells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
-        print('  Connections: %i (%i STDP; %0.2f per cell)' % (s.totalconnections, s.totalstdpconns, s.connspercell))
-        print('  Mean connection distance: %0.2f um' % mean(s.allconnections[2]))
-        print('  Mean connection delay: %0.2f ms' % mean(s.allconnections[3]))
+        print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
+        # print('  Mean connection distance: %0.2f um' % mean(s.allconnections[2]))
+        # print('  Mean connection delay: %0.2f ms' % mean(s.allconnections[3]))
 
 
 ###############################################################################

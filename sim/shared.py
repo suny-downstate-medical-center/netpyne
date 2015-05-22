@@ -177,31 +177,31 @@ class Pop:
 class Conn:
     # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
     connProbs=[[(lambda x: 0)]*l.numTopClass]*l.numTopClass
-    connProbs[l.IT][l.IT]   = (lambda x,y: 0.1*x+0.1/y)  # example of yfrac-dep function (x=presyn yfrac, y=postsyn yfrac)
-    connProbs[l.IT][l.PT]   = (lambda x,y: 0.2*x if (x>0.5 and x<0.8) else 0)
-    connProbs[l.IT][l.CT]   = (lambda x,y: 1)  # constant function
-    connProbs[l.IT][l.Pva]  = (lambda x,y: 1)
-    connProbs[l.IT][l.Sst]  = (lambda x,y: 1)
+    connProbs[l.IT][l.IT]   = (lambda x,y: 0.1*x+0.01/y)  # example of yfrac-dep function (x=presyn yfrac, y=postsyn yfrac)
+    connProbs[l.IT][l.PT]   = (lambda x,y: 0.02*x if (x>0.5 and x<0.8) else 0)
+    connProbs[l.IT][l.CT]   = (lambda x,y: 0.1)  # constant function
+    connProbs[l.IT][l.Pva]  = (lambda x,y: 0.1)
+    connProbs[l.IT][l.Sst]  = (lambda x,y: 0.1)
     connProbs[l.PT][l.IT]   = (lambda x,y: 0)
-    connProbs[l.PT][l.PT]   = (lambda x,y: 1)
+    connProbs[l.PT][l.PT]   = (lambda x,y: 0.1)
     connProbs[l.PT][l.CT]   = (lambda x,y: 0)
-    connProbs[l.PT][l.Pva]  = (lambda x,y: 1)
-    connProbs[l.PT][l.Sst]  = (lambda x,y: 1)
-    connProbs[l.CT][l.IT]   = (lambda x,y: 1)
+    connProbs[l.PT][l.Pva]  = (lambda x,y: 0.1)
+    connProbs[l.PT][l.Sst]  = (lambda x,y: 0.1)
+    connProbs[l.CT][l.IT]   = (lambda x,y: 0.1)
     connProbs[l.CT][l.PT]   = (lambda x,y: 0)
-    connProbs[l.CT][l.CT]   = (lambda x,y: 1)
-    connProbs[l.CT][l.Pva]  = (lambda x,y: 1)
-    connProbs[l.CT][l.Sst]  = (lambda x,y: 1)
-    connProbs[l.Pva][l.IT]  = (lambda x,y: 1)
-    connProbs[l.Pva][l.PT]  = (lambda x,y: 1)
-    connProbs[l.Pva][l.CT]  = (lambda x,y: 1)
-    connProbs[l.Pva][l.Pva] = (lambda x,y: 1)
-    connProbs[l.Pva][l.Sst] = (lambda x,y: 1)
-    connProbs[l.Sst][l.IT]  = (lambda x,y: 1)
-    connProbs[l.Sst][l.PT]  = (lambda x,y: 1)
-    connProbs[l.Sst][l.CT]  = (lambda x,y: 1)
-    connProbs[l.Sst][l.Pva] = (lambda x,y: 1)
-    connProbs[l.Sst][l.Sst] = (lambda x,y: 1)
+    connProbs[l.CT][l.CT]   = (lambda x,y: 0.1)
+    connProbs[l.CT][l.Pva]  = (lambda x,y: 0.1)
+    connProbs[l.CT][l.Sst]  = (lambda x,y: 0.1)
+    connProbs[l.Pva][l.IT]  = (lambda x,y: 0.1)
+    connProbs[l.Pva][l.PT]  = (lambda x,y: 0.1)
+    connProbs[l.Pva][l.CT]  = (lambda x,y: 0.1)
+    connProbs[l.Pva][l.Pva] = (lambda x,y: 0.1)
+    connProbs[l.Pva][l.Sst] = (lambda x,y: 0.1)
+    connProbs[l.Sst][l.IT]  = (lambda x,y: 0.1)
+    connProbs[l.Sst][l.PT]  = (lambda x,y: 0.1)
+    connProbs[l.Sst][l.CT]  = (lambda x,y: 0.1)
+    connProbs[l.Sst][l.Pva] = (lambda x,y: 0.1)
+    connProbs[l.Sst][l.Sst] = (lambda x,y: 0.1)
 
     # class variables to store matrix of connection weights (constant or function) for pre and post cell topClass
     #connWeights=zeros((l.numTopClass,l.numTopClass,l.numReceptors))
@@ -264,12 +264,12 @@ class Conn:
            distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*corticalthick-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
         allconnprobs = s.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
-                * [cls.connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] \
-                * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]])  # Calculate pairwise probabilities
+                * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]]) \
+                * [cls.connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] # Calculate pairwise probabilities
         allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
         
         seed(s.id32('%d'%(s.randseed+cellPost.gid)))  # Reset random number generator  
-        allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection  
+        allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         delays = s.mindelay + distances[preids]/float(s.velocity) # Calculate the delays
@@ -345,10 +345,10 @@ useconnweightdata = True # Whether or not to use INTF6 weight data
 mindelay = 2 # Minimum connection delay, in ms
 velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
 modelsize = 1000*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
-sparseness = 1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
+sparseness = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
 scaleconnweight = 4*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
-scaleconnprob = 200/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
+scaleconnprob = 1/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
 toroidal = False # Whether or not to have toroidal topology
 if useconnprobdata == False: connprobs = array(connprobs>0,dtype='int') # Optionally cnvert from float data into binary yes/no
@@ -387,7 +387,7 @@ backgroundreceptor = l.NMDA # Which receptor to stimulate
 usestims = False # Whether or not to use stimuli at all
 ltptimes  = [5, 10] # Pre-microstim touch times
 ziptimes = [10, 15] # Pre-microstim touch times
-stimpars = [stim.stimmod(stim.touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stim.stimmod(touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
+stimpars = [stim.stimmod(stim.touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]), stim.stimmod(stim.touch,name='ZIP',sta=ziptimes[0],fin=ziptimes[1])] # Turn classes into instances
 
 # global/shared containers
 simdata = {}

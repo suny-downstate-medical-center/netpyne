@@ -47,51 +47,6 @@ l = Labels() # instantiate object of class Labels
 
 
 
-###############################################################################
-### POP CLASS
-###############################################################################
-
-# definition of python class 'Pop' used to instantiate the network population
-class Pop:
-    def __init__(self, popgid, EorI, topClass, subClass, yfracRange, density, cellModel):
-        self.popgid = popgid  # id of population
-        self.EorI = EorI  # excitatory or inhibitory 
-        self.topClass = topClass  # top-level class (IT, PT, CT,...) 
-        self.subClass = subClass  # subclass (L4, Basket, ...)
-        self.yfracRange = yfracRange  # normalized cortical depth
-        self.density = density  # cell density function (of yfrac) (in mm^3?)
-        self.cellModel = cellModel  # cell model for this population
-        self.cellGids = []  # list of cell gids in this population
-        self.numCells = 0  # number of cells in this population
-        
-
-    # Function to instantiate Cell objects based on the characteristics of this population
-    def createCells(self, s):
-        cells = []
-        volume = s.scale*s.sparseness*(s.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*s.corticalthick/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
-        yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-        maxDensity = max(map(self.density, (arange(self.yfracRange[0],self.yfracRange[1], yfracInterval)))) # max cell density 
-        maxCells = volume * maxDensity  # max number of cells based on max value of density func 
-        seed(id32('%d' % randseed))  # reset random number generator
-        yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * rand(int(maxCells), 1) # random yfrac values 
-        yfracsProb = array(map(self.density, yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
-        allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
-        makethiscell = yfracsProb>allrands # perform test to see whether or not this cell should be included (pruning based on density func)
-        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-        self.numCells = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-        if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
-        
-        randLocs = rand(self.numCells, 2)  # create random x,z locations
-
-        for i in xrange(int(rank), self.numCells, s.nhosts):
-            gid = s.lastGid+i
-            self.cellGids.append(gid)  # add gid list of cells belonging to this population    
-            x = s.modelsize * randLocs[i,0] # calculate x location (um)
-            z = s.modelsize * randLocs[i,1] # calculate z location (um) 
-            cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel, s)) # instantiate Cell object
-            if verbose: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
-        s.lastGid = s.lastGid + self.numCells 
-        return cells
 
 
 ###############################################################################

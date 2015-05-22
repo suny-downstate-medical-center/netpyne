@@ -12,8 +12,11 @@ from datetime import datetime
 from time import time
 import csv
 import pickle
-import shared as s
 from mpl_toolkits.mplot3d import Axes3D
+
+import params as p
+import shared as s
+
 ###############################################################################
 ### Simulation-related graph plotting functions
 ###############################################################################

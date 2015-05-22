@@ -7,6 +7,8 @@ and defines functions to generate the stimuli
 """
 
 from pylab import array, rand, exp, zeros, hstack
+
+import params as p
 import shared as s # Import population and connection data
 
 #PMd, ASC, DSC, ER2, IF2, IL2, ER5, EB5, IF5, IL5, ER6, IF6, IL6, AMPA, NMDA, GABAA, GABAB, opsin, Epops, Ipops, allpops = cpd.names2inds() # Define populations

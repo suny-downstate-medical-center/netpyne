@@ -10,9 +10,32 @@ from time import time, sleep
 from datetime import datetime
 import pickle
 import warnings
-import analysis
-import shared as s # Import all shared variables and parameters
+import params as p  # Import all shared variables and parameters
+import shared as s
+
 warnings.filterwarnings('error')
+
+
+###############################################################################
+### Instantiate network populations (objects of class 'Pop')
+###############################################################################
+def createPops():
+    s.pops = []  # list to store populations ('Pop' objects)
+
+                # popid,    EorI,   topClass,   subClass,   yfracRange,     density,                cellModel
+    s.pops.append(Pop(0,      l.E,    l.IT,       l.other,    [0.1, 0.26],    lambda x:2e3*x,        l.Izhi2007)) #  L2/3 IT
+    s.pops.append(Pop(1,      l.E,    l.IT,       l.other,    [0.26, 0.31],   lambda x:2e3*x,        l.Izhi2007)) #  L4 IT
+    s.pops.append(Pop(2,      l.E,    l.IT,       l.other,    [0.31, 0.52],   lambda x:2e3*x,        l.Izhi2007)) #  L5A IT
+    s.pops.append(Pop(3,      l.E,    l.IT,       l.other,    [0.52, 0.77],   lambda x:1e3*x,        l.Izhi2007)) #  L5B IT
+    s.pops.append(Pop(4,      l.E,    l.PT,       l.other,    [0.52, 0.77],   lambda x:1e3,          l.Izhi2007)) #  L5B PT
+    s.pops.append(Pop(5,      l.E,    l.IT,       l.other,    [0.77, 1.0],    lambda x:1e3,          l.Izhi2007)) #  L6 IT
+    s.pops.append(Pop(6,      l.I,    l.Pva,      l.Basket,   [0.1, 0.31],    lambda x:0.5e3,        l.Izhi2007)) #  L2/3 Pva (FS)
+    s.pops.append(Pop(7,      l.I,    l.Sst,      l.Marti,    [0.1, 0.31],    lambda x:0.5e3,        l.Izhi2007)) #  L2/3 Sst (LTS)
+    s.pops.append(Pop(8,      l.I,    l.Pva,      l.Basket,   [0.31, 0.77],   lambda x:0.5e3,        l.Izhi2007)) #  L5 Pva (FS)
+    s.pops.append(Pop(9,      l.I,    l.Sst,      l.Marti,    [0.31, 0.77],   lambda x:0.5e3,        l.Izhi2007)) #  L5 Sst (LTS)
+    s.pops.append(Pop(10,     l.I,    l.Pva,      l.Basket,   [0.77, 1.0],    lambda x:0.5e3,        l.Izhi2007)) #  L6 Pva (FS)
+    s.pops.append(Pop(11,     l.I,    l.Sst,      l.Marti,    [0.77, 1.0],    lambda x:0.5e3,        l.Izhi2007)) #  L6 Sst (LTS)
+
 
 
 

@@ -14,14 +14,12 @@ MPI usage:
 2015may22 salvadordura@gmail.com
 """
 
-
-
-import sys
-from numpy import mean, zeros
-from time import time
-import pickle
 from neuron import h# Import NEURON
+from time import time
+import sim
 import network
+import analysis
+import params as p
 import shared as s
 
 
@@ -31,13 +29,14 @@ import shared as s
 # standard sequence
 def runSeq():
     verystart=time() # store initial time
-    createCells()
-    connectCells() 
-    addBackground()
-    addStimulation()
-    setupRecording()
-    runSim()
-    gatherData()
+    sim.readArgs()
+    network.createCells()
+    network.connectCells() 
+    network.addBackground()
+    network.addStimulation()
+    sim.setupRecording()
+    sim.runSim()
+    sim.gatherData()
     #saveData()
     #plotData()
 

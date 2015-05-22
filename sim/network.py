@@ -252,13 +252,13 @@ def gatherData():
         print('\nGathering spikes...')
         gatherstart = time() # See how long it takes to plot
 
-        data=[None]*s.nhosts # using None is important for mem and perf of pc.alltoall() when data is sparse
-        data[0]={} # make a new dict
-        for k,v in s.simdata.iteritems():  data[0][k] = v 
-        gather=s.pc.py_alltoall(data)
-        s.pc.barrier()
-        for v in s.simdata.itervalues(): v.resize(0)
-
+    data=[None]*s.nhosts # using None is important for mem and perf of pc.alltoall() when data is sparse
+    data[0]={} # make a new dict
+    for k,v in s.simdata.iteritems():   data[0][k] = v 
+    gather=s.pc.py_alltoall(data)
+    s.pc.barrier()
+    for v in s.simdata.itervalues(): v.resize(0)
+    if s.rank==0: 
         gdict = {}
         [gdict.update(d) for d in gather] # this will now repeated needlessly overwrite 'spkt' and 'spkid'
         gdict.update({'spkt' : concatenate([d['spkt']  for d in gather]), 
@@ -267,10 +267,9 @@ def gatherData():
                                                  # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
         gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
-    if s.rank==0: 
         gathertime = time()-gatherstart # See how long it took
         print('  Done; gather time = %0.1f s.' % gathertime)
-    s.pc.barrier()
+    #s.pc.barrier()
 
     ## Print statistics
     if s.rank == 0:

@@ -91,6 +91,8 @@ def connectCells():
     s.pc.barrier()
     allCells = []
     for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
+    allCellsGids = [x.gid for x in allCells] # order gids
+    allCells = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
     for ipost in s.cells: # for each postsynaptic cell in this node
         newConns = s.Conn.connect(allCells, ipost, s)  # calculate all connections
         s.conns.extend(newConns)  # add to list of connections in this node

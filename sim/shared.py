@@ -149,7 +149,6 @@ class Pop:
         makethiscell = yfracsProb>allrands # perform test to see whether or not this cell should be included (pruning based on density func)
         yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
         self.numCells = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-
         if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
         
         randLocs = rand(self.numCells, 2)  # create random x,z locations
@@ -263,7 +262,7 @@ class Conn:
                 * exp(-distances/s.connfalloff[[x.EorI for x in  cellsPre]]) \
                 * [cls.connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] # Calculate pairwise probabilities
         allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
-        
+
         seed(s.id32('%d'%(s.randseed+cellPost.gid)))  # Reset random number generator  
         allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection
         makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made

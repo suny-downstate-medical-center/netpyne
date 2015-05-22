@@ -64,6 +64,7 @@ def runSeq():
 ###############################################################################
 def createCells():
     ## Print diagnostic information
+    s.pc.barrier()
     if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),s.duration/1000.,s.nhosts)) 
     # Instantiate network cells (objects of class 'Cell')
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
@@ -72,7 +73,8 @@ def createCells():
     for ipop in s.pops:
         newCells = ipop.createCells(s) # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
-        if s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
+        s.pc.barrier()
+        if s.rank==0 and s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
     s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
     

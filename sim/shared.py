@@ -11,7 +11,7 @@ Version: 2015feb12 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange
+from pylab import array, inf, zeros, seed, rand, transpose, sqrt, exp, arange,mod
 from neuron import h # Import NEURON
 import izhi
 from time import time
@@ -133,6 +133,7 @@ class Pop:
         self.cellModel = cellModel  # cell model for this population
         self.cellGids = []  # list of cell gids in this population
         self.numCells = 0  # number of cells in this population
+        
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self, s):
@@ -152,20 +153,15 @@ class Pop:
         if verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
         
         randLocs = rand(self.numCells, 2)  # create random x,z locations
-        if s.gidVec: 
-            lastGid = s.gidVec[-1]+1
-        else:
-            lastGid = 0
-        # print "node:", rank
-        # print "pop:",self.popgid
-        # print "lastGid:", lastGid
+
         for i in xrange(int(rank), self.numCells, s.nhosts):
-            gid = lastGid+i
+            gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population    
             x = s.modelsize * randLocs[i,0] # calculate x location (um)
             z = s.modelsize * randLocs[i,1] # calculate z location (um) 
             cells.append(Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel, s)) # instantiate Cell object
-            if verbose: print('Cell %d/%d (gid=%d) of pop %d on node %d'%(i, self.numCells, gid, self.popgid, s.rank))
+            if verbose: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
+        s.lastGid = s.lastGid + self.numCells 
         return cells
 
 
@@ -329,7 +325,7 @@ savelfps = False # Whether or not to save LFPs
 #lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 savebackground = False # save background (NetStims) inputs
 saveraw = False # Whether or not to record raw voltages etc.
-verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+verbose = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = False # Whether or not to plot a raster
 plotpsd = False # plot power spectral density
@@ -391,6 +387,7 @@ stimpars = [stim.stimmod(stim.touch,name='LTP',sta=ltptimes[0],fin=ltptimes[1]),
 
 # global/shared containers
 simdata = {}
+lastGid = 0  # keep track of las cell gid
 
 ## Peform a mini-benchmarking test for future time estimates
 if rank==0:

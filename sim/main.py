@@ -1,37 +1,50 @@
+"""
+MODEL
+
+A modularized large-scale network simulation. 
+Built solely in Python with MPI support. 
+Runs in real-time with over >10k cells when appropriately parallelized.
+
+Usage:
+    python main.py # Run simulation, optionally plot a raster
+
+MPI usage:
+    mpiexec -n 4 nrniv -python -mpi main.py
+
+2015may22 salvadordura@gmail.com
+"""
+
+
+
 import sys
 from numpy import mean, zeros
 from time import time
 import pickle
 from neuron import h# Import NEURON
+import network
 import shared as s
 
-###############################################################################
-### Update model parameters from command-line arguments
-###############################################################################
-
-for argv in sys.argv[1:]: # Skip first argument, which is file name
-    arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
-    harg = arg[0].split('.')+[''] # Separate out variable name; '' since if split fails need to still have an harg[1]
-    if len(arg)==2:
-        if hasattr(s,arg[0]) or hasattr(s,harg[1]): # Check that variable exists
-            if arg[0] == 'outfilestem':
-                exec('s.'+arg[0]+'="'+arg[1]+'"') # Actually set variable 
-                if s.rank==0: # messages only come from Master  
-                    print('  Setting %s=%s' %(arg[0],arg[1]))
-            else:
-                exec('s.'+argv) # Actually set variable            
-                if s.rank==0: # messages only come from Master  
-                    print('  Setting %s=%r' %(arg[0],eval(arg[1])))
-        else: 
-            sys.tracebacklimit=0
-            raise Exception('Reading args from commandline: Variable "%s" not found' % arg[0])
-    elif argv=='-mpi':   ismpi = True
-    else: pass # ignore -python 
-
 
 ###############################################################################
-### Run model
+### Sequence of commands to run full model
 ###############################################################################
-import network
+# standard sequence
+def runSeq():
+    verystart=time() # store initial time
+    createCells()
+    connectCells() 
+    addBackground()
+    addStimulation()
+    setupRecording()
+    runSim()
+    gatherData()
+    #saveData()
+    #plotData()
+
+    #s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
+    #s.pc.done() # MPI: Close MPI
+    totaltime = time()-verystart # See how long it took in total
+    print('\nDone; total time = %0.1f s.' % totaltime)
+
 
 network.runSeq()

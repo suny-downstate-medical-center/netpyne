@@ -1,3 +1,4 @@
+from neuron import h # Import NEURON
 import params as p
 import shared as s
 

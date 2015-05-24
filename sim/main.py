@@ -14,8 +14,8 @@ MPI usage:
 2015may22 salvadordura@gmail.com
 """
 
-from neuron import h# Import NEURON
 from time import time
+from neuron import h# Import NEURON
 import sim
 import network
 import analysis
@@ -26,19 +26,18 @@ import shared as s
 ###############################################################################
 ### Sequence of commands to run full model
 ###############################################################################
-# standard sequence
 def runSeq():
     verystart=time() # store initial time
     sim.readArgs()
-    network.createCells()
-    network.connectCells() 
-    network.addBackground()
-    network.addStimulation()
-    sim.setupRecording()
-    sim.runSim()
-    sim.gatherData()
-    #saveData()
-    #plotData()
+    # network.createCells()
+    # network.connectCells() 
+    # network.addBackground()
+    # network.addStimulation()
+    # sim.setupRecording()
+    # sim.runSim()
+    # sim.gatherData()
+    # sim.saveData()
+    # analysis.plotData()
 
     #s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
     #s.pc.done() # MPI: Close MPI
@@ -46,4 +45,4 @@ def runSeq():
     print('\nDone; total time = %0.1f s.' % totaltime)
 
 
-network.runSeq()
+runSeq()

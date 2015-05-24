@@ -1,3 +1,4 @@
+from pylab import arange, seed, rand, array
 from neuron import h # Import NEURON
 import params as p
 import shared as s
@@ -8,7 +9,7 @@ import shared as s
 
 # definition of python class 'Cell' used to instantiate individual neurons based on (Harrison & Sheperd, 2105)
 class Cell:
-    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc, cellModel):
+    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc):
         self.gid = gid  # global cell id 
         self.popid = popid  # id of population
         self.EorI = EorI # excitatory or inhibitory 
@@ -17,7 +18,6 @@ class Cell:
         self.yfrac = yfrac  # normalized cortical depth
         self.xloc = xloc  # x location in um
         self.zloc = zloc  # y location in um 
-        self.cellModel = cellModel  # type of cell model (eg. Izhikevich, Friesen, HH ...)
         self.m = []  # NEURON object containing cell model
         
         self.make()  # create cell 
@@ -67,18 +67,15 @@ class Izhi2007(Cell):
         # Instantiate cell model 
         self.dummy = h.Section()
         if self.topClass in [p.IT, p.PT, p.CT]: # if excitatory cell use RS
-            self.m = RS(self.dummy, cellid=self.gid)
+            self.m = self.RS(self.dummy, cellid=self.gid)
         elif self.topClass == p.Pva: # if Pva use FS
-            self.m = FS(self.dummy, cellid=self.gid)
+            self.m = self.FS(self.dummy, cellid=self.gid)
         elif self.topClass == p.Sst: # if Sst us LTS
-            self.m = LTS(self.dummy, cellid=self.gid)
+            self.m = self.LTS(self.dummy, cellid=self.gid)
 
     def associateGid (self, threshold = 10.0):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        if self.cellModel == l.Izhi2007:
-            nc = h.NetCon(self.m, None) 
-        else:
-            nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.m) # nc determines spike threshold but then discarded
+        nc = h.NetCon(self.m, None) 
         nc.threshold = threshold
         s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
         s.gidVec.append(self.gid) # index = local id; value = global id
@@ -168,33 +165,33 @@ class Izhi2007(Cell):
 
 class HH:
     def make (self):
-    self.soma = h.Section(name='soma')
-    self.soma.diam = 18.8
-    self.soma.L = 18.8
-    self.soma.Ra = 123.0
-    self.soma.insert('hh')
+        self.soma = h.Section(name='soma')
+        self.soma.diam = 18.8
+        self.soma.L = 18.8
+        self.soma.Ra = 123.0
+        self.soma.insert('hh')
 
-  def activate (self):
-    self.stim = h.IClamp(0.5, sec=self.soma)
-    self.stim.amp = 0.1
-    self.stim.dur = 1
-    randomdel.Random123(id32('randomdel'), self.gid, 0) # randomizer on a per cell basis
-    self.stim.delay=2+randomdel.repick()
+    def activate (self):
+        self.stim = h.IClamp(0.5, sec=self.soma)
+        self.stim.amp = 0.1
+        self.stim.dur = 1
+        #randomdel.Random123(id32('randomdel'), self.gid, 0) # randomizer on a per cell basis
+        #self.stim.delay=2+randomdel.repick()
 
-  def associate_gid (self):
-    pc.set_gid2node(self.gid, rank) # this is the key call that assigns cell gid to a particular node
-    nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
-    nc.threshold = threshold
-    pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-    del nc # discard netcon
+    def associate_gid (self):
+        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
+        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
+        nc.threshold = p.threshold
+        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+        del nc # discard netcon
 
-  def record (self):
-    # set up voltage recording; acc and recdict will be taken from global context
-    for k,v in recdict.iteritems():
-      try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-      except: print 'bad state variable pointer: ',v
-      acc[(k, self.gid)] = h.Vector(h.tstop/Dt+10).resize(0)
-      acc[(k, self.gid)].record(ptr, Dt)
+    def record (self):
+        # set up voltage recording; acc and recdict will be taken from global context
+        for k,v in s.recdict.iteritems():
+          try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+          except: print 'bad state variable pointer: ',v
+          s.simdata[(k, self.gid)] = h.Vector(h.tstop/p.Dt+10).resize(0)
+          s.simdata[(k, self.gid)].record(ptr, p.Dt)
 
 
 
@@ -204,7 +201,7 @@ class HH:
 
 # definition of python class 'Pop' used to instantiate the network population
 class Pop:
-    def __init__(self, popgid, EorI, topClass, subClass, yfracRange, density, cellModel):
+    def __init__(self,  popgid, EorI=0, topClass=0, subClass=0, yfracRange=[0,1], density=lambda: 1, cellModel=[]):
         self.popgid = popgid  # id of population
         self.EorI = EorI  # excitatory or inhibitory 
         self.topClass = topClass  # top-level class (IT, PT, CT,...) 
@@ -239,7 +236,7 @@ class Pop:
             self.cellGids.append(gid)  # add gid list of cells belonging to this population    
             x = p.modelsize * randLocs[i,0] # calculate x location (um)
             z = p.modelsize * randLocs[i,1] # calculate z location (um) 
-            cells.append(s.Cell(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z, self.cellModel)) # instantiate Cell object
+            cells.append(self.cellModel(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z)) # instantiate Cell object
             if p.verbose: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
         s.lastGid = s.lastGid + self.numCells 
         return cells

@@ -1,8 +1,8 @@
-from neuron import h # Import NEURON
 import sys
-from numpy import mean, zeros
+from pylab import mean, zeros
 from time import time
 import pickle
+from neuron import h, init # Import NEURON
 import params as p
 import shared as s
 
@@ -53,6 +53,28 @@ def setupRecording():
     #             s.lfpcellids[pop].append(gid) # Flag this cell as belonging to this LFP population
 
     pass
+
+
+###############################################################################
+### Run Simulation
+###############################################################################
+def runSim():
+    if s.rank == 0:
+        print('\nRunning...')
+        runstart = time() # See how long the run takes
+    #h.tstop = s.duration
+    s.pc.set_maxstep(10)
+    mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    init() # diff with h.init()?
+    #h.cvode.event(s.savestep,savenow)
+    s.pc.psolve(s.duration)#h.tstop)
+    #if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))      
+    if s.rank==0: 
+        s.runtime = time()-runstart # See how long it took
+        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (s.runtime, s.duration/1000/s.runtime))
+    s.pc.barrier() # Wait for all hosts to get to this point
+
 
 
 ###############################################################################
@@ -148,7 +170,6 @@ def saveData():
             # Save variables
             info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
             
-
             variablestosave = ['info', 'simcode', 'spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 'connections', 'distances', 'delays', 'weights', 's.EorI']
             
             if s.savelfps:  

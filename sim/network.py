@@ -39,7 +39,7 @@ def createCells():
         newCells = ipop.createCells() # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
         s.pc.barrier()
-        if s.rank==0 and s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
+        if s.rank==0 and p.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
     s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
     
@@ -161,26 +161,6 @@ def addStimulation():
         print('  Number of stimuli created on host %i: %i' % (s.rank, len(s.stimsources)))
 
 
-
-###############################################################################
-### Run Simulation
-###############################################################################
-def runSim():
-    if s.rank == 0:
-        print('\nRunning...')
-        runstart = time() # See how long the run takes
-    #h.tstop = s.duration
-    s.pc.set_maxstep(10)
-    mindelay = s.pc.allreduce(s.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
-    init() # diff with h.init()?
-    #h.cvode.event(s.savestep,savenow)
-    s.pc.psolve(s.duration)#h.tstop)
-    #if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))      
-    if s.rank==0: 
-        s.runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (s.runtime, s.duration/1000/s.runtime))
-    s.pc.barrier() # Wait for all hosts to get to this point
 
 
 

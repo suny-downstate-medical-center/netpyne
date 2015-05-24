@@ -31,7 +31,7 @@ def runSeq():
     sim.readArgs()  # set parameters based on commandline arguments
     network.createPops()  # instantiate network populations
     network.createCells()  # instantiate network cells based on populations
-    # network.connectCells() 
+    network.connectCells() 
     # network.addBackground()
     # network.addStimulation()
     # sim.setupRecording()
@@ -40,8 +40,6 @@ def runSeq():
     # sim.saveData()
     # analysis.plotData()
 
-    #s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
-    #s.pc.done() # MPI: Close MPI
     if s.rank==0:
         totaltime = time()-verystart # See how long it took in total
         print('\nDone; total time = %0.1f s.' % totaltime)

@@ -50,21 +50,22 @@ def createCells():
 def connectCells():
     # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
     if s.rank==0: print('Making connections...'); connstart = time()
-    s.conns = []  # list to store connections
-    data = [s.cells]*s.nhosts  # send cells data to other nodes
-    gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
-    s.pc.barrier()
-    allCells = []
-    for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
-    allCellsGids = [x.gid for x in allCells] # order gids
-    allCells = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
-    for ipost in s.cells: # for each postsynaptic cell in this node
-        newConns = s.Conn.connect(allCells, ipost, s)  # calculate all connections
-        s.conns.extend(newConns)  # add to list of connections in this node
-    del gather, data  # removed unnecesary variables
-    print('  Number of connections on host %i: %i ' % (s.rank, len(s.conns)))
-    s.pc.barrier()
-    if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
+    if p.connType == 'yfrac':
+        s.conns = []  # list to store connections
+        data = [s.cells]*s.nhosts  # send cells data to other nodes
+        gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+        s.pc.barrier()
+        allCells = []
+        for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
+        allCellsGids = [x.gid for x in allCells] # order gids
+        allCells = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
+        for ipost in s.cells: # for each postsynaptic cell in this node
+            newConns = s.Conn.connectYfrac(allCells, ipost)  # calculate all connections
+            s.conns.extend(newConns)  # add to list of connections in this node
+        del gather, data  # removed unnecesary variables
+        print('  Number of connections on host %i: %i ' % (s.rank, len(s.conns)))
+        s.pc.barrier()
+        if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
 
 
 ###############################################################################

@@ -29,7 +29,7 @@ import shared as s
 def runSeq():
     if s.rank==0: verystart=time() # store initial time
     sim.readArgs()
-    # network.createCells()
+    network.createCells()
     # network.connectCells() 
     # network.addBackground()
     # network.addStimulation()

@@ -27,7 +27,7 @@ import shared as s
 ### Sequence of commands to run full model
 ###############################################################################
 def runSeq():
-    verystart=time() # store initial time
+    if s.rank==0: verystart=time() # store initial time
     sim.readArgs()
     # network.createCells()
     # network.connectCells() 
@@ -41,8 +41,9 @@ def runSeq():
 
     #s.pc.runworker() # MPI: Start simulations running on each host (add to simcontrol module)
     #s.pc.done() # MPI: Close MPI
-    totaltime = time()-verystart # See how long it took in total
-    print('\nDone; total time = %0.1f s.' % totaltime)
+    if s.rank==0:
+        totaltime = time()-verystart # See how long it took in total
+        print('\nDone; total time = %0.1f s.' % totaltime)
 
 
 runSeq()

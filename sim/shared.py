@@ -15,7 +15,6 @@ from neuron import h # Import NEURON
 from time import time
 import hashlib
 from cell import Cell
-from pop import Pop
 
 def id32(obj): return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
 

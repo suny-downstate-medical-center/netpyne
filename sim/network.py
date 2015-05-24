@@ -30,15 +30,13 @@ def createPops():
 ### Create Cells
 ###############################################################################
 def createCells():
-    ## Print diagnostic information
     s.pc.barrier()
-    if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),s.duration/1000.,s.nhosts)) 
-    # Instantiate network cells (objects of class 'Cell')
+    if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),p.duration/1000.,s.nhosts)) 
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.cells = []
-    for ipop in s.pops:
-        newCells = ipop.createCells(s) # create cells for this pop using Pop method
+    for ipop in s.pops: # For each pop instantiate the network cells (objects of class 'Cell')
+        newCells = ipop.createCells() # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
         s.pc.barrier()
         if s.rank==0 and s.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           

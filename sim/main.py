@@ -27,9 +27,10 @@ import shared as s
 ### Sequence of commands to run full model
 ###############################################################################
 def runSeq():
-    if s.rank==0: verystart=time() # store initial time
-    sim.readArgs()
-    network.createCells()
+    if s.rank==0: verystart=time()  # store initial time
+    sim.readArgs()  # set parameters based on commandline arguments
+    network.createPops()  # instantiate network populations
+    network.createCells()  # instantiate network cells based on populations
     # network.connectCells() 
     # network.addBackground()
     # network.addStimulation()

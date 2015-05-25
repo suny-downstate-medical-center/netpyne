@@ -1,8 +1,9 @@
 import sys
-from pylab import mean, zeros, concatenate, vstack
+from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
 import pickle
+import itertools
 from neuron import h, init # Import NEURON
 import params as p
 import shared as s
@@ -35,7 +36,7 @@ def readArgs():
 ### Setup Recording
 ###############################################################################
 def setupRecording():
-    # ## spike recording
+    # spike recording
     s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
     # ## intrinsic cell variables recording
@@ -53,7 +54,6 @@ def setupRecording():
     #         if sum(s.lfppops[pop]==thispop)>0: # There's a match
     #             s.lfpcellids[pop].append(gid) # Flag this cell as belonging to this LFP population
 
-    pass
 
 
 ###############################################################################
@@ -86,19 +86,34 @@ def gatherData():
         print('\nGathering spikes...')
         gatherstart = time() # See how long it takes to plot
 
+    # extend dictionary to save relevant data in each node
+    nodePops = [[x.popgid, x.EorI, x.topClass, x.subClass, x.yfracRange, x.cellModel] for x in s.pops]
+    nodeCells = [[x.gid, x.EorI, x.topClass, x.subClass, x.xloc, x.yfrac, x.zloc] for x in s.cells]
+    nodeConns = [[x.preid, x.postid, x.delay, x.weight] for x in s.conns]
+    s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
+    if p.savebackground:
+        nodeBackground = [(s.cells[i].gid, s.backgroundspikevecs[i]) for i in range(s.cells)]
+        s.simdata.update({'background': nodeBackground})
+#     if p.savelfps:  
+#         variablestosave.extend(['s.lfptime', 's.lfps'])   
+
     data=[None]*s.nhosts # using None is important for mem and perf of pc.alltoall() when data is sparse
     data[0]={} # make a new dict
     for k,v in s.simdata.iteritems():   data[0][k] = v 
     gather=s.pc.py_alltoall(data)
     s.pc.barrier()
-    for v in s.simdata.itervalues(): v.resize(0)
+    #for v in s.simdata.itervalues(): v.resize(0)
     if s.rank==0: 
         gdict = {}
-        [gdict.update(d) for d in gather] # this will now repeated needlessly overwrite 'spkt' and 'spkid'
-        gdict.update({'spkt' : concatenate([d['spkt']  for d in gather]), 
-               'spkid': concatenate([d['spkid'] for d in gather])})
+
+        [gdict.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']]
+        for k in [x for x in gather[0].keys() if x not in ['spkt', 'spkid']]:
+            tmp = []
+            for d in gather: tmp.extend(d[k]) 
+            gdict.update({k: tmp})
+        #[gdict.update({k : list(itertools.chain(d[k] for d in gather))}) for k in list(gather[0].keys()) 
         if not gdict.has_key('run'): gdict.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # eventually save full params (p)
-                                                 # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
+                                            # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
         gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
         gathertime = time()-gatherstart # See how long it took
@@ -110,9 +125,9 @@ def gatherData():
         print('\nAnalyzing...')
         s.totalspikes = len(gdict['spkt'])    
         s.totalconnections = len(s.conns)
-        s.ncells = len(s.cells)
+        s.ncells = len(gdict['cells'])
 
-        s.firingrate = float(s.totalspikes)/len(s.cells)/p.duration*1e3 # Calculate firing rate 
+        s.firingrate = float(s.totalspikes)/s.ncells/p.duration*1e3 # Calculate firing rate 
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
         print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, p.duration/1e3, p.scale, s.ncells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))

@@ -7,7 +7,6 @@
 from neuron import h, init # Import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
-from datetime import datetime
 import pickle
 import warnings
 

@@ -1,6 +1,7 @@
 import sys
-from pylab import mean, zeros
+from pylab import mean, zeros, concatenate
 from time import time
+from datetime import datetime
 import pickle
 from neuron import h, init # Import NEURON
 import params as p
@@ -96,7 +97,7 @@ def gatherData():
         [gdict.update(d) for d in gather] # this will now repeated needlessly overwrite 'spkt' and 'spkid'
         gdict.update({'spkt' : concatenate([d['spkt']  for d in gather]), 
                'spkid': concatenate([d['spkid'] for d in gather])})
-        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':s.saveStep, 'dt':h.dt, 'randseed':s.randseed, 'duration':s.duration}}) # eventually save full params (p)
+        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # eventually save full params (p)
                                                  # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
         gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
@@ -111,9 +112,9 @@ def gatherData():
         s.totalconnections = len(s.conns)
         s.ncells = len(s.cells)
 
-        s.firingrate = float(s.totalspikes)/len(s.cells)/s.duration*1e3 # Calculate firing rate -- confusing but cool Python trick for iterating over a list
+        s.firingrate = float(s.totalspikes)/len(s.cells)/p.duration*1e3 # Calculate firing rate 
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
-        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (s.runtime, s.duration/1e3, s.scale, s.ncells, s.nhosts))
+        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, p.duration/1e3, p.scale, s.ncells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
         print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
         # print('  Mean connection distance: %0.2f um' % mean(s.allconnections[2]))

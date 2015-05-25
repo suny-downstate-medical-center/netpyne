@@ -163,7 +163,7 @@ class Izhi2007(Cell):
 ### HODGKIN-HUXLEY CELL CLASS
 ###############################################################################
 
-class HH:
+class HH(Cell):
     def make (self):
         self.soma = h.Section(name='soma')
         self.soma.diam = 18.8
@@ -178,7 +178,7 @@ class HH:
         #randomdel.Random123(id32('randomdel'), self.gid, 0) # randomizer on a per cell basis
         #self.stim.delay=2+randomdel.repick()
 
-    def associate_gid (self):
+    def associateGid (self):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
         nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
         nc.threshold = p.threshold

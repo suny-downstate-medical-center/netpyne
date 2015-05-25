@@ -1,5 +1,5 @@
 import sys
-from pylab import mean, zeros, concatenate
+from pylab import mean, zeros, concatenate, vstack
 from time import time
 from datetime import datetime
 import pickle
@@ -127,7 +127,7 @@ def gatherData():
 def saveData():
     if s.rank == 0:
         ## Save to txt file (spikes and conn)
-        if s.savetxt: 
+        if p.savetxt: 
             filename = '../data/m1ms-spk.txt'
             fd = open(filename, "w")
             for c in range(len(s.allspiketimes)):
@@ -144,13 +144,13 @@ def saveData():
                 print "[Connections are stored in", filename, "]"
 
         ## Save to mat file
-        if s.savemat:
-            print('Saving output as %s...' % s.filename)
+        if p.savemat:
+            print('Saving output as %s...' % p.filename)
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
             
             # Save simulation code
-            filestosave = ['main.py', 'shared.py', 'network.py', 'izhi.py', 'izhi2007.mod', 'stdp.mod', 'nsloc.py', 'nsloc.mod'] # Files to save
+            filestosave = ['main.py', 'shared.py', 'network.py', 'izhi2007.mod'] # Files to save
             argv = [];
             simcode = [argv, filestosave] # Start off with input parameters, if any, and then the list of files being saved
             for f in range(len(filestosave)): # Loop over each file
@@ -159,29 +159,28 @@ def saveData():
                 fobj.close() # Close file object
             
             # Tidy variables
-            spikedata = vstack([s.allspikecells,s.allspiketimes]).T # Put spike data together
-            connections = vstack([s.allconnections[0],s.allconnections[1]]).T # Put connection data together
-            distances = s.allconnections[2] # Pull out distances
-            delays = s.allconnections[3] # Pull out delays
-            weights = s.allconnections[4] # Pull out weights
-            stdpdata = s.allstdpconndata # STDP connection data
-            if s.usestims: stimdata = [vstack(s.stimstruct[c][1]).T for c in range(len(stimstruct))] # Only pull out vectors, not text, in stimdata
+            # spikedata = vstack([s.allspikecells,s.allspiketimes]).T # Put spike data together
+            # connections = vstack([s.allconnections[0],s.allconnections[1]]).T # Put connection data together
+            # distances = s.allconnections[2] # Pull out distances
+            # delays = s.allconnections[3] # Pull out delays
+            # weights = s.allconnections[4] # Pull out weights
+            # stdpdata = s.allstdpconndata # STDP connection data
+            # if s.usestims: stimdata = [vstack(s.stimstruct[c][1]).T for c in range(len(stimstruct))] # Only pull out vectors, not text, in stimdata
 
-            # Save variables
-            info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
+            # # Save variables
+            # info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
             
-            variablestosave = ['info', 'simcode', 'spikedata', 's.cellpops', 's.cellnames', 's.cellclasses', 's.xlocs', 's.ylocs', 's.zlocs', 'connections', 'distances', 'delays', 'weights', 's.EorI']
+            # variablestosave = ['info', 'simcode', 'spikedata', 'p.popParams', 'connections', 'distances', 'delays', 'weights']
+            variablestosave = ['p.scale']
             
-            if s.savelfps:  
+            if p.savelfps:  
                 variablestosave.extend(['s.lfptime', 's.lfps'])   
-            if s.usestdp: 
-                variablestosave.extend(['stdpdata', 's.allweightchanges'])
-            if s.savebackground:
+            if p.savebackground:
                 variablestosave.extend(['s.backgrounddata'])
-            if s.saveraw: 
+            if p.saveraw: 
                 variablestosave.extend(['s.stimspikedata', 's.allraw'])
-            if s.usestims: variablestosave.extend(['stimdata'])
-            savecommand = "savemat(s.filename, {"
+            if p.usestims: variablestosave.extend(['stimdata'])
+            savecommand = "savemat(p.filename, {"
             for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var].replace('s.','') + "':" + variablestosave[var] + ", " # Create command out of all the variables
             savecommand = savecommand[:-2] + "}, oned_as='column')" # Omit final comma-space and complete command
             exec(savecommand) # Actually perform the save
@@ -190,30 +189,3 @@ def saveData():
             print('  Done; time = %0.1f s' % savetime)
 
 
-###############################################################################
-### Plot data
-###############################################################################
-def plotData():
-    ## Plotting
-    if s.rank == 0:
-        if s.plotraster: # Whether or not to plot
-            if (s.totalspikes>s.maxspikestoplot): 
-                disp('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
-            else: 
-                print('Plotting raster...')
-                analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
-        if s.plotconn:
-            print('Plotting connectivity matrix...')
-            analysis.plotconn()
-        if s.plotpsd:
-            print('Plotting power spectral density')
-            analysis.plotpsd()
-        if s.plotweightchanges:
-            print('Plotting weight changes...')
-            analysis.plotweightchanges()
-            #analysis.plotmotorpopchanges()
-        if s.plot3darch:
-            print('Plotting 3d architecture...')
-            analysis.plot3darch()
-
-        show(block=False)

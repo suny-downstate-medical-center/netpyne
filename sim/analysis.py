@@ -21,6 +21,33 @@ import shared as s
 ### Simulation-related graph plotting functions
 ###############################################################################
 
+# sequence of generic plots (raster, connectivity,psd,...)
+def plotData():
+    ## Plotting
+    if s.rank == 0:
+        if p.plotraster: # Whether or not to plot
+            if (s.totalspikes>s.maxspikestoplot): 
+                print('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
+            else: 
+                print('Plotting raster...')
+                s.analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
+        if p.plotconn:
+            print('Plotting connectivity matrix...')
+            s.analysis.plotconn()
+        if p.plotpsd:
+            print('Plotting power spectral density')
+            s.analysis.plotpsd()
+        if p.plotweightchanges:
+            print('Plotting weight changes...')
+            s.analysis.plotweightchanges()
+            #analysis.plotmotorpopchanges()
+        if p.plot3darch:
+            print('Plotting 3d architecture...')
+            s.analysis.plot3darch()
+
+        show(block=False)
+
+
 ## Create colormap
 def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
    from matplotlib.colors import LinearSegmentedColormap as makecolormap

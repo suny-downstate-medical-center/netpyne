@@ -24,8 +24,6 @@ List of remaining files:
 
 - nsloc.mod: NMODL for Netstim with location and adapted so interval can be modified during execution (used for proprioceptive and PMd inputs)
 
-- nsloc.py: Python wrapper for NSLOC units
-
 - stdp.mod: NMODL for STDP implementation
 
 - stimuli.py: functions and parameters for differnt types of neural stimulation

@@ -201,7 +201,7 @@ class HH:
 
 # definition of python class 'Pop' used to instantiate the network population
 class Pop:
-    def __init__(self,  popgid, EorI=0, topClass=0, subClass=0, yfracRange=[0,1], density=lambda: 1, cellModel=[]):
+    def __init__(self,  popgid, EorI=0, topClass=0, subClass=0, yfracRange=[0,1], density=lambda: 1, cellModel=0):
         self.popgid = popgid  # id of population
         self.EorI = EorI  # excitatory or inhibitory 
         self.topClass = topClass  # top-level class (IT, PT, CT,...) 
@@ -231,12 +231,17 @@ class Pop:
         
         randLocs = rand(self.numCells, 2)  # create random x,z locations
 
+        # select cell class to instantiate cells based on the cellModel attribute
+        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
+        elif self.cellModel == p.HH:    cellClass = s.HH
+        else: print 'Unknown cell model'
+
         for i in xrange(int(s.rank), self.numCells, s.nhosts):
             gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population    
             x = p.modelsize * randLocs[i,0] # calculate x location (um)
             z = p.modelsize * randLocs[i,1] # calculate z location (um) 
-            cells.append(self.cellModel(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z)) # instantiate Cell object
+            cells.append(cellClass(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z)) # instantiate Cell object
             if p.verbose: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
         s.lastGid = s.lastGid + self.numCells 
         return cells

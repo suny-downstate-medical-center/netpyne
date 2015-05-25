@@ -35,8 +35,8 @@ def runSeq():
     s.sim.setupRecording()
     s.sim.runSim()
     s.sim.gatherData()
-    #sim.saveData()
-    # analysis.plotData()
+    s.sim.saveData()
+    s.analysis.plotData()
 
     if s.rank==0:
         totaltime = time()-verystart # See how long it took in total

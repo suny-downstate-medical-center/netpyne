@@ -3,6 +3,7 @@ from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
 import pickle
+import cPickle as pk
 import itertools
 from neuron import h, init # Import NEURON
 import params as p
@@ -104,17 +105,15 @@ def gatherData():
     s.pc.barrier()
     #for v in s.simdata.itervalues(): v.resize(0)
     if s.rank==0: 
-        gdict = {}
-
-        [gdict.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']]
-        for k in [x for x in gather[0].keys() if x not in ['spkt', 'spkid']]:
+        s.gdict = {}
+        [s.gdict.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']] # concatenate spikes
+        for k in [x for x in gather[0].keys() if x not in ['spkt', 'spkid']]: # concatenate other dict fields
             tmp = []
             for d in gather: tmp.extend(d[k]) 
-            gdict.update({k: tmp})
-        #[gdict.update({k : list(itertools.chain(d[k] for d in gather))}) for k in list(gather[0].keys()) 
-        if not gdict.has_key('run'): gdict.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # eventually save full params (p)
-                                            # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
-        gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
+            s.gdict.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
+        if not s.gdict.has_key('run'): s.gdict.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
+        # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
+        s.gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
         gathertime = time()-gatherstart # See how long it took
         print('  Done; gather time = %0.1f s.' % gathertime)
@@ -123,9 +122,9 @@ def gatherData():
     ## Print statistics
     if s.rank == 0:
         print('\nAnalyzing...')
-        s.totalspikes = len(gdict['spkt'])    
+        s.totalspikes = len(s.gdict['spkt'])    
         s.totalconnections = len(s.conns)
-        s.ncells = len(gdict['cells'])
+        s.ncells = len(s.gdict['cells'])
 
         s.firingrate = float(s.totalspikes)/s.ncells/p.duration*1e3 # Calculate firing rate 
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
@@ -142,63 +141,37 @@ def gatherData():
 def saveData():
     if s.rank == 0:
         ## Save to txt file (spikes and conn)
-        if p.savetxt: 
-            filename = '../data/m1ms-spk.txt'
-            fd = open(filename, "w")
-            for c in range(len(s.allspiketimes)):
-                print >> fd, int(s.allspikecells[c]), s.allspiketimes[c], s.popNamesDic[s.cellnames[int(s.allspikecells[c])]]
-            fd.close()
-            print "[Spikes are stored in", filename, "]"
+        # if p.savetxt: 
+        #     filename = '../data/m1ms-spk.txt'
+        #     fd = open(filename, "w")
+        #     for c in range(len(s.allspiketimes)):
+        #         print >> fd, int(s.allspikecells[c]), s.allspiketimes[c], s.popNamesDic[s.cellnames[int(s.allspikecells[c])]]
+        #     fd.close()
+        #     print "[Spikes are stored in", filename, "]"
 
-            if s.verbose:
-                filename = 'm1ms-conn.txt'
-                fd = open(filename, "w")
-                for c in range(len(s.allconnections[0])):
-                    print >> fd, int(s.allconnections[0][c]), int(s.allconnections[1][c]), s.allconnections[2][c], s.allconnections[3][c], s.allconnections[4][c] 
-                fd.close()
-                print "[Connections are stored in", filename, "]"
+        #     if s.verbose:
+        #         filename = 'm1ms-conn.txt'
+        #         fd = open(filename, "w")
+        #         for c in range(len(s.allconnections[0])):
+        #             print >> fd, int(s.allconnections[0][c]), int(s.allconnections[1][c]), s.allconnections[2][c], s.allconnections[3][c], s.allconnections[4][c] 
+        #         fd.close()
+        #         print "[Connections are stored in", filename, "]"
+
+        if p.savedpk:
+            import os,gzip
+            fn=p.filename.split('.')
+            file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
+            gzip.open(file, 'wb').write(pk.dumps(s.gdict)) # write compressed string
+            print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
+  
 
         ## Save to mat file
         if p.savemat:
             print('Saving output as %s...' % p.filename)
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-            
-            # Save simulation code
-            filestosave = ['main.py', 'shared.py', 'network.py', 'izhi2007.mod'] # Files to save
-            argv = [];
-            simcode = [argv, filestosave] # Start off with input parameters, if any, and then the list of files being saved
-            for f in range(len(filestosave)): # Loop over each file
-                fobj = open(filestosave[f]) # Open it for reading
-                simcode.append(fobj.readlines()) # Append to list of code to save
-                fobj.close() # Close file object
-            
-            # Tidy variables
-            # spikedata = vstack([s.allspikecells,s.allspiketimes]).T # Put spike data together
-            # connections = vstack([s.allconnections[0],s.allconnections[1]]).T # Put connection data together
-            # distances = s.allconnections[2] # Pull out distances
-            # delays = s.allconnections[3] # Pull out delays
-            # weights = s.allconnections[4] # Pull out weights
-            # stdpdata = s.allstdpconndata # STDP connection data
-            # if s.usestims: stimdata = [vstack(s.stimstruct[c][1]).T for c in range(len(stimstruct))] # Only pull out vectors, not text, in stimdata
-
-            # # Save variables
-            # info = {'timestamp':datetime.today().strftime("%d %b %Y %H:%M:%S"), 'runtime':s.runtime, 'popnames':s.popnames, 'popEorI':s.popEorI} # Save date, runtime, and input arguments
-            
-            # variablestosave = ['info', 'simcode', 'spikedata', 'p.popParams', 'connections', 'distances', 'delays', 'weights']
-            variablestosave = ['p.scale']
-            
-            if p.savelfps:  
-                variablestosave.extend(['s.lfptime', 's.lfps'])   
-            if p.savebackground:
-                variablestosave.extend(['s.backgrounddata'])
-            if p.saveraw: 
-                variablestosave.extend(['s.stimspikedata', 's.allraw'])
-            if p.usestims: variablestosave.extend(['stimdata'])
-            savecommand = "savemat(p.filename, {"
-            for var in range(len(variablestosave)): savecommand += "'" + variablestosave[var].replace('s.','') + "':" + variablestosave[var] + ", " # Create command out of all the variables
-            savecommand = savecommand[:-2] + "}, oned_as='column')" # Omit final comma-space and complete command
-            exec(savecommand) # Actually perform the save
+             
+            savemat(p.filename, s.gdict)  # check if looks ok in matlab
             
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)

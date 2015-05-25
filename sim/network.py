@@ -64,7 +64,7 @@ def connectCells():
     allCells = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
     for ipost in s.cells: # for each postsynaptic cell in this node
         newConns = connFunc(allCells, ipost)  # calculate all connections
-        s.conns.extend(newConns)  # add to list of connections in this node
+        if newConns: s.conns.extend(newConns)  # add to list of connections in this node
     del gather, data  # removed unnecesary variables
     print('  Number of connections on host %i: %i ' % (s.rank, len(s.conns)))
     s.pc.barrier()

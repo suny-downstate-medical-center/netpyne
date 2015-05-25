@@ -30,8 +30,8 @@ def runSeq():
     s.network.createPops()  # instantiate network populations
     s.network.createCells()  # instantiate network cells based on defined populations
     s.network.connectCells()  
-    s.network.addBackground()
-    s.network.addStimulation()
+    #s.network.addBackground()
+    #s.network.addStimulation()
     s.sim.setupRecording()
     s.sim.runSim()
     s.sim.gatherData()

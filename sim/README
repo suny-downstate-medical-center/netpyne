@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-"m1" is an Izhikevich cell-based model of primary motor cortex (M1) w
+"m1" is a NEURON/Python-based model of primary motor cortex (M1)
 
-developed by Salvador Dura-Bernal (salvadordura@gmail.com) and Cliff Kerr (cliff@thekerrlab.com) 
+developed by Salvador Dura-Bernal (salvadordura@gmail.com) and Bill Lytton (billl@nuerosim.downstate.edu)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 List of main files:
@@ -11,7 +11,7 @@ After setting the command line input parameters, it calls one of the functions i
 
 - network.py: Contains all the functions that run the network model, including createNetwork(), addStimulation(), addBackground(), setupSim(), runSim(), finalizeSim(), saveData(), plotData(). It also includes functions that call all these functions in sequence (eg. runTuneParams()).
 
-- shared.py: Contains all the model shared parameters and variables, including layer definitions and connectivity. It is imported as "s" from all other files, so that any parameter can be referenced from any file using s.paramName
+- shared.py: Contains all the model shared variables and modules (except params.py). It is imported as "s" from all other file, so that any variable or module can be referenced from any file using s.paramName
 
 
 List of remaining files:
@@ -21,8 +21,6 @@ List of remaining files:
 - evol.py: Functions to run evolutionary algorithms (using inspyred) to optimize model parameters
 
 - izhi2007.mod: NMODL definition of Izhikevich 2007 neuron model
-
-- izhi.py: Python wrapper for the different Izhikevich cell types
 
 - nsloc.mod: NMODL for Netstim with location and adapted so interval can be modified during execution (used for proprioceptive and PMd inputs)
 

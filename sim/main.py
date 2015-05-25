@@ -16,9 +16,7 @@ MPI usage:
 
 from time import time
 from neuron import h# Import NEURON
-import sim
-import network
-import analysis
+
 import params as p
 import shared as s
 
@@ -28,16 +26,16 @@ import shared as s
 ###############################################################################
 def runSeq():
     if s.rank==0: verystart=time()  # store initial time
-    sim.readArgs()  # set parameters based on commandline arguments
-    network.createPops()  # instantiate network populations
-    network.createCells()  # instantiate network cells based on populations
-    network.connectCells() 
-    # network.addBackground()
-    # network.addStimulation()
-    # sim.setupRecording()
-    # sim.runSim()
-    # sim.gatherData()
-    # sim.saveData()
+    s.sim.readArgs()  # set parameters based on commandline arguments
+    s.network.createPops()  # instantiate network populations
+    s.network.createCells()  # instantiate network cells based on defined populations
+    s.network.connectCells()  
+    s.network.addBackground()
+    s.network.addStimulation()
+    s.sim.setupRecording()
+    s.sim.runSim()
+    s.sim.gatherData()
+    #sim.saveData()
     # analysis.plotData()
 
     if s.rank==0:

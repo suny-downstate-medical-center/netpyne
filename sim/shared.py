@@ -14,6 +14,10 @@ Version: 2015feb12 by salvadord
 from neuron import h # Import NEURON
 from time import time
 import hashlib
+import sim
+import network
+import analysis
+import stimuli
 from cell import Pop, Izhi2007, HH
 from conn import Conn
 

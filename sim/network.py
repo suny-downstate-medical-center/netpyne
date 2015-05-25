@@ -77,7 +77,7 @@ def addBackground():
     s.backgroundrands=[] # Create random number generators
     s.backgroundconns=[] # Create input connections
     s.backgroundgid=[] # Target cell gid for each input
-    if s.savebackground:
+    if p.savebackground:
         s.backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
         s.backgroundrecorders=[] # And for recording spikes
     for c in s.cells: 
@@ -87,18 +87,18 @@ def addBackground():
         backgroundrand.negexp(1)
         s.backgroundrands.append(backgroundrand)
         backgroundsource = h.NetStim() # Create a NetStim
-        backgroundsource.interval = s.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        backgroundsource.interval = p.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
         backgroundsource.noiseFromRandom(backgroundrand) # Set it to use this random number generator
-        backgroundsource.noise = s.backgroundnoise # Fractional noise in timing
-        backgroundsource.number = s.backgroundnumber # Number of spikes
+        backgroundsource.noise = p.backgroundnoise # Fractional noise in timing
+        backgroundsource.number = p.backgroundnumber # Number of spikes
         s.backgroundsources.append(backgroundsource) # Save this NetStim
         s.backgroundgid.append(gid) # append cell gid associated to this netstim
         backgroundconn = h.NetCon(backgroundsource, c.m) # Connect this noisy input to a cell
-        for r in range(s.l.numReceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        backgroundconn.weight[s.backgroundreceptor] = s.backgroundweight[c.EorI] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        for r in range(p.numReceptors): backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        backgroundconn.weight[p.backgroundreceptor] = p.backgroundweight[c.EorI] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
         s.backgroundconns.append(backgroundconn) # Save this connnection
-        if s.savebackground:
+        if p.savebackground:
             backgroundspikevec = h.Vector() # Initialize vector
             s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
             backgroundrecorder = h.NetCon(backgroundsource, None)
@@ -112,20 +112,21 @@ def addBackground():
 ### Add stimulation
 ###############################################################################
 def addStimulation():
-    if s.usestims:
+    if p.usestims:
+        s.stimuli.setStimParams()
         s.stimstruct = [] # For saving
         s.stimrands=[] # Create input connections
         s.stimsources=[] # Create empty list for storing synapses
         s.stimconns=[] # Create input connections
         s.stimtimevecs = [] # Create array for storing time vectors
         s.stimweightvecs = [] # Create array for holding weight vectors
-        if s.saveraw: 
+        if p.saveraw: 
             s.stimspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
             s.stimrecorders=[] # And for recording spikes
-        for stim in range(len(s.stimpars)): # Loop over each stimulus type
-            ts = s.stimpars[stim] # Stands for "this stimulus"
+        for stim in range(len(s.stimuli.stimpars)): # Loop over each stimulus type
+            ts = s.stimuli.stimpars[stim] # Stands for "this stimulus"
             ts.loc = ts.loc * s.modelsize # scale cell locations to model size
-            stimvecs = s.makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
+            stimvecs = s.stimuli.makestim(ts.isi, ts.var, ts.width, ts.weight, ts.sta, ts.fin, ts.shape) # Time-probability vectors
             s.stimstruct.append([ts.name, stimvecs]) # Store for saving later
             s.stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
             for c in s.cells:

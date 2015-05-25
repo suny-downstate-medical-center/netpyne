@@ -100,4 +100,6 @@ def makestim(isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stims
     
     return stimvecs
 
-stimpars = [stimmod(touch,name='LTP',sta=p.ltptimes[0],fin=p.ltptimes[1]), stimmod(touch,name='ZIP',sta=p.ziptimes[0],fin=p.ziptimes[1])] # Turn classes into instances
+## Define stimulus-making code
+def setStimParams():
+    s.stimpars = [stimmod(touch,name='LTP',sta=p.ltptimes[0],fin=p.ltptimes[1]), stimmod(touch,name='ZIP',sta=p.ziptimes[0],fin=p.ziptimes[1])] # Turn classes into instances

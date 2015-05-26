@@ -27,7 +27,7 @@ def plotData():
     ## Plotting
     if s.rank == 0:
         if p.plotraster: # Whether or not to plot
-            if (s.totalspikes>s.maxspikestoplot): 
+            if (s.totalspikes>p.maxspikestoplot): 
                 print('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')

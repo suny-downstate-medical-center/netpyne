@@ -97,9 +97,9 @@ def gatherData():
         gatherstart = time() # See how long it takes to plot
 
     # extend dictionary to save relevant data in each node
-    nodePops = [[x.values() for x in [y.__dict__]] for y in s.pops]
-    nodeCells = [[x.values() for x in [y.__dict__] if x.keys() not in ['m', 'dummy', 'soma', 'syns']] for y in s.cells]
-    nodeConns = [[x.values() for x in [y.__dict__] if x.keys() not in ['netcon']] for y in s.conns]
+    nodePops = [[y.__dict__[x] for x in y.__dict__] for y in s.pops]
+    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['m', 'dummy', 'soma', 'syns']] for y in s.cells]
+    nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['netcon']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
     if p.savebackground:
         nodeBackground = [(s.cells[i].gid, s.backgroundspikevecs[i]) for i in range(s.cells)]

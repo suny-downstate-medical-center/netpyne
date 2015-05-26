@@ -1,6 +1,9 @@
 #! /usr/bin/env python
-# runpbs_evol.py
-# runs evolutionary algorithm on arm2dms model using PBS Torque in HPC
+
+''' runpbs_evol.py
+Runs evolutionary algorithm on arm2dms model using PBS Torque in HPC
+Version: 2015may26 by salvadordura@gmail.com
+'''
 
 import os, sys
 from numpy import mean

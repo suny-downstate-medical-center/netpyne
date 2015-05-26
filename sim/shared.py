@@ -1,10 +1,10 @@
 """
-globals.py 
+shared.py 
 
-list of model objects (paramaters and variables) to be shared across modules
-Can modified manually or via arguments from main.py
+Contains all the model shared variables and modules (except params.py). It is imported as "s" from all other file, 
+so that any variable or module can be referenced from any file using s.varName
 
-Version: 2015feb12 by salvadord
+Version: 2015may26 by salvadord
 """
 
 ###############################################################################

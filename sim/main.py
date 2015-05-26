@@ -1,5 +1,5 @@
 """
-MODEL
+main.py
 
 A modularized large-scale network simulation. 
 Built solely in Python with MPI support. 

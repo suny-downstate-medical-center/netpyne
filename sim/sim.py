@@ -1,3 +1,12 @@
+"""
+sim.py 
+
+list of model objects (paramaters and variables) to be shared across modules
+Can modified manually or via arguments from main.py
+
+Version: 2015may26 by salvadordura@gmail.com
+"""
+
 import sys
 from pylab import mean, zeros, concatenate, vstack, array
 from time import time
@@ -88,9 +97,9 @@ def gatherData():
         gatherstart = time() # See how long it takes to plot
 
     # extend dictionary to save relevant data in each node
-    nodePops = [[x.popgid, x.EorI, x.topClass, x.subClass, x.yfracRange, x.cellModel] for x in s.pops]
-    nodeCells = [[x.gid, x.EorI, x.topClass, x.subClass, x.xloc, x.yfrac, x.zloc] for x in s.cells]
-    nodeConns = [[x.preid, x.postid, x.delay, x.weight] for x in s.conns]
+    nodePops = [[x.values() for x in [y.__dict__]] for y in s.pops]
+    nodeCells = [[x.values() for x in [y.__dict__] if x.keys() not in ['m', 'dummy', 'soma', 'syns']] for y in s.cells]
+    nodeConns = [[x.values() for x in [y.__dict__] if x.keys() not in ['netcon']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
     if p.savebackground:
         nodeBackground = [(s.cells[i].gid, s.backgroundspikevecs[i]) for i in range(s.cells)]
@@ -117,7 +126,6 @@ def gatherData():
 
         gathertime = time()-gatherstart # See how long it took
         print('  Done; gather time = %0.1f s.' % gathertime)
-    #s.pc.barrier()
 
     ## Print statistics
     if s.rank == 0:
@@ -140,23 +148,8 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
-        ## Save to txt file (spikes and conn)
-        # if p.savetxt: 
-        #     filename = '../data/m1ms-spk.txt'
-        #     fd = open(filename, "w")
-        #     for c in range(len(s.allspiketimes)):
-        #         print >> fd, int(s.allspikecells[c]), s.allspiketimes[c], s.popNamesDic[s.cellnames[int(s.allspikecells[c])]]
-        #     fd.close()
-        #     print "[Spikes are stored in", filename, "]"
 
-        #     if s.verbose:
-        #         filename = 'm1ms-conn.txt'
-        #         fd = open(filename, "w")
-        #         for c in range(len(s.allconnections[0])):
-        #             print >> fd, int(s.allconnections[0][c]), int(s.allconnections[1][c]), s.allconnections[2][c], s.allconnections[3][c], s.allconnections[4][c] 
-        #         fd.close()
-        #         print "[Connections are stored in", filename, "]"
-
+        # Save to dpk file
         if p.savedpk:
             import os,gzip
             fn=p.filename.split('.')
@@ -165,12 +158,12 @@ def saveData():
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
   
 
-        ## Save to mat file
+        # Save to mat file
         if p.savemat:
             print('Saving output as %s...' % p.filename)
             savestart = time() # See how long it takes to save
+            
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-             
             savemat(p.filename, s.gdict)  # check if looks ok in matlab
             
             savetime = time()-savestart # See how long it took to save

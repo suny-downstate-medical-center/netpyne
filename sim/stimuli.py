@@ -1,5 +1,5 @@
 """
-STIMULI
+stimuli.py
 
 This code defines properties of different type of stimuli
 and defines functions to generate the stimuli

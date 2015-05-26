@@ -7,8 +7,8 @@ import shared as s
 ### GENERIC CELL CLASS
 ###############################################################################
 class Cell:
-    ''' definition of python class 'Cell' used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
-    def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc):
+    ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
+    def __init__(self, gid, popid, EorI = [], topClass = [], subClass = [], yfrac = [], xloc = [], zloc = []):
         self.gid = gid  # global cell id 
         self.popid = popid  # id of population
         self.EorI = EorI # excitatory or inhibitory 
@@ -186,12 +186,41 @@ class HH(Cell):
 
 
 ###############################################################################
-### POP CLASS
+### BASIC POP CLASS
 ###############################################################################
 
 # definition of python class 'Pop' used to instantiate the network population
-class Pop:
-    def __init__(self,  popgid, EorI=0, topClass=0, subClass=0, yfracRange=[0,1], density=lambda: 1, cellModel=0):
+class BasicPop:
+    def __init__(self,  popgid, cellModel, numCells):
+        self.popgid = popgid  # id of population
+        self.cellModel = cellModel  # cell model for this population
+        self.numCells = numCells  # number of cells in this population
+        self.cellGids = []  # list of cell gids in this population
+
+    # Function to instantiate Cell objects based on the characteristics of this population
+    def createCells(self):
+        # select cell class to instantiate cells based on the cellModel attribute
+        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
+        elif self.cellModel == p.HH:    cellClass = s.HH
+        else: print 'Unknown cell model'
+
+        # use numCells variable to instantiate cells
+        cells = []
+        for i in xrange(int(s.rank), self.numCells, s.nhosts):
+            gid = s.lastGid+i
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population    
+            cells.append(cellClass(gid, self.popgid)) # instantiate Cell object
+            if p.verbose: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.numCells-1, gid, self.popgid, s.rank))
+        s.lastGid = s.lastGid + self.numCells 
+        return cells
+
+
+###############################################################################
+### YFRAC POP CLASS
+###############################################################################
+
+class YfracPop:
+    def __init__(self,  popgid, cellModel, EorI, topClass, subClass, yfracRange, density):
         self.popgid = popgid  # id of population
         self.EorI = EorI  # excitatory or inhibitory 
         self.topClass = topClass  # top-level class (IT, PT, CT,...) 
@@ -199,12 +228,18 @@ class Pop:
         self.yfracRange = yfracRange  # normalized cortical depth
         self.density = density  # cell density function (of yfrac) (in mm^3?)
         self.cellModel = cellModel  # cell model for this population
-        self.cellGids = []  # list of cell gids in this population
         self.numCells = 0  # number of cells in this population
+        self.cellGids = []  # list of cell gids in this population
         
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
+        # select cell class to instantiate cells based on the cellModel attribute
+        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
+        elif self.cellModel == p.HH:    cellClass = s.HH
+        else: print 'Unknown cell model'
+
+        # use yfrac-dep density if pop object has yfrac and density variables
         cells = []
         volume = p.scale*p.sparseness*(p.modelsize/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*p.corticalthick/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
         yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
@@ -218,14 +253,7 @@ class Pop:
         yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
         self.numCells = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
         if p.verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
-        
         randLocs = rand(self.numCells, 2)  # create random x,z locations
-
-        # select cell class to instantiate cells based on the cellModel attribute
-        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
-        elif self.cellModel == p.HH:    cellClass = s.HH
-        else: print 'Unknown cell model'
-
         for i in xrange(int(s.rank), self.numCells, s.nhosts):
             gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population    
@@ -235,3 +263,4 @@ class Pop:
             if p.verbose: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
         s.lastGid = s.lastGid + self.numCells 
         return cells
+

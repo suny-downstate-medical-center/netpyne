@@ -18,7 +18,7 @@ import sim
 import network
 import analysis
 import stimuli
-from cell import Pop, Izhi2007, HH
+from cell import BasicPop, YfracPop, Izhi2007, HH
 from conn import RandConn, YfracConn
 
 def id32(obj): return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)

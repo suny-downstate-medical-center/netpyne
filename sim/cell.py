@@ -6,9 +6,8 @@ import shared as s
 ###############################################################################
 ### GENERIC CELL CLASS
 ###############################################################################
-
-# definition of python class 'Cell' used to instantiate individual neurons based on (Harrison & Sheperd, 2105)
 class Cell:
+    ''' definition of python class 'Cell' used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     def __init__(self, gid, popid, EorI, topClass, subClass, yfrac, xloc, zloc):
         self.gid = gid  # global cell id 
         self.popid = popid  # id of population
@@ -30,7 +29,6 @@ class Cell:
 
 class Izhi2007(Cell):
     """
-
     Python class for the different celltypes of Izhikevich neuron. 
 
     Equations and parameter values taken from
@@ -51,16 +49,6 @@ class Izhi2007(Cell):
         5. FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
         6. TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
         7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-
-
-    Usage example:
-        from neuron import h
-        from izhi import pyramidal
-        dummy = h.Section()
-        cell = pyramidal(dummy)
-
-    Version: 2013oct16 by cliffk
-    Version: 2015mar30 by Salvador Dura-Bernal (salvadordura@gmail.com)
     """
 
     def make (self):
@@ -159,6 +147,7 @@ class Izhi2007(Cell):
         return cell
 
 
+
 ###############################################################################
 ### HODGKIN-HUXLEY CELL CLASS
 ###############################################################################
@@ -192,6 +181,7 @@ class HH(Cell):
           except: print 'bad state variable pointer: ',v
           s.simdata[(k, self.gid)] = h.Vector(h.tstop/p.Dt+10).resize(0)
           s.simdata[(k, self.gid)].record(ptr, p.Dt)
+
 
 
 

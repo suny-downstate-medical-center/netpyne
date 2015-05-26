@@ -18,7 +18,7 @@ List of files:
 
 - cell.py: contains cell and population classes 
 
-- conn.py: contains connectivity class
+- conn.py: contains class 'Conn' used to instantiate connections, and contains methods to connect cells (eg. random, yfrac-based)
 
 - analysis.py: functions to plot and analyse data
 

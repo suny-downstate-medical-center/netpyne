@@ -6,6 +6,9 @@ parameters in params.py.
 An example is provided in params.py which switches from a single Hodgkin-Huxley population, randomly connected model
 (mpiHHTut); to a multiple Izhikevich populations, yfrac-dependent connected M1 model.
 
+To test this just modify the variable simType in params.py: 
+simType = 'M1model' # 'mpiHHTut' 
+
 ** README with description of the different files
 List of files:
 
@@ -50,3 +53,17 @@ List of files:
 *** BasicPop and YfracPop
 *** if increase p.backgroundNoise > 0.0 get memory error 
 *** Find a way to save lambda funcs (can't be pickled)
+*** Clearing vector in simdata now gives error because also has python variables
+for v in s.simdata.itervalues() -- fix error
+*** 'Cell' class record method uses eval() which is unsafe
+*** currently setup to record traces from all cells
+*** bug when saving cell traces using multiple cores
+Gathering spikes...
+>>> >>> >>> Traceback (most recent call last):
+  File "main.py", line 46, in <module>
+    runSeq()
+  File "main.py", line 37, in runSeq
+    s.sim.gatherData()
+  File "sim.py", line 117, in gatherData
+    for d in gather: tmp.extend(d[k]) 
+KeyError: 'cellTraces_233'

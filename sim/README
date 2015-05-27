@@ -1,8 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 "m1" is a NEURON/Python-based model of primary motor cortex (M1)
 
+Using this modularized structure, user can select different cell types, populations, connectivities, etc. just by modifying the parameters in params.py. 
+
+An example is provided in params.py, which switches from a single Hodgkin-Huxley population, randomly connected model
+(mpiHHTut); to a multiple Izhikevich populations, yfrac-dependent connected M1 model.
+
+To test this just modify the variable simType in params.py: 
+simType = 'M1model' # 'mpiHHTut' 
+
 developed by Salvador Dura-Bernal (salvadordura@gmail.com) and Bill Lytton (billl@nuerosim.downstate.edu)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 List of files:
 

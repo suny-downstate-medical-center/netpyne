@@ -49,7 +49,7 @@ def setupRecording():
     # spike recording
     s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
-    # background inputs
+    # background inputs recording
     if p.saveBackground:
         for c in s.cells:
             s.backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
@@ -60,24 +60,10 @@ def setupRecording():
             backgroundRecorder.record(backgroundSpikevec) # Record simulation time
             s.backgroundRecorders.append(backgroundRecorder)
 
-
-
-    # ## intrinsic cell variables recording
-    # for c in s.cells: c.record()
-
-    # ## Set up LFP recording
-    # s.lfptime = [] # List of times that the LFP was recorded at
-    # s.nlfps = len(s.lfppops) # Number of distinct LFPs to calculate
-    # s.hostlfps = [] # Voltages for calculating LFP
-    # s.lfpcellids = [[] for pop in range(s.nlfps)] # Create list of lists of cell IDs
-    # for c in range(s.cellsperhost): # Loop over each cell and decide which LFP population, if any, it belongs to
-    #     gid = s.gidVec[c] # Get this cell's GID
-    #     for pop in range(s.nlfps): # Loop over each LFP population
-    #         thispop = s.cellpops[gid] # Population of this cell
-    #         if sum(s.lfppops[pop]==thispop)>0: # There's a match
-    #             s.lfpcellids[pop].append(gid) # Flag this cell as belonging to this LFP population
-
-
+    # intrinsic cell variables recording
+    if p.recordTraces:
+        for c in s.cells: 
+            c.record()
 
 ###############################################################################
 ### Run Simulation
@@ -123,7 +109,7 @@ def gatherData():
     for k,v in s.simdata.iteritems():   data[0][k] = v 
     gather=s.pc.py_alltoall(data)
     s.pc.barrier()
-    #for v in s.simdata.itervalues(): v.resize(0)
+    #for v in s.simdata.itervalues(): v.resize(0) # 
     if s.rank==0: 
         s.allsimdata = {}
         [s.allsimdata.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']] # concatenate spikes
@@ -131,8 +117,7 @@ def gatherData():
             tmp = []
             for d in gather: tmp.extend(d[k]) 
             s.allsimdata.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
-        if not s.allsimdata.has_key('run'): s.allsimdata.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
-        # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
+        if not s.allsimdata.has_key('run'): s.allsimdata.update({'run':{'recordStep':p.recordStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
         s.allsimdata.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
         gathertime = time()-gatherstart # See how long it took
@@ -157,6 +142,7 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
+        print('Saving output as %s...' % p.filename)
         # Save to dpk file
         if p.savedpk:
             import os,gzip
@@ -167,7 +153,6 @@ def saveData():
   
         # Save to mat file
         if p.savemat:
-            print('Saving output as %s...' % p.filename)
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
             savemat(p.filename, s.allsimdata)  # check if looks ok in matlab

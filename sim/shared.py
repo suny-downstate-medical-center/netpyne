@@ -29,6 +29,7 @@ nhosts = int(pc.nhost()) # Find number of hosts
 rank = int(pc.id())     # rank 0 will be the master
 
 if rank==0: 
+    print('\nSetting parameters...')
     pc.gid_clear()
 
 

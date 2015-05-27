@@ -31,6 +31,59 @@ class Cell:
         self.associateGid() # register cell for this node
 
 
+
+###############################################################################
+### HODGKIN-HUXLEY CELL CLASS
+###############################################################################
+
+class HH(Cell):
+    ''' Python class for Hodgkin-Huxley cell model'''
+
+    def make (self):
+        self.soma = h.Section(name='soma')
+        self.soma.diam = 18.8
+        self.soma.L = 18.8
+        self.soma.Ra = 123.0
+        self.soma.insert('hh')
+        self.activate()
+
+    def activate (self):
+        self.stim = h.IClamp(0.5, sec=self.soma)
+        self.stim.amp = 0.1
+        self.stim.dur = 0.1
+
+    def associateGid (self):
+        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
+        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
+        nc.threshold = p.threshold
+        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+        del nc # discard netcon
+    
+    def addBackground (self):
+        backgroundRand = h.Random()
+        backgroundRand.MCellRan4(self.gid,self.gid*2)
+        backgroundRand.negexp(1)
+        self.backgroundSource = h.NetStim() # Create a NetStim
+        self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
+        self.backgroundSource.number = p.backgroundNumber # Number of spikes
+        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
+        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
+        for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[0] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+    
+    def record (self):
+        # set up voltage recording; acc and recdict will be taken from global context
+        for k,v in p.recdict.iteritems():
+          try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+          except: print 'bad state variable pointer: ',v
+          s.simdata[(k, self.gid)] = h.Vector(p.tstop/p.recordStep+10).resize(0)
+          s.simdata[(k, self.gid)].record(ptr, p.recordStep)
+
+
+
 ###############################################################################
 ### IZHIKEVICH 2007 CELL CLASS
 ###############################################################################
@@ -94,12 +147,13 @@ class Izhi2007(Cell):
 
 
     def record(self):
-        # recvecs = [h.Vector() for q in range(s.nquantities)] # Initialize vectors
-        # recvecs[0].record(h._ref_t) # Record simulation time
-        # recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
-        # recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
-        # recvecs[3].record(s.cells[c]._ref_I) # Record cell current
-        pass
+        recvecs = [h.Vector() for q in range(4)] # Initialize vectors
+        recvecs[0].record(h._ref_t) # Record simulation time
+        recvecs[1].record(self.m._ref_V) # Record cell voltage
+        recvecs[2].record(self.m._ref_u) # Record cell recovery variable
+        recvecs[3].record(self.m._ref_I) # Record cell current
+        s.simdata[('cellTraces_%i'%self.gid)] = recvecs
+
 
     def __getstate__(self):
         ''' Removes self.m and self.dummy so can be pickled and sent via py_alltoall'''
@@ -161,60 +215,6 @@ class Izhi2007(Cell):
     def RTN(self, section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.015, b=10, c=-55, d=50, celltype=7, cellid=-1):
         cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
         return cell
-
-
-
-###############################################################################
-### HODGKIN-HUXLEY CELL CLASS
-###############################################################################
-
-class HH(Cell):
-    ''' Python class for Hodgkin-Huxley cell model'''
-
-    def make (self):
-        self.soma = h.Section(name='soma')
-        self.soma.diam = 18.8
-        self.soma.L = 18.8
-        self.soma.Ra = 123.0
-        self.soma.insert('hh')
-        self.activate()
-
-    def activate (self):
-        self.stim = h.IClamp(0.5, sec=self.soma)
-        self.stim.amp = 0.1
-        self.stim.dur = 0.1
-
-    def associateGid (self):
-        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
-        nc.threshold = p.threshold
-        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-        del nc # discard netcon
-    
-    def addBackground (self):
-        backgroundRand = h.Random()
-        backgroundRand.MCellRan4(self.gid,self.gid*2)
-        backgroundRand.negexp(1)
-        self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
-        self.backgroundSource.number = p.backgroundNumber # Number of spikes
-        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-        for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[0] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-    
-    def record (self):
-        # set up voltage recording; acc and recdict will be taken from global context
-        for k,v in s.recdict.iteritems():
-          try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-          except: print 'bad state variable pointer: ',v
-          s.simdata[(k, self.gid)] = h.Vector(h.tstop/p.Dt+10).resize(0)
-          s.simdata[(k, self.gid)].record(ptr, p.Dt)
-
-
 
 
 

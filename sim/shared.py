@@ -33,7 +33,7 @@ if rank==0:
     print('\nSetting parameters...')
 
 
-# global/shared containers
+## global/shared containers
 simdata = {}
 lastGid = 0  # keep track of las cell gid
 

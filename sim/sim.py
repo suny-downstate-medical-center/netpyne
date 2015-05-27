@@ -79,7 +79,6 @@ def runSim():
     init() # 
     #h.cvode.event(s.savestep,savenow)
     s.pc.psolve(p.tstop)
-    #if s.rank==0: print('  t = %0.1f s (%i%%; time remaining: %0.1f s)' % (h.t/1e3, int(h.t/s.duration*100), (s.duration-h.t)*(time()-runstart)/h.t))      
     if s.rank==0: 
         runtime = time()-runstart # See how long it took
         print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, p.duration/1000/runtime))

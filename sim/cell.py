@@ -174,8 +174,6 @@ class HH(Cell):
         self.stim = h.IClamp(0.5, sec=self.soma)
         self.stim.amp = 0.1
         self.stim.dur = 1
-        #randomdel.Random123(id32('randomdel'), self.gid, 0) # randomizer on a per cell basis
-        #self.stim.delay=2+randomdel.repick()
 
     def associateGid (self):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node

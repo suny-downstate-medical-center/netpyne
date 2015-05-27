@@ -75,7 +75,7 @@ class HH(Cell):
         self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
     
     def record (self):
-        # set up voltage recording; acc and recdict will be taken from global context
+        # set up voltage recording; recdict will be taken from global context
         for k,v in p.recdict.iteritems():
             try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
             except: print 'bad state variable pointer: ',v
@@ -88,7 +88,7 @@ class HH(Cell):
 ### IZHIKEVICH 2007 CELL CLASS
 ###############################################################################
 
-class Izhi2007(Cell):
+class Izhi2007a(Cell):
     """
     Python class for the different celltypes of Izhikevich neuron. 
 
@@ -147,13 +147,21 @@ class Izhi2007(Cell):
 
 
     def record(self):
-        recvecs = [h.Vector() for q in range(4)] # Initialize vectors
-        recvecs[0].record(h._ref_t) # Record simulation time
-        recvecs[1].record(self.m._ref_V) # Record cell voltage
-        recvecs[2].record(self.m._ref_u) # Record cell recovery variable
-        recvecs[3].record(self.m._ref_I) # Record cell current
-        s.simdata[('cellTraces_%i'%self.gid)] = array(recvecs)
-        s.simdataVecs.append(('cellTraces_%i'%self.gid))
+        # set up voltage recording; recdict will be taken from global context
+        for k,v in p.recdict.iteritems():
+            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+            except: print 'bad state variable pointer: ',v
+            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.tstop/p.recordStep+10).resize(0)
+            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.recordStep)
+
+
+        # recvecs = [h.Vector() for q in range(4)] # Initialize vectors
+        # recvecs[0].record(h._ref_t) # Record simulation time
+        # recvecs[1].record(self.m._ref_V) # Record cell voltage
+        # recvecs[2].record(self.m._ref_u) # Record cell recovery variable
+        # recvecs[3].record(self.m._ref_I) # Record cell current
+        # s.simdata[('cellTraces_%i'%self.gid)] = array(recvecs)
+        # s.simdataVecs.append(('cellTraces_%i'%self.gid))
 
 
     def __getstate__(self):
@@ -166,7 +174,7 @@ class Izhi2007(Cell):
     ## Create basic Izhikevich neuron with default parameters -- not to be called directly, only via one of the other functions
     def createcell(self, section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid):
         from neuron import h # Open NEURON
-        cell = h.Izhi2007(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
+        cell = h.Izhi2007a(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
         cell.C = C # Capacitance
         cell.k = k
         cell.vr = vr # Resting membrane potential
@@ -272,7 +280,7 @@ class YfracPop:
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
         # select cell class to instantiate cells based on the cellModel attribute
-        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
+        if self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
         elif self.cellModel == p.HH:    cellClass = s.HH
         else: print 'Unknown cell model'
 

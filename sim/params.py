@@ -20,7 +20,7 @@ AMPA=0; NMDA=1; GABAA=2; GABAB=3; opsin=4;  # synaptic receptors
 E=0; I=1  # excitatory vs inhibitory
 IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5; numTopClass=6  # cell/pop top class 
 L4=0; other=1; Vip=2; Nglia=3; Basket=4; Chand=5; Marti=6; L4Sst=7  # cell/pop sub class
-Izhi2007=0; Friesen=1; HH=2  # types of cell model
+Izhi2007a=0; Friesen=1; HH=2  # types of cell model
 
 
 # Simulation parameters
@@ -61,18 +61,18 @@ elif simType == 'M1model':
 	popType = 'Yfrac'
 	popParams = []
         		   # popid, cell model,     EorI, topClass, subClass, yfracRange,     density,                
-	popParams.append([0, 	Izhi2007,       E,    IT,       other,    [0.1, 0.26],    lambda x:2e3*x]) #  L2/3 IT
-	popParams.append([1,  	Izhi2007,		E,    IT,       other,    [0.26, 0.31],   lambda x:2e3*x]) #  L4 IT
-	popParams.append([2,   	Izhi2007,   	E,    IT,       other,    [0.31, 0.52],   lambda x:2e3*x]) #  L5A IT
-	popParams.append([3, 	Izhi2007,	    E,    IT,       other,    [0.52, 0.77],   lambda x:1e3*x]) #  L5B IT
-	popParams.append([4,  	Izhi2007,    	E,    PT,       other,    [0.52, 0.77],   lambda x:1e3]) #  L5B PT
-	popParams.append([5,  	Izhi2007,    	E,    IT,       other,    [0.77, 1.0],    lambda x:1e3]) #  L6 IT
-	popParams.append([6,  	Izhi2007,    	I,    Pva,      Basket,   [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Pva (FS)
-	popParams.append([7,  	Izhi2007,    	I,    Sst,      Marti,    [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Sst (LTS)
-	popParams.append([8,  	Izhi2007,    	I,    Pva,      Basket,   [0.31, 0.77],   lambda x:0.5e3]) #  L5 Pva (FS)
-	popParams.append([9,  	Izhi2007,    	I,    Sst,      Marti,    [0.31, 0.77],   lambda x:0.5e3]) #  L5 Sst (LTS)
-	popParams.append([10, 	Izhi2007,    	I,    Pva,      Basket,   [0.77, 1.0],    lambda x:0.5e3]) #  L6 Pva (FS)
-	popParams.append([11, 	Izhi2007,    	I,    Sst,      Marti,    [0.77, 1.0],    lambda x:0.5e3]) #  L6 Sst (LTS)
+	popParams.append([0, 	Izhi2007a,       E,    IT,       other,    [0.1, 0.26],    lambda x:2e3*x]) #  L2/3 IT
+	popParams.append([1,  	Izhi2007a,		E,    IT,       other,    [0.26, 0.31],   lambda x:2e3*x]) #  L4 IT
+	popParams.append([2,   	Izhi2007a,   	E,    IT,       other,    [0.31, 0.52],   lambda x:2e3*x]) #  L5A IT
+	popParams.append([3, 	Izhi2007a,	    E,    IT,       other,    [0.52, 0.77],   lambda x:1e3*x]) #  L5B IT
+	popParams.append([4,  	Izhi2007a,    	E,    PT,       other,    [0.52, 0.77],   lambda x:1e3]) #  L5B PT
+	popParams.append([5,  	Izhi2007a,    	E,    IT,       other,    [0.77, 1.0],    lambda x:1e3]) #  L6 IT
+	popParams.append([6,  	Izhi2007a,    	I,    Pva,      Basket,   [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Pva (FS)
+	popParams.append([7,  	Izhi2007a,    	I,    Sst,      Marti,    [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Sst (LTS)
+	popParams.append([8,  	Izhi2007a,    	I,    Pva,      Basket,   [0.31, 0.77],   lambda x:0.5e3]) #  L5 Pva (FS)
+	popParams.append([9,  	Izhi2007a,    	I,    Sst,      Marti,    [0.31, 0.77],   lambda x:0.5e3]) #  L5 Sst (LTS)
+	popParams.append([10, 	Izhi2007a,    	I,    Pva,      Basket,   [0.77, 1.0],    lambda x:0.5e3]) #  L6 Pva (FS)
+	popParams.append([11, 	Izhi2007a,    	I,    Sst,      Marti,    [0.77, 1.0],    lambda x:0.5e3]) #  L6 Sst (LTS)
 	
 	## Connectivity parameters
 	connType = 'yfrac'
@@ -89,6 +89,8 @@ elif simType == 'M1model':
 	connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
 	toroidal = False # Whether or not to have toroidal topology
 
+	## Recording 
+	recdict = {'V':'m._ref_V', 'u':'m._ref_u', 'I':'m._ref_I'}
 
 
 

@@ -79,12 +79,12 @@ class Izhi2007(Cell):
         del nc # discard netcon
 
     def addBackground (self):
-        self.backgroundRand = h.Random()
-        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-        self.backgroundRand.negexp(1)
+        backgroundRand = h.Random()
+        backgroundRand.MCellRan4(self.gid,self.gid*2)
+        backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
         self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
         self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
         self.backgroundSource.number = p.backgroundNumber # Number of spikes
         self.backgroundConn = h.NetCon(self.backgroundSource, self.m) # Connect this noisy input to a cell
@@ -182,7 +182,7 @@ class HH(Cell):
     def activate (self):
         self.stim = h.IClamp(0.5, sec=self.soma)
         self.stim.amp = 0.1
-        self.stim.dur = 1
+        self.stim.dur = 0.1
 
     def associateGid (self):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
@@ -197,13 +197,13 @@ class HH(Cell):
         backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
         self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
         self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
         self.backgroundSource.number = p.backgroundNumber # Number of spikes
-        self.backgroundSyn = h.ExpSyn(0,sec=cellPost.soma)
+        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
         self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
         for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[p.backgroundReceptor] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        self.backgroundConn.weight[0] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
     
     def record (self):

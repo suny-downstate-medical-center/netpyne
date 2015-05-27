@@ -41,7 +41,6 @@ def plotData():
         if p.plotweightchanges:
             print('Plotting weight changes...')
             s.analysis.plotweightchanges()
-            #analysis.plotmotorpopchanges()
         if p.plot3darch:
             print('Plotting 3d architecture...')
             s.analysis.plot3darch()
@@ -88,7 +87,7 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     scatter(s.allsimdata['spkt'],s.allsimdata['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
     ylabel('Cell ID')
-    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.backgroundweight[0],s.firingrate),fontsize=12)
+    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.backgroundWeight[0],s.firingrate),fontsize=12)
     xlim(0,p.duration)
     ylim(0,s.ncells)
     plottime = time()-plotstart # See how long it took

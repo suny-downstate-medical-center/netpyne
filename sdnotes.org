@@ -67,3 +67,4 @@ Gathering spikes...
   File "sim.py", line 117, in gatherData
     for d in gather: tmp.extend(d[k]) 
 KeyError: 'cellTraces_233'
+*** analysis.py still has many functions which havent been adapted to new structure

@@ -17,7 +17,6 @@ import hashlib
 import sim
 import network
 import analysis
-import stimuli
 from cell import BasicPop, YfracPop, Izhi2007, HH
 from conn import RandConn, YfracConn
 

@@ -31,8 +31,4 @@ List of files:
 
 - analysis.py: functions to visualize and analyse data
 
-- stimuli.py: functions and parameters for differnt types of neural stimulation (not adapted to the new model structure)
-
-- evol.py: Functions to run evolutionary algorithms (using inspyred) to optimize model parameters (not adapted to the new model structure)
-
 - izhi2007.mod: NMODL definition of Izhikevich 2007 neuron model

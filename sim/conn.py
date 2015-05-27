@@ -131,7 +131,7 @@ class YfracConn(Conn):
            distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*p.corticalthick-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
         allconnprobs = p.scaleconnprob[[x.EorI for x in cellsPre], cellPost.EorI] \
                 * exp(-distances/p.connfalloff[[x.EorI for x in  cellsPre]]) \
-                * [connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] # Calculate pairwise probabilities
+                * [cls.connProbs[x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] # Calculate pairwise probabilities
         allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
 
         seed(s.id32('%d'%(p.randseed+cellPost.gid)))  # Reset random number generator  
@@ -140,7 +140,7 @@ class YfracConn(Conn):
         preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
         delays = p.mindelay + distances[preids]/float(p.velocity) # Calculate the delays
         wt1 = p.scaleconnweight[[x.EorI for x in [cellsPre[i] for i in preids]], cellPost.EorI] # N weight scale factors
-        wt2 = [[connWeights[x.topClass][cellPost.topClass][iReceptor](x.yfrac, cellPost.yfrac) \
+        wt2 = [[cls.connWeights[x.topClass][cellPost.topClass][iReceptor](x.yfrac, cellPost.yfrac) \
             for iReceptor in range(p.numReceptors)] for x in [cellsPre[i] for i in preids]] # NxM inter-population weights
         wt3 = p.receptorweight[:] # M receptor weights
         finalweights = transpose(wt1*transpose(array(wt2)*wt3)) # Multiply out population weights with receptor weights to get NxM matrix

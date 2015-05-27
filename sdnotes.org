@@ -49,3 +49,4 @@ List of files:
 *** Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
 *** BasicPop and YfracPop
 *** if increase p.backgroundNoise > 0.0 get memory error 
+*** Find a way to save lambda funcs (can't be pickled)

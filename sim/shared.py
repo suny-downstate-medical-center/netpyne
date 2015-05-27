@@ -30,7 +30,6 @@ rank = int(pc.id())     # rank 0 will be the master
 
 if rank==0: 
     pc.gid_clear()
-    print('\nSetting parameters...')
 
 
 ## global/shared containers

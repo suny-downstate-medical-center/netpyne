@@ -6,7 +6,7 @@ Contains class 'Conn' used to instantiate connections, and contains methods to c
 Version: 2015may26 by salvadordura@gmail.com
 """
 
-from pylab import array, sqrt, exp, seed, rand, transpose
+from pylab import array, sqrt, exp, rand, seed, transpose
 import random
 from neuron import h # Import NEURON
 import params as p
@@ -39,7 +39,7 @@ class RandConn(Conn):
     @classmethod
     def connect(cls, ncell, cellPost):
         ''' Calculate connectivity as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac'''
-        seed(s.id32('%d'%(p.randseed+cellPost.gid)))  # Reset random number generator  
+        random.seed(s.id32('%d'%(p.randseed+cellPost.gid)))  # Reset random number generator  
         randPre = random.sample(xrange(ncell-1), random.randint(0, p.maxcons)) # select random subset of pre cells
         randDelays = [random.gauss(p.delaymean, p.delayvar) for i in randPre] # select random delays based on mean and var params
         cellPost.syns = [h.ExpSyn(0,sec=cellPost.soma) for i in randPre] # create syn objects for each connection (store syn objects inside post cell object)

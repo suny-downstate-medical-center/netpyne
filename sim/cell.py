@@ -161,12 +161,14 @@ class Izhi2007(Cell):
 ###############################################################################
 
 class HH(Cell):
+
     def make (self):
         self.soma = h.Section(name='soma')
         self.soma.diam = 18.8
         self.soma.L = 18.8
         self.soma.Ra = 123.0
         self.soma.insert('hh')
+        self.activate()
 
     def activate (self):
         self.stim = h.IClamp(0.5, sec=self.soma)

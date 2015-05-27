@@ -96,17 +96,16 @@ def gatherData():
         print('\nGathering spikes...')
         gatherstart = time() # See how long it takes to plot
 
-    # extend dictionary to save relevant data in each node
+    # extend simdata dictionary to save relevant data in each node
     nodePops = [[y.__dict__[x] for x in y.__dict__] for y in s.pops]
-    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['m', 'dummy', 'soma', 'syns']] for y in s.cells]
+    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['m', 'dummy', 'soma', 'syns', 'stim']] for y in s.cells]
     nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['netcon']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
     if p.savebackground:
         nodeBackground = [(s.cells[i].gid, s.backgroundspikevecs[i]) for i in range(s.cells)]
-        s.simdata.update({'background': nodeBackground})
-#     if p.savelfps:  
-#         variablestosave.extend(['s.lfptime', 's.lfps'])   
+        s.simdata.update({'background': nodeBackground})  
 
+    # gather simdata from all nodes
     data=[None]*s.nhosts # using None is important for mem and perf of pc.alltoall() when data is sparse
     data[0]={} # make a new dict
     for k,v in s.simdata.iteritems():   data[0][k] = v 
@@ -114,15 +113,15 @@ def gatherData():
     s.pc.barrier()
     #for v in s.simdata.itervalues(): v.resize(0)
     if s.rank==0: 
-        s.gdict = {}
-        [s.gdict.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']] # concatenate spikes
+        s.allsimdata = {}
+        [s.allsimdata.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']] # concatenate spikes
         for k in [x for x in gather[0].keys() if x not in ['spkt', 'spkid']]: # concatenate other dict fields
             tmp = []
             for d in gather: tmp.extend(d[k]) 
-            s.gdict.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
-        if not s.gdict.has_key('run'): s.gdict.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
+            s.allsimdata.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
+        if not s.allsimdata.has_key('run'): s.allsimdata.update({'run':{'saveStep':p.saveStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
         # 'recdict':recdict, 'Vrecc': Vrecc}}) # save major run attributes
-        s.gdict.update({'t':h.t, 'walltime':datetime.now().ctime()})
+        s.allsimdata.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
         gathertime = time()-gatherstart # See how long it took
         print('  Done; gather time = %0.1f s.' % gathertime)
@@ -130,18 +129,16 @@ def gatherData():
     ## Print statistics
     if s.rank == 0:
         print('\nAnalyzing...')
-        s.totalspikes = len(s.gdict['spkt'])    
-        s.totalconnections = len(s.conns)
-        s.ncells = len(s.gdict['cells'])
+        s.totalspikes = len(s.allsimdata['spkt'])    
+        s.totalconnections = len(s.allsimdata['conns'])
+        s.ncells = len(s.allsimdata['cells'])
 
         s.firingrate = float(s.totalspikes)/s.ncells/p.duration*1e3 # Calculate firing rate 
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
         print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, p.duration/1e3, p.scale, s.ncells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
         print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
-        # print('  Mean connection distance: %0.2f um' % mean(s.allconnections[2]))
-        # print('  Mean connection delay: %0.2f ms' % mean(s.allconnections[3]))
-
+ 
 
 ###############################################################################
 ### Save data
@@ -154,7 +151,7 @@ def saveData():
             import os,gzip
             fn=p.filename.split('.')
             file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
-            gzip.open(file, 'wb').write(pk.dumps(s.gdict)) # write compressed string
+            gzip.open(file, 'wb').write(pk.dumps(s.allsimdata)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
   
 
@@ -164,7 +161,7 @@ def saveData():
             savestart = time() # See how long it takes to save
             
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-            savemat(p.filename, s.gdict)  # check if looks ok in matlab
+            savemat(p.filename, s.allsimdata)  # check if looks ok in matlab
             
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)

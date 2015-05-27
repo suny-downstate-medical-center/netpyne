@@ -60,12 +60,12 @@ class HH(Cell):
         del nc # discard netcon
     
     def addBackground (self):
-        backgroundRand = h.Random()
-        backgroundRand.MCellRan4(self.gid,self.gid*2)
-        backgroundRand.negexp(1)
+        self.backgroundRand = h.Random()
+        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
+        self.backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
         self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
         self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
         self.backgroundSource.number = p.backgroundNumber # Number of spikes
         self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
@@ -132,12 +132,12 @@ class Izhi2007a(Cell):
         del nc # discard netcon
 
     def addBackground (self):
-        backgroundRand = h.Random()
-        backgroundRand.MCellRan4(self.gid,self.gid*2)
-        backgroundRand.negexp(1)
+        self.backgroundRand = h.Random()
+        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
+        self.backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
         self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
         self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
         self.backgroundSource.number = p.backgroundNumber # Number of spikes
         self.backgroundConn = h.NetCon(self.backgroundSource, self.m) # Connect this noisy input to a cell
@@ -243,7 +243,7 @@ class BasicPop:
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
         # select cell class to instantiate cells based on the cellModel attribute
-        if self.cellModel == p.Izhi2007:    cellClass = s.Izhi2007
+        if self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
         elif self.cellModel == p.HH:    cellClass = s.HH
         else: print 'Unknown cell model'
 

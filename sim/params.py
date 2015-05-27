@@ -33,7 +33,7 @@ randseed = 1 # Random seed to use
 
 
 # Population and conn params to reproduce different types of sim
-simType = 'M1model'#'mpiHHTut' # 'mpiHHTut' or 'M1model'
+simType = 'mpiHHTut' # 'mpiHHTut' or 'M1model'
 
 # mpiHHTut
 if simType == 'mpiHHTut':
@@ -122,7 +122,7 @@ useBackground = True # Whether or not to use background stimuli
 backgroundRate = 50 # Rate of stimuli (in Hz)
 backgroundRateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundNumber = 1e10 # Number of spikes
-backgroundNoise = 0.0 # Fractional noise
+backgroundNoise = 1 # Fractional noise
 backgroundWeight = 1.0*array([1,0.1]) # Weight for background input for E cells and I cells
 backgroundReceptor = NMDA # Which receptor to stimulate
 

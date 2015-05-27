@@ -39,7 +39,7 @@ List of files:
 *** Need to add a DEBUG mode or similar (like mpiHHTut had)
 - currently have a verbose flag, that prints some additional info
 *** Have print messages along the code, which could be made optional
-*** Structure of data saved to file
+*** Check structure of data saved to file
 - some nested lists with inhomogeneous dimensionality were converted to 'object' data types in order to be saved -- check if
   structure makes sense when reading from python/matlab
 *** Some attributes/variables of the class 'Cell' and 'Pop' are not used but still initialized to [ ]
@@ -50,7 +50,8 @@ List of files:
 *** stimuli.py not tested with this model
 - left there cause thought could be useful for future
 *** Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
-*** if increase p.backgroundNoise > 0.0 get memory error 
+*** if increase p.backgroundNoise > 0.0 get memory error - FIXED
+- had to store rnadom noise generator separately for each cell
 *** Find a way to save lambda funcs (can't be pickled)
 can use:
 >>>import inspect 
@@ -59,15 +60,5 @@ can use:
 for v in s.simdata.itervalues() -- fix error
 *** 'Cell' class record method uses eval() which is unsafe
 *** currently setup to record traces from all cells
-*** bug when saving cell traces using multiple cores
-Gathering spikes...
->>> >>> >>> Traceback (most recent call last):
-  File "main.py", line 46, in <module>
-    runSeq()
-  File "main.py", line 37, in runSeq
-    s.sim.gatherData()
-  File "sim.py", line 117, in gatherData
-    for d in gather: tmp.extend(d[k]) 
-KeyError: 'cellTraces_233'
-
 *** analysis.py still has many functions which havent been adapted to new structure
+*** Lines too long, need to split using \

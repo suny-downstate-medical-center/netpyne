@@ -1,4 +1,11 @@
 * 15may27 Modularized framework for NEURON/Python network simulations with MPI
+** Overview
+Using this modularized structure can select different cell types, populations, connectivities, etc. just by modifying the
+parameters in params.py. 
+
+An example is provided in params.py which switches from a single Hodgkin-Huxley population, randomly connected model
+(mpiHHTut); to a multiple Izhikevich populations, yfrac-dependent connected M1 model.
+
 ** README with description of the different files
 List of files:
 
@@ -26,6 +33,9 @@ List of files:
 
 ** Known issues, potential improvements, and alternative implementations
 *** Saving only happens at the end (instead of at fixed intervals)
+*** Need to add a DEBUG mode or similar (like mpiHHTut had)
+- currently have a verbose flag, that prints some additional info
+*** Have print messages along the code, which could be made optional
 *** Structure of data saved to file
 - some nested lists with inhomogeneous dimensionality were converted to 'object' data types in order to be saved -- check if
   structure makes sense when reading from python/matlab
@@ -36,3 +46,5 @@ List of files:
 - need to check pros and cons of each -- are dicts slower or have any limitations compared to lists/arrays ?
 *** stimuli.py not tested with this model
 - left there cause thought could be useful for future
+*** Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
+*** BasicPop and YfracPop

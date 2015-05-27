@@ -49,6 +49,19 @@ def setupRecording():
     # spike recording
     s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
+    # background inputs
+    if p.saveBackground:
+        for c in s.cells:
+            s.backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
+            s.backgroundRecorders=[] # And for recording spikes
+            backgroundSpikevec = h.Vector() # Initialize vector
+            s.backgroundSpikevecs.append(backgroundSpikevec) # Keep all those vectors
+            backgroundRecorder = h.NetCon(c.backgroundSource, None)
+            backgroundRecorder.record(backgroundSpikevec) # Record simulation time
+            s.backgroundRecorders.append(backgroundRecorder)
+
+
+
     # ## intrinsic cell variables recording
     # for c in s.cells: c.record()
 
@@ -97,11 +110,11 @@ def gatherData():
 
     # extend simdata dictionary to save relevant data in each node
     nodePops = [[y.__dict__[x] for x in y.__dict__] for y in s.pops]
-    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['m', 'dummy', 'soma', 'syns', 'stim']] for y in s.cells]
+    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['m', 'dummy', 'soma', 'syns', 'stim', 'backgroundSyn', 'backgroundSource', 'backgroundConn']] for y in s.cells]
     nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['netcon']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
-    if p.savebackground:
-        nodeBackground = [(s.cells[i].gid, s.backgroundspikevecs[i]) for i in range(s.cells)]
+    if p.saveBackground:
+        nodeBackground = [(s.cells[i].gid, s.backgroundSpikevecs[i]) for i in range(s.cells)]
         s.simdata.update({'background': nodeBackground})  
 
     # gather simdata from all nodes
@@ -144,7 +157,6 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
-
         # Save to dpk file
         if p.savedpk:
             import os,gzip
@@ -153,15 +165,12 @@ def saveData():
             gzip.open(file, 'wb').write(pk.dumps(s.allsimdata)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
   
-
         # Save to mat file
         if p.savemat:
             print('Saving output as %s...' % p.filename)
             savestart = time() # See how long it takes to save
-            
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
             savemat(p.filename, s.allsimdata)  # check if looks ok in matlab
-            
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)
 

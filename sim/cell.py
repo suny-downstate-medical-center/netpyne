@@ -78,20 +78,28 @@ class Izhi2007(Cell):
         s.gidDic[self.gid] = len(s.gidVec)
         del nc # discard netcon
 
+    def addBackground (self):
+        self.backgroundRand = h.Random()
+        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
+        self.backgroundRand.negexp(1)
+        self.backgroundSource = h.NetStim() # Create a NetStim
+        self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
+        self.backgroundSource.number = p.backgroundNumber # Number of spikes
+        self.backgroundConn = h.NetCon(self.backgroundSource, self.m) # Connect this noisy input to a cell
+        for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[p.backgroundReceptor] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+
+
     def record(self):
-        # set up voltage recording; acc and recdict will be taken from global context
-        # for k,v in recdict.iteritems():
-        # try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-        # except: print 'bad state variable pointer: ',v
-        # acc[(k, self.gid)] = h.Vector(h.tstop/Dt+10).resize(0)
-        # acc[(k, self.gid)].record(ptr, Dt)
         # recvecs = [h.Vector() for q in range(s.nquantities)] # Initialize vectors
         # recvecs[0].record(h._ref_t) # Record simulation time
         # recvecs[1].record(s.cells[c]._ref_V) # Record cell voltage
         # recvecs[2].record(s.cells[c]._ref_u) # Record cell recovery variable
         # recvecs[3].record(s.cells[c]._ref_I) # Record cell current
         pass
-
 
     def __getstate__(self):
         ''' Removes self.m and self.dummy so can be pickled and sent via py_alltoall'''
@@ -161,6 +169,7 @@ class Izhi2007(Cell):
 ###############################################################################
 
 class HH(Cell):
+    ''' Python class for Hodgkin-Huxley cell model'''
 
     def make (self):
         self.soma = h.Section(name='soma')
@@ -181,7 +190,22 @@ class HH(Cell):
         nc.threshold = p.threshold
         s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
         del nc # discard netcon
-
+    
+    def addBackground (self):
+        backgroundRand = h.Random()
+        backgroundRand.MCellRan4(self.gid,self.gid*2)
+        backgroundRand.negexp(1)
+        self.backgroundSource = h.NetStim() # Create a NetStim
+        self.backgroundSource.interval = p.backgroundRate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
+        self.backgroundSource.number = p.backgroundNumber # Number of spikes
+        self.backgroundSyn = h.ExpSyn(0,sec=cellPost.soma)
+        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
+        for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[p.backgroundReceptor] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+    
     def record (self):
         # set up voltage recording; acc and recdict will be taken from global context
         for k,v in s.recdict.iteritems():
@@ -193,12 +217,14 @@ class HH(Cell):
 
 
 
+
 ###############################################################################
 ### BASIC POP CLASS
 ###############################################################################
 
-# definition of python class 'Pop' used to instantiate the network population
 class BasicPop:
+    ''' Python class used to instantiate the network population '''
+
     def __init__(self,  popgid, cellModel, numCells):
         self.popgid = popgid  # id of population
         self.cellModel = cellModel  # cell model for this population
@@ -228,6 +254,8 @@ class BasicPop:
 ###############################################################################
 
 class YfracPop:
+    ''' Pop '''
+
     def __init__(self,  popgid, cellModel, EorI, topClass, subClass, yfracRange, density):
         self.popgid = popgid  # id of population
         self.EorI = EorI  # excitatory or inhibitory 

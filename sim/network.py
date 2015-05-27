@@ -90,29 +90,8 @@ def connectCells():
 ###############################################################################
 def addBackground():
     if s.rank==0: print('Creating background inputs...')
-    if p.savebackground:
-        s.backgroundspikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-        s.backgroundrecorders=[] # And for recording spikes
     for c in s.cells: 
-        gid = c.gid
-        c.backgroundrand = h.Random()
-        c.backgroundrand.MCellRan4(gid,gid*2)
-        c.backgroundrand.negexp(1)
-        c.backgroundsource = h.NetStim() # Create a NetStim
-        c.backgroundsource.interval = p.backgroundrate**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        c.backgroundsource.noiseFromRandom(c.backgroundrand) # Set it to use this random number generator
-        c.backgroundsource.noise = p.backgroundnoise # Fractional noise in timing
-        c.backgroundsource.number = p.backgroundnumber # Number of spikes
-        c.backgroundconn = h.NetCon(c.backgroundsource, c.m) # Connect this noisy input to a cell
-        for r in range(p.numReceptors): c.backgroundconn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        c.backgroundconn.weight[p.backgroundreceptor] = p.backgroundweight[c.EorI] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        c.backgroundconn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-        if p.savebackground:
-            backgroundspikevec = h.Vector() # Initialize vector
-            s.backgroundspikevecs.append(backgroundspikevec) # Keep all those vectors
-            backgroundrecorder = h.NetCon(c.backgroundsource, None)
-            backgroundrecorder.record(backgroundspikevec) # Record simulation time
-            s.backgroundrecorders.append(backgroundrecorder)
+        c.addBackground()
     print('  Number created on host %i: %i' % (s.rank, len(s.cells)))
     s.pc.barrier()
 

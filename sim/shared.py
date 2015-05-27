@@ -32,8 +32,9 @@ if rank==0:
     pc.gid_clear()
 
 
-## global/shared containers
+## global/shared containers (most are instantiated in network.py or sim.py)
 simdata = {}
+simdataVecs = ['spkt', 'spkid']
 lastGid = 0  # keep track of las cell gid
 
 ## Peform a mini-benchmarking test for future time estimates

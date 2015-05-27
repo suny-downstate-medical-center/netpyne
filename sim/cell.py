@@ -77,10 +77,10 @@ class HH(Cell):
     def record (self):
         # set up voltage recording; acc and recdict will be taken from global context
         for k,v in p.recdict.iteritems():
-          try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-          except: print 'bad state variable pointer: ',v
-          s.simdata[(k, self.gid)] = h.Vector(p.tstop/p.recordStep+10).resize(0)
-          s.simdata[(k, self.gid)].record(ptr, p.recordStep)
+            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+            except: print 'bad state variable pointer: ',v
+            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.tstop/p.recordStep+10).resize(0)
+            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.recordStep)
 
 
 
@@ -152,7 +152,8 @@ class Izhi2007(Cell):
         recvecs[1].record(self.m._ref_V) # Record cell voltage
         recvecs[2].record(self.m._ref_u) # Record cell recovery variable
         recvecs[3].record(self.m._ref_I) # Record cell current
-        s.simdata[('cellTraces_%i'%self.gid)] = recvecs
+        s.simdata[('cellTraces_%i'%self.gid)] = array(recvecs)
+        s.simdataVecs.append(('cellTraces_%i'%self.gid))
 
 
     def __getstate__(self):

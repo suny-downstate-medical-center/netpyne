@@ -33,7 +33,7 @@ randseed = 1 # Random seed to use
 
 
 # Population and conn params to reproduce different types of sim
-simType = 'mpiHHTut' # 'mpiHHTut' or 'M1model'
+simType = 'M1model'#'mpiHHTut' # 'mpiHHTut' or 'M1model'
 
 # mpiHHTut
 if simType == 'mpiHHTut':
@@ -97,10 +97,9 @@ outfilestem = '' # filestem to save fitness result
 savemat = True # Whether or not to write spikes etc. to a .mat file
 savetxt = False # save spikes and conn to txt file
 savedpk = True # save to a .dpk pickle fileto
-recordTraces = False  # whether to record cell traces or not
+recordTraces = True  # whether to record cell traces or not
 #lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
 saveBackground = False # save background (NetStims) inputs
-saveraw = False # Whether or not to record raw voltages etc.
 verbose = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 filename = '../data/m1ms'  # Set file output name
 plotraster = True # Whether or not to plot a raster

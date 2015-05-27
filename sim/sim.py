@@ -62,6 +62,8 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if p.recordTraces:
+        #s.simdataVecs.extend(p.recdict.keys())
+        for k in p.recdict.keys(): s.simdata[k] = {}
         for c in s.cells: 
             c.record()
 
@@ -112,8 +114,8 @@ def gatherData():
     #for v in s.simdata.itervalues(): v.resize(0) # 
     if s.rank==0: 
         s.allsimdata = {}
-        [s.allsimdata.update({k : concatenate([array(d[k]) for d in gather])}) for k in ['spkt', 'spkid']] # concatenate spikes
-        for k in [x for x in gather[0].keys() if x not in ['spkt', 'spkid']]: # concatenate other dict fields
+        [s.allsimdata.update({k : concatenate([array(d[k]) for d in gather])}) for k in s.simdataVecs] # concatenate spikes
+        for k in [x for x in gather[0].keys() if x not in s.simdataVecs]: # concatenate other dict fields
             tmp = []
             for d in gather: tmp.extend(d[k]) 
             s.allsimdata.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format

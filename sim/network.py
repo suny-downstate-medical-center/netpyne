@@ -11,7 +11,7 @@ Version: 2015may26 by salvadordura@gmail.com
 ### IMPORT MODULES
 ###############################################################################
 
-from neuron import h, init # Import NEURON
+from neuron import h Import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
 import pickle

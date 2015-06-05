@@ -41,12 +41,13 @@ if simType == 'mpiHHTut':
 	ncell   = 100  
 	popType = 'Basic'
 	popParams = []
-	        	# popid,    cell model, numc cells
-	popParams.append([0,	HH,		ncell]) # 
+
+	        	# popid,    cell model, num cells
+	popParams.append([0,	HH,			ncell]) # 
 	
 	## Connectivity parameters
 	connType = 'random'
-	numReceptors=1
+	numReceptors = 1
 	maxcons   = 20                   # number of connections onto each cell
 	weight    = 0.004                # weight of each connection
 	delaymean = 13.0                 # mean of delays
@@ -61,6 +62,7 @@ if simType == 'mpiHHTut':
 elif simType == 'M1model':
 	popType = 'Yfrac'
 	popParams = []
+
         		   # popid, cell model,     EorI, topClass, subClass, yfracRange,     density,                
 	popParams.append([0, 	Izhi2007b,      E,    IT,       other,    [0.1, 0.26],    lambda x:2e3*x]) #  L2/3 IT
 	popParams.append([1,  	Izhi2007b,		E,    IT,       other,    [0.26, 0.31],   lambda x:2e3*x]) #  L4 IT
@@ -77,7 +79,7 @@ elif simType == 'M1model':
 	
 	## Connectivity parameters
 	connType = 'yfrac'
-	numReceptors=1 
+	numReceptors = 1 
 	useconnprobdata = True # Whether or not to use INTF6 connectivity data
 	useconnweightdata = True # Whether or not to use INTF6 weight data
 	mindelay = 2 # Minimum connection delay, in ms

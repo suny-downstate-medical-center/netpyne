@@ -11,7 +11,7 @@ Version: 2015may26 by salvadord
 ### IMPORT MODULES AND INIT MPI
 ###############################################################################
 
-from neuron import h # Import NEURON
+from neuron import h, init # Import NEURON
 from time import time
 import hashlib
 import sim

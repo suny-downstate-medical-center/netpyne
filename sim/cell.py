@@ -276,9 +276,8 @@ class Izhi2007b(Cell):
     def __getstate__(self):
         ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['sec']  # remove fields that cannot be pickled
-        del odict['dummy']        
-        del odict['m']          
+        del odict['sec']  # remove fields that cannot be pickled       
+        del odict['m']     
         return odict
 
 

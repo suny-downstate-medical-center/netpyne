@@ -128,11 +128,11 @@ class Izhi2007a(Cell):
         # Instantiate cell model 
         self.sec = h.Section()
         if self.topClass in [p.IT, p.PT, p.CT]: # if excitatory cell use RS
-            self.m = izhType = 'RS' 
+            izhType = 'RS' 
         elif self.topClass == p.Pva: # if Pva use FS
-            self.m = sizhType = 'FS' 
+            izhType = 'FS' 
         elif self.topClass == p.Sst: # if Sst us LTS
-            self.m = izhType = 'LTS' 
+            izhType = 'LTS' 
 
         self.sec = h.Section(name='izhi2007'+izhType+str(self.gid))  # create Section
         self.m = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
@@ -338,6 +338,7 @@ class YfracPop:
     def createCells(self):
         # select cell class to instantiate cells based on the cellModel attribute
         if self.cellModel == p.Izhi2007b:    cellClass = s.Izhi2007b
+        if self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
         elif self.cellModel == p.HH:    cellClass = s.HH
         else: print 'Unknown cell model'
 

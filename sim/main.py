@@ -29,7 +29,7 @@ def runSeq():
     s.sim.readArgs()  # set parameters based on commandline arguments
     s.network.createPops()  # instantiate network populations
     s.network.createCells()  # instantiate network cells based on defined populations
-    s.network.connectCells()  
+    #s.network.connectCells()  
     s.network.addBackground()
     s.sim.setupRecording()
     s.sim.runSim()

@@ -338,7 +338,7 @@ class YfracPop:
     def createCells(self):
         # select cell class to instantiate cells based on the cellModel attribute
         if self.cellModel == p.Izhi2007b:    cellClass = s.Izhi2007b
-        if self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
+        elif self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
         elif self.cellModel == p.HH:    cellClass = s.HH
         else: print 'Unknown cell model'
 

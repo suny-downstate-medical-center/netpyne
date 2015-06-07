@@ -86,14 +86,14 @@ elif simType == 'M1model':
 	velocity = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
 	modelsize = 1000*scale # Size of network in um (~= 1000 neurons/column where column = 500um width)
 	sparseness = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
-	scaleconnweight = 0.0001*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+	scaleconnweight = 0.00025*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
 	receptorweight = [1, 1, 1, 1, 1] # Scale factors for each receptor
 	scaleconnprob = 1/scale*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
 	connfalloff = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
 	toroidal = False # Whether or not to have toroidal topology
 
 	## Recording 
-	recdict = {}#'V':'sec(0.5)._ref_v', 'u':'m._ref_u', 'I':'m._ref_i'}
+	recdict = {'V':'sec(0.5)._ref_v', 'u':'m._ref_u', 'I':'m._ref_i'}
 
 
 

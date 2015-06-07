@@ -64,18 +64,18 @@ elif simType == 'M1model':
 	popParams = []
 
         		   # popid, cell model,     EorI, topClass, subClass, yfracRange,     density,                
-	popParams.append([0, 	Izhi2007a,      E,    IT,       other,    [0.1, 0.26],    lambda x:2e3*x]) #  L2/3 IT
-	popParams.append([1,  	Izhi2007a,		E,    IT,       other,    [0.26, 0.31],   lambda x:2e3*x]) #  L4 IT
-	popParams.append([2,   	Izhi2007a,   	E,    IT,       other,    [0.31, 0.52],   lambda x:2e3*x]) #  L5A IT
-	popParams.append([3, 	Izhi2007a,	    E,    IT,       other,    [0.52, 0.77],   lambda x:1e3*x]) #  L5B IT
-	popParams.append([4,  	Izhi2007a,    	E,    PT,       other,    [0.52, 0.77],   lambda x:1e3]) #  L5B PT
-	popParams.append([5,  	Izhi2007a,    	E,    IT,       other,    [0.77, 1.0],    lambda x:1e3]) #  L6 IT
-	popParams.append([6,  	Izhi2007a,    	I,    Pva,      Basket,   [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Pva (FS)
-	popParams.append([7,  	Izhi2007a,    	I,    Sst,      Marti,    [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Sst (LTS)
-	popParams.append([8,  	Izhi2007a,    	I,    Pva,      Basket,   [0.31, 0.77],   lambda x:0.5e3]) #  L5 Pva (FS)
-	popParams.append([9,  	Izhi2007a,    	I,    Sst,      Marti,    [0.31, 0.77],   lambda x:0.5e3]) #  L5 Sst (LTS)
-	popParams.append([10, 	Izhi2007a,    	I,    Pva,      Basket,   [0.77, 1.0],    lambda x:0.5e3]) #  L6 Pva (FS)
-	popParams.append([11, 	Izhi2007a,    	I,    Sst,      Marti,    [0.77, 1.0],    lambda x:0.5e3]) #  L6 Sst (LTS)
+	popParams.append([0, 	Izhi2007b,      E,    IT,       other,    [0.1, 0.26],    lambda x:2e3*x]) #  L2/3 IT
+	popParams.append([1,  	Izhi2007b,		E,    IT,       other,    [0.26, 0.31],   lambda x:2e3*x]) #  L4 IT
+	popParams.append([2,   	Izhi2007b,   	E,    IT,       other,    [0.31, 0.52],   lambda x:2e3*x]) #  L5A IT
+	popParams.append([3, 	Izhi2007b,	    E,    IT,       other,    [0.52, 0.77],   lambda x:1e3*x]) #  L5B IT
+	popParams.append([4,  	Izhi2007b,    	E,    PT,       other,    [0.52, 0.77],   lambda x:1e3]) #  L5B PT
+	popParams.append([5,  	Izhi2007b,    	E,    IT,       other,    [0.77, 1.0],    lambda x:1e3]) #  L6 IT
+	popParams.append([6,  	Izhi2007b,    	I,    Pva,      Basket,   [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Pva (FS)
+	popParams.append([7,  	Izhi2007b,    	I,    Sst,      Marti,    [0.1, 0.31],    lambda x:0.5e3]) #  L2/3 Sst (LTS)
+	popParams.append([8,  	Izhi2007b,    	I,    Pva,      Basket,   [0.31, 0.77],   lambda x:0.5e3]) #  L5 Pva (FS)
+	popParams.append([9,  	Izhi2007b,    	I,    Sst,      Marti,    [0.31, 0.77],   lambda x:0.5e3]) #  L5 Sst (LTS)
+	popParams.append([10, 	Izhi2007b,    	I,    Pva,      Basket,   [0.77, 1.0],    lambda x:0.5e3]) #  L6 Pva (FS)
+	popParams.append([11, 	Izhi2007b,    	I,    Sst,      Marti,    [0.77, 1.0],    lambda x:0.5e3]) #  L6 Sst (LTS)
 	
 	## Connectivity parameters
 	connType = 'yfrac'
@@ -122,7 +122,7 @@ corticalthick = 1740 # rename to corticalThick
 
 ## Background input parameters
 useBackground = True # Whether or not to use background stimuli
-backgroundRate = 1 # Rate of stimuli (in Hz)
+backgroundRate = 5 # Rate of stimuli (in Hz)
 backgroundRateMin = 0.1 # Rate of stimuli (in Hz)
 backgroundNumber = 1e10 # Number of spikes
 backgroundNoise = 1 # Fractional noise

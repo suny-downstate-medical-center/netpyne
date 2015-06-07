@@ -14,7 +14,7 @@ from datetime import datetime
 import pickle
 import cPickle as pk
 import itertools
-from neuron import h, init # Import NEURON
+from neuron import h, gui, init # Import NEURON
 import params as p
 import shared as s
 
@@ -98,7 +98,7 @@ def gatherData():
 
     # extend simdata dictionary to save relevant data in each node
     nodePops = [[y.__dict__[x] for x in y.__dict__ if not x in ['density']] for y in s.pops]
-    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['dummy', 'soma', 'syns', 'stim', 'backgroundSyn', 'backgroundSource', 'backgroundConn', 'backgroundRand']] for y in s.cells]
+    nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['dummy', 'sec', 'm', 'syns', 'stim', 'backgroundSyn', 'backgroundSource', 'backgroundConn', 'backgroundRand']] for y in s.cells]
     nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['netcon', 'connWeights', 'connProbs']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
     if p.saveBackground:

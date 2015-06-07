@@ -144,7 +144,8 @@ class YfracConn(Conn):
             for iReceptor in range(p.numReceptors)] for x in [cellsPre[i] for i in preids]] # NxM inter-population weights
         wt3 = p.receptorweight[:] # M receptor weights
         finalweights = transpose(wt1*transpose(array(wt2)*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
+        cellPost.syns = [h.ExpSyn(0,sec=cellPost.sec) for i in preids] # create syn objects for each connection (store syn objects inside post cell object)
         # create list of Conn objects
-        newConns = [YfracConn(preGid=preids[i], postGid=cellPost.gid, targetObj = cellPost.soma, delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
+        newConns = [YfracConn(preGid=preids[i], postGid=cellPost.gid, targetObj = cellPost.syns[i], delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
         return newConns
 

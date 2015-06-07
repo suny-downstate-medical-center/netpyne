@@ -36,6 +36,7 @@ if rank==0:
 simdata = {}
 simdataVecs = ['spkt', 'spkid']
 lastGid = 0  # keep track of las cell gid
+fih = []  # list of func init handlers
 
 ## Peform a mini-benchmarking test for future time estimates
 if rank==0:

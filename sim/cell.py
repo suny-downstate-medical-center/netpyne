@@ -6,7 +6,8 @@ Contains cell and population classes
 Version: 2015may26 by salvadordura@gmail.com
 """
 
-from pylab import arange, seed, rand, array, collections
+from pylab import arange, seed, rand, array
+import collections
 from neuron import h # Import NEURON
 import params as p
 import shared as s
@@ -112,19 +113,33 @@ class Izhi2007a(Cell):
         7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
     """
 
+    type2007 = collections.OrderedDict([
+      #              C    k     vr  vt vpeak   a      b   c    d  celltype
+      ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
+      ('IB',        (150, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
+      ('CH',        (50,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
+      ('LTS',       (100, 1.0,  -56, -42, 40, 0.03,   8, -53,   20,   4)),
+      ('FS',        (20,  1.0,  -55, -40, 25, 0.2,   -2, -45,  -55,   5)),
+      ('TC',        (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
+      ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
+
+
     def make (self):
         # Instantiate cell model 
-        self.dummy = h.Section()
+        self.sec = h.Section()
         if self.topClass in [p.IT, p.PT, p.CT]: # if excitatory cell use RS
-            self.soma = self.RS(self.dummy, cellid=self.gid)
+            self.m = izhType = 'RS' 
         elif self.topClass == p.Pva: # if Pva use FS
-            self.soma = self.FS(self.dummy, cellid=self.gid)
+            self.m = sizhType = 'FS' 
         elif self.topClass == p.Sst: # if Sst us LTS
-            self.soma = self.LTS(self.dummy, cellid=self.gid)
+            self.m = izhType = 'LTS' 
+
+        self.sec = h.Section(name='izhi2007'+izhType+str(self.gid))  # create Section
+        self.m = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
 
     def associateGid (self, threshold = 10.0):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.soma, None) 
+        nc = h.NetCon(self.m, None) 
         nc.threshold = threshold
         s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
         s.gidVec.append(self.gid) # index = local id; value = global id
@@ -158,64 +173,9 @@ class Izhi2007a(Cell):
     def __getstate__(self):
         ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['soma']  # remove fields that cannot be pickled
-        del odict['dummy']              
+        del odict['m']  # remove fields that cannot be pickled
+        del odict['sec']              
         return odict
-
-    ## Create basic Izhikevich neuron with default parameters -- not to be called directly, only via one of the other functions
-    def createcell(self, section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid):
-        from neuron import h # Open NEURON
-        cell = h.Izhi2007a(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
-        cell.C = C # Capacitance
-        cell.k = k
-        cell.vr = vr # Resting membrane potential
-        cell.vt = vt # Membrane threhsold
-        cell.vpeak = vpeak # Peak voltage
-        cell.a = a
-        cell.b = b
-        cell.c = c
-        cell.d = d
-        cell.celltype = celltype # Set cell celltype (used for setting celltype-specific dynamics)
-        cell.cellid = cellid # Cell ID for keeping track which cell this is
-        cell.t0 = .0
-        return cell
-
-    ## Cell types based on Izhikevich, 2007 book
-    ## Layer 5 regular spiking (RS) pyramidal cell (fig 8.12 from 2007 book)
-    def RS(self, section, C=100, k=0.7, vr=-60, vt=-40, vpeak=35, a=0.03, b=-2, c=-50, d=100, celltype=1, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## Layer 5 intrinsically bursting (IB) cell (fig 8.19 from 2007 book)
-    def IB(self, section, C=150, k=1.2, vr=-75, vt=-45, vpeak=50, a=0.01, b=5, c=-56, d=130, celltype=2, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## Cat primary visual cortex chattering (CH) cell (fig8.23 from 2007 book)
-    def CH(self, section, C=50, k=1.5, vr=-60, vt=-40, vpeak=25, a=0.03, b=1, c=-40, d=150, celltype=3, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## Rat barrel cortex Low-threshold  spiking (LTS) interneuron (fig8.25 from 2007 book)
-    def LTS(self, section, C=100, k=1, vr=-56, vt=-42, vpeak=40, a=0.03, b=8, c=-53, d=20, celltype=4, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## layer 5 rat visual cortex fast-spiking (FS) interneuron (fig8.27 from 2007 book)
-    def FS(self, section, C=20, k=1, vr=-55, vt=-40, vpeak=25, a=0.2, b=-2, c=-45, d=-55, celltype=5, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-    def TC(self, section, C=200, k=1.6, vr=-60, vt=-50, vpeak=35, a=0.01, b=15, c=-60, d=10, celltype=6, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
-    ## Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-    def RTN(self, section, C=40, k=0.25, vr=-65, vt=-45, vpeak=0, a=0.015, b=10, c=-55, d=50, celltype=7, cellid=-1):
-        cell = self.createcell(section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid)
-        return cell
-
 
 
 ###############################################################################
@@ -267,21 +227,26 @@ class Izhi2007b(Cell):
 
         self.sec = h.Section(name='izhi2007'+izhType+str(self.gid))  # create Section
         self.sec.L, self.sec.diam = 6.3, 5  # empirically tuned L and diam 
-        self.soma = h.Izhi2007b(0.5, sec=self.sec)  # create point process object  
+        self.m = h.Izhi2007b(0.5, sec=self.sec)  # create point process object  
         self.vinit = -60  # set vinit
-        self.soma.C, self.soma.k, self.soma.vr, self.soma.vt, self.soma.vpeak, self.soma.a, \
-         self.soma.b, self.soma.c, self.soma.d, self.soma.celltype = self.type2007[izhType]
-        self.soma.cellid   = self.cellid # Cell ID for keeping track which cell this is
+        self.m.C, self.m.k, self.m.vr, self.m.vt, self.m.vpeak, self.m.a, \
+         self.m.b, self.m.c, self.m.d, self.m.celltype = self.type2007[izhType]
+        self.m.cellid = self.gid # Cell ID for keeping track which cell this is
+        s.fih.append(s.h.FInitializeHandler(self.init))
+
+    def init(self): 
+        self.sec.v=-60
 
 
     def associateGid (self, threshold = 10.0):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.soma, None) 
+        nc = h.NetCon(self.sec(0.5)._ref_v, None,sec=self.sec)
         nc.threshold = threshold
         s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
         s.gidVec.append(self.gid) # index = local id; value = global id
         s.gidDic[self.gid] = len(s.gidVec)
         del nc # discard netcon
+
 
     def addBackground (self):
         self.backgroundRand = h.Random()
@@ -292,7 +257,8 @@ class Izhi2007b(Cell):
         self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
         self.backgroundSource.noise = p.backgroundNoise # Fractional noise in timing
         self.backgroundSource.number = p.backgroundNumber # Number of spikes
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.soma) # Connect this noisy input to a cell
+        self.backgroundSyn = h.ExpSyn(0,sec=self.sec)
+        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
         for r in range(p.numReceptors): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
         self.backgroundConn.weight[p.backgroundReceptor] = p.backgroundWeight[0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
@@ -310,26 +276,10 @@ class Izhi2007b(Cell):
     def __getstate__(self):
         ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['soma']  # remove fields that cannot be pickled
-        del odict['dummy']              
+        del odict['sec']  # remove fields that cannot be pickled
+        del odict['dummy']        
+        del odict['m']          
         return odict
-
-    ## Create basic Izhikevich neuron with default parameters -- not to be called directly, only via one of the other functions
-    def createcell(self, section, C, k, vr, vt, vpeak, a, b, c, d, celltype, cellid):
-        from neuron import h # Open NEURON
-        cell = h.Izhi2007b(0,sec=section) # Create a new Izhikevich neuron at location 0 (doesn't matter where) in h.Section() "section"
-        cell.C = C # Capacitance
-        cell.k = k
-        cell.vr = vr # Resting membrane potential
-        cell.vt = vt # Membrane threhsold
-        cell.vpeak = vpeak # Peak voltage
-        cell.a = a
-        cell.b = b
-        cell.c = c
-        cell.d = d
-        cell.celltype = celltype # Set cell celltype (used for setting celltype-specific dynamics)
-        cell.cellid = cellid # Cell ID for keeping track which cell this is
-        return cell
 
 
 

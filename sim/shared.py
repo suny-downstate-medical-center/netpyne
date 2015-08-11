@@ -37,14 +37,3 @@ simdata = {}
 simdataVecs = ['spkt', 'spkid']
 lastGid = 0  # keep track of las cell gid
 fih = []  # list of func init handlers
-
-## Peform a mini-benchmarking test for future time estimates
-if rank==0:
-    print('Benchmarking...')
-    benchstart = time()
-    for i in range(int(1.36e6)): tmp=0 # Number selected to take 0.1 s on my machine
-    performance = 1/(10*(time() - benchstart))*100
-    print('  Running at %0.0f%% default speed (%0.0f%% total)' % (performance, performance*nhosts))
-
-
-

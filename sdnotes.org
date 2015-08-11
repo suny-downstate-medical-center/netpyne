@@ -38,27 +38,61 @@ List of files:
 *** Saving only happens at the end (instead of at fixed intervals)
 *** Need to add a DEBUG mode or similar (like mpiHHTut had)
 - currently have a verbose flag, that prints some additional info
-*** Have print messages along the code, which could be made optional
+- also have print messages along the code, which could be made optional
 *** Check structure of data saved to file
 - some nested lists with inhomogeneous dimensionality were converted to 'object' data types in order to be saved -- check if
   structure makes sense when reading from python/matlab
-*** Some attributes/variables of the class 'Cell' and 'Pop' are not used but still initialized to [ ]
+*** FIXED - Some attributes/variables of the class 'Cell' and 'Pop' are not used but still initialized to [ ]
 - maybe can find alternative using different constructors for different cell types
-*** Labels (eg. AMPA, IT, HH,...) are defined by assigning numeric values to variables
+- fixed by using dictionary of tags - flexible for eahc type
+*** FIXED - Labels (eg. AMPA, IT, HH,...) are defined by assigning numeric values to variables
 - can use dictionaries instead
 - need to check pros and cons of each -- are dicts slower or have any limitations compared to lists/arrays ?
+- changed to using dictionaries
 *** stimuli.py not tested with this model
 - left there cause thought could be useful for future
+*** analysis.py still has many functions which havent been adapted to new structure
 *** Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
-*** if increase p.backgroundNoise > 0.0 get memory error - FIXED
+*** Lines too long, need to split using \
+*** FIXED - if increase p.backgroundNoise > 0.0 get memory error 
 - had to store rnadom noise generator separately for each cell
-*** Find a way to save lambda funcs (can't be pickled)
+*** FIXED - Find a way to save lambda funcs (can't be pickled)
 can use:
 >>>import inspect 
 >>>inspect.getsource(myfunc)
-*** Clearing vector in simdata now gives error because also has python variables
+*** FIXED - Clearing vector in simdata now gives error because also has python variables
 for v in s.simdata.itervalues() -- fix error
+separated vectors
 *** 'Cell' class record method uses eval() which is unsafe
-*** currently setup to record traces from all cells
-*** analysis.py still has many functions which havent been adapted to new structure
-*** Lines too long, need to split using \
+*** FIXED - currently setup to record traces from all cells
+*** FIXED - bug when saving cell traces using multiple cores 
+Gathering spikes...
+>>> >>> >>> Traceback (most recent call last):
+  File "main.py", line 46, in <module>
+    runSeq()
+  File "main.py", line 37, in runSeq
+    s.sim.gatherData()
+  File "sim.py", line 117, in gatherData
+    for d in gather: tmp.extend(d[k]) 
+KeyError: 'cellTraces_233'
+
+- now saved using different structure 
+- had to remove hoc objects that are not pickable
+
+
+*** Load/save net+sim parameters from file
+- load net and sim parameters file from mat?
+- have different .py file to generate the params files
+
+within params.py - have option to load from file, or set params and save to 2 files net and sim.mat
+- maybe functions in sim.py? can be called from params?
+*** Store net and sim params in dictionaries inside params.py
+eg. p.net['ncells']
+- facilitates saving to file (prev point)
+- can use if key in dict:
+*** Use dict of tags/attributes for pop params and for cells
+eg. p.net['popParams'][i]['cellModel']
+- can use if key in dict:
+*** Define conn rules based on pair of tag/value for pre and post
+eg. use tuple key: connProbs['name','IT','name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
+or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda x,y: 0.1*x+0.01/y) 

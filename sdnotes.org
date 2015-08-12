@@ -9,6 +9,10 @@ An example is provided in params.py which switches from a single Hodgkin-Huxley 
 To test this just modify the variable simType in params.py: 
 simType = 'M1model' # 'mpiHHTut' 
 
+*** Bill's description of what this repo should be
+we should try to make this our main organizational code that can spin off multiple projects? -- would like a clean code center-org so that not so painful as it has been with our prior code base (which btw was all my fault and not sam's -- he inherited from me)
+then any pushes back to this main center would have to be agreed by curator (you) and would generally involve just some small fix to a single file
+
 ** README with description of the different files
 List of files:
 
@@ -96,3 +100,5 @@ eg. p.net['popParams'][i]['cellModel']
 *** Define conn rules based on pair of tag/value for pre and post
 eg. use tuple key: connProbs['name','IT','name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
 or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
+*** Add $Id$ hg info
+*** Rename main.py with init.py

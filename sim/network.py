@@ -27,10 +27,10 @@ warnings.filterwarnings('error')
 ### Instantiate network populations (objects of class 'Pop')
 ###############################################################################
 def createPops():
-    if p.popType == 'Basic': popClass = s.BasicPop
-    elif p.popType == 'Yfrac': popClass = s.YfracPop
+    if p.net['popType'] == 'Basic': popClass = s.BasicPop
+    elif p.net['popType'] == 'Yfrac': popClass = s.YfracPop
     s.pops = []  # list to store populations ('Pop' objects)
-    for popParam in p.popParams: # for each set of population parameters 
+    for popParam in p.net['popParams']: # for each set of population parameters 
         s.pops.append(popClass(*popParam))  # instantiate a new object of class Pop and add to list pop
 
 
@@ -39,7 +39,7 @@ def createPops():
 ###############################################################################
 def createCells():
     s.pc.barrier()
-    if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),p.duration/1000.,s.nhosts)) 
+    if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(s.pops),p.sim['duration']/1000.,s.nhosts)) 
     s.gidVec=[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.cells = []
@@ -47,7 +47,7 @@ def createCells():
         newCells = ipop.createCells() # create cells for this pop using Pop method
         s.cells.extend(newCells)  # add to list of cells
         s.pc.barrier()
-        if s.rank==0 and p.verbose: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
+        if s.rank==0 and p.sim['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
     s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
     
@@ -59,11 +59,11 @@ def connectCells():
     # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
     if s.rank==0: print('Making connections...'); connstart = time()
 
-    if p.connType == 'random':  # if random connectivity
+    if p.net['connType'] == 'random':  # if random connectivity
         connClass = s.RandConn  # select ConnRand class
-        arg = p.ncell  # pass as argument num of presyn cell
+        arg = p.net['ncell']  # pass as argument num of presyn cell
     
-    elif p.connType == 'yfrac':  # if yfrac-based connectivity
+    elif p.net['connType'] == 'yfrac':  # if yfrac-based connectivity
         connClass = s.YfracConn  # select ConnYfrac class
         data = [s.cells]*s.nhosts  # send cells data to other nodes
         gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)

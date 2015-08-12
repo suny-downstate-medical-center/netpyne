@@ -94,6 +94,11 @@ within params.py - have option to load from file, or set params and save to 2 fi
 eg. p.net['ncells']
 - facilitates saving to file (prev point)
 - can use if key in dict:
+
+- use regexp in submlime text to replace in all files:
+Find What: p\.(\w+)
+Replace With: p\.sim['$1']
+
 *** Use dict of tags/attributes for pop params and for cells
 eg. p.net['popParams'][i]['cellModel']
 - can use if key in dict:
@@ -106,3 +111,4 @@ or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda 
 - bill wanted to do because cliff and I add last update and author info to files -- which is never updated correctly
 - checked other github repos and they don't have it - just eg. Contributors
 *** FIXED - Rename main.py with init.py
+*** Remove popType and connType variables - infer from dict keys

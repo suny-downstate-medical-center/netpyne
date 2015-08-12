@@ -26,22 +26,22 @@ import shared as s
 def plotData():
     ## Plotting
     if s.rank == 0:
-        if p.plotraster: # Whether or not to plot
-            if (s.totalspikes>p.maxspikestoplot): 
+        if p.sim['plotraster']: # Whether or not to plot
+            if (s.totalspikes>p.sim['maxspikestoplot']): 
                 print('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
                 s.analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
-        if p.plotconn:
+        if p.sim['plotconn']:
             print('Plotting connectivity matrix...')
             s.analysis.plotconn()
-        if p.plotpsd:
+        if p.sim['plotpsd']:
             print('Plotting power spectral density')
             s.analysis.plotpsd()
-        if p.plotweightchanges:
+        if p.sim['plotweightchanges']:
             print('Plotting weight changes...')
             s.analysis.plotweightchanges()
-        if p.plot3darch:
+        if p.sim['plot3darch']:
             print('Plotting 3d architecture...')
             s.analysis.plot3darch()
 
@@ -87,8 +87,8 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     scatter(s.allsimdata['spkt'],s.allsimdata['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
     ylabel('Cell ID')
-    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.backgroundWeight[0],s.firingrate),fontsize=12)
-    xlim(0,p.duration)
+    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.sim['backgroundWeight'][0],s.firingrate),fontsize=12)
+    xlim(0,p.net['duration'])
     ylim(0,s.ncells)
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)

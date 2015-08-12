@@ -4,7 +4,7 @@ shared.py
 Contains all the model shared variables and modules (except params.py). It is imported as "s" from all other file, 
 so that any variable or module can be referenced from any file using s.varName
 
-Version: 2015may26 by salvadord
+Contributors: salvadordura@gmail.com
 """
 
 ###############################################################################

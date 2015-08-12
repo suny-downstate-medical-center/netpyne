@@ -100,5 +100,9 @@ eg. p.net['popParams'][i]['cellModel']
 *** Define conn rules based on pair of tag/value for pre and post
 eg. use tuple key: connProbs['name','IT','name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
 or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
-*** Add $Id$ hg info
-*** Rename main.py with init.py
+*** FIXED - Add $Id$ hg info
+- can do with https://mercurial.selenic.com/wiki/KeywordExtension
+- but not recommended 
+- bill wanted to do because cliff and I add last update and author info to files -- which is never updated correctly
+- checked other github repos and they don't have it - just eg. Contributors
+*** FIXED - Rename main.py with init.py

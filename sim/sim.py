@@ -4,7 +4,7 @@ sim.py
 list of model objects (paramaters and variables) to be shared across modules
 Can modified manually or via arguments from main.py
 
-Version: 2015may26 by salvadordura@gmail.com
+Contributors: salvadordura@gmail.com
 """
 
 import sys

@@ -3,7 +3,7 @@ cell.py
 
 Contains class 'Conn' used to instantiate connections, and contains methods to connect cells (eg. random, yfrac-based)
 
-Version: 2015may26 by salvadordura@gmail.com
+Contributors: salvadordura@gmail.com
 """
 
 from pylab import array, sqrt, exp, rand, seed, transpose

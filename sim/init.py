@@ -11,7 +11,7 @@ Usage:
 MPI usage:
     mpiexec -n 4 nrniv -python -mpi main.py
 
-2015may22 salvadordura@gmail.com
+Contributors: salvadordura@gmail.com
 """
 
 from time import time

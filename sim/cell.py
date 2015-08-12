@@ -3,7 +3,7 @@ cell.py
 
 Contains cell and population classes 
 
-Version: 2015may26 by salvadordura@gmail.com
+Contributors: salvadordura@gmail.com
 """
 
 from pylab import arange, seed, rand, array

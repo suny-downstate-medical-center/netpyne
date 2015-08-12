@@ -3,7 +3,7 @@ analysis.py
 
 Functions to plot and analyse results
 
-Version: 2015may26 by salvadordura@gmail.com
+Contributors: salvadordura@gmail.com
 """
 
 from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap, psd

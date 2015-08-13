@@ -50,7 +50,7 @@ def setupRecording():
     s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
     # background inputs recording
-    if p.saveBackground:
+    if p.sim['saveBackground']:
         for c in s.cells:
             s.backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
             s.backgroundRecorders=[] # And for recording spikes
@@ -61,9 +61,9 @@ def setupRecording():
             s.backgroundRecorders.append(backgroundRecorder)
 
     # intrinsic cell variables recording
-    if p.recordTraces:
-        #s.simdataVecs.extend(p.recdict.keys())
-        for k in p.recdict.keys(): s.simdata[k] = {}
+    if p.sim['recordTraces']:
+        #s.simdataVecs.extend(p.sim['recdict'].keys())
+        for k in p.sim['recdict'].keys(): s.simdata[k] = {}
         for c in s.cells: 
             c.record()
 
@@ -79,10 +79,10 @@ def runSim():
     if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     init() # 
     #h.cvode.event(s.savestep,savenow)
-    s.pc.psolve(p.tstop)
+    s.pc.psolve(p.sim['tstop'])
     if s.rank==0: 
         runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, p.duration/1000/runtime))
+        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, p.sim['duration']/1000/runtime))
     s.pc.barrier() # Wait for all hosts to get to this point
 
 
@@ -101,7 +101,7 @@ def gatherData():
     nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['soma', 'stim', 'sec', 'm', 'syns', 'backgroundSyn', 'backgroundSource', 'backgroundConn', 'backgroundRand']] for y in s.cells]
     nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['netcon', 'connWeights', 'connProbs']] for y in s.conns]
     s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
-    if p.saveBackground:
+    if p.sim['saveBackground']:
         nodeBackground = [(s.cells[i].gid, s.backgroundSpikevecs[i]) for i in range(s.cells)]
         s.simdata.update({'background': nodeBackground})  
 
@@ -119,7 +119,7 @@ def gatherData():
             tmp = []
             for d in gather: tmp.extend(d[k]) 
             s.allsimdata.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
-        if not s.allsimdata.has_key('run'): s.allsimdata.update({'run':{'recordStep':p.recordStep, 'dt':h.dt, 'randseed':p.randseed, 'duration':p.duration}}) # add run params
+        if not s.allsimdata.has_key('run'): s.allsimdata.update({'run':{'recordStep':p.sim['recordStep'], 'dt':h.dt, 'randseed':p.sim['randseed'], 'duration':p.sim['duration']}}) # add run params
         s.allsimdata.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
         gathertime = time()-gatherstart # See how long it took
@@ -132,9 +132,9 @@ def gatherData():
         s.totalconnections = len(s.allsimdata['conns'])
         s.ncells = len(s.allsimdata['cells'])
 
-        s.firingrate = float(s.totalspikes)/s.ncells/p.duration*1e3 # Calculate firing rate 
+        s.firingrate = float(s.totalspikes)/s.ncells/p.sim['duration']*1e3 # Calculate firing rate 
         s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
-        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, p.duration/1e3, p.scale, s.ncells, s.nhosts))
+        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, p.sim['duration']/1e3, p.net['scale'], s.ncells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
         print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
  
@@ -144,20 +144,20 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
-        print('Saving output as %s...' % p.filename)
+        print('Saving output as %s...' % p.sim['filename'])
         # Save to dpk file
-        if p.savedpk:
+        if p.sim['savedpk']:
             import os,gzip
-            fn=p.filename.split('.')
+            fn=p.sim['filename'].split('.')
             file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(file, 'wb').write(pk.dumps(s.allsimdata)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
   
         # Save to mat file
-        if p.savemat:
+        if p.sim['savemat']:
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-            savemat(p.filename, s.allsimdata)  # check if looks ok in matlab
+            savemat(p.sim['filename'], s.allsimdata)  # check if looks ok in matlab
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)
 

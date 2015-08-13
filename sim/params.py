@@ -48,8 +48,8 @@ else:  # set network params manually
 
 
     # simType is used to select between the population and conn params for different types of models (simple HH vs M1 izhikevich)
-    #simType = 'mpiHHTut' # 'mpiHHTut' or 'M1model'
-    simType = 'M1model' # 'mpiHHTut' or 'M1model'
+    simType = 'mpiHHTut' # 'mpiHHTut' or 'M1model'
+    #simType = 'M1model' # 'mpiHHTut' or 'M1model'
 
 
     # mpiHHTut

@@ -87,8 +87,8 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     scatter(s.allsimdata['spkt'],s.allsimdata['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
     ylabel('Cell ID')
-    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.sim['backgroundWeight'][0],s.firingrate),fontsize=12)
-    xlim(0,p.net['duration'])
+    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.net['backgroundWeight'][0],s.firingrate),fontsize=12)
+    xlim(0,p.sim['duration'])
     ylim(0,s.ncells)
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)

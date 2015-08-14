@@ -39,37 +39,37 @@ List of files:
 - evol.py: Functions to run evolutionary algorithms (using inspyred) to optimize model parameters
 
 ** Known issues, potential improvements, and alternative implementations
-*** Saving only happens at the end (instead of at fixed intervals)
-*** Need to add a DEBUG mode or similar (like mpiHHTut had)
+*** TODO - Saving only happens at the end (instead of at fixed intervals)
+*** TODO - Need to add a DEBUG mode or similar (like mpiHHTut had)
 - currently have a verbose flag, that prints some additional info
 - also have print messages along the code, which could be made optional
-*** Check structure of data saved to file
+*** TODO - Check structure of data saved to file
 - some nested lists with inhomogeneous dimensionality were converted to 'object' data types in order to be saved -- check if
   structure makes sense when reading from python/matlab
-*** FIXED - Some attributes/variables of the class 'Cell' and 'Pop' are not used but still initialized to [ ]
+*** DONE - Some attributes/variables of the class 'Cell' and 'Pop' are not used but still initialized to [ ]
 - maybe can find alternative using different constructors for different cell types
 - fixed by using dictionary of tags - flexible for eahc type
-*** FIXED - Labels (eg. AMPA, IT, HH,...) are defined by assigning numeric values to variables
+*** DONE - Labels (eg. AMPA, IT, HH,...) are defined by assigning numeric values to variables
 - can use dictionaries instead
 - need to check pros and cons of each -- are dicts slower or have any limitations compared to lists/arrays ?
 - changed to using dictionaries
-*** stimuli.py not tested with this model
+*** TODO - stimuli.py not tested with this model
 - left there cause thought could be useful for future
-*** analysis.py still has many functions which havent been adapted to new structure
-*** Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
-*** Lines too long, need to split using \
-*** FIXED - if increase p.backgroundNoise > 0.0 get memory error 
+*** TODO - analysis.py still has many functions which havent been adapted to new structure
+*** TODO - Some variables inherited from cliff still have too long names, eg. backgroundSpikevec
+*** TODO - Lines too long, need to split using \
+*** DONE - if increase p.backgroundNoise > 0.0 get memory error 
 - had to store rnadom noise generator separately for each cell
-*** FIXED - Find a way to save lambda funcs (can't be pickled)
+*** DONE - Find a way to save lambda funcs (can't be pickled)
 can use:
 >>>import inspect 
 >>>inspect.getsource(myfunc)
-*** FIXED - Clearing vector in simdata now gives error because also has python variables
+*** DONE - Clearing vector in simdata now gives error because also has python variables
 for v in s.simdata.itervalues() -- fix error
 separated vectors
-*** 'Cell' class record method uses eval() which is unsafe
-*** FIXED - currently setup to record traces from all cells
-*** FIXED - bug when saving cell traces using multiple cores 
+*** TODO - 'Cell' class record method uses eval() which is unsafe
+*** DONE - currently setup to record traces from all cells
+*** DONE - bug when saving cell traces using multiple cores 
 Gathering spikes...
 >>> >>> >>> Traceback (most recent call last):
   File "main.py", line 46, in <module>
@@ -84,13 +84,13 @@ KeyError: 'cellTraces_233'
 - had to remove hoc objects that are not pickable
 
 
-*** Load/save net+sim parameters from file
+*** TODO - Load/save net+sim parameters from file
 - load net and sim parameters file from mat?
 - have different .py file to generate the params files
 
 within params.py - have option to load from file, or set params and save to 2 files net and sim.mat
 - maybe functions in sim.py? can be called from params?
-*** Store net and sim params in dictionaries inside params.py
+*** DONE - Store net and sim params in dictionaries inside params.py
 eg. p.net['ncells']
 - facilitates saving to file (prev point)
 - can use if key in dict:
@@ -99,16 +99,18 @@ eg. p.net['ncells']
 Find What: p\.(\w+)
 Replace With: p\.sim['$1']
 
-*** Use dict of tags/attributes for pop params and for cells
+*** TODO - Use dict of tags/attributes for pop params and for cells
 eg. p.net['popParams'][i]['cellModel']
 - can use if key in dict:
 *** Define conn rules based on pair of tag/value for pre and post
 eg. use tuple key: connProbs['name','IT','name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
 or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda x,y: 0.1*x+0.01/y) 
-*** FIXED - Add $Id$ hg info
+*** DONE - Add $Id$ hg info
 - can do with https://mercurial.selenic.com/wiki/KeywordExtension
 - but not recommended 
 - bill wanted to do because cliff and I add last update and author info to files -- which is never updated correctly
 - checked other github repos and they don't have it - just eg. Contributors
-*** FIXED - Rename main.py with init.py
+*** DONE - Rename main.py with init.py
 *** Remove popType and connType variables - infer from dict keys
+*** Remove popid from popParams - can use list index
+*** Replace topClass and subClass with projection-type, type (neurotransmitter involved?)

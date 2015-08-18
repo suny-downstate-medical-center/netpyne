@@ -114,3 +114,210 @@ or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda 
 *** Remove popType and connType variables - infer from dict keys
 *** Remove popid from popParams - can use list index
 *** Replace topClass and subClass with projection-type, type (neurotransmitter involved?)
+
+* 15aug18 NECO reviews
+* 15mar21 reviews Subject: NECO-03-15-2319 Reviewer Comments
+** Dear Dr. Lytton,
+     We have received comments on your manuscript "Simulation neurotechnologies for advancing brain research: Parallelizing
+large networks in NEURON" submitted to Neural Computation.  It cannot be accepted in its current form, but a revised version
+that addresses the concerns of the reviewer(s) could be considered if we receive your resubmission within three months.
+     If you would like to resubmit the paper, please revise it according to the editor(s) comments and include a cover letter
+that specifically outlines the changes you have made, point by point.
+     When you are ready to upload your revisions, please log in and follow the links for this manuscript.
+http://neuralcomp.allentrack.net/cgi-bin/main.plex?el=A2Bq5CEC3A1aE6I7A9bO3MdMJMHrcuDCA9yinLAZ
+** Reviewer #1 (Comments to the Authors):
+This paper points out the importance that tools for the large scale parallel simulation of realistic neuronal network models
+hold for understanding the brain. This description of their implementation within the NEURON simulator is an important,
+original, and significant contribution, It should have a high priority for publication. I have no objections to publishing
+the paper as submitted. However, I offer the following suggestions in the event that the authors plan on further revisions.
+
+The Introduction suggests that the following sections would give the reader an overview of how a simple network with
+excitatory connections would be implemented in parallel NEURON. This overview would be useful to many readers who are not
+modeling networks with NEURON. But, I found no mention of the model in the remainder of the paper.  (The Hines 2014 reference
+was to a description of modelDB. not the model, and the model was not yet available on modelDB.) The Methods section would
+have been a good place to very briefly describe the model and its connection scheme. Details could be given in the following
+paper. Then the following descriptions of the use of ParallelContext and NetCon could be given in the context of implementing
+this model. Without this overview, I found the description of using NetCon in a parallel context to be very abstract, and
+hard to relate to an actual model. Perhaps some short script fragments with explanations would clarify this, I believe that
+this would make the paper much more comprehensible to a more general reader who is not a NEURON user. For such a reader, this
+paper will be a difficult read.
+
+it would be helpful to mention the hardware and software requirements for using NEURON in a parallel MPI context. For example,
+is the implementation of MPI built in to NEURON, or is a particular open source package such as openmpi or MPICH required?
+
+The topics that were covered under Results were treated thoroughly and in a way that clearly exposed the
+simulator-independent issues encountered in parallelizing a network simulation. The NEURON-specific examples provided the
+details.
+
+In Sec 3.4, I was baffled by the expression "an implicit pickle", until I read the description of Python's "pickle" module in
+a following section. Some reorganization would make this section more accessible to non-experts.
+
+In general, this is an informative and useful paper. With some (optional) revision, it could be made more appealing to a
+reader with a more general background in neural modeling.
+
+** Reviewer #2 (Comments to the Authors):
+
+Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON Lytton et al.
+
+This paper presents a broad overview of the use of the NEURON simulator, with an emphasis on parallel modeling. While NEURON
+is an important part of current neuronal modeling efforts and advances in its functionality are of interest to many groups,
+this paper does not effectively present these advances. The paper makes many general points about simulator methodology,
+with a few NEURON-specific illustrations, but does not present measurements, benchmarks, or quantifiable comparisons. In
+many cases it is difficult to discern how much of the presented material is novel to NEURON, novel to the field, or just an
+illustration of how to accomplish certain tasks using the Python interface.
+
+If the goal of this paper is to present the recent advances in parallel Neuron, it needs to clearly specify what the advances
+are, and what they accomplish.
+
+The paper also gives the sense of discussing many points in terms of experience with parallel models. Unfortunately it does
+so through generalities and examples, rather than as a data-driven exercise. There are no graphs or numerical results to
+make the points. 
+
+Major points.
+1. The authors state that they "present an update to our prior work on .. using parallel computing..."
+However the introduction does not clearly indicate what is the prior work, nor what the update consists of.
+
+2. The first part of the Methods section reads somewhat like an instruction manual, or even a primer at points. What it
+doesn't convey is how one sets up the example simulation. There are no simulation results shown, nor any benchmarks.
+
+3. Similarly section 2.1 is a somewhat unstructured listing of Python capabilities, without a clear motivation to explain
+why we are learning these things.
+
+4. In section 3.1, the discussion of spike exchange suffers from lack of figures and lack of quantitative measures
+explaining how each solution performs. There are several statements (for example, regarding Multisend and Allgather) which
+need to be supported with data. 
+
+5. Similarly section 3.2 repeats previous findings on fixed vs variable timestep methods. It isn't clear, for example,
+whether the discussion on the hazards of variable timestep methods in large network simulations, is a recap or new results.
+If the latter, then we need data and preferably illustrations. 
+
+6. Later in section 3.2 (last half of page 17, 18) there is a discussion and advice on how one may partition computations in
+a hybrid network model. Nevertheless it is difficult to discern the source of the results upon which this discussion is
+based. 
+
+7. Section 3.3 brings up "multiple permutations for a complete data handling scheme" and suggests idioms to handle these. It discusses
+in-memory storage and continuous dumping to disk, and various ways to organize these. It is not clear which of this, if any, is novel.
+Some of it seems to have been done in earlier NEURON work, and much appears to be part of the general consensus in the field
+about parallel data storage, of any kind. The authors relate what Neuron does for data saving, but do not attempt to
+distinguish it from capabilities of earlier versions, or from other approaches to data storage.
+
+8. A similar concern about novelty applies to section 3.4, sending data to the master node. The authors relate the usage of
+a python call, py_alltoall. At face value, these calls don't seem very different from a generic parallel application.
+Further, I don't see any results on performance here. 
+
+9. The data formats section is similarly general, lacking quantification. In this case the authors discuss several optional
+methods but don't benchmark any of them. None of these steps seem to go much further than the standard Python interfaces for
+data formatting. 
+
+10. The authors do discuss cell re-simulation and this, in principle, could be interesting. However, they again fail to
+benchmark or quantify the trade-offs and when it becomes viable to carry out re-simulation.
+
+11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I
+    cannot evaluate the efficiency.
+
+** TODO 
+*** R1. Include model + conn in Methods
+*** R1. 
+
+*** R2. 1) Prior work intro
+*** R2. 2) Example simulation with results and benchmark
+- Alex's poster with setup time, run time, and raster plots - for num nodes + num cells in NSG
+- Include comparison of Izhi vs HH
+*** R2. 3) Re-structure methods to make clear why using Python
+*** R2. 4) same as 2)
+*** R2. 5) Load-balancing - move to methods? perform comparison of fixed vs variable?
+*** R2. 6) Hybrid networks - either a) move to discussion or to b) Methods + run small sim
+*** R2. 7) Saving - move to Methods, describe several options (pickle, mat, txt, etc)
+*** R2. 8) Gathering data in master node - move to Methods (sim.py)
+- maybe add post-simulation benchmark time (gathering, etc)
+*** R2. 9) Move to saving section, with brief description of formats; possibly include comparison of file sizes + saving time
+- relate to NSG data format
+*** R2. 10) Re-simulation - consider if relevant for this paper?
+*** R2. 11) Multisaving - maybe mention briefly in Methods saving section
+
+** New paper structure
+*** Intro
+*** Methods
+**** NEURON/Python basic commands
+**** NEURON/Python mpi/parallel commands
+**** Example of code structure/simulation with simple network example
+- this is a proposal for a general python/NEURON framework to develop mpi/parallel models
+- figure with code structure - modularity, shared variables and params
+- params.py illustrate how to change
+- shared.py
+- network.py - net functions
+- sim.py - saving, gather
+- analysis.py - graphing
+- cell.py 
+- conn.py
+
+- random num generators 
+- load balancing??
+**** NSG Usage
+- how to run
+
+*** Results
+- raster plots
+- conn matrix 
+- Izhi vs HH; setup vs runtime vs after-run times (gathering etc) (Num nodes and num cells in NSG) + avg
+- Compare performance for different num of segments
+
+*** Conclusions
+
+** this paper does not effectively present these advances. The paper makes many general points about simulator methodology,
+with a few NEURON-specific illustrations
+** does not present measurements, benchmarks, or quantifiable comparisons. In many cases it is difficult to discern how much
+of the presented material is novel to NEURON, novel to the field, or just an illustration of how to accomplish certain tasks
+using the Python interface.
+** If the goal of this paper is to present the recent advances in parallel Neuron, it needs to clearly specify what the
+advances are, and what they accomplish.
+** The paper also gives the sense of discussing many points in terms of experience with parallel models. Unfortunately it does
+so through generalities and examples, rather than as a data-driven exercise. There are no graphs or numerical results to
+make the points. 
+** Major points.
+** introduction does not clearly indicate what is the prior work, nor what the update consists of
+1. The authors state that they "present an update to our prior work on .. using parallel computing..."
+
+** methods does not convey is how one sets up the example simulation. There are no simulation results shown, nor any benchmarks.
+2. The first part of the Methods section reads somewhat like an instruction manual, or even a primer at points. What it
+doesn't 
+
+** sec 2.1 is somewhat unstructured listing of Python capabilities, without a clear motivation to explain
+why we are learning these things.
+
+** several statements (for example, regarding Multisend and Allgather) which need to be supported with data
+In section 3.1, the discussion of spike exchange suffers from lack of figures and lack of quantitative measures
+explaining how each solution performs. There are 
+
+** hazards of variable timestep methods in large network simulations -- a recap or new results??
+5. Similarly section 3.2 repeats previous findings on fixed vs variable timestep methods. It isn't clear, for example,
+whether the discussion on the ; If the latter, then we need data and preferably illustrations. 
+
+6. how one may partition computations in a hybrid network model
+ Later in section 3.2 (last half of page 17, 18) there is a discussion and advice on how one may partition computations in
+a hybrid network model. Nevertheless it is difficult to discern the source of the results upon which this discussion is
+based. 
+
+** data saving -- It is not clear which of this, if any, is novel.
+7. Section 3.3 brings up "multiple permutations for a complete data handling scheme" and suggests idioms to handle these. It discusses
+in-memory storage and continuous dumping to disk, and various ways to organize these. It is not clear which of this, if any, is novel.
+Some of it seems to have been done in earlier NEURON work, and much appears to be part of the general consensus in the field
+about parallel data storage, of any kind. The authors relate what Neuron does for data saving, but do not attempt to
+distinguish it from capabilities of earlier versions, or from other approaches to data storage.
+
+** novelty? section 3.4, sending data to the master node. The authors relate the usage of
+8. A similar concern about novelty applies to section 3.4, sending data to the master node. The authors relate the usage of
+a python call, py_alltoall. At face value, these calls don't seem very different from a generic parallel application.
+Further, I don't see any results on performance here. 
+
+** data formats section -- benchmarking
+9. The data formats section is similarly general, lacking quantification. In this case the authors discuss several optional
+methods but don't benchmark any of them. None of these steps seem to go much further than the standard Python interfaces for
+data formatting. 
+
+** re-sim benchmarking
+10. The authors do discuss cell re-simulation and this, in principle, could be interesting. However, they again fail to
+benchmark or quantify the trade-offs and when it becomes viable to carry out re-simulation.
+
+** multisaving -- benchmarking
+11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I cannot evaluate the efficiency.

@@ -17,9 +17,8 @@ import shared as s
 ###############################################################################
 class Cell:
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
-    def __init__(self, gid, popid, EorI = [], topClass = [], subClass = [], yfrac = [], xloc = [], zloc = []):
+    def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
-        self.popid = popid  # id of population
         self.EorI = EorI # excitatory or inhibitory 
         self.topClass = topClass # top-level class (IT, PT, CT,...) 
         self.subClass = subClass # subclass (L4, Basket, ...)
@@ -290,33 +289,31 @@ class Izhi2007b(Cell):
 class Pop:
     ''' Python class used to instantiate the network population '''
     def __init__(self,  tags):
-        self.tags = tags # id of population
+        self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-        # select cell class to instantiate cells based on the cellModel attribute
-        if self.cellModel == p.Izhi2007b:    cellClass = s.Izhi2007b
-        elif self.cellModel == p.Izhi2007a:    cellClass = s.Izhi2007a
-        elif self.cellModel == p.HH:    cellClass = s.HH
-        else: print 'Unknown cell model'
+        # select cell class to instantiate cells based on the cellModel tag
+        cellClass = getattr(s, self.tags['cellModel']) 
 
         # population based on numCells
-        if 'numCells' in self.tags['popParams'][0]:
+        if 'numCells' in self.tags:
             cells = []
-            for i in xrange(int(s.rank), self.numCells, s.nhosts):
+            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
+                cellTags = {}
                 gid = s.lastGid+i
-                cells.append(cellClass(gid, self.popgid)) # instantiate Cell object
-                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.numCells-1, gid, self.popgid, s.rank))
-            s.lastGid = s.lastGid + self.numCells 
+                cells.append(cellClass(gid, cellTags)) # instantiate Cell object
+                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
+            s.lastGid = s.lastGid + self.tags['numCells'] 
             return cells
 
         # population based on yFracRange
-        elif 'yFracRange' in self.tags['popParams'][0]:
+        elif 'yFracRange' in self.tags:
             # use yfrac-dep density if pop object has yfrac and density variables
             cells = []
-            volume = p.net['scale']*p.net['sparseness']*(p.net['modelsize']/1e3)**2*((self.yfracRange[1]-self.yfracRange[0])*p.net['corticalthick']/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
+            volume = p.net['scale']*p.net['sparseness']*(p.net['modelsize']/1e3)**2*((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])*p.net['corticalthick']/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.density, (arange(self.yfracRange[0],self.yfracRange[1], yfracInterval)))) # max cell density 
+            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval)))) # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             seed(s.id32('%d' % p.sim['randseed']))  # reset random number generator
             yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * rand(int(maxCells), 1) # random yfrac values 

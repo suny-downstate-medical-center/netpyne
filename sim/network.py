@@ -27,11 +27,9 @@ warnings.filterwarnings('error')
 ### Instantiate network populations (objects of class 'Pop')
 ###############################################################################
 def createPops():
-    if p.net['popType'] == 'Basic': popClass = s.BasicPop
-    elif p.net['popType'] == 'Yfrac': popClass = s.YfracPop
     s.pops = []  # list to store populations ('Pop' objects)
     for popParam in p.net['popParams']: # for each set of population parameters 
-        s.pops.append(popClass(*popParam))  # instantiate a new object of class Pop and add to list pop
+        s.pops.append(s.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
 
 ###############################################################################

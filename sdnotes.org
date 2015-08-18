@@ -264,6 +264,15 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
 
 *** Conclusions
 
+** Alex TODO list
+- clone to neurosim
+- add stopwatch to sim.py
+- test in NSG
+- implement HH vs Izhi network
+- Run sims for paper
+- Write paper
+
+
 ** this paper does not effectively present these advances. The paper makes many general points about simulator methodology,
 with a few NEURON-specific illustrations
 ** does not present measurements, benchmarks, or quantifiable comparisons. In many cases it is difficult to discern how much

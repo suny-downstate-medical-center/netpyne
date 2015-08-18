@@ -23,14 +23,6 @@ sim = {}  # dictionary to store simulation params
 if loadNetParams:  # load network params from file
     pass
 else:  # set network params manually
-    # Store equivalence between names and values so can be used as indices
-    #AMPA=0; NMDA=1; GABAA=2; GABAB=3; # synaptic receptors
-    #AMPA=0; NMDA=0; GABAA=0; GABAB=0;   # synaptic receptors
-    #E=0; I=1  # excitatory vs inhibitory
-    #IT=0; PT=1; CT=2; HTR=3; Pva=4; Sst=5; numTopClass=6  # cell/pop top class 
-    #L4=0; other=1; Vip=2; Nglia=3; Basket=4; Chand=5; Marti=6; L4Sst=7  # cell/pop sub class
-    #Izhi2007a=0; Izhi2007b=1; Friesen=2; HH=3  # types of cell model
-
     ## Position parameters
     net['scale'] = 1 # Size of simulation in thousands of cells
     net['cortthaldist']=3000 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)

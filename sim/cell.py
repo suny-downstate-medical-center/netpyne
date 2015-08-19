@@ -19,13 +19,9 @@ class Cell:
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
-        self.EorI = EorI # excitatory or inhibitory 
-        self.topClass = topClass # top-level class (IT, PT, CT,...) 
-        self.subClass = subClass # subclass (L4, Basket, ...)
-        self.yfrac = yfrac  # normalized cortical depth
-        self.xloc = xloc  # x location in um
-        self.zloc = zloc  # y location in um 
-        self.m = []  # NEURON object containing cell model
+        self.tags = tags  # 
+
+        #self.m = []  # NEURON object containing cell model
         
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -316,21 +312,24 @@ class Pop:
             maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval)))) # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             seed(s.id32('%d' % p.sim['randseed']))  # reset random number generator
-            yfracsAll = self.yfracRange[0] + ((self.yfracRange[1]-self.yfracRange[0])) * rand(int(maxCells), 1) # random yfrac values 
-            yfracsProb = array(map(self.density, yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1) # random yfrac values 
+            yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
             allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
             makethiscell = yfracsProb>allrands # perform test to see whether or not this cell should be included (pruning based on density func)
             yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-            self.numCells = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-            if p.sim['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.numCells)
-            randLocs = rand(self.numCells, 2)  # create random x,z locations
-            for i in xrange(int(s.rank), self.numCells, s.nhosts):
+            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            if p.sim['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+            randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
+
+            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
                 gid = s.lastGid+i
-                self.cellGids.append(gid)  # add gid list of cells belonging to this population    
-                x = p.net['modelsize'] * randLocs[i,0] # calculate x location (um)
-                z = p.net['modelsize'] * randLocs[i,1] # calculate z location (um) 
-                cells.append(cellClass(gid, self.popgid, self.EorI, self.topClass, self.subClass, yfracs[i], x, z)) # instantiate Cell object
-                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, self.popgid, x, yfracs[i], z, s.rank))
+                # self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+                cellTags = {k: v for (k, v) in self.tags.iteritems() if k not in ['yFracRange', 'density']}  # copy all pop tags to cell tags, except those that are pop-specific
+                cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
+                cellTags['x'] = p.net['modelsize'] * randLocs[i,0]  # calculate x location (um)
+                cellTags['z'] = p.net['modelsize'] * randLocs[i,1]  # calculate z location (um) 
+                cells.append(cellClass(gid, cellTags)) # instantiate Cell object
+                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, x, yfracs[i], z, s.rank))
             s.lastGid = s.lastGid + self.numCells 
             return cells
 

@@ -111,12 +111,22 @@ or dict of dict with tuple keys: connProbs['name','IT']['name','IT']  = (lambda 
 - bill wanted to do because cliff and I add last update and author info to files -- which is never updated correctly
 - checked other github repos and they don't have it - just eg. Contributors
 *** DONE - Rename main.py with init.py
-*** Remove popType and connType variables - infer from dict keys
-*** Remove popid from popParams - can use list index
-*** Replace topClass and subClass with projection-type, type (neurotransmitter involved?)
+*** DONE Remove popType and connType variables - infer from dict keys
+*** DONE Remove popid from popParams - can use list index
+*** TODO Replace topClass and subClass with projection-type, type (neurotransmitter involved?)
+**** email to Ben
+Hey Ben, Im working on some of the changes we discussed. I've replaced variables with dictionaries of tags/attributes. For now, I've kep the 'population' concept, although can replace in future version if makes sense. 
 
-* 15aug18 NECO reviews
-* 15mar21 reviews Subject: NECO-03-15-2319 Reviewer Comments
+For both the 'population' and 'cell' objects you suggested replacing the 'topClass' and 'subClass' tags with 'projectionType' and 'cellType' if my notes are correct. I know projType for Exc cells will be 'IT', 'PT' or 'CT', but not sure what would be the best classification for Inh cells? Same thing for cellType, I think you mentioned neurotransmitters involved, but could you elaborate on what would be the list of possible values for both 'Exc' and 'Inh' cells/pops ?  
+
+We can use the google chat or this google doc to bounce ideas back and forth (link points to new section ready to be filled in).
+
+*** TODO Synapse
+- synapses as list of objects inside each cell (postsynaptic) - netcon in pre is stub; netcon in post is real synapse
+- netcon (neuron object) as part of synapse object
+
+
+* 15aug18 reviews Subject: NECO-03-15-2319 Reviewer Comments
 ** Dear Dr. Lytton,
      We have received comments on your manuscript "Simulation neurotechnologies for advancing brain research: Parallelizing
 large networks in NEURON" submitted to Neural Computation.  It cannot be accepted in its current form, but a revised version
@@ -215,7 +225,7 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
 11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I
     cannot evaluate the efficiency.
 
-** TODO 
+** TODO for paper review 
 *** R1. Include model + conn in Methods
 *** R1. 
 
@@ -272,33 +282,33 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
 - Run sims for paper
 - Write paper
 
-
-** this paper does not effectively present these advances. The paper makes many general points about simulator methodology,
+** Bill old list of things to do 
+*** this paper does not effectively present these advances. The paper makes many general points about simulator methodology,
 with a few NEURON-specific illustrations
-** does not present measurements, benchmarks, or quantifiable comparisons. In many cases it is difficult to discern how much
+*** does not present measurements, benchmarks, or quantifiable comparisons. In many cases it is difficult to discern how much
 of the presented material is novel to NEURON, novel to the field, or just an illustration of how to accomplish certain tasks
 using the Python interface.
-** If the goal of this paper is to present the recent advances in parallel Neuron, it needs to clearly specify what the
+*** If the goal of this paper is to present the recent advances in parallel Neuron, it needs to clearly specify what the
 advances are, and what they accomplish.
-** The paper also gives the sense of discussing many points in terms of experience with parallel models. Unfortunately it does
+*** The paper also gives the sense of discussing many points in terms of experience with parallel models. Unfortunately it does
 so through generalities and examples, rather than as a data-driven exercise. There are no graphs or numerical results to
 make the points. 
-** Major points.
-** introduction does not clearly indicate what is the prior work, nor what the update consists of
+*** Major points.
+*** introduction does not clearly indicate what is the prior work, nor what the update consists of
 1. The authors state that they "present an update to our prior work on .. using parallel computing..."
 
-** methods does not convey is how one sets up the example simulation. There are no simulation results shown, nor any benchmarks.
+*** methods does not convey is how one sets up the example simulation. There are no simulation results shown, nor any benchmarks.
 2. The first part of the Methods section reads somewhat like an instruction manual, or even a primer at points. What it
 doesn't 
 
-** sec 2.1 is somewhat unstructured listing of Python capabilities, without a clear motivation to explain
+*** sec 2.1 is somewhat unstructured listing of Python capabilities, without a clear motivation to explain
 why we are learning these things.
 
-** several statements (for example, regarding Multisend and Allgather) which need to be supported with data
+*** several statements (for example, regarding Multisend and Allgather) which need to be supported with data
 In section 3.1, the discussion of spike exchange suffers from lack of figures and lack of quantitative measures
 explaining how each solution performs. There are 
 
-** hazards of variable timestep methods in large network simulations -- a recap or new results??
+*** hazards of variable timestep methods in large network simulations -- a recap or new results??
 5. Similarly section 3.2 repeats previous findings on fixed vs variable timestep methods. It isn't clear, for example,
 whether the discussion on the ; If the latter, then we need data and preferably illustrations. 
 
@@ -307,26 +317,28 @@ whether the discussion on the ; If the latter, then we need data and preferably 
 a hybrid network model. Nevertheless it is difficult to discern the source of the results upon which this discussion is
 based. 
 
-** data saving -- It is not clear which of this, if any, is novel.
+*** data saving -- It is not clear which of this, if any, is novel.
 7. Section 3.3 brings up "multiple permutations for a complete data handling scheme" and suggests idioms to handle these. It discusses
 in-memory storage and continuous dumping to disk, and various ways to organize these. It is not clear which of this, if any, is novel.
 Some of it seems to have been done in earlier NEURON work, and much appears to be part of the general consensus in the field
 about parallel data storage, of any kind. The authors relate what Neuron does for data saving, but do not attempt to
 distinguish it from capabilities of earlier versions, or from other approaches to data storage.
 
-** novelty? section 3.4, sending data to the master node. The authors relate the usage of
+*** novelty? section 3.4, sending data to the master node. The authors relate the usage of
 8. A similar concern about novelty applies to section 3.4, sending data to the master node. The authors relate the usage of
 a python call, py_alltoall. At face value, these calls don't seem very different from a generic parallel application.
 Further, I don't see any results on performance here. 
 
-** data formats section -- benchmarking
+*** data formats section -- benchmarking
 9. The data formats section is similarly general, lacking quantification. In this case the authors discuss several optional
 methods but don't benchmark any of them. None of these steps seem to go much further than the standard Python interfaces for
 data formatting. 
 
-** re-sim benchmarking
+*** re-sim benchmarking
 10. The authors do discuss cell re-simulation and this, in principle, could be interesting. However, they again fail to
 benchmark or quantify the trade-offs and when it becomes viable to carry out re-simulation.
 
-** multisaving -- benchmarking
+*** multisaving -- benchmarking
 11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I cannot evaluate the efficiency.
+
+

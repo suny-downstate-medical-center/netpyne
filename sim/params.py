@@ -16,6 +16,7 @@ loadSimParams = 0  # either load sim params from file or set them here (and save
 net = {}  # dictionary to store network params
 sim = {}  # dictionary to store simulation params
 
+
 ###############################################################################
 #
 # NETWORK PARAMETERS
@@ -48,6 +49,18 @@ else:  # set network params manually
 
     # mpiHHTut
     if simType == 'mpiHHTut':
+        # option 1: list of dicts
+        net['cellParams'] = []
+        net['cellParams'].append({'tags':['cellType'], 'values':['PYR'], 'sectionParams': {} })
+        net['cellParams'][0] = {'soma': {}}
+        net['cellParams'][0]['soma'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mech':'hh'}
+
+        # option 2: dict of dict with tuple indices
+        net['cellParams'] = {}
+        net['cellParams'][('cellModel','PYR')] = {'soma': {}}
+        net['cellParams'][('cellModel','PYR')]['soma'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mech':'hh'}
+
+
         net['ncell']   = 100  
         net['popParams'] = []  # create list of populations - each item will contain dict with pop params
 
@@ -84,7 +97,7 @@ else:  # set network params manually
         net['popParams'].append({'cellModel':'Izhi2007b', 'cellType':'SOM', 'projTarget':'', 'yfracRange':[0.77, 1.0], 'density':lambda y:0.5e3}) #  L6 SOM (LTS)
 
         
-        ## Connectivity parameters
+        ## General connectivity parameters
         net['connType'] = 'yfrac'
         net['numReceptors'] = 1 
         net['useconnprobdata'] = True # Whether or not to use connectivity data
@@ -100,22 +113,8 @@ else:  # set network params manually
         net['toroidal'] = False # Whether or not to have toroidal topology
 
 
-        # class variables to store matrix of connection probabilities (constant or function) for pre and post cell cellType
-        # net['connProbs'] = []  # create list of connectivity rules
-        # net['connProbs'].append({('cellType','IT','cellType','IT'): (lambda x,y: 0.1*x+0.01/y)})  # option 1: list of dict with single tuple key and value
-        # net['connProbs'].append({('cellType','IT','cellType','PT'): (lambda x,y: 0.02*x+0.01*y)}) 
-
-        # net['connProbs'] = {}  # dict of conn rules
-        # net['connProbs'][('cellType','IT','cellType','PT')] = (lambda x,y: 0.1*x+0.01/y)  # option 2: single dict with multiple tuple keys and values
-        # net['connProbs'][('cellType','IT','cellType','PT')] = (lambda x,y: 0.02*x+0.01*y) 
-
-
-        # net['connProbs'] = []  # create list of connectivity rules
-        # net['connProbs'].append({'preTag':'cellType', 'preValue':'IT', 'postTag': 'cellType', 'postValue':'IT', 'connFunc': (lambda x,y: 0.1*x+0.01/y)})
-        # net['connProbs'].append({'preTags':['cellType','subClass'], 'preValues':['IT','other'], 'postTags': ['cellType'], 'postValues':['IT'], 'connFunc': lambda x,y: 0.1*x+0.01/y})
-
-
-        net['connParams'] = []  # create list of connectivity rules
+        ## List of connectivity rules/params
+        net['connParams'] = []  
         net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->IT rule

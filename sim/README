@@ -17,7 +17,7 @@ List of files:
 
 - main.py: Main executable; calls functions from other modules.
 
-- params.py: Contains all static parameters. It is imported as "p" from all other modules, so that params can be referenced from any file using p.paramName
+- params.py: Contains all static parameters. It is imported as "p" from all other modules, so that params can be referenced from any file using p.paramName. Includes simulation (sim) and network (net) parameters; net includes cell, population and connectivity parameters
 
 - shared.py: Contains all the model shared variables and modules (except params.py). It is imported as "s" from all other file, so that any variable or module can be referenced from any file using s.varName
 
@@ -25,7 +25,7 @@ List of files:
 
 - network.py: Network related functions (eg. createCells)
 
-- cell.py: contains cell and population classes 
+- cell.py: contains cell and population classes to create cells based on the parameters in params.py
 
 - conn.py: contains class 'Conn' used to instantiate connections, and contains methods to connect cells (eg. random, yfrac-based)
 

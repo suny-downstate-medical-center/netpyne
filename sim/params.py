@@ -17,7 +17,9 @@ net = {}  # dictionary to store network params
 sim = {}  # dictionary to store simulation params
 
 ###############################################################################
-### SET NETWORK PARAMETERS
+#
+# NETWORK PARAMETERS
+#
 ###############################################################################
 
 if loadNetParams:  # load network params from file (check shelves)
@@ -25,7 +27,7 @@ if loadNetParams:  # load network params from file (check shelves)
 else:  # set network params manually
     ## Position parameters
     net['scale'] = 1 # Size of simulation in thousands of cells
-    net['cortthaldist']=3000 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
+    net['cortthaldist'] = 3000 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
     net['corticalthick'] = 1740 # cortical thickness/depth
 
 
@@ -49,7 +51,7 @@ else:  # set network params manually
         net['ncell']   = 100  
         net['popParams'] = []  # create list of populations - each item will contain dict with pop params
 
-        net['popParams'].append({'cellModel': 'HH', 'numCells': net['ncell']}) # add dict with params for this pop
+        net['popParams'].append({'cellModel': 'HH', 'cellType':'PYR', 'numCells': net['ncell']}) # add dict with params for this pop
         
         ## Connectivity parameters
         net['connType'] = 'random'
@@ -66,7 +68,7 @@ else:  # set network params manually
     elif simType == 'M1model':
         net['popParams'] = []  # create list of populations, where each item contains a dict with the pop params
 
-                       # popid, cell model,     EorI, topClass, subClass, yfracRange,     density,                
+                       # popid, cell model,     EorI, cellType, subClass, yfracRange,     density,                
         net['popParams'].append({'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'yfracRange':[0.1, 0.26], 'density':lambda y:2e3*y}) #  L2/3 IT
         net['popParams'].append({'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'yfracRange':[0.26, 0.31], 'density':lambda y:2e3*y}) #  L4 IT
         net['popParams'].append({'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'yfracRange':[0.31, 0.52], 'density':lambda y:2e3*y}) #  L5A IT
@@ -98,126 +100,128 @@ else:  # set network params manually
         net['toroidal'] = False # Whether or not to have toroidal topology
 
 
-        # class variables to store matrix of connection probabilities (constant or function) for pre and post cell topClass
+        # class variables to store matrix of connection probabilities (constant or function) for pre and post cell cellType
         # net['connProbs'] = []  # create list of connectivity rules
-        # net['connProbs'].append({('topClass','IT','topClass','IT'): (lambda x,y: 0.1*x+0.01/y)})  # option 1: list of dict with single tuple key and value
-        # net['connProbs'].append({('topClass','IT','topClass','PT'): (lambda x,y: 0.02*x+0.01*y)}) 
+        # net['connProbs'].append({('cellType','IT','cellType','IT'): (lambda x,y: 0.1*x+0.01/y)})  # option 1: list of dict with single tuple key and value
+        # net['connProbs'].append({('cellType','IT','cellType','PT'): (lambda x,y: 0.02*x+0.01*y)}) 
 
         # net['connProbs'] = {}  # dict of conn rules
-        # net['connProbs'][('topClass','IT','topClass','PT')] = (lambda x,y: 0.1*x+0.01/y)  # option 2: single dict with multiple tuple keys and values
-        # net['connProbs'][('topClass','IT','topClass','PT')] = (lambda x,y: 0.02*x+0.01*y) 
+        # net['connProbs'][('cellType','IT','cellType','PT')] = (lambda x,y: 0.1*x+0.01/y)  # option 2: single dict with multiple tuple keys and values
+        # net['connProbs'][('cellType','IT','cellType','PT')] = (lambda x,y: 0.02*x+0.01*y) 
 
 
         # net['connProbs'] = []  # create list of connectivity rules
-        # net['connProbs'].append({'preTag':'topClass', 'preValue':'IT', 'postTag': 'topClass', 'postValue':'IT', 'connFunc': (lambda x,y: 0.1*x+0.01/y)})
-        # net['connProbs'].append({'preTags':['topClass','subClass'], 'preValues':['IT','other'], 'postTags': ['topClass'], 'postValues':['IT'], 'connFunc': lambda x,y: 0.1*x+0.01/y})
+        # net['connProbs'].append({'preTag':'cellType', 'preValue':'IT', 'postTag': 'cellType', 'postValue':'IT', 'connFunc': (lambda x,y: 0.1*x+0.01/y)})
+        # net['connProbs'].append({'preTags':['cellType','subClass'], 'preValues':['IT','other'], 'postTags': ['cellType'], 'postValues':['IT'], 'connFunc': lambda x,y: 0.1*x+0.01/y})
 
 
-        net['connRules'] = []  # create list of connectivity rules
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['IT'], 'postTags':['topClass'], 'postValues':['IT'], \
+        net['connParams'] = []  # create list of connectivity rules
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->IT rule
 
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['IT'], 'postTags':['topClass'], 'postValues':['PT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['PT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->PT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['IT'], 'postTags':['topClass'], 'postValues':['CT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['CT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->CT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['IT'], 'postTags':['topClass'], 'postValues':['Pva'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['Pva'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->Pva rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['IT'], 'postTags':['topClass'], 'postValues':['Sst'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['IT'], 'postTags':['cellType'], 'postValues':['Sst'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # IT->Sst rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['PT'], 'postTags':['topClass'], 'postValues':['IT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['PT'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # PT->IT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['PT'], 'postTags':['topClass'], 'postValues':['PT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['PT'], 'postTags':['cellType'], 'postValues':['PT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prey,posty: 1), 'receptor':'AMPA'})  # PT->PT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['PT'], 'postTags':['topClass'], 'postValues':['CT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['PT'], 'postTags':['cellType'], 'postValues':['CT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda prex,posty: 1), 'receptor':'AMPA'})  # PT->CT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['PT'], 'postTags':['topClass'], 'postValues':['Pva'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['PT'], 'postTags':['cellType'], 'postValues':['Pva'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # PT->Pva rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['PT'], 'postTags':['topClass'], 'postValues':['Sst'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['PT'], 'postTags':['cellType'], 'postValues':['Sst'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # PT->Sst rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['CT'], 'postTags':['topClass'], 'postValues':['IT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['CT'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # CT->IT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['CT'], 'postTags':['topClass'], 'postValues':['PT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['CT'], 'postTags':['cellType'], 'postValues':['PT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # CT->PT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['CT'], 'postTags':['topClass'], 'postValues':['CT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['CT'], 'postTags':['cellType'], 'postValues':['CT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # CT->CT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['CT'], 'postTags':['topClass'], 'postValues':['Pva'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['CT'], 'postTags':['cellType'], 'postValues':['Pva'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # CT->Pva rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['CT'], 'postTags':['topClass'], 'postValues':['Sst'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['CT'], 'postTags':['cellType'], 'postValues':['Sst'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # CT->Sst rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Pva'], 'postTags':['topClass'], 'postValues':['IT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Pva'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Pva->IT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Pva'], 'postTags':['topClass'], 'postValues':['PT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Pva'], 'postTags':['cellType'], 'postValues':['PT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Pva->PT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Pva'], 'postTags':['topClass'], 'postValues':['CT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Pva'], 'postTags':['cellType'], 'postValues':['CT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Pva->CT rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Pva'], 'postTags':['topClass'], 'postValues':['Pva'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Pva'], 'postTags':['cellType'], 'postValues':['Pva'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Pva->Pva rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Pva'], 'postTags':['topClass'], 'postValues':['Sst'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Pva'], 'postTags':['cellType'], 'postValues':['Sst'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Pva->Sst rule
         
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Sst'], 'postTags':['topClass'], 'postValues':['IT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Sst'], 'postTags':['cellType'], 'postValues':['IT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Sst->IT rule
   
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Sst'], 'postTags':['topClass'], 'postValues':['PT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Sst'], 'postTags':['cellType'], 'postValues':['PT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Sst->PT rule             
  
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Sst'], 'postTags':['topClass'], 'postValues':['CT'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Sst'], 'postTags':['cellType'], 'postValues':['CT'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Sst->CT rule
 
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Sst'], 'postTags':['topClass'], 'postValues':['Pva'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Sst'], 'postTags':['cellType'], 'postValues':['Pva'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Sst->Pva rule
 
-        net['connRules'].append({'preTags':['topClass'], 'preValues':['Sst'], 'postTags':['topClass'], 'postValues':['Sst'], \
+        net['connParams'].append({'preTags':['cellType'], 'preValues':['Sst'], 'postTags':['cellType'], 'postValues':['Sst'], \
             'connProb':(lambda prey,posty: 0.1*prey+0.01/posty), \
             'connWeight':(lambda x,y: 1), 'receptor':'AMPA'})  # Sst->Sst rule
 
 
 
 ###############################################################################
-### SET SIMULATION PARAMETERS
+#
+# SIMULATION PARAMETERS
+#
 ###############################################################################
 
 if loadSimParams:  # load network params from file
@@ -244,7 +248,6 @@ else:
     sim['savetxt'] = False # save spikes and conn to txt file
     sim['savedpk'] = True # save to a .dpk pickled file
     sim['recordTraces'] = True  # whether to record cell traces or not
-    #lfppops = [[ER2], [ER5], [EB5], [ER6]] # Populations for calculating the LFP from
     sim['saveBackground'] = False # save background (NetStims) inputs
     sim['verbose'] = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
     sim['plotraster'] = True # Whether or not to plot a raster

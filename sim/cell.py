@@ -13,35 +13,42 @@ import params as p
 import shared as s
 
 ###############################################################################
-### GENERIC CELL CLASS
+#
+# GENERIC CELL CLASS
+#
 ###############################################################################
+
 class Cell:
+
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
         self.tags = tags  # 
 
-        #self.m = []  # NEURON object containing cell model
-        
         self.make()  # create cell 
         self.associateGid() # register cell for this node
 
 
 
 ###############################################################################
-### HODGKIN-HUXLEY CELL CLASS
+#
+# HODGKIN-HUXLEY CELL CLASS
+#
 ###############################################################################
 
 class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
 
     def make (self):
-        self.soma = h.Section(name='soma')
-        self.soma.diam = 18.8
-        self.soma.L = 18.8
-        self.soma.Ra = 123.0
-        self.soma.insert('hh')
-        self.activate()
+        if self.tags['cellType'] == 'Pyr': 
+            self.soma = h.Section(name='soma')
+            self.soma.diam = 18.8
+            self.soma.L = 18.8
+            self.soma.Ra = 123.0
+            self.soma.insert('hh')
+            self.activate()
+        elif self.tags['cellType'] == 'IT':
+            pass
 
     def activate (self):
         self.stim = h.IClamp(0.5, sec=self.soma)
@@ -80,8 +87,12 @@ class HH(Cell):
 
 
 
+
+
 ###############################################################################
-### IZHIKEVICH 2007a CELL CLASS 
+#
+# IZHIKEVICH 2007a CELL CLASS (Euler explicit integration; include synapses)
+#
 ###############################################################################
 
 class Izhi2007a(Cell):
@@ -120,16 +131,15 @@ class Izhi2007a(Cell):
 
 
     def make (self):
-        # Instantiate cell model 
-        self.sec = h.Section()
-        if self.topClass in [p.IT, p.PT, p.CT]: # if excitatory cell use RS
+        # Instantiate cell model based on cellType
+        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
             izhType = 'RS' 
-        elif self.topClass == p.Pva: # if Pva use FS
+        elif self.tags['cellType'] == 'PV': # if Pva use FS
             izhType = 'FS' 
-        elif self.topClass == p.Sst: # if Sst us LTS
+        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
             izhType = 'LTS' 
 
-        self.sec = h.Section(name='izhi2007'+izhType+str(self.gid))  # create Section
+        self.sec = h.Section(name='izhi2007a'+izhType+str(self.gid))  # create Section
         self.m = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
 
     def associateGid (self, threshold = 10.0):
@@ -174,7 +184,9 @@ class Izhi2007a(Cell):
 
 
 ###############################################################################
-### IZHIKEVICH 2007b CELL CLASS 
+#
+# IZHIKEVICH 2007b CELL CLASS (integrates STATE u; v in Section)
+#
 ###############################################################################
 
 class Izhi2007b(Cell):
@@ -201,6 +213,7 @@ class Izhi2007b(Cell):
         7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
     """
 
+    # Izhikevich equation parameters for the different cell types
     type2007 = collections.OrderedDict([
       #              C    k     vr  vt vpeak   a      b   c    d  celltype
       ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
@@ -212,20 +225,20 @@ class Izhi2007b(Cell):
       ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
     def make (self):
-        # Instantiate cell model 
-        if self.topClass in [p.IT, p.PT, p.CT]: # if excitatory cell use RS
+        # Instantiate cell model based on cellType
+        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
             izhType = 'RS' 
-        elif self.topClass == p.Pva: # if Pva use FS
+        elif self.tags['cellType'] == 'PV': # if Pva use FS
             izhType = 'FS' 
-        elif self.topClass == p.Sst: # if Sst us LTS
+        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
             izhType = 'LTS' 
 
-        self.sec = h.Section(name='izhi2007'+izhType+str(self.gid))  # create Section
+        self.sec = h.Section(name='izhi2007b'+izhType+str(self.gid))  # create Section
         self.sec.L, self.sec.diam = 6.3, 5  # empirically tuned L and diam 
         self.m = h.Izhi2007b(0.5, sec=self.sec)  # create point process object  
         self.vinit = -60  # set vinit
         self.m.C, self.m.k, self.m.vr, self.m.vt, self.m.vpeak, self.m.a, \
-         self.m.b, self.m.c, self.m.d, self.m.celltype = self.type2007[izhType]
+        self.m.b, self.m.c, self.m.d, self.m.celltype = self.type2007[izhType]
         self.m.cellid = self.gid # Cell ID for keeping track which cell this is
         s.fih.append(s.h.FInitializeHandler(self.init))
 
@@ -307,17 +320,21 @@ class Pop:
         elif 'yFracRange' in self.tags:
             # use yfrac-dep density if pop object has yfrac and density variables
             cells = []
-            volume = p.net['scale']*p.net['sparseness']*(p.net['modelsize']/1e3)**2*((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])*p.net['corticalthick']/1e3) # calculate num of cells based on scale, density, modelsize and yfracRange
+            volume = p.net['scale'] * p.net['sparseness'] * (p.net['modelsize']/1e3)**2 \
+                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * p.net['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval)))) # max cell density 
+            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
+            
             seed(s.id32('%d' % p.sim['randseed']))  # reset random number generator
-            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1) # random yfrac values 
+            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
             yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
             allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
-            makethiscell = yfracsProb>allrands # perform test to see whether or not this cell should be included (pruning based on density func)
+            
+            makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
             yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
             self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            
             if p.sim['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
             randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
 
@@ -329,7 +346,7 @@ class Pop:
                 cellTags['x'] = p.net['modelsize'] * randLocs[i,0]  # calculate x location (um)
                 cellTags['z'] = p.net['modelsize'] * randLocs[i,1]  # calculate z location (um) 
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, x, yfracs[i], z, s.rank))
+                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
             s.lastGid = s.lastGid + self.numCells 
             return cells
 

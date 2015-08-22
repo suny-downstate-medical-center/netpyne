@@ -38,7 +38,7 @@ class Conn:
 class RandConn(Conn):         
     @classmethod
     def connect(cls, ncell, cellPost):
-        ''' Calculate connectivity as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac'''
+        ''' Generates random connectivity based on maxcons - no conn rules'''
         random.seed(s.id32('%d'%(p.sim['randseed']+cellPost.gid)))  # Reset random number generator  
         randPre = random.sample(xrange(ncell-1), random.randint(0, p.net['maxcons'])) # select random subset of pre cells
         randDelays = [random.gauss(p.net['delaymean'], p.net['delayvar']) for i in randPre] # select random delays based on mean and var params

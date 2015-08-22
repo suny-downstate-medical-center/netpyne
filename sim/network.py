@@ -42,10 +42,7 @@ def createCells():
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.cells = []
     for ipop in s.pops: # For each pop instantiate the network cells (objects of class 'Cell')
-        newCells = ipop.createCells() # create cells for this pop using Pop method
-        s.cells.extend(newCells)  # add to list of cells
-        s.pc.barrier()
-        if s.rank==0 and p.sim['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
+        fsim['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))           
     s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
     print('  Number of cells on node %i: %i ' % (s.rank,len(s.cells)))            
     

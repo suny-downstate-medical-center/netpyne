@@ -7,10 +7,6 @@ Contains cell and population classes
 Contributors: salvadordura@gmail.com
 """
 
-###############################################################################
-### IMPORT MODULES
-###############################################################################
-
 from neuron import h  # import NEURON
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 from time import time, sleep
@@ -24,7 +20,7 @@ warnings.filterwarnings('error')
 
 
 ###############################################################################
-### Instantiate network populations (objects of class 'Pop')
+# Instantiate network populations (objects of class 'Pop')
 ###############################################################################
 def createPops():
     s.pops = []  # list to store populations ('Pop' objects)
@@ -33,7 +29,7 @@ def createPops():
 
 
 ###############################################################################
-### Create Cells
+# Create Cells
 ###############################################################################
 def createCells():
     s.pc.barrier()
@@ -48,7 +44,7 @@ def createCells():
     
 
 ###############################################################################
-### Connect Cells
+# Connect Cells
 ###############################################################################
 def connectCells():
     # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
@@ -81,7 +77,7 @@ def connectCells():
 
 
 ###############################################################################
-### Add background inputs
+# Add background inputs
 ###############################################################################
 def addBackground():
     if s.rank==0: print('Creating background inputs...')

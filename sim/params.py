@@ -49,22 +49,18 @@ else:  # set network params manually
 
     # mpiHHTut
     if simType == 'mpiHHTut':
-        # option 1: list of dicts
-        net['cellParams'] = []
-        net['cellParams'].append({'tags':['cellType'], 'values':['PYR'], 'sectionParams': {} })
-        net['cellParams'][0] = {'soma': {}}
-        net['cellParams'][0]['soma'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mech':'hh'}
-
-        # option 2: dict of dict with tuple indices
+        # dictionary to store cell params using tuple indices 
         net['cellParams'] = {}
-        net['cellParams'][('cellModel','PYR')] = {'soma': {}}
-        net['cellParams'][('cellModel','PYR')]['soma'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mech':'hh'}
 
+        # PYR cell params
+        net['cellParams'][('cellType','PYR')] = {'sections': {}, 'Izhi2007Type': 'RS'}
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}
+        soma['mechs']['hh'] = {'gnbar': 1} 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}
+        net['cellParams'][('cellType','PYR')]['sections'] = {'soma': soma} 
 
-        net['ncell']   = 100  
         net['popParams'] = []  # create list of populations - each item will contain dict with pop params
-
-        net['popParams'].append({'cellModel': 'HH', 'cellType':'PYR', 'numCells': net['ncell']}) # add dict with params for this pop
+        net['popParams'].append({'cellModel': 'HH', 'cellType':'PYR', 'numCells': 100}) # add dict with params for this pop
         
         ## Connectivity parameters
         net['connType'] = 'random'
@@ -79,6 +75,51 @@ else:  # set network params manually
 
     # yfrac-based M1 model
     elif simType == 'M1model':
+
+        # dictionary to store cell params using tuple indices 
+        net['cellParams'] = {}
+
+        # IT cell params
+        net['cellParams'][('cellType','IT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
+        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+        soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        net['cellParams'][('cellType','PYR')]['sections'] = {'soma': soma}  
+
+        # PT cell params
+        net['cellParams'][('cellType','PT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
+        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+        soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        net['cellParams'][('cellType','PT')]['sections'] = {'soma': soma}  
+
+        # CT cell params
+        net['cellParams'][('cellType','CT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
+        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+        soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        net['cellParams'][('cellType','CT')]['sections'] = {'soma': soma}  
+
+        # SOM cell params
+        net['cellParams'][('cellType','SOM')] = {'sections': {}, 'Izhi2007Type': 'FS'} 
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
+        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+        soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+        net['cellParams'][('cellType','SOM')]['sections'] = {'soma': soma}  
+
+        # PV cell params
+        net['cellParams'][('cellType','PV')] = {'sections': {}, 'Izhi2007Type': 'LTS'} 
+        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
+        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+        soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+        net['cellParams'][('cellType','PV')]['sections'] = {'soma': soma}  
+
+
         net['popParams'] = []  # create list of populations, where each item contains a dict with the pop params
 
                        # popid, cell model,     EorI, cellType, subClass, yfracRange,     density,                
@@ -99,7 +140,7 @@ else:  # set network params manually
         
         ## General connectivity parameters
         net['connType'] = 'yfrac'
-        net['numReceptors'] = 1 
+        #net['numReceptors'] = 1 
         net['useconnprobdata'] = True # Whether or not to use connectivity data
         net['useconnweightdata'] = True # Whether or not to use weight data
         net['mindelay'] = 2 # Minimum connection delay, in ms

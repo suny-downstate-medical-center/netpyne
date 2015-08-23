@@ -22,7 +22,7 @@ import shared as s
 
 
 ###############################################################################
-### Sequence of commands to run full model
+# Sequence of commands to run full model
 ###############################################################################
 def runSeq():
     if s.rank==0: verystart=time()  # store initial time

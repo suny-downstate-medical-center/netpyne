@@ -49,20 +49,36 @@ else:  # set network params manually
 
     # mpiHHTut
     if simType == 'mpiHHTut':
-        # dictionary to store cell params using tuple indices 
-        net['cellParams'] = {}
+        
+        # Cell params
+        net['cellParams'] = {} # dictionary to store cell params using tuple indices 
 
         # PYR cell params
         net['cellParams'][('cellType','PYR')] = {'sections': {}, 'Izhi2007Type': 'RS'}
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}
-        soma['mechs']['hh'] = {'gnbar': 1} 
-        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}
-        net['cellParams'][('cellType','PYR')]['sections'] = {'soma': soma} 
-
-        net['popParams'] = []  # create list of populations - each item will contain dict with pop params
-        net['popParams'].append({'cellModel': 'HH', 'cellType':'PYR', 'numCells': 100}) # add dict with params for this pop
         
-        ## Connectivity parameters
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+        soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
+        soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
+        soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2': 5.3, 'e': 0}
+        
+        dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}
+        dend['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
+        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
+        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
+        dend['topol'] = {'parentSec': 'soma', 'parentX': 0, 'childX': 0}
+        dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+        dend['mechs']['nacurrent'] = {'ki': 1}
+        dend['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}
+        
+        net['cellParams'][('cellType','PYR')]['sections'] = {'soma': soma, 'dend': dend} 
+
+
+        # Connectivity parameters
+        net['popParams'] = []  # create list of populations - each item will contain dict with pop params
+        net['popParams'].append({'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+        
         net['connType'] = 'random'
         net['numReceptors'] = 1
         net['maxcons']   = 20                   # number of connections onto each cell
@@ -81,40 +97,55 @@ else:  # set network params manually
 
         # IT cell params
         net['cellParams'][('cellType','IT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
-        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+        soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
         soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
         soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+        soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
         net['cellParams'][('cellType','PYR')]['sections'] = {'soma': soma}  
 
         # PT cell params
         net['cellParams'][('cellType','PT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
-        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+        soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
         soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
         soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+        soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
         net['cellParams'][('cellType','PT')]['sections'] = {'soma': soma}  
 
         # CT cell params
         net['cellParams'][('cellType','CT')] = {'sections': {}, 'Izhi2007Type': 'RS'} 
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
-        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+        soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
         soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
         soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
+        soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+        soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
         net['cellParams'][('cellType','CT')]['sections'] = {'soma': soma}  
 
         # SOM cell params
         net['cellParams'][('cellType','SOM')] = {'sections': {}, 'Izhi2007Type': 'FS'} 
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
-        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+        soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+        soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
         soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
         soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
         net['cellParams'][('cellType','SOM')]['sections'] = {'soma': soma}  
 
         # PV cell params
         net['cellParams'][('cellType','PV')] = {'sections': {}, 'Izhi2007Type': 'LTS'} 
-        soma = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'mechs': {}, 'syns': {}}  #  soma
-        soma['mechs'] = {'hh': {'gnbar': 1}}  # HH 
+        soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+        soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+        soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+        soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+        soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}  # NMDA
         soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
         soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
         net['cellParams'][('cellType','PV')]['sections'] = {'soma': soma}  

@@ -23,7 +23,8 @@ class Cell:
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
-        self.tags = tags  # 
+        self.tags = tags  # dictionary of cell tags/attributes 
+        self.syns = []  # list of Synapse objects
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -38,6 +39,62 @@ class Cell:
 
 class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
+
+    def make(self):
+        for key,val in p.net['cellParams'].iteritems():  # for each set of cell params 
+            conditionsMet = 1
+            for (condKey,condVal) in zip(key[0::2], key[1::2]):  # check if all conditions in key tuple are met
+                if self.tags[condKey] != condVal: 
+                    conditionsMet = 0
+                    break
+            if conditionsMet:  # if all conditions are met, set values for this cell
+                setParams(val)
+
+
+    def setParams(self, params):
+        for sectName,sectParams in params['sections'].iteritems(): #  set params for all sections
+            if sectName not in self.__dict__:
+                self.__dict__[sectName] = h.Section()  # create Neuron section object if doesn't exist
+            sect = self.__dict__[sectName]  # pointer
+            
+            for mechName,mechParams in sect['mechs']:  # add mechanisms of this section
+                if mechName not in sect.__dict__: 
+                    sect(0.5).insert(mechName)
+                for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
+                    setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
+
+            if sect['syns']:  # add synapses of this section
+                for syn in sect['syns']:
+                    self.syns.append(Synapse(sect=self.soma, loc=0.5, tau1=0.05, tau2=5.3, e=0)
+
+            
+            for geomParamName,geomParamValue in sect['geom']:  # set geometry params 
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        setattr(sect(0.5), geomParamName, geomParamValue)
+
+            if ['geom']['pt3d']:  # set 3d geometry
+                h.pt3dclear(sec=sect)
+                x = self.tags['x']
+                y = self.tags['yfrac'] * p.net['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                z = self.tags['z']
+                for pt3d in sect['geom']['pt3d']:
+                    h.pt3dadd(x + pt3d['x'], x + pt3d['y'], x + pt3d['z'], pt3d['d'], sec=sect)
+
+
+        for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
+            sect = self.__dict__[sectName]  # pointer to child sec
+            sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
+        
+ dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}
+        dend['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
+        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
+        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
+        dend['topol'] = {'parentSec': 'soma', 'parentX': 0, 'childX': 0}
+        dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+        dend['mechs']['nacurrent'] = {'ki': 1}
+        dend['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}
+        
+
 
     def make (self):
         if self.tags['cellType'] == 'Pyr': 

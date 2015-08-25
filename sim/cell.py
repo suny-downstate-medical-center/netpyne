@@ -19,8 +19,8 @@ import shared as s
 ###############################################################################
 
 class Cell:
-
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
+    
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
@@ -28,6 +28,51 @@ class Cell:
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
+
+
+    def associateGid (self, threshold = 10.0):
+        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
+        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma)
+        nc.threshold = threshold
+        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+        s.gidVec.append(self.gid) # index = local id; value = global id
+        s.gidDic[self.gid] = len(s.gidVec)
+        del nc # discard netcon
+
+
+    def addBackground (self):
+        self.backgroundRand = h.Random()
+        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
+        self.backgroundRand.negexp(1)
+        self.backgroundSource = h.NetStim() # Create a NetStim
+        self.backgroundSource.interval = p.net['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+        self.backgroundSource.noise = p.net['backgroundNoise'] # Fractional noise in timing
+        self.backgroundSource.number = p.net['backgroundNumber'] # Number of spikes
+        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
+        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
+        for r in range(p.net['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[0] = p.net['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+
+    
+    def record (self):
+        # set up voltage recording; recdict will be taken from global context
+        for k,v in p.sim['recdict'].iteritems():
+            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
+            except: print 'bad state variable pointer: ',v
+            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.sim['tstop']/p.sim['recordStep']+10).resize(0)
+            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
+
+
+
+
+    def __getstate__(self): # MAKE GENERIC! REMOVE ALL NON-PICKABLE OBJECTS!!
+        ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
+        odict = self.__dict__.copy() # copy the dict since we change it
+        del odict['sec']  # remove fields that cannot be pickled       
+        del odict['m']     
+        return odict
 
 
 
@@ -52,27 +97,32 @@ class HH(Cell):
 
 
     def setParams(self, params):
-        for sectName,sectParams in params['sections'].iteritems(): #  set params for all sections
+        # set params for all sections
+        for sectName,sectParams in params['sections'].iteritems(): 
+            # create section
             if sectName not in self.__dict__:
                 self.__dict__[sectName] = h.Section(name=sectName)  # create Neuron section object if doesn't exist
             sect = self.__dict__[sectName]  # pointer
             
-            for mechName,mechParams in sect['mechs'].iteritems():  # add mechanisms of this section
+            # add mechanisms 
+            for mechName,mechParams in sect['mechs'].iteritems():  
                 if mechName not in sect.__dict__: 
                     sect(0.5).insert(mechName)
                 for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
                     setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
 
-            if sect['syns']:  # add synapses of this section
+            # add synapses 
+            if sect['syns']:  
                 for synName,synParams in sect['syns'].iteritems():
-                    #self.syns[sectName+synName] = Synapse(sect=sect, synParams=synParams)
                     self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
 
-            for geomParamName,geomParamValue in sect['geom'].iteritems():  # set geometry params 
+            # set geometry params 
+            for geomParamName,geomParamValue in sect['geom'].iteritems():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sect(0.5), geomParamName, geomParamValue)
 
-            if ['geom']['pt3d']:  # set 3d geometry
+            # set 3d geometry
+            if ['geom']['pt3d']:  
                 h.pt3dclear(sec=sect)
                 x = self.tags['x']
                 y = self.tags['yfrac'] * p.net['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
@@ -80,7 +130,7 @@ class HH(Cell):
                 for pt3d in sect['geom']['pt3d']:
                     h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
 
-
+        # set topology 
         for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
             sect = self.__dict__[sectName]  # pointer to child sec
             sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
@@ -90,37 +140,6 @@ class HH(Cell):
         self.stim = h.IClamp(0.5, sec=self.soma)
         self.stim.amp = 0.1
         self.stim.dur = 0.1
-
-    def associateGid (self):
-        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma) # nc determines spike threshold but then discarded
-        nc.threshold = p.net['threshold']
-        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-        del nc # discard netcon
-    
-    def addBackground (self):
-        self.backgroundRand = h.Random()
-        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-        self.backgroundRand.negexp(1)
-        self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = p.net['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = p.net['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = p.net['backgroundNumber'] # Number of spikes
-        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-        for r in range(p.net['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[0] = p.net['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-    
-    def record (self):
-        # set up voltage recording; recdict will be taken from global context
-        for k,v in p.sim['recdict'].iteritems():
-            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-            except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.sim['tstop']/p.sim['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
-
 
 
 
@@ -211,13 +230,6 @@ class Izhi2007a(Cell):
             s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
 
 
-    def __getstate__(self):
-        ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
-        odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['m']  # remove fields that cannot be pickled
-        del odict['sec']              
-        return odict
-
 
 ###############################################################################
 #
@@ -225,7 +237,7 @@ class Izhi2007a(Cell):
 #
 ###############################################################################
 
-class Izhi2007b(Cell):
+class izhi2007b(Cell):
     """
     Python class for the different celltypes of Izhikevich neuron. 
 
@@ -252,6 +264,7 @@ class Izhi2007b(Cell):
     # Izhikevich equation parameters for the different cell types
     type2007 = collections.OrderedDict([
       #              C    k     vr  vt vpeak   a      b   c    d  celltype
+      ('paramNames',('C', 'k', 'vr', 'vt', 'vpeak', 'a', 'b', 'c', 'd', 'celltype')),
       ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
       ('IB',        (150, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
       ('CH',        (50,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
@@ -260,70 +273,45 @@ class Izhi2007b(Cell):
       ('TC',        (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
       ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
-    def make (self):
-        # Instantiate cell model based on cellType
-        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
-            izhType = 'RS' 
-        elif self.tags['cellType'] == 'PV': # if Pva use FS
-            izhType = 'FS' 
-        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
-            izhType = 'LTS' 
 
-        self.sec = h.Section(name='izhi2007b'+izhType+str(self.gid))  # create Section
-        self.sec.L, self.sec.diam = 6.3, 5  # empirically tuned L and diam 
-        self.m = h.Izhi2007b(0.5, sec=self.sec)  # create point process object  
-        self.vinit = -60  # set vinit
-        self.m.C, self.m.k, self.m.vr, self.m.vt, self.m.vpeak, self.m.a, \
-        self.m.b, self.m.c, self.m.d, self.m.celltype = self.type2007[izhType]
-        self.m.cellid = self.gid # Cell ID for keeping track which cell this is
-        s.fih.append(s.h.FInitializeHandler(self.init))
+    def setParams(self, params):
+        # set params for soma 
+        if 'soma' in params['sections'].iterkeys():  # if soma is included in the cell params
+            
+            # create section
+            if 'soma' not in self.__dict__:  
+                self.soma = h.Section(name='soma'+params['Izhi2007Type'])
+                sect = self.soma
+
+            # set geometry params 
+            for geomParamName,geomParamValue in sect['geom'].iteritems():  
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        setattr(sect(0.5), geomParamName, geomParamValue)
+
+
+            # create Izhi object
+            if 'izh' not in self.__dict__:
+                self.izh = h.Izhi2007b(0.5, sec=self.soma)
+
+            # set Izhi params
+            izhParamNames = self.type2007['paramNames']
+            izhParamValues = self.type2007[params['Izhi2007Type']]
+            for (izhParamName, izhParamValue) in zip(izhParamNames, izhParamValues):
+                setattr(self.izh, izhParamName, izhParamValue)
+            self.izh.vinit = izhParamValues['vr']  # check if can make vinit part of the type2007 params
+            self.izh.cellid = self.gid 
+            s.fih.append(s.h.FInitializeHandler(self.init))  # check why this is needed
+
+            # add synapses 
+            if sect['syns']:  
+                for synName,synParams in sect['syns'].iteritems():
+                    self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
+
+        else: 
+            print 'Error: soma section not found for Izhi2007 model'
 
     def init(self): 
-        self.sec.v=-60
-
-
-    def associateGid (self, threshold = 10.0):
-        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.sec(0.5)._ref_v, None,sec=self.sec)
-        nc.threshold = threshold
-        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-        s.gidVec.append(self.gid) # index = local id; value = global id
-        s.gidDic[self.gid] = len(s.gidVec)
-        del nc # discard netcon
-
-
-    def addBackground (self):
-        self.backgroundRand = h.Random()
-        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-        self.backgroundRand.negexp(1)
-        self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = p.net['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = p.net['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = p.net['backgroundNumber'] # Number of spikes
-        self.backgroundSyn = h.ExpSyn(0,sec=self.sec)
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-        for r in range(p.net['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[p.net['backgroundReceptor']] = p.net['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-
-
-    def record(self):
-        # set up voltage recording; recdict will be taken from global context
-        for k,v in p.sim['recdict'].iteritems():
-            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-            except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.sim['tstop']/p.sim['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
-
-
-    def __getstate__(self):
-        ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
-        odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['sec']  # remove fields that cannot be pickled       
-        del odict['m']     
-        return odict
-
+        self.soma.v = -60  # check why this is needed
 
 
 

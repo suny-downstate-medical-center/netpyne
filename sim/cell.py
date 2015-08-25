@@ -24,7 +24,7 @@ class Cell:
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
-        self.syns = []  # list of Synapse objects
+        self.syns = {}  # dict of Synapse objects
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -48,27 +48,27 @@ class HH(Cell):
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
-                setParams(val)
+                self.setParams(val)
 
 
     def setParams(self, params):
         for sectName,sectParams in params['sections'].iteritems(): #  set params for all sections
             if sectName not in self.__dict__:
-                self.__dict__[sectName] = h.Section()  # create Neuron section object if doesn't exist
+                self.__dict__[sectName] = h.Section(name=sectName)  # create Neuron section object if doesn't exist
             sect = self.__dict__[sectName]  # pointer
             
-            for mechName,mechParams in sect['mechs']:  # add mechanisms of this section
+            for mechName,mechParams in sect['mechs'].iteritems():  # add mechanisms of this section
                 if mechName not in sect.__dict__: 
                     sect(0.5).insert(mechName)
                 for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
                     setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
 
             if sect['syns']:  # add synapses of this section
-                for syn in sect['syns']:
-                    self.syns.append(Synapse(sect=self.soma, loc=0.5, tau1=0.05, tau2=5.3, e=0)
+                for synName,synParams in sect['syns'].iteritems():
+                    #self.syns[sectName+synName] = Synapse(sect=sect, synParams=synParams)
+                    self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
 
-            
-            for geomParamName,geomParamValue in sect['geom']:  # set geometry params 
+            for geomParamName,geomParamValue in sect['geom'].iteritems():  # set geometry params 
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sect(0.5), geomParamName, geomParamValue)
 
@@ -78,34 +78,13 @@ class HH(Cell):
                 y = self.tags['yfrac'] * p.net['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
                 z = self.tags['z']
                 for pt3d in sect['geom']['pt3d']:
-                    h.pt3dadd(x + pt3d['x'], x + pt3d['y'], x + pt3d['z'], pt3d['d'], sec=sect)
+                    h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
 
 
         for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
             sect = self.__dict__[sectName]  # pointer to child sec
             sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
-        
- dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}
-        dend['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
-        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
-        dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
-        dend['topol'] = {'parentSec': 'soma', 'parentX': 0, 'childX': 0}
-        dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-        dend['mechs']['nacurrent'] = {'ki': 1}
-        dend['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}
-        
-
-
-    def make (self):
-        if self.tags['cellType'] == 'Pyr': 
-            self.soma = h.Section(name='soma')
-            self.soma.diam = 18.8
-            self.soma.L = 18.8
-            self.soma.Ra = 123.0
-            self.soma.insert('hh')
-            self.activate()
-        elif self.tags['cellType'] == 'IT':
-            pass
+   
 
     def activate (self):
         self.stim = h.IClamp(0.5, sec=self.soma)

@@ -276,11 +276,13 @@ class izhi2007b(Cell):
 
     def setParams(self, params):
         # set params for soma 
-        if 'soma' in params['sections'].iterkeys():  # if soma is included in the cell params
+        sectName = 'soma'  # selected section for Izhi mechanism
+
+        if sectName in params['sections'].iterkeys():  # if soma is included in the cell params
             
             # create section
-            if 'soma' not in self.__dict__:  
-                self.soma = h.Section(name='soma'+params['Izhi2007Type'])
+            if sectName not in self.__dict__:  
+                self.soma = h.Section(name=sectName+params['Izhi2007'])
                 sect = self.soma
 
             # set geometry params 
@@ -288,10 +290,9 @@ class izhi2007b(Cell):
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sect(0.5), geomParamName, geomParamValue)
 
-
             # create Izhi object
             if 'izh' not in self.__dict__:
-                self.izh = h.Izhi2007b(0.5, sec=self.soma)
+                self.izh = h.Izhi2007b(0.5, sec=sect)
 
             # set Izhi params
             izhParamNames = self.type2007['paramNames']

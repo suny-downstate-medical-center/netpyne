@@ -324,6 +324,7 @@ class Pop:
     ''' Python class used to instantiate the network population '''
     def __init__(self,  tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
+        self.cellGids = []  # list of cell gids beloging to this pop
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):

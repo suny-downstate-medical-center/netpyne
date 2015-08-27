@@ -13,8 +13,7 @@ from time import time
 from datetime import datetime
 import pickle
 import cPickle as pk
-import itertools
-from neuron import h, gui, init # Import NEURON
+from neuron import h, init # Import NEURON
 import params as p
 import shared as s
 

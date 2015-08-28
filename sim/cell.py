@@ -44,7 +44,7 @@ class Conn(object):
         self.weight = weight
         self.netcon = s.pc.gid_connect(preGid, self.synm)  # create Netcon between global gid and local cell object
         self.netcon.delay = delay  # set Netcon delay
-        for i in range(p.net['numReceptors']): self.netcon.weight[i] = weight[i]  # set Netcon weights
+        for i in range(s.net.param['numReceptors']): self.netcon.weight[i] = weight[i]  # set Netcon weights
         if p.sim['verbose']: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
             %(self.preGid, self.postGid, self.delay, weight[0], weight[1], weight[2], weight[3] ))
         pass
@@ -83,14 +83,14 @@ class Cell(object):
         self.backgroundRand.MCellRan4(self.gid,self.gid*2)
         self.backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = p.net['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.interval = s.net.param['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
         self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = p.net['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = p.net['backgroundNumber'] # Number of spikes
+        self.backgroundSource.noise = s.net.param['backgroundNoise'] # Fractional noise in timing
+        self.backgroundSource.number = s.net.param['backgroundNumber'] # Number of spikes
         self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
         self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-        for r in range(p.net['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[0] = p.net['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        for r in range(s.net.param['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[0] = s.net.param['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
 
     
@@ -124,7 +124,7 @@ class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
 
     def make(self):
-        for key,val in p.net['cellParams'].iteritems():  # for each set of cell params 
+        for key,val in s.net.param['cellParams'].iteritems():  # for each set of cell params 
             conditionsMet = 1
             for (condKey,condVal) in zip(key[0::2], key[1::2]):  # check if all conditions in key tuple are met
                 if self.tags[condKey] != condVal: 
@@ -163,7 +163,7 @@ class HH(Cell):
             if ['geom']['pt3d']:  
                 h.pt3dclear(sec=sect)
                 x = self.tags['x']
-                y = self.tags['yfrac'] * p.net['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                y = self.tags['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
                 z = self.tags['z']
                 for pt3d in sect['geom']['pt3d']:
                     h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
@@ -249,13 +249,13 @@ class Izhi2007a(Cell):
         self.backgroundRand.MCellRan4(self.gid,self.gid*2)
         self.backgroundRand.negexp(1)
         self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = p.net['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+        self.backgroundSource.interval = s.net.param['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
         self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = p.net['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = p.net['backgroundNumber'] # Number of spikes
+        self.backgroundSource.noise = s.net.param['backgroundNoise'] # Fractional noise in timing
+        self.backgroundSource.number = s.net.param['backgroundNumber'] # Number of spikes
         self.backgroundConn = h.NetCon(self.backgroundSource, self.m) # Connect this noisy input to a cell
-        for r in range(p.net['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[p.net['backgroundReceptor']] = p.net['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+        for r in range(s.net.param['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+        self.backgroundConn.weight[s.net.param['backgroundReceptor']] = s.net.param['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
         self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
 
 
@@ -384,8 +384,8 @@ class Pop(object):
         elif 'yFracRange' in self.tags:
             # use yfrac-dep density if pop object has yfrac and density variables
             cells = []
-            volume = p.net['scale'] * p.net['sparseness'] * (p.net['modelsize']/1e3)**2 \
-                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * p.net['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+            volume = s.net.param['scale'] * s.net.param['sparseness'] * (s.net.param['modelsize']/1e3)**2 \
+                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.param['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
             maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
@@ -404,11 +404,12 @@ class Pop(object):
 
             for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
                 gid = s.lastGid+i
-                # self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+                self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
                 cellTags = {k: v for (k, v) in self.tags.iteritems() if k not in ['yFracRange', 'density']}  # copy all pop tags to cell tags, except those that are pop-specific
                 cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
-                cellTags['x'] = p.net['modelsize'] * randLocs[i,0]  # calculate x location (um)
-                cellTags['z'] = p.net['modelsize'] * randLocs[i,1]  # calculate z location (um) 
+                cellTags['x'] = s.net.param['modelsize'] * randLocs[i,0]  # calculate x location (um)
+                cellTags['z'] = s.net.param['modelsize'] * randLocs[i,1]  # calculate z location (um)
+                cellTags['pop'] =  
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
                 if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
             s.lastGid = s.lastGid + self.numCells 

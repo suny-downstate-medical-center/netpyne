@@ -19,7 +19,7 @@ import shared as s
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(simConfig = None, netParams = None, net = None):
+def initialize(simConfig = None, netParam = None, net = None):
     s.simdata = {}  # used to store output simulation data (spikes etc)
     s.lastGid = 0  # keep track of las cell gid
     s.fih = []  # list of func init handlers
@@ -32,8 +32,8 @@ def initialize(simConfig = None, netParams = None, net = None):
     if simConfig:
         setSimCfg(simConfig)  # set simulation configuration
 
-    if netParams: 
-        setNetParams(netParams)  # set network parameters
+    if netParam: 
+        setNetParams(netParam)  # set network parameters
 
     createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
@@ -42,15 +42,15 @@ def setNet(net):
     s.net = net
 
 def setSimCfg(cfg):
-    s.cfg = cfg
+    s.config = cfg
 
-def loadSimCfg(paramsFile):
+def loadSimCfg(paramFile):
     pass
 
-def setNetParams(params):
-    s.net.params = params
+def setNetParams(param):
+    s.net.param = param
 
-def loadSimParams(paramsFile):
+def loadSimParams(paramFile):
     pass
 
 def createParallelContext():
@@ -209,5 +209,5 @@ def saveData():
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)
 
-            # check shelves
+        # Save to pickle file
 

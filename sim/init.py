@@ -27,7 +27,7 @@ import shared as s
 def runSeq():
     # net = s.Network(params.net) # optionally can create or load network and pass as argument
 
-    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParams = p.mpiHHTut.netParams)
+    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParam = p.mpiHHTut.netParam)
     
     s.net.createPops()  # instantiate network populations
     s.net.createCells()  # instantiate network cells based on defined populations

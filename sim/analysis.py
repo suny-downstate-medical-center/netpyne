@@ -15,7 +15,6 @@ import csv
 import pickle
 from mpl_toolkits.mplot3d import Axes3D
 
-import params as p
 import shared as s
 
 ###############################################################################

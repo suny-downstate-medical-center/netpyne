@@ -9,8 +9,41 @@ Contributors: salvadordura@gmail.com
 from pylab import arange, seed, rand, array
 import collections
 from neuron import h # Import NEURON
-import params as p
 import shared as s
+
+
+###############################################################################
+### SYNAPSE CLASS
+###############################################################################
+
+class Synapse:
+    ''' Class used to instantiate connections, and containing methods to connect cells (eg. random, yfrac-based)''' 
+    def __init__(self, postGid, postSect=None, sectObj, synParams):
+        self.postGid = postGid
+        self.postSect = postSect
+        self.synm = getattr(h, synParams['type'])(loc=synParams['loc'], sec=sectObj)
+        for paramName,paramValue in synParams.iteritems():
+            if paramName not in ['type','loc']:
+                setattr(self, paramName, paramValue)
+    
+
+
+
+###############################################################################
+### CONNECTION CLASS
+###############################################################################
+class Conn:
+    def connect(self, preGid, delay, weight):
+        self.preGid = preGid  
+        self.delay = delay
+        self.weight = weight
+        self.netcon = s.pc.gid_connect(preGid, self.synm)  # create Netcon between global gid and local cell object
+        self.netcon.delay = delay  # set Netcon delay
+        for i in range(p.net['numReceptors']): self.netcon.weight[i] = weight[i]  # set Netcon weights
+        if p.sim['verbose']: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
+            %(self.preGid, self.postGid, self.delay, weight[0], weight[1], weight[2], weight[3] ))
+        pass
+
 
 ###############################################################################
 #

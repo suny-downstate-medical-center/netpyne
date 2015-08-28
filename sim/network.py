@@ -2,7 +2,7 @@
 """
 network.py 
 
-Contains cell and population classes 
+Defines Network class which contains cell objects and network-realated methods
 
 Contributors: salvadordura@gmail.com
 """

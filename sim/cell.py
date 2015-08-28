@@ -1,7 +1,7 @@
 """
 cell.py 
 
-Contains cell and population classes 
+Contains Synapse, Conn, Cell and Population classes 
 
 Contributors: salvadordura@gmail.com
 """

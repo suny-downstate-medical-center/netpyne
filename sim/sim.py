@@ -1,8 +1,7 @@
 """
 sim.py 
 
-list of model objects (paramaters and variables) to be shared across modules
-Can modified manually or via arguments from main.py
+Contains functions related to the simulation (eg. setupRecording, runSim) 
 
 Contributors: salvadordura@gmail.com
 """
@@ -20,23 +19,24 @@ import shared as s
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(simCfg = None, netParams = None, net = None):
-    s.simdata = {}  # used to store
+def initialize(simConfig = None, netParams = None, net = None):
+    s.simdata = {}  # used to store output simulation data (spikes etc)
     s.lastGid = 0  # keep track of las cell gid
     s.fih = []  # list of func init handlers
 
     if net:
         setNet(s.net)  # set existing external network
     else: 
-        setNet(s.Network())  # create new network
+        setNet(s.Network())  # or create new network
 
-    if simCfg:
-        setSimCfg(simCfg)
+    if simConfig:
+        setSimCfg(simConfig)  # set simulation configuration
 
-    if netParams:
-        setNetParams(netParams)
+    if netParams: 
+        setNetParams(netParams)  # set network parameters
 
-    createParallelContext()
+    createParallelContext()  # iniitalize PC, nhosts and rank
+    readArgs()  # read arguments from commandline
 
 def setNet(net):
     s.net = net
@@ -45,13 +45,13 @@ def setSimCfg(cfg):
     s.cfg = cfg
 
 def loadSimCfg(paramsFile):
-    s.cfg = cfg
+    pass
 
 def setNetParams(params):
     s.net.params = params
 
 def loadSimParams(paramsFile):
-    s.net.params = params
+    pass
 
 def createParallelContext():
     s.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -69,7 +69,7 @@ def id32(obj):
 ###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and s.net s.params
 ###############################################################################
-def readArgs(arg):
+def readArgs():
     for argv in sys.argv[1:]: # Skip first argument, which is file name
         arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
         harg = arg[0].split('.')+[''] # Separate out variable name; '' since if split fails need to still have an harg[1]

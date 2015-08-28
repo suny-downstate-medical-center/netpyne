@@ -17,7 +17,7 @@ Contributors: salvadordura@gmail.com
 from time import time
 from neuron import h# Import NEURON
 
-import params
+import params as p
 import shared as s
 
 
@@ -27,12 +27,13 @@ import shared as s
 def runSeq():
     # net = s.Network(params.net) # optionally can create or load network and pass as argument
 
-    s.sim.initialize(simCfg = params.simConfig['default'], netParams = params.netParams['mpiHHTut'])
-    s.sim.readArgs()  # modify parameters based on commandline arguments
+    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParams = p.mpiHHTut.netParams)
+    
     s.net.createPops()  # instantiate network populations
     s.net.createCells()  # instantiate network cells based on defined populations
     s.net.connectCells()  
     s.net.addBackground()
+
     s.sim.setupRecording()
     s.sim.runSim()
     s.sim.gatherData()

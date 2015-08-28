@@ -22,25 +22,25 @@ sim = {}  # dictionary to store simulation params
 #
 ###############################################################################
 
-## Position parameters
-net['scale'] = 1 # Size of simulation in thousands of cells
-net['cortthaldist'] = 3000 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
-net['corticalthick'] = 1740 # cortical thickness/depth
-
-
-## Background input parameters
-net['useBackground'] = True # Whether or not to use background stimuli
-net['backgroundRate'] = 5 # Rate of stimuli (in Hz)
-net['backgroundRateMin'] = 0.1 # Rate of stimuli (in Hz)
-net['backgroundNumber'] = 1e10 # Number of spikes
-net['backgroundNoise'] = 1 # Fractional noise
-net['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
-net['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
-
-
-# mpiHHTut
+###############################################################################
+# MPI HH TUTORIAL
+###############################################################################
 if simType == 'mpiHHTut':
-    
+
+    ## Position parameters
+    net['scale'] = 1 # Size of simulation in thousands of cells
+    net['corticalthick'] = 1000 # cortical thickness/depth
+
+    ## Background input parameters
+    net['useBackground'] = True # Whether or not to use background stimuli
+    net['backgroundRate'] = 10 # Rate of stimuli (in Hz)
+    net['backgroundRateMin'] = 0.5 # Rate of stimuli (in Hz)
+    net['backgroundNumber'] = 1e10 # Number of spikes
+    net['backgroundNoise'] = 1 # Fractional noise
+    net['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
+    net['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
+
+        
     # Cell properties list
     net['cellProperties'] = []
 
@@ -81,8 +81,26 @@ if simType == 'mpiHHTut':
     net['threshold'] = 10.0                 # threshold 
 
 
-# yfrac-based M1 model
+
+###############################################################################
+# M1 6-LAYER YFRAC-BASED MODEL
+###############################################################################
 elif simType == 'M1model':
+
+    ## Position parameters
+    net['scale'] = 1 # Size of simulation in thousands of cells
+    net['cortthaldist'] = 1500 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
+    net['corticalthick'] = 1740 # cortical thickness/depth
+
+    ## Background input parameters
+    net['useBackground'] = True # Whether or not to use background stimuli
+    net['backgroundRate'] = 5 # Rate of stimuli (in Hz)
+    net['backgroundRateMin'] = 0.1 # Rate of stimuli (in Hz)
+    net['backgroundNumber'] = 1e10 # Number of spikes
+    net['backgroundNoise'] = 1 # Fractional noise
+    net['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
+    net['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
+
 
     # Cell properties list
     net['cellProperties'] = []

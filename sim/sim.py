@@ -20,7 +20,7 @@ import shared as s
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(simParams = None, netParams = None, net = None):
+def initialize(simCfg = None, netParams = None, net = None):
     s.simdata = {}  # used to store
     s.lastGid = 0  # keep track of las cell gid
     s.fih = []  # list of func init handlers
@@ -30,8 +30,8 @@ def initialize(simParams = None, netParams = None, net = None):
     else: 
         setNet(s.Network())  # create new network
 
-    if simParams:
-        setSimParams(simParams)
+    if simCfg:
+        setSimCfg(simCfg)
 
     if netParams:
         setNetParams(netParams)
@@ -41,11 +41,11 @@ def initialize(simParams = None, netParams = None, net = None):
 def setNet(net):
     s.net = net
 
-def setSimParams(params):
-    s.params = params
+def setSimCfg(cfg):
+    s.cfg = cfg
 
-def loadSimParams(paramsFile):
-    s.params = params
+def loadSimCfg(paramsFile):
+    s.cfg = cfg
 
 def setNetParams(params):
     s.net.params = params

@@ -13,11 +13,13 @@ import shared as s
 
 
 ###############################################################################
-### SYNAPSE CLASS
+#
+# SYNAPSE CLASS
+#
 ###############################################################################
 
-class Synapse:
-    ''' Class used to instantiate connections, and containing methods to connect cells (eg. random, yfrac-based)''' 
+class Synapse(object):
+    ''' Class used to instantiate synapses inside a Cell object''' 
     def __init__(self, postGid, postSect=None, sectObj, synParams):
         self.postGid = postGid
         self.postSect = postSect
@@ -30,9 +32,12 @@ class Synapse:
 
 
 ###############################################################################
-### CONNECTION CLASS
+#
+# CONNECTION CLASS
+#
 ###############################################################################
-class Conn:
+class Conn(object):
+    ''' Class used to instantiate connections inside a Cell object''' 
     def connect(self, preGid, delay, weight):
         self.preGid = preGid  
         self.delay = delay
@@ -51,7 +56,7 @@ class Conn:
 #
 ###############################################################################
 
-class Cell:
+class Cell(object):
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     
     def __init__(self, gid, tags):
@@ -353,7 +358,7 @@ class izhi2007b(Cell):
 ### POP CLASS
 ###############################################################################
 
-class Pop:
+class Pop(object):
     ''' Python class used to instantiate the network population '''
     def __init__(self,  tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)

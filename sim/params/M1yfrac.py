@@ -162,7 +162,7 @@ netParams['connParams'] = []
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty),
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->IT rule
+    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA', 'annot': 'ITtoITconn'})  # IT->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
@@ -266,7 +266,9 @@ netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'ce
 
 
 
-
+# Dictionary of annotations
+netParams['annots'] = {}
+netParams['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al., 2008); L5 strong by wiring matrix in (Weiler et al., 2008)'
 
 ###############################################################################
 # SIMULATION PARAMETERS

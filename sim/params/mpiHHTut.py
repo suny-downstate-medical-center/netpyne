@@ -1,8 +1,8 @@
 """
 params.py 
 
-netParams is a dict containing different sets of network parameters
-eg. netParams['mpiHHTut'] or netParams['M1yfrac']
+netParam is a dict containing different sets of network parameters
+eg. netParam['mpiHHTut'] or netParam['M1yfrac']
 
 simConfig is a dict containing different sets of simulation configurations
 eg. simConfig['default'] or simConfig['M1']
@@ -13,7 +13,7 @@ Contributors: salvadordura@gmail.com
 from pylab import array
 
 
-netParams = {}  # dictionary to store sets of network parameters
+netParam = {}  # dictionary to store sets of network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 
@@ -27,24 +27,24 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParams['mpiHHTut'] = {}  # dictionary to store netParams
-p = netParams['mpiHHTut']  # pointer to dict
+netParam['mpiHHTut'] = {}  # dictionary to store netParam
+p = netParam['mpiHHTut']  # pointer to dict
 
 ## Position parameters
-netParams['scale'] = 1 # Size of simulation in thousands of cells
-netParams['corticalthick'] = 1000 # cortical thickness/depth
+netParam['scale'] = 1 # Size of simulation in thousands of cells
+netParam['corticalthick'] = 1000 # cortical thickness/depth
 
 ## Background input parameters
-netParams['useBackground'] = True # Whether or not to use background stimuli
-netParams['backgroundRate'] = 10 # Rate of stimuli (in Hz)
-netParams['backgroundRateMin'] = 0.5 # Rate of stimuli (in Hz)
-netParams['backgroundNumber'] = 1e10 # Number of spikes
-netParams['backgroundNoise'] = 1 # Fractional noise
-netParams['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
-netParams['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
+netParam['useBackground'] = True # Whether or not to use background stimuli
+netParam['backgroundRate'] = 10 # Rate of stimuli (in Hz)
+netParam['backgroundRateMin'] = 0.5 # Rate of stimuli (in Hz)
+netParam['backgroundNumber'] = 1e10 # Number of spikes
+netParam['backgroundNoise'] = 1 # Fractional noise
+netParam['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
+netParam['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
     
 # Cell properties list
-netParams['cellProperties'] = []
+netParam['cellProps'] = []
 
 # PYR cell properties
 cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'}, 'Izhi2007Type': 'RS', 'sections': {}}
@@ -66,21 +66,20 @@ dend['mechs']['nacurrent'] = {'ki': 1}
 dend['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}
 
 cellProp['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
-netParams['cellProperties'].append(cellProp)  # add dict to list of cell properties
+netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+netParam['popParams'] = []  # create list of populations - each item will contain dict with pop params
+netParam['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
 
-netParams['connType'] = 'random'
-netParams['numReceptors'] = 1
-netParams['maxcons']   = 20                   # number of connections onto each cell
-netParams['weight']    = 0.004                # weight of each connection
-netParams['delaymean'] = 13.0                 # mean of delays
-netParams['delayvar']  = 1.4                  # variance of delays
-netParams['delaymin']  = 0.2                  # miniumum delays
-netParams['threshold'] = 10.0                 # threshold 
-
+netParam['connType'] = 'random'
+netParam['numReceptors'] = 1
+netParam['maxcons']   = 20                   # number of connections onto each cell
+netParam['weight']    = 0.004                # weight of each connection
+netParam['delaymean'] = 13.0                 # mean of delays
+netParam['delayvar']  = 1.4                  # variance of delays
+netParam['delaymin']  = 0.2                  # miniumum delays
+netParam['threshold'] = 10.0                 # threshold 
 
 
 
@@ -94,10 +93,11 @@ simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
 simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
-#h.dt = simConfig['dt'] = 0.5 # Internal integration timestep to use
+simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['randseed'] = 1 # Random seed to use
+simConfig['randseed'] = 1 # Rand
+om seed to use
 
 ## Recording 
 simConfig['recdict'] = {'Vsoma':'soma(0.5)._ref_v'}
@@ -118,11 +118,5 @@ simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotconn'] = False # whether to plot conn matrix
 simConfig['plotweightchanges'] = False # whether to plot weight changes (shown in conn matrix)
 simConfig['plot3darch'] = False # plot 3d architecture
-
-## Stimulus parameters
-simConfig['usestims'] = False # Whether or not to use stimuli at all
-simConfig['ltptimes']  = [5, 10] # Pre-microstim touch times
-simConfig['ziptimes'] = [10, 15] # Pre-microstim touch times
-
 
 

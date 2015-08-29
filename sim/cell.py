@@ -45,7 +45,7 @@ class Conn(object):
         self.netcon = s.pc.gid_connect(preGid, self.synm)  # create Netcon between global gid and local cell object
         self.netcon.delay = delay  # set Netcon delay
         for i in range(s.net.param['numReceptors']): self.netcon.weight[i] = weight[i]  # set Netcon weights
-        if p.sim['verbose']: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
+        if s.cfg['verbose']: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
             %(self.preGid, self.postGid, self.delay, weight[0], weight[1], weight[2], weight[3] ))
         pass
 
@@ -59,10 +59,13 @@ class Conn(object):
 class Cell(object):
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     
-    def __init__(self, gid, tags):
+    def __init__(self, gid, tag):
         self.gid = gid  # global cell id 
-        self.tags = tags  # dictionary of cell tags/attributes 
-        self.syns = {}  # dict of Synapse objects
+        self.tag = tag  # dictionary of cell tag/attributes 
+        self.sect = {}  # dict of sections
+        self.syn = {}  # dict of synapses
+        self.conn = []  # list of connections
+        self.propLabels = []  # list of labels of cell property sets (s.net.param['cellProps'])
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -76,6 +79,12 @@ class Cell(object):
         s.gidVec.append(self.gid) # index = local id; value = global id
         s.gidDic[self.gid] = len(s.gidVec)
         del nc # discard netcon
+
+    def addSect(self):
+
+    def addSyn(self):
+
+    def addMech(self):
 
 
     def addBackground (self):
@@ -96,13 +105,11 @@ class Cell(object):
     
     def record (self):
         # set up voltage recording; recdict will be taken from global context
-        for k,v in p.sim['recdict'].iteritems():
+        for k,v in s.cfg['recdict'].iteritems():
             try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
             except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.sim['tstop']/p.sim['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
-
-
+            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+10).resize(0)
+            s.simdata[k]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
 
     def __getstate__(self): # MAKE GENERIC! REMOVE ALL NON-PICKABLE OBJECTS!!
@@ -124,19 +131,20 @@ class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
 
     def make(self):
-        for key,val in s.net.param['cellParams'].iteritems():  # for each set of cell params 
+        for prop in s.net.param['cellProps']:  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in zip(key[0::2], key[1::2]):  # check if all conditions in key tuple are met
-                if self.tags[condKey] != condVal: 
+            for (condKey,condVal) in prop['conditions']:  # check if all conditions are met
+                if self.tag[condKey] != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
-                self.setParams(val)
+                self.tag['props'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
+                self.setProperties(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
 
 
-    def setParams(self, params):
+    def setProperties(self, params):
         # set params for all sections
-        for sectName,sectParams in params['sections'].iteritems(): 
+        for sectName,sectParams in self.param['sections'].iteritems(): 
             # create section
             if sectName not in self.__dict__:
                 self.__dict__[sectName] = h.Section(name=sectName)  # create Neuron section object if doesn't exist
@@ -150,8 +158,8 @@ class HH(Cell):
                     setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
 
             # add synapses 
-            if sect['syns']:  
-                for synName,synParams in sect['syns'].iteritems():
+            if sect['syn']:  
+                for synName,synParams in sect['syn'].iteritems():
                     self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
 
             # set geometry params 
@@ -162,9 +170,9 @@ class HH(Cell):
             # set 3d geometry
             if ['geom']['pt3d']:  
                 h.pt3dclear(sec=sect)
-                x = self.tags['x']
-                y = self.tags['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
-                z = self.tags['z']
+                x = self.tag['x']
+                y = self.tag['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                z = self.tag['z']
                 for pt3d in sect['geom']['pt3d']:
                     h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
 
@@ -225,11 +233,11 @@ class Izhi2007a(Cell):
 
     def make (self):
         # Instantiate cell model based on cellType
-        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
+        if self.tag['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
             izhType = 'RS' 
-        elif self.tags['cellType'] == 'PV': # if Pva use FS
+        elif self.tag['cellType'] == 'PV': # if Pva use FS
             izhType = 'FS' 
-        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
+        elif self.tag['cellType'] == 'SOM': # if Sst us LTS
             izhType = 'LTS' 
 
         self.sec = h.Section(name='izhi2007a'+izhType+str(self.gid))  # create Section
@@ -261,11 +269,11 @@ class Izhi2007a(Cell):
 
     def record(self):
         # set up voltage recording; recdict will be taken from global context
-        for k,v in p.sim['recdict'].iteritems():
+        for k,v in s.cfg['recdict'].iteritems():
             try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
             except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(p.sim['tstop']/p.sim['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, p.sim['recordStep'])
+            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+10).resize(0)
+            s.simdata[k]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
 
 
@@ -354,64 +362,65 @@ class izhi2007b(Cell):
 
 
 
+
 ###############################################################################
-### POP CLASS
+# 
+# POP CLASS
+#
 ###############################################################################
 
 class Pop(object):
     ''' Python class used to instantiate the network population '''
-    def __init__(self,  tags):
-        self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
+    def __init__(self,  tag):
+        self.tag = tag # list of tag/attributes of population (eg. numCells, cellModel,...)
         self.cellGids = []  # list of cell gids beloging to this pop
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-        # select cell class to instantiate cells based on the cellModel tag
-        cellClass = getattr(s, self.tags['cellModel']) 
+        cellClass = getattr(s, self.tag['cellModel'])  # select cell class to instantiate cells based on the cellModel tag
 
         # population based on numCells
-        if 'numCells' in self.tags:
+        if 'numCells' in self.tag:
             cells = []
-            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
+            for i in xrange(int(s.rank), self.tag['numCells'], s.nhosts):
                 cellTags = {}
                 gid = s.lastGid+i
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
-            s.lastGid = s.lastGid + self.tags['numCells'] 
+                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tag['numCells']-1, gid, i, s.rank))
+            s.lastGid = s.lastGid + self.tag['numCells'] 
             return cells
 
         # population based on yFracRange
-        elif 'yFracRange' in self.tags:
+        elif 'yFracRange' in self.tag:
             # use yfrac-dep density if pop object has yfrac and density variables
             cells = []
             volume = s.net.param['scale'] * s.net.param['sparseness'] * (s.net.param['modelsize']/1e3)**2 \
-                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.param['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+                 * ((self.tag['yfracRange'][1]-self.tag['yfracRange'][0]) * s.net.param['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
+            maxDensity = max(map(self.tag['density'], (arange(self.tag['yfracRange'][0],self.tag['yfracRange'][1], yfracInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
-            seed(s.id32('%d' % p.sim['randseed']))  # reset random number generator
-            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-            yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+            seed(s.id32('%d' % s.cfg['randseed']))  # reset random number generator
+            yfracsAll = self.tag['yfracRange'][0] + ((self.tag['yfracRange'][1]-self.tag['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
+            yfracsProb = array(map(self.tag['density'], self.tag['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
             allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
             
             makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
             yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            self.tag['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
             
-            if p.sim['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
-            randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
+            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tag['numCells'])
+            randLocs = rand(self.tag['numCells'], 2)  # create random x,z locations
 
-            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
+            for i in xrange(int(s.rank), self.tag['numCells'], s.nhosts):
                 gid = s.lastGid+i
                 self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-                cellTags = {k: v for (k, v) in self.tags.iteritems() if k not in ['yFracRange', 'density']}  # copy all pop tags to cell tags, except those that are pop-specific
+                cellTags = {k: v for (k, v) in self.tag.iteritems() if k in s.net.param['popTagsCopiedToCells']}  # copy all pop tag to cell tag, except those that are pop-specific
                 cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
                 cellTags['x'] = s.net.param['modelsize'] * randLocs[i,0]  # calculate x location (um)
                 cellTags['z'] = s.net.param['modelsize'] * randLocs[i,1]  # calculate z location (um)
-                cellTags['pop'] =  
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if p.sim['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
+                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
             s.lastGid = s.lastGid + self.numCells 
             return cells
 

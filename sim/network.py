@@ -29,7 +29,7 @@ class Network(object):
     ###############################################################################
     def createPops(self):
         self.pops = []  # list to store populations ('Pop' objects)
-        for popParam in self.params['popParams']: # for each set of population parameters 
+        for popParam in self.param['popParams']: # for each set of population parameters 
             self.pops.append(self.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
 
@@ -38,7 +38,7 @@ class Network(object):
     ###############################################################################
     def createCells(self):
         s.pc.barrier()
-        if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), s.params['duration']/1000.,s.nhosts)) 
+        if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), s.cfg['duration']/1000.,s.nhosts)) 
         self.gidVec = [] # Empty list for storing GIDs (index = local id; value = gid)
         self.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
         self.cells = []
@@ -46,7 +46,7 @@ class Network(object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             s.pc.barrier()
-            if s.rank==0 and s.params['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))    
+            if s.rank==0 and s.cfg['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))    
         s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
         print('  Number of cells on node %i: %i ' % (s.rank,len(self.cells)))            
         
@@ -58,11 +58,11 @@ class Network(object):
         # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
         if s.rank==0: print('Making connections...'); connstart = time()
 
-        if self.params['connType'] == 'random':  # if random connectivity
+        if self.param['connType'] == 'random':  # if random connectivity
             connClass = self.RandConn  # select ConnRand class
-            arg = self.params['ncell']  # pass as argument num of presyn cell
+            arg = self.param['ncell']  # pass as argument num of presyn cell
         
-        elif self.params['connType'] == 'yfrac':  # if yfrac-based connectivity
+        elif self.param['connType'] == 'yfrac':  # if yfrac-based connectivity
             connClass = self.YfracConn  # select ConnYfrac class
             data = [s.cells]*s.nhosts  # send cells data to other nodes
             gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)

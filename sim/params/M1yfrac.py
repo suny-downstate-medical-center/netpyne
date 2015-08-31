@@ -139,8 +139,8 @@ cellsList.append({'popLabel':'gs21', 'x': 2, 'yfrac': 0.5 , 'z': 3})
 netParam['popParams'].append({'popLabel': 'IT_cells', 'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'cellsList': cellsList}) #  IT individual cells
 
 cellsList = []
-cellsList.append({'popLabel':'bs50', 'cellModel': 'Izhi2007b',  'cellType':'PT', 'projTarget':'',       'x': 1, 'yfrac': 0.4 , 'z': 2})
-cellsList.append({'popLabel':'bs91', 'cellModel': 'HH',         'cellType':'PT', 'projTarget':'lumbar', 'x': 2, 'yfrac': 0.5 , 'z': 3})
+cellsList.append({'cellLabel':'bs50', 'cellModel': 'Izhi2007b',  'cellType':'PT', 'projTarget':'',       'x': 1, 'yfrac': 0.4 , 'z': 2})
+cellsList.append({'cellLabel':'bs91', 'cellModel': 'HH',         'cellType':'PT', 'projTarget':'lumbar', 'x': 2, 'yfrac': 0.5 , 'z': 3})
 netParam['popParams'].append({'popLabel': 'PT_cells', 'cellsList': cellsList}) #  PT individual cells
 
 netParam['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projTarget']
@@ -286,6 +286,9 @@ simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['randseed'] = 1 # Random seed to use
+simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
+simConfig['createPyStruc'] = 1  # create Python structure (simulator-independent) when instantiating network
+
 
 ## Recording 
 simConfig['recdict'] = {'V':'sec(0.5)._ref_v', 'u':'m._ref_u', 'I':'m._ref_i'}

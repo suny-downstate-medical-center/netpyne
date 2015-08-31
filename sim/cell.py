@@ -63,12 +63,27 @@ class Cell(object):
         self.gid = gid  # global cell id 
         self.tag = tag  # dictionary of cell tag/attributes 
         self.sect = {}  # dict of sections
-        self.syn = {}  # dict of synapses
-        self.conn = []  # list of connections
-        self.propLabels = []  # list of labels of cell property sets (s.net.param['cellProps'])
+        self.hnetcon = []  # list of connections
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
+
+    def make(self):
+        for prop in s.net.param['cellProps']:  # for each set of cell properties
+            conditionsMet = 1
+            for (condKey,condVal) in prop['conditions']:  # check if all conditions are met
+                if self.tag[condKey] != condVal: 
+                    conditionsMet = 0
+                    break
+            if conditionsMet:  # if all conditions are met, set values for this cell
+                if 'propList' not in self.tag:
+                    self.tag['propList'] = [prop['label']] # create list of property sets
+                else:
+                    self.tag['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
+                if s.cfg['createPyStruct']:
+                    self.createPyStruct(prop)
+                if s.cfg['createNEURONObj']:
+                    self.createHOCObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
 
 
     def associateGid (self, threshold = 10.0):
@@ -80,11 +95,6 @@ class Cell(object):
         s.gidDic[self.gid] = len(s.gidVec)
         del nc # discard netcon
 
-    def addSect(self):
-
-    def addSyn(self):
-
-    def addMech(self):
 
 
     def addBackground (self):
@@ -130,30 +140,66 @@ class Cell(object):
 class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
 
-    def make(self):
-        for prop in s.net.param['cellProps']:  # for each set of cell properties
-            conditionsMet = 1
-            for (condKey,condVal) in prop['conditions']:  # check if all conditions are met
-                if self.tag[condKey] != condVal: 
-                    conditionsMet = 0
-                    break
-            if conditionsMet:  # if all conditions are met, set values for this cell
-                self.tag['props'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
-                self.setProperties(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
-
-
-    def setProperties(self, params):
+    def createPyStruct(self, prop):
         # set params for all sections
-        for sectName,sectParams in self.param['sections'].iteritems(): 
+        for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
-            if sectName not in self.__dict__:
-                self.__dict__[sectName] = h.Section(name=sectName)  # create Neuron section object if doesn't exist
-            sect = self.__dict__[sectName]  # pointer
+            if sectName not in self.sect:
+                self.sect[sectName] = {}  # create h Section object
+            sec = self.sect[sectName]  # pointer to Section()
             
             # add mechanisms 
-            for mechName,mechParams in sect['mechs'].iteritems():  
-                if mechName not in sect.__dict__: 
-                    sect(0.5).insert(mechName)
+            for mechName,mechParams in sectParams['mechs'].iteritems():  
+                if mechName not in sec['mech']: 
+                    sec['mech'][mechName] = {}
+                for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
+                    sec['mech'][mechName][mechParamName] = mechParamValue
+
+            # add synapses 
+            for synName,synParams in sectParams['syns'].iteritems(): 
+                if synName not in sec['syn']:
+                    sec['syn'][synName] = {}
+                for synParamName,synParamValue in synParams.iteritems():
+                    sec['syn'][synName][synParamName] = synParamValue
+
+            # add geometry params 
+            for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        sec['geom'][geomParamName] = geomParamValue
+                        setattr(sect(0.5), geomParamName, geomParamValue)
+
+            # add 3d geometry
+            if sectParams['geom']['pt3d']:
+                if not sec['geom']['pt3d']:  
+                    sec['geom']['pt3d'] = []
+                for pt3d in sectParms['geom']['pt3d']:
+                    sec['geom']['pt3d'].append(pt3d)
+
+            # add topolopgy
+            if sectParams['topol']:
+                if not sec['topol']:
+                    sec['topol'] = {}
+                for topolParamName,topolParamValue in sectParams['topol'].iteritems():  
+                    sec['topol'][topolParamName] = topoplParamValue
+              
+            # set topology 
+            for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
+                sect = self.__dict__[sectName]  # pointer to child sec
+                sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
+
+    
+    def createNEURONObj(self, params):
+        # set params for all sections
+        for sectName,sectParams in prop['sections'].iteritems(): 
+            # create section
+            if sectName not in self.sect:
+                self.sect[sectName] = h.Section(name=sectName)  # create h Section object
+            sec = self.sect[sectName]  # pointer to Section()
+            
+            # add mechanisms 
+            for mechName,mechParams in sectParams['mechs'].iteritems():  
+                if mechName not in sec['mech']: 
+                    sec(0.5).insert(mechName)
                 for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
                     setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
 
@@ -181,6 +227,7 @@ class HH(Cell):
             sect = self.__dict__[sectName]  # pointer to child sec
             sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
    
+
 
     def activate (self):
         self.stim = h.IClamp(0.5, sec=self.soma)
@@ -320,7 +367,7 @@ class izhi2007b(Cell):
       ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
 
-    def setParams(self, params):
+    def setProperties(self, params):
         # set params for soma 
         sectName = 'soma'  # selected section for Izhi mechanism
 
@@ -419,6 +466,7 @@ class Pop(object):
                 cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
                 cellTags['x'] = s.net.param['modelsize'] * randLocs[i,0]  # calculate x location (um)
                 cellTags['z'] = s.net.param['modelsize'] * randLocs[i,1]  # calculate z location (um)
+                if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
                 if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
             s.lastGid = s.lastGid + self.numCells 

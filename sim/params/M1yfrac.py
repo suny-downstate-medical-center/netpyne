@@ -1,19 +1,16 @@
 """
 params.py 
 
-netParam is a dict containing different sets of network parameters
-eg. netParam['mpiHHTut'] or netParam['M1yfrac']
+netParams is a dict containing a set of network parameters using a standardized structure
 
-simConfig is a dict containing different sets of simulation configurations
-eg. simConfig['default'] or simConfig['M1']
+simConfig is a dict containing a set of simulation configurations using a standardized structure
 
 Contributors: salvadordura@gmail.com
 """
 
 from pylab import array
 
-
-netParam = {}  # dictionary to store sets of network parameters
+netParams = {}  # dictionary to store sets of network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 ###############################################################################
@@ -26,25 +23,25 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParam['M1yfrac'] = {}  # dictionary to store netParam
-p = netParam['M1yfrac']  # pointer to dict
+netParams['M1yfrac'] = {}  # dictionary to store netParams
+p = netParams['M1yfrac']  # pointer to dict
 
 ## Position parameters
-netParam['scale'] = 1 # Size of simulation in thousands of cells
-netParam['cortthaldist'] = 1500 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
-netParam['corticalthick'] = 1740 # cortical thickness/depth
+netParams['scale'] = 1 # Size of simulation in thousands of cells
+netParams['cortthaldist'] = 1500 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
+netParams['corticalthick'] = 1740 # cortical thickness/depth
 
 ## Background input parameters
-netParam['useBackground'] = True # Whether or not to use background stimuli
-netParam['backgroundRate'] = 5 # Rate of stimuli (in Hz)
-netParam['backgroundRateMin'] = 0.1 # Rate of stimuli (in Hz)
-netParam['backgroundNumber'] = 1e10 # Number of spikes
-netParam['backgroundNoise'] = 1 # Fractional noise
-netParam['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
-netParam['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
+netParams['useBackground'] = True # Whether or not to use background stimuli
+netParams['backgroundRate'] = 5 # Rate of stimuli (in Hz)
+netParams['backgroundRateMin'] = 0.1 # Rate of stimuli (in Hz)
+netParams['backgroundNumber'] = 1e10 # Number of spikes
+netParams['backgroundNoise'] = 1 # Fractional noise
+netParams['backgroundWeight'] = [0.1,0.1] # Weight for background input for E cells and I cells
+netParams['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
 
 # Cell properties list
-netParam['cellProps'] = []
+netParams['cellProps'] = []
 
 # IT cell params
 cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
@@ -58,7 +55,7 @@ soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1
 soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # PT cell params
 cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
@@ -72,7 +69,7 @@ soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1
 soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # CT cell params
 cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
@@ -86,7 +83,7 @@ soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1
 soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # SOM cell params
 cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
@@ -100,7 +97,7 @@ soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1
 soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParam['cellProps'].append(cellProp)  # add dict to list of cell properties 
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties 
 
 # PV cell params
 cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
@@ -113,166 +110,166 @@ soma['syns']['GABAA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1
 soma['syns']['GABAB'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 
 # create list of populations, where each item contains a dict with the pop params
-netParam['popParams'] = []  
+netParams['popParams'] = []  
      
-netParam['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
-netParam['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.26, 0.31], 'density': lambda y:2e3*y}) #  L4 IT
-netParam['popParams'].append({'popLabel': 'IT_L5A', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.31, 0.52], 'density': lambda y:2e3*y}) #  L5A IT
-netParam['popParams'].append({'popLabel': 'IT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B IT
-netParam['popParams'].append({'popLabel': 'PT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'PT',  'projTarget': '', 'yfracRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B PT
-netParam['popParams'].append({'popLabel': 'IT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 IT
-netParam['popParams'].append({'popLabel': 'CT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'CT',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 CT
-netParam['popParams'].append({'popLabel': 'PV_L23', 'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.1, 0.31], 'density': lambda y:1e3}) #  L2/3 PV (LTS)
-netParam['popParams'].append({'popLabel': 'SOM_L23','cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.1, 0.31], 'density': lambda y:2e3*y}) #  L2/3 SOM (FS)
-netParam['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 PV (FS)
-netParam['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 SOM (LTS)
-netParam['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 PV (FS)
-netParam['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 SOM (LTS)
+netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
+netParams['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.26, 0.31], 'density': lambda y:2e3*y}) #  L4 IT
+netParams['popParams'].append({'popLabel': 'IT_L5A', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.31, 0.52], 'density': lambda y:2e3*y}) #  L5A IT
+netParams['popParams'].append({'popLabel': 'IT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B IT
+netParams['popParams'].append({'popLabel': 'PT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'PT',  'projTarget': '', 'yfracRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B PT
+netParams['popParams'].append({'popLabel': 'IT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 IT
+netParams['popParams'].append({'popLabel': 'CT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'CT',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 CT
+netParams['popParams'].append({'popLabel': 'PV_L23', 'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.1, 0.31], 'density': lambda y:1e3}) #  L2/3 PV (LTS)
+netParams['popParams'].append({'popLabel': 'SOM_L23','cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.1, 0.31], 'density': lambda y:2e3*y}) #  L2/3 SOM (FS)
+netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 PV (FS)
+netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 SOM (LTS)
+netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 PV (FS)
+netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 SOM (LTS)
 
 cellsList = []
 cellsList.append({'popLabel':'gs15', 'x': 1, 'yfrac': 0.4 , 'z': 2})
 cellsList.append({'popLabel':'gs21', 'x': 2, 'yfrac': 0.5 , 'z': 3})
-netParam['popParams'].append({'popLabel': 'IT_cells', 'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'cellsList': cellsList}) #  IT individual cells
+netParams['popParams'].append({'popLabel': 'IT_cells', 'cellModel':'Izhi2007b', 'cellType':'IT', 'projTarget':'', 'cellsList': cellsList}) #  IT individual cells
 
 cellsList = []
 cellsList.append({'cellLabel':'bs50', 'cellModel': 'Izhi2007b',  'cellType':'PT', 'projTarget':'',       'x': 1, 'yfrac': 0.4 , 'z': 2})
 cellsList.append({'cellLabel':'bs91', 'cellModel': 'HH',         'cellType':'PT', 'projTarget':'lumbar', 'x': 2, 'yfrac': 0.5 , 'z': 3})
-netParam['popParams'].append({'popLabel': 'PT_cells', 'cellsList': cellsList}) #  PT individual cells
+netParams['popParams'].append({'popLabel': 'PT_cells', 'cellsList': cellsList}) #  PT individual cells
 
-netParam['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projTarget']
+netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projTarget']
 
 
 ## General connectivity parameters
-netParam['connType'] = 'yfrac'
-#netParam['numReceptors'] = 1 
-netParam['useconnprobdata'] = True # Whether or not to use connectivity data
-netParam['useconnweightdata'] = True # Whether or not to use weight data
-netParam['mindelay'] = 2 # Minimum connection delay, in ms
-netParam['velocity'] = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
-netParam['modelsize'] = 1000*netParam['scale'] # Size of netParamwork in um (~= 1000 neurons/column where column = 500um width)
-netParam['sparseness'] = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
-netParam['scaleconnweight'] = 0.00025*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
-netParam['receptorweight'] = [1, 1, 1, 1, 1] # Scale factors for each receptor
-netParam['scaleconnprob'] = 1/netParam['scale']*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
-netParam['connfalloff'] = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
-netParam['toroidal'] = False # Whether or not to have toroidal topology
+netParams['connType'] = 'yfrac'
+#netParams['numReceptors'] = 1 
+netParams['useconnprobdata'] = True # Whether or not to use connectivity data
+netParams['useconnweightdata'] = True # Whether or not to use weight data
+netParams['mindelay'] = 2 # Minimum connection delay, in ms
+netParams['velocity'] = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
+netParams['modelsize'] = 1000*netParams['scale'] # Size of netParamswork in um (~= 1000 neurons/column where column = 500um width)
+netParams['sparseness'] = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
+netParams['scaleconnweight'] = 0.00025*array([[2, 1], [2, 0.1]]) # Connection weights for EE, EI, IE, II synapses, respectively
+netParams['receptorweight'] = [1, 1, 1, 1, 1] # Scale factors for each receptor
+netParams['scaleconnprob'] = 1/netParams['scale']*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
+netParams['connfalloff'] = 100*array([2, 3]) # Connection length constants in um for E and I synapses, respectively
+netParams['toroidal'] = False # Whether or not to have toroidal topology
 
 ## List of connectivity rules/params
-netParam['connParams'] = []  
+netParams['connParams'] = []  
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty),
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA', 'annot': 'ITtoITconn'})  # IT->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->PT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->CT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Pva'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Pva'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Pva rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Sst'},
+netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Sst'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Sst rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'},
+netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->PT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'CT'},
+netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'CT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda prex,posty: 1), 'syn': 'AMPA'})  # PT->CT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Pva'},
+netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Pva'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Pva rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Sst'},
+netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Sst'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Sst rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'},
+netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->PT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'},
+netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->CT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Pva'},
+netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Pva'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Pva rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Sst'},
+netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Sst'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Sst rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'PT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'PT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->PT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'CT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'CT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->CT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Pva'},
+netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Pva'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Pva rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Sst'},
+netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Sst'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Sst rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'IT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'IT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->IT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'PT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'PT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->PT rule             
 
-netParam['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'CT'},
+netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'CT'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->CT rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Pva'},
+netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Pva'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Pva rule
 
-netParam['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Sst'},
+netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Sst'},
     'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
     'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Sst rule
 
 
 
 # Dictionary of annotations
-netParam['annots'] = {}
-netParam['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al., 2008); L5 strong by wiring matrix in (Weiler et al., 2008)'
+netParams['annots'] = {}
+netParams['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al., 2008); L5 strong by wiring matrix in (Weiler et al., 2008)'
 
 ###############################################################################
 # SIMULATION PARAMETERS
@@ -287,7 +284,7 @@ simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, 
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruc'] = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
 
 
 ## Recording 

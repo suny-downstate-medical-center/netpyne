@@ -39,11 +39,11 @@ class Conn(object):
 class Cell(object):
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     
-    def __init__(self, gid, tag):
+    def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
-        self.tag = tag  # dictionary of cell tag/attributes 
-        self.sect = {}  # dict of sections
-        self.conn = []  #list of connections
+        self.tags = tags  # dictionary of cell tags/attributes 
+        self.secs = {}  # dict of sections
+        self.conns = []  #list of connections
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -51,24 +51,24 @@ class Cell(object):
     def make(self):
         for prop in s.net.param['cellProps']:  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in prop['conditions']:  # check if all conditions are met
-                if self.tag[condKey] != condVal: 
+            for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
+                if self.tags[condKey] != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
-                if 'propList' not in self.tag:
-                    self.tag['propList'] = [prop['label']] # create list of property sets
+                if 'propList' not in self.tags:
+                    self.tags['propList'] = [prop['label']] # create list of property sets
                 else:
-                    self.tag['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
+                    self.tags['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
                 if s.cfg['createPyStruct']:
                     self.createPyStruct(prop)
                 if s.cfg['createNEURONObj']:
-                    self.createHOCObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
 
 
     def associateGid (self, threshold = 10.0):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.soma(0.5)._ref_v, None, sec=self.soma)
+        nc = h.NetCon(self.secs['soma']['hSection'](0.5)._ref_v, None, sec=self.secs['soma']['hSection'])
         nc.threshold = threshold
         s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
         s.gidVec.append(self.gid) # index = local id; value = global id
@@ -93,7 +93,7 @@ class Cell(object):
 
     
     def record (self):
-        # set up voltage recording; recdict will be taken from global context
+        # set up voltagse recording; recdict will be taken from global context
         for k,v in s.cfg['recdict'].iteritems():
             try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
             except: print 'bad state variable pointer: ',v
@@ -104,7 +104,7 @@ class Cell(object):
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = s.replaceItemObj(odict, keystart='h', None)  # replace h objects with None so can be pickled
+        odict = s.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         return odict
 
 
@@ -122,12 +122,14 @@ class HH(Cell):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
-            if sectName not in self.sect:
-                self.sect[sectName] = {}  # create h Section object
-            sec = self.sect[sectName]  # pointer to Section()
+            if sectName not in self.secs:
+                self.secs[sectName] = {}  # create section dict
+            sec = self.secs[sectName]  # pointer to section
             
             # add mechanisms 
             for mechName,mechParams in sectParams['mechs'].iteritems(): 
+                if 'mech' not in sec:
+                    sec['mech'] = {}
                 if mechName not in sec['mech']: 
                     sec['mech'][mechName] = {}  
                 for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
@@ -135,6 +137,8 @@ class HH(Cell):
 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
+                if 'syn' not in sec:
+                    sec['syn'] = {}
                 if synName not in sec['syn']:
                     sec['syn'][synName] = {}
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
@@ -142,68 +146,73 @@ class HH(Cell):
 
             # add geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
-                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        sec['geom'][geomParamName] = geomParamValue
+                if 'geom' not in sec:
+                    sec['geom'] = {}
+                if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                    sec['geom'][geomParamName] = geomParamValue
 
             # add 3d geometry
             if sectParams['geom']['pt3d']:
-                if not sec['geom']['pt3d']:  
+                if 'pt3d' not in sec['geom']:  
                     sec['geom']['pt3d'] = []
-                for pt3d in sectParms['geom']['pt3d']:
+                for pt3d in sectParams['geom']['pt3d']:
                     sec['geom']['pt3d'].append(pt3d)
 
             # add topolopgy params
             if sectParams['topol']:
-                if not sec['topol']:
+                if 'topol' not in sec:
                     sec['topol'] = {}
                 for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
-                    sec['topol'][topolParamName] = topoplParamValue
+                    sec['topol'][topolParamName] = topolParamValue
               
    
     def createNEURONObj(self, prop):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
-            if sectName not in self.sect:
-                self.sect[sectName] = {}  # create sect dict if doesn't exist
-            h.Section(name=sectName)  # create h Section object
-            sec = self.sect[sectName]  # pointer to section
+            if sectName not in self.secs:
+                self.secs[sectName] = {}  # create sect dict if doesn't exist
+            self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
+            sec = self.secs[sectName]  # pointer to section
             
             # add mechanisms 
             for mechName,mechParams in sectParams['mechs'].iteritems():  
                 if mechName not in sec['mech']: 
                     sec['mech'][mechName] = {}
-                sec(0.5).insert(mechName)
-                for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
-                    setattr(sec(0.5).__dict__[mechName], mechParamName, mechParamValue)
-
+                sec['hSection'].insert(mechName)
+                for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
+                    sec['hSection'](0.5).__getattribute__(mechName).__setattr__(mechParamName,mechParamValue)
+                
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
                 if synName not in sec['syn']:
                     sec['syn'][synName] = {} 
-                self.syns[synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                synObj = getattr(h, synParams['type'])
+                sec['syn'][synName]['hSyn'] = synObj(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
+                    if synParamName not in ['type','loc']:
+                        setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
-                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec(0.5), geomParamName, geomParamValue)
+                if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                    setattr(sec['hSection'], geomParamName, geomParamValue)
 
             # set 3d geometry
             if sectParams['geom']['pt3d']:  
-                h.pt3dclear(sec=sec)
-                x = self.tag['x']
-                y = self.tag['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
-                z = self.tag['z']
+                h.pt3dclear(sec=sec['hSection'])
+                x = self.tags['x']
+                y = self.tags['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                z = self.tags['z']
                 for pt3d in sectParams['geom']['pt3d']:
-                    h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
+                    h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sec['hSection'])
 
         # set topology 
         for sectName,sectParams in prop['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
-            sec = self.sect[sectName]  # pointer to section # pointer to child sec
-            sec.connect(self.sect[sectParams['topol']['parentSec']], sectParams['topol']['parentX'], sect['topol']['childX'])  # make topol connection
-   
+            sec = self.secs[sectName]  # pointer to section # pointer to child sec
+            if sectParams['topol']:
+                print sectParams['topol']
+                sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 
     def activate (self):
@@ -257,11 +266,11 @@ class Izhi2007a(Cell):
 
     def make (self):
         # Instantiate cell model based on cellType
-        if self.tag['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
+        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
             izhType = 'RS' 
-        elif self.tag['cellType'] == 'PV': # if Pva use FS
+        elif self.tags['cellType'] == 'PV': # if Pva use FS
             izhType = 'FS' 
-        elif self.tag['cellType'] == 'SOM': # if Sst us LTS
+        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
             izhType = 'LTS' 
 
         self.sec = h.Section(name='izhi2007a'+izhType+str(self.gid))  # create Section
@@ -292,7 +301,7 @@ class Izhi2007a(Cell):
 
 
     def record(self):
-        # set up voltage recording; recdict will be taken from global context
+        # set up voltagse recording; recdict will be taken from global context
         for k,v in s.cfg['recdict'].iteritems():
             try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
             except: print 'bad state variable pointer: ',v
@@ -307,7 +316,7 @@ class Izhi2007a(Cell):
 #
 ###############################################################################
 
-class izhi2007b(Cell):
+class Izhi2007b(Cell):
     """
     Python class for the different celltypes of Izhikevich neuron. 
 
@@ -344,42 +353,79 @@ class izhi2007b(Cell):
       ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
 
-    def setProperties(self, params):
+    def createPyStruct(self, prop):
         # set params for soma 
-        sectName = 'soma'  # selected section for Izhi mechanism
+        sectName = 'soma'  # selected section by default for Izhi mechanism
 
-        if sectName in params['sections'].iterkeys():  # if soma is included in the cell params
-            
+        if sectName in prop['sections'].iterkeys():  # if soma is included in the cell params
             # create section
-            if sectName not in self.__dict__:  
-                self.soma = h.Section(name=sectName+params['Izhi2007'])
-                sect = self.soma
+            if sectName not in self.secs:
+                self.secs[sectName] = {}  # create h Section object
+            sectParams = prop['sections'][sectName]  # pointer to section parameters
+            sec = self.secs[sectName]  # pointer to Section
 
             # set geometry params 
-            for geomParamName,geomParamValue in sect['geom'].iteritems():  
-                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sect(0.5), geomParamName, geomParamValue)
-
-            # create Izhi object
-            if 'izh' not in self.__dict__:
-                self.izh = h.Izhi2007b(0.5, sec=sect)
-
-            # set Izhi params
-            izhParamNames = self.type2007['paramNames']
-            izhParamValues = self.type2007[params['Izhi2007Type']]
-            for (izhParamName, izhParamValue) in zip(izhParamNames, izhParamValues):
-                setattr(self.izh, izhParamName, izhParamValue)
-            self.izh.vinit = izhParamValues['vr']  # check if can make vinit part of the type2007 params
-            self.izh.cellid = self.gid 
-            s.fih.append(s.h.FInitializeHandler(self.init))  # check why this is needed
+            for geomParamName,geomParamValue in sectParams['geom'].iteritems():   
+                if 'geom' not in sec:
+                    sec['geom'] = {}
+                if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                    sec['geom'][geomParamName] = geomParamValue
 
             # add synapses 
-            if sect['syns']:  
-                for synName,synParams in sect['syns'].iteritems():
-                    self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
+            for synName,synParams in sectParams['syns'].iteritems(): 
+                if synName not in sec['syn']:
+                    sec['syn'][synName] = {}
+                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
+                    sec['syn'][synName][synParamName] = synParamValue
+
+            # add Izhi type to tagss
+            self.tags['Izhi2007Type'] = sectParams['Izhi2007Type']
 
         else: 
             print 'Error: soma section not found for Izhi2007 model'
+
+
+    def createNEURONObj(self, prop):
+        # set params for soma 
+        sectName = 'soma'  # selected section by default for Izhi mechanism
+
+        if sectName in prop['sections'].iterkeys():  # if soma is included in the cell params
+            # create section
+            if sectName not in self.secs:
+                self.secs[sectName] = {}  # create h Section object
+            sectParams = prop['sections'][sectName]  # pointer to section parameters
+            self.secs[sectName]['hSection'] = h.Section(name=sectName+sectParams['Izhi2007'])
+            sec = self.secs[sectName]  # pointer to section
+
+            # set geometry params 
+            for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        setattr(sec['hSection'](0.5), geomParamName, geomParamValue)
+
+            # create Izhi object
+            if 'hIzhi' not in sec:
+                sec['hIzhi'] = h.Izhi2007b(0.5, sec=sec)
+
+            # set Izhi params
+            izhParamNames = self.type2007['paramNames']
+            izhParamValues = self.type2007[sectParams['Izhi2007Type']]
+            for (izhParamName, izhParamValue) in zip(izhParamNames, izhParamValues):
+                setattr(sec['hIzhi'], izhParamName, izhParamValue)
+            sec['hIzhi'].vinit = izhParamValues['vr']  # check if can make vinit part of the type2007 params
+            sec['hIzhi'].cellid = self.gid 
+            s.fih.append(s.h.FInitializeHandler(self.init))  # check why this is needed
+
+           # add synapses 
+            for synName,synParams in sectParams['syns'].iteritems(): 
+                if synName not in sec['syn']:
+                    sec['syn'][synName] = {} 
+                self.syns[synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
+                    setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
+
+        else: 
+            print 'Error: soma section not found for Izhi2007 model'
+
 
     def init(self): 
         self.soma.v = -60  # check why this is needed
@@ -395,57 +441,63 @@ class izhi2007b(Cell):
 
 class Pop(object):
     ''' Python class used to instantiate the network population '''
-    def __init__(self,  tag):
-        self.tag = tag # list of tag/attributes of population (eg. numCells, cellModel,...)
+    def __init__(self,  tags):
+        self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.cellGids = []  # list of cell gids beloging to this pop
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-        cellClass = getattr(s, self.tag['cellModel'])  # select cell class to instantiate cells based on the cellModel tag
+        cellClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
 
         # population based on numCells
-        if 'numCells' in self.tag:
+        if 'numCells' in self.tags:
             cells = []
-            for i in xrange(int(s.rank), self.tag['numCells'], s.nhosts):
-                cellTags = {}
+            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
                 gid = s.lastGid+i
+                self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+                cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.param['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+                cellTags['yfrac'] = 0 # set yfrac value for this cell
+                cellTags['x'] = 0  # calculate x location (um)
+                cellTags['z'] = 0 # calculate z location (um)
+                if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tag['numCells']-1, gid, i, s.rank))
-            s.lastGid = s.lastGid + self.tag['numCells'] 
+                cells.append(cellClass(gid, cellTags)) # instantiate Cell object
+                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
+            s.lastGid = s.lastGid + self.tags['numCells'] 
             return cells
 
         # population based on yFracRange
-        elif 'yFracRange' in self.tag:
+        elif 'yFracRange' in self.tags:
             # use yfrac-dep density if pop object has yfrac and density variables
             cells = []
             volume = s.net.param['scale'] * s.net.param['sparseness'] * (s.net.param['modelsize']/1e3)**2 \
-                 * ((self.tag['yfracRange'][1]-self.tag['yfracRange'][0]) * s.net.param['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.param['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.tag['density'], (arange(self.tag['yfracRange'][0],self.tag['yfracRange'][1], yfracInterval))))  # max cell density 
+            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
             seed(s.id32('%d' % s.cfg['randseed']))  # reset random number generator
-            yfracsAll = self.tag['yfracRange'][0] + ((self.tag['yfracRange'][1]-self.tag['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-            yfracsProb = array(map(self.tag['density'], self.tag['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
+            yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
             allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
             
             makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
             yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-            self.tag['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
             
-            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tag['numCells'])
-            randLocs = rand(self.tag['numCells'], 2)  # create random x,z locations
+            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+            randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
 
-            for i in xrange(int(s.rank), self.tag['numCells'], s.nhosts):
+            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
                 gid = s.lastGid+i
                 self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-                cellTags = {k: v for (k, v) in self.tag.iteritems() if k in s.net.param['popTagsCopiedToCells']}  # copy all pop tag to cell tag, except those that are pop-specific
+                cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.param['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
                 cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
                 cellTags['x'] = s.net.param['modelsize'] * randLocs[i,0]  # calculate x location (um)
                 cellTags['z'] = s.net.param['modelsize'] * randLocs[i,1]  # calculate z location (um)
                 if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
                 cells.append(cellClass(gid, cellTags)) # instantiate Cell object
                 if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
-            s.lastGid = s.lastGid + self.numCells 
+            s.lastGid = s.lastGid + self.tags['numCells'] 
             return cells
 

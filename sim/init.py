@@ -20,24 +20,23 @@ from neuron import h# Import NEURON
 import params as p
 import shared as s
 
-
 ###############################################################################
 # Sequence of commands to run full model
 ###############################################################################
 def runSeq():
     # net = s.Network(params.net) # optionally can create or load network and pass as argument
 
-    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParam = p.mpiHHTut.netParam)
+    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParams = p.mpiHHTut.netParams)
     
     s.net.createPops()  # instantiate network populations
     s.net.createCells()  # instantiate network cells based on defined populations
-    s.net.connectCells()  
-    s.net.addBackground()
+    # s.net.connectCells()  
+    # s.net.addBackground()
 
-    s.sim.setupRecording()
-    s.sim.runSim()
-    s.sim.gatherData()
-    s.sim.saveData()
-    s.analysis.plotData()
+    # s.sim.setupRecording()
+    # s.sim.runSim()
+    # s.sim.gatherData()
+    # s.sim.saveData()
+    # s.analysis.plotData()
 
 runSeq()

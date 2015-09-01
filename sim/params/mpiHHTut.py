@@ -1,19 +1,14 @@
 """
 params.py 
 
-netParam is a dict containing different sets of network parameters
-eg. netParam['mpiHHTut'] or netParam['M1yfrac']
+netParam is a dict containing a set of network parameters using a standardized structure
 
-simConfig is a dict containing different sets of simulation configurations
-eg. simConfig['default'] or simConfig['M1']
+simConfig is a dict containing a set of simulation configurations using a standardized structure
 
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import array
-
-
-netParam = {}  # dictionary to store sets of network parameters
+netParams = {}  # dictionary to store sets of network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 
@@ -40,7 +35,7 @@ netParam['backgroundRate'] = 10 # Rate of stimuli (in Hz)
 netParam['backgroundRateMin'] = 0.5 # Rate of stimuli (in Hz)
 netParam['backgroundNumber'] = 1e10 # Number of spikes
 netParam['backgroundNoise'] = 1 # Fractional noise
-netParam['backgroundWeight'] = 0.1*array([1,0.1]) # Weight for background input for E cells and I cells
+netParam['backgroundWeight'] = [1,0.1] # Weight for background input for E cells and I cells
 netParam['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
     
 # Cell properties list
@@ -54,7 +49,7 @@ soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
 soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2': 5.3, 'e': 0}
+soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2': 5.3, 'e': 0}
 
 dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # dend properties
 dend['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
@@ -62,8 +57,7 @@ dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
 dend['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
 dend['topol'] = {'parentSec': 'soma', 'parentX': 0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-dend['mechs']['nacurrent'] = {'ki': 1}
-dend['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'r': 1, 'e': 0}
+dend['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 1.0, 'tau1': 15, 'tau2': 150, 'e': 0}
 
 cellProp['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
@@ -71,6 +65,8 @@ netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
 # Population parameters
 netParam['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParam['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+
+netParam['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
 
 netParam['connType'] = 'random'
 netParam['numReceptors'] = 1
@@ -96,8 +92,11 @@ simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation,
 simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['randseed'] = 1 # Rand
-om seed to use
+simConfig['randseed'] = 1 # Random seed to use
+simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
+simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
+# alternative: simConfig['createFuncs'] = ['createNEURONObj', 'createPyStruct']
+
 
 ## Recording 
 simConfig['recdict'] = {'Vsoma':'soma(0.5)._ref_v'}

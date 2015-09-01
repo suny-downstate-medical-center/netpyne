@@ -7,11 +7,12 @@ Contributors: salvadordura@gmail.com
 """
 
 import sys
-from pylab import mean, zeros, concatenate, vstack, array, hashlib
+from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
 import pickle
 import cPickle as pk
+import hashlib 
 from neuron import h, init # Import NEURON
 import shared as s
 
@@ -19,8 +20,10 @@ import shared as s
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(simConfig = None, netParam = None, net = None):
+def initialize(simConfig = None, netParams = None, net = None):
     s.simdata = {}  # used to store output simulation data (spikes etc)
+    s.gidVec =[] # Empty list for storing GIDs (index = local id; value = gid)
+    s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.lastGid = 0  # keep track of las cell gid
     s.fih = []  # list of func init handlers
 
@@ -32,27 +35,40 @@ def initialize(simConfig = None, netParam = None, net = None):
     if simConfig:
         setSimCfg(simConfig)  # set simulation configuration
 
-    if netParam: 
-        setNetParams(netParam)  # set network parameters
+    if netParams: 
+        setNetParams(netParams)  # set network parameters
 
     createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
 
+
+###############################################################################
+# Set network object to use in simulation
+###############################################################################
 def setNet(net):
     s.net = net
 
+###############################################################################
+# Set network params to use in simulation
+###############################################################################
+def setNetParams(params):
+    s.net.params = params
+
+###############################################################################
+# Set simulation config
+###############################################################################
 def setSimCfg(cfg):
-    s.config = cfg
+    s.cfg = cfg
 
 def loadSimCfg(paramFile):
     pass
 
-def setNetParams(param):
-    s.net.param = param
-
 def loadSimParams(paramFile):
     pass
 
+###############################################################################
+# Create parallel context
+###############################################################################
 def createParallelContext():
     s.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     s.nhosts = int(s.pc.nhost()) # Find number of hosts

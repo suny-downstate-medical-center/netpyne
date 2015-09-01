@@ -20,21 +20,21 @@ class Network(object):
     ###############################################################################
     # initialize variables
     ###############################################################################
-    def __init__(self, param = None):
-        self.param = param
+    def __init__(self, params = None):
+        self.params = params
 
     ###############################################################################
-    # Set network params 
+    # Set network paramss 
     ###############################################################################
-    def setParams(self, param):
-        self.param = param
+    def setParams(self, params):
+        self.params = params
 
     ###############################################################################
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops(self):
         self.pops = []  # list to store populations ('Pop' objects)
-        for popParam in self.param['popParams']: # for each set of population parameters 
+        for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(s.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
 
@@ -63,11 +63,11 @@ class Network(object):
         # Instantiate network connections (objects of class 'Conn') - connects object cells based on pre and post cell's type, class and yfrac
         if s.rank==0: print('Making connections...'); connstart = time()
 
-        if self.param['connType'] == 'random':  # if random connectivity
+        if self.params['connType'] == 'random':  # if random connectivity
             connClass = self.RandConn  # select ConnRand class
-            arg = self.param['ncell']  # pass as argument num of presyn cell
+            arg = self.params['ncell']  # pass as argument num of presyn cell
         
-        elif self.param['connType'] == 'yfrac':  # if yfrac-based connectivity
+        elif self.params['connType'] == 'yfrac':  # if yfrac-based connectivity
             connClass = self.YfracConn  # select ConnYfrac class
             data = [s.cells]*s.nhosts  # send cells data to other nodes
             gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)

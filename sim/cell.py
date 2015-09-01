@@ -11,26 +11,6 @@ import collections
 from neuron import h # Import NEURON
 import shared as s
 
-
-###############################################################################
-#
-# SYNAPSE CLASS
-#
-###############################################################################
-
-class Synapse(object):
-    ''' Class used to instantiate synapses inside a Cell object''' 
-    def __init__(self, postGid, postSect=None, sectObj, synParams):
-        self.postGid = postGid
-        self.postSect = postSect
-        self.synm = getattr(h, synParams['type'])(loc=synParams['loc'], sec=sectObj)
-        for paramName,paramValue in synParams.iteritems():
-            if paramName not in ['type','loc']:
-                setattr(self, paramName, paramValue)
-    
-
-
-
 ###############################################################################
 #
 # CONNECTION CLASS
@@ -63,7 +43,7 @@ class Cell(object):
         self.gid = gid  # global cell id 
         self.tag = tag  # dictionary of cell tag/attributes 
         self.sect = {}  # dict of sections
-        self.hnetcon = []  # list of connections
+        self.conn = []  #list of connections
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -96,7 +76,6 @@ class Cell(object):
         del nc # discard netcon
 
 
-
     def addBackground (self):
         self.backgroundRand = h.Random()
         self.backgroundRand.MCellRan4(self.gid,self.gid*2)
@@ -122,11 +101,10 @@ class Cell(object):
             s.simdata[k]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
 
-    def __getstate__(self): # MAKE GENERIC! REMOVE ALL NON-PICKABLE OBJECTS!!
-        ''' Removes self.soma and self.dummy so can be pickled and sent via py_alltoall'''
+    def __getstate__(self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        del odict['sec']  # remove fields that cannot be pickled       
-        del odict['m']     
+        odict = s.replaceItemObj(odict, keystart='h', None)  # replace h objects with None so can be pickled
         return odict
 
 
@@ -149,9 +127,9 @@ class HH(Cell):
             sec = self.sect[sectName]  # pointer to Section()
             
             # add mechanisms 
-            for mechName,mechParams in sectParams['mechs'].iteritems():  
+            for mechName,mechParams in sectParams['mechs'].iteritems(): 
                 if mechName not in sec['mech']: 
-                    sec['mech'][mechName] = {}
+                    sec['mech'][mechName] = {}  
                 for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                     sec['mech'][mechName][mechParamName] = mechParamValue
 
@@ -159,14 +137,13 @@ class HH(Cell):
             for synName,synParams in sectParams['syns'].iteritems(): 
                 if synName not in sec['syn']:
                     sec['syn'][synName] = {}
-                for synParamName,synParamValue in synParams.iteritems():
+                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
                     sec['syn'][synName][synParamName] = synParamValue
 
             # add geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         sec['geom'][geomParamName] = geomParamValue
-                        setattr(sect(0.5), geomParamName, geomParamValue)
 
             # add 3d geometry
             if sectParams['geom']['pt3d']:
@@ -175,57 +152,57 @@ class HH(Cell):
                 for pt3d in sectParms['geom']['pt3d']:
                     sec['geom']['pt3d'].append(pt3d)
 
-            # add topolopgy
+            # add topolopgy params
             if sectParams['topol']:
                 if not sec['topol']:
                     sec['topol'] = {}
-                for topolParamName,topolParamValue in sectParams['topol'].iteritems():  
+                for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
                     sec['topol'][topolParamName] = topoplParamValue
               
-            # set topology 
-            for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
-                sect = self.__dict__[sectName]  # pointer to child sec
-                sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
-
-    
-    def createNEURONObj(self, params):
+   
+    def createNEURONObj(self, prop):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
             if sectName not in self.sect:
-                self.sect[sectName] = h.Section(name=sectName)  # create h Section object
-            sec = self.sect[sectName]  # pointer to Section()
+                self.sect[sectName] = {}  # create sect dict if doesn't exist
+            h.Section(name=sectName)  # create h Section object
+            sec = self.sect[sectName]  # pointer to section
             
             # add mechanisms 
             for mechName,mechParams in sectParams['mechs'].iteritems():  
                 if mechName not in sec['mech']: 
-                    sec(0.5).insert(mechName)
+                    sec['mech'][mechName] = {}
+                sec(0.5).insert(mechName)
                 for mechParamName,mechParamValue in mechParams:  # add params of the mechanism
-                    setattr(sect(0.5).__dict__[mechName], mechParamName, mechParamValue)
+                    setattr(sec(0.5).__dict__[mechName], mechParamName, mechParamValue)
 
             # add synapses 
-            if sect['syn']:  
-                for synName,synParams in sect['syn'].iteritems():
-                    self.syns[(sectName,synName)] = s.Synapse(sect=sect, postGid=self.gid, postSect=sectName, synParams=synParams)
+            for synName,synParams in sectParams['syns'].iteritems(): 
+                if synName not in sec['syn']:
+                    sec['syn'][synName] = {} 
+                self.syns[synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
+                    setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
-            for geomParamName,geomParamValue in sect['geom'].iteritems():  
+            for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sect(0.5), geomParamName, geomParamValue)
+                        setattr(sec(0.5), geomParamName, geomParamValue)
 
             # set 3d geometry
-            if ['geom']['pt3d']:  
-                h.pt3dclear(sec=sect)
+            if sectParams['geom']['pt3d']:  
+                h.pt3dclear(sec=sec)
                 x = self.tag['x']
                 y = self.tag['yfrac'] * s.net.param['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
                 z = self.tag['z']
-                for pt3d in sect['geom']['pt3d']:
+                for pt3d in sectParams['geom']['pt3d']:
                     h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sect)
 
         # set topology 
-        for sectName,sectParams in params['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
-            sect = self.__dict__[sectName]  # pointer to child sec
-            sect.connect(self.__dict__[sect['topol']['parentSec']], sect['topol']['parentX'], sect['topol']['childX'])  # make topol connection
+        for sectName,sectParams in prop['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
+            sec = self.sect[sectName]  # pointer to section # pointer to child sec
+            sec.connect(self.sect[sectParams['topol']['parentSec']], sectParams['topol']['parentX'], sect['topol']['childX'])  # make topol connection
    
 
 

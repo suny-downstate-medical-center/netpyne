@@ -47,9 +47,9 @@ netParam['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
 netParam['cellProps'] = []
 
 # IT cell params
-cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'Izhi2007Type': 'RS', 'sections': {}}
+cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
 
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
@@ -61,9 +61,9 @@ cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # PT cell params
-cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'Izhi2007Type': 'RS', 'sections': {}}
+cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
 
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
@@ -75,9 +75,9 @@ cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # CT cell params
-cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'Izhi2007Type': 'RS', 'sections': {}}
+cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
 
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
@@ -89,9 +89,9 @@ cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParam['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # SOM cell params
-cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'Izhi2007Type': 'FS', 'sections': {}}
+cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
 
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
@@ -103,8 +103,8 @@ cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParam['cellProps'].append(cellProp)  # add dict to list of cell properties 
 
 # PV cell params
-cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'Izhi2007Type': 'LTS', 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnbar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA

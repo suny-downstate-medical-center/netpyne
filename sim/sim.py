@@ -67,6 +67,23 @@ def id32(obj):
 
 
 ###############################################################################
+### Replacee item with specific key from dict or list (used to remove h objects)
+###############################################################################
+def replaceItemObj(obj, keystart, newval):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict]:
+                replaceItemObj(item, keystart, newval)
+
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict]:
+                replaceItemObj(val, keystart, newval)
+            if key.startswith(keystart):
+                obj[key] = newval
+    return obj
+
+###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and s.net s.params
 ###############################################################################
 def readArgs():

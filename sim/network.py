@@ -100,15 +100,15 @@ class Network(object):
 ### RANDOM CONN CLASS
 ###############################################################################
 
-class RandConn(Conn):         
-    @classmethod
-    def connect(cls, ncell, cellPost):
+def RandConn(cls, ncell, cellPost):
         ''' Generates random connectivity based on maxcons - no conn rules'''
         random.seed(s.id32('%d'%(p.sim['randseed']+cellPost.gid)))  # Reset random number generator  
         randPre = random.sample(xrange(ncell-1), random.randint(0, p.net['maxcons'])) # select random subset of pre cells
         randDelays = [random.gauss(p.net['delaymean'], p.net['delayvar']) for i in randPre] # select random delays based on mean and var params
         cellPost.syns = [h.ExpSyn(0,sec=cellPost.soma) for i in randPre] # create syn objects for each connection (store syn objects inside post cell object)
         newConns = [RandConn(x, cellPost.gid, cellPost.syns[i], randDelays[i], [p.net['weight']]) for i,x in enumerate(randPre)] # create new conn objects 
+
+        # CALL CONNECT METHODS INSIDE CELL; WHICH DEPENDING ON INPUT ARGUMENTS, AND CELL PROPERTIES CREATES DIFFERNT TYPES OF CONNECTIONS
         return newConns
 
 
@@ -116,10 +116,7 @@ class RandConn(Conn):
 ### YFRAC CONN CLASS
 ###############################################################################
 
-class YfracConn(Conn):
-
-    @classmethod
-    def connect(cls, cellsPre, cellPost):
+def YfracConn(cls, cellsPre, cellPost):
         ''' Calculate connectivity as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac'''
         # calculate distances of pre to post
         if p.net['toroidal']: 

@@ -446,56 +446,72 @@ class Pop(object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-        cellClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
-
-        # population based on numCells
+        # create cells based on fixed number of cells
         if 'numCells' in self.tags:
-            cells = []
-            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
-                gid = s.lastGid+i
-                self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-                cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-                cellTags['yfrac'] = 0 # set yfrac value for this cell
-                cellTags['x'] = 0  # calculate x location (um)
-                cellTags['z'] = 0 # calculate z location (um)
-                if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-                cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
-            s.lastGid = s.lastGid + self.tags['numCells'] 
-            return cells
+            cells = self.createCellsFixedNum()
 
-        # population based on yFracRange
-        elif 'yFracRange' in self.tags:
-            # use yfrac-dep density if pop object has yfrac and density variables
-            cells = []
-            volume = s.net.params['scale'] * s.net.params['sparseness'] * (s.net.params['modelsize']/1e3)**2 \
-                 * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
-            yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
-            maxCells = volume * maxDensity  # max number of cells based on max value of density func 
-            
-            seed(s.id32('%d' % s.cfg['randseed']))  # reset random number generator
-            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-            yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
-            allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
-            
-            makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-            yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-            
-            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
-            randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
+        # create cells based on yfrac density
+        elif 'yFracRange' in self.tags and 'density' in self.tags:
+            cells = self.createCellsYfrac()
 
-            for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
-                gid = s.lastGid+i
-                self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-                cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-                cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
-                cellTags['x'] = s.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
-                cellTags['z'] = s.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
-                if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-                cells.append(cellClass(gid, cellTags)) # instantiate Cell object
-                if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
-            s.lastGid = s.lastGid + self.tags['numCells'] 
-            return cells
+        else:
+            if 'popLabel' not in self.tags:
+                self.tags['popLabel'] = 'unlabeled'
+            print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
+        return cells
+
+
+    # population based on numCells
+    def createCellsFixedNum(self):
+        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+        cells = []
+        for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
+            gid = s.lastGid+i
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags['yfrac'] = 0 # set yfrac value for this cell
+            cellTags['x'] = 0  # calculate x location (um)
+            cellTags['z'] = 0 # calculate z location (um)
+            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
+            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
+        s.lastGid = s.lastGid + self.tags['numCells'] 
+        return cells
+
+
+                
+    # population based on YfracRange
+    def createCellsYfrac(self):
+        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+        cells = []
+        volume = s.net.params['scale'] * s.net.params['sparseness'] * (s.net.params['modelsize']/1e3)**2 \
+             * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+        yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
+        maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
+        maxCells = volume * maxDensity  # max number of cells based on max value of density func 
+        
+        seed(s.id32('%d' % s.cfg['randseed']))  # reset random number generator
+        yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
+        yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+        allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
+        
+        makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
+        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
+        self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+        
+        if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+        randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
+
+        for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
+            gid = s.lastGid+i
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
+            cellTags['x'] = s.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
+            cellTags['z'] = s.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
+            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
+            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
+        s.lastGid = s.lastGid + self.tags['numCells'] 
+        return cells
 

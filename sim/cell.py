@@ -11,24 +11,6 @@ import collections
 from neuron import h # Import NEURON
 import shared as s
 
-###############################################################################
-#
-# CONNECTION CLASS
-#
-###############################################################################
-class Conn(object):
-    ''' Class used to instantiate connections inside a Cell object''' 
-    def connect(self, preGid, delay, weight):
-        self.preGid = preGid  
-        self.delay = delay
-        self.weight = weight
-        self.netcon = s.pc.gid_connect(preGid, self.synm)  # create Netcon between global gid and local cell object
-        self.netcon.delay = delay  # set Netcon delay
-        for i in range(s.net.params['numReceptors']): self.netcon.weight[i] = weight[i]  # set Netcon weights
-        if s.cfg['verbose']: print('Created Conn pre=%d post=%d delay=%0.2f, weights=[%.2f, %.2f, %.2f, %.2f]'\
-            %(self.preGid, self.postGid, self.delay, weight[0], weight[1], weight[2], weight[3] ))
-        pass
-
 
 ###############################################################################
 #
@@ -74,6 +56,17 @@ class Cell(object):
         s.gidVec.append(self.gid) # index = local id; value = global id
         s.gidDic[self.gid] = len(s.gidVec)
         del nc # discard netcon
+
+
+
+    def addConn(self, connParams):
+        self.conns.append(connParams)
+        netcon = s.pc.gid_connect(connParams['preGid'], self.secs[connParams['sec']][connParams['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
+        netcon.weight = connParams['weight']  # set Netcon weight
+        netcon.delay = connParams['delay']  # set Netcon delay
+        self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        if s.cfg['verbose']: print('Created Conn pre=%d post=%d'%(connParams['preGid'], connParams['postGid']))
+
 
 
     def addBackground (self):
@@ -477,7 +470,6 @@ class Pop(object):
             if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
         s.lastGid = s.lastGid + self.tags['numCells'] 
         return cells
-
 
                 
     # population based on YfracRange

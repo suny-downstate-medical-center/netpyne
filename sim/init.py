@@ -17,7 +17,8 @@ Contributors: salvadordura@gmail.com
 from time import time
 from neuron import h# Import NEURON
 
-import params as p
+#import params as p
+from params import mpiHHTut, M1yfrac
 import shared as s
 
 ###############################################################################
@@ -26,11 +27,11 @@ import shared as s
 def runSeq():
     # net = s.Network(params.net) # optionally can create or load network and pass as argument
 
-    s.sim.initialize(simConfig = p.mpiHHTut.simConfig, netParams = p.mpiHHTut.netParams)
+    s.sim.initialize(simConfig = mpiHHTut.simConfig, netParams = mpiHHTut.netParams)
     
     s.net.createPops()  # instantiate network populations
     s.net.createCells()  # instantiate network cells based on defined populations
-    # s.net.connectCells()  
+    s.net.connectCells()  
     # s.net.addBackground()
 
     # s.sim.setupRecording()

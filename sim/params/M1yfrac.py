@@ -162,108 +162,110 @@ netParams['toroidal'] = False # Whether or not to have toroidal topology
 netParams['connParams'] = []  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty),
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA', 'annot': 'ITtoITconn'})  # IT->IT rule
+    'connType': 'yfrac',
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty),
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA', 'annot': 'ITtoITconn'})  # IT->IT rule
+# netParams['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al., 2008); L5 strong by wiring matrix in (Weiler et al., 2008)''
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->IT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->PT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->PT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->CT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->CT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Pva'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Pva rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Pva rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'Sst'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Sst rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # IT->Sst rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->IT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->PT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prey,posty: 1), 'syn': 'AMPA'})  # PT->PT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'CT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda prex,posty: 1), 'syn': 'AMPA'})  # PT->CT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda prex,posty: 1), 'syn': 'AMPA'})  # PT->CT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Pva'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Pva rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Pva rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'Sst'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Sst rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # PT->Sst rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->IT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->PT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->PT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->CT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->CT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Pva'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Pva rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Pva rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'Sst'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Sst rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # CT->Sst rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->IT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'PT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->PT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->PT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'CT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->CT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->CT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Pva'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Pva rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Pva rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Pva'}, 'postTags': {'cellType': 'Sst'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Sst rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Pva->Sst rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'IT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->IT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->IT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'PT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->PT rule             
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->PT rule             
 
 netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'CT'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->CT rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->CT rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Pva'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Pva rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Pva rule
 
 netParams['connParams'].append({'preTags': {'cellType': 'Sst'}, 'postTags': {'cellType': 'Sst'},
-    'connProb': (lambda prey,posty: 0.1*prey+0.01/posty), \
-    'connWeight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Sst rule
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'weight': (lambda x,y: 1), 'syn': 'AMPA'})  # Sst->Sst rule
 
 
 

@@ -68,15 +68,18 @@ netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType':
 
 netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
 
-netParams['connType'] = 'random'
-netParams['numReceptors'] = 1
-netParams['maxcons']   = 20                   # number of connections onto each cell
-netParams['weight']    = 0.004                # weight of each connection
-netParams['delaymean'] = 13.0                 # mean of delays
-netParams['delayvar']  = 1.4                  # variance of delays
-netParams['delaymin']  = 0.2                  # miniumum delays
-netParams['threshold'] = 10.0                 # threshold 
+# Connectivity parameters
 
+netParams['connParams'] = []  
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'connType': 'random',   # pre and post cells selected randomly 
+    'weight': 0.004,        # weight of each connection
+    'delayMean': 13.0,      # mean of delays
+    'delayVar': 1.4,        # variance of delays 
+    'delayMin': 0.2,        # minimum delays
+    'threshold': 10})       # threshold
 
 
 

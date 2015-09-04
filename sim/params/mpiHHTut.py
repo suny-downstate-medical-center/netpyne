@@ -28,15 +28,6 @@ p = netParams['mpiHHTut']  # pointer to dict
 ## Position parameters
 netParams['scale'] = 1 # Size of simulation in thousands of cells
 netParams['corticalthick'] = 1000 # cortical thickness/depth
-
-## Background input parameters
-netParams['useBackground'] = True # Whether or not to use background stimuli
-netParams['backgroundRate'] = 10 # Rate of stimuli (in Hz)
-netParams['backgroundRateMin'] = 0.5 # Rate of stimuli (in Hz)
-netParams['backgroundNumber'] = 1e10 # Number of spikes
-netParams['backgroundNoise'] = 1 # Fractional noise
-netParams['backgroundWeight'] = [1,0.1] # Weight for background input for E cells and I cells
-netParams['backgroundReceptor'] = 'NMDA' # Which receptor to stimulate
     
 # Cell properties list
 netParams['cellProps'] = []
@@ -65,6 +56,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
 
@@ -81,6 +73,13 @@ netParams['connParams'].append(
     'delayMin': 0.2,        # minimum delays
     'threshold': 10})       # threshold
 
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR' }, # background -> PYR
+    'connFunc': 'fullConn',
+    'probability': 0.5, 
+    'weight': 0.1, 
+    'syn': 'NMDA',
+    'delay': 5})  
 
 
 ###############################################################################

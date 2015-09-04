@@ -25,7 +25,7 @@ class Cell(object):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
-        self.conns = []  #list of connections
+        self.conns = []  # list of connections
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -439,8 +439,14 @@ class Pop(object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
+         
+
+        # if NetStim pop do not create cell objects (Netstims added to postsyn cell object when creating connections)
+        if self.tags['cellModel'] == 'NetStim':
+            pass
+
         # create cells based on fixed number of cells
-        if 'numCells' in self.tags:
+        elif 'numCells' in self.tags:
             cells = self.createCellsFixedNum()
 
         # create cells based on yfrac density
@@ -462,7 +468,8 @@ class Pop(object):
 
     # population based on numCells
     def createCellsFixedNum(self):
-        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+         # select cell class to instantiate cells based on the cellModel tags
+        cellModelClass = getattr(s, self.tags['cellModel'])
         cells = []
         for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
             gid = s.lastGid+i

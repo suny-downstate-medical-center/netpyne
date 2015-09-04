@@ -63,6 +63,8 @@ class Network(object):
         # Instantiate network connections connects object cells based on pre and post cell's type, class and yfrac
         if s.rank==0: print('Making connections...'); connstart = time()
 
+        #connClass =
+
         if self.params['connType'] == 'random':  # if random connectivity
             connClass = self.RandConn  # select ConnRand class
             arg = self.params['ncell']  # pass as argument num of presyn cell
@@ -104,7 +106,7 @@ class Network(object):
     ###############################################################################
     ### Random connectivity
     ###############################################################################
-    def RandConn(cls, ncell, cellPost):
+    def randConn(cls, ncell, cellPost):
         ''' Generates random connectivity based on maxcons - no conn rules'''
         random.seed(s.id32('%d'%(p.sim['randseed']+cellPost.gid)))  # Reset random number generator  
         randPre = random.sample(xrange(ncell-1), random.randint(0, p.net['maxcons'])) # select random subset of pre cells
@@ -120,7 +122,7 @@ class Network(object):
     ### Yfrac-based connectivity
     ###############################################################################
 
-    def YfracConn(cls, cellsPre, cellPost):
+    def yfracConn(cls, cellsPre, cellPost):
             ''' Calculate connectivity as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac'''
             # calculate distances of pre to post
             if p.net['toroidal']: 

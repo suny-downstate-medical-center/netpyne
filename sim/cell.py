@@ -447,10 +447,16 @@ class Pop(object):
         elif 'yFracRange' in self.tags and 'density' in self.tags:
             cells = self.createCellsYfrac()
 
+        # add individual cells
+        if 'cellList' in self.tags:
+            cells = self.createCellsList()
+
+        # not enough tags to create cells
         else:
             if 'popLabel' not in self.tags:
                 self.tags['popLabel'] = 'unlabeled'
             print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
+
         return cells
 
 
@@ -506,4 +512,20 @@ class Pop(object):
             if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
         s.lastGid = s.lastGid + self.tags['numCells'] 
         return cells
+
+
+    def createCellsList(self):
+        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+        cells = []
+        for i in xrange(int(s.rank), len(self.tags['listCells']), s.nhosts):
+            gid = s.lastGid+1
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags.update(self.tags['listCells'][i])  # add tags specific to this cells
+            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
+            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
+        s.lastGid = s.lastGid + len(self.tags['listCells'])
+        return cells
+
 

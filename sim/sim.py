@@ -143,7 +143,7 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if s.params['recordTraces']:
-        #s.s.simdataVecs.extend(s.params['recdict'].keys())
+        #s.simdataVecs.extend(s.params['recdict'].keys())
         for k in s.params['recdict'].keys(): s.simdata[k] = {}
         for c in s.net.cells: 
             c.record()

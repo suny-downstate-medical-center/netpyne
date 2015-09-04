@@ -454,7 +454,7 @@ class Pop(object):
             cells = self.createCellsYfrac()
 
         # add individual cells
-        if 'cellList' in self.tags:
+        elif 'cellList' in self.tags:
             cells = self.createCellsList()
 
         # not enough tags to create cells
@@ -463,7 +463,7 @@ class Pop(object):
             if 'popLabel' not in self.tags:
                 self.tags['popLabel'] = 'unlabeled'
             print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
-            
+
         return cells
 
 

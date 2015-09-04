@@ -173,16 +173,13 @@ def runSim():
 ###############################################################################
 
 def gatherAllCellTags():
-    data = [{cell.gid: cell.tag} for cell in s.net.cells]*s.nhosts  # send cells data to other nodes
+    data = [{cell.gid: cell.tags for cell in s.net.cells}]*s.nhosts  # send cells data to other nodes
     gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     s.pc.barrier()
     allCellTags = {}
-    for d in gather: allCellTags.update(d)
-        #allGids.extend(d['gid'])
-        #allTags.extend(d['tag'])  # concatenate cells data from all nodes
+    for dataNode in gather:         
+        allCellTags.update(dataNode)
     del gather, data  # removed unnecesary variables
-    #allCellsGids = [x.gid for x in allCells] # order gids
-    #allCellTags = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
     return allCellTags
 
 

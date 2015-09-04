@@ -63,8 +63,8 @@ class Network(object):
         # Instantiate network connections based on the connectivity rules defined in params
         if s.rank==0: print('Making connections...'); connstart = time()
         
-        allCellTags = s.gatherAllCellTags()
-        print allCellTags
+        if s.nhosts > 1: allCellTags = s.sim.gatherAllCellTags()
+        #print allCellTags
  
         # for connParam in self.params['connParams']:  # for each conn rule or parameter set
         #     # Find subset of cells that match presyn criteria

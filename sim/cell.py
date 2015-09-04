@@ -26,6 +26,7 @@ class Cell(object):
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
         self.conns = []  # list of connections
+        self.stims = []  # list of stimuli
 
         self.make()  # create cell 
         self.associateGid() # register cell for this node
@@ -439,11 +440,10 @@ class Pop(object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-         
 
         # if NetStim pop do not create cell objects (Netstims added to postsyn cell object when creating connections)
         if self.tags['cellModel'] == 'NetStim':
-            pass
+            cells = []
 
         # create cells based on fixed number of cells
         elif 'numCells' in self.tags:
@@ -459,10 +459,11 @@ class Pop(object):
 
         # not enough tags to create cells
         else:
+            cells = []
             if 'popLabel' not in self.tags:
                 self.tags['popLabel'] = 'unlabeled'
             print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
-
+            
         return cells
 
 

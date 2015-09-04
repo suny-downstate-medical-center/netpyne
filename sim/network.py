@@ -60,46 +60,51 @@ class Network(object):
     # Connect Cells
     ###############################################################################
     def connectCells(self):
-        # Instantiate network connections connects object cells based on pre and post cell's type, class and yfrac
+        # Instantiate network connections based on the connectivity rules defined in params
         if s.rank==0: print('Making connections...'); connstart = time()
-
-        #connClass =
-
-        if self.params['connType'] == 'random':  # if random connectivity
-            connClass = self.RandConn  # select ConnRand class
-            arg = self.params['ncell']  # pass as argument num of presyn cell
         
-        elif self.params['connType'] == 'yfrac':  # if yfrac-based connectivity
-            connClass = self.YfracConn  # select ConnYfrac class
-            data = [s.cells]*s.nhosts  # send cells data to other nodes
-            gather = s.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
-            s.pc.barrier()
-            allCells = []
-            for x in gather:    allCells.extend(x)  # concatenate cells data from all nodes
-            del gather, data  # removed unnecesary variables
-            allCellsGids = [x.gid for x in allCells] # order gids
-            allCells = [x for (y,x) in sorted(zip(allCellsGids,allCells))]
-            arg = allCells  # pass as argument the list of presyn cell objects
+        allCellTags = s.gatherAllCellTags()
+        print allCellTags
+ 
+        # for connParam in self.params['connParams']:  # for each conn rule or parameter set
+        #     # Find subset of cells that match presyn criteria
+        #     connParam['preTags']
 
-        self.conns = []  # list to store connections   
-        for ipost in self.cells: # for each postsynaptic cell in this node
-            newConns = connClass.connect(arg, ipost)  # calculate all connections
-            if newConns: self.conns.extend(newConns)  # add to list of connections in this node
+        #     # Find subset of cells in this node that match postsyn criteria
+
+        #     # For each postsyn cell, call connFunc(preCells, postCell, connParam)
+        #     self.conns = []  # list to store connections   
+        #     for ipost in self.cells: # for each postsynaptic cell in this node
+        #         connClass(preCells, postCell, connParam)  # calculate all connections
+
+        #     # or, directly call connFunc(preCells, postCells, connParam)
+        #     connClass(preCells, postCell, connParam)  # calculate all connections
+
+
+        # netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'IT' }, # background -> IT
+        #     'connFunc': 'fullConn',
+        #     'probability': 0.5, 
+        #     'weight': 0.1, 
+        #     'syn': 'NMDA',
+        #     'delay': 5})  
+
+                
+
         
-        print('  Number of connections on host %i: %i ' % (s.rank, len(self.conns)))
-        s.pc.barrier()
-        if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
+        # print('  Number of connections on host %i: %i ' % (s.rank, len(self.conns)))
+        # s.pc.barrier()
+        # if s.rank==0: conntime = time()-connstart; print('  Done; time = %0.1f s' % conntime) # See how long it took
 
 
     ###############################################################################
     # Add background inputs
     ###############################################################################
-    def addBackground(self):
-        if s.rank==0: print('Creating background inputs...')
-        for c in self.cells: 
-            c.addBackground()
-        print('  Number created on host %i: %i' % (s.rank, len(self.cells)))
-        s.pc.barrier()
+    # def addBackground(self):
+    #     if s.rank==0: print('Creating background inputs...')
+    #     for c in self.cells: 
+    #         c.addBackground()
+    #     print('  Number created on host %i: %i' % (s.rank, len(self.cells)))
+    #     s.pc.barrier()
 
 
 

@@ -60,13 +60,35 @@ class Cell(object):
 
 
 
-    def addConn(self, connParams):
-        self.conns.append(connParams)
-        netcon = s.pc.gid_connect(connParams['preGid'], self.secs[connParams['sec']][connParams['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
-        netcon.weight = connParams['weight']  # set Netcon weight
-        netcon.delay = connParams['delay']  # set Netcon delay
+    def addConn(self, params):
+        if params['preGid'] == self.gid:
+            print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            return  # if self-connection return
+
+        if not params['sec']:  # if no section specified 
+            if 'soma' in self.secs:  
+                params['sec'] = 'soma'  # use 'soma' if exists
+            elif self.secs:  
+                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
+            else:  
+                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                return  # if no Sections available print error and exit
+
+        if not params['synReceptor']:  # if no synapse specified 
+            if 'syns' in self.secs[params['sec']]:  
+                params['synReceptor'] = self.secs[params['sec']]['syns'].keys()[0]  # use first synapse available in section
+            else:  
+                print 'Error: no Synapse available on cell gid=%d, section=%s to add connection'%(self.gid, params['sec'])
+                return  # if no Synapse available print error and exit
+
+        self.conns.append(params)
+        netcon = s.pc.gid_connect(params['preGid'], self.secs[params['sec']]['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
+        netcon.weight[0] = params['weight']  # set Netcon weight
+        netcon.delay = params['delay']  # set Netcon delay
+        netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if s.cfg['verbose']: print('Created Conn pre=%d post=%d'%(connParams['preGid'], connParams['postGid']))
+        if s.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+            (params['preGid'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
 
 
@@ -122,21 +144,21 @@ class HH(Cell):
             
             # add mechanisms 
             for mechName,mechParams in sectParams['mechs'].iteritems(): 
-                if 'mech' not in sec:
-                    sec['mech'] = {}
-                if mechName not in sec['mech']: 
-                    sec['mech'][mechName] = {}  
+                if 'mechs' not in sec:
+                    sec['mechs'] = {}
+                if mechName not in sec['mechs']: 
+                    sec['mechs'][mechName] = {}  
                 for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
-                    sec['mech'][mechName][mechParamName] = mechParamValue
+                    sec['mechs'][mechName][mechParamName] = mechParamValue
 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
-                if 'syn' not in sec:
-                    sec['syn'] = {}
-                if synName not in sec['syn']:
-                    sec['syn'][synName] = {}
+                if 'syns' not in sec:
+                    sec['syns'] = {}
+                if synName not in sec['syns']:
+                    sec['syns'][synName] = {}
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    sec['syn'][synName][synParamName] = synParamValue
+                    sec['syns'][synName][synParamName] = synParamValue
 
             # add geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
@@ -171,21 +193,21 @@ class HH(Cell):
             
             # add mechanisms 
             for mechName,mechParams in sectParams['mechs'].iteritems():  
-                if mechName not in sec['mech']: 
-                    sec['mech'][mechName] = {}
+                if mechName not in sec['mechs']: 
+                    sec['mechs'][mechName] = {}
                 sec['hSection'].insert(mechName)
                 for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                     sec['hSection'](0.5).__getattribute__(mechName).__setattr__(mechParamName,mechParamValue)
                 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
-                if synName not in sec['syn']:
-                    sec['syn'][synName] = {} 
+                if synName not in sec['syns']:
+                    sec['syns'][synName] = {} 
                 synObj = getattr(h, synParams['type'])
-                sec['syn'][synName]['hSyn'] = synObj(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                sec['syns'][synName]['hSyn'] = synObj(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
                     if synParamName not in ['type','loc']:
-                        setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
+                        setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
@@ -366,10 +388,10 @@ class Izhi2007b(Cell):
 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
-                if synName not in sec['syn']:
-                    sec['syn'][synName] = {}
+                if synName not in sec['syns']:
+                    sec['syns'][synName] = {}
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    sec['syn'][synName][synParamName] = synParamValue
+                    sec['syns'][synName][synParamName] = synParamValue
 
             # add Izhi type to tagss
             self.tags['Izhi2007Type'] = sectParams['Izhi2007Type']
@@ -410,11 +432,11 @@ class Izhi2007b(Cell):
 
            # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
-                if synName not in sec['syn']:
-                    sec['syn'][synName] = {} 
+                if synName not in sec['syns']:
+                    sec['syns'][synName] = {} 
                 self.syns[synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    setattr(sec['syn'][synName]['hSyn'], synParamName, synParamValue)
+                    setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
 
         else: 
             print 'Error: soma section not found for Izhi2007 model'
@@ -481,7 +503,7 @@ class Pop(object):
             cellTags['z'] = 0 # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
+            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'], s.rank))
         s.lastGid = s.lastGid + self.tags['numCells'] 
         return cells
 

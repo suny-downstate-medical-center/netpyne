@@ -66,20 +66,21 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'connType': 'random',   # pre and post cells selected randomly 
-    'weight': 0.004,        # weight of each connection
+    'connFunc': 'randConn', # connection function
+    'weight': 0.04,        # weight of each connection
     'delayMean': 13.0,      # mean of delays
     'delayVar': 1.4,        # variance of delays 
     'delayMin': 0.2,        # minimum delays
-    'threshold': 10})       # threshold
+    'threshold': 10,
+    'maxConns': 100})       # threshold
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR' }, # background -> PYR
-    'connFunc': 'fullConn',
-    'probability': 0.5, 
-    'weight': 0.1, 
-    'syn': 'NMDA',
-    'delay': 5})  
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR' }, # background -> PYR
+#     'connFunc': 'fullConn',
+#     'probability': 0.5, 
+#     'weight': 0.1, 
+#     'syn': 'NMDA',
+#     'delay': 5})  
 
 
 ###############################################################################
@@ -112,7 +113,7 @@ simConfig['savetxt'] = False # save spikes and conn to txt file
 simConfig['savedpk'] = True # save to a .dpk pickled file
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['saveBackground'] = False # save background (NetStims) inputs
-simConfig['verbose'] = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+simConfig['verbose'] = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 simConfig['plotraster'] = True # Whether or not to plot a raster
 simConfig['plotpsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot

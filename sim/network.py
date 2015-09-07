@@ -8,6 +8,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
+import random
 from time import time, sleep
 import pickle
 import warnings
@@ -51,7 +52,7 @@ class Network(object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             s.pc.barrier()
-            if s.rank==0 and s.cfg['verbose']: print('Instantiated %d cells of population %d'%(ipop.numCells, ipop.popgid))    
+            if s.rank==0 and s.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
         s.simdata.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
         print('  Number of cells on node %i: %i ' % (s.rank,len(self.cells)))            
         
@@ -62,34 +63,25 @@ class Network(object):
     def connectCells(self):
         # Instantiate network connections based on the connectivity rules defined in params
         if s.rank==0: print('Making connections...'); connstart = time()
+
+        if s.nhosts > 1: # Gather tags from all cells 
+            allCellTags = s.sim.gatherAllCellTags()  
+        else:
+            allCellTags = {cell.gid: cell.tags for cellPreell in self.cells} 
         
-        if s.nhosts > 1: allCellTags = s.sim.gatherAllCellTags()
-        #print allCellTags
- 
-        # for connParam in self.params['connParams']:  # for each conn rule or parameter set
-        #     # Find subset of cells that match presyn criteria
-        #     connParam['preTags']
+        for cellPreonnParam in self.params['connParams']:  # for each conn rule or parameter set
+            if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+            if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if section not specified, make None (will be assigned to first synapse in cell)     
+            preCells = allCellTags  # initialize with all presyn cells 
+            for cellPreondKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
+                preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
+            
+            postCells = {cell.gid:cell for cellPreell in self.cells}
+            for cellPreondKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
+                postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
 
-        #     # Find subset of cells in this node that match postsyn criteria
-
-        #     # For each postsyn cell, call connFunc(preCells, postCell, connParam)
-        #     self.conns = []  # list to store connections   
-        #     for ipost in self.cells: # for each postsynaptic cell in this node
-        #         connClass(preCells, postCell, connParam)  # calculate all connections
-
-        #     # or, directly call connFunc(preCells, postCells, connParam)
-        #     connClass(preCells, postCell, connParam)  # calculate all connections
-
-
-        # netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'IT' }, # background -> IT
-        #     'connFunc': 'fullConn',
-        #     'probability': 0.5, 
-        #     'weight': 0.1, 
-        #     'syn': 'NMDA',
-        #     'delay': 5})  
-
-                
-
+            connFunc = getattr(self, connParam['connFunc'])  # get function name from params
+            connFunc(preCells, postCells, connParam)  # call specific conn function
         
         # print('  Number of connections on host %i: %i ' % (s.rank, len(self.conns)))
         # s.pc.barrier()
@@ -101,69 +93,116 @@ class Network(object):
     ###############################################################################
     # def addBackground(self):
     #     if s.rank==0: print('Creating background inputs...')
-    #     for c in self.cells: 
+    #     for cellPre in self.cells: 
     #         c.addBackground()
     #     print('  Number created on host %i: %i' % (s.rank, len(self.cells)))
     #     s.pc.barrier()
 
 
+        # netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'IT' }, # background -> IT
+        #     'connFunc': 'fullConn',
+        #     'probability': 0.5, 
+        #     'weight': 0.1, 
+        #     'syn': 'NMDA',
+        #     'delay': 5})  
+
+                
+   ###############################################################################
+    ### Full connectivity
+    ###############################################################################
+    def fullConn(self, preCells, postCells, connParam):
+        ''' Generates connections between all pre and post-syn cells '''
+        if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
+            random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+            randDelays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(len(preCells)*len(postCells))]  # select random delays based on mean and var params    
+        else:
+            randDelays = None   
+            delay = connParam['delay']  # fixed delay
+        for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
+            for preCellGid in preCells.keys():  # for each presyn cell
+                if randDelays:  delay = randDelays.pop()  # set random delay
+                params = {'preGid': preCellGid, 
+                'sec': connParam['sec'], 
+                'synReceptor': connParam['synReceptor'], 
+                'weight': connParam['weight'], 'delay': delay, 
+                'threshold': connParam['threshold']}
+                postCell.addConn(params)  # call cell method to add connections
+
 
     ###############################################################################
     ### Random connectivity
     ###############################################################################
-    def randConn(cls, ncell, cellPost):
-        ''' Generates random connectivity based on maxcons - no conn rules'''
-        random.seed(s.id32('%d'%(p.sim['randseed']+cellPost.gid)))  # Reset random number generator  
-        randPre = random.sample(xrange(ncell-1), random.randint(0, p.net['maxcons'])) # select random subset of pre cells
-        randDelays = [random.gauss(p.net['delaymean'], p.net['delayvar']) for i in randPre] # select random delays based on mean and var params
-        cellPost.syns = [h.ExpSyn(0,sec=cellPost.soma) for i in randPre] # create syn objects for each connection (store syn objects inside post cell object)
-        newConns = [RandConn(x, cellPost.gid, cellPost.syns[i], randDelays[i], [p.net['weight']]) for i,x in enumerate(randPre)] # create new conn objects 
-
-        # CALL CONNECT METHODS INSIDE CELL; WHICH DEPENDING ON INPUT ARGUMENTS, AND CELL PROPERTIES CREATES DIFFERNT TYPES OF CONNECTIONS
- 
+    def randConn(self, preCells, postCells, connParam):
+        ''' Generates connections between  maxcons random pre and postsyn cells'''
+        if 'maxConns' not in connParam: connParam['maxConns'] = len(preCells)
+        if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
+            random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+            randDelays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(connParam['maxConns']*len(postCells))] # select random delays based on mean and var params    
+        else:
+            randDelays = None   
+            delay = connParam['delay']  # fixed delay
+        for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
+            preCellGids = random.sample(preCells.keys(), random.randint(0, connParam['maxCons'])) # select random subset of pre cells
+            for preCellGid in preCellGids: # for each presyn cell
+                if randDelays:  delay = randDelays.pop()  # set random delay
+                params = {'preGid': preCellGid, 
+                'sec': connParam['sec'], 
+                'synReceptor': connParam['synReceptor'], 
+                'weight': connParam['weight'], 'delay': delay, 
+                'threshold': connParam['threshold']}
+                postCell.addConn(params)  # call cell method to add connections
 
 
     ###############################################################################
     ### Yfrac-based connectivity
     ###############################################################################
-
-    def yfracConn(cls, cellsPre, cellPost):
-            ''' Calculate connectivity as a func of cellPre.topClass, cellPre.yfrac, cellPost.topClass, cellPost.yfrac'''
+    def yfracConn(self, preCells, postCells, connParam):
+        ''' Calculate connectivity as a func of preCell.topClass, preCell['yfrac'], postCell.topClass, postCell.tags['yfrac']
+            preCells = {gid: tags} 
+            postCells = {gid: Cell object}
+            '''
+        for postCell in postCells.values():
             # calculate distances of pre to post
-            if p.net['toroidal']: 
-                xpath=[(x.xloc-cellPost.xloc)**2 for x in cellsPre]
-                xpath2=[(s.modelsize - abs(x.xloc-cellPost.xloc))**2 for x in cellsPre]
+            if self.params['toroidal']: 
+                xpath=[(preCellTags['x']-postCell.tags['x'])**2 for preCellTags in preCells.values()]
+                xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
                 xpath[xpath2<xpath]=xpath2[xpath2<xpath]
                 xpath=array(xpath)
-                ypath=array([((x.yfrac-cellPost.yfrac)*s.corticalthick)**2 for x in cellsPre])
-                zpath=[(x.zloc-cellPost.zloc)**2 for x in cellsPre]
-                zpath2=[(s.modelsize - abs(x.zloc-cellPost.zloc))**2 for x in cellsPre]
+                ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*s.corticalthick)**2 for preCellTags in preCells.values()])
+                zpath=[(preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()]
+                zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
                 zpath[zpath2<zpath]=zpath2[zpath2<zpath]
                 zpath=array(zpath)
                 distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
                 distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
             else: 
-               distances = sqrt([(x.xloc-cellPost.xloc)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-               distances3d = sqrt([(x.xloc-cellPost.xloc)**2 + (x.yfrac*p.net['corticalthick']-cellPost.yfrac)**2 + (x.zloc-cellPost.zloc)**2 for x in cellsPre])  # Calculate all pairwise distances
-            allconnprobs = p.net['scaleconnprob'][[x.EorI for x in cellsPre], cellPost.EorI] \
-                    * exp(-distances/p.net['connfalloff'][[x.EorI for x in  cellsPre]]) \
-                    * [p.net['connProbs'][x.topClass][cellPost.topClass](x.yfrac, cellPost.yfrac) for x in cellsPre] # Calculate pairwise probabilities
-            allconnprobs[cellPost.gid] = 0  # Prohibit self-connections using the cell's GID
+               distances = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
+                (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
+               distances3d = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
+                (preCellTags['yfrac']*self.params['corticalthick']-postCell.tags['yfrac'])**2 + \
+                (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
+            allConnProbs = array([self.params['scaleconnprob'] * \
+                exp(-distances/self.params['connfalloff']) * \
+                connParams['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                for preCellTags in preCells.values()]) # Calculate pairwise probabilities
+         
+            seed(s.sim.id32('%d'%(s.cfg['randseed']+postCell.gid)))  # Reset random number generator  
+            allRands = rand(len(allConnProbs))  # Create an array of random numbers for checking each connection
+            makeThisConnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
+            preInds = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+         
+   #allconnprobs[postCell.gid] = 0  # Prohibit self-connections using the cell's GID
 
-            seed(s.id32('%d'%(p.sim['randseed']+cellPost.gid)))  # Reset random number generator  
-            allrands = rand(len(allconnprobs))  # Create an array of random numbers for checking each connection
-            makethisconnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
-            preids = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-            delays = p.net['mindelay'] + distances[preids]/float(p.net['velocity']) # Calculate the delays
-            wt1 = p.net['scaleconnweight'][[x.EorI for x in [cellsPre[i] for i in preids]], cellPost.EorI] # N weight scale factors
-            wt2 = [[p.net['connWeights'][x.topClass][cellPost.topClass][iReceptor](x.yfrac, cellPost.yfrac) \
-                for iReceptor in range(p.net['numReceptors'])] for x in [cellsPre[i] for i in preids]] # NxM inter-population weights
-            wt3 = p.net['receptorweight'][:] # M receptor weights
+            delays = self.params['mindelay'] + distances[preInds]/float(self.params['velocity']) # Calculate the delays
+            wt1 = self.params['scaleconnweight'][[preCellTags.EorI for preCellTags in [preCells[i] for i in preInds]], postCell.EorI] # N weight scale factors
+          #don't need cause not interpop!  wt2 = [[connParam['connWeights'][preCellTags.topClass][postCell.topClass][iReceptor](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                for iReceptor in range(connParam['numReceptors'])] for cellPre in [preCells[i] for i in preInds]] # NxM inter-population weights
+          # need receptor weights?  wt3 = connParam['receptorweight'][:] # M receptor weights
             finalweights = transpose(wt1*transpose(array(wt2)*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
-            cellPost.syns = [h.ExpSyn(0,sec=cellPost.sec) for i in preids] # create syn objects for each connection (store syn objects inside post cell object)
+            postCell.syns = [h.ExpSyn(0,sec=postCell.sec) for i in preInds] # create syn objects for each connection (store syn objects inside post cell object)
             # create list of Conn objects
-            newConns = [YfracConn(preGid=preids[i], postGid=cellPost.gid, targetObj = cellPost.syns[i], delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
-            #newConns = [YfracConn(preGid=preids[i], postGid=cellPost.gid, targetObj = cellPost.m, delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
+            newConns = [YfracConn(preGid=preInds[i], postGid=postCell.gid, targetObj = postCell.syns[i], delay=delays[i], weight=finalweights[i]) for i in range(len(preInds))]
+            #newConns = [YfracConn(preGid=preids[i], postGid=postCell.gid, targetObj = postCell.m, delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
             return newConns
 
 

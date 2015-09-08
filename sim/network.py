@@ -67,16 +67,16 @@ class Network(object):
         if s.nhosts > 1: # Gather tags from all cells 
             allCellTags = s.sim.gatherAllCellTags()  
         else:
-            allCellTags = {cell.gid: cell.tags for cellPreell in self.cells} 
+            allCellTags = {cell.gid: cell.tags for cell in self.cells} 
         
-        for cellPreonnParam in self.params['connParams']:  # for each conn rule or parameter set
+        for connParam in self.params['connParams']:  # for each conn rule or parameter set
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if section not specified, make None (will be assigned to first synapse in cell)     
             preCells = allCellTags  # initialize with all presyn cells 
-            for cellPreondKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
+            for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
                 preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
             
-            postCells = {cell.gid:cell for cellPreell in self.cells}
+            postCells = {cell.gid:cell for cell in self.cells}
             for cellPreondKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
                 postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
 
@@ -183,26 +183,23 @@ class Network(object):
                 (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
             allConnProbs = array([self.params['scaleconnprob'] * \
                 exp(-distances/self.params['connfalloff']) * \
-                connParams['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
                 for preCellTags in preCells.values()]) # Calculate pairwise probabilities
          
             seed(s.sim.id32('%d'%(s.cfg['randseed']+postCell.gid)))  # Reset random number generator  
             allRands = rand(len(allConnProbs))  # Create an array of random numbers for checking each connection
-            makeThisConnection = allconnprobs>allrands # Perform test to see whether or not this connection should be made
-            preInds = array(makethisconnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-         
-   #allconnprobs[postCell.gid] = 0  # Prohibit self-connections using the cell's GID
-
+            makeThisConnection = allConnProbs>allRands # Perform test to see whether or not this connection should be made
+            preInds = array(makeThisConnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
+   
             delays = self.params['mindelay'] + distances[preInds]/float(self.params['velocity']) # Calculate the delays
-            wt1 = self.params['scaleconnweight'][[preCellTags.EorI for preCellTags in [preCells[i] for i in preInds]], postCell.EorI] # N weight scale factors
-          #don't need cause not interpop!  wt2 = [[connParam['connWeights'][preCellTags.topClass][postCell.topClass][iReceptor](preCellTags['yfrac'], postCell.tags['yfrac']) \
-                for iReceptor in range(connParam['numReceptors'])] for cellPre in [preCells[i] for i in preInds]] # NxM inter-population weights
-          # need receptor weights?  wt3 = connParam['receptorweight'][:] # M receptor weights
-            finalweights = transpose(wt1*transpose(array(wt2)*wt3)) # Multiply out population weights with receptor weights to get NxM matrix
-            postCell.syns = [h.ExpSyn(0,sec=postCell.sec) for i in preInds] # create syn objects for each connection (store syn objects inside post cell object)
-            # create list of Conn objects
-            newConns = [YfracConn(preGid=preInds[i], postGid=postCell.gid, targetObj = postCell.syns[i], delay=delays[i], weight=finalweights[i]) for i in range(len(preInds))]
-            #newConns = [YfracConn(preGid=preids[i], postGid=postCell.gid, targetObj = postCell.m, delay=delays[i], weight=finalweights[i]) for i in range(len(preids))]
-            return newConns
+            weight = self.parms['scaleconnweight'] * connParam['weight']
+            for i in preInds:
+                params = {'preGid': reCells.keys()[i], 
+                'sec': connParam['sec'], 
+                'synReceptor': connParam['synReceptor'], 
+                'weight': weight, 
+                'delay': delays[i], 
+                'threshold': connParam['threshold']}
+                postCell.addConn(params)  # call cell method to add connections
 
-
+      

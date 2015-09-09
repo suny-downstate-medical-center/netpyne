@@ -81,6 +81,9 @@ class Cell(object):
                 print 'Error: no Synapse available on cell gid=%d, section=%s to add connection'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
+        if not params['threshold']:
+            params['threshold'] = 10.0
+
         self.conns.append(params)
         netcon = s.pc.gid_connect(params['preGid'], self.secs[params['sec']]['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
         netcon.weight[0] = params['weight']  # set Netcon weight
@@ -168,7 +171,7 @@ class HH(Cell):
                     sec['geom'][geomParamName] = geomParamValue
 
             # add 3d geometry
-            if sectParams['geom']['pt3d']:
+            if 'pt3d' in sectParams['geom']:
                 if 'pt3d' not in sec['geom']:  
                     sec['geom']['pt3d'] = []
                 for pt3d in sectParams['geom']['pt3d']:
@@ -215,7 +218,7 @@ class HH(Cell):
                     setattr(sec['hSection'], geomParamName, geomParamValue)
 
             # set 3d geometry
-            if sectParams['geom']['pt3d']:  
+            if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
                 y = self.tags['yfrac'] * s.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
@@ -388,6 +391,8 @@ class Izhi2007b(Cell):
 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
+                if 'syns' not in sec:
+                    sec['syns'] = {}
                 if synName not in sec['syns']:
                     sec['syns'][synName] = {}
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
@@ -409,35 +414,36 @@ class Izhi2007b(Cell):
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create h Section object
             sectParams = prop['sections'][sectName]  # pointer to section parameters
-            self.secs[sectName]['hSection'] = h.Section(name=sectName+sectParams['Izhi2007'])
+            self.secs[sectName]['hSection'] = h.Section(name=sectName+sectParams['Izhi2007Type'])
             sec = self.secs[sectName]  # pointer to section
 
             # set geometry params 
             for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec['hSection'](0.5), geomParamName, geomParamValue)
+                        setattr(sec['hSection'], geomParamName, geomParamValue)
 
             # create Izhi object
             if 'hIzhi' not in sec:
-                sec['hIzhi'] = h.Izhi2007b(0.5, sec=sec)
+                sec['hIzhi'] = h.Izhi2007b(0.5, sec=sec['hSection'])
 
             # set Izhi params
             izhParamNames = self.type2007['paramNames']
             izhParamValues = self.type2007[sectParams['Izhi2007Type']]
             for (izhParamName, izhParamValue) in zip(izhParamNames, izhParamValues):
                 setattr(sec['hIzhi'], izhParamName, izhParamValue)
-            sec['hIzhi'].vinit = izhParamValues['vr']  # check if can make vinit part of the type2007 params
             sec['hIzhi'].cellid = self.gid 
-            s.fih.append(s.h.FInitializeHandler(self.init))  # check why this is needed
+            s.fih.append(h.FInitializeHandler(self.init))  # check why this is needed
 
            # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
+                if 'syns' not in sec:
+                    sec['syns'] = {}
                 if synName not in sec['syns']:
                     sec['syns'][synName] = {} 
-                self.syns[synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                sec['syns'][synName]['hSyn'] = getattr(h, synParams['type'])(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
-
+                    if synParamName not in ['type', 'loc']:
+                        setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
         else: 
             print 'Error: soma section not found for Izhi2007 model'
 
@@ -463,8 +469,12 @@ class Pop(object):
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
 
+        # add individual cells
+        if 'cellsList' in self.tags:
+            cells = self.createCellsList()
+
         # if NetStim pop do not create cell objects (Netstims added to postsyn cell object when creating connections)
-        if self.tags['cellModel'] == 'NetStim':
+        elif self.tags['cellModel'] == 'NetStim':
             cells = []
 
         # create cells based on fixed number of cells
@@ -475,10 +485,6 @@ class Pop(object):
         elif 'yFracRange' in self.tags and 'density' in self.tags:
             cells = self.createCellsYfrac()
 
-        # add individual cells
-        elif 'cellList' in self.tags:
-            cells = self.createCellsList()
-
         # not enough tags to create cells
         else:
             cells = []
@@ -486,6 +492,8 @@ class Pop(object):
                 self.tags['popLabel'] = 'unlabeled'
             print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
 
+        print self.tags
+        print self.cellGids
         return cells
 
 
@@ -545,17 +553,20 @@ class Pop(object):
 
 
     def createCellsList(self):
-        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+        if 'cellModel' in self.tags: 
+            cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
-        for i in xrange(int(s.rank), len(self.tags['listCells']), s.nhosts):
-            gid = s.lastGid+1
+        for i in xrange(int(s.rank), len(self.tags['cellsList']), s.nhosts):
+            if 'cellModel' in self.tags['cellsList'][i]:
+                cellModelClass = getattr(s, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+            gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags.update(self.tags['listCells'][i])  # add tags specific to this cells
+            cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
-        s.lastGid = s.lastGid + len(self.tags['listCells'])
+        s.lastGid = s.lastGid + len(self.tags['cellsList'])
         return cells
 
 

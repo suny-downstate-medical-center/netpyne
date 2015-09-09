@@ -66,7 +66,7 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'connFunc': 'fullConn', # connection function
+    'connFunc': 'randConn', # connection function
     'weight': 0.04,        # weight of each connection
     'delayMean': 13.0,      # mean of delays
     'delayVar': 1.4,        # variance of delays 

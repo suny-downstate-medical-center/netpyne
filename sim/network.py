@@ -71,7 +71,8 @@ class Network(object):
         
         for connParam in self.params['connParams']:  # for each conn rule or parameter set
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if section not specified, make None (will be assigned to first synapse in cell)     
+            if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if section not specified, make None (will be assigned to first synapse in cell)  
+            if 'threshold' not in connParam: connParam['threshold'] = None  # if section not specified, make None (will be assigned to first synapse in cell)    
             preCells = allCellTags  # initialize with all presyn cells 
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
                 preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
@@ -195,13 +196,13 @@ class Network(object):
             preInds = array(makeThisConnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
    
             delays = self.params['mindelay'] + distances[preInds]/float(self.params['velocity']) # Calculate the delays
-            weight = self.parms['scaleconnweight'] * connParam['weight']
+            weights = [self.params['scaleconnweight'] * connParam['weight'](preCellTags['yfrac'], postCell.tags['yfrac']) for preCellTags in preCells.values()]
             for i in preInds:
                 if preCells.keys()[i] == postCell.gid: break
                 params = {'preGid': preCells.keys()[i], 
                 'sec': connParam['sec'], 
                 'synReceptor': connParam['synReceptor'], 
-                'weight': weight, 
+                'weight': weights[i], 
                 'delay': delays[i], 
                 'threshold': connParam['threshold']}
                 postCell.addConn(params)  # call cell method to add connections

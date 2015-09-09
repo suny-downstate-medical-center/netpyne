@@ -482,7 +482,7 @@ class Pop(object):
             cells = self.createCellsFixedNum()
 
         # create cells based on yfrac density
-        elif 'yFracRange' in self.tags and 'density' in self.tags:
+        elif 'yfracRange' in self.tags and 'density' in self.tags:
             cells = self.createCellsYfrac()
 
         # not enough tags to create cells

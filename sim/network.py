@@ -120,6 +120,7 @@ class Network(object):
             delay = connParam['delay']  # fixed delay
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid in preCells.keys():  # for each presyn cell
+                if preCellGid == postCellGid: break
                 if randDelays:  delay = randDelays.pop()  # set random delay
                 params = {'preGid': preCellGid, 
                 'sec': connParam['sec'], 
@@ -142,10 +143,12 @@ class Network(object):
             randDelays = None   
             delay = connParam['delay']  # fixed delay
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
-            preCellGids = random.sample(preCells.keys(), random.randint(0, connParam['maxCons'])) # select random subset of pre cells
-            for preCellGid in preCellGids: # for each presyn cell
+            preCellGids = preCells.keys()
+            if postCellGid in preCellGids: preCellGids.remove(postCellGid)
+            randPreCellGids = random.sample(preCellGids, random.randint(0, min(connParam['maxConns'], len(preCellGids)))) # select random subset of pre cells
+            for randPreCellGid in randPreCellGids: # for each presyn cell
                 if randDelays:  delay = randDelays.pop()  # set random delay
-                params = {'preGid': preCellGid, 
+                params = {'preGid': randPreCellGid, 
                 'sec': connParam['sec'], 
                 'synReceptor': connParam['synReceptor'], 
                 'weight': connParam['weight'], 'delay': delay, 
@@ -194,7 +197,8 @@ class Network(object):
             delays = self.params['mindelay'] + distances[preInds]/float(self.params['velocity']) # Calculate the delays
             weight = self.parms['scaleconnweight'] * connParam['weight']
             for i in preInds:
-                params = {'preGid': reCells.keys()[i], 
+                if preCells.keys()[i] == postCell.gid: break
+                params = {'preGid': preCells.keys()[i], 
                 'sec': connParam['sec'], 
                 'synReceptor': connParam['synReceptor'], 
                 'weight': weight, 

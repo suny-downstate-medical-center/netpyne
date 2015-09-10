@@ -492,8 +492,6 @@ class Pop(object):
                 self.tags['popLabel'] = 'unlabeled'
             print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
 
-        print self.tags
-        print self.cellGids
         return cells
 
 
@@ -526,9 +524,9 @@ class Pop(object):
         maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
         maxCells = volume * maxDensity  # max number of cells based on max value of density func 
         
-        seed(s.id32('%d' % s.cfg['randseed']))  # reset random number generator
+        seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
         yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-        yfracsProb = array(map(self.tags['density'], self.tags['yfracsAll'])) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+        yfracsProb = array(map(self.tags['density'], yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
         allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
         
         makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
@@ -542,12 +540,13 @@ class Pop(object):
             gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['yfrac'] = yfracs[i]  # set yfrac value for this cell
+            cellTags['yfrac'] = yfracs[i][0]  # set yfrac value for this cell
             cellTags['x'] = s.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
             cellTags['z'] = s.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.numCells-1, gid, cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
+            if s.cfg['verbose']: 
+                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
         s.lastGid = s.lastGid + self.tags['numCells'] 
         return cells
 
@@ -556,6 +555,7 @@ class Pop(object):
         if 'cellModel' in self.tags: 
             cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
+        self.tags['numCells'] = len(self.tags['cellsList'])
         for i in xrange(int(s.rank), len(self.tags['cellsList']), s.nhosts):
             if 'cellModel' in self.tags['cellsList'][i]:
                 cellModelClass = getattr(s, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags

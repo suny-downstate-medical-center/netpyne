@@ -96,7 +96,7 @@ class Cell(object):
 
 
     def addStim (self, params):
-      if not params['sec']:  # if no section specified 
+        if not params['sec']:  # if no section specified 
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  

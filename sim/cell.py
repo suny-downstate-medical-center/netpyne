@@ -95,22 +95,81 @@ class Cell(object):
 
 
 
-    def addBackground (self):
-        self.backgroundRand = h.Random()
-        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-        self.backgroundRand.negexp(1)
-        self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = s.net.params['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = s.net.params['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = s.net.params['backgroundNumber'] # Number of spikes
-        self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-        for r in range(s.net.params['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[0] = s.net.params['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
+    def addStim (self, params):
+      if not params['sec']:  # if no section specified 
+            if 'soma' in self.secs:  
+                params['sec'] = 'soma'  # use 'soma' if exists
+            elif self.secs:  
+                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
+            else:  
+                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                return  # if no Sections available print error and exit
+
+        if not params['synReceptor']:  # if no synapse specified 
+            if 'syns' in self.secs[params['sec']]:  
+                params['synReceptor'] = self.secs[params['sec']]['syns'].keys()[0]  # use first synapse available in section
+            else:  
+                print 'Error: no Synapse available on cell gid=%d, section=%s to add connection'%(self.gid, params['sec'])
+                return  # if no Synapse available print error and exit
+
+        if not params['threshold']:
+            params['threshold'] = 10.0
+
+        self.stims.append(params)
+
+        if params['source'] == 'random':
+            rand = h.Random()
+            rand.MCellRan4(self.gid,self.gid*2)
+            rand.negexp(1)
+            self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
+
+            netstim = h.NetStim()
+            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+            netstim.noiseFromRandom(self.rand)  # use random number generator
+            netstim.noise = params['noise']
+            netstim.number = 1e12   
+            self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+
+        netcon = h.NetCon(netstim, self.secs[params['sec']]['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
+        netcon.weight[0] = params['weight']  # set Netcon weight
+        netcon.delay = params['delay']  # set Netcon delay
+        netcon.threshold = params['threshold']  # set Netcon delay
+        self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        if s.cfg['verbose']: print('Created stim prePop=%s postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+            (params['popLabel'], params['sec'], params['synReceptor'], params['weight'], params['delay']))
+
+
+
+    #     self.backgroundRand = h.Random()
+    #     self.backgroundRand.MCellRan4(self.gid,self.gid*2)
+    #     self.backgroundRand.negexp(1)
+    #     self.backgroundSource = h.NetStim() # Create a NetStim
+    #     self.backgroundSource.interval = s.net.params['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
+    #     self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
+    #     self.backgroundSource.noise = s.net.params['backgroundNoise'] # Fractional noise in timing
+    #     self.backgroundSource.number = s.net.params['backgroundNumber'] # Number of spikes
+    #     self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
+    #     self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
+    #     for r in range(s.net.params['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
+    #     self.backgroundConn.weight[0] = s.net.params['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
+    #     self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
 
     
+    # if preCellTags['cellModel'] == 'NetStim':  # if NetStim 
+    #                 params = {'rate': preCellTags['rate'],
+    #                 'noise': preCellTags['noise'],
+    #                 'source': preCellTags['source'], 
+    #                 'sec': connParam['sec'], 
+    #                 'synReceptor': connParam['synReceptor'], 
+    #                 'weight': connParam['weight'], 'delay': delay, 
+    #                 'threshold': connParam['threshold']}
+    #                 postCell.addStim(params)  # call cell method to add connections              
+
+  #       cell[0].stims[0]={'popLabel': 'background', 'rate':50, 'noise': 0.4, 'hNetStim':
+  # h.Netstim(), 'hRandom': h.Random()} - YES!
+
+
+
     def record (self):
         # set up voltagse recording; recdict will be taken from global context
         for k,v in s.cfg['recdict'].iteritems():

@@ -125,7 +125,7 @@ class Cell(object):
 
             netstim = h.NetStim()
             netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-            netstim.noiseFromRandom(self.rand)  # use random number generator
+            netstim.noiseFromRandom(rand)  # use random number generator
             netstim.noise = params['noise']
             netstim.number = 1e12   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
@@ -135,39 +135,8 @@ class Cell(object):
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if s.cfg['verbose']: print('Created stim prePop=%s postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
-            (params['popLabel'], params['sec'], params['synReceptor'], params['weight'], params['delay']))
-
-
-
-    #     self.backgroundRand = h.Random()
-    #     self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-    #     self.backgroundRand.negexp(1)
-    #     self.backgroundSource = h.NetStim() # Create a NetStim
-    #     self.backgroundSource.interval = s.net.params['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-    #     self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-    #     self.backgroundSource.noise = s.net.params['backgroundNoise'] # Fractional noise in timing
-    #     self.backgroundSource.number = s.net.params['backgroundNumber'] # Number of spikes
-    #     self.backgroundSyn = h.ExpSyn(0,sec=self.soma)
-    #     self.backgroundConn = h.NetCon(self.backgroundSource, self.backgroundSyn) # Connect this noisy input to a cell
-    #     for r in range(s.net.params['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-    #     self.backgroundConn.weight[0] = s.net.params['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-    #     self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-
-    
-    # if preCellTags['cellModel'] == 'NetStim':  # if NetStim 
-    #                 params = {'rate': preCellTags['rate'],
-    #                 'noise': preCellTags['noise'],
-    #                 'source': preCellTags['source'], 
-    #                 'sec': connParam['sec'], 
-    #                 'synReceptor': connParam['synReceptor'], 
-    #                 'weight': connParam['weight'], 'delay': delay, 
-    #                 'threshold': connParam['threshold']}
-    #                 postCell.addStim(params)  # call cell method to add connections              
-
-  #       cell[0].stims[0]={'popLabel': 'background', 'rate':50, 'noise': 0.4, 'hNetStim':
-  # h.Netstim(), 'hRandom': h.Random()} - YES!
-
+        if s.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+            (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
 
     def record (self):

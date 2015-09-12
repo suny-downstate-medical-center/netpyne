@@ -79,14 +79,15 @@ class Network(object):
             prePops = allPopTags  # initialize with all presyn pops
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
                 preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in pop.tags) and (pop.tags[condKey] == condValue)}
+                prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
                 
             if not preCells: # if no presyn cells, check if netstim
-                if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops):
+                print prePops
+                if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     preCells = prePops
             
             postCells = {cell.gid:cell for cell in self.cells}
-            for cellPreondKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
+            for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
                 postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
 
             connFunc = getattr(self, connParam['connFunc'])  # get function name from params
@@ -117,9 +118,9 @@ class Network(object):
                     'delay': delay, 
                     'threshold': connParam['threshold']}
                     postCell.addStim(params)  # call cell method to add connections              
-
-                if randDelays:  delay = randDelays.pop()  # set random delay
-                if preCellGid != postCellGid:  # if not self-connection
+                elif preCellGid != postCellGid:
+                    if randDelays:  delay = randDelays.pop()  # set random delay
+                    # if not self-connection
                     params = {'preGid': preCellGid, 
                     'sec': connParam['sec'], 
                     'synReceptor': connParam['synReceptor'], 

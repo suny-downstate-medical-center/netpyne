@@ -150,7 +150,10 @@ class Cell(object):
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
                 else:
                     if 'pointProcess' in params: # eg. soma.izh._ref_u
-                        ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
+                        if params['pointProcess'] in self.secs[params['sec']]:
+                            ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
+                        else: 
+                            return
 
                 s.simdata[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
                 s.simdata[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
@@ -408,7 +411,7 @@ class Izhi2007b(Cell):
 
 
     def init(self): 
-        self.soma.v = -60  # check why this is needed
+        self.secs['soma']['hSection'].v = -60  # check why this is needed
 
 
 

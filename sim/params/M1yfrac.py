@@ -118,7 +118,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 # create list of populations, where each item contains a dict with the pop params
 netParams['popParams'] = []  
      
-netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
+netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'HH', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
 netParams['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.26, 0.31], 'density': lambda y:2e3*y}) #  L4 IT
 netParams['popParams'].append({'popLabel': 'IT_L5A', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.31, 0.52], 'density': lambda y:2e3*y}) #  L5A IT
 netParams['popParams'].append({'popLabel': 'IT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B IT
@@ -369,7 +369,7 @@ simConfig['savetxt'] = False # save spikes and conn to txt file
 simConfig['savedpk'] = True # save to a .dpk pickled file
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['saveBackground'] = False # save background (NetStims) inputs
-simConfig['verbose'] = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+simConfig['verbose'] = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 simConfig['plotraster'] = True # Whether or not to plot a raster
 simConfig['plotpsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot

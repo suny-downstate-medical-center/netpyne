@@ -33,7 +33,7 @@ def runSeq():
     s.net.createCells()  # instantiate network cells based on defined populations
     s.net.connectCells()  
     s.sim.setupRecording()
-    # s.sim.runSim()
+    s.sim.runSim()
     # s.sim.gatherData()
     # s.sim.saveData()
     # s.analysis.plotData()

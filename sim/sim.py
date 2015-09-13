@@ -158,10 +158,10 @@ def runSim():
     if s.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     init() # 
     #h.cvode.event(s.savestep,savenow)
-    s.pc.psolve(s.params['tstop'])
+    s.pc.psolve(s.cfg['tstop'])
     if s.rank==0: 
         runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, s.params['duration']/1000/runtime))
+        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, s.cfg['duration']/1000/runtime))
     s.pc.barrier() # Wait for all hosts to get to this point
 
 

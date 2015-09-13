@@ -141,7 +141,7 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if s.cfg['recordTraces']:
-        for key in s.params['recdict'].keys(): s.simdata[key] = {}
+        for key in s.cfg['recdict'].keys(): s.simdata[key] = {}
         for cell in s.net.cells: 
             cell.recordTraces()
 

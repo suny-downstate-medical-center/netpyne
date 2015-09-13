@@ -349,16 +349,17 @@ simConfig = {}  # dictionary to store simConfig
 # Simulation parameters
 simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.5 # Internal integration timestep to use
-simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
 
 
 ## Recording 
-simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'mech':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'mech':'hIzhi', 'var':'i'}}
-simConfig['simdataVecs'] = ['spkt', 'spkid']
+simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
+simConfig['simdataVecs'] = ['spkt', 'spkid','stims']
+simConfig['recordStim'] = True  # record spikes of cell stims
+simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 
 
 ## Saving and plotting parameters
@@ -368,7 +369,7 @@ simConfig['savetxt'] = False # save spikes and conn to txt file
 simConfig['savedpk'] = True # save to a .dpk pickled file
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['saveBackground'] = False # save background (NetStims) inputs
-simConfig['verbose'] = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+simConfig['verbose'] = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 simConfig['plotraster'] = True # Whether or not to plot a raster
 simConfig['plotpsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot

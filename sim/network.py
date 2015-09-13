@@ -82,7 +82,6 @@ class Network(object):
                 prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
                 
             if not preCells: # if no presyn cells, check if netstim
-                print prePops
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     preCells = prePops
             

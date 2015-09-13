@@ -145,17 +145,18 @@ class Cell(object):
             try:
                 if 'pos' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
                     else:  # eg. soma(0.5)._ref_v
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
                 else:
-                    if 'mech' in params: # eg. soma.izh._ref_u
-                        ptr = self.secs[params['sec']]['hSection'].__getattribute__(params['mech']).__getattribute('_ref_'+params['var'])
-            except: 
-                print 'Recoding params yield bad pointer: ',params
+                    if 'pointProcess' in params: # eg. soma.izh._ref_u
+                        ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
 
-            s.simdata[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
-            s.simdata[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+                s.simdata[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
+                s.simdata[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+
+            except: 
+                print 'Recoding params yielded bad pointer: ',params
 
 
     def recordStimSpikes (self):
@@ -165,14 +166,6 @@ class Cell(object):
             stim['hNetcon'].record(stimSpikeVecs)
             s.simdata['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
-        # backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-        # backgroundRecorders=[] # And for recording spikes
-        # backgroundSpikevec = h.Vector() # Initialize vector
-        # backgroundSpikevecs.append(backgroundSpikevec) # Keep all those vectors
-
-        # backgroundRecorder = h.NetCon(c.backgroundSource, None)
-        # backgroundRecorder.record(backgroundSpikevec) # Record simulation time
-        # backgroundRecorders.append(backgroundRecorder)
 
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''

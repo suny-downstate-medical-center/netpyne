@@ -357,7 +357,7 @@ simConfig['createPyStruct'] = 1  # create Python structure (simulator-independen
 
 
 ## Recording 
-simConfig['recdict'] = {'V':'sec(0.5)._ref_v', 'u':'m._ref_u', 'I':'m._ref_i'}
+simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'mech':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'mech':'hIzhi', 'var':'i'}}
 simConfig['simdataVecs'] = ['spkt', 'spkid']
 
 

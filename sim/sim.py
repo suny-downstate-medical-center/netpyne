@@ -78,8 +78,11 @@ def createParallelContext():
         s.pc.gid_clear()
 
 
+###############################################################################
+# Hash function to obtain random value
+###############################################################################
 def id32(obj): 
-    return int(hashlib.md5(obj).hexdigest()[0:8],16)# hash(obj) & 0xffffffff # for random seeds (bitwise AND to retain only lower 32 bits)
+    return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
 ###############################################################################
@@ -130,23 +133,18 @@ def setupRecording():
     # spike recording
     s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
 
-    # background inputs recording
-    if s.params['saveBackground']:
-        for c in s.net.cells:
-            backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
-            backgroundRecorders=[] # And for recording spikes
-            backgroundSpikevec = h.Vector() # Initialize vector
-            backgroundSpikevecs.append(backgroundSpikevec) # Keep all those vectors
-            backgroundRecorder = h.NetCon(c.backgroundSource, None)
-            backgroundRecorder.record(backgroundSpikevec) # Record simulation time
-            backgroundRecorders.append(backgroundRecorder)
+    # background inputs recording # REPLACE WITH cell.recordstim() or include in cell.record() based on cfg['saveStim']
+    if s.cfg['recordStim']:
+        s.simdata['stims'] = {}
+        for cell in s.net.cells: 
+            cell.recordStimSpikes()
 
     # intrinsic cell variables recording
-    if s.params['recordTraces']:
-        #s.simdataVecs.extend(s.params['recdict'].keys())
-        for k in s.params['recdict'].keys(): s.simdata[k] = {}
-        for c in s.net.cells: 
-            c.record()
+    if s.cfg['recordTraces']:
+        for key in s.params['recdict'].keys(): s.simdata[key] = {}
+        for cell in s.net.cells: 
+            cell.recordTraces()
+
 
 ###############################################################################
 ### Run Simulation

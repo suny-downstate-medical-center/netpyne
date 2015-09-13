@@ -139,14 +139,40 @@ class Cell(object):
             (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
 
-    def record (self):
+    def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
-        for k,v in s.cfg['recdict'].iteritems():
-            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-            except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+        for key, params in s.cfg['recdict'].iteritems():
+            try:
+                if 'pos' in params:
+                    if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute('_ref_'+params['var'])
+                    else:  # eg. soma(0.5)._ref_v
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute('_ref_'+params['var'])
+                else:
+                    if 'mech' in params: # eg. soma.izh._ref_u
+                        ptr = self.secs[params['sec']]['hSection'].__getattribute__(params['mech']).__getattribute('_ref_'+params['var'])
+            except: 
+                print 'Recoding params yield bad pointer: ',params
 
+            s.simdata[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
+            s.simdata[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+
+
+    def recordStimSpikes (self):
+        s.simdata['stims'] = {'cell_'+str(self.gid): {}}
+        for stim in self.stims:
+            stimSpikeVecs = h.Vector() # initialize vector to store 
+            stim['hNetcon'].record(stimSpikeVecs)
+            s.simdata['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+
+        # backgroundSpikevecs=[] # A list for storing actual cell voltages (WARNING, slow!)
+        # backgroundRecorders=[] # And for recording spikes
+        # backgroundSpikevec = h.Vector() # Initialize vector
+        # backgroundSpikevecs.append(backgroundSpikevec) # Keep all those vectors
+
+        # backgroundRecorder = h.NetCon(c.backgroundSource, None)
+        # backgroundRecorder.record(backgroundSpikevec) # Record simulation time
+        # backgroundRecorders.append(backgroundRecorder)
 
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
@@ -265,94 +291,6 @@ class HH(Cell):
         self.stim = h.IClamp(0.5, sec=self.soma)
         self.stim.amp = 0.1
         self.stim.dur = 0.1
-
-
-
-
-###############################################################################
-#
-# IZHIKEVICH 2007a CELL CLASS (Euler explicit integration; include synapses)
-#
-###############################################################################
-
-class Izhi2007a(Cell):
-    """
-    Python class for the different celltypes of Izhikevich neuron. 
-
-    Equations and parameter values taken from
-      Izhikevich EM (2007).
-      "Dynamical systems in neuroscience"
-      MIT Press
-
-    Equation for synaptic inputs taken from
-      Izhikevich EM, Edelman GM (2008).
-      "Large-scale model of mammalian thalamocortical systems." 
-      PNAS 105(9) 3593-3598.
-
-    Cell types available are based on Izhikevich, 2007 book:
-        1. RS - Layer 5 regular spiking pyramidal cell (fig 8.12 from 2007 book)
-        2. IB - Layer 5 intrinsically bursting cell (fig 8.19 from 2007 book)
-        3. CH - Cat primary visual cortex chattering cell (fig8.23 from 2007 book)
-        4. LTS - Rat barrel cortex Low-threshold  spiking interneuron (fig8.25 from 2007 book)
-        5. FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
-        6. TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-        7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-    """
-
-    type2007 = collections.OrderedDict([
-      #              C    k     vr  vt vpeak   a      b   c    d  celltype
-      ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
-      ('IB',        (150, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
-      ('CH',        (50,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
-      ('LTS',       (100, 1.0,  -56, -42, 40, 0.03,   8, -53,   20,   4)),
-      ('FS',        (20,  1.0,  -55, -40, 25, 0.2,   -2, -45,  -55,   5)),
-      ('TC',        (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
-      ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
-
-
-    def make (self):
-        # Instantiate cell model based on cellType
-        if self.tags['cellType'] in ['IT', 'PT', 'CT']: # if excitatory cell use RS
-            izhType = 'RS' 
-        elif self.tags['cellType'] == 'PV': # if Pva use FS
-            izhType = 'FS' 
-        elif self.tags['cellType'] == 'SOM': # if Sst us LTS
-            izhType = 'LTS' 
-
-        self.sec = h.Section(name='izhi2007a'+izhType+str(self.gid))  # create Section
-        self.m = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
-
-    def associateGid (self, threshold = 10.0):
-        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
-        nc = h.NetCon(self.m, None) 
-        nc.threshold = threshold
-        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-        s.gidVec.append(self.gid) # index = local id; value = global id
-        s.gidDic[self.gid] = len(s.gidVec)
-        del nc # discard netcon
-
-    def addBackground (self):
-        self.backgroundRand = h.Random()
-        self.backgroundRand.MCellRan4(self.gid,self.gid*2)
-        self.backgroundRand.negexp(1)
-        self.backgroundSource = h.NetStim() # Create a NetStim
-        self.backgroundSource.interval = s.net.params['backgroundRate']**-1*1e3 # Take inverse of the frequency and then convert from Hz^-1 to ms
-        self.backgroundSource.noiseFromRandom(self.backgroundRand) # Set it to use this random number generator
-        self.backgroundSource.noise = s.net.params['backgroundNoise'] # Fractional noise in timing
-        self.backgroundSource.number = s.net.params['backgroundNumber'] # Number of spikes
-        self.backgroundConn = h.NetCon(self.backgroundSource, self.m) # Connect this noisy input to a cell
-        for r in range(s.net.params['numReceptors']): self.backgroundConn.weight[r]=0 # Initialize weights to 0, otherwise get memory leaks
-        self.backgroundConn.weight[s.net.params['backgroundReceptor']] = s.net.params['backgroundWeight'][0] # Specify the weight -- 1 is NMDA receptor for smoother, more summative activation
-        self.backgroundConn.delay=2 # Specify the delay in ms -- shouldn't make a spot of difference
-
-
-    def record(self):
-        # set up voltagse recording; recdict will be taken from global context
-        for k,v in s.cfg['recdict'].iteritems():
-            try: ptr=eval('self.'+v) # convert string to a pointer to something to record; eval() is unsafe
-            except: print 'bad state variable pointer: ',v
-            s.simdata[k]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+10).resize(0)
-            s.simdata[k]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
 
 

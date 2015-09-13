@@ -10,5 +10,5 @@ Contributors: salvadordura@gmail.com
 import sim
 import analysis
 from network import Network
-from cell import Cell, Izhi2007a, Izhi2007b, HH, Pop
+from cell import Cell, Izhi2007b, HH, Pop
 

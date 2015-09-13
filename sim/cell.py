@@ -173,7 +173,7 @@ class Cell(object):
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = s.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = s.sim.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         return odict
 
 
@@ -531,4 +531,10 @@ class Pop(object):
         s.lastGid = s.lastGid + len(self.tags['cellsList'])
         return cells
 
+
+    def __getstate__(self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = s.sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
+        return odict
 

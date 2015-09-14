@@ -352,31 +352,33 @@ simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig['verbose'] = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
 
 
-## Recording 
+# Recording 
+simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
-simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
-
 simConfig['simDataVecs'] = ['spkt', 'spkid','stims']
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
+
+# Saving
+simConfig['filename'] = '../data/M1yfrac'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
+simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
+simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveTxt'] = False # save spikes and conn to txt file
+simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
-## Saving and plotting parameters
-simConfig['filename'] = '../data/m1ms'  # Set file output name
-simConfig['savemat'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['savetxt'] = False # save spikes and conn to txt file
-simConfig['savedpk'] = True # save to a .dpk pickled file
-simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['saveBackground'] = False # save background (NetStims) inputs
-simConfig['verbose'] = 1 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+# Analysis  and plotting 
 simConfig['plotraster'] = True # Whether or not to plot a raster
 simConfig['plotpsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotconn'] = False # whether to plot conn matrix
 simConfig['plotweightchanges'] = False # whether to plot weight changes (shown in conn matrix)
 simConfig['plot3darch'] = False # plot 3d architecture
+
 
 

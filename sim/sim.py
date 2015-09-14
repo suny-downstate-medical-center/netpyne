@@ -120,7 +120,7 @@ def replaceFuncObj(obj):
             if hasattr(val,'func_name'):
                 line = inspect.getsource(val)
                 startInd = line.find('lambda')
-                endInd = min([line[startInd:].find(c) for c in [']', '}', '\''] if line[startInd:].find(c)>0])
+                endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
                 funcSource = line[startInd:startInd+endInd]
                 obj[key] = funcSource
     return obj
@@ -217,7 +217,6 @@ def gatherData():
     nodeData = {'netCells': [c.__getstate__() for c in s.net.cells], 'simData': s.simData} 
     data = [None]*s.nhosts
     data[0] = {}
-    print len(s.simData['V'])
     for k,v in nodeData.iteritems():
         data[0][k] = v 
     gather = s.pc.py_alltoall(data)
@@ -246,15 +245,15 @@ def gatherData():
         print('  Done; gather time = %0.1f s.' % gathertime)
 
         print('\nAnalyzing...')
-        s.totalspikes = sum([len(spks) for spks in s.allSimData['spkt'].values()])    
-        s.totalconnections = sum([len(cell['conns']) for cell in s.net.allCells])   
-        s.ncells = len(s.net.allCells)
+        s.totalSpikes = sum([len(spks) for spks in s.allSimData['spkt'].values()])    
+        s.totalConnections = sum([len(cell['conns']) for cell in s.net.allCells])   
+        s.numCells = len(s.net.allCells)
 
-        #s.firingrate = float(s.totalspikes)/s.ncells/s.params['duration']*1e3 # Calculate firing rate 
-        # s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
-        # print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, s.params['duration']/1e3, s.params['scale'], s.ncells, s.nhosts))
-        # print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
-        # print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
+        s.firingRate = float(s.totalSpikes)/s.numCells/s.cfg['duration']*1e3 # Calculate firing rate 
+        s.connsPerCell = s.totalConnections/float(s.numCells) # Calculate the number of connections per cell
+        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, s.cfg['duration']/1e3, s.net.params['scale'], s.numCells, s.nhosts))
+        print('  Spikes: %i (%0.2f Hz)' % (s.totalSpikes, s.firingRate))
+        print('  Connections: %i (%0.2f per cell)' % (s.totalConnections, s.connsPerCell))
  
 
 ###############################################################################
@@ -262,18 +261,20 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
-        print('Saving output as %s...' % s.params['filename'])
-
-
-        paramsPickle = replaceFuncObj(s.net.params)
+        print('Saving output as %s...' % s.cfg['filename'])
 
         # Save to pickle file
-
+        if s.cfg['savePickle']:
+            dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
+            with open(s.cfg['filename'], 'wb') as f:
+                pickle.dump(dataSave, f)
 
         # Save to json file
+        if s.cfg['saveJson']:
+            pass
 
         # Save to mat file
-        if s.params['savemat']:
+        if s.cfg['saveMat']:
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
             savemat(s.params['filename'], s.alls.simData)  # check if looks ok in matlab
@@ -281,7 +282,7 @@ def saveData():
             print('  Done; time = %0.1f s' % savetime)
 
         # Save to dpk file
-        if s.params['savedpk']:
+        if s.cfg['saveDpk']:
             import os,gzip
             fn=s.params['filename'].split('.')
             file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name

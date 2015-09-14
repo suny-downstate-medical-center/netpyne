@@ -119,7 +119,7 @@ class Cell(object):
 
         if params['source'] == 'random':
             rand = h.Random()
-            rand.MCellRan4(self.gid,self.gid*2)
+            rand.Random123(self.gid,self.gid*2)
             rand.negexp(1)
             self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
@@ -269,7 +269,10 @@ class HH(Cell):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                y = self.tags['yfrac'] * s.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                if 'yfrac' in self.tags and 'corticalthick' in s.net.params:
+                    y = self.tags['yfrac'] * s.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                else:
+                    y = self.tags['y']
                 z = self.tags['z']
                 for pt3d in sectParams['geom']['pt3d']:
                     h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sec['hSection'])
@@ -464,7 +467,7 @@ class Pop(object):
             gid = s.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['yfrac'] = 0 # set yfrac value for this cell
+            cellTags['y'] = 0 # set yfrac value for this cell
             cellTags['x'] = 0  # calculate x location (um)
             cellTags['z'] = 0 # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist

@@ -237,7 +237,6 @@ def gatherData():
                         s.allSimData[key] = list(s.allSimData[key])+list(val)
                 else: 
                     s.allSimData[key].update(val)           # update simData dicts which are not Vectors
-
         s.net.allCells = allCells
 
 
@@ -253,7 +252,7 @@ def gatherData():
 
         s.firingRate = float(s.totalSpikes)/s.numCells/s.cfg['duration']*1e3 # Calculate firing rate 
         s.connsPerCell = s.totalConnections/float(s.numCells) # Calculate the number of connections per cell
-        print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, s.cfg['duration']/1e3, s.net.params['scale'], s.numCells, s.nhosts))
+        print('  Run time: %0.1f s (%i-s sim; %i cells; %i workers)' % (gathertime, s.cfg['duration']/1e3, s.numCells, s.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (s.totalSpikes, s.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (s.totalConnections, s.connsPerCell))
  

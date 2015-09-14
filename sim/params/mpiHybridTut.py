@@ -23,7 +23,6 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 ###############################################################################
 
 # # General network parameters
-# netParams['scale'] = 1 # Size of simulation in thousands of cells
 # netParams['corticalthick'] = 1000 # cortical thickness/depth
 
 # Cell properties list
@@ -34,16 +33,25 @@ cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
+soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
-cellProp['sections'] = {'soma': soma}  # add sections to dict
+dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # dend properties
+dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
+dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
+dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+dend['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+
+cellProp['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'Izhi2007b', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
@@ -63,10 +71,19 @@ netParams['connParams'].append(
     'maxConns': 20})       # threshold
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 10, 
     'syn': 'NMDA',
+    'delay': 5})  
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
+    'connFunc': 'fullConn',
+    'weight': 20, 
+    'syn': 'NMDA',
+    'sec': 'dend',
+    'loc': 1.0,
     'delay': 5})  
 
 
@@ -93,7 +110,7 @@ simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = '../data/mpiHHTut'  # Set file output name
+simConfig['filename'] = '../data/mpiHybridTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
 simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file

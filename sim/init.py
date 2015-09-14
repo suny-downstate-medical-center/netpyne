@@ -17,7 +17,7 @@ from time import time
 from neuron import h # Import NEURON
 
 #import params as p
-from params import mpiHHTut, M1yfrac
+from params import mpiHHTut, mpiHybridTut, M1yfrac
 import shared as s
 
 ###############################################################################
@@ -25,8 +25,8 @@ import shared as s
 ###############################################################################
 def runModel():
     s.sim.initialize(                   # create network object and set cfg and net params
-        simConfig = M1yfrac.simConfig, 
-        netParams = M1yfrac.netParams)  
+        simConfig = mpiHybridTut.simConfig, 
+        netParams = mpiHybridTut.netParams)  
     s.net.createPops()                  # instantiate network populations
     s.net.createCells()                 # instantiate network cells based on defined populations
     s.net.connectCells()                # create connections between cells based on params

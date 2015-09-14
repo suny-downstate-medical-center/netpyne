@@ -171,7 +171,7 @@ class Network(object):
                 xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
                 xpath[xpath2<xpath]=xpath2[xpath2<xpath]
                 xpath=array(xpath)
-                ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*s.corticalthick)**2 for preCellTags in preCells.values()])
+                ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*self.params['corticalthick'])**2 for preCellTags in preCells.values()])
                 zpath=[(preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()]
                 zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
                 zpath[zpath2<zpath]=zpath2[zpath2<zpath]

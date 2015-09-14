@@ -23,10 +23,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParams['M1yfrac'] = {}  # dictionary to store netParams
-p = netParams['M1yfrac']  # pointer to dict
-
-## General network parameters
+# General network parameters
 netParams['scale'] = 1 # Size of simulation in thousands of cells
 netParams['modelsize'] = 1000*netParams['scale'] # Size of netParamswork in um (~= 1000 neurons/column where column = 500um width)
 netParams['sparseness'] = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
@@ -45,7 +42,7 @@ netParams['toroidal'] = False # Whether or not to have toroidal topology
 # Cell properties list
 netParams['cellProps'] = []
 
-# IT cell params
+## IT cell params
 cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
@@ -59,7 +56,7 @@ soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.
 cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
-# PT cell params
+## PT cell params
 cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
@@ -73,7 +70,7 @@ soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.
 cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
-# CT cell params
+## CT cell params
 cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
@@ -87,7 +84,7 @@ soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.
 cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
-# SOM cell params
+## SOM cell params
 cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
@@ -101,7 +98,7 @@ soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.
 cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties 
 
-# PV cell params
+## PV cell params
 cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
@@ -115,7 +112,7 @@ cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 
-# create list of populations, where each item contains a dict with the pop params
+## create list of populations, where each item contains a dict with the pop params
 netParams['popParams'] = []  
      
 netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'HH', 'cellType': 'IT',  'projTarget': '', 'yfracRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
@@ -146,7 +143,7 @@ netParams['popParams'].append({'popLabel': 'PT_cells', 'cellsList': cellsList}) 
 netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projTarget']  # tags from population that are copied over to the cells
 
 
-## List of connectivity rules/params
+# List of connectivity rules/params
 netParams['connParams'] = []  
 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'IT' }, # background -> IT

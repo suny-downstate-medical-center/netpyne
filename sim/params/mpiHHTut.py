@@ -22,10 +22,6 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
-# # General network parameters
-# netParams['scale'] = 1 # Size of simulation in thousands of cells
-# netParams['corticalthick'] = 1000 # cortical thickness/depth
-
 # Cell properties list
 netParams['cellProps'] = []
 

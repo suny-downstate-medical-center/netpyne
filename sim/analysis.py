@@ -25,22 +25,22 @@ import shared as s
 def plotData():
     ## Plotting
     if s.rank == 0:
-        if p.sim['plotraster']: # Whether or not to plot
-            if (s.totalspikes>p.sim['maxspikestoplot']): 
-                print('  Too many spikes (%i vs. %i)' % (s.totalspikes, s.maxspikestoplot)) # Plot raster, but only if not too many spikes
+        if s.cfg['plotraster']: # Whether or not to plot
+            if (s.totalSpikes>s.cfg['maxspikestoplot']): 
+                print('  Too many spikes (%i vs. %i)' % (s.totalSpikes, s.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
                 s.analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
-        if p.sim['plotconn']:
+        if s.cfg['plotconn']:
             print('Plotting connectivity matrix...')
             s.analysis.plotconn()
-        if p.sim['plotpsd']:
+        if s.cfg['plotpsd']:
             print('Plotting power spectral density')
             s.analysis.plotpsd()
-        if p.sim['plotweightchanges']:
+        if s.cfg['plotweightchanges']:
             print('Plotting weight changes...')
             s.analysis.plotweightchanges()
-        if p.sim['plot3darch']:
+        if s.cfg['plot3darch']:
             print('Plotting 3d architecture...')
             s.analysis.plot3darch()
 
@@ -83,12 +83,12 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
     #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
     figure() # Open a new figure
-    scatter(s.allsimData['spkt'],s.allsimData['spkid'],10,linewidths=0.5,marker='|') # Create raster  
+    scatter(s.allSimData['spkt'],s.allSimData['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
     ylabel('Cell ID')
-    title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.net['backgroundWeight'][0],s.firingrate),fontsize=12)
-    xlim(0,p.sim['duration'])
-    ylim(0,s.ncells)
+    title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (s.numCells,s.connsPerCell,s.firingRate),fontsize=12)
+    xlim(0,s.cfg['duration'])
+    ylim(0,s.numCells)
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)
     #show()

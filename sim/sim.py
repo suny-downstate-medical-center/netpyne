@@ -11,7 +11,6 @@ from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
 import inspect
-import pickle
 import cPickle as pk
 import hashlib 
 from neuron import h, init # Import NEURON
@@ -173,6 +172,7 @@ def setupRecording():
 ### Run Simulation
 ###############################################################################
 def runSim():
+    s.pc.barrier()
     if s.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
@@ -228,15 +228,17 @@ def gatherData():
             s.allSimData[k] = {}
         for node in gather:  # concatenate data from each node
             allCells.extend(node['netCells'])  # extend allCells list
-            [s.allSimData[key].update(val) for key,val in node['simData'].iteritems() if key not in s.cfg['simDataVecs']] # update simData dicts
-            for key,dic in node['simData'].iteritems():  # update simData dics of dics of h.Vector (eg. ['v']['cell_1']=h.Vector)
-                if key in s.cfg['simDataVecs'] and dic:
-                    for cell,vec in dic.iteritems():
-                        s.allSimData[key].update({cell:vec})
+            for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector (eg. ['v']['cell_1']=h.Vector)
+                if key in s.cfg['simDataVecs']:             # simData dicts that contain Vectors
+                    if isinstance(val,dict):                # udpate simData dicts which are dicts of Vectors
+                        for cell,vec in val.iteritems():
+                            s.allSimData[key].update({cell:vec})
+                    else:                                   # udpate simData dicts which are Vectors
+                        s.allSimData[key] = list(s.allSimData[key])+list(val)
+                else: 
+                    s.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
         s.net.allCells = allCells
-    #     if not allsimData.has_key('run'): allsimData.update({'run':{'recordStep':s.params['recordStep'], 'dt':h.dt, 'randseed':s.params['randseed'], 'duration':s.params['duration']}}) # add run s.params
-    #     allsimData.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
 
     ## Print statistics
@@ -245,7 +247,7 @@ def gatherData():
         print('  Done; gather time = %0.1f s.' % gathertime)
 
         print('\nAnalyzing...')
-        s.totalSpikes = sum([len(spks) for spks in s.allSimData['spkt'].values()])    
+        s.totalSpikes = len(s.allSimData['spkt'])   
         s.totalConnections = sum([len(cell['conns']) for cell in s.net.allCells])   
         s.numCells = len(s.net.allCells)
 
@@ -262,22 +264,26 @@ def gatherData():
 def saveData():
     if s.rank == 0:
         print('Saving output as %s...' % s.cfg['filename'])
+        dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
 
         # Save to pickle file
         if s.cfg['savePickle']:
-            dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
-            with open(s.cfg['filename'], 'wb') as f:
+            import pickle
+            with open(s.cfg['filename']+'.pkl', 'wb') as f:
                 pickle.dump(dataSave, f)
 
         # Save to json file
         if s.cfg['saveJson']:
+            import json
+            with open(s.cfg['filename']+'.json', 'w') as f:
+                json.dump(dataSave, f)
             pass
 
         # Save to mat file
         if s.cfg['saveMat']:
             savestart = time() # See how long it takes to save
-            from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-            savemat(s.params['filename'], s.alls.simData)  # check if looks ok in matlab
+            from scipy.io import savemat # analysis:ignore 
+            savemat(s.cfg['filename']+'.mat', dataSave)  # check if looks ok in matlab
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)
 

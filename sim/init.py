@@ -37,4 +37,4 @@ def runModel():
     s.analysis.plotData()               # plot spike raster
 
 
-runModel()                              # excute sequence of commands to run full model
+runModel()                              # execute sequence of commands to run full model

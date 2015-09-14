@@ -22,7 +22,7 @@ import shared as s
 ###############################################################################
 
 def initialize(simConfig = None, netParams = None, net = None):
-    s.simdata = {}  # used to store output simulation data (spikes etc)
+    s.simData = {}  # used to store output simulation data (spikes etc)
     s.gidVec =[] # Empty list for storing GIDs (index = local id; value = gid)
     s.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     s.lastGid = 0  # keep track of las cell gid
@@ -122,7 +122,6 @@ def replaceFuncObj(obj):
                 startInd = line.find('lambda')
                 endInd = min([line[startInd:].find(c) for c in [']', '}', '\''] if line[startInd:].find(c)>0])
                 funcSource = line[startInd:startInd+endInd]
-                print line, startInd, endInd, funcSource
                 obj[key] = funcSource
     return obj
 
@@ -155,17 +154,17 @@ def readArgs():
 ###############################################################################
 def setupRecording():
     # spike recording
-    s.pc.spike_record(-1, s.simdata['spkt'], s.simdata['spkid']) # -1 means to record from all cells on this node
+    s.pc.spike_record(-1, s.simData['spkt'], s.simData['spkid']) # -1 means to record from all cells on this node
 
-    # background inputs recording # REPLACE WITH cell.recordstim() or include in cell.record() based on cfg['saveStim']
+    # stim spike recording
     if s.cfg['recordStim']:
-        s.simdata['stims'] = {}
+        s.simData['stims'] = {}
         for cell in s.net.cells: 
             cell.recordStimSpikes()
 
     # intrinsic cell variables recording
     if s.cfg['recordTraces']:
-        for key in s.cfg['recdict'].keys(): s.simdata[key] = {}
+        for key in s.cfg['recdict'].keys(): s.simData[key] = {}
         for cell in s.net.cells: 
             cell.recordTraces()
 
@@ -215,57 +214,47 @@ def gatherData():
         print('\nGathering spikes...')
         gatherstart = time() # See how long it takes to plot
 
-    print s.net.pops[0].__getstate__()
-    netData = {'pops': s.net.pops}#, 'cells': s.net.cells} 
+    nodeData = {'netCells': [c.__getstate__() for c in s.net.cells], 'simData': s.simData} 
     data = [None]*s.nhosts
     data[0] = {}
-    for k,v in netData.iteritems():   data[0][k] = v 
-    #gather=s.pc.py_alltoall(data)
-    #s.pc.barrier()
-    #print gather
+    print len(s.simData['V'])
+    for k,v in nodeData.iteritems():
+        data[0][k] = v 
+    gather = s.pc.py_alltoall(data)
+    s.pc.barrier()
+    if s.rank == 0:
+        allCells = []
+        s.allSimData = {} 
+        for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
+            s.allSimData[k] = {}
+        for node in gather:  # concatenate data from each node
+            allCells.extend(node['netCells'])  # extend allCells list
+            [s.allSimData[key].update(val) for key,val in node['simData'].iteritems() if key not in s.cfg['simDataVecs']] # update simData dicts
+            for key,dic in node['simData'].iteritems():  # update simData dics of dics of h.Vector (eg. ['v']['cell_1']=h.Vector)
+                if key in s.cfg['simDataVecs'] and dic:
+                    for cell,vec in dic.iteritems():
+                        s.allSimData[key].update({cell:vec})
+
+        s.net.allCells = allCells
+    #     if not allsimData.has_key('run'): allsimData.update({'run':{'recordStep':s.params['recordStep'], 'dt':h.dt, 'randseed':s.params['randseed'], 'duration':s.params['duration']}}) # add run s.params
+    #     allsimData.update({'t':h.t, 'walltime':datetime.now().ctime()})
 
 
-    # # extend s.simdata dictionary to save relevant data in each node
-    # nodePops = [[pop.__dict__[x] for x in pop.__dict__ if not x in ['density']] for pop in s.net.pops]
-    # nodeCells = [[y.__dict__[x] for x in y.__dict__ if not x in ['soma', 'stim', 'sec', 'm', 'syns', 'backgroundSyn', 'backgroundSource', 'backgroundConn', 'backgroundRand']] for y in s.net.cells]
-    # nodeConns = [[y.__dict__[x] for x in y.__dict__ if not x in ['s.netcon', 'connWeights', 'connProbs']] for y in s.net.conns]
-    # s.simdata.update({'pops': nodePops, 'cells': nodeCells, 'conns': nodeConns})
-    # if s.params['saveBackground']:
-    #     nodeBackground = [(s.net.cells[i].gid, s.backgroundSpikevecs[i]) for i in range(s.net.cells)]
-    #     s.simdata.update({'background': nodeBackground})  
+    ## Print statistics
+    if s.rank == 0:
+        gathertime = time()-gatherstart # See how long it took
+        print('  Done; gather time = %0.1f s.' % gathertime)
 
-    # # gather s.simdata from all nodes
-    # data=[None]*s.nhosts # using None is important for mem and perf of s.pc.alltoall() when data is sparse
-    # data[0]={} # make a new dict
-    # for k,v in s.simdata.iteritems():   data[0][k] = v 
-    # gather=s.pc.py_alltoall(data)
-    # s.pc.barrier()
-    # #for v in s.simdata.itervalues(): v.resize(0) # 
-    # if s.rank==0: 
-    #     allsimdata = {}
-    #     [allsimdata.update({k : concatenate([array(d[k]) for d in gather])}) for k in s.simdataVecs] # concatenate spikes
-    #     for k in [x for x in gather[0].keys() if x not in s.s.simdataVecs]: # concatenate other dict fields
-    #         tmp = []
-    #         for d in gather: tmp.extend(d[k]) 
-    #         allsimdata.update({k: array(tmp, dtype=object)})  # object type so can be saved in .mat format
-    #     if not allsimdata.has_key('run'): allsimdata.update({'run':{'recordStep':s.params['recordStep'], 'dt':h.dt, 'randseed':s.params['randseed'], 'duration':s.params['duration']}}) # add run s.params
-    #     allsimdata.update({'t':h.t, 'walltime':datetime.now().ctime()})
+        print('\nAnalyzing...')
+        s.totalspikes = sum([len(spks) for spks in s.allSimData['spkt'].values()])    
+        s.totalconnections = sum([len(cell['conns']) for cell in s.net.allCells])   
+        s.ncells = len(s.net.allCells)
 
-    #     gathertime = time()-gatherstart # See how long it took
-    #     print('  Done; gather time = %0.1f s.' % gathertime)
-
-    # ## Print statistics
-    # if s.rank == 0:
-    #     print('\nAnalyzing...')
-    #     s.totalspikes = len(s.alls.simdata['spkt'])    
-    #     s.totalconnections = len(s.alls.simdata['conns'])
-    #     s.ncells = len(s.alls.simdata['cells'])
-
-    #     s.firingrate = float(s.totalspikes)/s.ncells/s.params['duration']*1e3 # Calculate firing rate 
-    #     s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
-    #     print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, s.params['duration']/1e3, s.params['scale'], s.ncells, s.nhosts))
-    #     print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
-    #     print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
+        #s.firingrate = float(s.totalspikes)/s.ncells/s.params['duration']*1e3 # Calculate firing rate 
+        # s.connspercell = s.totalconnections/float(s.ncells) # Calculate the number of connections per cell
+        # print('  Run time: %0.1f s (%i-s sim; %i scale; %i cells; %i workers)' % (gathertime, s.params['duration']/1e3, s.params['scale'], s.ncells, s.nhosts))
+        # print('  Spikes: %i (%0.2f Hz)' % (s.totalspikes, s.firingrate))
+        # print('  Connections: %i (%0.2f per cell)' % (s.totalconnections, s.connspercell))
  
 
 ###############################################################################
@@ -275,7 +264,11 @@ def saveData():
     if s.rank == 0:
         print('Saving output as %s...' % s.params['filename'])
 
+
+        paramsPickle = replaceFuncObj(s.net.params)
+
         # Save to pickle file
+
 
         # Save to json file
 
@@ -283,7 +276,7 @@ def saveData():
         if s.params['savemat']:
             savestart = time() # See how long it takes to save
             from scipy.io import savemat # analysis:ignore -- because used in exec() statement
-            savemat(s.params['filename'], s.alls.simdata)  # check if looks ok in matlab
+            savemat(s.params['filename'], s.alls.simData)  # check if looks ok in matlab
             savetime = time()-savestart # See how long it took to save
             print('  Done; time = %0.1f s' % savetime)
 
@@ -292,7 +285,7 @@ def saveData():
             import os,gzip
             fn=s.params['filename'].split('.')
             file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
-            gzip.open(file, 'wb').write(pk.dumps(s.alls.simdata)) # write compressed string
+            gzip.open(file, 'wb').write(pk.dumps(s.alls.simData)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
           
 

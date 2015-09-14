@@ -356,7 +356,9 @@ simConfig['createPyStruct'] = 1  # create Python structure (simulator-independen
 
 ## Recording 
 simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
-simConfig['simdataVecs'] = ['spkt', 'spkid','stims']
+simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
+
+simConfig['simDataVecs'] = ['spkt', 'spkid','stims']
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk

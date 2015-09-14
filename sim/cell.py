@@ -142,32 +142,30 @@ class Cell(object):
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
         for key, params in s.cfg['recdict'].iteritems():
-            try:
-                if 'pos' in params:
-                    if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
-                    else:  # eg. soma(0.5)._ref_v
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
-                else:
-                    if 'pointProcess' in params: # eg. soma.izh._ref_u
-                        if params['pointProcess'] in self.secs[params['sec']]:
-                            ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
-                        else: 
-                            return
+            ptr = None
+            if 'pos' in params:
+                if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
+                    ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                else:  # eg. soma(0.5)._ref_v
+                    ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
+            else:
+                if 'pointProcess' in params: # eg. soma.izh._ref_u
+                    if params['pointProcess'] in self.secs[params['sec']]:
+                        ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
 
-                s.simdata[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
-                s.simdata[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+            if ptr:  # if pointer has been created, the setup recording
+                s.simData[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
+                s.simData[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
-            except: 
-                print 'Recoding params yielded bad pointer: ',params
+                if s.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):
-        s.simdata['stims'] = {'cell_'+str(self.gid): {}}
+        s.simData['stims'] = {'cell_'+str(self.gid): {}}
         for stim in self.stims:
             stimSpikeVecs = h.Vector() # initialize vector to store 
             stim['hNetcon'].record(stimSpikeVecs)
-            s.simdata['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+            s.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
 
     def __getstate__(self): 

@@ -83,7 +83,7 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
     #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
     figure() # Open a new figure
-    scatter(s.allsimdata['spkt'],s.allsimdata['spkid'],10,linewidths=0.5,marker='|') # Create raster  
+    scatter(s.allsimData['spkt'],s.allsimData['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
     ylabel('Cell ID')
     title('cells=%i syns/cell=%0.1f noise=%0.1f rate=%0.1f Hz' % (s.ncells,s.connspercell,p.net['backgroundWeight'][0],s.firingrate),fontsize=12)

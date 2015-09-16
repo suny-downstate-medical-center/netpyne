@@ -25,8 +25,8 @@ import shared as s
 ###############################################################################
 def runModel():
     s.sim.initialize(                   # create network object and set cfg and net params
-        simConfig = mpiHybridTut.simConfig, 
-        netParams = mpiHybridTut.netParams)  
+        simConfig = M1yfrac.simConfig, 
+        netParams = M1yfrac.netParams)  
     s.net.createPops()                  # instantiate network populations
     s.net.createCells()                 # instantiate network cells based on defined populations
     s.net.connectCells()                # create connections between cells based on params

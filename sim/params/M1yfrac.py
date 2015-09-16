@@ -362,8 +362,8 @@ simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, 
 simConfig['filename'] = '../data/M1yfrac'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveJson'] = True # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = True # Whether or not to write spikes etc. to a .mat file
 simConfig['saveTxt'] = False # save spikes and conn to txt file
 simConfig['saveDpk'] = False # save to a .dpk pickled file
 

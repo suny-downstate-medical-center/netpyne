@@ -102,7 +102,7 @@ simConfig['verbose'] = 1  # show detailed messages
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
-simConfig['simDataVecs'] = ['spkt', 'spkid','stims']
+simConfig['simDataVecs'] = ['spkt','spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -110,18 +110,17 @@ simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, 
 simConfig['filename'] = '../data/mpiHybridTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveJson'] = True # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = True # Whether or not to write spikes etc. to a .mat file
 simConfig['saveTxt'] = False # save spikes and conn to txt file
 simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
-simConfig['plotraster'] = True # Whether or not to plot a raster
-simConfig['plotpsd'] = False # plot power spectral density
+simConfig['plotRaster'] = True # Whether or not to plot a raster
+simConfig['plotPsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotconn'] = False # whether to plot conn matrix
-simConfig['plotweightchanges'] = False # whether to plot weight changes (shown in conn matrix)
+simConfig['plotConn'] = False # whether to plot conn matrix
+simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
 simConfig['plot3darch'] = False # plot 3d architecture
-
 

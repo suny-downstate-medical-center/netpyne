@@ -337,7 +337,7 @@ netParams['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al.
 
 
 ###############################################################################
-# SIMULATION PARAMETERS
+# SIMULATION CONFIGURATION
 ###############################################################################
 
 simConfig = {}  # dictionary to store simConfig
@@ -354,7 +354,7 @@ simConfig['verbose'] = 0 # Whether to write nothing (0), diagnostic information 
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {} # {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
-simConfig['simDataVecs'] = ['spkt', 'spkid','stims']
+simConfig['simDataVecs'] = ['spkt', 'spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -368,13 +368,12 @@ simConfig['saveTxt'] = False # save spikes and conn to txt file
 simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
-# Analysis  and plotting 
-simConfig['plotraster'] = True # Whether or not to plot a raster
-simConfig['plotpsd'] = False # plot power spectral density
+# Analysis and plotting 
+simConfig['plotRaster'] = True # Whether or not to plot a raster
+simConfig['plotPsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotconn'] = False # whether to plot conn matrix
-simConfig['plotweightchanges'] = False # whether to plot weight changes (shown in conn matrix)
+simConfig['plotConn'] = False # whether to plot conn matrix
+simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
 simConfig['plot3darch'] = False # plot 3d architecture
-
 
 

@@ -25,19 +25,19 @@ import shared as s
 def plotData():
     ## Plotting
     if s.rank == 0:
-        if s.cfg['plotraster']: # Whether or not to plot
+        if s.cfg['plotRaster']: # Whether or not to plot
             if (s.totalSpikes>s.cfg['maxspikestoplot']): 
                 print('  Too many spikes (%i vs. %i)' % (s.totalSpikes, s.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
                 s.analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
-        if s.cfg['plotconn']:
+        if s.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             s.analysis.plotconn()
-        if s.cfg['plotpsd']:
+        if s.cfg['plotPsd']:
             print('Plotting power spectral density')
             s.analysis.plotpsd()
-        if s.cfg['plotweightchanges']:
+        if s.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             s.analysis.plotweightchanges()
         if s.cfg['plot3darch']:

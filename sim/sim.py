@@ -124,6 +124,28 @@ def replaceFuncObj(obj):
                 obj[key] = funcSource
     return obj
 
+
+###############################################################################
+### Replace None from dict or list with [](so can be saved to .mat)
+###############################################################################
+def replaceNoneObj(obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict]:
+                replaceNoneObj(item)
+
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict]:
+                replaceNoneObj(val)
+            if val == None:
+                obj[key] = []
+            elif val == {}:
+                obj[key] = [] # also replace empty dicts with empty list
+    return obj
+
+
+
 ###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and s.net s.params
 ###############################################################################
@@ -226,15 +248,21 @@ def gatherData():
         s.allSimData = {} 
         for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
             s.allSimData[k] = {}
+        #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND ACT ACCORDINGLY ####
         for node in gather:  # concatenate data from each node
             allCells.extend(node['netCells'])  # extend allCells list
-            for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector (eg. ['v']['cell_1']=h.Vector)
+            for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
                 if key in s.cfg['simDataVecs']:             # simData dicts that contain Vectors
-                    if isinstance(val,dict):                # udpate simData dicts which are dicts of Vectors
-                        for cell,vec in val.iteritems():
-                            s.allSimData[key].update({cell:vec})
-                    else:                                   # udpate simData dicts which are Vectors
-                        s.allSimData[key] = list(s.allSimData[key])+list(val)
+                    if isinstance(val,dict):                
+                        for cell,val2 in val.iteritems():
+                            if isinstance(val2,dict):       
+                                s.allSimData[key].update({cell:{}})
+                                for stim,val3 in val2.iteritems():
+                                    s.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                            else:
+                                s.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                    else:                                   
+                        s.allSimData[key] = list(s.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else: 
                     s.allSimData[key].update(val)           # update simData dicts which are not Vectors
         s.net.allCells = allCells
@@ -265,6 +293,8 @@ def saveData():
         print('Saving output as %s...' % s.cfg['filename'])
         dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
 
+        print s.allSimData
+
         # Save to pickle file
         if s.cfg['savePickle']:
             import pickle
@@ -280,11 +310,8 @@ def saveData():
 
         # Save to mat file
         if s.cfg['saveMat']:
-            savestart = time() # See how long it takes to save
-            from scipy.io import savemat # analysis:ignore 
-            savemat(s.cfg['filename']+'.mat', dataSave)  # check if looks ok in matlab
-            savetime = time()-savestart # See how long it took to save
-            print('  Done; time = %0.1f s' % savetime)
+            from scipy.io import savemat 
+            savemat(s.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
 
         # Save to dpk file
         if s.cfg['saveDpk']:

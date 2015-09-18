@@ -248,7 +248,7 @@ def gatherData():
         s.allSimData = {} 
         for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
             s.allSimData[k] = {}
-        #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND ACT ACCORDINGLY ####
+        #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND UPDATE ALLSIMDATA ACCORDINGLY ####
         for node in gather:  # concatenate data from each node
             allCells.extend(node['netCells'])  # extend allCells list
             for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
@@ -292,9 +292,6 @@ def saveData():
     if s.rank == 0:
         print('Saving output as %s...' % s.cfg['filename'])
         dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
-
-        print s.allSimData
-
         # Save to pickle file
         if s.cfg['savePickle']:
             import pickle

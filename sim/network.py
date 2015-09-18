@@ -159,7 +159,7 @@ class Network(object):
     ###############################################################################
     ### Yfrac-based connectivity
     ###############################################################################
-    def yfracConn(self, preCells, postCells, connParam):
+    def yfracProbConn(self, preCells, postCells, connParam):
         ''' Calculate connectivity as a func of preCell.topClass, preCell['yfrac'], postCell.topClass, postCell.tags['yfrac']
             preCells = {gid: tags} 
             postCells = {gid: Cell object}

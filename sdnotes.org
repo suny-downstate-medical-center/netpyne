@@ -226,9 +226,7 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
     cannot evaluate the efficiency.
 
 ** TODO for paper review 
-*** R1. Include model + conn in Methods
-*** R1. 
-
+*** R1. Include model + conn in Methods 
 *** R2. 1) Prior work intro
 *** R2. 2) Example simulation with results and benchmark
 - Alex's poster with setup time, run time, and raster plots - for num nodes + num cells in NSG

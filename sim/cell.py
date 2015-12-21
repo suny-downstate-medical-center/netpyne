@@ -117,6 +117,8 @@ class Cell(object):
 
         self.stims.append(params)
 
+        #if self.tags['cellModel'] == 'HH': print params,self.stims
+
         if params['source'] == 'random':
             rand = h.Random()
             rand.Random123(self.gid,self.gid*2)
@@ -153,7 +155,7 @@ class Cell(object):
                     if params['pointProcess'] in self.secs[params['sec']]:
                         ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
 
-            if ptr:  # if pointer has been created, the setup recording
+            if ptr:  # if pointer has been created, then setup recording
                 s.simData[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
                 s.simData[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
 
@@ -161,7 +163,7 @@ class Cell(object):
 
 
     def recordStimSpikes (self):
-        s.simData['stims'] = {'cell_'+str(self.gid): {}}
+        s.simData['stims'].update({'cell_'+str(self.gid): {}})
         for stim in self.stims:
             stimSpikeVecs = h.Vector() # initialize vector to store 
             stim['hNetcon'].record(stimSpikeVecs)
@@ -248,7 +250,11 @@ class HH(Cell):
                     sec['mechs'][mechName] = {}
                 sec['hSection'].insert(mechName)
                 for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
-                    sec['hSection'](0.5).__getattribute__(mechName).__setattr__(mechParamName,mechParamValue)
+                    mechParamValueFinal = mechParamValue
+                    for iseg,seg in enumerate(sec['hSection']):  # set mech params for each segment
+                        if type(mechParamValue) in [list]: 
+                            mechParamValueFinal = mechParamValue[iseg]
+                        seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
                 
             # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
@@ -275,7 +281,7 @@ class HH(Cell):
                     y = self.tags['y']
                 z = self.tags['z']
                 for pt3d in sectParams['geom']['pt3d']:
-                    h.pt3dadd(x+pt3d['x'], y+pt3d['y'], z+pt3d['z'], pt3d['d'], sec=sec['hSection'])
+                    h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
 
         # set topology 
         for sectName,sectParams in prop['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
@@ -444,9 +450,9 @@ class Pop(object):
         elif 'numCells' in self.tags:
             cells = self.createCellsFixedNum()
 
-        # create cells based on yfrac density
+        # create cells based on density (optional yfrac-dep)
         elif 'yfracRange' in self.tags and 'density' in self.tags:
-            cells = self.createCellsYfrac()
+            cells = self.createCellsDensity()
 
         # not enough tags to create cells
         else:
@@ -478,25 +484,33 @@ class Pop(object):
 
                 
     # population based on YfracRange
-    def createCellsYfrac(self):
+    def createCellsDensity(self):
         cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
         volume = s.net.params['scale'] * s.net.params['sparseness'] * (s.net.params['modelsize']/1e3)**2 \
              * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
-        yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-        maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
-        maxCells = volume * maxDensity  # max number of cells based on max value of density func 
         
-        seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
-        yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-        yfracsProb = array(map(self.tags['density'], yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
-        allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
-        
-        makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-        yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-        self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-        
-        if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+        if hasattr(self.tags['density'], '__call__'): # check if conn is yfrac-dep density func 
+            yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
+            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
+            maxCells = volume * maxDensity  # max number of cells based on max value of density func 
+            
+            seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
+            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
+            yfracsProb = array(map(self.tags['density'], yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
+            allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
+            
+            makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
+            yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
+            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+
+        else:  # NO yfrac-dep
+            self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
+            seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
+            yfracs = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(self.tags['numCells'], 1)  # random yfrac values 
+            if s.cfg['verbose']: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
+
         randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
 
         for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):

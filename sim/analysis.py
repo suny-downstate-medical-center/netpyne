@@ -30,7 +30,7 @@ def plotData():
                 print('  Too many spikes (%i vs. %i)' % (s.totalSpikes, s.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
-                s.analysis.plotraster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
+                s.analysis.plotrasterYfrac()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
         if s.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             s.analysis.plotconn()
@@ -82,6 +82,7 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     plotstart = time() # See how long it takes to plot
     #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
     #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
+
     figure() # Open a new figure
     scatter(s.allSimData['spkt'],s.allSimData['spkid'],10,linewidths=0.5,marker='|') # Create raster  
     xlabel('Time (ms)')
@@ -89,6 +90,45 @@ def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, ba
     title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (s.numCells,s.connsPerCell,s.firingRate),fontsize=12)
     xlim(0,s.cfg['duration'])
     ylim(0,s.numCells)
+    plottime = time()-plotstart # See how long it took
+    print('  Done; time = %0.1f s' % plottime)
+    #show()
+
+def plotrasterYfrac(): # allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
+    plotstart = time() # See how long it takes to plot
+    #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
+    #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
+
+    # reorder cells as func of yfrac
+    yfracs = [cell['tags']['yfrac'] for cell in s.net.allCells]
+    gids = [cell['gid'] for cell in s.net.allCells]
+    sortInds = sorted(range(len(yfracs)), key=lambda k:yfracs[k])
+    posdic={gid: pos for gid,pos in zip(gids,sortInds)}
+
+    # plot cells types with different colors
+    from  collections import OrderedDict
+    colors = OrderedDict()
+    dark=0.9
+    colors['IT'] = [1,1,1]#[0.90*dark,0.76*dark,0.00]
+    colors['PT'] = [0.90*dark,0.32*dark,0.00]
+    colors['CT'] = [1,1,1]#[0.90*dark,0.59*dark,0.00]
+    colors['SOM'] = [1,1,1]#[0.42*dark,0.83*dark,0.59*dark]
+    colors['PV'] = [1,1,1]#[0.42*dark,0.67*dark,0.84*dark]
+
+    cellcolors = [colors[cell['tags']['cellType']] for cell in s.net.allCells]
+    colordic = {gid: color for gid,color in zip(gids,cellcolors)}
+
+    fontsi=16;
+    figure() # Open a new figure
+    scatter(s.allSimData['spkt'],[posdic[gid] for gid in s.allSimData['spkid']],10,linewidths=1.5,marker='|',color=[colordic[gid] for gid in s.allSimData['spkid']]) # Create raster  
+    xlabel('Time (ms)', fontsize=fontsi )
+    ylabel('Cell id (arranged by NCD)', fontsize=fontsi)
+    title('cells=%i, synapses=%i, rate=%0.1f Hz' % (s.numCells,s.totalConnections,s.firingRate),fontsize=fontsi)
+    xlim(0,s.cfg['duration'])
+    ylim(0,s.numCells)
+    for k,v in colors.iteritems():
+        plot(0,0,color=v,label=k)
+    legend(fontsize=fontsi)
     plottime = time()-plotstart # See how long it took
     print('  Done; time = %0.1f s' % plottime)
     #show()
@@ -166,40 +206,40 @@ def plotconn():
 ## Plot weight changes
 def plotweightchanges():
     if s.usestdp:
-    	# create plot
-    	figh = figure(figsize=(1.2*8,1.2*6))
-    	figh.subplots_adjust(left=0.02) # Less space on left
-    	figh.subplots_adjust(right=0.98) # Less space on right
-    	figh.subplots_adjust(top=0.96) # Less space on bottom
-    	figh.subplots_adjust(bottom=0.02) # Less space on bottom
-    	figh.subplots_adjust(wspace=0) # More space between
-    	figh.subplots_adjust(hspace=0) # More space between
-    	h = axes()
+        # create plot
+        figh = figure(figsize=(1.2*8,1.2*6))
+        figh.subplots_adjust(left=0.02) # Less space on left
+        figh.subplots_adjust(right=0.98) # Less space on right
+        figh.subplots_adjust(top=0.96) # Less space on bottom
+        figh.subplots_adjust(bottom=0.02) # Less space on bottom
+        figh.subplots_adjust(wspace=0) # More space between
+        figh.subplots_adjust(hspace=0) # More space between
+        h = axes()
 
-    	# create data matrix
+        # create data matrix
         wcs = [x[-1][-1] for x in s.allweightchanges] # absolute final weight
-    	wcs = [x[-1][-1]-x[0][-1] for x in s.allweightchanges] # absolute weight change
-    	pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
-    	ncells = int(max(max(pre),max(post))+1)
-    	wcmat = zeros([ncells, ncells])
+        wcs = [x[-1][-1]-x[0][-1] for x in s.allweightchanges] # absolute weight change
+        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in s.allstdpconndata])
+        ncells = int(max(max(pre),max(post))+1)
+        wcmat = zeros([ncells, ncells])
 
-    	for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
+        for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
             wcmat[int(ipre),int(ipost)] = iwc *(-1 if irecep>=2 else 1)
 
-    	# plot
-    	imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
-    	xlabel('post-synaptic cell id')
-    	ylabel('pre-synaptic cell id')
-    	h.set_xticks(s.popGidStart)
-    	h.set_yticks(s.popGidStart)
-    	h.set_xticklabels(s.popnames)
-    	h.set_yticklabels(s.popnames)
-    	h.xaxis.set_ticks_position('top')
-    	xlim(-0.5,ncells-0.5)
-    	ylim(ncells-0.5,-0.5)
-    	clim(-abs(wcmat).max(),abs(wcmat).max())
-    	colorbar()
-    	#show()
+        # plot
+        imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
+        xlabel('post-synaptic cell id')
+        ylabel('pre-synaptic cell id')
+        h.set_xticks(s.popGidStart)
+        h.set_yticks(s.popGidStart)
+        h.set_xticklabels(s.popnames)
+        h.set_yticklabels(s.popnames)
+        h.xaxis.set_ticks_position('top')
+        xlim(-0.5,ncells-0.5)
+        ylim(ncells-0.5,-0.5)
+        clim(-abs(wcmat).max(),abs(wcmat).max())
+        colorbar()
+        #show()
 
 
 ## plot motor subpopulations connectivity changes

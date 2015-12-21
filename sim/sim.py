@@ -252,7 +252,7 @@ def gatherData():
         for node in gather:  # concatenate data from each node
             allCells.extend(node['netCells'])  # extend allCells list
             for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
-                if key in s.cfg['simDataVecs']:             # simData dicts that contain Vectors
+                if key in s.cfg['simDataVecs']:          # simData dicts that contain Vectors
                     if isinstance(val,dict):                
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):       
@@ -290,25 +290,48 @@ def gatherData():
 ###############################################################################
 def saveData():
     if s.rank == 0:
-        print('Saving output as %s...' % s.cfg['filename'])
+        
         dataSave = {'simConfig': s.cfg, 'netParams': replaceFuncObj(s.net.params), 'netCells': s.net.allCells, 'simData': s.allSimData}
         # Save to pickle file
         if s.cfg['savePickle']:
             import pickle
+            print('Saving output as %s...' % s.cfg['filename']+'.pkl')
             with open(s.cfg['filename']+'.pkl', 'wb') as f:
                 pickle.dump(dataSave, f)
+            print('Finished saving!')
 
         # Save to json file
         if s.cfg['saveJson']:
             import json
+            print('Saving output as %s...' % s.cfg['filename']+'.json')
             with open(s.cfg['filename']+'.json', 'w') as f:
                 json.dump(dataSave, f)
             pass
 
+        # Save to json file minimal version (cells sampled)
+        if s.cfg['saveJsonSampled']:
+            print 'Sampling cells and removing connections with missing preGid...'
+            s.net.allCells = s.net.allCells[0::2]
+            cellGids = [cell['gid'] for cell in s.net.allCells]
+            for icell,cell in enumerate(s.net.allCells):
+                for iconn,conn in enumerate(cell['conns']):
+                    if conn['preGid'] not in cellGids:
+                        cell['conns'].remove(conn)
+
+            dataSave = {'netCells': s.net.allCells}
+            import json
+            print('Saving output as %s...' % s.cfg['filename']+'.json')
+            with open(s.cfg['filename']+'.json', 'w') as f:
+                json.dump(dataSave, f)
+            pass
+            print('Finished saving!')
+
         # Save to mat file
         if s.cfg['saveMat']:
             from scipy.io import savemat 
+            print('Saving output as %s...' % s.cfg['filename']+'.mat')
             savemat(s.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+            print('Finished saving!')
 
         # Save to dpk file
         if s.cfg['saveDpk']:
@@ -317,6 +340,7 @@ def saveData():
             file='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(file, 'wb').write(pk.dumps(s.alls.simData)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),file,os.path.getsize(file)/1e6)
+
           
 
 

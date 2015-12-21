@@ -32,7 +32,7 @@ netParams['corticalthick'] = 1740 # cortical thickness/depth
 
 ## General connectivity parameters
 netParams['mindelay'] = 2 # Minimum connection delay, in ms
-netParams['velocity'] = 100 # Conduction velocity in um/ms (e.g. 50 = 0.05 m/s)
+netParams['velocity'] = 100 # Conduction velocity in um/ms (e 100 um = 0.1 m/s)
 netParams['scaleconnweight'] = 0.025 # Connection weight scale factor
 netParams['receptorweight'] = 1 # [1, 1, 1, 1, 1] # Scale factors for each receptor
 netParams['scaleconnprob'] = 1 # 1/netParams['scale']*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed

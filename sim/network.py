@@ -78,16 +78,23 @@ class Network(object):
             preCells = allCellTags  # initialize with all presyn cells 
             prePops = allPopTags  # initialize with all presyn pops
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
-                preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
-                
+                if condKey == 'yfrac':
+                    preCells = {gid: tags for (gid,tags) in preCells.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
+                    prePops = {}
+                else:
+                    preCells = {gid: tags for (gid,tags) in preCells.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+
             if not preCells: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     preCells = prePops
             
             postCells = {cell.gid:cell for cell in self.cells}
             for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
-                postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
+                if condKey == 'yfrac':
+                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if condValue[0] <= cell.tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                else:
+                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] in condValue}  # dict with post Cell objects
 
             connFunc = getattr(self, connParam['connFunc'])  # get function name from params
             connFunc(preCells, postCells, connParam)  # call specific conn function
@@ -156,16 +163,17 @@ class Network(object):
                 postCell.addConn(params)  # call cell method to add connections
 
 
+
     ###############################################################################
-    ### Yfrac-based connectivity
+    ### Probabilistic connectivity (option for distance-dep and yfrac-dep weight+prob)
     ###############################################################################
-    def yfracProbConn(self, preCells, postCells, connParam):
+    def probConn(self, preCells, postCells, connParam):
         ''' Calculate connectivity as a func of preCell.topClass, preCell['yfrac'], postCell.topClass, postCell.tags['yfrac']
             preCells = {gid: tags} 
             postCells = {gid: Cell object}
             '''
         for postCell in postCells.values():
-            # calculate distances of pre to post
+            # calculate distances of pre to post (used for delay and dist-dep conn)
             if self.params['toroidal']: 
                 xpath=[(preCellTags['x']-postCell.tags['x'])**2 for preCellTags in preCells.values()]
                 xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
@@ -176,25 +184,41 @@ class Network(object):
                 zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
                 zpath[zpath2<zpath]=zpath2[zpath2<zpath]
                 zpath=array(zpath)
-                distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
-                #distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
+                #distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
+                distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
             else: 
-                distances = [sqrt((preCellTags['x']-postCell.tags['x'])**2 + \
-                    (preCellTags['z']-postCell.tags['z'])**2) for preCellTags in preCells.values()]  # Calculate all pairwise distances
-                # distances3d = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
-                #     (preCellTags['yfrac']*self.params['corticalthick']-postCell.tags['yfrac'])**2 + \
-                #     (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
+                #distances = [sqrt((preCellTags['x']-postCell.tags['x'])**2 + \
+                #    (preCellTags['z']-postCell.tags['z'])**2) for preCellTags in preCells.values()]  # Calculate all pairwise distances
+                distances3d = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
+                    (preCellTags['yfrac']*self.params['corticalthick']-postCell.tags['yfrac'])**2 + \
+                    (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
 
-            allConnProbs = [self.params['scaleconnprob'] * exp(-distances[i]/self.params['connfalloff']) * \
-                connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
-                for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
+            if 'lengthConst' in connParam:  # distance-dependent conn with length constant param
+                if hasattr(connParam['probability'], '__call__'): # check if conn is yfrac-dep func 
+                    allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * \
+                        connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                        for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
+                else:
+                    allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * connParam['probability'] \
+                    for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
+
+            else:  # NO distance-dependence
+                if hasattr(connParam['probability'], '__call__'): # check if conn is yfrac-dep func 
+                    allConnProbs = [self.params['scaleconnprob'] * connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                    for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
+                else:
+                    allConnProbs = [self.params['scaleconnprob'] * connParam['probability'] \
+                    for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
 
             seed(s.sim.id32('%d'%(s.cfg['randseed']+postCell.gid)))  # Reset random number generator  
             allRands = rand(len(allConnProbs))  # Create an array of random numbers for checking each connection
             makeThisConnection = allConnProbs>allRands # Perform test to see whether or not this connection should be made
             preInds = array(makeThisConnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-            delays = [self.params['mindelay'] + distances[preInd]/float(self.params['velocity']) for preInd in preInds]  # Calculate the delays
-            weights = [self.params['scaleconnweight'] * connParam['weight'](preCellTags['yfrac'], postCell.tags['yfrac']) for preCellTags in preCells.values()]
+            delays = [self.params['mindelay'] + distances3d[preInd]/float(self.params['velocity']) for preInd in preInds]  # Calculate the delays
+            if hasattr(connParam['weight'], '__call__'): # if yfrac-dep weight
+                weights = [self.params['scaleconnweight'] * connParam['weight'](preCellTags['yfrac'], postCell.tags['yfrac']) for preCellTags in preCells.values()]
+            else:  # NO yfrac-dep weight
+                weights = [self.params['scaleconnweight'] * connParam['weight'] for preCellTags in preCells.values()]
             for i,preInd in enumerate(preInds):
                 if preCells.keys()[preInd] == postCell.gid: break
                 params = {'preGid': preCells.keys()[preInd], 

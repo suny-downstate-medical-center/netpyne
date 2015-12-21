@@ -39,7 +39,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 500}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']

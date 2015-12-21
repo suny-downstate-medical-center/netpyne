@@ -30,8 +30,8 @@ cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
-soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 0, 'd': 20})
-soma['geom']['pt3d'].append({'x': 0, 'y': 0, 'z': 20, 'd': 20})
+soma['geom']['pt3d'].append((0, 0, 0, 20))
+soma['geom']['pt3d'].append((0, 0, 20, 20))
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 

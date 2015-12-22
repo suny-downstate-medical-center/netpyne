@@ -11,6 +11,7 @@ from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
 from time import time
+from collections import OrderedDict
 import csv
 import pickle
 from mpl_toolkits.mplot3d import Axes3D
@@ -30,19 +31,19 @@ def plotData():
                 print('  Too many spikes (%i vs. %i)' % (s.totalSpikes, s.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
-                s.analysis.plotrasterYfrac()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
+                s.analysis.plotRaster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
         if s.cfg['plotConn']:
             print('Plotting connectivity matrix...')
-            s.analysis.plotconn()
+            s.analysis.plotConn()
         if s.cfg['plotPsd']:
             print('Plotting power spectral density')
-            s.analysis.plotpsd()
+            s.analysis.plotPsd()
         if s.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
-            s.analysis.plotweightchanges()
+            s.analysis.plotWeightChanges()
         if s.cfg['plot3darch']:
             print('Plotting 3d architecture...')
-            s.analysis.plot3darch()
+            s.analysis.plot3dArch()
 
         show(block=False)
 
@@ -77,28 +78,34 @@ def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
 
    return cmap
 
-## Raster plot
-def plotraster(): # allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
+## Raster plot 
+def plotRaster(): 
     plotstart = time() # See how long it takes to plot
-    #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
-    #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
+    colorList = [[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]] 
+    popLabels = [pop.tags['popLabel'] for pop in s.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in s.net.allCells}  # dict with color for each gid
+    spkidColors = [gidColors[spkid] for spkid in s.allSimData['spkid']]
+
+    print popColors
 
     figure() # Open a new figure
-    scatter(s.allSimData['spkt'],s.allSimData['spkid'],10,linewidths=0.5,marker='|') # Create raster  
-    xlabel('Time (ms)')
-    ylabel('Cell ID')
-    title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (s.numCells,s.connsPerCell,s.firingRate),fontsize=12)
+    fontsiz = 12
+    scatter(s.allSimData['spkt'],s.allSimData['spkid'], 10, linewidths=1, marker='|', color = spkidColors) # Create raster  
+    xlabel('Time (ms)', fontsize=fontsiz)
+    ylabel('Cell ID', fontsize=fontsiz)
+    title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (s.numCells,s.connsPerCell,s.firingRate), fontsize=fontsiz)
     xlim(0,s.cfg['duration'])
     ylim(0,s.numCells)
+    for popLabel in popLabels:
+        plot(0,0,color=popColors[popLabel],label=popLabel)
+    legend(fontsize=fontsiz)
     plottime = time()-plotstart # See how long it took
-    print('  Done; time = %0.1f s' % plottime)
-    #show()
+    print('  Done; plotting time = %0.1f s' % plottime)
 
-def plotrasterYfrac(): # allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
+def plotRasterYfrac(): # allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
     plotstart = time() # See how long it takes to plot
-    #EorIcolors = array([(1,0.4,0) , (0,0.2,0.8)]) # Define excitatory and inhibitory colors -- orange and turquoise
-    #cellcolors = EorIcolors[array(s.EorI)[array(s.allspikecells,dtype=int)]] # Set each cell to be either orange or turquoise
-
+    
     # reorder cells as func of yfrac
     yfracs = [cell['tags']['yfrac'] for cell in s.net.allCells]
     gids = [cell['gid'] for cell in s.net.allCells]
@@ -130,11 +137,11 @@ def plotrasterYfrac(): # allspiketimes, allspikecells, EorI, ncells, connspercel
         plot(0,0,color=v,label=k)
     legend(fontsize=fontsi)
     plottime = time()-plotstart # See how long it took
-    print('  Done; time = %0.1f s' % plottime)
-    #show()
+    print('  Done; plotting time = %0.1f s' % plottime)
+
 
 ## Plot power spectra density
-def plotpsd():
+def plotPsd():
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
 
     lfpv=[[] for c in range(len(s.lfppops))]    
@@ -167,7 +174,7 @@ def plotpsd():
 
 
 ## Plot connectivityFor diagnostic purposes . Based on conndiagram.py.
-def plotconn():
+def plotConn():
     # Create plot
     figh = figure(figsize=(8,6))
     figh.subplots_adjust(left=0.02) # Less space on left
@@ -204,7 +211,7 @@ def plotconn():
 
 
 ## Plot weight changes
-def plotweightchanges():
+def plotWeightChanges():
     if s.usestdp:
         # create plot
         figh = figure(figsize=(1.2*8,1.2*6))
@@ -242,86 +249,8 @@ def plotweightchanges():
         #show()
 
 
-## plot motor subpopulations connectivity changes
-def plotmotorpopchanges():
-    showInh = True
-    if s.usestdp:
-        Ewpre =  []
-        Ewpost = []
-        EwpreSum = []
-        EwpostSum = []
-        if showInh: 
-            Iwpre =  []
-            Iwpost = []
-            IwpreSum = []
-            IwpostSum = [] 
-        for imus in range(len(s.motorCmdCellRange)):
-            Ewpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
-            Ewpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in s.motorCmdCellRange[imus]])
-            EwpreSum.append(sum(Ewpre[imus]))
-            EwpostSum.append(sum(Ewpost[imus]))
-       
-
-            if showInh:
-                motorInhCellRange = s.motorCmdCellRange[imus] - s.popGidStart[s.EDSC] + s.popGidStart[s.IDSC]
-                Iwpre.append([x[0][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in motorInhCellRange])
-                Iwpost.append([x[-1][-1] for (icon,x) in enumerate(s.allweightchanges) if s.allstdpconndata[icon][1] in motorInhCellRange])
-                IwpreSum.append(sum(Iwpre[imus]))
-                IwpostSum.append(sum(Iwpost[imus]))
-
-        print '\ninitial E weights: ',EwpreSum
-        print 'final E weigths: ',EwpostSum
-        print 'absolute E difference: ',array(EwpostSum) - array(EwpreSum)
-        print 'relative E difference: ',(array(EwpostSum) - array(EwpreSum)) / array(EwpreSum)
-
-        if showInh:
-            print '\ninitial I weights: ',IwpreSum
-            print 'final I weigths: ',IwpostSum
-            print 'absolute I difference: ',array(IwpostSum) - array(IwpreSum)
-            print 'relative I difference: ',(array(IwpostSum) - array(IwpreSum)) / array(IwpreSum)
-            
-
-        # plot
-        figh = figure(figsize=(1.2*8,1.2*6))
-        ax1 = figh.add_subplot(2,1,1)
-        ind = arange(len(EwpreSum))  # the x locations for the groups
-        width = 0.35       # the width of the bars
-        ax1.bar(ind, EwpreSum, width, color='b')
-        ax1.bar(ind+width, EwpostSum, width, color='r')
-        ax1.set_xticks(ind+width)
-        ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
-        #legend(['pre','post'])
-        ax1.grid()
-
-        ax2 = figh.add_subplot(2,1,2)
-        width = 0.70       # the width of the bars
-        bar(ind,(array(EwpostSum) - array(EwpreSum)) / array(EwpreSum), width, color='b')
-        ax2.set_xticks(ind+width/2)
-        ax2.set_xticklabels( ('shext','shflex','elext','elflex') )
-        ax2.grid()
-
-        if showInh:
-            figh = figure(figsize=(1.2*8,1.2*6))
-            ax1 = figh.add_subplot(2,1,1)
-            ind = arange(len(IwpreSum))  # the x locations for the groups
-            width = 0.35       # the width of the bars
-            ax1.bar(ind, IwpreSum, width, color='b')
-            ax1.bar(ind+width, IwpostSum, width, color='r')
-            ax1.set_xticks(ind+width)
-            ax1.set_xticklabels( ('shext','shflex','elext','elflex') )
-            legend(['pre','post'])
-            ax1.grid()
-
-            ax2 = figh.add_subplot(2,1,2)
-            width = 0.70       # the width of the bars
-            bar(ind,(array(IwpostSum) - array(IwpreSum)) / array(IwpreSum), width, color='b')
-            ax2.set_xticks(ind+width/2)
-            ax2.set_xticklabels( ('shext','shflex','elext','elflex') )
-            ax2.grid()
-        
-
 ## plot 3d architecture:
-def plot3darch():
+def plot3dArch():
     # create plot
     figh = figure(figsize=(1.2*8,1.2*6))
     # figh.subplots_adjust(left=0.02) # Less space on left

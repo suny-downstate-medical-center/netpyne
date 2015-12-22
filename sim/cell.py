@@ -318,13 +318,14 @@ class Izhi2007b(Cell):
       PNAS 105(9) 3593-3598.
 
     Cell types available are based on Izhikevich, 2007 book:
-        1. RS - Layer 5 regular spiking pyramidal cell (fig 8.12 from 2007 book)
-        2. IB - Layer 5 intrinsically bursting cell (fig 8.19 from 2007 book)
-        3. CH - Cat primary visual cortex chattering cell (fig8.23 from 2007 book)
-        4. LTS - Rat barrel cortex Low-threshold  spiking interneuron (fig8.25 from 2007 book)
-        5. FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
-        6. TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-        7. RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
+        RS - Layer 5 regular spiking pyramidal cell (fig 8.12 from 2007 book)
+        IB - Layer 5 intrinsically bursting cell (fig 8.19 from 2007 book)
+        CH - Cat primary visual cortex chattering cell (fig8.23 from 2007 book)
+        LTS - Rat barrel cortex Low-threshold  spiking interneuron (fig8.25 from 2007 book)
+        FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
+        TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
+        RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
+        Claustrum cells - 
     """
 
     # Izhikevich equation parameters for the different cell types
@@ -367,7 +368,7 @@ class Izhi2007b(Cell):
                 for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
                     sec['syns'][synName][synParamName] = synParamValue
 
-            # add Izhi type to tagss
+            # add Izhi type to tags
             self.tags['Izhi2007Type'] = sectParams['Izhi2007Type']
 
         else: 

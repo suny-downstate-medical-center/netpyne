@@ -41,42 +41,11 @@ def plotData():
         if s.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             s.analysis.plotWeightChanges()
-        if s.cfg['plot3darch']:
+        if s.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
             s.analysis.plot3dArch()
 
         show(block=False)
-
-
-## Create colormap
-def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
-   from matplotlib.colors import LinearSegmentedColormap as makecolormap
-   
-   mng=mingreen; # Minimum amount of green to add into the colors
-   mix=redbluemix; # How much red to mix with the blue an vice versa
-   eps=epsilon; # How much of the center of the colormap to make gray
-   omg=1-gap # omg = one minus gap
-   
-   cdict = {'red': ((0.00000, 0.0, 0.0),
-                    (0.5-eps, mix, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, 1.0),
-                    (1.00000, 1.0, 1.0)),
-
-         'green':  ((0.00000, mng, mng),
-                    (0.5-eps, omg, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, omg),
-                    (1.00000, mng, mng)),
-
-         'blue':   ((0.00000, 1.0, 1.0),
-                    (0.5-eps, 1.0, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, mix),
-                    (1.00000, 0.0, 0.0))}
-   cmap = makecolormap('bicolormap',cdict,256)
-
-   return cmap
 
 ## Raster plot 
 def plotRaster(): 
@@ -85,15 +54,24 @@ def plotRaster():
     popLabels = [pop.tags['popLabel'] for pop in s.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in s.net.allCells}  # dict with color for each gid
-    spkidColors = [gidColors[spkid] for spkid in s.allSimData['spkid']]
-
-    print popColors
-
+    spkids = s.allSimData['spkid']
+    ylabelText = 'Cell id'
+    try:
+        if s.cfg['orderRasterYfrac']:
+            gids = [cell['gid'] for cell in s.net.allCells]
+            yfracs = [cell['tags']['yfrac'] for cell in s.net.allCells]
+            sortInds = sorted(range(len(yfracs)), key=lambda k:yfracs[k])
+            posdic = {gid: pos for gid,pos in zip(gids,sortInds)}
+            spkids = [posdic[gid] for gid in spkids]
+            ylabelText = 'Cell id (arranged by NCD)'
+    except:
+        pass
+    spkidColors = [gidColors[spkid] for spkid in spkids]
     figure() # Open a new figure
     fontsiz = 12
-    scatter(s.allSimData['spkt'],s.allSimData['spkid'], 10, linewidths=1, marker='|', color = spkidColors) # Create raster  
+    scatter(s.allSimData['spkt'], spkids, 10, linewidths=1.5, marker='|', color = spkidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
-    ylabel('Cell ID', fontsize=fontsiz)
+    ylabel(ylabelText, fontsize=fontsiz)
     title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (s.numCells,s.connsPerCell,s.firingRate), fontsize=fontsiz)
     xlim(0,s.cfg['duration'])
     ylim(0,s.numCells)
@@ -102,43 +80,6 @@ def plotRaster():
     legend(fontsize=fontsiz)
     plottime = time()-plotstart # See how long it took
     print('  Done; plotting time = %0.1f s' % plottime)
-
-def plotRasterYfrac(): # allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration): # Define a function for plotting a raster
-    plotstart = time() # See how long it takes to plot
-    
-    # reorder cells as func of yfrac
-    yfracs = [cell['tags']['yfrac'] for cell in s.net.allCells]
-    gids = [cell['gid'] for cell in s.net.allCells]
-    sortInds = sorted(range(len(yfracs)), key=lambda k:yfracs[k])
-    posdic={gid: pos for gid,pos in zip(gids,sortInds)}
-
-    # plot cells types with different colors
-    from  collections import OrderedDict
-    colors = OrderedDict()
-    dark=0.9
-    colors['IT'] = [1,1,1]#[0.90*dark,0.76*dark,0.00]
-    colors['PT'] = [0.90*dark,0.32*dark,0.00]
-    colors['CT'] = [1,1,1]#[0.90*dark,0.59*dark,0.00]
-    colors['SOM'] = [1,1,1]#[0.42*dark,0.83*dark,0.59*dark]
-    colors['PV'] = [1,1,1]#[0.42*dark,0.67*dark,0.84*dark]
-
-    cellcolors = [colors[cell['tags']['cellType']] for cell in s.net.allCells]
-    colordic = {gid: color for gid,color in zip(gids,cellcolors)}
-
-    fontsi=16;
-    figure() # Open a new figure
-    scatter(s.allSimData['spkt'],[posdic[gid] for gid in s.allSimData['spkid']],10,linewidths=1.5,marker='|',color=[colordic[gid] for gid in s.allSimData['spkid']]) # Create raster  
-    xlabel('Time (ms)', fontsize=fontsi )
-    ylabel('Cell id (arranged by NCD)', fontsize=fontsi)
-    title('cells=%i, synapses=%i, rate=%0.1f Hz' % (s.numCells,s.totalConnections,s.firingRate),fontsize=fontsi)
-    xlim(0,s.cfg['duration'])
-    ylim(0,s.numCells)
-    for k,v in colors.iteritems():
-        plot(0,0,color=v,label=k)
-    legend(fontsize=fontsi)
-    plottime = time()-plotstart # See how long it took
-    print('  Done; plotting time = %0.1f s' % plottime)
-
 
 ## Plot power spectra density
 def plotPsd():
@@ -274,3 +215,34 @@ def plot3dArch():
     xlabel('lateral distance (mm)')
     ylabel('lateral distance (mm)')
     ylabel('cortical depth (mm)')
+
+
+## Create colormap
+def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
+   from matplotlib.colors import LinearSegmentedColormap as makecolormap
+   
+   mng=mingreen; # Minimum amount of green to add into the colors
+   mix=redbluemix; # How much red to mix with the blue an vice versa
+   eps=epsilon; # How much of the center of the colormap to make gray
+   omg=1-gap # omg = one minus gap
+   
+   cdict = {'red': ((0.00000, 0.0, 0.0),
+                    (0.5-eps, mix, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, 1.0),
+                    (1.00000, 1.0, 1.0)),
+
+         'green':  ((0.00000, mng, mng),
+                    (0.5-eps, omg, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, omg),
+                    (1.00000, mng, mng)),
+
+         'blue':   ((0.00000, 1.0, 1.0),
+                    (0.5-eps, 1.0, omg),
+                    (0.50000, omg, omg),
+                    (0.5+eps, omg, mix),
+                    (1.00000, 0.0, 0.0))}
+   cmap = makecolormap('bicolormap',cdict,256)
+
+   return cmap

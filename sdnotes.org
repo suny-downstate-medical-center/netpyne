@@ -340,3 +340,75 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
 11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I cannot evaluate the efficiency.
 
 
+* Claustrum net - George Augustine and Jing
+** initial chat with Jing to implement network
+
+salvadord [12:10 PM] 
+hi jing, yeah I can help you with the network stuff -- where is the current repo so I can check out the code? what info do we have about network? I discussed with george augustine and he said you had 'unitary conn strenghts' but not enough info for 'probability of connection' between populations
+
+jing [12:14 PM] 
+Hi @salvadord, thanks for agreeing to help
+
+​[12:16] 
+yes, I guess so. we have data regarding the level of excitation in the presynaptic cell and the consequent level of activation of the postsynaptic cell
+
+​[12:17] 
+we might be able to approx the probability of connection since also know how many presynaptic cell  excites a postsynaptic cell
+
+salvadord [12:18 PM] 
+ok sounds good... so how many populations do you have? do u have approx cell numbers or densities?
+
+jing [12:18 PM] 
+the code doens't work at the moment because I'm trying to rewrite parts of it -- /u/jing/claus
+
+​[12:18] 
+approx cell numbers or densities -- we have that data but it's not with me
+
+billl [12:19 PM] 
+7 types I think
+
+jing [12:19 PM] 
+cell types 7 yes
+
+​[12:19] 
+currently modelled 6
+
+​[12:19] 
+the 7 types are P, SA1, SA2, SA3, SA4, MA1, MA2
+
+salvadord [12:20 PM] ok cool... so let me update the network framework with the last changes and you can clone from there --
+I can go over a simple example with you and help you fill in a new parameters file for this network
+
+salvadord [1:07 PM] 
+ok sounds good, I'll put some info in this channel and we can discuss tonite
+
+salvadord [4:09 PM] jing, you can now clone the python network framework from /usr/site/nrniv/local/sim/simsetup/ -- eg. hg
+clone /usr/site/nrniv/local/sim/simsetup /u/jing/clausnet
+
+​[4:10] 
+there is a README file that describes what the purpose of the framework is and the main files involved
+
+​[4:11] the general idea is that it facilitates building networks in NEURON by allowing to specify the full model parameters
+(populations, cell properties, connectivity and simulation options) in a single file
+
+​[4:12] once all this params are specified you can easily run the network in parallel using mpi, save to different formats and
+plots several graphs (raster plot of spikes, LFP, connectivity matrices etc)
+
+​[4:13] The file to specify the params uses a custom format based solely on python dictionaries (so no NEURON code is used
+there) -- you can see examples inside the /params folder
+
+​[4:15] eg. /params/mpiHHTut.py implements a simple tutorial model with HH cells; /params/mpiHybridTut.py includes both HH and
+Izhikevich cells; and /params/M1yfrac.py implements a more complex M1 cortex network with Izhi cells
+
+​[4:16] the framework makes it very easy to swap different cell types (eg. HH vs Izhi), and to define connectivity rules
+between different populations etc
+
+​[4:16] once you have cloned the repo, I can help you set up the param file for the claustrum network, with your specific
+populations, cell types, connectivity etc
+
+​[4:17] I have also added import functions so you can read cell definitions from HOC templates or other Python files -- so you
+can use the cell models you have already developed
+** Next steps to include cell model in network
+- copy or link new mod file clausIzhi2007b.mod
+- define new cell class in cell.py, or extend current Izhi2007b - if can run old model
+- define cell properties, pops adn conn

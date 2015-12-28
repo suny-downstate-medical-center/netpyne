@@ -19,8 +19,30 @@ def getSecName(sec):
 		secIndex = -1
 	return secName
 
-def importCellFromTemplate(fileName, cellName):
-	''' Import cell from HOC template into framework format (dict of sections, with geom, topol, mechs, syns)'''
+def importCellParams(fileName, labels, values, key = None):
+	params = {}
+	if fileName.endswith('.py'):
+		try:
+	 		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
+	  		if filePath not in sys.path:  # add to path if not there (need to import module)
+	 			sys.path.insert(0, filePath)
+			moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
+			exec('import '+ moduleName + ' as tempModule') in locals() # import module dynamically
+			modulePointer = tempModule
+			paramLabels = getattr(modulePointer, labels) # tuple with labels
+			paramValues = getattr(modulePointer, values)  # variable with paramValues
+			if key:  # if paramValues = dict
+				paramValues = paramValues[key]
+			params = dict(zip(paramLabels, paramValues))
+			sys.path.remove(filePath)
+		except:
+			print "Error loading cell parameter values from " + fileName
+	else:
+		print "Trying to import izhi params from a file without the .py extension"
+	return params
+
+def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
+	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
 		cell = getattr(h, cellName)(0,19,0)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
@@ -30,10 +52,24 @@ def importCellFromTemplate(fileName, cellName):
   		if filePath not in sys.path:  # add to path if not there (need to import module)
  			sys.path.insert(0, filePath)
 		moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-		exec('import '+ moduleName)  # import module dynamically
-		exec('modulePointer = '+ moduleName)  # assign pointer to module dynamically
-		cell = getattr(modulePointer, cellName)()  # create cell
-		secList = cell.all_sec
+		exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+		modulePointer = tempModule
+		if pointNeuronParamLabels and not isinstance(pointNeuronParamLabels, list): # if not a list, then use variable name to read list
+			pointNeuronParamLabels = getattr(modulePointer, pointNeuronParamLabels) # tuple with labels
+		if type:
+			cell = getattr(modulePointer, cellName)(type=type)  # create cell and pass type as argument
+		else:
+			cell = getattr(modulePointer, cellName)()  # create cell
+		dirCell = dir(cell)
+		if 'all_sec' in dirCell:
+			secList = cell.all_sec
+		elif 'sec' in dirCell:
+			secList = [cell.sec]
+		elif 'soma' in dirCell:
+			secList = [cell.soma]
+		else:
+			secList = []
+		sys.path.remove(filePath)
 	else:
 		print "File name should be either .hoc or .py file"
 		return
@@ -43,14 +79,19 @@ def importCellFromTemplate(fileName, cellName):
 	for sec in secList: 
 		# create new section dict with name of section
 		secName = getSecName(sec)
+		if len(secList) == 1:
+			secName = 'soma' # framework requires at least one section named 'soma'
 		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # create dictionary to store sec info
 
 		# store geometry properties
 		standardGeomParams = ['L', 'nseg', 'diam', 'Ra', 'cm']
 		secDir = dir(sec)
 		for geomParam in standardGeomParams:
-			if geomParam in secDir:
+			#if geomParam in secDir:
+			try:
 				secDic[secName]['geom'][geomParam] = sec.__getattribute__(geomParam)
+			except:
+				pass
 
 		# store 3d geometry
 		numPoints = int(h.n3d())
@@ -79,22 +120,31 @@ def importCellFromTemplate(fileName, cellName):
 					mechDic[mech][prop] = propVals
 		secDic[secName]['mechs'] = mechDic
 
-		# add synapses 
+		# add synapses and point neurons
 		# for now read fixed params, but need to find way to read only synapse params
 		syns = {}
-		synParams = ['e', 'tau1', 'tau2']
+		synParams = ['e', 'tau1', 'tau2', 'tau', 'gmax', 'tau1NMDA', 'tau2NMDA', 'mg', 'r', 'smax', 'sNMDAmax', 'Vwt', 'fracca']
 		for seg in sec:
-			for isyn,syn in enumerate(seg.point_processes()):
-				synName = 'syn_'+ str(isyn)
-				syns[synName] = {}
-				syns[synName]['type'] = syn.hname().split('[')[0]
-				syns[synName]['loc'] = seg.x
-				for synParam in synParams:
-					try:
-						syns[synName][synParam] = syn.__getattribute__(synParam)
-					except:
-						pass
-		secDic[secName]['syns'] = syns
+			for ipoint,point in enumerate(seg.point_processes()):
+				if 'cellid' not in dir(point): # omit if point neuron
+					synName = 'syn_'+ str(ipoint)
+					syns[synName] = {}
+					syns[synName]['type'] = point.hname().split('[')[0]
+					syns[synName]['loc'] = seg.x
+					for synParam in synParams:
+						try:
+							syns[synName][synParam] = point.__getattribute__(synParam)
+						except:
+							pass
+				elif pointNeuronParamLabels: # point neuron
+					if pointNeuronParamLabels[0] in dir(point): # check if point neuron
+						try:
+							pointNeuronName = point.hname().split('[')[0]
+							pointNeuronParams = {paramName: point.__getattribute__(paramName) for paramName in pointNeuronParamLabels}
+						except:
+							print 'Error reading point neuron params'
+
+		if syns: secDic[secName]['syns'] = syns
 
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
 		secRef = h.SectionRef(sec=sec)
@@ -102,7 +152,12 @@ def importCellFromTemplate(fileName, cellName):
 			secDic[secName]['topol']['parentSec'] = getSecName(secRef.parent().sec)
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
-	return secDic
+
+	if  pointNeuronParamLabels:
+		pointDic = {pointNeuronName: pointNeuronParams}
+		return secDic, pointDic
+	else:
+		return secDic
 
 
 def importConnFromExcel(fileName, sheetName):

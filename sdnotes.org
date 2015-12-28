@@ -412,3 +412,7 @@ can use the cell models you have already developed
 - copy or link new mod file clausIzhi2007b.mod
 - define new cell class in cell.py, or extend current Izhi2007b - if can run old model
 - define cell properties, pops adn conn
+
+- ln -s /u/jing/claus/clausIzhi2007b.mod 
+- ./compile
+

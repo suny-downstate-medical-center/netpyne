@@ -26,12 +26,16 @@ import shared as s
 def plotData():
     ## Plotting
     if s.rank == 0:
+        plotstart = time() # See how long it takes to plot
         if s.cfg['plotRaster']: # Whether or not to plot
             if (s.totalSpikes>s.cfg['maxspikestoplot']): 
                 print('  Too many spikes (%i vs. %i)' % (s.totalSpikes, s.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
-                s.analysis.plotRaster()#allspiketimes, allspikecells, EorI, ncells, connspercell, backgroundweight, firingrate, duration)
+                s.analysis.plotRaster() 
+        if s.cfg['plotTracesGids']:
+            print('Plotting recorded traces ...')
+            s.analysis.plotTraces() 
         if s.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             s.analysis.plotConn()
@@ -44,12 +48,12 @@ def plotData():
         if s.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
             s.analysis.plot3dArch()
-
+        plottime = time()-plotstart # See how long it took
+        print('  Done; plotting time = %0.1f s' % plottime)
         show(block=False)
 
 ## Raster plot 
 def plotRaster(): 
-    plotstart = time() # See how long it takes to plot
     colorList = [[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]] 
     popLabels = [pop.tags['popLabel'] for pop in s.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
@@ -78,8 +82,32 @@ def plotRaster():
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz)
-    plottime = time()-plotstart # See how long it took
-    print('  Done; plotting time = %0.1f s' % plottime)
+
+## Traces (v,i,g etc) plot
+def plotTraces(): 
+    tracesList = s.cfg['recdict'].keys()
+    tracesList.sort()
+    gidList = s.cfg['plotTracesGids']
+    duration = s.cfg['duration']
+    recordStep = s.cfg['recordStep']
+
+    for gid in gidList:
+        figure() # Open a new figure
+        fontsiz = 12
+        for itrace, trace in enumerate(tracesList):
+            try:
+                data = s.allSimData[trace]['cell_'+str(gid)]
+                t = arange(0, duration+recordStep, recordStep)
+                subplot(len(tracesList),1,itrace+1)
+                plot(t, data, linewidth=1.5)
+                xlabel('Time (ms)', fontsize=fontsiz)
+                ylabel(trace, fontsize=fontsiz)
+                xlim(0,s.cfg['duration'])
+            except:
+                pass
+        subplot(len(tracesList),1,1)
+        title('Cell %d'%(int(gid)))
+
 
 ## Plot power spectra density
 def plotPsd():

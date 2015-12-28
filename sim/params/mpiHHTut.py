@@ -26,9 +26,8 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 netParams['cellProps'] = []
 
 ## PYR cell properties
-cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
-
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  # soma properties
+cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}, 'pointNeuron':{}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
@@ -100,10 +99,11 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
+simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
 simConfig['plotPsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix
 simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3darch'] = False # plot 3d architecture
+simConfig['plot3dArch'] = False # plot 3d architecture
 
 

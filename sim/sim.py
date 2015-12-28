@@ -308,24 +308,6 @@ def saveData():
                 json.dump(dataSave, f)
             pass
 
-        # Save to json file minimal version (cells sampled)
-        if s.cfg['saveJsonSampled']:
-            print 'Sampling cells and removing connections with missing preGid...'
-            s.net.allCells = s.net.allCells[0::2]
-            cellGids = [cell['gid'] for cell in s.net.allCells]
-            for icell,cell in enumerate(s.net.allCells):
-                for iconn,conn in enumerate(cell['conns']):
-                    if conn['preGid'] not in cellGids:
-                        cell['conns'].remove(conn)
-
-            dataSave = {'netCells': s.net.allCells}
-            import json
-            print('Saving output as %s...' % s.cfg['filename']+'.json')
-            with open(s.cfg['filename']+'.json', 'w') as f:
-                json.dump(dataSave, f)
-            pass
-            print('Finished saving!')
-
         # Save to mat file
         if s.cfg['saveMat']:
             from scipy.io import savemat 

@@ -16,17 +16,13 @@ Contributors: salvadordura@gmail.com
 from time import time
 from neuron import h # Import NEURON
 
-#import params as p
 from params import mpiHHTut, mpiHybridTut, M1yfrac
 import shared as s
 
-###############################################################################
-# Sequence of commands to run full model
-###############################################################################
-def runModel():
-    s.sim.initialize(                   # create network object and set cfg and net params
-        simConfig = mpiHybridTut.simConfig, 
-        netParams = mpiHybridTut.netParams)  
+
+def runModel(simConfig, netParams):
+    ''' Sequence of commands to run full model '''
+    s.sim.initialize(simConfig, netParams)  # create network object and set cfg and net params
     s.net.createPops()                  # instantiate network populations
     s.net.createCells()                 # instantiate network cells based on defined populations
     s.net.connectCells()                # create connections between cells based on params
@@ -37,5 +33,8 @@ def runModel():
     s.analysis.plotData()               # plot spike raster
 
 
-runModel()                              # execute sequence of commands to run full model
+# Main call
+runModel(                                      # execute sequence of commands to run full model
+    simConfig = mpiHHTut.simConfig,     # pass simulation config options and network params as arguments
+    netParams = mpiHHTut.netParams)      
 

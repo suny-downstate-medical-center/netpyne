@@ -49,6 +49,62 @@ class Cell(object):
                     self.createNEURONObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
 
 
+    def createPyStruct(self, prop):
+        # set params for all sections
+        for sectName,sectParams in prop['sections'].iteritems(): 
+            # create section
+            if sectName not in self.secs:
+                self.secs[sectName] = {}  # create section dict
+            sec = self.secs[sectName]  # pointer to section
+            
+            # add mechanisms 
+            if 'mechs' in sectParams:
+                for mechName,mechParams in sectParams['mechs'].iteritems(): 
+                    if 'mechs' not in sec:
+                        sec['mechs'] = {}
+                    if mechName not in sec['mechs']: 
+                        sec['mechs'][mechName] = {}  
+                    for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
+                        sec['mechs'][mechName][mechParamName] = mechParamValue
+
+            # add synapses 
+            if 'syns' in sectParams:
+                for synName,synParams in sectParams['syns'].iteritems(): 
+                    if 'syns' not in sec:
+                        sec['syns'] = {}
+                    if synName not in sec['syns']:
+                        sec['syns'][synName] = {}
+                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
+                        sec['syns'][synName][synParamName] = synParamValue
+
+            # add geometry params 
+            if 'geom' in sectParams:
+                for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                    if 'geom' not in sec:
+                        sec['geom'] = {}
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        sec['geom'][geomParamName] = geomParamValue
+
+            # add 3d geometry
+            if 'pt3d' in sectParams['geom']:
+                if 'pt3d' not in sec['geom']:  
+                    sec['geom']['pt3d'] = []
+                for pt3d in sectParams['geom']['pt3d']:
+                    sec['geom']['pt3d'].append(pt3d)
+
+            # add topolopgy params
+            if 'topol' in sectParams:
+                if 'topol' not in sec:
+                    sec['topol'] = {}
+                for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
+                    sec['topol'][topolParamName] = topolParamValue
+
+        # set params for point neuron
+        if 'pointNeuron' in prop:
+            for pointName, pointParams in prop['pointNeuron'].iteritems():
+                  if pointName == self.tags['cellModel']: # add param values only if this cell uses that point neuron model
+                      self.tags[pointName] = pointParams
+
     def associateGid (self, threshold = 10.0):
         s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
         nc = h.NetCon(self.secs['soma']['hSection'](0.5)._ref_v, None, sec=self.secs['soma']['hSection'])
@@ -94,7 +150,6 @@ class Cell(object):
             (params['preGid'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
 
-
     def addStim (self, params):
         if not params['sec']:  # if no section specified 
             if 'soma' in self.secs:  
@@ -117,8 +172,6 @@ class Cell(object):
 
         self.stims.append(params)
 
-        #if self.tags['cellModel'] == 'HH': print params,self.stims
-
         if params['source'] == 'random':
             rand = h.Random()
             rand.Random123(self.gid,self.gid*2)
@@ -140,26 +193,32 @@ class Cell(object):
         if s.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
             (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
-
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
         for key, params in s.cfg['recdict'].iteritems():
             ptr = None
-            if 'pos' in params:
-                if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                    ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
-                else:  # eg. soma(0.5)._ref_v
-                    ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
-            else:
-                if 'pointProcess' in params: # eg. soma.izh._ref_u
-                    if params['pointProcess'] in self.secs[params['sec']]:
-                        ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
+            try: 
+                if 'pos' in params:
+                    if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                    elif 'syn' in params:  # eg. soma(0.5).AMPA._ref_g
+                        print key,params
+                        print self.secs[params['sec']]['syns'][params['syn']]['hSyn'].i
+                        ptr = self.secs[params['sec']]['syns'][params['syn']]['hSyn'].__getattribute__('_ref_'+params['var'])
+                        print 'ok'
+                    else:  # eg. soma(0.5)._ref_v
+                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
+                else:
+                    if 'pointProcess' in params: # eg. soma.izh._ref_u
+                        if params['pointProcess'] in self.secs[params['sec']]:
+                            ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
 
-            if ptr:  # if pointer has been created, then setup recording
-                s.simData[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
-                s.simData[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
-
-                if s.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+                if ptr:  # if pointer has been created, then setup recording
+                    s.simData[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
+                    s.simData[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
+                    if s.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+            except:
+                if s.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):
@@ -187,54 +246,6 @@ class Cell(object):
 class HH(Cell):
     ''' Python class for Hodgkin-Huxley cell model'''
 
-    def createPyStruct(self, prop):
-        # set params for all sections
-        for sectName,sectParams in prop['sections'].iteritems(): 
-            # create section
-            if sectName not in self.secs:
-                self.secs[sectName] = {}  # create section dict
-            sec = self.secs[sectName]  # pointer to section
-            
-            # add mechanisms 
-            for mechName,mechParams in sectParams['mechs'].iteritems(): 
-                if 'mechs' not in sec:
-                    sec['mechs'] = {}
-                if mechName not in sec['mechs']: 
-                    sec['mechs'][mechName] = {}  
-                for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
-                    sec['mechs'][mechName][mechParamName] = mechParamValue
-
-            # add synapses 
-            for synName,synParams in sectParams['syns'].iteritems(): 
-                if 'syns' not in sec:
-                    sec['syns'] = {}
-                if synName not in sec['syns']:
-                    sec['syns'][synName] = {}
-                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    sec['syns'][synName][synParamName] = synParamValue
-
-            # add geometry params 
-            for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
-                if 'geom' not in sec:
-                    sec['geom'] = {}
-                if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                    sec['geom'][geomParamName] = geomParamValue
-
-            # add 3d geometry
-            if 'pt3d' in sectParams['geom']:
-                if 'pt3d' not in sec['geom']:  
-                    sec['geom']['pt3d'] = []
-                for pt3d in sectParams['geom']['pt3d']:
-                    sec['geom']['pt3d'].append(pt3d)
-
-            # add topolopgy params
-            if sectParams['topol']:
-                if 'topol' not in sec:
-                    sec['topol'] = {}
-                for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
-                    sec['topol'][topolParamName] = topolParamValue
-              
-   
     def createNEURONObj(self, prop):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
@@ -299,92 +310,32 @@ class HH(Cell):
 
 ###############################################################################
 #
-# IZHIKEVICH 2007b CELL CLASS (integrates STATE u; v in Section)
+# POINT NEURON CLASS (point process placed in Section; v calculated in Section)
 #
 ###############################################################################
 
-class Izhi2007b(Cell):
+class PointNeuron(Cell):
     """
-    Python class for the different celltypes of Izhikevich neuron. 
-
-    Equations and parameter values taken from
-      Izhikevich EM (2007).
-      "Dynamical systems in neuroscience"
-      MIT Press
-
-    Equation for synaptic inputs taken from
-      Izhikevich EM, Edelman GM (2008).
-      "Large-scale model of mammalian thalamocortical systems." 
-      PNAS 105(9) 3593-3598.
-
-    Cell types available are based on Izhikevich, 2007 book:
-        RS - Layer 5 regular spiking pyramidal cell (fig 8.12 from 2007 book)
-        IB - Layer 5 intrinsically bursting cell (fig 8.19 from 2007 book)
-        CH - Cat primary visual cortex chattering cell (fig8.23 from 2007 book)
-        LTS - Rat barrel cortex Low-threshold  spiking interneuron (fig8.25 from 2007 book)
-        FS - Rat visual cortex layer 5 fast-spiking interneuron (fig8.27 from 2007 book)
-        TC - Cat dorsal LGN thalamocortical (TC) cell (fig8.31 from 2007 book)
-        RTN - Rat reticular thalamic nucleus (RTN) cell  (fig8.32 from 2007 book)
-        Claustrum cells - 
+    Python class for poin neurons (eg.Izhikevich 2003 or 2007 models)
+    Point process in placed in a section and v calculated in section
+    Point process and parameter values are passed as argument
     """
-
-    # Izhikevich equation parameters for the different cell types
-    type2007 = collections.OrderedDict([
-      #              C    k     vr  vt vpeak   a      b   c    d  celltype
-      ('paramNames',('C', 'k', 'vr', 'vt', 'vpeak', 'a', 'b', 'c', 'd', 'celltype')),
-      ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
-      ('IB',        (150, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
-      ('CH',        (50,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
-      ('LTS',       (100, 1.0,  -56, -42, 40, 0.03,   8, -53,   20,   4)),
-      ('FS',        (20,  1.0,  -55, -40, 25, 0.2,   -2, -45,  -55,   5)),
-      ('TC',        (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
-      ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
-
-
-    def createPyStruct(self, prop):
-        # set params for soma 
-        sectName = 'soma'  # selected section by default for Izhi mechanism
-
-        if sectName in prop['sections'].iterkeys():  # if soma is included in the cell params
-            # create section
-            if sectName not in self.secs:
-                self.secs[sectName] = {}  # create h Section object
-            sectParams = prop['sections'][sectName]  # pointer to section parameters
-            sec = self.secs[sectName]  # pointer to Section
-
-            # set geometry params 
-            for geomParamName,geomParamValue in sectParams['geom'].iteritems():   
-                if 'geom' not in sec:
-                    sec['geom'] = {}
-                if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                    sec['geom'][geomParamName] = geomParamValue
-
-            # add synapses 
-            for synName,synParams in sectParams['syns'].iteritems(): 
-                if 'syns' not in sec:
-                    sec['syns'] = {}
-                if synName not in sec['syns']:
-                    sec['syns'][synName] = {}
-                for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                    sec['syns'][synName][synParamName] = synParamValue
-
-            # add Izhi type to tags
-            self.tags['Izhi2007Type'] = sectParams['Izhi2007Type']
-
-        else: 
-            print 'Error: soma section not found for Izhi2007 model'
-
 
     def createNEURONObj(self, prop):
         # set params for soma 
-        sectName = 'soma'  # selected section by default for Izhi mechanism
+        sectName = 'soma'  # selected section by default for point process
+        pointProc = self.__class__.__name__ # prop['pointNeuron']['model']
+        if pointProc == 'PointNeuron':
+            pointProc = 'Izhi2007b'  # default to Izhi2007b
+
+        pointProcParams = prop['pointNeuron'][pointProc]
 
         if sectName in prop['sections'].iterkeys():  # if soma is included in the cell params
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create h Section object
             sectParams = prop['sections'][sectName]  # pointer to section parameters
-            self.secs[sectName]['hSection'] = h.Section(name=sectName+sectParams['Izhi2007Type'])
+            self.secs[sectName]['hSection'] = h.Section(name=sectName+'_'+pointProc)
             sec = self.secs[sectName]  # pointer to section
 
             # set geometry params 
@@ -393,16 +344,13 @@ class Izhi2007b(Cell):
                         setattr(sec['hSection'], geomParamName, geomParamValue)
 
             # create Izhi object
-            if 'hIzhi' not in sec:
-                sec['hIzhi'] = h.Izhi2007b(0.5, sec=sec['hSection'])
+            if 'hPoint' not in sec:
+                sec['hPoint'] = getattr(h, pointProc)(0.5, sec=sec['hSection'])
 
             # set Izhi params
-            izhParamNames = self.type2007['paramNames']
-            izhParamValues = self.type2007[sectParams['Izhi2007Type']]
-            for (izhParamName, izhParamValue) in zip(izhParamNames, izhParamValues):
-                setattr(sec['hIzhi'], izhParamName, izhParamValue)
-            sec['hIzhi'].cellid = self.gid 
-            s.fih.append(h.FInitializeHandler(self.init))  # check why this is needed
+            for izhParamName, izhParamValue in pointProcParams.iteritems():
+                setattr(sec['hPoint'], izhParamName, izhParamValue)
+            sec['hPoint'].cellid = self.gid 
 
            # add synapses 
             for synName,synParams in sectParams['syns'].iteritems(): 
@@ -415,13 +363,33 @@ class Izhi2007b(Cell):
                     if synParamName not in ['type', 'loc']:
                         setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
         else: 
-            print 'Error: soma section not found for Izhi2007 model'
+            print 'Error: soma section not found to place point neuron model'
+
+# Cell classes that inherit from PointNeuron
+# Should match the POINTPROCESS mechanism
+# Required so can generate cell objects dynamically using 'cellModel' property
+
+class Izhi2003b(PointNeuron):
+    pass
+
+class Izhi2007b(PointNeuron):
+    pass
+
+class clausIzhi2007b(PointNeuron):
+    pass
 
 
-    def init(self): 
-        self.secs['soma']['hSection'].v = -60  # check why this is needed
+###############################################################################
+#
+# POINT NEURON CLASS (artificial cell, independent point process outside of section)
+#
+###############################################################################
 
-
+class PointNeuronIndep(Cell):
+    '''
+    Point Neuron that doesn't require a Section - TO DO
+    '''
+    pass
 
 
 ###############################################################################

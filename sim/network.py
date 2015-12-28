@@ -173,35 +173,37 @@ class Network(object):
             postCells = {gid: Cell object}
             '''
         for postCell in postCells.values():
-            # calculate distances of pre to post (used for delay and dist-dep conn)
-            if self.params['toroidal']: 
-                xpath=[(preCellTags['x']-postCell.tags['x'])**2 for preCellTags in preCells.values()]
-                xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
-                xpath[xpath2<xpath]=xpath2[xpath2<xpath]
-                xpath=array(xpath)
-                ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*self.params['corticalthick'])**2 for preCellTags in preCells.values()])
-                zpath=[(preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()]
-                zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
-                zpath[zpath2<zpath]=zpath2[zpath2<zpath]
-                zpath=array(zpath)
-                #distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
-                distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
-            else: 
-                #distances = [sqrt((preCellTags['x']-postCell.tags['x'])**2 + \
-                #    (preCellTags['z']-postCell.tags['z'])**2) for preCellTags in preCells.values()]  # Calculate all pairwise distances
-                distances3d = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
-                    (preCellTags['yfrac']*self.params['corticalthick']-postCell.tags['yfrac'])**2 + \
-                    (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
+            if 'lengthConst' in connParam: 
+                # calculate distances of pre to post (used for delay and dist-dep conn)
+                if 'toroidal' not in self.params: 
+                    self.params['toroidal'] = False
+                if self.params['toroidal']: 
+                    xpath=[(preCellTags['x']-postCell.tags['x'])**2 for preCellTags in preCells.values()]
+                    xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
+                    xpath[xpath2<xpath]=xpath2[xpath2<xpath]
+                    xpath=array(xpath)
+                    ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*self.params['corticalthick'])**2 for preCellTags in preCells.values()])
+                    zpath=[(preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()]
+                    zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
+                    zpath[zpath2<zpath]=zpath2[zpath2<zpath]
+                    zpath=array(zpath)
+                    #distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
+                    distances3d = sqrt(array(xpath) + array(ypath) + array(zpath)) # Calculate all pairwise 3d distances
+                else: 
+                    #distances = [sqrt((preCellTags['x']-postCell.tags['x'])**2 + \
+                    #    (preCellTags['z']-postCell.tags['z'])**2) for preCellTags in preCells.values()]  # Calculate all pairwise distances
+                    distances3d = sqrt([(preCellTags['x']-postCell.tags['x'])**2 + \
+                        (preCellTags['yfrac']*self.params['corticalthick']-postCell.tags['yfrac'])**2 + \
+                        (preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()])  # Calculate all pairwise distances
 
-            if 'lengthConst' in connParam:  # distance-dependent conn with length constant param
-                if hasattr(connParam['probability'], '__call__'): # check if conn is yfrac-dep func 
-                    allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * \
-                        connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                 # distance-dependent conn with length constant param
+                    if hasattr(connParam['probability'], '__call__'): # check if conn is yfrac-dep func 
+                        allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * \
+                            connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
+                            for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
+                    else:
+                        allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * connParam['probability'] \
                         for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
-                else:
-                    allConnProbs = [self.params['scaleconnprob'] * exp(-distances3d[i]/connParam['lengthConst']) * connParam['probability'] \
-                    for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
-
             else:  # NO distance-dependence
                 if hasattr(connParam['probability'], '__call__'): # check if conn is yfrac-dep func 
                     allConnProbs = [self.params['scaleconnprob'] * connParam['probability'](preCellTags['yfrac'], postCell.tags['yfrac']) \
@@ -209,12 +211,22 @@ class Network(object):
                 else:
                     allConnProbs = [self.params['scaleconnprob'] * connParam['probability'] \
                     for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
-
+           
             seed(s.sim.id32('%d'%(s.cfg['randseed']+postCell.gid)))  # Reset random number generator  
             allRands = rand(len(allConnProbs))  # Create an array of random numbers for checking each connection
             makeThisConnection = allConnProbs>allRands # Perform test to see whether or not this connection should be made
             preInds = array(makeThisConnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
-            delays = [self.params['mindelay'] + distances3d[preInd]/float(self.params['velocity']) for preInd in preInds]  # Calculate the delays
+
+            if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
+                random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+                delays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(len(preInds))] # select random delays based on mean and var params    
+            elif 'lengthConst' in connParam: # generate list of delays based on distance between cells (only happens when prob also dist-dep)
+                delays = [self.params['mindelay'] + distances3d[preInd]/float(self.params['velocity']) for preInd in preInds]  # Calculate the delays
+            elif 'delay' in connParam:  # fixed delay specified in conn params
+                delays = [connParam['delay'] for preInd in preInds]
+            else: # fixed minDelay
+                delays = [self.params['mindelay'] for preInd in preInds]
+
             if hasattr(connParam['weight'], '__call__'): # if yfrac-dep weight
                 weights = [self.params['scaleconnweight'] * connParam['weight'](preCellTags['yfrac'], postCell.tags['yfrac']) for preCellTags in preCells.values()]
             else:  # NO yfrac-dep weight

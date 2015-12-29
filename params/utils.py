@@ -74,7 +74,7 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 		print "File name should be either .hoc or .py file"
 		return
 
-	print 'Loading cell from template: '+fileName
+	#print 'Loading cell from template: '+fileName
 	secDic = {}
 	for sec in secList: 
 		# create new section dict with name of section

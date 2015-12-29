@@ -372,9 +372,6 @@ class Izhi2003b(PointNeuron):
 class Izhi2007b(PointNeuron):
     pass
 
-class clausIzhi2007b(PointNeuron):
-    pass
-
 
 ###############################################################################
 #

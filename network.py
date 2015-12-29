@@ -9,9 +9,7 @@ Contributors: salvadordura@gmail.com
 
 from pylab import seed, rand, sqrt, exp, transpose, ceil, concatenate, array, zeros, ones, vstack, show, disp, mean, inf, concatenate
 import random
-from time import time, sleep
-import pickle
-import warnings
+from time import time
 from neuron import h  # import NEURON
 import framework as f
 

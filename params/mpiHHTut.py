@@ -88,7 +88,7 @@ simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = '../data/mpiHHTut'  # Set file output name
+simConfig['filename'] = 'mpiHHTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
 simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file

@@ -216,7 +216,7 @@ def runSim():
 ### Gather tags from cells
 ###############################################################################
 def gatherAllCellTags():
-    data = [{cell.gid: cell.tags for cell in f.net.cells}]*s.nhosts  # send cells data to other nodes
+    data = [{cell.gid: cell.tags for cell in f.net.cells}]*f.nhosts  # send cells data to other nodes
     gather = f.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     f.pc.barrier()
     allCellTags = {}
@@ -237,7 +237,7 @@ def gatherData():
         gatherstart = time() # See how long it takes to plot
 
     nodeData = {'netCells': [c.__getstate__() for c in f.net.cells], 'simData': f.simData} 
-    data = [None]*s.nhosts
+    data = [None]*f.nhosts
     data[0] = {}
     for k,v in nodeData.iteritems():
         data[0][k] = v 
@@ -278,7 +278,7 @@ def gatherData():
         f.totalConnections = sum([len(cell['conns']) for cell in f.net.allCells])   
         f.numCells = len(f.net.allCells)
 
-        f.firingRate = float(f.totalSpikes)/s.numCells/s.cfg['duration']*1e3 # Calculate firing rate 
+        f.firingRate = float(f.totalSpikes)/f.numCells/f.cfg['duration']*1e3 # Calculate firing rate 
         f.connsPerCell = f.totalConnections/float(f.numCells) # Calculate the number of connections per cell
         print('  Run time: %0.1f s (%i-s sim; %i cells; %i workers)' % (gathertime, f.cfg['duration']/1e3, f.numCells, f.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (f.totalSpikes, f.firingRate))
@@ -318,7 +318,7 @@ def saveData():
         # Save to dpk file
         if f.cfg['saveDpk']:
             import os,gzip
-            fn=s.params['filename'].split('.')
+            fn=f.params['filename'].split('.')
             fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)

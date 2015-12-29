@@ -436,7 +436,7 @@ class Pop(object):
     # population based on numCells
     def createCellsFixedNum(self):
          # select cell class to instantiate cells based on the cellModel tags
-        cellModelClass = getattr(s, self.tags['cellModel'])
+        cellModelClass = getattr(f, self.tags['cellModel'])
         cells = []
         for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
             gid = f.lastGid+i
@@ -454,7 +454,7 @@ class Pop(object):
                 
     # population based on YfracRange
     def createCellsDensity(self):
-        cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+        cellModelClass = getattr(f, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
         volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['modelsize']/1e3)**2 \
              * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
@@ -499,12 +499,12 @@ class Pop(object):
 
     def createCellsList(self):
         if 'cellModel' in self.tags: 
-            cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+            cellModelClass = getattr(f, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in xrange(int(f.rank), len(self.tags['cellsList']), f.nhosts):
             if 'cellModel' in self.tags['cellsList'][i]:
-                cellModelClass = getattr(s, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+                cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific

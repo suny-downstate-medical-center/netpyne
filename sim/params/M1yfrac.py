@@ -58,7 +58,7 @@ soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'e': 0}  # NMDA
+soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellProp['sections'] = {'soma': soma}  # add sections to dict
@@ -71,7 +71,7 @@ soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'e': 0}  # NMDA
+soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellProp['sections'] = {'soma': soma}  # add sections to dict
@@ -84,7 +84,7 @@ soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'} 
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'e': 0}  # NMDA
+soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellProp['sections'] = {'soma': soma}  # add sections to dict
@@ -97,7 +97,7 @@ soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'LTS'}
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'e': 0}  # NMDA
+soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellProp['sections'] = {'soma': soma}  # add sections to dict
@@ -110,7 +110,7 @@ soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'FS'} 
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 15, 'tau2': 150, 'e': 0}  # NMDA
+soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellProp['sections'] = {'soma': soma}  # add sections to dict
@@ -133,7 +133,7 @@ netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', '
 netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 SOM (LTS)
 netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 PV (FS)
 netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'yfracRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 SOM (LTS)
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 200, 'noise': 0.5, 'source': 'random'})  # background inputs
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 cellsList = [] 
 cellsList.append({'cellLabel':'gs15', 'x': 1, 'yfrac': 0.4 , 'z': 2})
@@ -151,10 +151,9 @@ netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projT
 # List of connectivity rules/params
 netParams['connParams'] = []  
 
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'IT' }, # background -> IT
+netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['IT', 'PT', 'CT', 'PV', 'SOM']}, # background -> All
     'connFunc': 'fullConn',
-    'probability': 0.5, 
-    'weight': 0.1, 
+    'weight': 10, 
     'synReceptor': 'NMDA',
     'delay': 5})  
 
@@ -168,7 +167,7 @@ netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cel
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'}, # IT->PT rule
     'connFunc': 'probConn',    
-    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), \
+    'probability': (lambda prey,posty: 0.1*prey+0.01/posty), 
     'weight': (lambda prey,posty: 1), 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
@@ -353,12 +352,12 @@ simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 0 # Whether to write nothing (0), diagnostic information on events (1), or everything (2) a file directly from izhi.mod
+simConfig['verbose'] = 0 # Whether to write nothing (0) or diagnostic information on events (1)
 
 
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recdict'] = {} #{'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hIzhi', 'var':'i'}}
+simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
 simConfig['simDataVecs'] = ['spkt', 'spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -366,16 +365,16 @@ simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, 
 # Saving
 simConfig['filename'] = '../data/M1yfrac'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = True # Whether or not to write spikes etc. to a .mat file
+simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
 simConfig['saveTxt'] = False # save spikes and conn to txt file
 simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
+simConfig['plotTracesGids'] = [1] # plot recorded traces for this list of cells
 simConfig['plotPsd'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

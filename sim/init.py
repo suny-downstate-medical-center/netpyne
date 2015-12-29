@@ -35,6 +35,6 @@ def runModel(simConfig, netParams):
 
 # Main call
 runModel(                                      # execute sequence of commands to run full model
-    simConfig = mpiHHTut.simConfig,     # pass simulation config options and network params as arguments
-    netParams = mpiHHTut.netParams)      
+    simConfig = M1yfrac.simConfig,     # pass simulation config options and network params as arguments
+    netParams = M1yfrac.netParams)      
 

@@ -366,8 +366,8 @@ class PointNeuron(Cell):
             print 'Error: soma section not found to place point neuron model'
 
 # Cell classes that inherit from PointNeuron
-# Should match the POINTPROCESS mechanism
-# Required so can generate cell objects dynamically using 'cellModel' property
+# Should match the POINTPROCESS mechanism name
+# Required so can generate cell objects dynamically using the 'cellModel' property of populations
 
 class Izhi2003b(PointNeuron):
     pass

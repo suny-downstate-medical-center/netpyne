@@ -416,3 +416,14 @@ can use the cell models you have already developed
 - ln -s /u/jing/claus/clausIzhi2007b.mod 
 - ./compile
 
+
+* 15dec28 Convert into python package
+- PyNet ? NeuPyNE, NeuPyNet, netpyne !! PYthon-based NETwork development framework for the NEuron simulator
+- make shared -> framework 
+- from pynet import framework as f
+- just need init.py and param.py file
+- to add cells or conn functions use:
+-- class newCellClass(PointNeuron): ... ;  f.newCellClass = newCellClass 
+-- class newConnFunc(): ... ; f.newConnFunc = newConnFunc
+- default simConfig
+- from pynet import init ; init.createAndRun(netParams, simConfig)

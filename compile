@@ -1,6 +1,0 @@
-#!/bin/bash
-echo "Compiling..."; sleep 0.3
-rm -r ./x86_64
-nrnivmodl mod
-echo "Done."
-

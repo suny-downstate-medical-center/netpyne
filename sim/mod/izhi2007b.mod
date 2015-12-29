@@ -1,1 +1,0 @@
-/usr/site/nrniv/local/mod/izhi2007b.mod

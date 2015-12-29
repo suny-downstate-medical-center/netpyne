@@ -13,7 +13,6 @@ MPI usage:
 Contributors: salvadordura@gmail.com
 """
 
-from neuron import h # Import NEURON
 import framework as f
 
 

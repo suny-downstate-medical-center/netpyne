@@ -202,10 +202,7 @@ class Cell(object):
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
                     elif 'syn' in params:  # eg. soma(0.5).AMPA._ref_g
-                        print key,params
-                        print self.secs[params['sec']]['syns'][params['syn']]['hSyn'].i
                         ptr = self.secs[params['sec']]['syns'][params['syn']]['hSyn'].__getattribute__('_ref_'+params['var'])
-                        print 'ok'
                     else:  # eg. soma(0.5)._ref_v
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
                 else:

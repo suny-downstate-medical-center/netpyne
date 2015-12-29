@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 from pylab import arange, seed, rand, array
 import collections
 from neuron import h # Import NEURON
-import shared as s
+import framework as f
 
 
 ###############################################################################
@@ -32,7 +32,7 @@ class Cell(object):
         self.associateGid() # register cell for this node
 
     def make(self):
-        for prop in s.net.params['cellProps']:  # for each set of cell properties
+        for prop in f.net.params['cellProps']:  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
                 if self.tags[condKey] != condVal: 
@@ -43,9 +43,9 @@ class Cell(object):
                     self.tags['propList'] = [prop['label']] # create list of property sets
                 else:
                     self.tags['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
-                if s.cfg['createPyStruct']:
+                if f.cfg['createPyStruct']:
                     self.createPyStruct(prop)
-                if s.cfg['createNEURONObj']:
+                if f.cfg['createNEURONObj']:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
 
 
@@ -106,12 +106,12 @@ class Cell(object):
                       self.tags[pointName] = pointParams
 
     def associateGid (self, threshold = 10.0):
-        s.pc.set_gid2node(self.gid, s.rank) # this is the key call that assigns cell gid to a particular node
+        f.pc.set_gid2node(self.gid, f.rank) # this is the key call that assigns cell gid to a particular node
         nc = h.NetCon(self.secs['soma']['hSection'](0.5)._ref_v, None, sec=self.secs['soma']['hSection'])
         nc.threshold = threshold
-        s.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-        s.gidVec.append(self.gid) # index = local id; value = global id
-        s.gidDic[self.gid] = len(s.gidVec)
+        f.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+        f.gidVec.append(self.gid) # index = local id; value = global id
+        f.gidDic[self.gid] = len(f.gidVec)
         del nc # discard netcon
 
 
@@ -141,12 +141,12 @@ class Cell(object):
             params['threshold'] = 10.0
 
         self.conns.append(params)
-        netcon = s.pc.gid_connect(params['preGid'], self.secs[params['sec']]['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
+        netcon = f.pc.gid_connect(params['preGid'], self.secs[params['sec']]['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local cell object
         netcon.weight[0] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if s.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+        if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
             (params['preGid'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
 
@@ -190,12 +190,12 @@ class Cell(object):
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if s.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+        if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
             (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
-        for key, params in s.cfg['recdict'].iteritems():
+        for key, params in f.cfg['recdict'].iteritems():
             ptr = None
             try: 
                 if 'pos' in params:
@@ -214,25 +214,25 @@ class Cell(object):
                             ptr = self.secs[params['sec']][params['pointProcess']].__getattribute__('_ref_'+params['var'])
 
                 if ptr:  # if pointer has been created, then setup recording
-                    s.simData[key]['cell_'+str(self.gid)] = h.Vector(s.cfg['tstop']/s.cfg['recordStep']+1).resize(0)
-                    s.simData[key]['cell_'+str(self.gid)].record(ptr, s.cfg['recordStep'])
-                    if s.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+                    f.simData[key]['cell_'+str(self.gid)] = h.Vector(f.cfg['tstop']/f.cfg['recordStep']+1).resize(0)
+                    f.simData[key]['cell_'+str(self.gid)].record(ptr, f.cfg['recordStep'])
+                    if f.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
             except:
-                if s.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
+                if f.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):
-        s.simData['stims'].update({'cell_'+str(self.gid): {}})
+        f.simData['stims'].update({'cell_'+str(self.gid): {}})
         for stim in self.stims:
             stimSpikeVecs = h.Vector() # initialize vector to store 
             stim['hNetcon'].record(stimSpikeVecs)
-            s.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+            f.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
 
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = s.sim.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = f.sim.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         return odict
 
 
@@ -286,8 +286,8 @@ class HH(Cell):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                if 'yfrac' in self.tags and 'corticalthick' in s.net.params:
-                    y = self.tags['yfrac'] * s.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                if 'yfrac' in self.tags and 'corticalthick' in f.net.params:
+                    y = self.tags['yfrac'] * f.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
                 else:
                     y = self.tags['y']
                 z = self.tags['z']
@@ -438,17 +438,17 @@ class Pop(object):
          # select cell class to instantiate cells based on the cellModel tags
         cellModelClass = getattr(s, self.tags['cellModel'])
         cells = []
-        for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
-            gid = s.lastGid+i
+        for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
+            gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['y'] = 0 # set yfrac value for this cell
             cellTags['x'] = 0  # calculate x location (um)
             cellTags['z'] = 0 # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'], s.rank))
-        s.lastGid = s.lastGid + self.tags['numCells'] 
+            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'], f.rank))
+        f.lastGid = f.lastGid + self.tags['numCells'] 
         return cells
 
                 
@@ -456,15 +456,15 @@ class Pop(object):
     def createCellsDensity(self):
         cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
-        volume = s.net.params['scale'] * s.net.params['sparseness'] * (s.net.params['modelsize']/1e3)**2 \
-             * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * s.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+        volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['modelsize']/1e3)**2 \
+             * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
         
         if hasattr(self.tags['density'], '__call__'): # check if conn is yfrac-dep density func 
             yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
             maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
-            seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
+            seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
             yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
             yfracsProb = array(map(self.tags['density'], yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
             allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
@@ -472,28 +472,28 @@ class Pop(object):
             makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
             yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
             self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
-            if s.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
+            if f.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
 
         else:  # NO yfrac-dep
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
-            seed(s.sim.id32('%d' % s.cfg['randseed']))  # reset random number generator
+            seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
             yfracs = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(self.tags['numCells'], 1)  # random yfrac values 
-            if s.cfg['verbose']: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
+            if f.cfg['verbose']: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
         randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
 
-        for i in xrange(int(s.rank), self.tags['numCells'], s.nhosts):
-            gid = s.lastGid+i
+        for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
+            gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['yfrac'] = yfracs[i][0]  # set yfrac value for this cell
-            cellTags['x'] = s.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
-            cellTags['z'] = s.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
+            cellTags['x'] = f.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
+            cellTags['z'] = f.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if s.cfg['verbose']: 
-                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['yfrac'], cellTags['z'], s.rank))
-        s.lastGid = s.lastGid + self.tags['numCells'] 
+            if f.cfg['verbose']: 
+                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['yfrac'], cellTags['z'], f.rank))
+        f.lastGid = f.lastGid + self.tags['numCells'] 
         return cells
 
 
@@ -502,23 +502,23 @@ class Pop(object):
             cellModelClass = getattr(s, self.tags['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
-        for i in xrange(int(s.rank), len(self.tags['cellsList']), s.nhosts):
+        for i in xrange(int(f.rank), len(self.tags['cellsList']), f.nhosts):
             if 'cellModel' in self.tags['cellsList'][i]:
                 cellModelClass = getattr(s, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
-            gid = s.lastGid+i
+            gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in s.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if s.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, s.rank))
-        s.lastGid = s.lastGid + len(self.tags['cellsList'])
+            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, f.rank))
+        f.lastGid = f.lastGid + len(self.tags['cellsList'])
         return cells
 
 
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = s.sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
+        odict = f.sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
         return odict
 

@@ -13,7 +13,7 @@ from time import time, sleep
 import pickle
 import warnings
 from neuron import h  # import NEURON
-import shared as s
+import framework as f
 
 
 class Network(object):
@@ -36,25 +36,25 @@ class Network(object):
     def createPops(self):
         self.pops = []  # list to store populations ('Pop' objects)
         for popParam in self.params['popParams']: # for each set of population paramseters 
-            self.pops.append(s.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
+            self.pops.append(f.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
 
     ###############################################################################
     # Create Cells
     ###############################################################################
     def createCells(self):
-        s.pc.barrier()
-        if s.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), s.cfg['duration']/1000.,s.nhosts)) 
+        f.pc.barrier()
+        if f.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), f.cfg['duration']/1000.,f.nhosts)) 
         self.gidVec = [] # Empty list for storing GIDs (index = local id; value = gid)
         self.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
         self.cells = []
         for ipop in self.pops: # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
-            s.pc.barrier()
-            if s.rank==0 and s.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
-        s.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
-        print('  Number of cells on node %i: %i ' % (s.rank,len(self.cells)))            
+            f.pc.barrier()
+            if f.rank==0 and f.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
+        f.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
+        print('  Number of cells on node %i: %i ' % (f.rank,len(self.cells)))            
         
 
     ###############################################################################
@@ -62,10 +62,10 @@ class Network(object):
     ###############################################################################
     def connectCells(self):
         # Instantiate network connections based on the connectivity rules defined in params
-        if s.rank==0: print('Making connections...'); connstart = time()
+        if f.rank==0: print('Making connections...'); connstart = time()
 
-        if s.nhosts > 1: # Gather tags from all cells 
-            allCellTags = s.sim.gatherAllCellTags()  
+        if f.nhosts > 1: # Gather tags from all cells 
+            allCellTags = f.sim.gatherAllCellTags()  
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
@@ -106,7 +106,7 @@ class Network(object):
     def fullConn(self, preCells, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells '''
         if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
-            random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+            random.seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
             randDelays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(len(preCells)*len(postCells))]  # select random delays based on mean and var params    
         else:
             randDelays = None   
@@ -144,7 +144,7 @@ class Network(object):
         ''' Generates connections between  maxcons random pre and postsyn cells'''
         if 'maxConns' not in connParam: connParam['maxConns'] = len(preCells)
         if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
-            random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+            random.seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
             randDelays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(connParam['maxConns']*len(postCells))] # select random delays based on mean and var params    
         else:
             randDelays = None   
@@ -179,12 +179,12 @@ class Network(object):
                     self.params['toroidal'] = False
                 if self.params['toroidal']: 
                     xpath=[(preCellTags['x']-postCell.tags['x'])**2 for preCellTags in preCells.values()]
-                    xpath2=[(s.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
+                    xpath2=[(f.modelsize - abs(preCellTags['x']-postCell.tags['x']))**2 for preCellTags in preCells.values()]
                     xpath[xpath2<xpath]=xpath2[xpath2<xpath]
                     xpath=array(xpath)
                     ypath=array([((preCellTags['yfrac']-postCell.tags['yfrac'])*self.params['corticalthick'])**2 for preCellTags in preCells.values()])
                     zpath=[(preCellTags['z']-postCell.tags['z'])**2 for preCellTags in preCells.values()]
-                    zpath2=[(s.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
+                    zpath2=[(f.modelsize - abs(preCellTags['z']-postCell.tags['z']))**2 for preCellTags in preCells.values()]
                     zpath[zpath2<zpath]=zpath2[zpath2<zpath]
                     zpath=array(zpath)
                     #distances = array(sqrt(xpath + zpath)) # Calculate all pairwise distances
@@ -212,13 +212,13 @@ class Network(object):
                     allConnProbs = [self.params['scaleconnprob'] * connParam['probability'] \
                     for i,preCellTags in enumerate(preCells.values())] # Calculate pairwise probabilities
            
-            seed(s.sim.id32('%d'%(s.cfg['randseed']+postCell.gid)))  # Reset random number generator  
+            seed(f.sim.id32('%d'%(f.cfg['randseed']+postCell.gid)))  # Reset random number generator  
             allRands = rand(len(allConnProbs))  # Create an array of random numbers for checking each connection
             makeThisConnection = allConnProbs>allRands # Perform test to see whether or not this connection should be made
             preInds = array(makeThisConnection.nonzero()[0],dtype='int') # Return True elements of that array for presynaptic cell IDs
 
             if all (k in connParam for k in ('delayMean', 'delayVar')):  # generate list of delays based on mean and variance
-                random.seed(s.sim.id32('%d'%(s.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
+                random.seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0])))  # Reset random number generator  
                 delays = [random.gauss(connParam['delayMean'], connParam['delayVar']) for pre in range(len(preInds))] # select random delays based on mean and var params    
             elif 'lengthConst' in connParam: # generate list of delays based on distance between cells (only happens when prob also dist-dep)
                 delays = [self.params['mindelay'] + distances3d[preInd]/float(self.params['velocity']) for preInd in preInds]  # Calculate the delays

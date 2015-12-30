@@ -22,8 +22,9 @@ Select which model to run by modifying the initialize call in init.py, eg.:
         simConfig = mpiHHTut.simConfig, 
         netParams = mpiHHTut.netParams)`
         
-Additional details of the modelling framework and M1 model can be found here:
+Additional details of the modelling framework can be found here:
 
+* [Documentation](http://neurosimlab.org/salvadord/netpyne_doc/)
 * [SFN'15 poster](http://neurosimlab.org/salvadord/sfn15-sal-final.pdf)
 * [slides](https://drive.google.com/file/d/0B8v-knmZRjhtVl9BOFY2bzlWSWs/view?usp=sharing)       
  

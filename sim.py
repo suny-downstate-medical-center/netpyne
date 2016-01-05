@@ -292,6 +292,13 @@ def saveData():
     if f.rank == 0:
         
         dataSave = {'simConfig': f.cfg, 'netParams': replaceFuncObj(f.net.params), 'netCells': f.net.allCells, 'simData': f.allSimData}
+
+        if 'timestampFilename' in f.cfg:  # add timestamp to filename
+            if f.cfg['timestampFilename']: 
+                timestamp = time()
+                timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+                f.cfg['filename'] = f.cfg['filename']+'-'+timestampStr
+
         # Save to pickle file
         if f.cfg['savePickle']:
             import pickle

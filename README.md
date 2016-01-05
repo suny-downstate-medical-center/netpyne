@@ -36,14 +36,14 @@ Requires NEURON with Python and MPI support.
 1. Make sure the `netpyne` package is in the path
 
 2. Create a model file where you import the netpyne package and set the parameters, eg. model.py:
-`
-from netpyne.params import mpiHHTut
-from netpyne import init
 
-# Main call
-`init.createAndRun(                      # execute sequence of commands to run full model
-    simConfig = mpiHHTut.simConfig,     # pass simulation config options and network params as arguments
-    netParams = mpiHHTut.netParams)`
+	`from netpyne.params import mpiHHTut
+	from netpyne import init
+
+	# Main call
+	init.createAndRun(                      # execute sequence of commands to run full model
+	    simConfig = mpiHHTut.simConfig,     # pass simulation config options and network params as arguments
+	    netParams = mpiHHTut.netParams)`
 
 3. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 

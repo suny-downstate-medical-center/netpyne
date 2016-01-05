@@ -18,9 +18,11 @@ Three example model parameters are provided:
 
 Select which model to run by modifying the initialize call in init.py, eg.:
 
-    `s.sim.initialize(                   
+    ```
+    s.sim.initialize(                   
         simConfig = mpiHHTut.simConfig, 
-        netParams = mpiHHTut.netParams)`
+        netParams = mpiHHTut.netParams)
+    ```
         
 Additional details of the modelling framework can be found here:
 
@@ -43,7 +45,7 @@ Requires NEURON with Python and MPI support.
 		init.createAndRun(
 			simConfig = mpiHHTut.simConfig,     
 			netParams = mpiHHTut.netParams)
-	```
+	``
 
 3. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 

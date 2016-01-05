@@ -39,7 +39,7 @@ Requires NEURON with Python and MPI support.
 
 	`from netpyne.params import mpiHHTut
 	from netpyne import init
-	init.createAndRun(                      
+		init.createAndRun(
 		simConfig = mpiHHTut.simConfig,     
 		netParams = mpiHHTut.netParams)`
 

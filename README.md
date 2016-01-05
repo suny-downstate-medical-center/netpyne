@@ -47,7 +47,7 @@ Requires NEURON with Python and MPI support.
 			netParams = mpiHHTut.netParams)
 	```
 
-3. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
+3. Type or `./compile` or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 
 4. To run type: `./runsim [num_proc]` or the equivalent `mpiexec -np [num_proc] nrniv -python -mpi model.py`
 

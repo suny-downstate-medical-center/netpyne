@@ -40,9 +40,8 @@ Requires NEURON with Python and MPI support.
 	`from netpyne.params import mpiHHTut
 	from netpyne import init
 
-	# Main call
-	init.createAndRun(                      # execute sequence of commands to run full model
-	    simConfig = mpiHHTut.simConfig,     # pass simulation config options and network params as arguments
+	init.createAndRun(                      
+	    simConfig = mpiHHTut.simConfig,     
 	    netParams = mpiHHTut.netParams)`
 
 3. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 

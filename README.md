@@ -1,4 +1,4 @@
-# NetPyNe (python package)
+# NetPyNE (python package)
 ## Description
 A Network development framework for Python-NEURON
 

@@ -69,12 +69,13 @@ class Cell(object):
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
-                    if 'pointps' not in sec:
-                        sec['pointps'] = {}
-                    if pointpName not in sec['pointps']: 
-                        sec['pointps'][pointpName] = {}  
-                    for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
-                        sec['pointps'][pointpName][pointpParamName] = pointpParamValue
+                    if self.tags['cellModel'] == pointpName:
+                        if 'pointps' not in sec:
+                            sec['pointps'] = {}
+                        if pointpName not in sec['pointps']: 
+                            sec['pointps'][pointpName] = {}  
+                        for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
+                            sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
             # add synapses 
@@ -136,15 +137,16 @@ class Cell(object):
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
-                    if pointpName not in sec['pointps']:
-                        sec['pointps'][pointpName] = {} 
-                    synObj = getattr(h, pointpName)
-                    loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    sec['pointps'][pointpName]['hPointp'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
-                    for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the synapse
-                        if pointpParamName not in ['loc','vref','synList']:
-                            setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
-                    
+                    if self.tags['cellModel'] == pointpName:
+                        if pointpName not in sec['pointps']:
+                            sec['pointps'][pointpName] = {} 
+                        synObj = getattr(h, pointpName)
+                        loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
+                        sec['pointps'][pointpName]['hPointp'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                        for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the synapse
+                            if pointpParamName not in ['loc','vref','synList']:
+                                setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
+                        
             # add synapses 
             if 'syns' in sectParams:
                 for synName,synParams in sectParams['syns'].iteritems(): 
@@ -190,7 +192,7 @@ class Cell(object):
             nc = None
             if 'pointps' in sec:  # if no syns, check if point processes (artificial cell)
                 for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if 'vref' in pointpParams:
+                    if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:
                         nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSection'])
                         break
             if not nc:  # if still haven't created netcon  
@@ -222,7 +224,7 @@ class Cell(object):
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if 'synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['synList']: 
@@ -268,7 +270,7 @@ class Cell(object):
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  # if no syns, check if point processes (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                  if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                  if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if 'synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['synList']: 

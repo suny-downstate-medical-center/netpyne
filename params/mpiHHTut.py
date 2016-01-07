@@ -26,7 +26,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 netParams['cellProps'] = []
 
 ## PYR cell properties
-cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}, 'pointNeuron':{}}
+cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 

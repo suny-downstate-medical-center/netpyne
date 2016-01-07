@@ -340,7 +340,7 @@ benchmark or quantify the trade-offs and when it becomes viable to carry out re-
 11. The section on multisaving (3.7) does begin with some specifics about the use of this technique. Without benchmarks I cannot evaluate the efficiency.
 
 
-* Claustrum net - George Augustine and Jing
+* 15dec10 Claustrum net - George Augustine and Jing
 ** initial chat with Jing to implement network
 
 salvadord [12:10 PM] 
@@ -427,3 +427,29 @@ can use the cell models you have already developed
 -- class newConnFunc(): ... ; f.newConnFunc = newConnFunc
 - default simConfig
 - from pynet import init ; init.createAndRun(netParams, simConfig)
+
+* 16jan05 Extension to framework
+** unify cellmodel 
+- cell prop conditions: 
+-- cellType=RS; cellModel=HH
+-- cellType=RS; cellModel=Izhi
+- provide option to insert distribute mechanism or point process
+- single cell class 
+- then add support for 2007a - spikes+record from izh._ref_V
+
+- INCLUDE BOTH HH AND IZHI IN SAME RULE AND USE CELLMODEL TAG IN CELL TO CHOOSE WHICH TO USE!!
+
+** Avg postsyn convergence
+** Record cell from specific population
+** Save plots to file
+** LFP
+- simple voltage sum 
+- LFPy
+** Default simConfig
+** HDF5
+** timing
+** Friese cell
+** Conn/props just in master node
+** Overwrite files optional (timestamp)
+** normalized transfer entropy (nTE)
+** Granger causality

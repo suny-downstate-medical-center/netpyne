@@ -123,6 +123,7 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 		# add synapses and point neurons
 		# for now read fixed params, but need to find way to read only synapse params
 		syns = {}
+		pointps = {}
 		synParams = ['e', 'tau1', 'tau2', 'tau', 'gmax', 'tau1NMDA', 'tau2NMDA', 'mg', 'r', 'smax', 'sNMDAmax', 'Vwt', 'fracca']
 		for seg in sec:
 			for ipoint,point in enumerate(seg.point_processes()):
@@ -136,15 +137,19 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 							syns[synName][synParam] = point.__getattribute__(synParam)
 						except:
 							pass
-				elif pointNeuronParamLabels: # point neuron
+				elif pointNeuronParamLabels: # point processes
 					if pointNeuronParamLabels[0] in dir(point): # check if point neuron
 						try:
-							pointNeuronName = point.hname().split('[')[0]
-							pointNeuronParams = {paramName: point.__getattribute__(paramName) for paramName in pointNeuronParamLabels}
+							pointpName = point.hname().split('[')[0]
+							pointps[pointpName] = {}
+							for pointpParamName in pointNeuronParamLabels:
+								pointps[pointpName][pointpParamName] = point.__getattribute__(pointpParamName)
 						except:
 							print 'Error reading point neuron params'
 
+
 		if syns: secDic[secName]['syns'] = syns
+		if pointps: secDic[secName]['pointps'] = pointps
 
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
 		secRef = h.SectionRef(sec=sec)
@@ -154,8 +159,7 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 			secDic[secName]['topol']['childX'] = h.section_orientation()
 
 	if  pointNeuronParamLabels:
-		pointDic = {pointNeuronName: pointNeuronParams}
-		return secDic, pointDic
+		return secDic
 	else:
 		return secDic
 

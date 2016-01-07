@@ -95,7 +95,8 @@ class Network(object):
                     postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] in condValue}  # dict with post Cell objects
 
             connFunc = getattr(self, connParam['connFunc'])  # get function name from params
-            connFunc(preCells, postCells, connParam)  # call specific conn function
+            if preCells and postCells:
+                connFunc(preCells, postCells, connParam)  # call specific conn function
        
 
    ###############################################################################

@@ -25,9 +25,8 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # Cell properties list
 netParams['cellProps'] = []
 
-## PYR cell properties
-cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}, 'pointNeuron':{}}
-cellProp['pointNeuron']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+## PYR cell properties (HH)
+cellProp = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
@@ -43,6 +42,19 @@ dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 dend['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 cellProp['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+
+
+## PYR cell properties (Izhi)
+cellProp = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
+
+soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+
+soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
+
+cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 
@@ -72,14 +84,14 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 10, 
-    'syn': 'NMDA',
+    'synReceptor': 'NMDA',
     'delay': 5})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 20, 
-    'syn': 'NMDA',
+    'synReceptor': 'NMDA',
     'sec': 'dend',
     'loc': 1.0,
     'delay': 5})  

@@ -51,12 +51,12 @@ izhiParams['FS'] = {'C':20, 'k':1.0, 'vr':-55, 'vt':-40, 'vpeak':25, 'a':0.2, 'b
 # Cell properties list
 netParams['cellProps'] = []
 
-## IT general cell params
+## IT cell params
 cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
-soma['pointps']['Izhi2007b'] = izhiParams['RS']
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH
+soma['pointps']['Izhi2007b'] = izhiParams['RS'] 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
@@ -64,24 +64,12 @@ soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.
 cellProp['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
-## IT HH cell params
-cellProp = {'label': 'IT_HH', 'conditions': {'cellType': 'IT', 'cellModel':'HH'}, 'sections': {}}
-cellProp['sections'] = {'soma': {'mechs': {'hh': {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}} # HH 
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
-
-## IT Izhi cell params
-cellProp = {'label': 'IT_Izhi2007b', 'conditions': {'cellType': 'IT', 'cellModel':'HH'}, 'sections': {}}
-cellProp['sections'] = {'soma': {'pointps': {'Izhi2007b': izhiParams['RS']}}} # Izhi 
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
-
-# OR INCLUDE BOTH IN SAME RULE AND USE CELLMODEL TAG IN CELL TO CHOOSE WHICH TO USE!!
-
 ## PT cell params
 cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
-cellProp['pointNeuron']['Izhi2007b'] = izhiParams['IB']
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi2007b'] = izhiParams['IB'] 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
@@ -91,10 +79,10 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## CT cell params
 cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
-cellProp['pointNeuron']['Izhi2007b'] = izhiParams['RS']
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi2007b'] = izhiParams['RS'] 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
@@ -104,10 +92,10 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## SOM cell params
 cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
-cellProp['pointNeuron']['Izhi2007b'] = izhiParams['LTS']
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi2007b'] = izhiParams['LTS'] 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
@@ -117,10 +105,10 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## PV cell params
 cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
-cellProp['pointNeuron']['Izhi2007b'] = izhiParams['FS']
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi2007b'] = izhiParams['FS'] 
 soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA

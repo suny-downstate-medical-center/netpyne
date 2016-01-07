@@ -13,16 +13,16 @@ The data file is available in Pickle, JSON and Matlab formats.
 
 Three example model parameters are provided: 
 
-1. **mpiHHTut.py** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
-2. **mpiHybridTut.py** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
+1. **HHTut.py** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
+2. **HybridTut.py** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
 3. **M1yfrac.py** - mouse M1 model with 14 populations and cortical depth-dependent connectivity.
 
 Select which model to run by modifying the initialize call in init.py, eg.:
 
     s.sim.initialize(                   
-        simConfig = mpiHHTut.simConfig, 
-        netParams = mpiHHTut.netParams)
-        
+        simConfig = HHTut.simConfig, 
+        netParams = HHTut.netParams)
+
         
 Additional details of the modelling framework can be found here:
 
@@ -39,11 +39,11 @@ Requires NEURON with Python and MPI support.
 2. Create a model file where you import the netpyne package and set the parameters, eg. model.py:
 
 	```
-	from netpyne.params import mpiHHTut
+	from netpyne.params import HHTut
 	from netpyne import init
 		init.createAndRun(
-			simConfig = mpiHHTut.simConfig,     
-			netParams = mpiHHTut.netParams)
+			simConfig = HHTut.simConfig,     
+			netParams = HHTut.netParams)
 	```
 
 3. Type or `./compile` or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 

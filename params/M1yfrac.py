@@ -66,7 +66,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## PT cell params
 cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi2007b'] = izhiParams['IB'] 
@@ -79,7 +79,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## CT cell params
 cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi2007b'] = izhiParams['RS'] 
@@ -92,7 +92,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## SOM cell params
 cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi2007b'] = izhiParams['LTS'] 
@@ -105,7 +105,7 @@ netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
 
 ## PV cell params
 cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi2007b'] = izhiParams['FS'] 

@@ -19,11 +19,10 @@ Three example model parameters are provided:
 
 Select which model to run by modifying the initialize call in init.py, eg.:
 
-    ```
     s.sim.initialize(                   
         simConfig = mpiHHTut.simConfig, 
         netParams = mpiHHTut.netParams)
-    ```
+        
         
 Additional details of the modelling framework can be found here:
 

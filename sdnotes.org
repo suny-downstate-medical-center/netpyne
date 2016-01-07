@@ -429,7 +429,7 @@ can use the cell models you have already developed
 - from pynet import init ; init.createAndRun(netParams, simConfig)
 
 * 16jan05 Extension to framework
-** unify cellmodel 
+** DONE - unify cellmodel 
 - cell prop conditions: 
 -- cellType=RS; cellModel=HH
 -- cellType=RS; cellModel=Izhi
@@ -439,17 +439,18 @@ can use the cell models you have already developed
 
 - INCLUDE BOTH HH AND IZHI IN SAME RULE AND USE CELLMODEL TAG IN CELL TO CHOOSE WHICH TO USE!!
 
-** Avg postsyn convergence
-** Record cell from specific population
-** Save plots to file
+** DONE - Overwrite files optional (timestamp)
+
+** Default simConfig
 ** LFP
 - simple voltage sum 
 - LFPy
-** Default simConfig
 ** HDF5
 ** timing
-** Friese cell
+** Friesen cell
+** Avg postsyn convergence
+** Record cell from specific population
+** Save plots to file
 ** Conn/props just in master node
-** Overwrite files optional (timestamp)
 ** normalized transfer entropy (nTE)
 ** Granger causality

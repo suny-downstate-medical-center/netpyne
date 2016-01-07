@@ -15,12 +15,13 @@ import cPickle as pk
 import hashlib 
 from neuron import h, init # Import NEURON
 import framework as f
+from params import default
 
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(simConfig = None, netParams = None, net = None):
+def initialize(netParams = {}, simConfig = {}, net = None):
     f.simData = {}  # used to store output simulation data (spikes etc)
     f.gidVec =[] # Empty list for storing GIDs (index = local id; value = gid)
     f.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
@@ -32,11 +33,10 @@ def initialize(simConfig = None, netParams = None, net = None):
     else: 
         setNet(f.Network())  # or create new network
 
-    if simConfig:
-        setSimCfg(simConfig)  # set simulation configuration
-
     if netParams: 
         setNetParams(netParams)  # set network parameters
+
+    setSimCfg(simConfig)  # set simulation configuration
 
     createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
@@ -58,6 +58,9 @@ def setNetParams(params):
 # Set simulation config
 ###############################################################################
 def setSimCfg(cfg):
+    for paramName, paramValue in default.simConfig.iteritems():  # set default values
+        if paramName not in cfg:
+            cfg[paramName] = paramValue
     f.cfg = cfg
 
 def loadSimCfg(paramFile):

@@ -16,9 +16,9 @@ Contributors: salvadordura@gmail.com
 import framework as f
 
 
-def createAndRun(simConfig, netParams):
+def createAndRun(netParams, simConfig):
     ''' Sequence of commands to run full model '''
-    f.sim.initialize(simConfig, netParams)  # create network object and set cfg and net params
+    f.sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     f.net.createPops()                  # instantiate network populations
     f.net.createCells()                 # instantiate network cells based on defined populations
     f.net.connectCells()                # create connections between cells based on params

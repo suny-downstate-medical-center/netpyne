@@ -31,7 +31,7 @@ class Cell(object):
         self.associateGid() # register cell for this node
 
     def make(self):
-        for prop in f.net.params['cellProps']:  # for each set of cell properties
+        for prop in f.net.params['cellParams']:  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
                 if self.tags[condKey] != condVal: 

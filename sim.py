@@ -52,6 +52,9 @@ def setNet(net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams(params):
+    for paramName, paramValue in default.netParams.iteritems():  # set default values
+        if paramName not in params:
+            params[paramName] = paramValue
     f.net.params = params
 
 ###############################################################################

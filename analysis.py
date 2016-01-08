@@ -54,7 +54,7 @@ def plotData():
 
 ## Raster plot 
 def plotRaster(): 
-    colorList = [[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]] 
+    colorList = [[0.42,0.67,0.84],[0.90,0.76,0.00],[0.42,0.83,0.59],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]] 
     popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in f.net.allCells}  # dict with color for each gid
@@ -79,7 +79,7 @@ def plotRaster():
     title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
     xlim(0,f.cfg['duration'])
     ylim(0,f.numCells)
-    for popLabel in popLabels:
+    for popLabel in popLabels[::-1]:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz)
 

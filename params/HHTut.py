@@ -23,17 +23,17 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 ###############################################################################
 
 # Cell properties list
-netParams['cellProps'] = []
+netParams['cellParams'] = []
 
 ## PYR cell properties
-cellProp = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.1, 'tau2': 5, 'e': 0}
 
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 # Population parameters

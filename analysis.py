@@ -50,7 +50,7 @@ def plotData():
             f.analysis.plot3dArch()
         plottime = time()-plotstart # See how long it took
         print('  Done; plotting time = %0.1f s' % plottime)
-        f.pylab.show(block=False)
+        #show(block=False)
 
 ## Raster plot 
 def plotRaster(): 

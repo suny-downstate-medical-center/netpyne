@@ -151,7 +151,7 @@ class Network(object):
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             preCellGids = preCells.keys()
             if postCellGid in preCellGids: preCellGids.remove(postCellGid)
-            random.seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]))) 
+            random.seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid))) 
             randPreCellGids = random.sample(preCellGids, random.randint(0, min(connParam['maxConns'], len(preCellGids)))) # select random subset of pre cells
             for randPreCellGid in randPreCellGids: # for each presyn cell
                 if randDelays:  delay = randDelays.pop()  # set random delay

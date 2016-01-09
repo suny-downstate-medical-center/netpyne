@@ -14,7 +14,6 @@ Contributors: salvadordura@gmail.com
 """
 
 import framework as f
-import pylab
 
 def createAndSimulate(netParams, simConfig):
     ''' Sequence of commands to run full model '''
@@ -27,8 +26,7 @@ def createAndSimulate(netParams, simConfig):
     f.sim.gatherData()                  # gather spiking data and cell info from each node
     f.sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
     f.analysis.plotData()               # plot spike raster
-    pylab.show(block=False)
-
+    
 
 # Main call example
 # createAndSimulate(                                      # execute sequence of commands to run full model

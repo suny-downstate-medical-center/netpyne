@@ -445,7 +445,30 @@ can use the cell models you have already developed
 - simple voltage sum 
 - LFPy
 ** HDF5
-- tried h5py
+- tried h5py (http://docs.h5py.org/en/latest/quick.html)
+Saving output as example-20160108_200403.hdf5... 
+Traceback (most recent call last):
+  File "init.py", line 24, in <module>
+    f.sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+  File "/usr/site/nrniv/pypkg/netpyne/sim.py", line 346, in saveData
+    hickle.dump(dataSave, f.cfg['filename']+'.hdf5', mode='w')
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/hickle.py", line 376, in dump
+    dumper(obj, h5f, **kwargs)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/hickle.py", line 300, in dump_dict
+    _dump_dict(obj, hgroup, **kwargs)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/hickle.py", line 282, in _dump_dict
+    _dump_dict(dd[key], new_group, **kwargs)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/hickle.py", line 269, in _dump_dict
+    hgroup.create_dataset("%s" % key, data=dd[key], **kwargs)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/hickle.py", line 88, in create_dataset
+    return super(H5GroupWrapper, self).create_dataset(*args, **kwargs)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/h5py/_hl/group.py", line 94, in create_dataset
+    dsid = dataset.make_new_dset(self, shape, dtype, data, **kwds)
+  File "/u/salvadord/anaconda/lib/python2.7/site-packages/h5py/_hl/dataset.py", line 79, in make_new_dset
+    tid = h5t.py_create(dtype, logical=1)
+  File "h5t.pyx", line 1389, in h5py.h5t.py_create (h5py/h5t.c:13046)
+  File "h5t.pyx", line 1463, in h5py.h5t.py_create (h5py/h5t.c:12893)
+TypeError: Object dtype dtype('O') has no native HDF5 equivalent
 
 - tried hdf5storage (http://pythonhosted.org/hdf5storage/introduction.html#getting-started)
 Traceback (most recent call last):

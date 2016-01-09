@@ -68,11 +68,12 @@ simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, e
 simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['timestampFilename'] = True
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveTxt'] = False # save spikes and conn to txt file
-simConfig['saveDpk'] = False # save to a .dpk pickled file
+simConfig['savePickle'] = False # save to pickle file
+simConfig['saveJson'] = False # save to json file
+simConfig['saveMat'] = False # save to mat file
+simConfig['saveTxt'] = False # save to txt file
+simConfig['saveDpk'] = False # save to .dpk pickled file
+simConfig['saveHDF5'] = False # save to HDF5 file (using hickle)
 
 
 # Analysis and plotting 

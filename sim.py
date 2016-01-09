@@ -308,34 +308,52 @@ def saveData():
         # Save to pickle file
         if f.cfg['savePickle']:
             import pickle
-            print('Saving output as %s...' % f.cfg['filename']+'.pkl')
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.pkl'))
             with open(f.cfg['filename']+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
-            print('Finished saving!')
-
-        # Save to json file
-        if f.cfg['saveJson']:
-            import json
-            print('Saving output as %s...' % f.cfg['filename']+'.json')
-            with open(f.cfg['filename']+'.json', 'w') as fileObj:
-                json.dump(dataSave, fileObj)
-            pass
-
-        # Save to mat file
-        if f.cfg['saveMat']:
-            from scipy.io import savemat 
-            print('Saving output as %s...' % f.cfg['filename']+'.mat')
-            savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
         # Save to dpk file
         if f.cfg['saveDpk']:
             import os,gzip
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
             fn=f.params['filename'].split('.')
             fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
             print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
 
-          
+        # Save to json file
+        if f.cfg['saveJson']:
+            import json
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.json '))
+            with open(f.cfg['filename']+'.json', 'w') as fileObj:
+                json.dump(dataSave, fileObj)
+            print('Finished saving!')
+
+        # Save to mat file
+        if f.cfg['saveMat']:
+            from scipy.io import savemat 
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.mat'))
+            savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+            print('Finished saving!')
+
+        # Save to HDF5 file
+        if f.cfg['saveHDF5']:
+            import h5py 
+            #try: 
+            #import hickle 
+            import hdf5storage
+            print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
+            #hickle.dump(dataSave, f.cfg['filename']+'.hdf5', mode='w')
+            hdf5storage.write(dataSave, filename=f.cfg['filename']+'.hdf5')
+            #with h5py.File(f.cfg['filename']+'.hdf5', 'w') as fileObj:
+            #    dset = f.create_dataset("mydataset", (100,), dtype='i')
+            print('Finished saving!')
+            fil = h5py.File(f.cfg['filename']+'.hdf5', 'r')
+            print fil.keys()
+            print fil.keys()[0]
+            #except:
+            #    print 'Saving to HDF5 format requires the hickle (https://github.com/telegraphic/hickle)'
+
 
 

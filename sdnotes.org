@@ -440,12 +440,26 @@ can use the cell models you have already developed
 - INCLUDE BOTH HH AND IZHI IN SAME RULE AND USE CELLMODEL TAG IN CELL TO CHOOSE WHICH TO USE!!
 
 ** DONE - Overwrite files optional (timestamp)
-
-** Default simConfig
+** DONE - Default simConfig
 ** LFP
 - simple voltage sum 
 - LFPy
 ** HDF5
+- tried h5py
+
+- tried hdf5storage (http://pythonhosted.org/hdf5storage/introduction.html#getting-started)
+Traceback (most recent call last):
+  File "init.py", line 24, in <module>
+    f.sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+  File "/usr/site/nrniv/pypkg/netpyne/sim.py", line 348, in saveData
+    hdf5storage.write(dataSave, filename=f.cfg['filename']+'.hdf5')
+  File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/__init__.py", line 1399, in write
+    
+  File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/__init__.py", line 1318, in writes
+    
+  File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/lowlevel.py", line 114, in write_data
+  File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/Marshallers.py", line 1557, in write
+NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netParams'
 ** timing
 ** Friesen cell
 ** Avg postsyn convergence

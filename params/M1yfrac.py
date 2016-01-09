@@ -49,10 +49,10 @@ izhiParams['LTS'] = {'C':100, 'k':1.0, 'vr':-56, 'vt':-42, 'vpeak':40, 'a':0.03,
 izhiParams['FS'] = {'C':20, 'k':1.0, 'vr':-55, 'vt':-40, 'vpeak':25, 'a':0.2, 'b':-2, 'c':-45, 'd':-55, 'celltype':5}
 
 # Cell properties list
-netParams['cellProps'] = []
+netParams['cellParams'] = []
 
 ## IT cell params
-cellProp = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
+cellRule = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH
@@ -61,11 +61,11 @@ soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3,
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## PT cell params
-cellProp = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
+cellRule = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
@@ -74,11 +74,11 @@ soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3,
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## CT cell params
-cellProp = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
+cellRule = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
@@ -87,11 +87,11 @@ soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3,
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## SOM cell params
-cellProp = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
+cellRule = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
@@ -100,11 +100,11 @@ soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3,
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties 
 
 ## PV cell params
-cellProp = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
+cellRule = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
@@ -113,8 +113,8 @@ soma['syns']['AMPA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.05, 'tau2':5.3,
 soma['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
 soma['syns']['GABAA'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
 soma['syns']['GABAB'] = {'type': 'Exp2Syn', 'loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 ## create list of populations, where each item contains a dict with the pop params
@@ -358,7 +358,6 @@ simConfig['verbose'] = 0 # Whether to write nothing (0) or diagnostic informatio
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
-simConfig['simDataVecs'] = ['spkt', 'spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 

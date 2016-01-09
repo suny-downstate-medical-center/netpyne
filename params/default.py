@@ -60,7 +60,6 @@ simConfig['verbose'] = 0  # show detailed messages
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {}
-simConfig['simDataVecs'] = ['spkt','spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = False  # record spikes of cell stims
 simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, etc)
 

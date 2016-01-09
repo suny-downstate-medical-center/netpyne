@@ -23,10 +23,10 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 ###############################################################################
 
 # Cell properties list
-netParams['cellProps'] = []
+netParams['cellParams'] = []
 
 ## PYR cell properties (HH)
-cellProp = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
+cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
@@ -41,12 +41,12 @@ dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 dend['syns']['NMDA'] = {'type': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
-cellProp['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 ## PYR cell properties (Izhi)
-cellProp = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
+cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
 
 soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
@@ -54,8 +54,8 @@ soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35
 
 soma['syns']['NMDA'] = {'type': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
-cellProp['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellProps'].append(cellProp)  # add dict to list of cell properties
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 # Population parameters
@@ -115,7 +115,6 @@ simConfig['verbose'] = 1  # show detailed messages
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
 simConfig['recdict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
-simConfig['simDataVecs'] = ['spkt','spkid','stims']+simConfig['recdict'].keys()
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 

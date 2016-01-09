@@ -249,6 +249,7 @@ def gatherData():
         data[0][k] = v 
     gather = f.pc.py_alltoall(data)
     f.pc.barrier()
+    simDataVecs = ['spkt','spkid','stims']+f.cfg['recdict'].keys()
     if f.rank == 0:
         allCells = []
         f.allSimData = {} 
@@ -258,7 +259,7 @@ def gatherData():
         for node in gather:  # concatenate data from each node
             allCells.extend(node['netCells'])  # extend allCells list
             for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
-                if key in f.cfg['simDataVecs']:          # simData dicts that contain Vectors
+                if key in simDataVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):                
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):       

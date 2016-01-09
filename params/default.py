@@ -59,14 +59,13 @@ simConfig['verbose'] = 0  # show detailed messages
 
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recdict'] = {}
+simConfig['recdict'] = {}  # Dict of traces to record 
 simConfig['recordStim'] = False  # record spikes of cell stims
 simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = 'model_output'  # Set file output name
-simConfig['timestampFilename'] = True
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
+simConfig['filename'] = 'model_output'  # Name of file to save model output
+simConfig['timestampFilename'] = False  # Add timestamp to filename to avoid overwriting
 simConfig['savePickle'] = False # save to pickle file
 simConfig['saveJson'] = False # save to json file
 simConfig['saveMat'] = False # save to mat file
@@ -77,11 +76,11 @@ simConfig['saveHDF5'] = False # save to HDF5 file (using hickle)
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
+simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['orderRasterYfrac'] = False # Order cells in raster by yfrac (default is by pop and cell id)
 simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
-simConfig['plotPsd'] = False # plot power spectral density
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3dArch'] = False # plot 3d architecture
+simConfig['plotPsd'] = False # plot power spectral density (not yet implemented)
+simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
+simConfig['plotWeightChanges'] = False # whether to plot weight changes (not yet implemented)
+simConfig['plot3dArch'] = False # plot 3d architecture (not yet implemented)
 

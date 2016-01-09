@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap, psd
+from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap, psd, ion
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -82,6 +82,7 @@ def plotRaster():
     for popLabel in popLabels[::-1]:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz)
+    savefig('raster.png')
 
 ## Traces (v,i,g etc) plot
 def plotTraces(): 
@@ -107,6 +108,7 @@ def plotTraces():
                 pass
         subplot(len(tracesList),1,1)
         title('Cell %d'%(int(gid)))
+    savefig('traces.png')
 
 
 ## Plot power spectra density

@@ -9,7 +9,12 @@ import os, sys
 from neuron import h
 
 def getSecName(sec):
-	fullSecName = sec.name().split('.')[1] if '.' in sec.name() else sec.name()
+	if '>.' in sec.name():
+		fullSecName = sec.name().split('>.')[1] 
+	elif '.' in sec.name():
+		fullSecName = sec.name().split('.')[1]  
+	else:
+		fullSecName = sec.name()
 	if '[' in fullSecName:  # if section is array element
 		secNameTemp = fullSecName.split('[')[0]
 		secIndex = int(fullSecName.split('[')[1].split(']')[0])
@@ -41,7 +46,7 @@ def importCellParams(fileName, labels, values, key = None):
 		print "Trying to import izhi params from a file without the .py extension"
 	return params
 
-def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
+def importCell(fileName, cellName, cellType = None, pointNeuronParamLabels = None):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
@@ -54,10 +59,10 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 		moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
 		exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
 		modulePointer = tempModule
-		if pointNeuronParamLabels and not isinstance(pointNeuronParamLabels, list): # if not a list, then use variable name to read list
+		if pointNeuronParamLabels and not type(pointNeuronParamLabels) in [list,tuple]: # if not a list, then use variable name to read list
 			pointNeuronParamLabels = getattr(modulePointer, pointNeuronParamLabels) # tuple with labels
-		if type:
-			cell = getattr(modulePointer, cellName)(type=type)  # create cell and pass type as argument
+		if cellType:
+			cell = getattr(modulePointer, cellName)(type=cellType)  # create cell and pass type as argument
 		else:
 			cell = getattr(modulePointer, cellName)()  # create cell
 		dirCell = dir(cell)
@@ -65,6 +70,8 @@ def importCell(fileName, cellName, type = None, pointNeuronParamLabels = None):
 			secList = cell.all_sec
 		elif 'sec' in dirCell:
 			secList = [cell.sec]
+		elif 'allsec' in dir(h):
+			secList = [sec for sec in h.allsec()]
 		elif 'soma' in dirCell:
 			secList = [cell.soma]
 		else:

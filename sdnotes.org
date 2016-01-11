@@ -441,6 +441,7 @@ can use the cell models you have already developed
 
 ** DONE - Overwrite files optional (timestamp)
 ** DONE - Default simConfig
+** Import cells with generic set of arguments
 ** LFP
 - simple voltage sum 
 - LFPy
@@ -483,6 +484,9 @@ Traceback (most recent call last):
   File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/lowlevel.py", line 114, in write_data
   File "build/bdist.macosx-10.5-x86_64/egg/hdf5storage/Marshallers.py", line 1557, in write
 NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netParams'
+
+- try this: http://stackoverflow.com/questions/16705274/fastest-way-to-convert-a-dicts-keys-values-from-str-to-unicode
+
 ** timing
 ** Friesen cell
 ** Avg postsyn convergence

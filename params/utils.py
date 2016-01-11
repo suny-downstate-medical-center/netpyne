@@ -51,7 +51,7 @@ def importCell(fileName, cellName, cellType = None, pointNeuronParamLabels = Non
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
 		cell = getattr(h, cellName)(0,19,0)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
-		secList = cell.allsec()
+		secList = list(cell.allsec())
 	elif fileName.endswith('.py'):
  		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
   		if filePath not in sys.path:  # add to path if not there (need to import module)

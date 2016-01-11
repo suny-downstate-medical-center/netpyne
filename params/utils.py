@@ -46,7 +46,7 @@ def importCellParams(fileName, labels, values, key = None):
 		print "Trying to import izhi params from a file without the .py extension"
 	return params
 
-def importCell(fileName, cellName, cellType = None, pointNeuronParamLabels = None):
+def importCell(fileName, cellName, cellArgs = None, pointNeuronParamLabels = None):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
@@ -61,10 +61,7 @@ def importCell(fileName, cellName, cellType = None, pointNeuronParamLabels = Non
 		modulePointer = tempModule
 		if pointNeuronParamLabels and not type(pointNeuronParamLabels) in [list,tuple]: # if not a list, then use variable name to read list
 			pointNeuronParamLabels = getattr(modulePointer, pointNeuronParamLabels) # tuple with labels
-		if cellType:
-			cell = getattr(modulePointer, cellName)(type=cellType)  # create cell and pass type as argument
-		else:
-			cell = getattr(modulePointer, cellName)()  # create cell
+		cell = getattr(modulePointer, cellName)(cellArgs)  # create cell and pass type as argument
 		dirCell = dir(cell)
 		if 'all_sec' in dirCell:
 			secList = cell.all_sec

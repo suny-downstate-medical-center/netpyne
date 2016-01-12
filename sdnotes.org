@@ -445,6 +445,11 @@ can use the cell models you have already developed
 ** Use mechanismType to make importCell more robust
 https://www.neuron.yale.edu/neuron/static/new_doc/modelspec/programmatic/mechtype.html
 https://www.neuron.yale.edu/neuron/static/new_doc/programming/mechstan.html
+http://neurosimlab.org/ramcd/pyhelp/mechstan.html#MechanismStandard - 2nd example
+** Add x,y positions as 'xrange' and 'yrange'
+** importCell can modify h variables (eg. celsius)
+- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
 ** LFP
 - simple voltage sum 
 - LFPy

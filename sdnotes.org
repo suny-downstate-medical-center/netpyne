@@ -441,7 +441,10 @@ can use the cell models you have already developed
 
 ** DONE - Overwrite files optional (timestamp)
 ** DONE - Default simConfig
-** Import cells with generic set of arguments
+** DONE - Import cells with generic set of arguments
+** Use mechanismType to make importCell more robust
+https://www.neuron.yale.edu/neuron/static/new_doc/modelspec/programmatic/mechtype.html
+https://www.neuron.yale.edu/neuron/static/new_doc/programming/mechstan.html
 ** LFP
 - simple voltage sum 
 - LFPy

@@ -26,6 +26,7 @@ Select which model to run by modifying the initialize call in init.py, eg.:
         
 Additional details of the modelling framework can be found here:
 
+* [NetPyNE Documentation](http://neurosimlab.org/netpyne/)
 * [SFN'15 poster](http://neurosimlab.org/salvadord/sfn15-sal-final.pdf)
 * [slides](https://drive.google.com/file/d/0B8v-knmZRjhtVl9BOFY2bzlWSWs/view?usp=sharing)       
  
@@ -65,10 +66,6 @@ Requires NEURON with Python and MPI support.
 * **/cell.py**: contains cell and population classes to create cells based on the parameters.
 
 * **/analysis.py**: functions to visualize and analyse data
-
-* **/cells/izhi2007.py**: Python class (wrapper) for Izhikevich 2007 neuron model
-
-* **/mod/izhi2007b.mod**: NMODL definition of Izhikevich 2007 neuron model
 
 
 For further information please contact: salvadordura@gmail.com 

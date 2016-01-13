@@ -69,13 +69,13 @@ class Cell(object):
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
-                    if self.tags['cellModel'] == pointpName:
-                        if 'pointps' not in sec:
-                            sec['pointps'] = {}
-                        if pointpName not in sec['pointps']: 
-                            sec['pointps'][pointpName] = {}  
-                        for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
-                            sec['pointps'][pointpName][pointpParamName] = pointpParamValue
+                    #if self.tags['cellModel'] == pointpName: # only required if want to allow setting various cell models in same rule
+                    if 'pointps' not in sec:
+                        sec['pointps'] = {}
+                    if pointpName not in sec['pointps']: 
+                        sec['pointps'][pointpName] = {}  
+                    for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
+                        sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
             # add synapses 
@@ -137,25 +137,26 @@ class Cell(object):
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
-                    if self.tags['cellModel'] == pointpName:
-                        if pointpName not in sec['pointps']:
-                            sec['pointps'][pointpName] = {} 
-                        synObj = getattr(h, pointpName)
-                        loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                        sec['pointps'][pointpName]['hPointp'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
-                        for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the synapse
-                            if pointpParamName not in ['loc','vref','synList']:
-                                setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
+                    #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
+                    if pointpName not in sec['pointps']:
+                        sec['pointps'][pointpName] = {} 
+                    pointpObj = getattr(h, pointpParams['_type'])
+                    loc = pointpParams['_loc'] if '_loc' in pointpParams else 0.5  # set location
+                    sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSection'])  # create h Pointp object (eg. h.Izhi2007b)
+                    for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
+                        if not pointpParamName.startswith('_'):
+                            setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
                         
             # add synapses 
             if 'syns' in sectParams:
                 for synName,synParams in sectParams['syns'].iteritems(): 
                     if synName not in sec['syns']:
                         sec['syns'][synName] = {} 
-                    synObj = getattr(h, synParams['type'])
-                    sec['syns'][synName]['hSyn'] = synObj(synParams['loc'], sec = sec['hSection'])  # create h Syn object (eg. h.Ex)
+                    synObj = getattr(h, synParams['_type'])
+                    loc = synParams['_loc'] if '_loc' in synParams else 0.5  # set location
+                    sec['syns'][synName]['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                        if synParamName not in ['type','loc']:
+                        if not synParamName.startswith('_'):
                             setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
@@ -184,16 +185,15 @@ class Cell(object):
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 
-
     def associateGid (self, threshold = 10.0):
         if self.secs:
             f.pc.set_gid2node(self.gid, f.rank) # this is the key call that assigns cell gid to a particular node
             sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
             nc = None
-            if 'pointps' in sec:  # if no syns, check if point processes (artificial cell)
+            if 'pointps' in sec:  # if no syns, check if point processes with '_vref' (artificial cell)
                 for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:
-                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSection'])
+                    if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:
+                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['_vref']), None, sec=sec['hSection'])
                         break
             if not nc:  # if still haven't created netcon  
                 nc = h.NetCon(sec['hSection'](0.5)._ref_v, None, sec=sec['hSection'])
@@ -202,7 +202,6 @@ class Cell(object):
             f.gidVec.append(self.gid) # index = local id; value = global id
             f.gidDic[self.gid] = len(f.gidVec)
             del nc # discard netcon
-
 
 
     def addConn(self, params):
@@ -222,9 +221,9 @@ class Cell(object):
         weightIndex = 0  # set default weight matrix index
 
         pointp = None
-        if 'pointps' in self.secs[params['sec']]:  #  check if point processes (artificial cell)
+        if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if 'synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['synList']: 
@@ -233,8 +232,7 @@ class Cell(object):
         if not params['synReceptor']:  # if no synapse specified 
             if 'syns' in self.secs[params['sec']]:  
                 params['synReceptor'] = self.secs[params['sec']]['syns'].keys()[0]  # use first synapse available in section
-
-        if not params['synReceptor']:  # if still no synapse  
+            else:
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add connection'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
@@ -270,7 +268,7 @@ class Cell(object):
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  # if no syns, check if point processes (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                  if self.tags['cellModel'] == pointpName and 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                  if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if 'synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['synList']: 
@@ -280,8 +278,7 @@ class Cell(object):
         if not params['synReceptor']:  # if no synapse specified 
             if 'syns' in self.secs[params['sec']]:  
                 params['synReceptor'] = self.secs[params['sec']]['syns'].keys()[0]  # use first synapse available in section
-        
-        if not params['synReceptor']:  # if still no synapse  
+            else: # if still no synapse  
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 

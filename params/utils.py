@@ -46,11 +46,29 @@ def importCellParams(fileName, labels, values, key = None):
 		print "Trying to import izhi params from a file without the .py extension"
 	return params
 
-def importCell(fileName, cellName, cellArgs = {}, pointNeuronParamLabels = None):
+
+def mechVarList():
+    msname = h.ref('')
+    varList = {}
+    for i, mechtype in enumerate(['mechs','pointps']):
+        mt = h.MechanismType(i)  # either distributed mechs (0) or point process (1)
+        varList[mechtype] = {}
+        for j in xrange(int(mt.count())):
+            mt.select(j)
+            mt.selected(msname)
+            ms = h.MechanismStandard(msname[0], 1) # PARAMETER (modifiable)
+            varList[mechtype][msname[0]] = []
+            propName = h.ref('')
+            for var in xrange(int(ms.count())):
+                k = ms.name(propName, var)
+                varList[mechtype][msname[0]].append(propName[0])
+    return varList
+
+def importCell(fileName, cellName, cellArgs = {}):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
-		cell = getattr(h, cellName)(0,19,0)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
+		cell = getattr(h, cellName)(**cellArgs)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
 		secList = list(cell.allsec())
 	elif fileName.endswith('.py'):
  		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
@@ -59,8 +77,6 @@ def importCell(fileName, cellName, cellArgs = {}, pointNeuronParamLabels = None)
 		moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
 		exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
 		modulePointer = tempModule
-		if pointNeuronParamLabels and not type(pointNeuronParamLabels) in [list,tuple]: # if not a list, then use variable name to read list
-			pointNeuronParamLabels = getattr(modulePointer, pointNeuronParamLabels) # tuple with labels
 		cell = getattr(modulePointer, cellName)(**cellArgs)  # create cell and pass type as argument
 		dirCell = dir(cell)
 		if 'all_sec' in dirCell:
@@ -78,7 +94,6 @@ def importCell(fileName, cellName, cellArgs = {}, pointNeuronParamLabels = None)
 		print "File name should be either .hoc or .py file"
 		return
 
-	#print 'Loading cell from template: '+fileName
 	secDic = {}
 	for sec in secList: 
 		# create new section dict with name of section
@@ -110,47 +125,53 @@ def importCell(fileName, cellName, cellArgs = {}, pointNeuronParamLabels = None)
 			secDic[secName]['geom']['pt3d'] = points
 
 		# store mechanisms
-		ignoreMechs = ['dist']
+		varList = mechVarList()  # list of properties for all density mechanisms and point processes
+		ignoreMechs = ['dist']  # dist only used during cell creation 
 		mechDic = {}
 		for mech in dir(sec(0.5)):  
 			if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
 				mechDic[mech] = {}  # create dic for mechanism properties
-				props = [prop.replace('_'+mech, '') for prop in dir(sec(0.5).__getattribute__(mech)) if prop.endswith('_'+mech)]
-				propVals = []
-				for prop in props:
-					propVals = [seg.__getattribute__(mech).__getattribute__(prop) for seg in sec]
-					if len(set(propVals)) == 1:
-						propVals = propVals[0] 
-					mechDic[mech][prop] = propVals
+				varNames = [varName.replace('_'+mech, '') for varName in varList['mechs'][mech]]
+				varVals = []
+				for varName in varNames:
+					try:
+						varVals = [seg.__getattribute__(mech).__getattribute__(varName) for seg in sec]
+						if len(set(varVals)) == 1:
+							varVals = varVals[0] 
+						mechDic[mech][varName] = varVals
+					except: 
+						print 'Could not read %s of mechanism %s'%(varName,mech)
 		secDic[secName]['mechs'] = mechDic
 
 		# add synapses and point neurons
 		# for now read fixed params, but need to find way to read only synapse params
 		syns = {}
 		pointps = {}
-		synParams = ['e', 'tau1', 'tau2', 'tau', 'gmax', 'tau1NMDA', 'tau2NMDA', 'mg', 'r', 'smax', 'sNMDAmax', 'Vwt', 'fracca']
 		for seg in sec:
 			for ipoint,point in enumerate(seg.point_processes()):
-				if 'cellid' not in dir(point): # omit if point neuron
-					synName = 'syn_'+ str(ipoint)
+				pptype = point.hname().split('[')[0]
+				varNames = varList['pointps'][pptype]
+				if 'syn' in pptype.lower(): # if syn in name of point process then assume synapse
+					synName = 'syn_'+ str(len(syns))
 					syns[synName] = {}
-					syns[synName]['type'] = point.hname().split('[')[0]
-					syns[synName]['loc'] = seg.x
-					for synParam in synParams:
+					syns[synName]['_type'] = pptype
+					syns[synName]['_loc'] = seg.x
+					for varName in varNames:
 						try:
-							syns[synName][synParam] = point.__getattribute__(synParam)
+							syns[synName][varName] = point.__getattribute__(varName)
 						except:
-							pass
-				elif pointNeuronParamLabels: # point processes
-					if pointNeuronParamLabels[0] in dir(point): # check if point neuron
+							print 'Could not read %s of synapse %s'%(varName,synName)
+				
+				else: # assume its a non-synapse point process
+					pointpName = 'pointp_'+ str(len(pointps))
+					pointps[pointpName] = {}
+					pointps[pointpName]['_type'] = pptype
+					pointps[pointpName]['_loc'] = seg.x
+					for varName in varNames:
 						try:
-							pointpName = point.hname().split('[')[0]
-							pointps[pointpName] = {}
-							for pointpParamName in pointNeuronParamLabels:
-								pointps[pointpName][pointpParamName] = point.__getattribute__(pointpParamName)
+							pointps[pointpName][varName] = point.__getattribute__(varName)
 						except:
-							print 'Error reading point neuron params'
-
+							print 'Could not read %s of synapse %s'%(varName,synName)
 
 		if syns: secDic[secName]['syns'] = syns
 		if pointps: secDic[secName]['pointps'] = pointps
@@ -162,10 +183,7 @@ def importCell(fileName, cellName, cellArgs = {}, pointNeuronParamLabels = None)
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
 
-	if  pointNeuronParamLabels:
-		return secDic
-	else:
-		return secDic
+	return secDic
 
 
 def importConnFromExcel(fileName, sheetName):

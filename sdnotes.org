@@ -152,10 +152,44 @@ We can use the google chat or this google doc to bounce ideas back and forth (li
 ** DONE - Overwrite files optional (timestamp)
 ** DONE - Default simConfig
 ** DONE - Import cells with generic set of arguments
-** Use mechanismType to make importCell more robust
+** DONE Use mechanismType to make importCell more robust
 https://www.neuron.yale.edu/neuron/static/new_doc/modelspec/programmatic/mechtype.html
 https://www.neuron.yale.edu/neuron/static/new_doc/programming/mechstan.html
 http://neurosimlab.org/ramcd/pyhelp/mechstan.html#MechanismStandard - 2nd example
+
+- use params with initial underscore '_var' to indicate used by netpyne, not mechanism/pointprocess variable
+** Distinguish syns from other point processes 
+- no way to do it
+- assume 'syn' in name -- establish naming convention
+
+- syn: .is_netcon_target() = True; .has_net_event(i) = False; .is_artificial()
+- artcell: true, true?, true
+- izh2007a: true, true
+
+MechanismType.is_netcon_target()
+Syntax:
+boolean =  mt.is_netcon_target(i)
+Description:
+The i'th point process has a NET_RECEIVE block and can therefore be a target for a NetCon object.
+
+MechanismType.has_net_event() 
+Syntax:
+boolean = mt.has_net_event(i)
+Description:
+The i'th point process has a net_event call in its NET_RECEIVE block and can therefore be a source for a NetCon object. This
+means it is NetCon stimulator or that the point process can be used as an artificial neural network cell.
+
+MechanismType.is_artificial() 
+Syntax:
+boolean = mt.is_artificial(i)
+Description:
+The i'th point process is an ARTIFICIAL_CELL and can therefore be a source for a NetCon object. This means it is NetCon stimulator or that the point process can be used as an artificial neural network cell.
+
+This seems to have, but does not, equivalent functionality to has_net_event() and was introduced because ARTIFICIAL_CELL
+objects are no longer located in sections. Some ARTIFICIAL_CELLs such as the PatternStim do not make use of net_event in
+their implementation, and some PointProcesses do use net_event and must be located in sections for their proper function,
+e.g. reciprocal synapses.
+
 ** Add x,y positions as 'xrange' and 'yrange'
 - maybe xfracRange, yfracRange
 - replace yfrac with zfrac!
@@ -214,7 +248,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Make list of data saved part of simCfg
 - simConfig, netParams, net, simData
 ** timing
-** Test Friesen cell and adaptive exp cell
+** Test Friesen cell, adaptive exp cell and IntFire1,2,3,4
 ** Avg postsyn convergence
 ** Subcellular synaptic connectivity
 - distribution of syns across segments based on empirical map
@@ -226,5 +260,10 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Granger causality
 ** Conn matrix
 - by cells and populations
+** Set v_init before calling init()
+- netParam param
 ** Saving at intervals
 ** Stimulation - iclamp,vclamp, opto, microelectrode
+** Plasticity
+- Hebbian
+- STDP

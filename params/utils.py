@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
-def getSecName(sec):
+def getSecName(sec, dirCellSecNames = {}):
 	if '>.' in sec.name():
 		fullSecName = sec.name().split('>.')[1] 
 	elif '.' in sec.name():
@@ -22,6 +22,8 @@ def getSecName(sec):
 	else:
 		secName = fullSecName
 		secIndex = -1
+	if secName in dirCellSecNames:  # get sec names from python
+		secName = dirCellSecNames[secName]
 	return secName
 
 def importCellParams(fileName, labels, values, key = None):
@@ -70,6 +72,7 @@ def importCell(fileName, cellName, cellArgs = {}):
 		h.load_file(fileName)
 		cell = getattr(h, cellName)(**cellArgs)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
 		secList = list(cell.allsec())
+		dirCell = dir(cell)
 	elif fileName.endswith('.py'):
  		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
   		if filePath not in sys.path:  # add to path if not there (need to import module)
@@ -79,6 +82,7 @@ def importCell(fileName, cellName, cellArgs = {}):
 		modulePointer = tempModule
 		cell = getattr(modulePointer, cellName)(**cellArgs)  # create cell and pass type as argument
 		dirCell = dir(cell)
+
 		if 'all_sec' in dirCell:
 			secList = cell.all_sec
 		elif 'sec' in dirCell:
@@ -94,12 +98,25 @@ def importCell(fileName, cellName, cellArgs = {}):
 		print "File name should be either .hoc or .py file"
 		return
 
+	# create dict with hname of each element in dir(cell)
+	dirCellHnames = {}  
+	for dirCellName in dirCell:
+		try:
+			dirCellHnames.update({cell.__dict__[dirCellName].hname(): dirCellName})
+		except:
+			pass
+	# create dict with dir(cell) name corresponding to each hname 
+	dirCellSecNames = {} 
+	for sec in secList:
+		dirCellSecNames.update({hname: name for hname,name in dirCellHnames.iteritems() if hname == sec.hname()})
+
 	secDic = {}
 	for sec in secList: 
 		# create new section dict with name of section
-		secName = getSecName(sec)
+		secName = getSecName(sec, dirCellSecNames)
+
 		if len(secList) == 1:
-			secName = 'soma' # framework requires at least one section named 'soma'
+			secName = 'soma' # if just one section rename to 'soma'
 		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # create dictionary to store sec info
 
 		# store geometry properties
@@ -140,7 +157,9 @@ def importCell(fileName, cellName, cellArgs = {}):
 							varVals = varVals[0] 
 						mechDic[mech][varName] = varVals
 					except: 
-						print 'Could not read %s of mechanism %s'%(varName,mech)
+						pass
+						#print 'Could not read variable %s from mechanism %s'%(varName,mech)
+
 		secDic[secName]['mechs'] = mechDic
 
 		# add synapses and point neurons
@@ -151,8 +170,9 @@ def importCell(fileName, cellName, cellArgs = {}):
 			for ipoint,point in enumerate(seg.point_processes()):
 				pptype = point.hname().split('[')[0]
 				varNames = varList['pointps'][pptype]
-				if 'syn' in pptype.lower(): # if syn in name of point process then assume synapse
-					synName = 'syn_'+ str(len(syns))
+				if any([s in pptype.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
+				#if 'syn' in pptype.lower(): # if syn in name of point process then assume synapse
+					synName = pptype + '_' + str(len(syns))
 					syns[synName] = {}
 					syns[synName]['_type'] = pptype
 					syns[synName]['_loc'] = seg.x
@@ -160,10 +180,10 @@ def importCell(fileName, cellName, cellArgs = {}):
 						try:
 							syns[synName][varName] = point.__getattribute__(varName)
 						except:
-							print 'Could not read %s of synapse %s'%(varName,synName)
+							print 'Could not read variable %s from synapse %s'%(varName,synName)
 				
 				else: # assume its a non-synapse point process
-					pointpName = 'pointp_'+ str(len(pointps))
+					pointpName = pptype + '_'+ str(len(pointps))
 					pointps[pointpName] = {}
 					pointps[pointpName]['_type'] = pptype
 					pointps[pointpName]['_loc'] = seg.x
@@ -171,7 +191,7 @@ def importCell(fileName, cellName, cellArgs = {}):
 						try:
 							pointps[pointpName][varName] = point.__getattribute__(varName)
 						except:
-							print 'Could not read %s of synapse %s'%(varName,synName)
+							print 'Could not read %s variable from point process %s'%(varName,synName)
 
 		if syns: secDic[secName]['syns'] = syns
 		if pointps: secDic[secName]['pointps'] = pointps
@@ -179,9 +199,12 @@ def importCell(fileName, cellName, cellArgs = {}):
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
 		secRef = h.SectionRef(sec=sec)
 		if secRef.has_parent():
-			secDic[secName]['topol']['parentSec'] = getSecName(secRef.parent().sec)
+			secDic[secName]['topol']['parentSec'] = getSecName(secRef.parent().sec, dirCellSecNames)
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
+
+	del(cell) # delete cell
+	import gc; gc.collect()
 
 	return secDic
 

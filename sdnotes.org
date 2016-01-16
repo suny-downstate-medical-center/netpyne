@@ -152,19 +152,21 @@ We can use the google chat or this google doc to bounce ideas back and forth (li
 ** DONE - Overwrite files optional (timestamp)
 ** DONE - Default simConfig
 ** DONE - Import cells with generic set of arguments
-** DONE Use mechanismType to make importCell more robust
+** DONE - Use mechanismType to make importCell more robust
 https://www.neuron.yale.edu/neuron/static/new_doc/modelspec/programmatic/mechtype.html
 https://www.neuron.yale.edu/neuron/static/new_doc/programming/mechstan.html
 http://neurosimlab.org/ramcd/pyhelp/mechstan.html#MechanismStandard - 2nd example
 
-- use params with initial underscore '_var' to indicate used by netpyne, not mechanism/pointprocess variable
-** Distinguish syns from other point processes 
+- use params with initial underscore '_var' to indicate used by netpyne, not mechanism/pointprocess variable - add to docu!
+** DONE Check Izhi2007a
+** DONE Distinguish syns from other point processes 
 - no way to do it
-- assume 'syn' in name -- establish naming convention
+- assume 'syn' in name -- establish naming convention -- added to doc
 
-- syn: .is_netcon_target() = True; .has_net_event(i) = False; .is_artificial()
+- syn: true, false, false (.is_netcon_target() = True; .has_net_event(i) = False; .is_artificial() = false)
 - artcell: true, true?, true
-- izh2007a: true, true
+- izh2007a: true, true, false
+- izhi2007b: true, false, false
 
 MechanismType.is_netcon_target()
 Syntax:
@@ -190,16 +192,21 @@ objects are no longer located in sections. Some ARTIFICIAL_CELLs such as the Pat
 their implementation, and some PointProcesses do use net_event and must be located in sections for their proper function,
 e.g. reciprocal synapses.
 
-** Add x,y positions as 'xrange' and 'yrange'
-- maybe xfracRange, yfracRange
-- replace yfrac with zfrac!
-** Set positions in Neuron's 3D space
-** importCell can modify h variables (eg. celsius)
-- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+** DONE Make list of data saved part of simCfg
+- simConfig, netParams, net, simData
+- added to docu
 
-** LFP
-- simple voltage sum 
-- LFPy
+** DONE Test Friesen cell
+- Read python names in importCell
+-- use dir; check if section; compare with secList
+
+- 'synReceptor' check for syn type not name
+
+** DONE Associate_gid from axon
+- section['spikeGenLoc'] = 0.5
+
+** DONE Test adaptive exp cell (no Neuron code)
+
 ** HDF5
 - tried h5py (http://docs.h5py.org/en/latest/quick.html)
 Saving output as example-20160108_200403.hdf5... 
@@ -242,17 +249,25 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 - try this: http://stackoverflow.com/questions/16705274/fastest-way-to-convert-a-dicts-keys-values-from-str-to-unicode
 
+** Avg postsyn convergence
+** Add x,y positions as 'xrange' and 'yrange'
+- maybe xfracRange, yfracRange
+- replace yfrac with zfrac!
+** Set positions in Neuron's 3D space
+** importCell can modify h variables (eg. celsius)
+- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
+** LFP
+- simple voltage sum 
+- LFPy
 ** NeuroML
 - padraig
 ** Functions to load simConfig, netParams, net, simData
-** Make list of data saved part of simCfg
-- simConfig, netParams, net, simData
 ** timing
-** Test Friesen cell, adaptive exp cell and IntFire1,2,3,4
-** Avg postsyn convergence
 ** Subcellular synaptic connectivity
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
+** Add support for SectionLists 
 ** Record cell from specific population
 ** Save plots to file
 ** Conn/props just in master node
@@ -260,6 +275,18 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Granger causality
 ** Conn matrix
 - by cells and populations
+** Add support for point neuron outside of section
+eg. IntFire1,2,3,4 
+ ARTIFICIAL_CELL means
+     3 	: that this model not only has a NET_RECEIVE block and does NOT
+     4 	: have a BREAKPOINT but is not associated with a
+     5 	: section location or numerical integrator. i.e it does not
+     6 	: refer to v or any ions or have a POINTER. It is entirely isolated
+     7 	: and depends on discrete events from the outside to affect it and
+     8 	: affects the outside only by sending discrete events.
+
+- outside of section so need different method - maybe not worth? 
+
 ** Set v_init before calling init()
 - netParam param
 ** Saving at intervals
@@ -267,3 +294,6 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Plasticity
 - Hebbian
 - STDP
+** modify instantiated network
+- load net and provide new set of params
+

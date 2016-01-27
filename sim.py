@@ -150,7 +150,20 @@ def replaceNoneObj(obj):
                 obj[key] = [] # also replace empty dicts with empty list
     return obj
 
-
+###############################################################################
+### Convert dict strings to utf8 so can be saved in HDF5 format
+###############################################################################
+def dict2utf8(obj):
+#unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
+    import collections
+    if isinstance(obj, basestring):
+        return obj.decode('utf8')
+    elif isinstance(obj, collections.Mapping):
+        return dict(map(dict2utf8, obj.iteritems()))
+    elif isinstance(obj, collections.Iterable):
+        return type(obj)(map(dict2utf8, obj))
+    else:
+        return obj
 
 ###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and f.net f.params
@@ -298,7 +311,7 @@ def gatherData():
 def saveData():
     if f.rank == 0:
         
-        dataSave = {'simConfig': f.cfg, 'netParams': replaceFuncObj(f.net.params), 'netCells': f.net.allCells, 'simData': f.allSimData}
+        dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
 
         if 'timestampFilename' in f.cfg:  # add timestamp to filename
             if f.cfg['timestampFilename']: 
@@ -340,21 +353,13 @@ def saveData():
 
         # Save to HDF5 file
         if f.cfg['saveHDF5']:
-            import h5py 
-            #try: 
-            #import hickle 
+            print dataSave
+            dataSaveUTF8 = dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
-            #hickle.dump(dataSave, f.cfg['filename']+'.hdf5', mode='w')
-            hdf5storage.write(dataSave, filename=f.cfg['filename']+'.hdf5')
-            #with h5py.File(f.cfg['filename']+'.hdf5', 'w') as fileObj:
-            #    dset = f.create_dataset("mydataset", (100,), dtype='i')
+            hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
             print('Finished saving!')
-            fil = h5py.File(f.cfg['filename']+'.hdf5', 'r')
-            print fil.keys()
-            print fil.keys()[0]
-            #except:
-            #    print 'Saving to HDF5 format requires the hickle (https://github.com/telegraphic/hickle)'
-
-
+            load=hdf5storage.read(filename=f.cfg['filename']+'.hdf5')
+            print load
+   
 

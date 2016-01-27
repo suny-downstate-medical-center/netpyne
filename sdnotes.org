@@ -138,6 +138,202 @@ We can use the google chat or this google doc to bounce ideas back and forth (li
 - default simConfig
 - from pynet import init ; init.createAndRun(netParams, simConfig)
 
+* 15jan26 Possibly making more simulator-indep using NeuroML-based format
+** NeuroML format 
+- could represent all nml format using python dicts (instantiated net)
+- additional abstract layer (connParams, netParams etc) - using more general format and then converted to nml
+- eg. https://github.com/OpenSourceBrain/Thalamocortical/tree/master/neuroConstruct/generatedNeuroML2
+- https://www.neuroml.org/getneuroml
+- https://www.neuroml.org/tool_support
+- https://github.com/NeuralEnsemble/libNeuroML
+- https://github.com/NeuroML/pyNeuroML
+- http://bioportal.bioontology.org/ontologies/CNO
+- http://www.neuroconstruct.org/
+- http://neuronvisio.org/
+
+
+*** Issues
+- Would like to keep simple declarative (python dicts based) specifications
+- Want to make netpyne more NEURON-independent, both at specifications, and py instantiated network
+- netpyne makes use of mod files, but neuroml requires detailed specification
+- netpyne provides conversion from abstract specifications -> instantiated network, and support for multicompartment, and
+  subcellular connectivity
+- netpyne provides instantiation of NEURON objects, and parallel simulation of network
+- netpyne can use NeuroML structure but using dictionaries instead of xml text - so easy to manipulate
+- libneuroml and pynn - procedural, not so intuitive, and require internal definition of cell types etc (eg. IAF); whereas
+  netpyne is 'declarative', more intuitive?, can define arbitrary cell props based on mechs and syns
+- dictionary of equivalences NEURON<->NeuroML (eg. tau1, rise)
+
+*** cells
+NOTE: segment = sections/segment; segmentGroup = sectionList/section
+- can have segmentGroups that consist of segmentGroups
+- Neuron sections->segmentGroups
+- Neuron 3d points -> segmnets
+- Neuron nseg -> property tag numberInternalDivisions
+- if have pointProcess in segment -> mapping of position along section and where pointprocess is placed
+
+    <include href="nap.channel.nml"/>
+
+    <include href="pas.channel.nml"/>
+
+<cell id="SupAxAx">
+
+        <notes>Cell: supaxax_0 exported from NEURON ModelView</notes>
+
+        <morphology id="morphology_SupAxAx">
+
+            <segment id="0" name="Seg0_comp_1">
+                <proximal x="0.0" y="0.0" z="0.0" diameter="15.0"/>
+                <distal x="0.0" y="10.0" z="0.0" diameter="15.0"/>
+            </segment>
+
+            <segment id="1" name="Seg1_comp_1">
+                <parent segment="0"/>
+                <distal x="-4.371139E-7" y="20.0" z="0.0" diameter="15.0"/>
+            </segment>
+
+ <segmentGroup id="prox_dend_soma">
+                <include segmentGroup="comp_1"/>
+                <include segmentGroup="comp_41"/>
+                <include segmentGroup="comp_28"/>
+                <include segmentGroup="comp_15"/>
+                <include segmentGroup="comp_2"/>
+            </segmentGroup>
+
+
+	<biophysicalProperties id="biophys">
+
+            <membraneProperties>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="ar_ModelViewParmSubset_1" ionChannel="ar__m00_25" segmentGroup="ModelViewParmSubset_1" erev="-40.0 mV" ion="ar"/>
+                
+                <channelDensity condDensity="0.1 mS_per_cm2" id="cal_ModelViewParmSubset_4" ionChannel="cal" segmentGroup="ModelViewParmSubset_4" ion="ca" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.2 mS_per_cm2" id="cal_ModelViewParmSubset_5" ionChannel="cal" segmentGroup="ModelViewParmSubset_5" ion="ca" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="cat_ModelViewParmSubset_1" ionChannel="cat" segmentGroup="ModelViewParmSubset_1" ion="cat" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="k2_all" ionChannel="k2" ion="k" erev="-100.0 mV"/>
+                
+                <spikeThresh value="0.0 mV"/>
+
+                <specificCapacitance value="1.0 uF_per_cm2"/>
+
+                <initMembPotential value="-65.0 mV"/>
+
+
+*** connections
+<projection id="LTS_AxAx_sm" presynapticPopulation="CG_C04_LTS_sm" postsynapticPopulation="CG_C04_AxAx_sm" synapse="Inh_LTS_FS">
+            <connection id="0" preCellId="../CG_C04_LTS_sm/5/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="112" preFractionAlong="0.26785243" postSegmentId="82" postFractionAlong="0.36041966"/>
+            <connection id="1" preCellId="../CG_C04_LTS_sm/3/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="116" preFractionAlong="0.6782849" postSegmentId="91" postFractionAlong="0.99472666"/>
+            <connection id="2" preCellId="../CG_C04_LTS_sm/6/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="112" preFractionAlong="0.42696908" postSegmentId="84" postFractionAlong="0.46009916"/>
+            <connection id="3" preCellId="../CG_C04_LTS_sm/0/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.92599744" postSegmentId="83" postFractionAlong="0.60695267"/>
+            <connection id="4" preCellId="../CG_C04_LTS_sm/9/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.5823235" postSegmentId="39" postFractionAlong="0.646692"/>
+            <connection id="5" preCellId="../CG_C04_LTS_sm/6/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.16917303" postSegmentId="57" postFractionAlong="0.6089958"/>
+
+*** synapses
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd" id="Syn_AMPA_L4SS_IN">
+
+    <notes>ChannelML file describing a single synaptic mechanism</notes>
+
+    <alphaSynapse id="Syn_AMPA_L4SS_IN" tau="0.8ms" gbase="2.94303552937e-07mS" erev="0.0mV">
+
+        <notes>Synapse with syn scaling constant c = 1 nS (translating to max cond of 2.94304e-07 mS), time course: 0.8 ms and reversal potential: 0 mV.
+        Automatically generated by command:  genSyn.py Syn_AMPA_L4SS_IN 0.8 1 0 </notes>
+</alphaSynapse>
+
+</neuroml>
+*** population
+
+        <population id="CG_C04_FRB_sm" component="L23PyrFRB_varInit" type="populationList" size="6">
+           <annotation>
+                <property tag="color" value="0.0 0.0 0.0"/>
+            </annotation>
+            <instance id="0">
+                <location x="-739.27563" y="-798.43396" z="-440.9723"/>
+            </instance>
+            <instance id="1">
+                <location x="975.8342" y="-870.85077" z="1090.1094"/>
+            </instance>
+            <instance id="2">
+                <location x="-1012.162" y="-785.71173" z="1053.8684"/>
+            </instance>
+            <instance id="3">
+                <location x="-1391.423" y="-776.4188" z="-32.483643"/>
+            </instance>
+            <instance id="4">
+                <location x="149.5564" y="-790.7691" z="433.74915"/>
+            </instance>
+            <instance id="5">
+                <location x="585.53955" y="-765.37933" z="819.1377"/>
+            </instance>
+        </population>
+
+
+*** pulse generator (netstim?)
+   <pulseGenerator id="DepCurr_L23FRB" delay="0.0s" duration="20.0s" amplitude="3.0E-10A"/>
+    
+    <pulseGenerator id="DepCurr_L23FRB__0" delay="0.0s" duration="20.0s" amplitude="3.37936E-10A"/>
+** chat with Bill
+summary of 3-hr meeting with Ben: 1) he really likes netpyne, 2) discussed how to add subcellular syn info (3 main methods: sectionlists, yfrac-based, path distance-based), 3) provided his unpublished code to convert sCRACM data to synapse density maps and said we can use in netpyne, 4) suggested making netpyne more NEURON/simulator-independent (similar to Kim Blackwell)
+
+on this last point (simu-indep), I looked at NeuroML2 format, and some of the tools Padraig has built 2 interface it with Python and Neuron (eg. neuroconstruct, pyNeuroML, libNeuroML), and read Robert's reproducibility paper
+
+I think it might be possible to make netpyne simulator-independent at the specs and instantiated network, using a NeuroML-like internal format (but using python dicts instead of xml so can manipulate data) -- and then keep final stage where its converted to Neuron simulatable objects
+
+sent padraig an email to discuss the technical details of what they've already implemented and how netpyne could fit, and be useful to fill in missing tools in this whole story
+
+an alternative is to keep it as a tool specific for Neuron, with its internal Neuron-based format for specs and network, and the possibility of exporting/importing from NeuroML and others (ie. its current status)
+
+** chat with Padraig
+- good to separate M1 model from netpyne
+- similarities with pnn and libneuroml
+- important of neuroml is conceptual structure
+- libneuroml has cell types
+- mapping from pyneuroml to mod files, but not the other way around
+
+- standardization of abstract conn rules is above pynn and nueroml/pyneuroml
+- eg 10 conn algorithms -> pynn -> neuroml
+- morphology - segments, segment groups
+
+- mod files would need to be translated into nueroml (not fully translated); alternative would be point to nueroml
+  definition, convert via pyneuroml to Neuron mod
+- setup.py to netpyne
+- dot.travis jml continuous integration server - run tests every time there is a commit to repository - make sure its consistent
+  with latest version
+
+- convert from Neuron model to NeuroML:
+-- export specifications 
+-- OSB converting to NeuroML2 cell morphology (pyneuroml.convert_to_neuroml2) - in future if already in neuroml dont need to
+ define in Nueron/netpyne format 
+-- Izhikevich (params) - abstract definiton
+-- export to Nueroml2 positions and connectivity - no current tool to convert
+-- https://github.com/OpenSourceBrain/Cerebellum3DDemo
+-- http://www.opensourcebrain.org/docs#Converting_To_NeuroML2
+
+
+- convert from NeuromML to Neuron:
+-- java script to convert neuroml to mod and Neuron/py files - wait for better iteration
+-- adapt java code to convert directly to netpyne
+-- https://github.com/NeuroML/org.neuroml.export/blob/development/src/main/java/org/neuroml/export/neuron/NeuronWriter.java
+-- https://github.com/NeuroML/org.neuroml.export/blob/development/src/main/java/org/neuroml/export/pynn/PyNNWriter.java
+-- check param files hhtut izhitut updated so can padraig can modify
+-- add load cell function in netpyne in neuroml format
+
+
+- differences:
+1) declarative
+2) netpyne makes use of mod files, but neuroml requires detailed specification
+3) netpyne provides conversion from abstract specifications -> instantiated network, and support for multicompartment, and
+  subcellular connectivity
+4) netpyne provides instantiation of NEURON objects, and parallel simulation of network
+
+- options:
+-- long-term: use Neuroml internally for instantiated network 
+-- short-term:  Neuron-based and conversion to NeuroML; 
+
+
 * TODO
 ** DONE - unify cellmodel 
 - cell prop conditions: 
@@ -196,7 +392,7 @@ e.g. reciprocal synapses.
 - simConfig, netParams, net, simData
 - added to docu
 
-** DONE Test Friesen cell
+** DONE Test importing Friesen, mainen, traub cell models
 - Read python names in importCell
 -- use dir; check if section; compare with secList
 
@@ -204,10 +400,8 @@ e.g. reciprocal synapses.
 
 ** DONE Associate_gid from axon
 - section['spikeGenLoc'] = 0.5
-
 ** DONE Test adaptive exp cell (no Neuron code)
-
-** HDF5
+** DONE HDF5
 - tried h5py (http://docs.h5py.org/en/latest/quick.html)
 Saving output as example-20160108_200403.hdf5... 
 Traceback (most recent call last):
@@ -249,6 +443,10 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 - try this: http://stackoverflow.com/questions/16705274/fastest-way-to-convert-a-dicts-keys-values-from-str-to-unicode
 
+- converted to unicode using dict2utf8() func, but now get segmentation fault for all except simConfig dict
+
+- empty dicts {} caused seg fault -- replaced with []
+
 ** Avg postsyn convergence
 ** Add x,y positions as 'xrange' and 'yrange'
 - maybe xfracRange, yfracRange
@@ -261,7 +459,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - simple voltage sum 
 - LFPy
 ** NeuroML
-- padraig
+- padraig (see notes above)
 ** Functions to load simConfig, netParams, net, simData
 ** timing
 ** Subcellular synaptic connectivity
@@ -290,10 +488,15 @@ eg. IntFire1,2,3,4
 ** Set v_init before calling init()
 - netParam param
 ** Saving at intervals
+** RxD 
+/u/samn/m1dyst -> models/m1dyst
+https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
+
 ** Stimulation - iclamp,vclamp, opto, microelectrode
 ** Plasticity
 - Hebbian
 - STDP
 ** modify instantiated network
 - load net and provide new set of params
+** Make simulator-indep using NeuroML internal format
 

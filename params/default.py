@@ -77,7 +77,7 @@ simConfig['saveHDF5'] = False # save to HDF5 file
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['orderRasterYfrac'] = False # Order cells in raster by yfrac (default is by pop and cell id)
+simConfig['orderRasterYnorm'] = False # Order cells in raster by yfrac (default is by pop and cell id)
 simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
 simConfig['plotPsd'] = False # plot power spectral density (not yet implemented)
 simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)

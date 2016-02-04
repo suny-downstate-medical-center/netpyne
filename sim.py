@@ -353,13 +353,9 @@ def saveData():
 
         # Save to HDF5 file
         if f.cfg['saveHDF5']:
-            print dataSave
             dataSaveUTF8 = dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
             hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
             print('Finished saving!')
-            load=hdf5storage.read(filename=f.cfg['filename']+'.hdf5')
-            print load
-   
 

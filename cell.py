@@ -173,8 +173,8 @@ class Cell(object):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                if 'yfrac' in self.tags and 'corticalthick' in f.net.params:
-                    y = self.tags['yfrac'] * f.net.params['corticalthick']/1e3  # y as a func of yfrac and cortical thickness
+                if 'ynorm' in self.tags and 'corticalthick' in f.net.params:
+                    y = self.tags['ynorm'] * f.net.params['corticalthick']/1e3  # y as a func of ynorm and cortical thickness
                 else:
                     y = self.tags['y']
                 z = self.tags['z']
@@ -331,7 +331,7 @@ class Cell(object):
             netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
             netstim.noiseFromRandom(rand)  # use random number generator
             netstim.noise = params['noise']
-            netstim.number = 1e12   
+            netstim.number = params['number']   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if pointp:
@@ -427,8 +427,8 @@ class Pop(object):
         elif 'numCells' in self.tags:
             cells = self.createCellsFixedNum()
 
-        # create cells based on density (optional yfrac-dep)
-        elif 'yfracRange' in self.tags and 'density' in self.tags:
+        # create cells based on density (optional ynorm-dep)
+        elif 'ynormRange' in self.tags and 'density' in self.tags:
             cells = self.createCellsDensity()
 
         # not enough tags to create cells
@@ -449,7 +449,7 @@ class Pop(object):
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['y'] = 0 # set yfrac value for this cell
+            cellTags['y'] = 0 # set ynorm value for this cell
             cellTags['x'] = 0  # calculate x location (um)
             cellTags['z'] = 0 # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
@@ -459,32 +459,32 @@ class Pop(object):
         return cells
 
                 
-    # population based on YfracRange
+    # population based on ynormRange
     def createCellsDensity(self):
         cellModelClass = Cell
         cells = []
         volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['modelsize']/1e3)**2 \
-             * ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and yfracRange
+             * ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and ynormRange
         
-        if hasattr(self.tags['density'], '__call__'): # check if conn is yfrac-dep density func 
-            yfracInterval = 0.001  # interval of yfrac values to evaluate in order to find the max cell density
-            maxDensity = max(map(self.tags['density'], (arange(self.tags['yfracRange'][0],self.tags['yfracRange'][1], yfracInterval))))  # max cell density 
+        if hasattr(self.tags['density'], '__call__'): # check if conn is ynorm-dep density func 
+            ynormInterval = 0.001  # interval of ynorm values to evaluate in order to find the max cell density
+            maxDensity = max(map(self.tags['density'], (arange(self.tags['ynormRange'][0],self.tags['ynormRange'][1], ynormInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
             seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
-            yfracsAll = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(int(maxCells), 1)  # random yfrac values 
-            yfracsProb = array(map(self.tags['density'], yfracsAll)) / maxDensity  # calculate normalized density for each yfrac value (used to prune)
-            allrands = rand(len(yfracsProb))  # create an array of random numbers for checking each yfrac pos 
+            ynormsAll = self.tags['ynormRange'][0] + ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0])) * rand(int(maxCells), 1)  # random ynorm values 
+            ynormsProb = array(map(self.tags['density'], ynormsAll)) / maxDensity  # calculate normalized density for each ynorm value (used to prune)
+            allrands = rand(len(ynormsProb))  # create an array of random numbers for checking each ynorm pos 
             
-            makethiscell = yfracsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-            yfracs = [yfracsAll[i] for i in range(len(yfracsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfracs based on density func
-            self.tags['numCells'] = len(yfracs)  # final number of cells after pruning of yfrac values based on density func
+            makethiscell = ynormsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
+            ynorms = [ynormsAll[i] for i in range(len(ynormsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of ynorms based on density func
+            self.tags['numCells'] = len(ynorms)  # final number of cells after pruning of ynorm values based on density func
             if f.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
 
-        else:  # NO yfrac-dep
+        else:  # NO ynorm-dep
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
             seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
-            yfracs = self.tags['yfracRange'][0] + ((self.tags['yfracRange'][1]-self.tags['yfracRange'][0])) * rand(self.tags['numCells'], 1)  # random yfrac values 
+            ynorms = self.tags['ynormRange'][0] + ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0])) * rand(self.tags['numCells'], 1)  # random ynorm values 
             if f.cfg['verbose']: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
         randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
@@ -493,13 +493,13 @@ class Pop(object):
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['yfrac'] = yfracs[i][0]  # set yfrac value for this cell
+            cellTags['ynorm'] = ynorms[i][0]  # set ynorm value for this cell
             cellTags['x'] = f.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
             cellTags['z'] = f.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if f.cfg['verbose']: 
-                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['yfrac'], cellTags['z'], f.rank))
+                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['ynorm'], cellTags['z'], f.rank))
         f.lastGid = f.lastGid + self.tags['numCells'] 
         return cells
 

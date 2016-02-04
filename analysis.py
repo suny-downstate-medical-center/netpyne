@@ -61,10 +61,10 @@ def plotRaster():
     spkids = f.allSimData['spkid']
     ylabelText = 'Cell id'
     try:
-        if f.cfg['orderRasterYfrac']:
+        if f.cfg['orderRasterYnorm']:
             gids = [cell['gid'] for cell in f.net.allCells]
-            yfracs = [cell['tags']['yfrac'] for cell in f.net.allCells]
-            sortInds = sorted(range(len(yfracs)), key=lambda k:yfracs[k])
+            ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
+            sortInds = sorted(range(len(ynorms)), key=lambda k:ynorms[k])
             posdic = {gid: pos for gid,pos in zip(gids,sortInds)}
             spkids = [posdic[gid] for gid in spkids]
             ylabelText = 'Cell id (arranged by NCD)'

@@ -190,6 +190,8 @@ def importCell(fileName, cellName, cellArgs = {}):
 					for varName in varNames:
 						try:
 							pointps[pointpName][varName] = point.__getattribute__(varName)
+							# special condition for Izhi model, to set vinit=vr
+							if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName) 
 						except:
 							print 'Could not read %s variable from point process %s'%(varName,synName)
 

@@ -114,7 +114,14 @@ class Cell(object):
             if 'spikeGenLoc' in sectParams:
                 sec['spikeGenLoc'] = sectParams['spikeGenLoc']
 
+            if 'vinit' in sectParams:
+                sec['vinit'] = sectParams['vinit']
 
+
+    def initV(self): 
+        for sec in self.secs.values():
+            if 'vinit' in sec:
+                sec['hSection'](0.5).v = sec['vinit']
 
     def createNEURONObj(self, prop):
         # set params for all sections
@@ -189,6 +196,7 @@ class Cell(object):
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 
+
     def associateGid (self, threshold = 10.0):
         if self.secs:
             f.pc.set_gid2node(self.gid, f.rank) # this is the key call that assigns cell gid to a particular node
@@ -211,6 +219,10 @@ class Cell(object):
             f.gidVec.append(self.gid) # index = local id; value = global id
             f.gidDic[self.gid] = len(f.gidVec)
             del nc # discard netcon
+
+
+    
+
 
 
     def addConn(self, params):

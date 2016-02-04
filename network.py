@@ -53,8 +53,6 @@ class Network(object):
             if f.rank==0 and f.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
         f.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
         print('  Number of cells on node %i: %i ' % (f.rank,len(self.cells)))            
-        
-
     
 
     ###############################################################################

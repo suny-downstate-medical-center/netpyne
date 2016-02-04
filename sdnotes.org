@@ -527,22 +527,40 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 - empty dicts {} caused seg fault -- replaced with []
 
-** Enable providing num spikes in Netstim (paper)
+** DONE Enable providing num spikes in Netstim (paper)
 ** setup.py pip install (paper)
 ** Conv and div conn (paper)
 ** Add x,y positions as 'xrange' and 'yrange' (paper)
 - maybe xfracRange, yfracRange
 - replace yfrac with zfrac!
-
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
 ** simple LFP (paper) 
 - simple voltage sum 
+** import/export NeuroML (paper)
+- padraig (see notes above)
+** Functions to load simConfig, netParams, net, simData (paper)
+** timing (paper)
+** Add support for SectionLists (paper)
+** Record cell from specific population (paper)
+- and or one of each population
+** Conn matrix (paper)
+- by cells and populations
+** Set v_init before calling init() (paper)
+- netParam param
+- 'vinit' param in section
+- automatically set vinit=vr for izhis 
+- add to doc
 
 ** Subcellular synaptic connectivity (paper?)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
+
+
+** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
+- maybe iclamp for paper?
+
 ** Set positions in Neuron's 3D space
 ** LFPy
 ** Save plots to file
@@ -561,7 +579,6 @@ eg. IntFire1,2,3,4
 
 - outside of section so need different method - maybe not worth? 
 
-
 ** RxD 
 /u/samn/m1dyst -> models/m1dyst
 https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
@@ -569,22 +586,6 @@ https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
 ** Plasticity
 - Hebbian
 - STDP
-
-
-
-** import/export NeuroML (paper)
-- padraig (see notes above)
-** Functions to load simConfig, netParams, net, simData (paper)
-** timing (paper)
-** Add support for SectionLists (paper)
-** Record cell from specific population (paper)
-- and or one of each population
-** Conn matrix (paper)
-- by cells and populations
-** Set v_init before calling init() (paper?)
-- netParam param
-** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
-- maybe iclamp for paper?
 ** modify instantiated network
 - load net and provide new set of params
 ** Make simulator-indep using NeuroML internal format

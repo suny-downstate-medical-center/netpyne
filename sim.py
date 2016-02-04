@@ -193,6 +193,11 @@ def readArgs():
 ### Setup Recording
 ###############################################################################
 def setupRecording():
+    # set initial v of cells
+    f.fih = []
+    for cell in f.net.cells:
+        f.fih.append(h.FInitializeHandler(cell.initV))
+
     # spike recording
     f.pc.spike_record(-1, f.simData['spkt'], f.simData['spkid']) # -1 means to record from all cells on this node
 
@@ -220,14 +225,14 @@ def runSim():
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
-    init() # 
+    init()
+    #h.finitialize()
     #h.cvode.event(f.savestep,savenow)
     f.pc.psolve(f.cfg['duration'])
     if f.rank==0: 
         runtime = time()-runstart # See how long it took
         print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, f.cfg['duration']/1000/runtime))
     f.pc.barrier() # Wait for all hosts to get to this point
-
 
 
 

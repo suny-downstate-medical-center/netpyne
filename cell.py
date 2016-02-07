@@ -221,8 +221,6 @@ class Cell(object):
             del nc # discard netcon
 
 
-    
-
 
 
     def addConn(self, params):
@@ -231,6 +229,7 @@ class Cell(object):
             return  # if self-connection return
 
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
+            print self.secs
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
@@ -279,12 +278,12 @@ class Cell(object):
         else:
             netcon = f.pc.gid_connect(params['preGid'], sec['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local synapse
         
-        netcon.weight[weightIndex] = params['weight']  # set Netcon weight
+        netcon.weight[weightIndex] = f.net.params['scaleconnweight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['synReceptor'], f.net.params['scaleconnweight']*params['weight'], params['delay']))
 
 
     def addStim (self, params):
@@ -457,13 +456,18 @@ class Pop(object):
     def createCellsFixedNum(self):
         cellModelClass = Cell
         cells = []
+        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
+        randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['y'] = 0 # set ynorm value for this cell
-            cellTags['x'] = 0  # calculate x location (um)
-            cellTags['z'] = 0 # calculate z location (um)
+            cellTags['xnorm'] = randLocs[i,0] # set x location (um)
+            cellTags['ynorm'] = randLocs[i,1] # set y location (um)
+            cellTags['znorm'] = randLocs[i,2] # set z location (um)
+            cellTags['x'] = f.net.params['sizeX'] * randLocs[i,0] # set x location (um)
+            cellTags['y'] = f.net.params['sizeY'] * randLocs[i,1] # set y location (um)
+            cellTags['z'] = f.net.params['sizeZ'] * randLocs[i,2] # set z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'], f.rank))
@@ -475,8 +479,8 @@ class Pop(object):
     def createCellsDensity(self):
         cellModelClass = Cell
         cells = []
-        volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['modelsize']/1e3)**2 \
-             * ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, modelsize and ynormRange
+        volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['sizeY']/1e3)**2 \
+             * ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, sizeY and ynormRange
         
         if hasattr(self.tags['density'], '__call__'): # check if conn is ynorm-dep density func 
             ynormInterval = 0.001  # interval of ynorm values to evaluate in order to find the max cell density
@@ -499,6 +503,7 @@ class Pop(object):
             ynorms = self.tags['ynormRange'][0] + ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0])) * rand(self.tags['numCells'], 1)  # random ynorm values 
             if f.cfg['verbose']: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
+        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
         randLocs = rand(self.tags['numCells'], 2)  # create random x,z locations
 
         for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
@@ -506,8 +511,11 @@ class Pop(object):
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['ynorm'] = ynorms[i][0]  # set ynorm value for this cell
-            cellTags['x'] = f.net.params['modelsize'] * randLocs[i,0]  # calculate x location (um)
-            cellTags['z'] = f.net.params['modelsize'] * randLocs[i,1]  # calculate z location (um)
+            cellTags['y'] = f.net.params['sizeY'] * ynorms[i][0]  # set ynorm value for this cell
+            cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
+            cellTags['znorm'] = randLocs[i,1]  # calculate z location (um)
+            cellTags['x'] = f.net.params['sizeX'] * randLocs[i,0]  # calculate x location (um)
+            cellTags['z'] = f.net.params['sizeZ'] * randLocs[i,1]  # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if f.cfg['verbose']: 

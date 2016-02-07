@@ -335,6 +335,10 @@ an alternative is to keep it as a tool specific for Neuron, with its internal Ne
 
 * 16jan27 Consolidate connectivity functions
 ** Full conn -> fullConn
+- =probConn with prob = 1?
+** combine convConn, divConn, and randConn?
+- probFunc = optional param -- if not present, then:
+- select function depending of param included? eg. 'convergence', 'divergence', 'probability'
 ** Random conn with N conns per postsyn cell (convergence) -> convConn
 ~= conv conn
 - conv param allowed as function eg. uniform, gauss
@@ -372,6 +376,12 @@ prob = 'gauss(10,5)'
 prob = 'uniform(1,5)'
 - functions allow all of python random functions 
 
+*** efficiency
+- calculate all delay, prob, weight funcs together at the beginning
+- calcualte weights+delays for all possible conns despite some will not be used?
+- alternative might be more comput costly (calling 1 by 1), and repeated code
+- use map(lambda, list)
+- calculate final list of weights,probs,delays and pass to specific conn func
 
 ** comparison to PyNN
 *** class AllToAllConnector(allow_self_connections=True, safe=True, callback=None)[source]
@@ -528,6 +538,12 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - empty dicts {} caused seg fault -- replaced with []
 
 ** DONE Enable providing num spikes in Netstim (paper)
+** DONE Set v_init before calling init() (paper)
+- netParam param
+- 'vinit' param in section
+- automatically set vinit=vr for izhis - not needed cause fixed mod
+- add to doc
+
 ** setup.py pip install (paper)
 ** Conv and div conn (paper)
 ** Add x,y positions as 'xrange' and 'yrange' (paper)
@@ -547,20 +563,15 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - and or one of each population
 ** Conn matrix (paper)
 - by cells and populations
-** Set v_init before calling init() (paper)
-- netParam param
-- 'vinit' param in section
-- automatically set vinit=vr for izhis 
-- add to doc
-
+** replace dict[key] with dict.get(key) (defaults None)
+ 
 ** Subcellular synaptic connectivity (paper?)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
-
-
 ** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
 - maybe iclamp for paper?
 
+** Evol params batch
 ** Set positions in Neuron's 3D space
 ** LFPy
 ** Save plots to file

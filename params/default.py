@@ -24,12 +24,15 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 
 # General network parameters
 netParams['scale'] = 1 # Size of simulation in thousands of cells
+netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
+netParams['sizeY'] = 100 # y-dimension (vertical height or cortical depth) size in um
+netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
+
 
 ## General connectivity parameters
-netParams['mindelay'] = 2 # Minimum connection delay, in ms
-netParams['velocity'] = 100 # Conduction velocity in um/ms (e 100 um = 0.1 m/s)
+#netParams['minDelay'] = 2 # Minimum connection delay, in ms
+#netParams['condVelocity'] = 100 # Conduction velocity in um/ms (e 100 um = 0.1 m/s)
 netParams['scaleconnweight'] = 1 # Connection weight scale factor
-netParams['scaleconnprob'] = 1 # scale for scale since size fixed
 
 # Cell properties list
 netParams['cellParams'] = []

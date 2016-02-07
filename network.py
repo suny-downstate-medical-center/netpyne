@@ -216,7 +216,7 @@ class Network(object):
         allRands = [random() for i in range(len(preCellsTags)*len(postCells))]  # Create an array of random numbers for checking each connection
         probsList = True if isinstance(connParam['probability'], list) else False
         weightsList = True if isinstance(connParam['weight'], list) else False
-        delaysList = True if isinstance(connParam['delays'], list) else False
+        delaysList = True if isinstance(connParam['delay'], list) else False
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 probability = connParam['probability'].pop(0) if probsList else connParam['probability']
@@ -256,38 +256,42 @@ class Network(object):
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         convsList = True if isinstance(connParam['convergence'], list) else False
         weightsList = True if isinstance(connParam['weight'], list) else False
-        delaysList = True if isinstance(connParam['delays'], list) else False
+        delaysList = True if isinstance(connParam['delay'], list) else False
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             convergence = connParam['convergence'].pop(0) if convsList else connParam['convergence']  # num of presyn conns / postsyn cell
+            convergence = min(int(round(convergence)), len(preCellsTags))
             preCellsSample = sample(preCellsTags.keys(), convergence)  # selected gids of presyn cells
             preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
-            for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
+            print convergence
+            print preCellsSample
+            print preCellsConv
+            for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
+                ### FIX THIS! WEIGHT AND DELAY NOT POPPED FOR NON-SELECTED PREGIDS
                 weight = connParam['weight'].pop(0) if weightsList else connParam['weight']
                 delay = connParam['delay'].pop(0) if delaysList else connParam['delay']
-                for preCellGid, preCellTags in preCellsConv:  # for each presyn cell
-                    if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        if not 'number' in preCellTags: preCellTags['number'] = 1e12
-                        params = {'popLabel': preCellTags['popLabel'],
-                        'rate': preCellTags['rate'],
-                        'noise': preCellTags['noise'],
-                        'source': preCellTags['source'], 
-                        'number': preCellTags['number'],
-                        'sec': connParam['sec'], 
-                        'synReceptor': connParam['synReceptor'], 
-                        'weight': weight, 
-                        'delay': delay, 
-                        'threshold': connParam['threshold']}
-                        postCell.addStim(params)  # call cell method to add connections              
-                    elif preCellGid != postCellGid:
-                        # if not self-connection
-                        params = {'preGid': preCellGid, 
-                        'sec': connParam['sec'], 
-                        'synReceptor': connParam['synReceptor'], 
-                        'weight': weight,
-                        'delay': delay,
-                        'threshold': connParam['threshold']}
-                        postCell.addConn(params)  # call cell method to add connections
-       
+                if preCellTags['cellModel'] == 'NetStim':  # if NetStim
+                    if not 'number' in preCellTags: preCellTags['number'] = 1e12
+                    params = {'popLabel': preCellTags['popLabel'],
+                    'rate': preCellTags['rate'],
+                    'noise': preCellTags['noise'],
+                    'source': preCellTags['source'], 
+                    'number': preCellTags['number'],
+                    'sec': connParam['sec'], 
+                    'synReceptor': connParam['synReceptor'], 
+                    'weight': weight, 
+                    'delay': delay, 
+                    'threshold': connParam['threshold']}
+                    postCell.addStim(params)  # call cell method to add connections              
+                elif preCellGid != postCellGid:
+                    # if not self-connection
+                    params = {'preGid': preCellGid, 
+                    'sec': connParam['sec'], 
+                    'synReceptor': connParam['synReceptor'], 
+                    'weight': weight,
+                    'delay': delay,
+                    'threshold': connParam['threshold']}
+                    postCell.addConn(params)  # call cell method to add connections
+   
 
    #  ###############################################################################
    #  # Connect Cells

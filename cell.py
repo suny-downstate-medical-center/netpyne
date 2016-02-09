@@ -229,7 +229,6 @@ class Cell(object):
             return  # if self-connection return
 
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
-            print self.secs
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  

@@ -383,6 +383,10 @@ prob = 'uniform(1,5)'
 - use map(lambda, list)
 - calculate final list of weights,probs,delays and pass to specific conn func
 
+*** errors
+- arguments by reference using lambda func only works for 'delay' if 'convergence' func loops over preCellsTags and postCells
+  -- even though they have nothing to do with each other!! whats going on? python bug? Im missing something?!
+
 ** comparison to PyNN
 *** class AllToAllConnector(allow_self_connections=True, safe=True, callback=None)[source]
 =fullConn

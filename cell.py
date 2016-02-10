@@ -281,7 +281,7 @@ class Cell(object):
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.2f, delay=%.1f'%
+        if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
             (params['preGid'], self.gid, params['sec'], params['synReceptor'], f.net.params['scaleconnweight']*params['weight'], params['delay']))
 
 
@@ -534,6 +534,13 @@ class Pop(object):
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
+            for coord in ['x','y','z']:
+                if coord in cellTags:  # if absolute coord exists
+                    cellTags[coord+'norm'] = cellTags[coord]/f.net.params['size'+coord.upper()]  # calculate norm coord
+                elif coord+'norm' in cellTags:  # elif norm coord exists
+                    cellTags[coord] = cellTags[coord+'norm']*f.net.params['size'+coord.upper()]  # calculate norm coord
+                else:
+                    cellTags[coord+'norm'] = cellTags[coord] = 0
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, f.rank))

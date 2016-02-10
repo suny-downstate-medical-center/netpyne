@@ -49,20 +49,17 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'connFunc': 'randConn', # connection function
-    'weight': 0.001,        # weight of each connection
-    'delayMean': 13.0,      # mean of delays
-    'delayVar': 1.4,        # variance of delays 
-    'delayMin': 0.2,        # minimum delays
-    'threshold': 10,
-    'maxConns': 15})       # threshold
+    'weight': 0.001,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'connFunc': 'fullConn',
-    'weight': 0.008, 
-    'syn': 'NMDA',
-    'delay': 5})  
+    'connFunc': 'fullConn',             # all-to-all (can omit this param)
+    'weight': 0.008,                    # fixed weight of 0.08
+    'syn': 'NMDA',                      # target NMDA synapse
+    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
 ###############################################################################
@@ -77,7 +74,7 @@ simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 0  # show detailed messages 
+simConfig['verbose'] = 1  # show detailed messages 
 
 
 # Recording 

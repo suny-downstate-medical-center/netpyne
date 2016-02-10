@@ -567,13 +567,14 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - and or one of each population
 ** Conn matrix (paper)
 - by cells and populations
-** replace dict[key] with dict.get(key) (defaults None)
+** replace dict[key] with dict.get(key) (defaults None) (paper)
  
 ** Subcellular synaptic connectivity (paper?)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
 ** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
 - maybe iclamp for paper?
+
 
 ** Evol params batch
 ** Set positions in Neuron's 3D space

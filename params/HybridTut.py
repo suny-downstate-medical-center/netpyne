@@ -72,20 +72,18 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'connFunc': 'randConn', # connection function
-    'weight': 0.004,        # weight of each connection
-    'delayMean': 13.0,      # mean of delays
-    'delayVar': 1.4,        # variance of delays 
-    'delayMin': 0.2,        # minimum delays
-    'threshold': 10,
-    'maxConns': 20})       # threshold
+    'weight': 0.004,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,20)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 20
+
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 10, 
     'synReceptor': 'NMDA',
-    'delay': 5})  
+    'delay': 'uniform(1,5)'})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
@@ -94,7 +92,8 @@ netParams['connParams'].append(
     'synReceptor': 'NMDA',
     'sec': 'dend',
     'loc': 1.0,
-    'delay': 5})  
+    'delay': 'uniform(1,5)'})  
+
 
 
 ###############################################################################

@@ -25,6 +25,25 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
+
+# General network parameters
+netParams['scale'] = 1 # Scale factor for number of cells
+netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
+netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
+netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
+
+
+## General connectivity parameters
+netParams['scaleconnweight'] = 1 # Connection weight scale factor
+
+# Cell properties list
+netParams['cellParams'] = []
+
+# Population parameters
+netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
+netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
+
+
 # General network parameters
 netParams['scale'] = 1 # Size of simulation in thousands of cells
 netParams['modelsize'] = 1000*netParams['scale'] # Size of netParamswork in um (~= 1000 neurons/column where column = 500um width)

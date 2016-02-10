@@ -180,8 +180,8 @@ class Cell(object):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                if 'ynorm' in self.tags and 'corticalthick' in f.net.params:
-                    y = self.tags['ynorm'] * f.net.params['corticalthick']/1e3  # y as a func of ynorm and cortical thickness
+                if 'ynorm' in self.tags and 'sizeY' in f.net.params:
+                    y = self.tags['ynorm'] * f.net.params['sizeY']/1e3  # y as a func of ynorm and cortical thickness
                 else:
                     y = self.tags['y']
                 z = self.tags['z']
@@ -355,6 +355,7 @@ class Cell(object):
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
 
+
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
         for key, params in f.cfg['recdict'].iteritems():
@@ -457,7 +458,7 @@ class Pop(object):
         cells = []
         seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
-        for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
+        for i in xrange(int(f.rank), f.net.params['scale'] * self.tags['numCells'], f.nhosts):
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -469,7 +470,7 @@ class Pop(object):
             cellTags['z'] = f.net.params['sizeZ'] * randLocs[i,2] # set z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'], f.rank))
+            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, f.net.params['scale'] * self.tags['numCells']-1, gid, self.tags['popLabel'], f.rank))
         f.lastGid = f.lastGid + self.tags['numCells'] 
         return cells
 
@@ -478,8 +479,8 @@ class Pop(object):
     def createCellsDensity(self):
         cellModelClass = Cell
         cells = []
-        volume = f.net.params['scale'] * f.net.params['sparseness'] * (f.net.params['sizeY']/1e3)**2 \
-             * ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0]) * f.net.params['corticalthick']/1e3)  # calculate num of cells based on scale, density, sizeY and ynormRange
+        volume = f.net.params['scale'] * (f.net.params['sizeY']/1e3) * ((self.tags['ynormRange'][1]-self.tags['ynormRange'][0]) \
+            * f.net.params['sizeX']/1e3 * f.net.params['sizeZ']/1e3)  # calculate num of cells based on scale, density, sizeY and ynormRange
         
         if hasattr(self.tags['density'], '__call__'): # check if conn is ynorm-dep density func 
             ynormInterval = 0.001  # interval of ynorm values to evaluate in order to find the max cell density

@@ -358,6 +358,7 @@ number eg. 5
 -- total: 22 variables
 - create dictionary with each variable associated to its value/variable/function -- don't evaluate to save
 - enter as string, and convert to function
+- other variables allowed: any that are defined in f.net.params[var] -- arbitrary
 ** implementation
 - use **kwargs
 - string based - converted to function, extract variables

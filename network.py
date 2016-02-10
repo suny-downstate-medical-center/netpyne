@@ -10,6 +10,7 @@ Contributors: salvadordura@gmail.com
 from pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time
+from numbers import Number
 from neuron import h  # import NEURON
 import framework as f
 
@@ -70,9 +71,11 @@ class Network(object):
 
         for connParam in self.params['connParams']:  # for each conn rule or parameter set
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if section not specified, make None (will be assigned to first synapse in cell)  
-            if 'threshold' not in connParam: connParam['threshold'] = None  # if section not specified, make None (will be assigned to first synapse in cell)    
-            
+            if 'synReceptor' not in connParam: connParam['synReceptor'] = None  # if synapse not specified, make None (will be assigned to first synapse in cell)  
+            if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)
+            if 'weight' not in connParam: connParam['weight'] = f.net.params['defaultWeight'] # if no weight, set default
+            if 'delay' not in connParam: connParam['delay'] = f.net.params['defaultDelay'] # if no delay, set default
+
             preCellsTags = allCellTags  # initialize with all presyn cells 
             prePops = allPopTags  # initialize with all presyn pops
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
@@ -113,12 +116,6 @@ class Network(object):
         # list of params that have a function passed in as a string
         paramsStrFunc = [param for param in ['weight', 'delay', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
         
-        # list of spatial variables allowed in function -- needs to be ordered with longest 1st since strings overlap
-        allFuncVars = ['pre_xnorm', 'pre_ynorm', 'pre_znorm', 'pre_x', 'pre_y', 'pre_z',
-                    'post_xnorm', 'post_ynorm', 'post_znorm', 'post_x', 'post_y', 'post_z', 
-                    'dist_xznorm', 'post_xyznorm', 'dist_xz', 'dist_xyz',
-                    'dist_xnorm', 'dist_ynorm', 'dist_znorm', 'dist_x', 'dist_y', 'dist_z']  
-
         # dict to store correspondence between string and actual variable
         dictVars = {}  
         dictVars['pre_x']       = lambda preTags,postCell: preTags['x'] 
@@ -136,24 +133,28 @@ class Network(object):
         dictVars['dist_x']      = lambda preTags,postCell: abs(preTags['x'] - postCell.tags['x'])
         dictVars['dist_y']      = lambda preTags,postCell: abs(preTags['y'] - postCell.tags['y']) 
         dictVars['dist_z']      = lambda preTags,postCell: abs(preTags['z'] - postCell.tags['z'])
-        dictVars['dist_xyz']    = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
+        dictVars['dist_3D']    = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
                                 (preTags['y'] - postCell.tags['y'])**2 + 
                                 (preTags['z'] - postCell.tags['z'])**2)
-        dictVars['dist_xz']     = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
+        dictVars['dist_2D']     = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
                                 (preTags['z'] - postCell.tags['z'])**2)
         dictVars['dist_xnorm']  = lambda preTags,postCell: abs(preTags['xnorm'] - postCell.tags['xnorm'])
         dictVars['dist_ynorm']  = lambda preTags,postCell: abs(preTags['ynorm'] - postCell.tags['ynorm']) 
         dictVars['dist_znorm']  = lambda preTags,postCell: abs(preTags['znorm'] - postCell.tags['znorm'])
-        dictVars['dist_xyznorm'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
+        dictVars['dist_norm3D'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
                                 sqrt(preTags['y'] - postCell.tags['y']) + 
                                 sqrt(preTags['z'] - postCell.tags['z']))
-        dictVars['dist_xznorm'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
+        dictVars['dist_norm2D'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
                                 sqrt(preTags['z'] - postCell.tags['z']))
+        # add netParams variables
+        for k,v in f.net.params.iteritems():
+            if isinstance(v, Number):
+                dictVars[k] = lambda preTags,postCell: v
 
         # for each parameter containing a function
         for paramStrFunc in paramsStrFunc:
             strFunc = connParam[paramStrFunc]  # string containing function
-            strVars = [var for var in allFuncVars if var in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
+            strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
        
@@ -180,12 +181,14 @@ class Network(object):
                 connParam[paramStrFunc] = lambdaFunc
                 connParam[paramStrFunc+'Vars'] = {strVar: dictVars[strVar] for strVar in strVars} 
 
+
     ###############################################################################
     ### Full connectivity
     ###############################################################################
     def fullConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells '''
         if f.cfg['verbose']: print 'Generating set of all-to-all connections...'
+        
         # list of params that can have a lambda function
         paramsStrFunc = [param for param in ['weight', 'delay'] if param in connParam and hasattr(connParam[param], '__call__')] 
         for paramStrFunc in paramsStrFunc:
@@ -193,6 +196,7 @@ class Network(object):
             seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
             connParam[paramStrFunc] = [connParam[paramStrFunc](**{k:v(preCellTags,postCell) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preCellTags in preCellsTags.values() for postCell in postCells.values()]
+        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
@@ -226,11 +230,13 @@ class Network(object):
     def probConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of probabilistic connections...'
+        
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         allRands = [random() for i in range(len(preCellsTags)*len(postCells))]  # Create an array of random numbers for checking each connection
         probsList = True if isinstance(connParam['probability'], list) else False  # check if list
         weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
         delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
+        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 probability = connParam['probability'].pop(0) if probsList else connParam['probability']
@@ -269,10 +275,12 @@ class Network(object):
     def convConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of convergent connections...'
+        
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         convsList = True if isinstance(connParam['convergence'], list) else False
         weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
         delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
+        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             convergence = connParam['convergence'].pop(0) if convsList else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
@@ -311,10 +319,12 @@ class Network(object):
     def divConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of divergent connections...'
+        
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         divsList = True if isinstance(connParam['divergence'], list) else False
         weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
         delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
+        
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergence'].pop(0) if divsList else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCells)), 0)

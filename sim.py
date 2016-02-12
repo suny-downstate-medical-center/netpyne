@@ -123,6 +123,7 @@ def replaceFuncObj(obj):
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
             if hasattr(val,'func_name'):
+                print obj,key,val
                 line = inspect.getsource(val)
                 startInd = line.find('lambda')
                 endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
@@ -296,7 +297,7 @@ def gatherData():
     ## Print statistics
     if f.rank == 0:
         gathertime = time()-gatherstart # See how long it took
-        print('  Done; gather time = %0.1f f.' % gathertime)
+        print('  Done; gather time = %0.1f s.' % gathertime)
 
         print('\nAnalyzing...')
         f.totalSpikes = len(f.allSimData['spkt'])   

@@ -365,7 +365,7 @@ number eg. 5
 - arguments weight and delay valid for all conn types; and can be functional
 
 Options to implement func:
-*** lambda with kwargs
+*** lambda with kwargs - NO
 prob = lambda(**d): d['pre_ynorm']*0.5
 *** lambda with args - NO!
 prob = lambda(*d): d[3]*0.5
@@ -376,7 +376,11 @@ prob = 'uniform()'
 prob = 'gauss(10,5)'
 prob = 'uniform(1,5)'
 - functions allow all of python random functions 
-
+- internal implementation:
+-- identifiy variables (pre, post or dist x,y,z,2d or 3d; plus any arbitrary defined in netParams)
+-- define dict mapping variable name to lambda function returning actual variable using preCell and postCell as args
+-- convert string to lambda function with variables as arguments
+-- call lambda function with args as dict with each entry mapped to lambda func that returns the variable
 *** efficiency
 - calculate all delay, prob, weight funcs together at the beginning
 - calcualte weights+delays for all possible conns despite some will not be used?
@@ -550,15 +554,21 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - add to doc
 
 ** setup.py pip install (paper)
-** Conv and div conn (paper)
-** Add x,y positions as 'xrange' and 'yrange' (paper)
-- maybe xfracRange, yfracRange
-- replace yfrac with zfrac!
+** DONE Conv and div conn (paper)
+- made conn very flexible by allowing function for: prob, conv, div, weight and delay
+- funcs can include spatial/distance variables; and others defined in netParams
+- can implement a large range of functionalities with very generic implementation
+** DONE Add x,z,xnorm,znorm positions (paper)
+** Allow to define xrange and zrange of pops
+- also xfracrange and zfracrange
+- for fixed cell density, easy, just don't calcualte rand
+- for functional density more complex
+- make generic so no distinction between coordinates
+
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
-** simple LFP (paper) 
-- simple voltage sum 
+
 ** import/export NeuroML (paper)
 - padraig (see notes above)
 ** Functions to load simConfig, netParams, net, simData (paper)
@@ -566,10 +576,11 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Add support for SectionLists (paper)
 ** Record cell from specific population (paper)
 - and or one of each population
-** Conn matrix (paper)
+** simple LFP (paper) 
+- simple voltage sum 
+** Plot conn matrix (paper)
 - by cells and populations
-** replace dict[key] with dict.get(key) (defaults None) (paper)
- 
+
 ** Subcellular synaptic connectivity (paper?)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections

@@ -60,17 +60,17 @@ def plotRaster():
     gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in f.net.allCells}  # dict with color for each gid
     spkids = f.allSimData['spkid']
     ylabelText = 'Cell id'
+    spkidColors = [gidColors[spkid] for spkid in spkids]
     try:
         if f.cfg['orderRasterYnorm']:
             gids = [cell['gid'] for cell in f.net.allCells]
             ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
             sortInds = sorted(range(len(ynorms)), key=lambda k:ynorms[k])
             posdic = {gid: pos for gid,pos in zip(gids,sortInds)}
-            spkids = [posdic[gid] for gid in spkids]
+            spkids = [posdic[gid] for gid in spkids]  # spkids now contain indices ordered according to ynorm
             ylabelText = 'Cell id (arranged by NCD)'
     except:
-        pass
-    spkidColors = [gidColors[spkid] for spkid in spkids]
+        pass     
     figure() # Open a new figure
     fontsiz = 12
     scatter(f.allSimData['spkt'], spkids, 10, linewidths=1.5, marker='|', color = spkidColors) # Create raster  

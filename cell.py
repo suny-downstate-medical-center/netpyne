@@ -483,7 +483,7 @@ class Pop(object):
             * f.net.params['sizeX']/1e3 * f.net.params['sizeZ']/1e3)  # calculate num of cells based on scale, density, sizeY and ynormRange
         
         if hasattr(self.tags['density'], '__call__'): # check if conn is ynorm-dep density func 
-            ynormInterval = 0.001  # interval of ynorm values to evaluate in order to find the max cell density
+            ynormInterval = 0.001  # interval of ynorm values to evaluate func in order to find the max cell density
             maxDensity = max(map(self.tags['density'], (arange(self.tags['ynormRange'][0],self.tags['ynormRange'][1], ynormInterval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             

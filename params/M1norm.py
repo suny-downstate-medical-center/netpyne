@@ -32,7 +32,6 @@ netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
 netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
 netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
-
 ## General connectivity parameters
 netParams['scaleconnweight'] = 1 # Connection weight scale factor
 
@@ -45,20 +44,17 @@ netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
 
 
 # General network parameters
-netParams['scale'] = 1 # Size of simulation in thousands of cells
-netParams['modelsize'] = 1000*netParams['scale'] # Size of netParamswork in um (~= 1000 neurons/column where column = 500um width)
-netParams['sparseness'] = 0.1 # fraction of cells represented (num neurons = density * modelsize * sparseness)
-netParams['cortthaldist'] = 1500 # Distance from relay nucleus to cortex -- ~1 cm = 10,000 um (check)
-netParams['corticalthick'] = 1740 # cortical thickness/depth
+netParams['scale'] = 1 # Scale factor for number of cells
+netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
+netParams['sizeY'] = 1500 # y-dimension (vertical height or cortical depth) size in um
+netParams['sizeZ'] = 1000 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
-netParams['mindelay'] = 2 # Minimum connection delay, in ms
-netParams['velocity'] = 100 # Conduction velocity in um/ms (e 100 um = 0.1 m/s)
 netParams['scaleconnweight'] = 0.025 # Connection weight scale factor
-netParams['receptorweight'] = 1 # [1, 1, 1, 1, 1] # Scale factors for each receptor
-netParams['scaleconnprob'] = 1 # 1/netParams['scale']*array([[1, 1], [1, 1]]) # scale*1* Connection probabilities for EE, EI, IE, II synapses, respectively -- scale for scale since size fixed
-netParams['connfalloff'] = 200 # 100*array([2, 3]) # 2 in um for E and I synapses, respectively
-netParams['toroidal'] = False # Whether or not to have toroidal topology
+netParams['defaultDelay'] = 2.0 # default conn delay (ms)
+netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+netParams['connfalloff'] = 200 # connection fall off constant (um)
+
 
 # Izhi cell params (used in cell properties)
 izhiParams = {}
@@ -178,44 +174,44 @@ netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'}, # IT->IT rule
     'probability': '0.1*pre_y+0.01/post_y',
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5,
     'synReceptor': 'AMPA',
     'annot': 'ITtoITconn'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'}, # IT->PT rule    
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'}, # IT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PV'}, # IT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'SOM'}, # IT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'}, # PT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'}, # PT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
@@ -227,103 +223,103 @@ netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cel
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PV'}, # PT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'SOM'}, # PT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'}, # CT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'}, # CT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'}, # CT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PV'}, # CT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'SOM'}, # CT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'IT'}, # PV->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PT'}, # PV->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'CT'}, # PV->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PV'}, # PV->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'SOM'}, # PV->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'IT'}, # SOM->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PT'}, # SOM->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})               
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'CT'}, # SOM->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PV'}, # SOM->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'SOM'}, # SOM->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y',
-    'weight': '1*exp(-dist_xz/10)', 
+    'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
     'synReceptor': 'GABAA'})  
 

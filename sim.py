@@ -123,12 +123,11 @@ def replaceFuncObj(obj):
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
             if hasattr(val,'func_name'):
-                print obj,key,val
-                line = inspect.getsource(val)
-                startInd = line.find('lambda')
-                endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
-                funcSource = line[startInd:startInd+endInd]
-                obj[key] = funcSource
+                #line = inspect.getsource(val)
+                #startInd = line.find('lambda')
+                #endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
+                #funcSource = line[startInd:startInd+endInd]
+                obj[key] = 'func' # funcSource
     return obj
 
 

@@ -559,23 +559,22 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - funcs can include spatial/distance variables; and others defined in netParams
 - can implement a large range of functionalities with very generic implementation
 ** DONE Add x,z,xnorm,znorm positions (paper)
+** DONE Plot cell from specific population (paper)
+- and or one of each population
+
 ** Allow to define xrange and zrange of pops
 - also xfracrange and zfracrange
 - for fixed cell density, easy, just don't calcualte rand
 - for functional density more complex
 - make generic so no distinction between coordinates
-
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
-
 
 ** import/export NeuroML (paper)
 - padraig (see notes above)
 ** Functions to load simConfig, netParams, net, simData (paper)
 ** timing (paper)
 ** Add support for SectionLists (paper)
-** Record cell from specific population (paper)
-- and or one of each population
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)

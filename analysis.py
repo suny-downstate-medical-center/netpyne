@@ -33,7 +33,7 @@ def plotData():
             else: 
                 print('Plotting raster...')
                 f.analysis.plotRaster() 
-        if f.cfg['plotTracesGids']:
+        if f.cfg['plotTracesGids'] or f.cfg['plotTracesPops']:
             print('Plotting recorded traces ...')
             f.analysis.plotTraces() 
         if f.cfg['plotConn']:
@@ -89,6 +89,7 @@ def plotTraces():
     tracesList = f.cfg['recdict'].keys()
     tracesList.sort()
     gidList = f.cfg['plotTracesGids']
+    popList = f.cfg['plotTracesPops']
     duration = f.cfg['duration']
     recordStep = f.cfg['recordStep']
 
@@ -108,6 +109,27 @@ def plotTraces():
                 pass
         subplot(len(tracesList),1,1)
         title('Cell %d'%(int(gid)))
+
+    for popLabel in popList:
+        fontsiz = 12
+        for pop in f.net.pops:
+            if pop.tags['popLabel'] == popLabel and pop.cellGids:
+                figure() # Open a new figure
+                gid = pop.cellGids[0] 
+                for itrace, trace in enumerate(tracesList):
+                    try:
+                        data = f.allSimData[trace]['cell_'+str(gid)]
+                        t = arange(0, duration+recordStep, recordStep)
+                        subplot(len(tracesList),1,itrace+1)
+                        plot(t, data, linewidth=1.5)
+                        xlabel('Time (ms)', fontsize=fontsiz)
+                        ylabel(trace, fontsize=fontsiz)
+                        xlim(0,f.cfg['duration'])
+                    except:
+                        pass
+        subplot(len(tracesList),1,1)
+        title('Pop %s, Cell %d'%(popLabel, int(gid)))
+
     savefig('traces.png')
 
 

@@ -82,14 +82,14 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 10, 
-    'synReceptor': 'NMDA',
+    'syn': 'NMDA',
     'delay': 'uniform(1,5)'})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 20, 
-    'synReceptor': 'NMDA',
+    'syn': 'NMDA',
     'sec': 'dend',
     'loc': 1.0,
     'delay': 'uniform(1,5)'})  

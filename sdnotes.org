@@ -495,7 +495,7 @@ e.g. reciprocal synapses.
 - Read python names in importCell
 -- use dir; check if section; compare with secList
 
-- 'synReceptor' check for syn type not name
+- 'syn' check for syn type not name
 
 ** DONE Associate_gid from axon
 - section['spikeGenLoc'] = 0.5
@@ -567,15 +567,13 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - for fixed cell density, easy, just don't calcualte rand
 - for functional density more complex
 - make generic so no distinction between coordinates
-** Fix NetStim connectivity
-** fix so lambda funcs saved as string
+** DONE Fix NetStim connectivity
+- no convergent or divergent; only full and prob
+** DONE fix so lambda funcs saved as string
+** Add support for SectionLists (paper)
+
 ** import/export NeuroML (paper)
 - padraig (see notes above)
-** Functions to load simConfig, netParams, net, simData (paper)
-** timing (paper)
-** Add support for SectionLists (paper)
-** importCell can modify h variables (eg. celsius) (paper)
-- maybe just note in documentation that shouldnt modify h.vars - undesired effects
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)
@@ -583,6 +581,11 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Subcellular synaptic connectivity (paper)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
+** Functions to load simConfig, netParams, net, simData (paper)
+** timing (paper)
+** importCell can modify h variables (eg. celsius) (paper)
+- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
 
 ** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
 - maybe iclamp for paper?

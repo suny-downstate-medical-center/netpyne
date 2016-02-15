@@ -169,159 +169,159 @@ netParams['connParams'] = []
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['IT', 'PT', 'CT', 'PV', 'SOM']}, # background -> All
     'connFunc': 'fullConn',
     'weight': 10, 
-    'synReceptor': 'NMDA',
+    'syn': 'NMDA',
     'delay': 5})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'}, # IT->IT rule
     'probability': '0.1*pre_y+0.01/post_y',
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5,
-    'synReceptor': 'AMPA',
+    'syn': 'AMPA',
     'annot': 'ITtoITconn'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'}, # IT->PT rule    
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'}, # IT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PV'}, # IT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'SOM'}, # IT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'}, # PT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'}, # PT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'CT'}, # PT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '(lambda prex,posty: 1)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PV'}, # PT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'SOM'}, # PT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'}, # CT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'}, # CT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'}, # CT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PV'}, # CT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'SOM'}, # CT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'IT'}, # PV->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PT'}, # PV->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'CT'}, # PV->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PV'}, # PV->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'AMPA'})  
+    'syn': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'SOM'}, # PV->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'IT'}, # SOM->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PT'}, # SOM->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})               
+    'syn': 'GABAA'})               
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'CT'}, # SOM->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PV'}, # SOM->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'SOM'}, # SOM->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y',
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'synReceptor': 'GABAA'})  
+    'syn': 'GABAA'})  
 
 
 

@@ -262,7 +262,7 @@ def importConnFromExcel(fileName, sheetName):
 					line = line + "'" + cond2[0].replace(' ','') + "': " + cond2[1].replace(' ','')   # generate line
 				line = line + "}" # end of postTags			
 				line = line + ",\n'connFunc': '" + func + "'"  # write connFunc
-				line = line + ",\n'synReceptor': '" + syn + "'"  # write synReceptor
+				line = line + ",\n'syn': '" + syn + "'"  # write synReceptor
 				line = line + ",\n'probability': " + str(prob)  # write prob
 				line = line + ",\n'weight': " + str(weight)  # write prob
 				line = line + "})"  # add closing brackets

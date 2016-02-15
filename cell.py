@@ -209,7 +209,7 @@ class Cell(object):
             nc = None
             if 'pointps' in sec:  # if no syns, check if point processes with '_vref' (artificial cell)
                 for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:
+                    if '_vref' in pointpParams:
                         nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['_vref']), None, sec=sec['hSection'])
                         break
             if not nc:  # if still haven't created netcon  
@@ -248,7 +248,7 @@ class Cell(object):
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if '_synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['_synList']: 
@@ -277,12 +277,12 @@ class Cell(object):
         else:
             netcon = f.pc.gid_connect(params['preGid'], sec['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local synapse
         
-        netcon.weight[weightIndex] = f.net.params['scaleconnweight']*params['weight']  # set Netcon weight
+        netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synReceptor'], f.net.params['scaleconnweight']*params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['synReceptor'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
 
 
     def addStim (self, params):
@@ -306,7 +306,7 @@ class Cell(object):
         pointp = None
         if 'pointps' in sec:  # check if point processes (artificial cell)
             for pointpName, pointpParams in sec['pointps'].iteritems():
-                  if self.tags['cellModel'] == pointpParams['_type'] and '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if '_synList' in pointpParams:
                         if params['synReceptor'] in pointpParams['_synList']: 
@@ -488,7 +488,7 @@ class Pop(object):
         ''' Create population cells based on density'''
         cellModelClass = Cell
         cells = []
-        volume = f.net.params['scale'] * f.net.params['sizeY']/1e3 * f.net.params['sizeX']/1e3 * f.net.params['sizeZ']/1e3  # calculate full volume
+        volume =  f.net.params['sizeY']/1e3 * f.net.params['sizeX']/1e3 * f.net.params['sizeZ']/1e3  # calculate full volume
         for coord in ['x', 'y', 'z']:
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
                 self.tags[coord+'normRange'] = [point / f.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
@@ -568,8 +568,8 @@ class Pop(object):
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in xrange(int(f.rank), len(self.tags['cellsList']), f.nhosts):
-            if 'cellModel' in self.tags['cellsList'][i]:
-                cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+            #if 'cellModel' in self.tags['cellsList'][i]:
+            #    cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = f.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific

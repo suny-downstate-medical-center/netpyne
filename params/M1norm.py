@@ -33,7 +33,7 @@ netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size
 netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
-netParams['scaleconnweight'] = 1 # Connection weight scale factor
+netParams['scaleConnWeight'] = 1 # Connection weight scale factor
 
 # Cell properties list
 netParams['cellParams'] = []
@@ -50,7 +50,7 @@ netParams['sizeY'] = 1500 # y-dimension (vertical height or cortical depth) size
 netParams['sizeZ'] = 1000 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
-netParams['scaleconnweight'] = 0.025 # Connection weight scale factor
+netParams['scaleConnWeight'] = 0.025 # Connection weight scale factor
 netParams['defaultDelay'] = 2.0 # default conn delay (ms)
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
 netParams['connfalloff'] = 200 # connection fall off constant (um)
@@ -135,19 +135,19 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 ## create list of populations, where each item contains a dict with the pop params
 netParams['popParams'] = []  
      
-netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.1, 0.26], 'density': lambda y:2e3*y}) #  L2/3 IT
-netParams['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.26, 0.31], 'density': lambda y:2e3*y}) #  L4 IT
-netParams['popParams'].append({'popLabel': 'IT_L5A', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.31, 0.52], 'density': lambda y:2e3*y}) #  L5A IT
-netParams['popParams'].append({'popLabel': 'IT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B IT
-netParams['popParams'].append({'popLabel': 'PT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'PT',  'projTarget': '', 'ynormRange': [0.52, 0.77], 'density': lambda y:2e3*y}) #  L5B PT
-netParams['popParams'].append({'popLabel': 'IT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 IT
-netParams['popParams'].append({'popLabel': 'CT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'CT',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': lambda y:1e3}) #  L6 CT
-netParams['popParams'].append({'popLabel': 'PV_L23', 'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.1, 0.31], 'density': lambda y:1e3}) #  L2/3 PV (FS)
-netParams['popParams'].append({'popLabel': 'SOM_L23','cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.1, 0.31], 'density': lambda y:2e3*y}) #  L2/3 SOM (LTS)
-netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 PV (FS)
-netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': lambda y:0.5e3}) #  L5 SOM (LTS)
-netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 PV (FS)
-netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': lambda y:0.5e3}) #  L6 SOM (LTS)
+netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.1, 0.26], 'density': '2e3*ynorm'}) #  L2/3 IT
+netParams['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.26, 0.31], 'density': '2e3*ynorm'}) #  L4 IT
+netParams['popParams'].append({'popLabel': 'IT_L5A', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.31, 0.52], 'density': '2e3*ynorm'}) #  L5A IT
+netParams['popParams'].append({'popLabel': 'IT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.52, 0.77], 'density': '1e3*ynorm'}) #  L5B IT
+netParams['popParams'].append({'popLabel': 'PT_L5B', 'cellModel': 'Izhi2007b', 'cellType': 'PT',  'projTarget': '', 'ynormRange': [0.52, 0.77], 'density': '1e3*ynorm'}) #  L5B PT
+netParams['popParams'].append({'popLabel': 'IT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': '1e3*ynorm'}) #  L6 IT
+netParams['popParams'].append({'popLabel': 'CT_L6',  'cellModel': 'Izhi2007b', 'cellType': 'CT',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': '1e3*ynorm'}) #  L6 CT
+netParams['popParams'].append({'popLabel': 'PV_L23', 'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.1, 0.31], 'density': '1e3*ynorm'}) #  L2/3 PV (FS)
+netParams['popParams'].append({'popLabel': 'SOM_L23','cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.1, 0.31], 'density': '1e3*ynorm'}) #  L2/3 SOM (LTS)
+netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': 500}) #  L5 PV (FS)
+netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': 500}) #  L5 SOM (LTS)
+netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 500}) #  L6 PV (FS)
+netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 500}) #  L6 SOM (LTS)
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 cellsList = [] 

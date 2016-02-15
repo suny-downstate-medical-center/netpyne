@@ -30,7 +30,7 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 
 ## General connectivity parameters
-netParams['scaleconnweight'] = 1 # Connection weight scale factor
+netParams['scaleConnWeight'] = 1 # Connection weight scale factor
 netParams['defaultWeight'] = 1  # default connection weight
 netParams['defaultDelay'] = 1  # default connection delay (ms)
 netParams['propVelocity'] = 500.0 # propagation velocity (um/ms)

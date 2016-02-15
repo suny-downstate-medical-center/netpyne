@@ -234,10 +234,6 @@ class Network(object):
         
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         allRands = [random() for i in range(len(preCellsTags)*len(postCells))]  # Create an array of random numbers for checking each connection
-        #probsList = True if isinstance(connParam['probability'], list) else False  # check if list
-        #weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
-        #delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
-        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 probability = connParam['probabilityFunc'].pop(0) if 'probabilityFunc' in connParam else connParam['probability']
@@ -280,10 +276,6 @@ class Network(object):
         if f.cfg['verbose']: print 'Generating set of convergent connections...'
         
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
-        #convsList = True if isinstance(connParam['convergence'], list) else False
-        #weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
-        #delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
-        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             convergence = connParam['convergenceFunc'].pop(0) if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
@@ -326,10 +318,6 @@ class Network(object):
         if f.cfg['verbose']: print 'Generating set of divergent connections...'
         
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
-        #divsList = True if isinstance(connParam['divergence'], list) else False
-        #weightFunc = True if hasattr(connParam['weight'], '__call__') else False  # check if func
-        #delayFunc = True if hasattr(connParam['delay'], '__call__') else False  # check if func 
-        
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'].pop(0) if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCells)), 0)

@@ -251,19 +251,19 @@ class Cell(object):
                 if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['synReceptor'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['synReceptor'])  # udpate weight index based pointp synList
+                        if params['syn'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
 
 
         if not pointp: # not a point process
             if 'syns' in sec: # section has synapses
-                if params['synReceptor']: # desired synapse specified in conn params
-                    if params['synReceptor'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
+                if params['syn']: # desired synapse specified in conn params
+                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
                         synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['synReceptor'] in syn])  # check if contained in any of the synapse names
-                        params['synReceptor'] = sec['syns'].keys()[synIndex[-1]]
+                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
+                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
                 else:  # if no synapse specified            
-                    params['synReceptor'] = sec['syns'].keys()[0]  # use first synapse available in section
+                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
             else: # if still no synapse  
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
@@ -275,14 +275,14 @@ class Cell(object):
         if pointp:
             netcon = f.pc.gid_connect(params['preGid'], sec['pointps'][pointp]['hPointp']) # create Netcon between global gid and local point neuron
         else:
-            netcon = f.pc.gid_connect(params['preGid'], sec['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local synapse
+            netcon = f.pc.gid_connect(params['preGid'], sec['syns'][params['syn']]['hSyn']) # create Netcon between global gid and local synapse
         
         netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synReceptor'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['syn'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
 
 
     def addStim (self, params):
@@ -309,19 +309,19 @@ class Cell(object):
                   if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['synReceptor'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['synReceptor'])  # udpate weight index based pointp synList
+                        if params['syn'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
 
 
         if not pointp: # not a point process
             if 'syns' in sec: # section has synapses
-                if params['synReceptor']: # desired synapse specified in conn params
-                    if params['synReceptor'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
+                if params['syn']: # desired synapse specified in conn params
+                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
                         synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['synReceptor'] in syn])  # check if contained in any of the synapse names
-                        params['synReceptor'] = sec['syns'].keys()[synIndex[-1]]
+                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
+                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
                 else:  # if no synapse specified            
-                    params['synReceptor'] = sec['syns'].keys()[0]  # use first synapse available in section
+                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
             else: # if still no synapse  
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
@@ -347,13 +347,13 @@ class Cell(object):
         if pointp:
             netcon = h.NetCon(netstim, sec['pointps'][pointp]['hPointp'])  # create Netcon between global gid and local point neuron
         else:
-            netcon = h.NetCon(netstim, sec['syns'][params['synReceptor']]['hSyn']) # create Netcon between global gid and local synapse
+            netcon = h.NetCon(netstim, sec['syns'][params['syn']]['hSyn']) # create Netcon between global gid and local synapse
         netcon.weight[weightIndex] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
-            (params['popLabel'], self.gid, params['sec'], params['synReceptor'], params['weight'], params['delay']))
+            (params['popLabel'], self.gid, params['sec'], params['syn'], params['weight'], params['delay']))
 
 
     def recordTraces (self):

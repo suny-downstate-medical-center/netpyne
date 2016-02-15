@@ -183,7 +183,7 @@ class Network(object):
             else:
                 # store lambda function and func vars in connParam (for weight and delay, since only calcualted for certain conns)
                 connParam[paramStrFunc+'Func'] = lambdaFunc
-                connParam[paramStrFunc+'Vars'] = {strVar: dictVars[strVar] for strVar in strVars} 
+                connParam[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
                 
 
     ###############################################################################
@@ -212,7 +212,7 @@ class Network(object):
                     'sec': connParam['sec'], 
                     'synReceptor': connParam['synReceptor'], 
                     'weight': connParam['weightFunc'].pop(0) if 'weightFunc' in connParam else connParam['weight'],
-                    'delay': connParam['delay'].pop(0) if 'delayFunc' in connParam else connParam['delay'],
+                    'delay': connParam['delayFunc'].pop(0) if 'delayFunc' in connParam else connParam['delay'],
                     'threshold': connParam['threshold']}
                     postCell.addStim(params)  # call cell method to add connections              
                 elif preCellGid != postCellGid:
@@ -220,8 +220,8 @@ class Network(object):
                     params = {'preGid': preCellGid, 
                     'sec': connParam['sec'], 
                     'synReceptor': connParam['synReceptor'], 
-                    'weight': connParam['weight'].pop(0) if 'weightFunc' in connParam else connParam['weight'],
-                    'delay': connParam['delay'].pop(0) if 'delayFunc' in connParam else connParam['delay'],
+                    'weight': connParam['weightFunc'].pop(0) if 'weightFunc' in connParam else connParam['weight'],
+                    'delay': connParam['delayFunc'].pop(0) if 'delayFunc' in connParam else connParam['delay'],
                     'threshold': connParam['threshold']}
                     postCell.addConn(params)  # call cell method to add connections
 
@@ -240,9 +240,9 @@ class Network(object):
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 probability = connParam['probabilityFunc'].pop(0) if 'probabilityFunc' in connParam else connParam['probability']
                 if 'weightFunc' in connParam: 
-                    weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightVars'].iteritems()}  # call lambda functions to get weight func args
+                    weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                 if 'delayFunc' in connParam: 
-                    delayVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['delayVars'].iteritems()}  # call lambda functions to get delay func args
+                    delayVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                 if probability >= allRands.pop():
                     seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
@@ -284,9 +284,9 @@ class Network(object):
             preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
             for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
                 if 'weightFunc' in connParam:
-                    weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightVars'].iteritems()}  # call lambda functions to get weight func args
+                    weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                 if 'delayFunc' in connParam: 
-                    delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCell) for k,v in connParam['delayVars'].iteritems()}  # call lambda functions to get delay func args
+                    delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                 seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                     params = {'popLabel': preCellTags['popLabel'],
@@ -325,9 +325,9 @@ class Network(object):
             postCellsDiv = {k:v for k,v in postCells.iteritems() if k in postCellsSample}  # dict of selected postsyn cells tags
             for postCellGid, postCell in postCellsDiv.iteritems():  # for each postsyn cell
                 if 'weightFunc' in connParam:
-                    weightVars = {k: v(preCellTags, postCell) for k,v in connParam['weightVars'].iteritems()}  # call lambda functions to get weight func args
+                    weightVars = {k: v(preCellTags, postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                 if 'delayFunc' in connParam: 
-                    delayVars = {k: v(preCellTags, postCell) for k,v in connParam['delayVars'].iteritems()}  # call lambda functions to get delay func args
+                    delayVars = {k: v(preCellTags, postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                 seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                     params = {'popLabel': preCellTags['popLabel'],

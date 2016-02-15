@@ -513,8 +513,6 @@ class Pop(object):
             interval = 0.001  # interval of location values to evaluate func in order to find the max cell density
             maxDensity = max(map(densityFunc, (arange(minRange, maxRange, interval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
-
-            print maxDensity, maxCells
             
             seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
             locsAll = minRange + ((maxRange-minRange)) * rand(int(maxCells), 1)  # random location values 
@@ -540,7 +538,6 @@ class Pop(object):
             if funcLocs and coordFunc == coord+'norm':  # if locations for this coordinate calcualated using density function
                 randLocs[:,icoord] = funcLocs
 
-        print funcLocs
         if f.cfg['verbose'] and not funcLocs: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
 

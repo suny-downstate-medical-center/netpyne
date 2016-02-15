@@ -89,6 +89,9 @@ class Network(object):
 
             if not preCellsTags: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
+                    for prePop in prePops.values():
+                        if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
+                        if not 'source' in prePop: prePop['source'] = 'random'  # add default source
                     preCellsTags = prePops
             
             postCells = {cell.gid:cell for cell in self.cells}
@@ -201,7 +204,6 @@ class Network(object):
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    if not 'number' in preCellTags: preCellTags['number'] = 1e12
                     params = {'popLabel': preCellTags['popLabel'],
                     'rate': preCellTags['rate'],
                     'noise': preCellTags['noise'],
@@ -244,7 +246,6 @@ class Network(object):
                 if probability >= allRands.pop():
                     seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        if not 'number' in preCellTags: preCellTags['number'] = 1e12
                         params = {'popLabel': preCellTags['popLabel'],
                                 'rate': preCellTags['rate'],
                                 'noise': preCellTags['noise'],
@@ -288,7 +289,6 @@ class Network(object):
                     delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCell) for k,v in connParam['delayVars'].iteritems()}  # call lambda functions to get delay func args
                 seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    if not 'number' in preCellTags: preCellTags['number'] = 1e12  
                     params = {'popLabel': preCellTags['popLabel'],
                             'rate': preCellTags['rate'],
                             'noise': preCellTags['noise'],
@@ -330,7 +330,6 @@ class Network(object):
                     delayVars = {k: v(preCellTags, postCell) for k,v in connParam['delayVars'].iteritems()}  # call lambda functions to get delay func args
                 seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    if not 'number' in preCellTags: preCellTags['number'] = 1e12  
                     params = {'popLabel': preCellTags['popLabel'],
                             'rate': preCellTags['rate'],
                             'noise': preCellTags['noise'],

@@ -567,7 +567,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - for fixed cell density, easy, just don't calcualte rand
 - for functional density more complex
 - make generic so no distinction between coordinates
-
+** Fix NetStim connectivity
 ** fix so lambda funcs saved as string
 ** import/export NeuroML (paper)
 - padraig (see notes above)

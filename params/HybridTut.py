@@ -113,7 +113,7 @@ simConfig['verbose'] = 1  # show detailed messages
 
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recdict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
+simConfig['recordDict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 

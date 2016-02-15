@@ -209,7 +209,7 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if f.cfg['recordTraces']:
-        for key in f.cfg['recdict'].keys(): f.simData[key] = {}
+        for key in f.cfg['recordDict'].keys(): f.simData[key] = {}
         for cell in f.net.cells: 
             cell.recordTraces()
 
@@ -267,7 +267,7 @@ def gatherData():
         data[0][k] = v 
     gather = f.pc.py_alltoall(data)
     f.pc.barrier()
-    simDataVecs = ['spkt','spkid','stims']+f.cfg['recdict'].keys()
+    simDataVecs = ['spkt','spkid','stims']+f.cfg['recordDict'].keys()
     if f.rank == 0:
         allCells = []
         f.allSimData = {} 

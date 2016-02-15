@@ -86,7 +86,7 @@ def plotRaster():
 
 ## Traces (v,i,g etc) plot
 def plotTraces(): 
-    tracesList = f.cfg['recdict'].keys()
+    tracesList = f.cfg['recordDict'].keys()
     tracesList.sort()
     gidList = f.cfg['plotTracesGids']
     popList = f.cfg['plotTracesPops']

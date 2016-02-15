@@ -358,7 +358,7 @@ class Cell(object):
 
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
-        for key, params in f.cfg['recdict'].iteritems():
+        for key, params in f.cfg['recordDict'].iteritems():
             ptr = None
             try: 
                 if 'pos' in params:

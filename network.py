@@ -167,17 +167,20 @@ class Network(object):
 
             if paramStrFunc in ['probability']:
                 # replace function with list of values derived from function (one per pre+post cell)
-                connParam[paramStrFunc+'Func'] = [lambdaFunc(**{strVar: dictVars[strVar](preCellTags, postCell) for strVar in strVars})  
+                connParam[paramStrFunc+'Func'] = [lambdaFunc(
+                    **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, postCell) for strVar in strVars})  
                     for preCellTags in preCellsTags.values() for postCell in postCells.values()]
 
             elif paramStrFunc in ['convergence']:
                 # replace function with list of values derived from function (one per post cell)
-                connParam[paramStrFunc+'Func'] = [lambdaFunc(**{strVar: dictVars[strVar](None, postCell) for strVar in strVars}) 
+                connParam[paramStrFunc+'Func'] = [lambdaFunc(
+                    **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCell) for strVar in strVars}) 
                     for postCell in postCells.values()]
 
             elif paramStrFunc in ['divergence']:
                 # replace function with list of values derived from function (one per post cell)
-                connParam[paramStrFunc+'Func'] = [lambdaFunc(**{strVar: dictVars[strVar](preCellTags, None) for strVar in strVars}) 
+                connParam[paramStrFunc+'Func'] = [lambdaFunc(
+                    **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, None) for strVar in strVars}) 
                     for preCellTags in preCellsTags.values()]
 
             else:

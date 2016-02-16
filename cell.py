@@ -534,7 +534,7 @@ class Pop(object):
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
-                randLocs[:,icoord] = randLocs[:,icoord] / (maxv-minv) + minv
+                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
             if funcLocs and coordFunc == coord+'norm':  # if locations for this coordinate calcualated using density function
                 randLocs[:,icoord] = funcLocs
 

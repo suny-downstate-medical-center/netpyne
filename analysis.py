@@ -39,9 +39,9 @@ def plotData():
         if f.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             f.analysis.plotConn()
-        if f.cfg['plotPsd']:
-            print('Plotting power spectral density')
-            f.analysis.plotPsd()
+        if f.cfg['plotLFPSpectrum']:
+            print('Plotting LFP power spectral density')
+            f.analysis.plotLFPSpectrum()
         if f.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             f.analysis.plotWeightChanges()
@@ -134,7 +134,7 @@ def plotTraces():
 
 
 ## Plot power spectra density
-def plotPsd():
+def plotLFPSpectrum():
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
 
     lfpv=[[] for c in range(len(f.lfppops))]    

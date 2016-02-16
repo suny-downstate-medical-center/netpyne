@@ -1,10 +1,7 @@
 """
 params.py 
-
 netParams is a dict containing a set of network parameters using a standardized structure
-
 simConfig is a dict containing a set of simulation configurations using a standardized structure
-
 Contributors: salvadordura@gmail.com
 """
 
@@ -84,8 +81,7 @@ simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['orderRasterYnorm'] = False # Order cells in raster by yfrac (default is by pop and cell id)
 simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
 simConfig['plotTracesPops'] = []  # plot recorded traces for one cell of each the pops in this list
-simConfig['plotPsd'] = False # plot power spectral density (not yet implemented)
+simConfig['plotLFPSpectrum'] = False # plot power spectral density (not yet implemented)
 simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
 simConfig['plotWeightChanges'] = False # whether to plot weight changes (not yet implemented)
 simConfig['plot3dArch'] = False # plot 3d architecture (not yet implemented)
-

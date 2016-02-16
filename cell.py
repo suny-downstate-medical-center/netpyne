@@ -27,10 +27,10 @@ class Cell(object):
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
-        self.make()  # create cell 
+        self.create()  # create cell 
         self.associateGid() # register cell for this node
 
-    def make(self):
+    def create(self):
         for prop in f.net.params['cellParams']:  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met

@@ -316,7 +316,7 @@ def gatherData():
 def saveData():
     if f.rank == 0:
         
-        dataSave = {'netParams': f.net.params, 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
+        dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
 
         if 'timestampFilename' in f.cfg:  # add timestamp to filename
             if f.cfg['timestampFilename']: 

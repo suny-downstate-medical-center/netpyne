@@ -145,11 +145,11 @@ class Network(object):
         dictVars['dist_xnorm']  = lambda preTags,postCell: abs(preTags['xnorm'] - postCell.tags['xnorm'])
         dictVars['dist_ynorm']  = lambda preTags,postCell: abs(preTags['ynorm'] - postCell.tags['ynorm']) 
         dictVars['dist_znorm']  = lambda preTags,postCell: abs(preTags['znorm'] - postCell.tags['znorm'])
-        dictVars['dist_norm3D'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
-                                sqrt(preTags['y'] - postCell.tags['y']) + 
-                                sqrt(preTags['z'] - postCell.tags['z']))
-        dictVars['dist_norm2D'] = lambda preTags,postCell: sqrt((preTags['x'] - postCell.tags['x'])**2 +
-                                sqrt(preTags['z'] - postCell.tags['z']))
+        dictVars['dist_norm3D'] = lambda preTags,postCell: sqrt((preTags['xnorm'] - postCell.tags['xnorm'])**2 +
+                                sqrt(preTags['ynorm'] - postCell.tags['ynorm']) + 
+                                sqrt(preTags['znorm'] - postCell.tags['znorm']))
+        dictVars['dist_norm2D'] = lambda preTags,postCell: sqrt((preTags['xnorm'] - postCell.tags['xnorm'])**2 +
+                                sqrt(preTags['znorm'] - postCell.tags['znorm']))
         # add netParams variables
         for k,v in f.net.params.iteritems():
             if isinstance(v, Number):

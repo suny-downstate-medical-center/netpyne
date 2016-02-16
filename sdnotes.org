@@ -495,7 +495,7 @@ e.g. reciprocal synapses.
 - Read python names in importCell
 -- use dir; check if section; compare with secList
 
-- 'syn' check for syn type not name
+- 'synReceptor' check for syn type not name
 
 ** DONE Associate_gid from axon
 - section['spikeGenLoc'] = 0.5
@@ -553,7 +553,6 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - automatically set vinit=vr for izhis - not needed cause fixed mod
 - add to doc
 
-** setup.py pip install (paper)
 ** DONE Conv and div conn (paper)
 - made conn very flexible by allowing function for: prob, conv, div, weight and delay
 - funcs can include spatial/distance variables; and others defined in netParams
@@ -570,10 +569,9 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** DONE Fix NetStim connectivity
 - no convergent or divergent; only full and prob
 ** DONE fix so lambda funcs saved as string
+** setup.py pip install (paper)
 ** Add support for SectionLists (paper)
 
-** import/export NeuroML (paper)
-- padraig (see notes above)
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)
@@ -581,6 +579,8 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** Subcellular synaptic connectivity (paper)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
+** import/export NeuroML (paper)
+- padraig (see notes above)
 ** Functions to load simConfig, netParams, net, simData (paper)
 ** timing (paper)
 ** importCell can modify h variables (eg. celsius) (paper)

@@ -15,7 +15,6 @@ import cPickle as pk
 import hashlib 
 from neuron import h, init # Import NEURON
 import framework as f
-from params import default
 
 ###############################################################################
 # initialize variables and MPI
@@ -52,7 +51,7 @@ def setNet(net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams(params):
-    for paramName, paramValue in default.netParams.iteritems():  # set default values
+    for paramName, paramValue in f.default.netParams.iteritems():  # set default values
         if paramName not in params:
             params[paramName] = paramValue
     f.net.params = params
@@ -61,7 +60,7 @@ def setNetParams(params):
 # Set simulation config
 ###############################################################################
 def setSimCfg(cfg):
-    for paramName, paramValue in default.simConfig.iteritems():  # set default values
+    for paramName, paramValue in f.default.simConfig.iteritems():  # set default values
         if paramName not in cfg:
             cfg[paramName] = paramValue
     f.cfg = cfg

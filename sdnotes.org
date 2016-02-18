@@ -587,6 +587,9 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
 ** setup.py pip install (paper)
+** Plasticity
+- Hebbian
+- STDP
 
 ** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
 - maybe iclamp for paper?
@@ -615,9 +618,6 @@ eg. IntFire1,2,3,4
 /u/samn/m1dyst -> models/m1dyst
 https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
 ** Saving at intervals
-** Plasticity
-- Hebbian
-- STDP
 ** modify instantiated network
 - load net and provide new set of params
 ** Make simulator-indep using NeuroML internal format

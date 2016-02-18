@@ -333,6 +333,7 @@ an alternative is to keep it as a tool specific for Neuron, with its internal Ne
 -- long-term: use Neuroml internally for instantiated network 
 -- short-term:  Neuron-based and conversion to NeuroML; 
 
+
 * 16jan27 Consolidate connectivity functions
 ** Full conn -> fullConn
 - =probConn with prob = 1?
@@ -432,6 +433,17 @@ Randomly connect one source node to many target nodes.
 *** BinomialConvergentConnect
 Connect a target to a binomial number of sources.
 ??
+
+
+* 16feb18 Changing folder structure
+** file structure
+- root
+-- examples/: param and run files
+-- netpyne/: actual package
+-- doc/: documentation
+-- setup.py: required for pip install
+-- other root files
+** how to add $PYTHONPATH in setup.py?
 
 * TODO
 ** DONE - unify cellmodel 

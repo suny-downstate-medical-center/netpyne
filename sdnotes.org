@@ -435,7 +435,7 @@ Connect a target to a binomial number of sources.
 ??
 
 
-* 16feb18 Changing folder structure
+* 16feb18 Changing folder structure and adding setup.py
 ** file structure
 - root
 -- examples/: param and run files
@@ -443,7 +443,7 @@ Connect a target to a binomial number of sources.
 -- doc/: documentation
 -- setup.py: required for pip install
 -- other root files
-** TODO how to add $PYTHONPATH in setup.py?
+** OK how to add $PYTHONPATH in setup.py?
 ** OK Make sure all examples and tuts work
 - examples - ok
 - tutorial examples - ok
@@ -588,9 +588,9 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** DONE Fix NetStim connectivity
 - no convergent or divergent; only full and prob
 ** DONE fix so lambda funcs saved as string
+** DONE setup.py pip install (paper)
 
 ** Add support for SectionLists (paper)
-
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)
@@ -605,8 +605,8 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
-** setup.py pip install (paper)
-** Plasticity
+
+** Plasticity (paper?
 - Hebbian
 - STDP
 

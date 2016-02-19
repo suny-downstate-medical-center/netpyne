@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name = 'netpyne',
     
-    version = '0.2',
+    version = '0.3',
     description = 'Network developing framework for Python-NEURON',
     long_description = long_description,
     
@@ -39,7 +39,7 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering:: Visualization',
+        'Topic :: Scientific/Engineering :: Visualization',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
@@ -62,7 +62,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['NEURON'],
+    install_requires=[],
 
  # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

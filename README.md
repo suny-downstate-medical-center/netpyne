@@ -28,12 +28,12 @@ Additional details of the modelling framework can be found here:
 
 Requires NEURON with Python and MPI support. 
 
-1. Make sure the `netpyne` package is in the path ($PYTHONPATH)
+1. Install package via `pip install netpyne`.
 
-2. Create a model file where you import the netpyne package and set the parameters, eg. model.py:
+2. Create a model file (eg. model.py) where you import the netpyne package and set the parameters (you can use some of the parameter files incldued in the `examples` folder, eg. `HHTut.py`):
 
 	```
-	from netpyne.params import HHTut
+	import HHTut
 	from netpyne import init
 		init.createAndRun(
 			simConfig = HHTut.simConfig,     

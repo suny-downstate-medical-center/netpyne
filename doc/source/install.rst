@@ -18,17 +18,11 @@ Other useful links:
 
 Note: It is possible to use the NetPyNE package without NEURON, to convert model specifications into Python-based instantiated networks (hierarchical data structure of objects, dicts and lists), and export into different formats. More details provided here (coming soon).
 
-Download
--------------
+Install via pip
+----------------
 
-The NetPyNE package is available via github at: https://github.com/Neurosim-lab/netpyne
+To install the the package run ``pip install netpyne``
 
-To download/install: 
+If you need to install ``pip`` go to `this link <https://pip.pypa.io/en/stable/installing/>`_
 
-1. cd to the destination folder eg. ``cd /usr/pypkg`` 
-
-Important: make sure this folder is included in the $PYTHONPATH environment variable so the package can be imported from python. 
-
-2. clone the package repository: ``git clone https://github.com/Neurosim-lab/netpyne``
-
-To test that the package is correctly installed, open python and type ``import netpyne``
+The NetPyNE package source files, as well as example models, are available via github at: https://github.com/Neurosim-lab/netpyne

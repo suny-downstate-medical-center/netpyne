@@ -15,15 +15,8 @@ Three example model parameters are provided:
 
 1. **HHTut.py** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
 2. **HybridTut.py** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
-3. **M1yfrac.py** - mouse M1 model with 14 populations and cortical depth-dependent connectivity.
+3. **M1.py** - mouse M1 model with 14 populations and cortical depth-dependent connectivity.
 
-Select which model to run by modifying the initialize call in init.py, eg.:
-
-    s.sim.initialize(                   
-        simConfig = HHTut.simConfig, 
-        netParams = HHTut.netParams)
-
-        
 Additional details of the modelling framework can be found here:
 
 * [NetPyNE Documentation](http://neurosimlab.org/netpyne/)
@@ -35,7 +28,7 @@ Additional details of the modelling framework can be found here:
 
 Requires NEURON with Python and MPI support. 
 
-1. Make sure the `netpyne` package is in the path
+1. Make sure the `netpyne` package is in the path ($PYTHONPATH)
 
 2. Create a model file where you import the netpyne package and set the parameters, eg. model.py:
 
@@ -47,25 +40,34 @@ Requires NEURON with Python and MPI support.
 			netParams = HHTut.netParams)
 	```
 
-3. Type or `./compile` or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
+3. Type `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 
-4. To run type: `./runsim [num_proc]` or the equivalent `mpiexec -np [num_proc] nrniv -python -mpi model.py`
+4. To run type `python model.py` (or `mpiexec -np [num_proc] nrniv -python -mpi model.py` for parallel simulation).
 
-## Overview of file structure:
+## Overview of files:
 
-* **/init.py**: Main executable; calls functions from other modules. Sets what parameter file to use.
+* **examples/**: Folder with examples.
 
-* **/params**: Contains a single parameters file to define each model. Includes simulation (simConfig) and network (netParams) parameters. 
+* **doc/**: Folder with documentation source files.
 
-* **/framework.py**: Contains all the model shared variables and modules. It is imported as "s" from all other file, so that any variable or module can be referenced from any file using s.varName
+* **netpyne/**: Folder with netpyne package files.
 
-* **/sim.py**: Simulation control functions (eg. runSim).
+* **netpyne/init.py**: Main executable; calls functions from other modules. Sets what parameter file to use.
 
-* **/network.py**: Network related functions (eg. createCells)
+* **netpyne/framework.py**: Contains all the model shared variables and modules. It is imported as "s" from all other file, so that any variable or module can be referenced from any file using s.varName
 
-* **/cell.py**: contains cell and population classes to create cells based on the parameters.
+* **netpyne/sim.py**: Simulation control functions (eg. runSim).
 
-* **/analysis.py**: functions to visualize and analyse data
+* **netpyne/network.py**: Network related functions (eg. createCells)
+
+* **netpyne/cell.py**: contains cell and population classes to create cells based on the parameters.
+
+* **netpyne/analysis.py**: functions to visualize and analyse data
+
+* **netpyne/default.py**: default network and simulation parameters
+
+* **netpyne/utils.py**: utility python methods (eg. to import cell parameters)
+
 
 
 For further information please contact: salvadordura@gmail.com 

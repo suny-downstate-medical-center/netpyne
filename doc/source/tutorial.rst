@@ -25,9 +25,9 @@ The second line imports the ``init`` module from the ``netpyne`` package. The `i
 
 The third line calls the ``createAndSimulate`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
 
-* **``netParams``** - a dictionary to store network parameters (eg. cell properties, populations, connectivtiy)
+* ``netParams`` - a dictionary to store network parameters (eg. cell properties, populations, connectivtiy)
 
-* **``simConfig``** - a dictionary to store simulation options (eg. duration, dt, recording and plotting options, etc)
+* ``simConfig`` - a dictionary to store simulation options (eg. duration, dt, recording and plotting options, etc)
 
 In this case we are using a set of predefined parameters defined in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required dictionaries: ``netParams`` and ``simConfig``. 
 

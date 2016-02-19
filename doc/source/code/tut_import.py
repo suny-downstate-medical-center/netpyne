@@ -1,4 +1,4 @@
-from netpyne import init, params
+from netpyne import init, utils
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters

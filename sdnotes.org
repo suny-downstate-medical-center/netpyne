@@ -443,7 +443,14 @@ Connect a target to a binomial number of sources.
 -- doc/: documentation
 -- setup.py: required for pip install
 -- other root files
-** how to add $PYTHONPATH in setup.py?
+** TODO how to add $PYTHONPATH in setup.py?
+** TODO Make sure all examples and tuts work
+- examples
+- tutorial examples
+- clause
+- M1Network
+** TODO Update documentation
+** TODO Update README
 
 * TODO
 ** DONE - unify cellmodel 

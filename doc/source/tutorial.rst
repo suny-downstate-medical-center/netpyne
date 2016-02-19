@@ -13,20 +13,23 @@ A good understading of python nested dictionaries and lists is recommended, sinc
 
 Very simple and quick example
 -------------------------------
-To start in an encouraging way, we will implement the simplest example possible consisting of just 2 lines! This will create a simple network (500 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
+To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (500 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
-	from netpyne import params, init
-	init.createAndSimulate(netParams = params.HHTut.netParams, simConfig = params.HHTut.simConfig)    
+	import HHTut
+	from netpyne import init
+	init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
 
-The first line imports the ``params`` subpackage (folder with modules) and the ``init`` module from the ``netpyne`` package. The ``params`` subpackage contains parameter files for several example networks included in ``netpyne``. The `init`` module provides functions to easily create and simulate networks based on these parameters.
+The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to download the ``HHTut.py`` example parameter file  from `here <https://github.com/Neurosim-lab/netpyne/blob/master/examples/HHTut.py>`_. 
 
-The second line calls the ``createAndSimulate`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
+The second line imports the ``init`` module from the ``netpyne`` package. The `init`` module provides functions to easily create and simulate networks based on these parameters.
+
+The third line calls the ``createAndSimulate`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
 
 * **``netParams``** - a dictionary to store network parameters (eg. cell properties, populations, connectivtiy)
 
 * **``simConfig``** - a dictionary to store simulation options (eg. duration, dt, recording and plotting options, etc)
 
-In this case we are using a set of predefined parameters defined in the ``HHTut`` module (Hodgkin-Huxley network example) included in the ``params`` subpackage within the ``netpyne`` package. The ``HHTut`` module contains the 2 required dictionaries: ``netParams`` and ``simConfig``. 
+In this case we are using a set of predefined parameters defined in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required dictionaries: ``netParams`` and ``simConfig``. 
 
 To run the model just type from shell::
 

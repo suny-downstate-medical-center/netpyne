@@ -1,4 +1,5 @@
-from netpyne import params, init
-init.createAndSimulate(netParams = params.HHTut.netParams, simConfig = params.HHTut.simConfig)    
+import HHTut
+from netpyne import init
+init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

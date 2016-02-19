@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name = 'netpyne',
     
-    version = '0.1',
+    version = '0.2',
     description = 'Network developing framework for Python-NEURON',
     long_description = long_description,
     
@@ -23,11 +23,10 @@ setup(
     url = 'https://github.com/Neurosim-lab/netpyne',
 
     #Author detials
-    author = 'Salvador Dura-Bernal',
+    author = 'Salvador Dura-Bernal (Neurosim lab)',
     author_email = 'salvadordura@gmail.com',
 
     #Choose license
-    #(not sure what to put here so I just used MIT like the example)
     license = 'MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers

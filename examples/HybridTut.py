@@ -29,7 +29,7 @@ netParams['cellParams'] = []
 cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]}
 soma['geom']['pt3d'].append((0, 0, 0, 20))
 soma['geom']['pt3d'].append((0, 0, 20, 20))
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
@@ -41,6 +41,7 @@ dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
+
 cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
@@ -49,22 +50,17 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
 
 soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0}
 soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-
 soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
-
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
-
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'Izhi2007b', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'source': 'random'})  # background inputs
-
-netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
+netParams['popParams'].append({'popLabel': 'PYR_HH', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR_Izhi', 'cellModel': 'Izhi2007b', 'cellType': 'PYR', 'numCells': 50}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 
 # Connectivity parameters
@@ -75,15 +71,17 @@ netParams['connParams'].append(
     'weight': 0.004,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'convergence': 'uniform(1,20)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 20
+    'convergence': 'uniform(0,5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
+
 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
-    'weight': 10, 
+    'weight': 0.004, 
     'syn': 'NMDA',
     'delay': 'uniform(1,5)'})  
+
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
@@ -108,28 +106,32 @@ simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 1  # show detailed messages 
+simConfig['verbose'] = 0 # show detailed messages 
 
 
 # Recording 
 simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recordDict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
+simConfig['recordDict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 
+    'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
+    'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
+    'NMDA_g': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'g'},
+    'NMDA_i': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 simConfig['filename'] = 'mpiHybridTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = True # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = True # Whether or not to write spikes etc. to a .mat file
+simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
 simConfig['saveTxt'] = False # save spikes and conn to txt file
 simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
+simConfig['plotTracesGids'] = [1,51] # plot recorded traces for this list of cells
 simConfig['plotLFPSpectrum'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

@@ -232,6 +232,7 @@ def runSim():
         runtime = time()-runstart # See how long it took
         print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, f.cfg['duration']/1000/runtime))
     f.pc.barrier() # Wait for all hosts to get to this point
+    print h.dt
 
 
 

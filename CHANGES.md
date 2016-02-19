@@ -5,10 +5,10 @@ First version that was uploaded to pypi. Includes following features:
 - Clear separation (modularization) of parameter specifications, network instantiation and NEURON simulation code.
 
 - Easy-to-use, standardized, flexible, extensible and NEURON-independent format to specify parameters:
--- Populations
--- Cell property rules
--- Connectivity rules
--- Simulation configuration
+	- Populations
+	- Cell property rules
+	- Connectivity rules
+	- Simulation configuration
 
 - Support for cell location (eg. cortical depth) dependence of cell density and connectivity.
 
@@ -33,6 +33,6 @@ First version that was uploaded to pypi. Includes following features:
 - Analysis and visualization of network (eg. connecitivity matrix) and simulation output (eg. voltage traces, raster plot)
 
 - Data exporting/sharing to several formats (pickle, Matlab, JSON, HDF5) of the following:
--- Parameters/specifications
--- Instantiated networks
--- Simulation results
+	- Parameters/specifications
+	- Instantiated networks
+	- Simulation results

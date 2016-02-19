@@ -606,7 +606,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
 
-** Plasticity (paper?
+** Plasticity (paper?)
 - Hebbian
 - STDP
 
@@ -614,6 +614,8 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - maybe iclamp for paper?
 - can implement via pointp in cell properties
 
+** Travis CI
+test automatically examples
 ** Evol params batch
 ** Set positions in Neuron's 3D space
 ** LFPy

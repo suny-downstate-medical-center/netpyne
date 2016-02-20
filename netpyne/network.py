@@ -58,7 +58,7 @@ class Network(object):
         print('  Number of cells on node %i: %i ' % (f.rank,len(self.cells))) 
         f.pc.barrier()
         f.sim.timing('stop', 'createTime')
-        if f.cfg['timing']: print('  Done; cell creation time = %0.2f s.' % f.timing['createTime'])
+        if f.rank == 0 and f.cfg['timing']: print('  Done; cell creation time = %0.2f s.' % f.timing['createTime'])
         
 
     ###############################################################################
@@ -121,7 +121,7 @@ class Network(object):
         print('  Number of connections on node %i: %i ' % (f.rank, sum([len(cell.conns) for cell in f.net.cells])))
         f.pc.barrier()
         f.sim.timing('stop', 'connectTime')
-        if f.cfg['timing']: print('  Done; cell connection time = %0.2f s.' % f.timing['connectTime'])
+        if f.rank == 0 and f.cfg['timing']: print('  Done; cell connection time = %0.2f s.' % f.timing['connectTime'])
 
     ###############################################################################
     # Convert string to function

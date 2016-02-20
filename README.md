@@ -1,13 +1,13 @@
 # NetPyNE (python package)
 ## Description
-A Network development framework for Python-NEURON ([NetPyNE Documentation](http://neurosimlab.org/netpyne/))
+A Python package to facilitate the development and simulation of biological networks in NEURON ([NetPyNE Documentation](http://neurosimlab.org/netpyne/))
 
 NEURON/Python-based modularized framework for network simulations with MPI. Using this modularized structure, users can define different models (including cell types, populations, connectivities, etc.) just by modifying a single parameters file, and easily simulate then in NEURON. Additionally, the framework allows to store a single data file with the following:
 
 1. model specifications (conn rules etc)
 2. network instantiation (list of all cells, connections, etc)
 3. simulation parameters/configuration (duration, dt, etc)
-4. simulation outpuo (spikes, voltage traces etc)
+4. simulation output (spikes, voltage traces etc)
 
 The data file is available in Pickle, JSON and Matlab formats.
 

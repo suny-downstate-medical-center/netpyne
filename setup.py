@@ -15,8 +15,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name = 'netpyne',
     
-    version = '0.3',
-    description = 'Network developing framework for Python-NEURON',
+    version = '0.3.1',
+    description = 'A Python package to facilitate the development and simulation of biological networks in NEURON.',
     long_description = long_description,
     
     # The project's main homepage.
@@ -52,7 +52,7 @@ setup(
         ],
     
     # What does project relate to?    
-    keywords = ['neuron','network','developing','framework','developing'],
+    keywords = ['neuron','network','developing','framework','biological', 'simulation'],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().

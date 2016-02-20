@@ -132,7 +132,6 @@ def plotTraces():
                         pass
         subplot(len(tracesList),1,1)
         title('Pop %s, Cell %d'%(popLabel, int(gid)))
-
     savefig('traces.png')
 
 

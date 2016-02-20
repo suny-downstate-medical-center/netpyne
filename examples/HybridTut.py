@@ -101,7 +101,7 @@ netParams['connParams'].append(
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
+simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
@@ -117,7 +117,7 @@ simConfig['recordDict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'},
     'NMDA_g': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'g'},
     'NMDA_i': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 simConfig['filename'] = 'mpiHybridTut'  # Set file output name

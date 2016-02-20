@@ -221,12 +221,11 @@ def runSim():
     if f.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
+    h.dt = f.cfg['dt']
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     init()
-    #h.finitialize()
-    #h.cvode.event(f.savestep,savenow)
     f.pc.psolve(f.cfg['duration'])
     if f.rank==0: 
         runtime = time()-runstart # See how long it took

@@ -1,3 +1,7 @@
+## Version 0.3.1
+
+- Fixed bug: h.dt now set to value of simConfig['dt']
+
 ## Version 0.3
 
 First version that was uploaded to pypi. Includes following features:

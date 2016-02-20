@@ -26,7 +26,7 @@ import framework as f
 def plotData():
     ## Plotting
     if f.rank == 0:
-        plotstart = time() # See how long it takes to plot
+        f.sim.timing('start', 'plotTime')
         if f.cfg['plotRaster']: # Whether or not to plot
             if (f.totalSpikes>f.cfg['maxspikestoplot']): 
                 print('  Too many spikes (%i vs. %i)' % (f.totalSpikes, f.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
@@ -48,8 +48,11 @@ def plotData():
         if f.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
             f.analysis.plot3dArch()
-        plottime = time()-plotstart # See how long it took
-        print('  Done; plotting time = %0.1f s' % plottime)
+        if f.cfg['timing']:
+            f.sim.timing('stop', 'plotTime')
+            print('  Done; plotting time = %0.2f s' % f.timing['plotTime'])
+            f.sim.timing('stop', 'totalTime')
+            print('\nTotal time = %0.2f s' % f.timing['totalTime'])
         show(block=False)
 
 ## Raster plot 

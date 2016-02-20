@@ -67,12 +67,11 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    {'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},
     'weight': 0.004,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(0,5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
-
 
 
 netParams['connParams'].append(
@@ -104,9 +103,10 @@ simConfig = {}  # dictionary to store simConfig
 simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
-simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 0 # show detailed messages 
+simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
+simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
+simConfig['timing'] = True  # show timing  and save to file
+simConfig['verbose'] = False # show detailed messages 
 
 
 # Recording 

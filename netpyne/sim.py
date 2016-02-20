@@ -26,6 +26,13 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     f.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
     f.lastGid = 0  # keep track of las cell gid
     f.fih = []  # list of func init handlers
+    f.rank = 0  # initialize rank
+    f.timing = {}  # dict to store timing
+
+    setSimCfg(simConfig)  # set simulation configuration
+    
+    timing('start', 'initialTime')
+    timing('start', 'totalTime')
 
     if net:
         setNet(f.net)  # set existing external network
@@ -35,10 +42,11 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     if netParams: 
         setNetParams(netParams)  # set network parameters
 
-    setSimCfg(simConfig)  # set simulation configuration
-
     createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
+
+    timing('stop', 'initialTime')
+    
 
 
 ###############################################################################
@@ -77,7 +85,7 @@ def loadSimParams(paramFile):
 def createParallelContext():
     f.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     f.nhosts = int(f.pc.nhost()) # Find number of hosts
-    f.rank = int(f.pc.id())     # rank 0 will be the master
+    f.rank = int(f.pc.id())     # rank or node number (0 will be the master)
 
     if f.rank==0: 
         f.pc.gid_clear()
@@ -192,6 +200,7 @@ def readArgs():
 ### Setup Recording
 ###############################################################################
 def setupRecording():
+    timing('start', 'setrecordTime')
     # set initial v of cells
     f.fih = []
     for cell in f.net.cells:
@@ -211,6 +220,7 @@ def setupRecording():
         for key in f.cfg['recordDict'].keys(): f.simData[key] = {}
         for cell in f.net.cells: 
             cell.recordTraces()
+    timing('stop', 'setrecordTime')
 
 
 ###############################################################################
@@ -218,20 +228,21 @@ def setupRecording():
 ###############################################################################
 def runSim():
     f.pc.barrier()
+    timing('start', 'runTime')
     if f.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
     h.dt = f.cfg['dt']
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if f.rank==0: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     init()
     f.pc.psolve(f.cfg['duration'])
     if f.rank==0: 
         runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.1f s; real-time ratio: %0.2f.' % (runtime, f.cfg['duration']/1000/runtime))
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, f.cfg['duration']/1000/runtime))
     f.pc.barrier() # Wait for all hosts to get to this point
-    print h.dt
+    timing('stop', 'runTime')
 
 
 
@@ -254,10 +265,10 @@ def gatherAllCellTags():
 ### Gather data from nodes
 ###############################################################################
 def gatherData():
+    timing('start', 'gatherTime')
     ## Pack data from all hosts
     if f.rank==0: 
         print('\nGathering spikes...')
-        gatherstart = time() # See how long it takes to plot
 
     nodeData = {'netCells': [c.__getstate__() for c in f.net.cells], 'simData': f.simData} 
     data = [None]*f.nhosts
@@ -294,8 +305,8 @@ def gatherData():
 
     ## Print statistics
     if f.rank == 0:
-        gathertime = time()-gatherstart # See how long it took
-        print('  Done; gather time = %0.1f s.' % gathertime)
+        timing('stop', 'gatherTime')
+        if f.cfg['timing']: print('  Done; gather time = %0.2f s.' % f.timing['gatherTime'])
 
         print('\nAnalyzing...')
         f.totalSpikes = len(f.allSimData['spkt'])   
@@ -304,9 +315,11 @@ def gatherData():
 
         f.firingRate = float(f.totalSpikes)/f.numCells/f.cfg['duration']*1e3 # Calculate firing rate 
         f.connsPerCell = f.totalConnections/float(f.numCells) # Calculate the number of connections per cell
-        print('  Run time: %0.1f s (%i-s sim; %i cells; %i workers)' % (gathertime, f.cfg['duration']/1e3, f.numCells, f.nhosts))
+        if f.cfg['timing']: print('  Run time: %0.2f s' % (f.timing['runTime']))
+        print('  Simulated time: %i-s; %i cells; %i workers' % (f.cfg['duration']/1e3, f.numCells, f.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (f.totalSpikes, f.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (f.totalConnections, f.connsPerCell))
+
  
 
 ###############################################################################
@@ -314,7 +327,7 @@ def gatherData():
 ###############################################################################
 def saveData():
     if f.rank == 0:
-        
+        timing('start', 'saveTime')
         dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
 
         if 'timestampFilename' in f.cfg:  # add timestamp to filename
@@ -363,3 +376,18 @@ def saveData():
             hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
             print('Finished saving!')
 
+        # Save timing
+        timing('stop', 'saveTime')
+        if f.cfg['timing'] and f.cfg['saveTiming']: 
+            import pickle
+            with open('timing.pkl', 'wb') as file: pickle.dump(f.timing, file)
+
+###############################################################################
+### Timing - Stop Watch
+###############################################################################
+def timing(mode, processName):
+    if f.rank == 0 and f.cfg['timing']:
+        if mode == 'start':
+            f.timing[processName] = time() 
+        elif mode == 'stop':
+            f.timing[processName] = time() - f.timing[processName]

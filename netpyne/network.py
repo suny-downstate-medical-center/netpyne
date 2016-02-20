@@ -44,6 +44,7 @@ class Network(object):
     ###############################################################################
     def createCells(self):
         f.pc.barrier()
+        f.sim.timing('start', 'createTime')
         if f.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), f.cfg['duration']/1000.,f.nhosts)) 
         self.gidVec = [] # Empty list for storing GIDs (index = local id; value = gid)
         self.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
@@ -54,15 +55,20 @@ class Network(object):
             f.pc.barrier()
             if f.rank==0 and f.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
         f.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
-        print('  Number of cells on node %i: %i ' % (f.rank,len(self.cells)))            
-    
+        print('  Number of cells on node %i: %i ' % (f.rank,len(self.cells))) 
+        f.pc.barrier()
+        f.sim.timing('stop', 'createTime')
+        if f.cfg['timing']: print('  Done; cell creation time = %0.2f s.' % f.timing['createTime'])
+        
 
     ###############################################################################
     # Connect Cells
     ###############################################################################
     def connectCells(self):
         # Instantiate network connections based on the connectivity rules defined in params
-        if f.rank==0: print('Making connections...'); connstart = time()
+        if f.rank==0: 
+            print('Making connections...')
+            f.sim.timing('start', 'connectTime')
 
         if f.nhosts > 1: # Gather tags from all cells 
             allCellTags = f.sim.gatherAllCellTags()  
@@ -111,7 +117,11 @@ class Network(object):
             if preCellsTags and postCells:
                 self.strToFunc(preCellsTags, postCells, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCells, connParam)  # call specific conn function
-    
+        
+        print('  Number of connections on node %i: %i ' % (f.rank, sum([len(cell.conns) for cell in f.net.cells])))
+        f.pc.barrier()
+        f.sim.timing('stop', 'connectTime')
+        if f.cfg['timing']: print('  Done; cell connection time = %0.2f s.' % f.timing['connectTime'])
 
     ###############################################################################
     # Convert string to function

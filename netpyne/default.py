@@ -53,9 +53,11 @@ simConfig = {}  # dictionary to store simConfig
 simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
-simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 0  # show detailed messages 
+simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
+simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
+simConfig['timing'] = True  # show timing of each process
+simConfig['saveTiming'] = False  # save timing data to pickle file
+simConfig['verbose'] = False  # show detailed messages 
 
 
 # Recording 

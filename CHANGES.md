@@ -1,5 +1,7 @@
 ## Version 0.3.1
 
+- Added option to show and/or save to file the timing of initialization, cell creation, connection creation, setup recording, simulation run, data gathering, plotting, and saving. 
+
 - Fixed bug: h.dt now set to value of simConfig['dt']
 
 ## Version 0.3

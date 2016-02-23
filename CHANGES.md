@@ -1,3 +1,7 @@
+## Version 0.3.2
+
+- Fixed bug: convergence connectivity produced error if used numeric value
+
 ## Version 0.3.1
 
 - Added option to show and/or save to file the timing of initialization, cell creation, connection creation, setup recording, simulation run, data gathering, plotting, and saving. 

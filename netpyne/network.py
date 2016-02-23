@@ -308,7 +308,7 @@ class Network(object):
                             'sec': connParam['sec'], 
                             'syn': connParam['syn'], 
                             'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
-                            'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' else connParam['delay'], 
+                            'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                             'threshold': connParam['threshold']}
                     postCell.addConn(params)  # call cell method to add connections
 

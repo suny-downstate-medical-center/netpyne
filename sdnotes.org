@@ -614,6 +614,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - maybe iclamp for paper?
 - can implement via pointp in cell properties
 
+** Record subset of time, and only record traces for subset of cells
 ** Travis CI
 test automatically examples
 ** Evol params batch

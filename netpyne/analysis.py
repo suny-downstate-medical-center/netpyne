@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import mean, arange, bar, vstack,scatter, figure, hold, isscalar, gca, unique, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, cm, specgram, get_cmap, psd, ion
+from pylab import arange, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -57,7 +57,10 @@ def plotData():
 
 ## Raster plot 
 def plotRaster(): 
-    colorList = [[0.42,0.67,0.84],[0.90,0.76,0.00],[0.42,0.83,0.59],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]] 
+    colorList = [[0.42,0.67,0.84],[0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
     popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in f.net.allCells}  # dict with color for each gid
@@ -74,7 +77,7 @@ def plotRaster():
             ylabelText = 'Cell id (arranged by NCD)'
     except:
         pass     
-    figure() # Open a new figure
+    figure(figsize=(10,8)) # Open a new figure
     fontsiz = 12
     scatter(f.allSimData['spkt'], spkids, 10, linewidths=1.5, marker='|', color = spkidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
@@ -84,7 +87,9 @@ def plotRaster():
     ylim(0,f.numCells)
     for popLabel in popLabels[::-1]:
         plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz)
+    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+    maxLabelLen = max([len(l) for l in popLabels])
+    subplots_adjust(right=(0.9-0.01*maxLabelLen))
     savefig('raster.png')
 
 ## Traces (v,i,g etc) plot

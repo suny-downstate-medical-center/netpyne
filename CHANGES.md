@@ -1,3 +1,7 @@
+## Version 0.3.3
+
+- Moved plot legends outside of plot area
+
 ## Version 0.3.2
 
 - Fixed bug: convergence connectivity produced error if used numeric value

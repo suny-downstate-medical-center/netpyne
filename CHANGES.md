@@ -2,6 +2,8 @@
 
 - Moved plot legends outside of plot area
 
+- Changed order of raster population colors to make separation clearer
+
 ## Version 0.3.2
 
 - Fixed bug: convergence connectivity produced error if used numeric value

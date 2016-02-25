@@ -427,8 +427,8 @@ Related to the simulation and netpyne framework:
 
 Related to recording:
 
-* **recordTraces** - Record cell traces (default: False)
-* **recordDict** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}})
+* **recordCells** - List of cells from which to record traces. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [])
+* **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordStep** - Step size in ms for data recording (e.g. 1)
 
@@ -449,8 +449,7 @@ Related to plotting and analysis:
 * **plotRaster** - Whether or not to plot a raster (default: True)
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
-* **plotTracesGids** - Plot recorded traces for this list of cells (default: [] ; example: [5,10])
-* **plotTracesPops** - Plot recorded traces for one cell of each the pops in this list
+* **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
 * **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)
 * **plotWeightChanges** - Plot weight changes (default: False) (not yet implemented)

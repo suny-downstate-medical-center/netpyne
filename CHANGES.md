@@ -1,8 +1,10 @@
 ## Version 0.3.3
 
-- Moved plot legends outside of plot area
+- Moved plot legend outside of plot area
 
 - Changed order of raster population colors to make separation clearer
+
+- Added option to select what cells to record/plot from separately; using new format with cells/pops in single list.
 
 ## Version 0.3.2
 

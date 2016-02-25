@@ -358,7 +358,7 @@ class Cell(object):
 
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
-        for key, params in f.cfg['recordDict'].iteritems():
+        for key, params in f.cfg['recordTraces'].iteritems():
             ptr = None
             try: 
                 if 'pos' in params:
@@ -375,7 +375,7 @@ class Cell(object):
                             ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
 
                 if ptr:  # if pointer has been created, then setup recording
-                    f.simData[key]['cell_'+str(self.gid)] = h.Vector(f.cfg['tstop']/f.cfg['recordStep']+1).resize(0)
+                    f.simData[key]['cell_'+str(self.gid)] = h.Vector(f.cfg['duration']/f.cfg['recordStep']+1).resize(0)
                     f.simData[key]['cell_'+str(self.gid)].record(ptr, f.cfg['recordStep'])
                     if f.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
             except:

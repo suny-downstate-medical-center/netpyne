@@ -71,6 +71,11 @@ def setSimCfg(cfg):
     for paramName, paramValue in f.default.simConfig.iteritems():  # set default values
         if paramName not in cfg:
             cfg[paramName] = paramValue
+
+    for cell in cfg['plotCells']:  # add all cells of plotCell to recordCells
+        if cell not in cfg['recordCells']:
+            cfg['recordCells'].append(cell)
+
     f.cfg = cfg
 
 def loadSimCfg(paramFile):
@@ -216,10 +221,21 @@ def setupRecording():
             cell.recordStimSpikes()
 
     # intrinsic cell variables recording
-    if f.cfg['recordTraces']:
-        for key in f.cfg['recordDict'].keys(): f.simData[key] = {}
-        for cell in f.net.cells: 
-            cell.recordTraces()
+    if f.cfg['recordCells']:
+        for key in f.cfg['recordTraces'].keys(): f.simData[key] = {}  # create dict to store traces
+        for entry in f.cfg['recordCells']:  # for each entry in recordCells
+            if entry == 'all':  # record all cells
+                for cell in f.net.cells: cell.recordTraces()
+                break
+            elif isinstance(entry, str):  # if str, record 1st cell of this population
+                for pop in f.net.pops:
+                    if pop.tags['popLabel'] == entry and pop.cellGids:
+                        gid = pop.cellGids[0]
+                        for cell in f.net.cells: 
+                            if cell.gid == gid: cell.recordTraces()
+            elif isinstance(entry, int):  # if int, record from cell with this gid
+                for cell in f.net.cells: 
+                    if cell.gid == entry: cell.recordTraces()
     timing('stop', 'setrecordTime')
 
 
@@ -277,7 +293,7 @@ def gatherData():
         data[0][k] = v 
     gather = f.pc.py_alltoall(data)
     f.pc.barrier()
-    simDataVecs = ['spkt','spkid','stims']+f.cfg['recordDict'].keys()
+    simDataVecs = ['spkt','spkid','stims']+f.cfg['recordTraces'].keys()
     if f.rank == 0:
         allCells = []
         f.allSimData = {} 

@@ -334,7 +334,7 @@ netParams['annots']['ITtoITconn'] = 'L2: weak by wiring matrix in (Weiler et al.
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
+simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.5 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
@@ -343,8 +343,8 @@ simConfig['verbose'] = 0 # Whether to write nothing (0) or diagnostic informatio
 
 
 # Recording 
-simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recordDict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
+simConfig['recordCells'] = []  # list of cells to record from
+simConfig['recordTraces'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -360,7 +360,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotTracesGids'] = [1] # plot recorded traces for this list of cells
+simConfig['plotCells'] = [1] # plot recorded traces for this list of cells 
 simConfig['plotLFPSpectrum'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

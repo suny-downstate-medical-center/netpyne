@@ -69,7 +69,7 @@ netParams['connParams'].append(
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = simConfig['tstop'] = 1*1e3 # Duration of the simulation, in ms
+simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
@@ -78,8 +78,8 @@ simConfig['verbose'] = 1  # show detailed messages
 
 
 # Recording 
-simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recordDict'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
+simConfig['recordCells'] = []  # whether to record cell traces or not
+simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -95,7 +95,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotTracesGids'] = [1] # plot recorded traces for this list of cells
+simConfig['plotCells'] = [] # plot recorded traces for this list of cells
 simConfig['plotLFPSpectrum'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

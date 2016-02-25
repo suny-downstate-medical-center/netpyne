@@ -61,8 +61,8 @@ simConfig['verbose'] = False  # show detailed messages
 
 
 # Recording 
-simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recordDict'] = {}  # Dict of traces to record 
+simConfig['recordCells'] = []  # what cells to record from (eg. 'all', 5, or 'PYR')
+simConfig['recordTraces'] = {}  # Dict of traces to record 
 simConfig['recordStim'] = False  # record spikes of cell stims
 simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -78,11 +78,10 @@ simConfig['saveHDF5'] = False # save to HDF5 file
 
 
 # Analysis and plotting 
+simConfig['plotCells'] = [] # plot recorded traces for this list of cells
 simConfig['plotRaster'] = True # Whether or not to plot a raster
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['orderRasterYnorm'] = False # Order cells in raster by yfrac (default is by pop and cell id)
-simConfig['plotTracesGids'] = [] # plot recorded traces for this list of cells
-simConfig['plotTracesPops'] = []  # plot recorded traces for one cell of each the pops in this list
 simConfig['plotLFPSpectrum'] = False # plot power spectral density (not yet implemented)
 simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
 simConfig['plotWeightChanges'] = False # whether to plot weight changes (not yet implemented)

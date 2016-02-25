@@ -33,7 +33,7 @@ def plotData():
             else: 
                 print('Plotting raster...')
                 f.analysis.plotRaster() 
-        if f.cfg['plotTracesGids'] or f.cfg['plotTracesPops']:
+        if f.cfg['plotCells']:
             print('Plotting recorded traces ...')
             f.analysis.plotTraces() 
         if f.cfg['plotConn']:
@@ -57,7 +57,7 @@ def plotData():
 
 ## Raster plot 
 def plotRaster(): 
-    colorList = [[0.42,0.67,0.84],[0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
@@ -94,10 +94,13 @@ def plotRaster():
 
 ## Traces (v,i,g etc) plot
 def plotTraces(): 
-    tracesList = f.cfg['recordDict'].keys()
+    tracesList = f.cfg['recordTraces'].keys()
     tracesList.sort()
-    gidList = f.cfg['plotTracesGids']
-    popList = f.cfg['plotTracesPops']
+    gidList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, int)]
+    popList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, str)]
+    if 'all' in popList:
+        gidList = [cell.gid for cell in f.net.allCell]
+        popList = []
     duration = f.cfg['duration']
     recordStep = f.cfg['recordStep']
 
@@ -115,7 +118,7 @@ def plotTraces():
                 xlim(0,f.cfg['duration'])
             except:
                 pass
-        subplot(len(tracesList),1,1)
+        if tracesList: subplot(len(tracesList),1,1)
         title('Cell %d'%(int(gid)))
 
     for popLabel in popList:

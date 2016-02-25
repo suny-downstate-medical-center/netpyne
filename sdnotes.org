@@ -615,6 +615,12 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - can implement via pointp in cell properties
 
 ** Record subset of time, and only record traces for subset of cells
+- recordTraces = ['all', 'P', 1]
+- plotTraces = ['all', 'P', 1]
+
+- pops means just 1 cell of that pop!
+- automatically add elements of plotTraces to recordTraces!!
+
 ** Travis CI
 test automatically examples
 ** Evol params batch

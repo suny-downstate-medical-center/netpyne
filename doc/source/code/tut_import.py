@@ -110,8 +110,8 @@ netParams['connParams'].append({
 
 netParams['connParams'].append({
 	'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},  #  PYR -> PYR random
-	'connFunc': 'randConn', 	# connectivity function (random)
-	'maxConns': 10, 			# max number of incoming conns to cell
+	'connFunc': 'convConn', 	# connectivity function (random)
+	'convergence': 'uniform(0,10)', 			# max number of incoming conns to cell
 	'weight': 0.001, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})				# section to connect to
@@ -122,13 +122,12 @@ simConfig = {}
 simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
 simConfig['dt'] = 0.025 				# Internal integration timestep to use
 simConfig['verbose'] = False			# Show detailed messages 
-simConfig['recordTraces'] = True  		# Record cell traces or not
-simConfig['recdict'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
 simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
 simConfig['plotRaster'] = True 			# Plot a raster
-simConfig['plotTracesGids'] = [1] 		# Plot recorded traces for this list of cells
+simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation

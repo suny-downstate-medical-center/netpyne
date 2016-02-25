@@ -110,8 +110,8 @@ simConfig['verbose'] = False # show detailed messages
 
 
 # Recording 
-simConfig['recordTraces'] = True  # whether to record cell traces or not
-simConfig['recordDict'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 
+simConfig['recordCells'] = []  # list of cells to record from 
+simConfig['recordTraces'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
     'NMDA_g': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'g'},
@@ -131,7 +131,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotTracesGids'] = [1,51] # plot recorded traces for this list of cells
+simConfig['plotCells'] = [1,51] # plot recorded traces for this list of cells
 simConfig['plotLFPSpectrum'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

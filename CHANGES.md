@@ -1,3 +1,9 @@
+## Version 0.3.4
+
+- Added option to add STDP plasticity and RL to connections
+
+- 
+
 ## Version 0.3.3
 
 - Moved plot legend outside of plot area

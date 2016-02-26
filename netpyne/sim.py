@@ -261,6 +261,35 @@ def runSim():
     timing('stop', 'runTime')
 
 
+###############################################################################
+### Run Simulation
+###############################################################################
+def runSimWithIntervalFunc(interval, func):
+    f.pc.barrier()
+    timing('start', 'runTime')
+    if f.rank == 0:
+        print('\nRunning...')
+        runstart = time() # See how long the run takes
+    h.dt = f.cfg['dt']
+    f.pc.set_maxstep(10)
+    mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    init()
+
+    progUpdate = 1000  # update every second
+    while round(h.t) < f.cfg['duration']:
+        f.pc.psolve(min(f.cfg['duration'], h.t+interval))
+        if f.cfg['verbose'] and (round(h.t) % progUpdate):
+            print(' sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg['duration']*100)))
+        func(h.t) # function to be called at intervals
+
+    if f.rank==0: 
+        runtime = time()-runstart # See how long it took
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, f.cfg['duration']/1000/runtime))
+    f.pc.barrier() # Wait for all hosts to get to this point
+    timing('stop', 'runTime')
+                
+
 
 ###############################################################################
 ### Gather tags from cells

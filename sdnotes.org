@@ -138,6 +138,376 @@ We can use the google chat or this google doc to bounce ideas back and forth (li
 - default simConfig
 - from pynet import init ; init.createAndRun(netParams, simConfig)
 
+* 16jan26 Possibly making more simulator-indep using NeuroML-based format
+** NeuroML format 
+- could represent all nml format using python dicts (instantiated net)
+- additional abstract layer (connParams, netParams etc) - using more general format and then converted to nml
+- eg. https://github.com/OpenSourceBrain/Thalamocortical/tree/master/neuroConstruct/generatedNeuroML2
+- https://www.neuroml.org/getneuroml
+- https://www.neuroml.org/tool_support
+- https://github.com/NeuralEnsemble/libNeuroML
+- https://github.com/NeuroML/pyNeuroML
+- http://bioportal.bioontology.org/ontologies/CNO
+- http://www.neuroconstruct.org/
+- http://neuronvisio.org/
+
+
+*** Issues
+- Would like to keep simple declarative (python dicts based) specifications
+- Want to make netpyne more NEURON-independent, both at specifications, and py instantiated network
+- netpyne makes use of mod files, but neuroml requires detailed specification
+- netpyne provides conversion from abstract specifications -> instantiated network, and support for multicompartment, and
+  subcellular connectivity
+- netpyne provides instantiation of NEURON objects, and parallel simulation of network
+- netpyne can use NeuroML structure but using dictionaries instead of xml text - so easy to manipulate
+- libneuroml and pynn - procedural, not so intuitive, and require internal definition of cell types etc (eg. IAF); whereas
+  netpyne is 'declarative', more intuitive?, can define arbitrary cell props based on mechs and syns
+- dictionary of equivalences NEURON<->NeuroML (eg. tau1, rise)
+
+*** cells
+NOTE: segment = sections/segment; segmentGroup = sectionList/section
+- can have segmentGroups that consist of segmentGroups
+- Neuron sections->segmentGroups
+- Neuron 3d points -> segmnets
+- Neuron nseg -> property tag numberInternalDivisions
+- if have pointProcess in segment -> mapping of position along section and where pointprocess is placed
+
+    <include href="nap.channel.nml"/>
+
+    <include href="pas.channel.nml"/>
+
+<cell id="SupAxAx">
+
+        <notes>Cell: supaxax_0 exported from NEURON ModelView</notes>
+
+        <morphology id="morphology_SupAxAx">
+
+            <segment id="0" name="Seg0_comp_1">
+                <proximal x="0.0" y="0.0" z="0.0" diameter="15.0"/>
+                <distal x="0.0" y="10.0" z="0.0" diameter="15.0"/>
+            </segment>
+
+            <segment id="1" name="Seg1_comp_1">
+                <parent segment="0"/>
+                <distal x="-4.371139E-7" y="20.0" z="0.0" diameter="15.0"/>
+            </segment>
+
+ <segmentGroup id="prox_dend_soma">
+                <include segmentGroup="comp_1"/>
+                <include segmentGroup="comp_41"/>
+                <include segmentGroup="comp_28"/>
+                <include segmentGroup="comp_15"/>
+                <include segmentGroup="comp_2"/>
+            </segmentGroup>
+
+
+	<biophysicalProperties id="biophys">
+
+            <membraneProperties>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="ar_ModelViewParmSubset_1" ionChannel="ar__m00_25" segmentGroup="ModelViewParmSubset_1" erev="-40.0 mV" ion="ar"/>
+                
+                <channelDensity condDensity="0.1 mS_per_cm2" id="cal_ModelViewParmSubset_4" ionChannel="cal" segmentGroup="ModelViewParmSubset_4" ion="ca" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.2 mS_per_cm2" id="cal_ModelViewParmSubset_5" ionChannel="cal" segmentGroup="ModelViewParmSubset_5" ion="ca" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="cat_ModelViewParmSubset_1" ionChannel="cat" segmentGroup="ModelViewParmSubset_1" ion="cat" erev="125.0 mV"/>
+                
+                <channelDensity condDensity="0.0 mS_per_cm2" id="k2_all" ionChannel="k2" ion="k" erev="-100.0 mV"/>
+                
+                <spikeThresh value="0.0 mV"/>
+
+                <specificCapacitance value="1.0 uF_per_cm2"/>
+
+                <initMembPotential value="-65.0 mV"/>
+
+
+*** connections
+<projection id="LTS_AxAx_sm" presynapticPopulation="CG_C04_LTS_sm" postsynapticPopulation="CG_C04_AxAx_sm" synapse="Inh_LTS_FS">
+            <connection id="0" preCellId="../CG_C04_LTS_sm/5/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="112" preFractionAlong="0.26785243" postSegmentId="82" postFractionAlong="0.36041966"/>
+            <connection id="1" preCellId="../CG_C04_LTS_sm/3/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="116" preFractionAlong="0.6782849" postSegmentId="91" postFractionAlong="0.99472666"/>
+            <connection id="2" preCellId="../CG_C04_LTS_sm/6/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="112" preFractionAlong="0.42696908" postSegmentId="84" postFractionAlong="0.46009916"/>
+            <connection id="3" preCellId="../CG_C04_LTS_sm/0/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.92599744" postSegmentId="83" postFractionAlong="0.60695267"/>
+            <connection id="4" preCellId="../CG_C04_LTS_sm/9/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.5823235" postSegmentId="39" postFractionAlong="0.646692"/>
+            <connection id="5" preCellId="../CG_C04_LTS_sm/6/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx" preSegmentId="113" preFractionAlong="0.16917303" postSegmentId="57" postFractionAlong="0.6089958"/>
+
+*** synapses
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd" id="Syn_AMPA_L4SS_IN">
+
+    <notes>ChannelML file describing a single synaptic mechanism</notes>
+
+    <alphaSynapse id="Syn_AMPA_L4SS_IN" tau="0.8ms" gbase="2.94303552937e-07mS" erev="0.0mV">
+
+        <notes>Synapse with syn scaling constant c = 1 nS (translating to max cond of 2.94304e-07 mS), time course: 0.8 ms and reversal potential: 0 mV.
+        Automatically generated by command:  genSyn.py Syn_AMPA_L4SS_IN 0.8 1 0 </notes>
+</alphaSynapse>
+
+</neuroml>
+*** population
+
+        <population id="CG_C04_FRB_sm" component="L23PyrFRB_varInit" type="populationList" size="6">
+           <annotation>
+                <property tag="color" value="0.0 0.0 0.0"/>
+            </annotation>
+            <instance id="0">
+                <location x="-739.27563" y="-798.43396" z="-440.9723"/>
+            </instance>
+            <instance id="1">
+                <location x="975.8342" y="-870.85077" z="1090.1094"/>
+            </instance>
+            <instance id="2">
+                <location x="-1012.162" y="-785.71173" z="1053.8684"/>
+            </instance>
+            <instance id="3">
+                <location x="-1391.423" y="-776.4188" z="-32.483643"/>
+            </instance>
+            <instance id="4">
+                <location x="149.5564" y="-790.7691" z="433.74915"/>
+            </instance>
+            <instance id="5">
+                <location x="585.53955" y="-765.37933" z="819.1377"/>
+            </instance>
+        </population>
+
+
+*** pulse generator (netstim?)
+   <pulseGenerator id="DepCurr_L23FRB" delay="0.0s" duration="20.0s" amplitude="3.0E-10A"/>
+    
+    <pulseGenerator id="DepCurr_L23FRB__0" delay="0.0s" duration="20.0s" amplitude="3.37936E-10A"/>
+** chat with Bill
+summary of 3-hr meeting with Ben: 1) he really likes netpyne, 2) discussed how to add subcellular syn info (3 main methods: sectionlists, yfrac-based, path distance-based), 3) provided his unpublished code to convert sCRACM data to synapse density maps and said we can use in netpyne, 4) suggested making netpyne more NEURON/simulator-independent (similar to Kim Blackwell)
+
+on this last point (simu-indep), I looked at NeuroML2 format, and some of the tools Padraig has built 2 interface it with Python and Neuron (eg. neuroconstruct, pyNeuroML, libNeuroML), and read Robert's reproducibility paper
+
+I think it might be possible to make netpyne simulator-independent at the specs and instantiated network, using a NeuroML-like internal format (but using python dicts instead of xml so can manipulate data) -- and then keep final stage where its converted to Neuron simulatable objects
+
+sent padraig an email to discuss the technical details of what they've already implemented and how netpyne could fit, and be useful to fill in missing tools in this whole story
+
+an alternative is to keep it as a tool specific for Neuron, with its internal Neuron-based format for specs and network, and the possibility of exporting/importing from NeuroML and others (ie. its current status)
+
+** chat with Padraig
+- good to separate M1 model from netpyne
+- similarities with pnn and libneuroml
+- important of neuroml is conceptual structure
+- libneuroml has cell types
+- mapping from pyneuroml to mod files, but not the other way around
+
+- standardization of abstract conn rules is above pynn and nueroml/pyneuroml
+- eg 10 conn algorithms -> pynn -> neuroml
+- morphology - segments, segment groups
+
+- mod files would need to be translated into nueroml (not fully translated); alternative would be point to nueroml
+  definition, convert via pyneuroml to Neuron mod
+- setup.py to netpyne
+- dot.travis.yml continuous integration server - run tests every time there is a commit to repository - make sure its consistent
+  with latest version
+
+- convert from Neuron model to NeuroML:
+-- export specifications 
+-- OSB converting to NeuroML2 cell morphology (pyneuroml.convert_to_neuroml2) - in future if already in neuroml dont need to
+ define in Nueron/netpyne format 
+-- Izhikevich (params) - abstract definiton
+-- export to Nueroml2 positions and connectivity - no current tool to convert
+-- https://github.com/OpenSourceBrain/Cerebellum3DDemo
+-- http://www.opensourcebrain.org/docs#Converting_To_NeuroML2
+
+
+- convert from NeuromML to Neuron:
+-- java script to convert neuroml to mod and Neuron/py files - wait for better iteration
+-- adapt java code to convert directly to netpyne
+-- https://github.com/NeuroML/org.neuroml.export/blob/development/src/main/java/org/neuroml/export/neuron/NeuronWriter.java
+-- https://github.com/NeuroML/org.neuroml.export/blob/development/src/main/java/org/neuroml/export/pynn/PyNNWriter.java
+-- check param files hhtut izhitut updated so can padraig can modify
+-- add load cell function in netpyne in neuroml format
+
+
+- differences:
+1) declarative
+2) netpyne makes use of mod files, but neuroml requires detailed specification
+3) netpyne provides conversion from abstract specifications -> instantiated network, and support for multicompartment, and
+  subcellular connectivity
+4) netpyne provides instantiation of NEURON objects, and parallel simulation of network
+
+- options:
+-- long-term: use Neuroml internally for instantiated network 
+-- short-term:  Neuron-based and conversion to NeuroML; 
+
+
+* 16jan27 Consolidate connectivity functions
+** Full conn -> fullConn
+- =probConn with prob = 1?
+** combine convConn, divConn, and randConn?
+- probFunc = optional param -- if not present, then:
+- select function depending of param included? eg. 'convergence', 'divergence', 'probability'
+** Random conn with N conns per postsyn cell (convergence) -> convConn
+~= conv conn
+- conv param allowed as function eg. uniform, gauss
+- also allows for weight+delay as func
+** Random conn with N conns per presyn cell (divergence) -> divConn
+** Random conn with fixed, function (including distance-dep) prob, weight, delay -> probConn
+*** fixed
+number eg. 5
+*** func
+- uniform
+*** func dist-dep
+- function of yfrac
+- function of 3d distance
+- generalizable to func of 
+-- (pre, post, dist) + '_' + (xfrac, yfrac, zfrac, x, y, z) = 18 variables
+-- (dist) + '_' + (xznorm, xyznorm, xz, xyz) = 4 variables
+-- total: 22 variables
+- create dictionary with each variable associated to its value/variable/function -- don't evaluate to save
+- enter as string, and convert to function
+- other variables allowed: any that are defined in f.net.params[var] -- arbitrary
+** implementation
+- use **kwargs
+- string based - converted to function, extract variables
+- arguments weight and delay valid for all conn types; and can be functional
+
+Options to implement func:
+*** lambda with kwargs - NO
+prob = lambda(**d): d['pre_ynorm']*0.5
+*** lambda with args - NO!
+prob = lambda(*d): d[3]*0.5
+*** string
+prob = 'pre_ynorm*0.5'
+prob = 'post_xyznorm*0.5
+prob = 'uniform()'
+prob = 'gauss(10,5)'
+prob = 'uniform(1,5)'
+- functions allow all of python random functions 
+- internal implementation:
+-- identifiy variables (pre, post or dist x,y,z,2d or 3d; plus any arbitrary defined in netParams)
+-- define dict mapping variable name to lambda function returning actual variable using preCell and postCell as args
+-- convert string to lambda function with variables as arguments
+-- call lambda function with args as dict with each entry mapped to lambda func that returns the variable
+*** efficiency
+- calculate all delay, prob, weight funcs together at the beginning
+- calcualte weights+delays for all possible conns despite some will not be used?
+- alternative might be more comput costly (calling 1 by 1), and repeated code
+- use map(lambda, list)
+- calculate final list of weights,probs,delays and pass to specific conn func
+
+*** errors
+- arguments by reference using lambda func only works for 'delay' if 'convergence' func loops over preCellsTags and postCells
+  -- even though they have nothing to do with each other!! whats going on? python bug? Im missing something?!
+
+** comparison to PyNN
+*** class AllToAllConnector(allow_self_connections=True, safe=True, callback=None)[source]
+=fullConn
+*** class OneToOneConnector(safe=True, callback=None)[source]
+=conn rule specifying cell ids
+*** class FixedProbabilityConnector(p_connect, allow_self_connections=True, rng=None, safe=True, callback=None)[source]
+=probConn
+*** class FromListConnector(conn_list, column_names=None, safe=True, callback=None)[source]
+=conn rule specifying cell ids
+*** class FromFileConnector(file, distributed=False, safe=True, callback=None)[source]
+=conn rule specifying cell ids
+*** class ArrayConnector(array, safe=True, callback=None)[source]
+=conn rule specifying cell ids
+*** class FixedNumberPreConnector(n, allow_self_connections=True, with_replacement=False, rng=None, safe=True, callback=None)
+=divConn
+*** class DistanceDependentProbabilityConnector(d_expression, allow_self_connections=True, rng=None, safe=True, callback=None)[source]
+= probConn with dist-dep func
+
+*** class IndexBasedProbabilityConnector(index_expression, allow_self_connections=True, rng=None, safe=True, callback=None)[sour
+= conn rule specifying cell ids
+*** class SmallWorldConnector(degree, rewiring, allow_self_connections=True, n_connections=None, rng=None, safe=True, callback=N
+not implemented
+*** class CSAConnector(cset, safe=True, callback=None)[source]
+not implemented
+** comparison to NEST
+*** ConvergentConnect
+Connect many source nodes to one target node.
+=convConn
+*** DivergentConnect
+Connect one source node to many target nodes.
+= divConn
+*** RandomConvergentConnect
+Randomly connect one source node to many target nodes.
+= convConn with uniform func
+*** RandomDivergentConnect
+Randomly connect one source node to many target nodes.
+= divConn with uniform func
+*** BinomialConvergentConnect
+Connect a target to a binomial number of sources.
+??
+
+
+* 16feb18 Changing folder structure and adding setup.py
+** file structure
+- root
+-- examples/: param and run files
+-- netpyne/: actual package
+-- doc/: documentation
+-- setup.py: required for pip install
+-- other root files
+** OK how to add $PYTHONPATH in setup.py?
+** OK Make sure all examples and tuts work
+- examples - ok
+- tutorial examples - ok
+- claus - ok
+- M1Network -ok
+** OK Update documentation
+** OK Update README
+
+* 16feb25 Adding STDP and RL
+** old stdp code
+if s.usestdp and ([s.cellpops[pregid],s.cellpops[pstgid]] in s.plastConns): # If using STDP and these pops are set to be plastic connections
+            if sum(abs(s.stdprates[s.EorI[pregid],:]))>0 or sum(abs(s.RLrates[s.EorI[pregid],:]))>0: # Don't create an STDP connection if the learning rates are zero
+                for r in range(s.nreceptors): # Need a different STDP instances for each receptor
+                    if newcon.weight[r]>0: # Only make them for nonzero connections
+                        stdpmech = h.STDP(0,sec=s.dummies[pstid]) # Create STDP adjuster
+                        stdpmech.hebbwt = s.stdprates[s.EorI[pregid],0] # Potentiation rate
+                        stdpmech.antiwt = s.stdprates[s.EorI[pregid],1] # Depression rate
+                        stdpmech.wmax = s.maxweight # Maximum synaptic weight
+                        precon = s.pc.gid_connect(pregid,stdpmech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                        pstcon = s.pc.gid_connect(pstgid,stdpmech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                        h.setpointer(s.connlist[-1]._ref_weight[r],'synweight',stdpmech) # Associate the STDP adjuster with this weight
+                        s.stdpmechs.append(stdpmech) # Save STDP adjuster
+                        s.precons.append(precon) # Save presynaptic spike source
+                        s.pstcons.append(pstcon) # Save postsynaptic spike source
+                        s.stdpconndata.append([pregid,pstgid,r]) # Store presynaptic cell ID, postsynaptic, and receptor
+                        if s.useRL: # using RL
+                            stdpmech.RLon = 1 # make sure RL is on
+                            stdpmech.RLhebbwt = s.RLrates[s.EorI[pregid],0] # Potentiation rate
+                            stdpmech.RLantiwt = s.RLrates[s.EorI[pregid],1] # Depression rate
+                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp time constant(ms)
+                            stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
+                            stdpmech.useRLexp = s.useRLexp # RL 
+                            stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
+                        else:
+                            stdpmech.RLon = 0 # make sure RL is off
+** how to update at intervals
+*** why needed?
+- periodic saves (eg. of weights)
+- update virtual arm apparatus
+- run RL on syns based on critic signal
+- calculate LFP
+
+*** option 1: run sim for short periods of time (not efficient?)
+while round(h.t) < s.duration:
+        s.pc.psolve(min(s.duration,h.t+s.loopstep)
+*** option 2: finitialize handler?
+** netpyne format
+- within conn rule
+
+- One set of STDP params for each conn rule:
+STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 'tauhebb', 'RLwindhebb', 'useRLexp', 'softthresh'
+
+  stdpmech.RLon = 1 # make sure RL is on
+                            stdpmech.RLhebbwt = s.RLrates[s.EorI[pregid],0] # Potentiation rate
+                            stdpmech.RLantiwt = s.RLrates[s.EorI[pregid],1] # Depression rate
+                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp time constant(ms)
+                            stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
+                            stdpmech.useRLexp = s.useRLexp # RL 
+                            stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
+'plasticity': {'mech': 'STDP', 'params': STDPparams}
+
+- Single set of STDP params for all:
+'plasticity':  'STDP'
+
 * TODO
 ** DONE - unify cellmodel 
 - cell prop conditions: 
@@ -196,7 +566,7 @@ e.g. reciprocal synapses.
 - simConfig, netParams, net, simData
 - added to docu
 
-** DONE Test Friesen cell
+** DONE Test importing Friesen, mainen, traub cell models
 - Read python names in importCell
 -- use dir; check if section; compare with secList
 
@@ -205,9 +575,7 @@ e.g. reciprocal synapses.
 ** DONE Associate_gid from axon
 - section['spikeGenLoc'] = 0.5
 
-** DONE Test adaptive exp cell (no Neuron code)
-
-** HDF5
+** DONE HDF5
 - tried h5py (http://docs.h5py.org/en/latest/quick.html)
 Saving output as example-20160108_200403.hdf5... 
 Traceback (most recent call last):
@@ -249,32 +617,81 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 - try this: http://stackoverflow.com/questions/16705274/fastest-way-to-convert-a-dicts-keys-values-from-str-to-unicode
 
-** Avg postsyn convergence
-** Add x,y positions as 'xrange' and 'yrange'
-- maybe xfracRange, yfracRange
-- replace yfrac with zfrac!
-** Set positions in Neuron's 3D space
-** importCell can modify h variables (eg. celsius)
-- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+- converted to unicode using dict2utf8() func, but now get segmentation fault for all except simConfig dict
 
-** LFP
+- empty dicts {} caused seg fault -- replaced with []
+
+** DONE Enable providing num spikes in Netstim (paper)
+** DONE Set v_init before calling init() (paper)
+- netParam param
+- 'vinit' param in section
+- automatically set vinit=vr for izhis - not needed cause fixed mod
+- add to doc
+
+** DONE Conv and div conn (paper)
+- made conn very flexible by allowing function for: prob, conv, div, weight and delay
+- funcs can include spatial/distance variables; and others defined in netParams
+- can implement a large range of functionalities with very generic implementation
+** DONE Add x,z,xnorm,znorm positions (paper)
+** DONE Plot cell from specific population (paper)
+- and or one of each population
+
+** DONE Allow to define xrange and zrange of pops
+- also xfracrange and zfracrange
+- for fixed cell density, easy, just don't calcualte rand
+- for functional density more complex
+- make generic so no distinction between coordinates
+** DONE Fix NetStim connectivity
+- no convergent or divergent; only full and prob
+** DONE fix so lambda funcs saved as string
+** DONE setup.py pip install (paper)
+** DONE timing (paper)
+** DONE Record subset of time, and only record traces for subset of cells
+- recordTraces = ['all', 'P', 1]
+- plotTraces = ['all', 'P', 1]
+
+- pops means just 1 cell of that pop!
+- automatically add elements of plotTraces to recordTraces!!
+
+
+** Add support for SectionLists (paper)
+** simple LFP (paper) 
 - simple voltage sum 
-- LFPy
-** NeuroML
-- padraig
-** Functions to load simConfig, netParams, net, simData
-** timing
-** Subcellular synaptic connectivity
+** Plot conn matrix (paper)
+- by cells and populations
+** Subcellular synaptic connectivity (paper)
 - distribution of syns across segments based on empirical map
 - concept of logical connection subsumes subset of unitary connections
-** Add support for SectionLists 
-** Record cell from specific population
+** import/export NeuroML (paper)
+- padraig (see notes above)
+** Functions to load simConfig, netParams, net, simData (paper)
+** importCell can modify h variables (eg. celsius) (paper)
+- maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
+
+** Plasticity (paper?)
+- Hebbian
+- STDP
+
+** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
+- maybe iclamp for paper?
+- can implement via pointp in cell properties
+
+
+** User input error checking
+eg. getattr(a,b, DEFAULT VALUE!)
+** Travis CI
+test automatically examples
+** Evol params batch
+** Set positions in Neuron's 3D space
+** LFPy
+cliff?
 ** Save plots to file
 ** Conn/props just in master node
 ** normalized transfer entropy (nTE)
+cliff?
 ** Granger causality
-** Conn matrix
-- by cells and populations
+cliff?
 ** Add support for point neuron outside of section
 eg. IntFire1,2,3,4 
  ARTIFICIAL_CELL means
@@ -287,13 +704,21 @@ eg. IntFire1,2,3,4
 
 - outside of section so need different method - maybe not worth? 
 
-** Set v_init before calling init()
-- netParam param
+** RxD 
+/u/samn/m1dyst -> models/m1dyst
+https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
 ** Saving at intervals
-** Stimulation - iclamp,vclamp, opto, microelectrode
-** Plasticity
-- Hebbian
-- STDP
 ** modify instantiated network
 - load net and provide new set of params
+** Make simulator-indep using NeuroML internal format
+** GUI
+** Test adaptive exp cell (no Neuron code)
+student doing
+** Make opensource with contributions from community
+There are several ways to contribute to PyNN:
 
+reporting bugs, errors and other mistakes in the code or documentation;
+making suggestions for improvements;
+fixing bugs and other mistakes;
+adding or maintaining a simulator backend;
+major refactoring to improve performance, reduce code complexity, or both.

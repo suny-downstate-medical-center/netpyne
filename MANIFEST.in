@@ -1,0 +1,3 @@
+# Include the data files
+recursive-include netpyne *
+recursive-include examples *

@@ -273,16 +273,31 @@ class Cell(object):
 
         self.conns.append(params)
         if pointp:
-            netcon = f.pc.gid_connect(params['preGid'], sec['pointps'][pointp]['hPointp']) # create Netcon between global gid and local point neuron
+            postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
         else:
-            netcon = f.pc.gid_connect(params['preGid'], sec['syns'][params['syn']]['hSyn']) # create Netcon between global gid and local synapse
-        
+            postTarget= sec['syns'][params['syn']]['hSyn'] # local synapse
+        netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
         netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
             (params['preGid'], self.gid, params['sec'], params['syn'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+
+        plasticity = params.get('plasticity')
+        if plasticity:  # add plasticity
+            plastSection = h.Section()
+            try:
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
+                for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
+                    setattr(plastMech, plastParamName, plastParamValue)
+                if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
+                    precon = f.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                    pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                    h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
+                    if f.cfg['verbose']: print('  Added STDP plasticity to synapse')
+            except:
+                print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
 
     def addStim (self, params):

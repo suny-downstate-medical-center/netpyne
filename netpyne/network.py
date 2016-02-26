@@ -235,7 +235,8 @@ class Network(object):
                     'syn': connParam['syn'], 
                     'weight': connParam['weightFunc'].pop(0) if 'weightFunc' in connParam else connParam['weight'],
                     'delay': connParam['delayFunc'].pop(0) if 'delayFunc' in connParam else connParam['delay'],
-                    'threshold': connParam['threshold']}
+                    'threshold': connParam['threshold'],
+                    'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
 
 
@@ -277,7 +278,8 @@ class Network(object):
                                 'syn': connParam['syn'], 
                                 'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                 'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
-                                'threshold': connParam['threshold']}
+                                'threshold': connParam['threshold'],
+                                'plasticity': connParam.get('plasticity')}
                         postCell.addConn(params)  # call cell method to add connections
        
 
@@ -309,7 +311,8 @@ class Network(object):
                             'syn': connParam['syn'], 
                             'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                             'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
-                            'threshold': connParam['threshold']}
+                            'threshold': connParam['threshold'],
+                            'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
 
 
@@ -340,7 +343,8 @@ class Network(object):
                             'syn': connParam['syn'], 
                             'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                             'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
-                            'threshold': connParam['threshold']}
+                            'threshold': connParam['threshold'],
+                            'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
    
 

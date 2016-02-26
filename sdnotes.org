@@ -452,6 +452,62 @@ Connect a target to a binomial number of sources.
 ** OK Update documentation
 ** OK Update README
 
+* 16feb25 Adding STDP and RL
+** old stdp code
+if s.usestdp and ([s.cellpops[pregid],s.cellpops[pstgid]] in s.plastConns): # If using STDP and these pops are set to be plastic connections
+            if sum(abs(s.stdprates[s.EorI[pregid],:]))>0 or sum(abs(s.RLrates[s.EorI[pregid],:]))>0: # Don't create an STDP connection if the learning rates are zero
+                for r in range(s.nreceptors): # Need a different STDP instances for each receptor
+                    if newcon.weight[r]>0: # Only make them for nonzero connections
+                        stdpmech = h.STDP(0,sec=s.dummies[pstid]) # Create STDP adjuster
+                        stdpmech.hebbwt = s.stdprates[s.EorI[pregid],0] # Potentiation rate
+                        stdpmech.antiwt = s.stdprates[s.EorI[pregid],1] # Depression rate
+                        stdpmech.wmax = s.maxweight # Maximum synaptic weight
+                        precon = s.pc.gid_connect(pregid,stdpmech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                        pstcon = s.pc.gid_connect(pstgid,stdpmech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                        h.setpointer(s.connlist[-1]._ref_weight[r],'synweight',stdpmech) # Associate the STDP adjuster with this weight
+                        s.stdpmechs.append(stdpmech) # Save STDP adjuster
+                        s.precons.append(precon) # Save presynaptic spike source
+                        s.pstcons.append(pstcon) # Save postsynaptic spike source
+                        s.stdpconndata.append([pregid,pstgid,r]) # Store presynaptic cell ID, postsynaptic, and receptor
+                        if s.useRL: # using RL
+                            stdpmech.RLon = 1 # make sure RL is on
+                            stdpmech.RLhebbwt = s.RLrates[s.EorI[pregid],0] # Potentiation rate
+                            stdpmech.RLantiwt = s.RLrates[s.EorI[pregid],1] # Depression rate
+                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp time constant(ms)
+                            stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
+                            stdpmech.useRLexp = s.useRLexp # RL 
+                            stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
+                        else:
+                            stdpmech.RLon = 0 # make sure RL is off
+** how to update at intervals
+*** why needed?
+- periodic saves (eg. of weights)
+- update virtual arm apparatus
+- run RL on syns based on critic signal
+- calculate LFP
+
+*** option 1: run sim for short periods of time (not efficient?)
+while round(h.t) < s.duration:
+        s.pc.psolve(min(s.duration,h.t+s.loopstep)
+*** option 2: finitialize handler?
+** netpyne format
+- within conn rule
+
+- One set of STDP params for each conn rule:
+STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 'tauhebb', 'RLwindhebb', 'useRLexp', 'softthresh'
+
+  stdpmech.RLon = 1 # make sure RL is on
+                            stdpmech.RLhebbwt = s.RLrates[s.EorI[pregid],0] # Potentiation rate
+                            stdpmech.RLantiwt = s.RLrates[s.EorI[pregid],1] # Depression rate
+                            stdpmech.tauhebb = stdpmech.tauanti = s.stdpwin # stdp time constant(ms)
+                            stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
+                            stdpmech.useRLexp = s.useRLexp # RL 
+                            stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
+'plasticity': {'mech': 'STDP', 'params': STDPparams}
+
+- Single set of STDP params for all:
+'plasticity':  'STDP'
+
 * TODO
 ** DONE - unify cellmodel 
 - cell prop conditions: 
@@ -590,6 +646,13 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 ** DONE fix so lambda funcs saved as string
 ** DONE setup.py pip install (paper)
 ** DONE timing (paper)
+** DONE Record subset of time, and only record traces for subset of cells
+- recordTraces = ['all', 'P', 1]
+- plotTraces = ['all', 'P', 1]
+
+- pops means just 1 cell of that pop!
+- automatically add elements of plotTraces to recordTraces!!
+
 
 ** Add support for SectionLists (paper)
 ** simple LFP (paper) 
@@ -614,22 +677,21 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - maybe iclamp for paper?
 - can implement via pointp in cell properties
 
-** Record subset of time, and only record traces for subset of cells
-- recordTraces = ['all', 'P', 1]
-- plotTraces = ['all', 'P', 1]
 
-- pops means just 1 cell of that pop!
-- automatically add elements of plotTraces to recordTraces!!
-
+** User input error checking
+eg. getattr(a,b, DEFAULT VALUE!)
 ** Travis CI
 test automatically examples
 ** Evol params batch
 ** Set positions in Neuron's 3D space
 ** LFPy
+cliff?
 ** Save plots to file
 ** Conn/props just in master node
 ** normalized transfer entropy (nTE)
+cliff?
 ** Granger causality
+cliff?
 ** Add support for point neuron outside of section
 eg. IntFire1,2,3,4 
  ARTIFICIAL_CELL means

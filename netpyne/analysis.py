@@ -90,7 +90,7 @@ def plotRaster():
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
     subplots_adjust(right=(0.9-0.01*maxLabelLen))
-    savefig('raster.png')
+    #savefig('raster.png')
 
 ## Traces (v,i,g etc) plot
 def plotTraces(): 
@@ -140,7 +140,7 @@ def plotTraces():
                         pass
         subplot(len(tracesList),1,1)
         title('Pop %s, Cell %d'%(popLabel, int(gid)))
-    savefig('traces.png')
+    #savefig('traces.png')
 
 
 ## Plot power spectra density

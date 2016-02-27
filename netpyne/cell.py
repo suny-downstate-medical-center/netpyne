@@ -352,10 +352,21 @@ class Cell(object):
             rand.negexp(1)
             self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
-            netstim = h.NetStim()
-            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+            if isinstance(params['rate'], str):
+                if params['rate'] == 'variable':
+                    try:
+                        netstim = h.NSLOC()
+                        netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
+                        netstim.noise = 0
+                    except:
+                        print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
+                else:
+                    print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
+            else:
+                netstim = h.NetStim()
+                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+                netstim.noise = params['noise']
             netstim.noiseFromRandom(rand)  # use random number generator
-            netstim.noise = params['noise']
             netstim.number = params['number']   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 

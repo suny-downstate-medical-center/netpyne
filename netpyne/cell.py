@@ -378,6 +378,7 @@ class Cell(object):
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        self.stims[-1]['weightIndex'] = weightIndex
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['syn'], params['weight'], params['delay']))
 

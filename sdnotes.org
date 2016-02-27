@@ -508,6 +508,15 @@ STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 
 - Single set of STDP params for all:
 'plasticity':  'STDP'
 
+* Netpyne Models/Users
+** Github examples folder
+** Documentation tutorials
+** M1 network (Salva, Neurosim)
+** Parallel Neuron paper (Alex, Neurosim)
+** Claustrum network (Jing, George Augustine)
+** Sensorimotor network + arm (Cliff, Kerr lab)
+
+
 * TODO
 ** DONE - unify cellmodel 
 - cell prop conditions: 
@@ -653,7 +662,8 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - pops means just 1 cell of that pop!
 - automatically add elements of plotTraces to recordTraces!!
 
-
+** Fix pops starting with same characters
+EMstim == EM !!
 ** Add support for SectionLists (paper)
 ** simple LFP (paper) 
 - simple voltage sum 

@@ -2,7 +2,7 @@
 
 - Added option to add STDP plasticity and RL to connections
 
-- 
+- Added option to run function at intervals during simulation, e.g. to interface with external program (such as virtual arm)
 
 ## Version 0.3.3
 

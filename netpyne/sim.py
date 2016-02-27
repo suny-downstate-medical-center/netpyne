@@ -276,11 +276,11 @@ def runSimWithIntervalFunc(interval, func):
     if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     init()
 
-    progUpdate = 1000  # update every second
+    #progUpdate = 1000  # update every second
     while round(h.t) < f.cfg['duration']:
         f.pc.psolve(min(f.cfg['duration'], h.t+interval))
-        if f.cfg['verbose'] and (round(h.t) % progUpdate):
-            print(' sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg['duration']*100)))
+        #if f.cfg['verbose'] and (round(h.t) % progUpdate):
+            #print(' Sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg['duration']*100)))
         func(h.t) # function to be called at intervals
 
     if f.rank==0: 

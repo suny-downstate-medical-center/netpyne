@@ -1,7 +1,7 @@
 COMMENT
 
-A "simple" implementation of the Izhikevich neuron with AMPA, NMDA,
-GABA_A, and GABA_B receptor dynamics. Equations and parameter values are taken from
+A "simple" implementation of the Izhikevich neuron.
+Equations and parameter values are taken from
   Izhikevich EM (2007).
   "Dynamical systems in neuroscience"
   MIT Press
@@ -33,7 +33,7 @@ ENDCOMMENT
 : Declare name of object and variables
 NEURON {
   POINT_PROCESS Izhi2007b
-  RANGE C, k, vr, vt, vpeak, a, b, c, d, Iin, celltype, alive, cellid, verbose, derivtype
+  RANGE C, k, vr, vt, vpeak, u, a, b, c, d, Iin, celltype, alive, cellid, verbose, derivtype, delta, t0
   NONSPECIFIC_CURRENT i
 }
 
@@ -64,26 +64,52 @@ PARAMETER {
 ASSIGNED {
   v (mV)
   i (nA)
+  u (mV) : Slow current/recovery variable
+  delta
+  t0
   derivtype
 }
 
-: State variables
-STATE {
-  u (mV) : Slow current/recovery variable
-}
-
-
 : Initial conditions
 INITIAL {
-  v = vr  : overwritten by h.v_init in stdinit()
   u = 0.2*vr
   derivtype=2
-  net_send(0,1) : Required for the WATCH statement to be active
+  net_send(0,1) : Required for the WATCH statement to be active; v=vr initialization done there
 }
 
 : Define neuron dynamics
 BREAKPOINT {
-  SOLVE states METHOD derivimplicit  : cnexp
+  delta = t-t0 : Find time difference
+  if (celltype<5) {
+    u = u + delta*a*(b*(v-vr)-u) : Calculate recovery variable
+  }
+  else {
+     : For FS neurons, include nonlinear U(v): U(v) = 0 when v<vb ; U(v) = 0.025(v-vb) when v>=vb (d=vb=-55)
+     if (celltype==5) {
+       if (v<d) { 
+        u = u + delta*a*(0-u)
+       }
+       else { 
+        u = u + delta*a*((0.025*(v-d)*(v-d)*(v-d))-u)
+       }
+     }
+
+     : For TC neurons, reset b
+     if (celltype==6) {
+       if (v>-65) {b=0}
+       else {b=15}
+       u = u + delta*a*(b*(v-vr)-u) : Calculate recovery variable
+     }
+     
+     : For TRN neurons, reset b
+     if (celltype==7) {
+       if (v>-65) {b=2}
+       else {b=10}
+       u = u + delta*a*(b*(v-vr)-u) : Calculate recovery variable
+     }
+  }
+
+  t0=t : Reset last time so delta can be calculated in the next time step
   i = -(k*(v-vr)*(v-vt) - u + Iin)/C/1000
 }
 
@@ -91,7 +117,7 @@ FUNCTION derivfunc () {
   if (celltype==5 && derivtype==2) { : For FS neurons, include nonlinear U(v): U(v) = 0 when v<vb ; U(v) = 0.025(v-vb) when v>=vb (d=vb=-55)
     derivfunc = a*(0-u)
   } else if (celltype==5 && derivtype==1) { : For FS neurons, include nonlinear U(v): U(v) = 0 when v<vb ; U(v) = 0.025(v-vb) when v>=vb (d=vb=-55)
-    derivfunc = a*((0.025*(v-d)^3)-u)
+    derivfunc = a*((0.025*(v-d)*(v-d)*(v-d))-u)
   } else if (celltype==5) { 
     VERBATIM
     hoc_execerror("izhi2007b.mod ERRA: derivtype not set",0);
@@ -99,12 +125,6 @@ FUNCTION derivfunc () {
   } else {
     derivfunc = a*(b*(v-vr)-u) : Calculate recovery variable
   }
-}
-
-DERIVATIVE states {
-  LOCAL f
-  f = derivfunc()
-  u' = f
 }
 
 : Input received
@@ -127,6 +147,7 @@ NET_RECEIVE (w) {
       WATCH (v> d) 3  : going up
       WATCH (v< d) 4  : coming down
     }
+    v = vr  : initialization can be done here
   : FLAG 2 Event created by WATCH statement -- threshold crossed for spiking
   } else if (flag == 2) { 
     if (alive) {net_event(t)} : Send spike event if the cell is alive
@@ -151,7 +172,7 @@ NET_RECEIVE (w) {
   : FLAG 3 Event created by WATCH statement -- v exceeding set point for param reset
   } else if (flag == 3) { 
     : For TC neurons 
-    if (celltype == 5)        { derivtype = 1 : if (v>d) u'=a*((0.025*(v-d)^3)-u)
+    if (celltype == 5)        { derivtype = 1 : if (v>d) u'=a*((0.025*(v-d)*(v-d)*(v-d))-u)
     } else if (celltype == 6) { b=0
     } else if (celltype == 7) { b=2 
     }

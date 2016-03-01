@@ -286,8 +286,8 @@ class Cell(object):
 
         plasticity = params.get('plasticity')
         if plasticity:  # add plasticity
-            plastSection = h.Section()
             try:
+                plastSection = h.Section()
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
@@ -295,9 +295,12 @@ class Cell(object):
                     precon = f.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
                     pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
                     h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
+                    self.conns[-1]['hPlastSection'] = plastSection
+                    self.conns[-1]['hSTDP'] = plastMech
                     if f.cfg['verbose']: print('  Added STDP plasticity to synapse')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
+
 
 
     def addStim (self, params):
@@ -378,6 +381,7 @@ class Cell(object):
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        self.stims[-1]['weightIndex'] = weightIndex
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['syn'], params['weight'], params['delay']))
 

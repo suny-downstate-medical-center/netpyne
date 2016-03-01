@@ -1,3 +1,7 @@
+## Version 0.3.5
+
+- Fixed bug when checking connectivity rule conditions
+
 ## Version 0.3.4
 
 - Added option to add STDP plasticity and RL to connections

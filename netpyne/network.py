@@ -86,11 +86,14 @@ class Network(object):
             preCellsTags = allCellTags  # initialize with all presyn cells 
             prePops = allPopTags  # initialize with all presyn pops
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
-                if condKey == 'ynorm':
+                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                     preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
                     prePops = {}
                 else:
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                    if isinstance(condValue, list): 
+                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                    else:
+                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
                     prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
 
             if not preCellsTags: # if no presyn cells, check if netstim
@@ -102,10 +105,13 @@ class Network(object):
             
             postCells = {cell.gid:cell for cell in self.cells}
             for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
-                if condKey == 'ynorm':
+                if condKey == ['x','y','z','xnorm','ynorm','znorm']:
                     postCells = {gid: cell for (gid,cell) in postCells.iteritems() if condValue[0] <= cell.tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-                else:
+                elif isinstance(condValue, list): 
                     postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] in condValue}  # dict with post Cell objects
+                else:
+                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
+
 
             if 'connFunc' not in connParam:  # if conn function not specified, select based on params
                 if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func

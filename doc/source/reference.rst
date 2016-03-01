@@ -35,7 +35,7 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions). 
+* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the connectivity rule conditions). 
 
 The image below illustrates this process:
 
@@ -64,7 +64,7 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 * **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['popLabel', 'cellModel', 'cellType'])
 
-Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see below). 
+Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -85,13 +85,13 @@ Each item of the ``popParams`` list consists of a dictionary that defines the pr
 	e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich 2007 point neuron model). 
 
 * **xRange** or **xnormRange** - Range of neuron positions in x-axis (horizontal length), specified 2-element list [min, max]. 
-	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1-0.2]).
+	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
 
 * **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified 2-element list [min, max]. 
-	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1-0.2]).
+	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]).
 
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
-	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1-0.2]).
+	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
 Examples of standard population::
 

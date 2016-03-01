@@ -662,8 +662,9 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 - pops means just 1 cell of that pop!
 - automatically add elements of plotTraces to recordTraces!!
 
-** Fix pops starting with same characters
+** DONE Fix pops starting with same characters
 EMstim == EM !!
+** Cell position in ellipsoid 
 ** Add support for SectionLists (paper)
 ** simple LFP (paper) 
 - simple voltage sum 

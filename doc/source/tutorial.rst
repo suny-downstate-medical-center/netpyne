@@ -323,6 +323,6 @@ Congratulatios, now you have a hybrid model composed of HH and Izhikevich cells!
 
 The full tutorial code for this example is available here: :download:`tut4.py <code/tut4.py>`.
 
-..seealso:: NetPyNE also supports importing cells defined in other files (eg. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
+.. seealso:: NetPyNE also supports importing cells defined in other files (eg. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
 
-..seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
+.. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

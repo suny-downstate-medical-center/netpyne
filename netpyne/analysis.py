@@ -130,7 +130,7 @@ def plotTraces():
                 for itrace, trace in enumerate(tracesList):
                     try:
                         data = f.allSimData[trace]['cell_'+str(gid)]
-                        t = arange(0, duration+recordStep, recordStep)
+                        t = arange(0, len(data)*recordStep, recordStep)
                         subplot(len(tracesList),1,itrace+1)
                         plot(t, data, linewidth=1.5)
                         xlabel('Time (ms)', fontsize=fontsiz)

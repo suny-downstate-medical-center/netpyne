@@ -85,6 +85,7 @@ class Network(object):
 
             preCellsTags = allCellTags  # initialize with all presyn cells 
             prePops = allPopTags  # initialize with all presyn pops
+
             for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                     preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
@@ -103,26 +104,27 @@ class Network(object):
                         if not 'source' in prePop: prePop['source'] = 'random'  # add default source
                     preCellsTags = prePops
             
-            postCells = {cell.gid:cell for cell in self.cells}
-            for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
-                if condKey == ['x','y','z','xnorm','ynorm','znorm']:
-                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if condValue[0] <= cell.tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-                elif isinstance(condValue, list): 
-                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] in condValue}  # dict with post Cell objects
-                else:
-                    postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
+            if preCellsTags:  # only check post if there are pre
+                postCells = {cell.gid:cell for cell in self.cells}
+                for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
+                    if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                        postCells = {gid: cell for (gid,cell) in postCells.iteritems() if condValue[0] <= cell.tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    elif isinstance(condValue, list): 
+                        postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] in condValue}  # dict with post Cell objects
+                    else:
+                        postCells = {gid: cell for (gid,cell) in postCells.iteritems() if cell.tags[condKey] == condValue}  # dict with post Cell objects
 
 
-            if 'connFunc' not in connParam:  # if conn function not specified, select based on params
-                if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
-                elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
-                elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
-                else: connParam['connFunc'] = 'fullConn'  # convergence function
+                if 'connFunc' not in connParam:  # if conn function not specified, select based on params
+                    if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
+                    elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
+                    elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
+                    else: connParam['connFunc'] = 'fullConn'  # convergence function
 
-            connFunc = getattr(self, connParam['connFunc'])  # get function name from params
-            if preCellsTags and postCells:
-                self.strToFunc(preCellsTags, postCells, connParam)  # convert strings to functions (for the delay, and probability params)
-                connFunc(preCellsTags, postCells, connParam)  # call specific conn function
+                connFunc = getattr(self, connParam['connFunc'])  # get function name from params
+                if preCellsTags and postCells:
+                    self.strToFunc(preCellsTags, postCells, connParam)  # convert strings to functions (for the delay, and probability params)
+                    connFunc(preCellsTags, postCells, connParam)  # call specific conn function
         
         print('  Number of connections on node %i: %i ' % (f.rank, sum([len(cell.conns) for cell in f.net.cells])))
         f.pc.barrier()
@@ -253,7 +255,7 @@ class Network(object):
     def probConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of probabilistic connections...'
-        
+
         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
         allRands = [random() for i in range(len(preCellsTags)*len(postCells))]  # Create an array of random numbers for checking each connection
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell

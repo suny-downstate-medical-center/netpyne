@@ -664,6 +664,7 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 ** DONE Fix pops starting with same characters
 EMstim == EM !!
+
 ** Cell position in ellipsoid 
 ** Add support for SectionLists (paper)
 ** simple LFP (paper) 
@@ -678,6 +679,7 @@ EMstim == EM !!
 ** Functions to load simConfig, netParams, net, simData (paper)
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
 
 
 ** Plasticity (paper?)

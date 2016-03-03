@@ -1,9 +1,6 @@
 ## Version 0.3.5
 
-- Fixed 2 bugs when checking connectivity rule conditions
-
-
-- Create only one dummy section when using Izhi2007a model (2x speedup)
+- Fixed bugs when checking connectivity rule conditions
 
 
 ## Version 0.3.4

@@ -35,9 +35,9 @@ Requires NEURON with Python and MPI support.
 	```
 	import HHTut
 	from netpyne import init
-		init.createAndRun(
-			simConfig = HHTut.simConfig,     
-			netParams = HHTut.netParams)
+	init.createAndSimulate(
+		simConfig = HHTut.simConfig,     
+		netParams = HHTut.netParams)
 	```
 
 3. Type `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 

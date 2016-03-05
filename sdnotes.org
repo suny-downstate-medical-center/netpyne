@@ -508,6 +508,41 @@ STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 
 - Single set of STDP params for all:
 'plasticity':  'STDP'
 
+* 16mar04 Adding subcellular synaptic conn distribution
+** sectionList
+- need during runtim? for connectivity purposes?
+- option 1: can include section attribute named 'sectionList' and add name, but could take longer to set properties if have to search all
+- option 2: can include as dict in sectionLists in cellProp, and then add all sections inside of each sectionList dict; but would
+  change the consistency of the generic implementation (cell.py etc)
+- option 3: can add additional dict sectionLitst in cellProp, simply including list of sections (need to return additional
+  dic from util.py function)
+- best options seem 1 or 3
+- Need to create sectionList at runtime? useful?
+
+-- iterating over sectionList
+from neuron import h
+​
+s = h.Section(name='s')
+a = h.Section(name='a')
+d = h.Section(name='d')
+​
+sl1 = h.SectionList()
+sl1.append(sec=s)
+​
+sl2 = h.SectionList()
+sl2.append(sec=a)
+sl2.append(sec=d)
+​
+section_lists = h.List('SectionList')
+print 'There are %d SectionLists' % section_lists.count()
+​
+for i in xrange(int(section_lists.count())):
+    print 'SectionList %d has the following sections: %r' % (i + 1, [str(sec.hname()) for sec in section_lists.o(i)])
+
+--- Note that this iterates over all SectionList objects, not just those associated with a particular cell.
+--- Alternatively, itertools.chain.from_iterable
+--- https://docs.python.org/2/library/itertools.html#itertools.chain.from_iterable
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -664,8 +699,10 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 ** DONE Fix pops starting with same characters
 EMstim == EM !!
+
 ** Cell position in ellipsoid 
 ** Add support for SectionLists (paper)
+
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)
@@ -678,6 +715,7 @@ EMstim == EM !!
 ** Functions to load simConfig, netParams, net, simData (paper)
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
+
 
 
 ** Plasticity (paper?)

@@ -1,7 +1,8 @@
 ## Version 0.3.5
 
-- Fixed bugs when checking connectivity rule conditions
+- Fixed bugs: not checking connectivity rule conditions properly
 
+- Fixed bug: number of connections depended on number of nodes
 
 ## Version 0.3.4
 

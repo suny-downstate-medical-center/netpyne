@@ -181,7 +181,7 @@ class Network(object):
             lambdaFunc = eval(lambdaStr)
        
              # initialize randomizer in case used in function
-            seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))
+            seed(f.sim.id32('%d'%(f.cfg['randseed'])))
 
             if paramStrFunc in ['probability']:
                 # replace function with list of values derived from function (one per pre+post cell)
@@ -218,7 +218,7 @@ class Network(object):
         paramsStrFunc = [param for param in ['weightFunc', 'delayFunc'] if param in connParam] 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
+            seed(f.sim.id32('%d'%(f.cfg['randseed'])))
             connParam[paramStrFunc] = [connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preCellTags in preCellsTags.values() for postCell in postCells.values()]
         
@@ -256,8 +256,13 @@ class Network(object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of probabilistic connections...'
 
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
+        seed(f.sim.id32('%d'%(f.cfg['randseed'])))  
         allRands = [random() for i in range(len(preCellsTags)*len(postCells))]  # Create an array of random numbers for checking each connection
+
+        print 'Node:',f.rank
+        print connParam
+        print allRands
+
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                 probability = connParam['probabilityFunc'].pop(0) if 'probabilityFunc' in connParam else connParam['probability']
@@ -299,10 +304,11 @@ class Network(object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of convergent connections...'
         
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
+        
         for postCellGid, postCell in postCells.iteritems():  # for each postsyn cell
             convergence = connParam['convergenceFunc'].pop(0) if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
+            seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid)))  
             preCellsSample = sample(preCellsTags.keys(), convergence)  # selected gids of presyn cells
             preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
             for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
@@ -330,11 +336,11 @@ class Network(object):
     def divConn(self, preCellsTags, postCells, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of divergent connections...'
-        
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+postCells.keys()[0]+preCellsTags.keys()[0])))  
+         
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'].pop(0) if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCells)), 0)
+            seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellGid)))  
             postCellsSample = sample(postCells, divergence)  # selected gids of postsyn cells
             postCellsDiv = {k:v for k,v in postCells.iteritems() if k in postCellsSample}  # dict of selected postsyn cells tags
             for postCellGid, postCell in postCellsDiv.iteritems():  # for each postsyn cell

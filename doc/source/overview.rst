@@ -10,7 +10,7 @@ NetPyNE is a python package to facilitate the development and parallel simulatio
 	:width: 80%
 	:align: center
 
-The modularized framework allows the user to define the network parameters (including cell populations, cell properties and conectivity rules) and the simulation configuration (eg. duration, integration step, plotting options etc) using a simple and flexible format. The format is based solely on Python dictionaries and lists and does not require the NEURON simulator, or even the netpyne package. Therefore, the model specifications/parameters are indepdendent from the model execution/simulation.
+The modularized framework allows the user to define the network parameters (including cell populations, cell properties and conectivity rules) and the simulation configuration (eg. duration, integration step, plotting options etc) using a simple and flexible format. The format is based solely on Python dictionaries and lists and does not require the NEURON simulator, or even the netpyne package. Therefore, the model specifications/parameters are independent from the model execution/simulation.
 
 Based on these input parameters, the framework instantiates the network as a hierarchical python structure, and creates the NEURON objects required to simulate the network. The user can then easily run a parallel simulation (using mpi) and plot graphs such as raster plots or cell voltage traces. The framework allows to save the data generated at each stages (model specifications, instantiated network, and simulation results) into different formats (eg. pickle, json, mat).
 
@@ -41,8 +41,8 @@ Main Features
 * NEURON-independent instantiation of network (all cells, connections, ...) using Python objects and containers.
 * NEURON-specific instantiation of network ready for simulation.
 * Enables sharing of Python-based network objects, which can then be instantiated and simulated in NEURON.
-* Easy MPI parallel simulation of network, including cell distribution across nodes an gathering of data from all nodes.
-* Analysis and visualization of network (eg. connecitivity matrix) and simulation output (eg. voltage traces, raster plot)
+* Easy MPI parallel simulation of network, including cell distribution across nodes and gathering of data from all nodes.
+* Analysis and visualization of network (eg. connectivity matrix) and simulation output (eg. voltage traces, raster plot)
 * Data exporting/sharing to several formats (pickle, Matlab, JSON, HDF5, NeuroML) of the following:
 	* Parameters/specifications
 	* Instantiated networks

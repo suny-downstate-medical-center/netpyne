@@ -269,7 +269,6 @@ class Network(object):
                 postCell = f.net.cells[nodePostGids[postCellGid]]  # get Cell object
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
-                    print probability
                     if 'weightFunc' in connParam: 
                         weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                     if 'delayFunc' in connParam: 

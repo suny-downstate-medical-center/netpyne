@@ -296,7 +296,10 @@ class Cell(object):
                     pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
                     h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
                     self.conns[-1]['hPlastSection'] = plastSection
-                    self.conns[-1]['hSTDP'] = plastMech
+                    self.conns[-1]['hSTDP']         = plastMech
+                    self.conns[-1]['hSTDPprecon']   = precon
+                    self.conns[-1]['hSTDPpstcon']   = pstcon
+                    self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
                     if f.cfg['verbose']: print('  Added STDP plasticity to synapse')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])

@@ -1,3 +1,9 @@
+## Version 0.3.6
+
+- Fixed bug: STDP objects need to be stored so it works.
+
+- Added support for SectionList 
+
 ## Version 0.3.5
 
 - Fixed bugs: not checking connectivity rule conditions properly

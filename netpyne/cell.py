@@ -117,6 +117,10 @@ class Cell(object):
             if 'vinit' in sectParams:
                 sec['vinit'] = sectParams['vinit']
 
+        # add sectionLists
+        if 'secLists' in prop:
+            self.secLists = prop['secLists']  # diction of section lists
+
 
     def initV(self): 
         for sec in self.secs.values():
@@ -195,6 +199,9 @@ class Cell(object):
                 if sectParams['topol']:
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
+        # add sectionLists
+        if 'secLists' in prop:
+            self.secLists = prop['secLists']  # diction of section lists
 
 
     def associateGid (self, threshold = 10.0):

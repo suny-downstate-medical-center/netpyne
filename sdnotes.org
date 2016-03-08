@@ -543,6 +543,26 @@ for i in xrange(int(section_lists.count())):
 --- Alternatively, itertools.chain.from_iterable
 --- https://docs.python.org/2/library/itertools.html#itertools.chain.from_iterable
 
+*** NeuroML implements as option 3:
+ <segmentGroup id="prox_dend_soma">
+                <include segmentGroup="comp_1"/>
+                <include segmentGroup="comp_41"/>
+                <include segmentGroup="comp_28"/>
+                <include segmentGroup="comp_15"/>
+                <include segmentGroup="comp_2"/>
+            </segmentGroup>
+
+*** Netpyne implementation
+- Option 3
+cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}, 'sectionLists': {}} 
+...
+cellRule['sectionLists']['all'] = ['soma', 'dend']
+
+- Can't define properties of section lists in netpyne
+- Neuron section list object not created - just python version
+- Can import cell with sectionlists
+- Can use sectionlists in connectivity
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

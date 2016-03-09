@@ -19,6 +19,7 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 
+
 ### HH
 cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
 utils.importCell(cellRule = cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
@@ -102,7 +103,7 @@ netParams['connParams'].append({
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'synReceptor':'NMDA',
+	'syn':'NMDA',
 	'sec': 'soma'})				
 
 netParams['connParams'].append({

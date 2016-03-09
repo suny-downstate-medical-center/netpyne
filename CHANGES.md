@@ -2,7 +2,7 @@
 
 - Fixed bug: STDP objects need to be stored so it works.
 
-- Added support for SectionList 
+- Added support for SectionLists (also when importing cells)
 
 ## Version 0.3.5
 

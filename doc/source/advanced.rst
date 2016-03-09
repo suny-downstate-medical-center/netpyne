@@ -46,7 +46,7 @@ Hodgkin-Huxley model
 *NetPyNE Code* ::
 
 	cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
+	utils.importCell(cellRule=cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
 	netParams['cellParams'].append(cellRule)  
 
 
@@ -63,7 +63,7 @@ Hodgkin-Huxley model with 3D geometry
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_HH3D_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='geom.hoc', cellName='E21')
+	utils.importCell(cellRule=cellRule, fileName='geom.hoc', cellName='E21')
 	cellRule['sections']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
 	for secName in cellRule['sections']:
 		cellRule['sections'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
@@ -99,7 +99,7 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showmodel.cshtml?model=20756
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
+	utils.importCell(cellRule=cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
 	cellRule['sections']['comp_1']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 	netParams['cellParams'].append(cellRule) 
 
@@ -125,7 +125,7 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showModel.cshtml?model=2488 (
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Mainen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule,fileName='mainen.py', cellName='PYR2')
+	utils.importCell(cellRule=cellRule,fileName='mainen.py', cellName='PYR2')
 	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 	netParams['cellParams'].append(cellRule)  
 
@@ -149,7 +149,7 @@ Friesen model
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Friesen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
+	utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
 	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 	cellRule['sections']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 	netParams['cellParams'].append(cellRule)  
@@ -171,7 +171,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Izhi03a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 	cellRule['sections']['soma']['pointps']['Izhi2003a_0']['_vref'] = 'V' # specify that uses its own voltage V
 	netParams['cellParams'].append(cellRule)  
 
@@ -192,7 +192,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell', cellArgs={'type':'tonic spiking'})
+	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell', cellArgs={'type':'tonic spiking'})
 	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 	netParams['cellParams'].append(cellRule) 
 
@@ -213,7 +213,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
+	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
 	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
 	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 	netParams['cellParams'].append(cellRule) 
@@ -235,7 +235,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 *NetPyNE Code:* ::
 
 	cellRule = {'label': 'PYR_Izhi07b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
-	utils.importCell(cellRule = cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
+	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
 	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 	netParams['cellParams'].append(cellRule)  	
 

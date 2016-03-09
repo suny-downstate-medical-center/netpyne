@@ -568,9 +568,9 @@ cellRule['sectionLists']['all'] = ['soma', 'dend']
 
 TODO:
 - update tut_import.py - DONE
-- update documentation  
-- update claus 
-- update M1Network
+- update documentation - DONE
+- update claus - DONE
+- update M1Network - DONE
 
 
 * Netpyne Models/Users
@@ -729,9 +729,10 @@ NotImplementedError: Dictionaries with non-unicode keys are not supported: 'netP
 
 ** DONE Fix pops starting with same characters
 EMstim == EM !!
+** DONE Add support for SectionLists (paper)
+- also when importing
 
 ** Cell position in ellipsoid 
-** Add support for SectionLists (paper)
 
 ** simple LFP (paper) 
 - simple voltage sum 

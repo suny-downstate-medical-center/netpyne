@@ -20,13 +20,13 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 
 ### HH
-cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(fileName='HHCellFile.py', cellName='HHCellClass')
+cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
 
 ### HH3D
-cellRule = {'label': 'PYR_HH3D_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH3D'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(fileName='geom.hoc', cellName='E21')
+cellRule = {'label': 'PYR_HH3D_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='geom.hoc', cellName='E21')
 cellRule['sections']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
 for secName in cellRule['sections']:
 	cellRule['sections'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
@@ -35,51 +35,47 @@ cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5,
 netParams['cellParams'].append(cellRule)  
 
 ### Traub
-cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'},  'sections': {}, 'sectionLists': {}} 	# cell rule dict
+cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
 utils.importCell(cellRule = cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
 somaSec = cellRule['sectionLists']['Soma'][0] 
 cellRule['sections'][somaSec]['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Mainen
-cellRule = {'label': 'PYR_Mainen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Mainen'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(fileName='mainen.py', cellName='PYR2')
+cellRule = {'label': 'PYR_Mainen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='mainen.py', cellName='PYR2')
 cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Friesen
-cellRule = {'label': 'PYR_Friesen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Friesen'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(fileName='friesen.py', cellName='MakeRSFCELL')
+cellRule = {'label': 'PYR_Friesen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
 cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 cellRule['sections']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 netParams['cellParams'].append(cellRule)  
 
 ### Izhi2003a (independent voltage)
-cellRule = {'label': 'PYR_Izhi03a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003a'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(
-	fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+cellRule = {'label': 'PYR_Izhi03a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 cellRule['sections']['soma']['pointps']['Izhi2003a_0']['_vref'] = 'V' # specify that uses its own voltage V
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2003b (section voltage)
-cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(
-	fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
+cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
 cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007a (independent voltage)
-cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(
-	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
+cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
 cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
 cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007b (section voltage)
-cellRule = {'label': 'PYR_Izhi07b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 	# cell rule dict
-cellRule['sections'] = utils.importCell(
-	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
+cellRule = {'label': 'PYR_Izhi07b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
 cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 

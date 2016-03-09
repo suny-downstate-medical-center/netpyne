@@ -563,6 +563,16 @@ cellRule['sectionLists']['all'] = ['soma', 'dend']
 - Can import cell with sectionlists
 - Can use sectionlists in connectivity
 
+- Modified importCell so it reads sectionLists with original variable names; and modified input arguments so now pass
+  cellRule as 1st arg -- so can add 'sections' and 'sectionLists' to cellRule dict
+
+TODO:
+- update tut_import.py - DONE
+- update documentation  
+- update claus 
+- update M1Network
+
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

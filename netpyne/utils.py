@@ -66,12 +66,12 @@ def mechVarList():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
-def importCell(fileName, cellName, cellArgs = {}):
+def importCell(cellRule, fileName, cellName, cellArgs = {}):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
 		cell = getattr(h, cellName)(**cellArgs)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
-		secList = list(cell.allsec())
+		secs = list(cell.allsec())
 		dirCell = dir(cell)
 	elif fileName.endswith('.py'):
  		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
@@ -84,15 +84,15 @@ def importCell(fileName, cellName, cellArgs = {}):
 		dirCell = dir(cell)
 
 		if 'all_sec' in dirCell:
-			secList = cell.all_sec
+			secs = cell.all_sec
 		elif 'sec' in dirCell:
-			secList = [cell.sec]
+			secs = [cell.sec]
 		elif 'allsec' in dir(h):
-			secList = [sec for sec in h.allsec()]
+			secs = [sec for sec in h.allsec()]
 		elif 'soma' in dirCell:
-			secList = [cell.soma]
+			secs = [cell.soma]
 		else:
-			secList = []
+			secs = []
 		sys.path.remove(filePath)
 	else:
 		print "File name should be either .hoc or .py file"
@@ -102,20 +102,20 @@ def importCell(fileName, cellName, cellArgs = {}):
 	dirCellHnames = {}  
 	for dirCellName in dirCell:
 		try:
-			dirCellHnames.update({cell.__dict__[dirCellName].hname(): dirCellName})
+			dirCellHnames.update({getattr(cell, dirCellName).hname(): dirCellName})
 		except:
 			pass
 	# create dict with dir(cell) name corresponding to each hname 
 	dirCellSecNames = {} 
-	for sec in secList:
+	for sec in secs:
 		dirCellSecNames.update({hname: name for hname,name in dirCellHnames.iteritems() if hname == sec.hname()})
 
 	secDic = {}
-	for sec in secList: 
+	for sec in secs: 
 		# create new section dict with name of section
 		secName = getSecName(sec, dirCellSecNames)
 
-		if len(secList) == 1:
+		if len(secs) == 1:
 			secName = 'soma' # if just one section rename to 'soma'
 		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # create dictionary to store sec info
 
@@ -205,10 +205,27 @@ def importCell(fileName, cellName, cellArgs = {}):
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
 
+	# store section lists
+	secLists = h.List('SectionList')
+	if int(secLists.count()): 
+		secListDic = {}
+		for i in xrange(int(secLists.count())):  # loop over section lists
+			hname = secLists.o(i).hname()
+			if hname in dirCellHnames:  # use python variable name
+				secListName = dirCellHnames[hname]
+			else:
+				secListName = hname
+			secListDic[secListName] = [getSecName(sec, dirCellSecNames) for sec in secLists.o(i)]
+	else:
+		secListDic = None
+
+	# clean 
 	del(cell) # delete cell
 	import gc; gc.collect()
 
-	return secDic
+	cellRule['sections'] = secDic
+	if secListDic:
+		cellRule['sectionLists'] = secListDic
 
 
 def importConnFromExcel(fileName, sheetName):

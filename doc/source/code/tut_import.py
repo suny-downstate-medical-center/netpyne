@@ -35,9 +35,10 @@ cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5,
 netParams['cellParams'].append(cellRule)  
 
 ### Traub
-cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'},  'sections': {}} 	# cell rule dict
-cellRule['sections'], cellRule['sectionLists'] = utils.importCell(fileName='pyr3_traub.hoc', cellName='pyr3')
-cellRule['sections']['comp_1']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'},  'sections': {}, 'sectionLists': {}} 	# cell rule dict
+utils.importCell(cellRule = cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
+somaSec = cellRule['sectionLists']['Soma'][0] 
+cellRule['sections'][somaSec]['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Mainen

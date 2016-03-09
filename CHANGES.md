@@ -2,7 +2,9 @@
 
 - Fixed bug: STDP objects need to be stored so it works.
 
-- Added support for SectionLists (also when importing cells)
+- Added support for SectionLists (modified format of importCell so also works)
+
+- Fixed bugs: function-based connectivity 
 
 ## Version 0.3.5
 

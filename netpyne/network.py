@@ -138,7 +138,7 @@ class Network(object):
     def strToFunc(self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
         paramsStrFunc = [param for param in ['weight', 'delay', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
-        
+
         # dict to store correspondence between string and actual variable
         dictVars = {}  
         dictVars['pre_x']       = lambda preTags,postTags: preTags['x'] 
@@ -147,9 +147,9 @@ class Network(object):
         dictVars['pre_xnorm']   = lambda preTags,postTags: preTags['xnorm'] 
         dictVars['pre_ynorm']   = lambda preTags,postTags: preTags['ynorm'] 
         dictVars['pre_znorm']   = lambda preTags,postTags: preTags['znorm'] 
-        dictVars['post_x']      = lambda preTags,postTags: postTags.tags['x'] 
-        dictVars['post_y']      = lambda preTags,postTags: postTags.tags['y'] 
-        dictVars['post_z']      = lambda preTags,postTags: postTags.tags['z'] 
+        dictVars['post_x']      = lambda preTags,postTags: postTags['x'] 
+        dictVars['post_y']      = lambda preTags,postTags: postTags['y'] 
+        dictVars['post_z']      = lambda preTags,postTags: postTags['z'] 
         dictVars['post_xnorm']  = lambda preTags,postTags: postTags['tags']['xnorm'] 
         dictVars['post_ynorm']  = lambda preTags,postTags: postTags['tags']['ynorm'] 
         dictVars['post_znorm']  = lambda preTags,postTags: postTags['tags']['znorm'] 
@@ -264,15 +264,15 @@ class Network(object):
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         nodePostGids = {cell.gid: i for i,cell in enumerate(f.net.cells)}  
-        for postCellGid in postCellsTags:  # for each postsyn cell
+        for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in nodePostGids:  # check if postsyn is in this node
                 postCell = f.net.cells[nodePostGids[postCellGid]]  # get Cell object
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
                     if 'weightFunc' in connParam: 
-                        weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
+                        weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                     if 'delayFunc' in connParam: 
-                        delayVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
+                        delayVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                     if probability >= allRands[preCellGid,postCellGid]:
                         seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
@@ -303,12 +303,12 @@ class Network(object):
     ###############################################################################
     ### Convergent connectivity 
     ###############################################################################
-    def convConn(self, preCellsTags, postCellsGids, connParam):
+    def convConn(self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of convergent connections...'
             
         nodePostGids = {cell.gid: i for i,cell in enumerate(f.net.cells)}  
-        for postCellGid in postCellsGids:  # for each postsyn cell
+        for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in nodePostGids:  # check if postsyn is in this node
                 postCell = f.net.cells[nodePostGids[postCellGid]]  # get Cell object
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
@@ -318,9 +318,9 @@ class Network(object):
                 preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
                     if 'weightFunc' in connParam:
-                        weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
+                        weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                     if 'delayFunc' in connParam: 
-                        delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
+                        delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                     seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                         print 'Error: Convergent connectivity for NetStims is not implemented'
@@ -338,22 +338,23 @@ class Network(object):
     ###############################################################################
     ### Divergent connectivity 
     ###############################################################################
-    def divConn(self, preCellsTags, postCellsGids, connParam):
+    def divConn(self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of divergent connections...'
          
         nodePostGids = {cell.gid: i for i,cell in enumerate(f.net.cells)}  
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
-            divergence = max(min(int(round(divergence)), len(postCellsGids)), 0)
+            divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellGid)))  
-            postCellsSample = sample(postCellsGids, divergence)  # selected gids of postsyn cells
-            postCellsDiv = {postGid: f.net.cells[nodePostGids[postGid]] for postGid in postCellsGids if postGid in postCellsSample and postGid in nodePostGids}  # dict of selected postsyn cells tags
-            for postCellGid, postCell in postCellsDiv.iteritems():  # for each postsyn cell
+            postCellsSample = sample(postCellsTags, divergence)  # selected gids of postsyn cells
+            postCellsDiv = {postGid:postTags  for postGid,postTags in postCellsTags.iteritems() if postGid in postCellsSample and postGid in nodePostGids}  # dict of selected postsyn cells tags
+            for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
+                postCell = f.net.cells[nodePostGids[postCellGid]]
                 if 'weightFunc' in connParam:
-                    weightVars = {k: v(preCellTags, postCell) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
+                    weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                 if 'delayFunc' in connParam: 
-                    delayVars = {k: v(preCellTags, postCell) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
+                    delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                 seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                     print 'Error: Divergent connectivity for NetStims is not implemented'           

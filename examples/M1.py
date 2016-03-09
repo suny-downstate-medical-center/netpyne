@@ -170,7 +170,7 @@ netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags
     'delay': 5})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'}, # IT->IT rule
-    'probability': '0.1*pre_y+0.01/post_y',
+    'divergence': '10*pre_y+0.01/pre_y',
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5,
     'syn': 'AMPA',

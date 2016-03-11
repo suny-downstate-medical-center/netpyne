@@ -572,6 +572,133 @@ TODO:
 - update claus - DONE
 - update M1Network - DONE
 
+** Discussion with Ben
+- define subcellular location of synapses:
+1) named sectionlists of sublists - apicatuft, obliques
+2) radial distribution, fraction yfrac, normalized, cortical depth, where dendrites fall in layers (cx centered, not cell
+ centered)
+3) path distance from soma 
+-- plus combination of above
+-- 1st, 2nd order branches differences cannot be specified directly, but can create sectionlists 
+eg. 1st 50um apical trunk no spines - subsets that are spiny vs non-spiny
+
+2 METHODS:
+A) 2-step implementation: 1) unitary conns, 2) contacts (subcellular conn)
+B) axo-dendritic density overlap - you don't know unitary without calculating subcellular
+-- HBP approach - axonal density is function of proj from L2->L5 + dendritic density, even if cells not realistic, calculate
+weight+prob
+
+if we imagine a hierarch struc where a 'unitaryConn' object contains a list of 'contacts' (~= Neuron Netcons) and 'synapses' (Neuron Synapses)
+this unitaryConn would have a specific pre and post-cell id
+but it may be the case, that the synapse is used as the target of many presyn cells
+(at least in Neuron terms and how we usually build models now)
+which means the 'synapse' would have to be outside of the 'unitaryConn' and just be referenced by name or whatever
+I'll just point out that this doesn't make all that much sense to me (despite being the way you do it)
+
+- 2 levels of instantiation - abstract (no specific models, not simulatable, cellular); and specific (subcellular)
+- from 1st - every neuron has to be assigned and implementation; and every connection has to be implemented
+- thats what happens right now but abstract instantiation is not saved
+- 2nd step consists of instantiating subcellular info - cell morphology + subcellular conn (could be separate)
+- 1st pass) cellular instatiation step (includes cell+conns); 2nd pass) subcellular step; 3rd pass) choose simulator pick
+  Neuron object for each cell
+- In 3rd level decide where to place h.Netcons and h.Synapses 
+
+- conns = unitary conns - presyn, type (AMPA), weight (somatic response for 1 AP presyn cell ~0.2 mV EPSP), delay?
+- in connParams have subcellular conn info - but not added to cell objects, only once create simulatable individual cells,
+  wire it up 
+
+- just 3 levels : specifications -> cellular -> simulator instantiation
+- Neurons instantiation separate from python structure - linked by cell id
+- for each unitary connection, check cell model of presyn and postsyn and decide if use NetCons, Synapses etc 
+
+** Current implementation
+- Cell (object)
+-- conns (list of dicts)
+--- hNetcon
+--- preGid
+--- weight
+--- threshold
+--- sec
+--- syn
+
+-- secs (dict of dicts)
+--- geom
+--- topol
+--- mechs
+--- pointps
+--- syns (dict)
+---- hSyn
+---- _loc
+---- _type
+---- tau
+---- e
+
+** Pros/Cons of making conns indep of cells 
+- pros:
+-- easier to search for conns, do analysis etc
+-- conceptually make more sense (Ben, Bill)
+-- consistent with NueroML
+
+- cons:
+-- synapses separate from cell too? associate via gid? prev models and Neuron standard is syns inside cell, conns outside; harder to check syns 
+-- make sure conns for each cell in same node -- seems easy since will happen naturally
+-- easier to find conns of a given cell
+
+
+*** Possible structure (wiht contacts inside each unitary conn):
+- net (object of class Network)
+-- cells (list of objects of class Cell)
+-- conns (list of dicts)
+--- preGid
+--- postGid
+--- contacts (list of dicts)
+---- hNetcon
+---- weight
+---- threshold
+---- sec
+---- syn
+
+- Advantage is that would have equivalent top level connections indepdently of subcellular info (morphology).
+- Disadvantage is that have more complex hierarchical structure, more difficult to search, if have simple single contacts
+  then overcomplicated, and doesnt match neuroml 
+
+*** Alternative structure (with single list of contacts):
+- net (object of class Network)
+-- cells (list of objects of class Cell)
+-- conns (list of dicts)
+--- preGid
+--- postGid
+--- hNetcon
+--- weight
+--- threshold
+--- sec
+--- syn
+
+for unitary conns - find unique preGid/postGid (eg. print list(set(zip(*myList)[1])))
+
+*** neuroml 
+- projections: between populations; pre, post and synapse
+- connection: pregid, postgid, presegment, postsegment, prefraction, postfraction
+- synapse: mechanism associated to cell; tau, gbase, erev
+
+<projection id="LTS_AxAx_sm" presynapticPopulation="CG_C04_LTS_sm" postsynapticPopulation="CG_C04_AxAx_sm" synapse="Inh_LTS_FS">
+
+<connection id="0" preCellId="../CG_C04_LTS_sm/5/SupLTSInter" postCellId="../CG_C04_AxAx_sm/0/SupAxAx"
+            preSegmentId="112" preFractionAlong="0.26785243" postSegmentId="82" postFractionAlong="0.36041966"/>
+
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2 https://raw.github.com/NeuroML/NeuroML2/development/Schemas/NeuroML2/NeuroML_v2beta4.xsd" id="Syn_AMPA_L4SS_IN">
+
+    <notes>ChannelML file describing a single synaptic mechanism</notes>
+
+    <alphaSynapse id="Syn_AMPA_L4SS_IN" tau="0.8ms" gbase="2.94303552937e-07mS" erev="0.0mV">
+
+        <notes>Synapse with syn scaling constant c = 1 nS (translating to max cond of 2.94304e-07 mS), time course: 0.8 ms and reversal potential: 0 mV.
+        Automatically generated by command:  genSyn.py Syn_AMPA_L4SS_IN 0.8 1 0 </notes>
+</alphaSynapse>
+
+** Ben's sCRACM code
+
+
 
 * Netpyne Models/Users
 ** Github examples folder

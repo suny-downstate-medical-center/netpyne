@@ -1,3 +1,8 @@
+## Version 0.3.7
+
+- Made conn functions more efficient using gid2lid and lid2gid
+
+
 ## Version 0.3.6
 
 - Fixed bug: STDP objects need to be stored so it works.

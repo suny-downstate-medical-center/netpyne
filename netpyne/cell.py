@@ -222,8 +222,8 @@ class Cell(object):
                 nc = h.NetCon(sec['hSection'](loc)._ref_v, None, sec=sec['hSection'])
             nc.threshold = threshold
             f.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-            f.net.lid2gid.append(self.gid) # index = local id; value = global id
             f.net.gid2lid[self.gid] = len(f.net.lid2gid)
+            f.net.lid2gid.append(self.gid) # index = local id; value = global id
             del nc # discard netcon
 
 

@@ -22,9 +22,6 @@ import framework as f
 
 def initialize(netParams = {}, simConfig = {}, net = None):
     f.simData = {}  # used to store output simulation data (spikes etc)
-    f.gidVec =[] # Empty list for storing GIDs (index = local id; value = gid)
-    f.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
-    f.lastGid = 0  # keep track of las cell gid
     f.fih = []  # list of func init handlers
     f.rank = 0  # initialize rank
     f.timing = {}  # dict to store timing

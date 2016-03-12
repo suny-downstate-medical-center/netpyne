@@ -645,7 +645,7 @@ I'll just point out that this doesn't make all that much sense to me (despite be
 -- easier to find conns of a given cell
 
 
-*** Possible structure (wiht contacts inside each unitary conn):
+** Possible structure (with contacts inside each unitary conn):
 - net (object of class Network)
 -- cells (list of objects of class Cell)
 -- conns (list of dicts)
@@ -659,10 +659,13 @@ I'll just point out that this doesn't make all that much sense to me (despite be
 ---- syn
 
 - Advantage is that would have equivalent top level connections indepdently of subcellular info (morphology).
+- Advantage: Need to know all unitary connections before can actually implement the subcellular details - distribution
+  depends on total number of input conns
+
 - Disadvantage is that have more complex hierarchical structure, more difficult to search, if have simple single contacts
   then overcomplicated, and doesnt match neuroml 
 
-*** Alternative structure (with single list of contacts):
+** Alternative structure (with single list of contacts):
 - net (object of class Network)
 -- cells (list of objects of class Cell)
 -- conns (list of dicts)
@@ -676,7 +679,46 @@ I'll just point out that this doesn't make all that much sense to me (despite be
 
 for unitary conns - find unique preGid/postGid (eg. print list(set(zip(*myList)[1])))
 
-*** neuroml 
+** Alternative structure (with contacts inside, but as a class)
+- net (object of class Network)
+-- cells (list of objects of class Cell)
+-- conns (list of object of class Connection)
+--- preGid
+--- postGid
+--- contacts (list of dicts)
+---- hNetcon
+---- weight
+---- threshold
+---- sec
+---- syn
+
+Advantage - can have subcelullar methods inside
+
+** Structure with proper nomenclature for cellConns, synConns, synMechs 
+- net (object of class Network)
+-- cells (list of objects of class Cell)
+-- cellConns (list of object of class CellConnection)
+--- preGid
+--- postGid
+--- synConns (list of dicts)
+---- hNetcon
+---- weight
+---- threshold
+---- sec
+---- synMech
+
+** Choice of cellConns, synConns, synMechs 
+
+- 'cellConns' = unitary connection between 2 cells (can contain many synapses) = non-existent (Neuron) = non-existent (NeuroML)
+= 'connection' (HBP)
+
+- 'synConns': individual synaptic contacts made between single pre and post cell (each connection can contain many) =
+  'h.NetCon' (Neuron) = 'connections' (NeuroML) = 'synapse' (HBP)
+
+- 'synMechs': postsynaptic mechanism (receptor-like), usually one per connection = eg. 'h.ExpSyn' or 'h.AMPA' (Neuron) =
+  eg. 'alphaSynapse' (NeuroML) = 'synaptic mechanism' (HBP)
+
+** neuroml conn structure
 - projections: between populations; pre, post and synapse
 - connection: pregid, postgid, presegment, postsegment, prefraction, postfraction
 - synapse: mechanism associated to cell; tau, gbase, erev
@@ -698,6 +740,11 @@ for unitary conns - find unique preGid/postGid (eg. print list(set(zip(*myList)[
 
 ** Ben's sCRACM code
 
+** netpyne implementation
+- check number of presyn cells connecting to post (cellCons)
+- check syn distribution pattern and morphology of post
+- need to calculate num of synConns based on weight?? or fixed weight for synConn (divide cellConn weight by num of synConns?)
+- create synConns and synMechs 
 
 
 * Netpyne Models/Users
@@ -861,13 +908,13 @@ EMstim == EM !!
 
 ** Cell position in ellipsoid 
 
+** Subcellular synaptic connectivity (paper)
+- distribution of syns across segments based on empirical map
+- concept of logical connection subsumes subset of unitary connections
 ** simple LFP (paper) 
 - simple voltage sum 
 ** Plot conn matrix (paper)
 - by cells and populations
-** Subcellular synaptic connectivity (paper)
-- distribution of syns across segments based on empirical map
-- concept of logical connection subsumes subset of unitary connections
 ** import/export NeuroML (paper)
 - padraig (see notes above)
 ** Functions to load simConfig, netParams, net, simData (paper)
@@ -917,6 +964,8 @@ https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
 ** Saving at intervals
 ** modify instantiated network
 - load net and provide new set of params
+** Save space using __slots__
+http://tech.oyster.com/save-ram-with-python-slots/
 ** Make simulator-indep using NeuroML internal format
 ** GUI
 ** Test adaptive exp cell (no Neuron code)

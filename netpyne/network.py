@@ -46,8 +46,9 @@ class Network(object):
         f.pc.barrier()
         f.sim.timing('start', 'createTime')
         if f.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), f.cfg['duration']/1000.,f.nhosts)) 
-        self.gidVec = [] # Empty list for storing GIDs (index = local id; value = gid)
-        self.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
+        self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
+        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
+        self.lastGid = 0  # keep track of last cell gid 
         self.cells = []
         for ipop in self.pops: # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
@@ -263,7 +264,7 @@ class Network(object):
         seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
-        nodePostGids = {cell.gid: i for i,cell in enumerate(f.net.cells)}  
+        nodePostGids = {cell.gid: i for i,cell in enumerate(f.net.cells)}  # get postsyn gids in this node 
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in nodePostGids:  # check if postsyn is in this node
                 postCell = f.net.cells[nodePostGids[postCellGid]]  # get Cell object

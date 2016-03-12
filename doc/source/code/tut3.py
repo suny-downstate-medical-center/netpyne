@@ -12,15 +12,15 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}} 	# cell rule dict
-soma = {'geom': {}, 'mechs': {}, 'syns': {}}  											# soma params dict
+soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}  											# soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
-dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  								# dend params dict
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  								# dend params dict
 dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}		# dend NMDA synapse
+dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}		# dend NMDA synapse
 cellRule['sections'] = {'soma': soma, 'dend': dend}  									# add soma and dend sections to dict
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
 
@@ -31,11 +31,11 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
-	'syn': 'NMDA'})   	# target synapse 
+	'synMech': 'NMDA'})   	# target synapse 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
-	'syn': 'NMDA'})  	# target synapse 
+	'synMech': 'NMDA'})  	# target synapse 
 
 
 # Simulation options

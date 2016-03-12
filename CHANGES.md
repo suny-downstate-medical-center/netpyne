@@ -2,6 +2,7 @@
 
 - Made conn functions more efficient using gid2lid and lid2gid
 
+- Replaced 'syn' (synapse) with 'synMech' (synaptic mechanism) to avoid confusion with synaptic connections
 
 ## Version 0.3.6
 

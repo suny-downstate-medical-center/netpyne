@@ -149,25 +149,25 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 	
-	* **syns**: Dictionary of synapses (point processes). 
-		The key contains an arbitrary label for the synapse (e.g. 'NMDA').
-		The value contains a dictionary with the synapse properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
+	* **syns**: Dictionary of synaptic mechanisms (point processes). 
+		The key contains an arbitrary label for the synaptic mechanism (e.g. 'NMDA').
+		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore:
 
 		* ``_type``, the name of the NEURON mechanism, e.g. ``'Exp2Syn'``.
-		* ``_loc``, section location where to place synapse, e.g. 1.0, default=0.5.
+		* ``_loc``, section location where to place synaptic mechanism, e.g. 1.0, default=0.5.
 	
-	* **pointps**: Dictionary of point processes (excluding synapses). 
+	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
 		The value contains a dictionary with the point process properties (e.g. ``{'_type':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore: 
 
 		* ``_type``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``_loc``, section location where to place synapse, e.g. ``1.0``, default=0.5.
+		* ``_loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
 		* ``_vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
-		* ``_synList`` (optional), list of internal mechanism synapse labels, e.g. ['AMPA', 'NMDA', 'GABAB']
+		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
@@ -180,18 +180,18 @@ Example of two cell property rules::
 	## PYR cell properties (HH)
 	cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
-	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
+	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # dend properties
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+	dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
@@ -200,10 +200,10 @@ Example of two cell property rules::
 	## PYR cell properties (Izhi)
 	cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'sections': {}}
 
-	soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
+	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'_type':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
@@ -234,11 +234,11 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ''`soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. 
 
-* **synReceptor** (optional) - Label of target synapse on the postsynaptic neuron (e.g. ``'AMPA'``). 
-	If omitted employs first synapse in the cell synapses list.
+* **synReceptor** (optional) - Label of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'``). 
+	If omitted employs first synaptic mechanism in the cell synaptic mechanisms list.
 	
 * **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``). 
-	Associated to a change in conductance, but has different meaning and scale depending on the synapse and cell model. 
+	Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. 
 
 	Can be defined as a function (see :ref:`function_string`).
 
@@ -289,7 +289,7 @@ Example of connectivity rules:
 		'preTags': {'popLabel': 'S'}, 
 		'postTags': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
-		'syn': 'NMDA',					# target synapse
+		'synMech': 'NMDA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
 		'probability': 0.5})				# probability of connection		
@@ -297,7 +297,7 @@ Example of connectivity rules:
 	netParams['connParams'].append(
 		{'preTags': {'popLabel': 'background'}, 
 		'postTags': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
-		'synReceptor': 'NMDA',					# target synapse 
+		'synReceptor': 'NMDA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 

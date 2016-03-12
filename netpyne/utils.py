@@ -117,7 +117,7 @@ def importCell(cellRule, fileName, cellName, cellArgs = {}):
 
 		if len(secs) == 1:
 			secName = 'soma' # if just one section rename to 'soma'
-		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # create dictionary to store sec info
+		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # create dictionary to store sec info
 
 		# store geometry properties
 		standardGeomParams = ['L', 'nseg', 'diam', 'Ra', 'cm']
@@ -170,8 +170,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = {}):
 			for ipoint,point in enumerate(seg.point_processes()):
 				pptype = point.hname().split('[')[0]
 				varNames = varList['pointps'][pptype]
-				if any([s in pptype.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
-				#if 'syn' in pptype.lower(): # if syn in name of point process then assume synapse
+				if any([s in pptype.lower() for s in ['synMech', 'ampa', 'gaba', 'nmda', 'glu']]):
+				#if 'synMech' in pptype.lower(): # if syn in name of point process then assume synapse
 					synName = pptype + '_' + str(len(syns))
 					syns[synName] = {}
 					syns[synName]['_type'] = pptype
@@ -195,7 +195,7 @@ def importCell(cellRule, fileName, cellName, cellArgs = {}):
 						except:
 							print 'Could not read %s variable from point process %s'%(varName,synName)
 
-		if syns: secDic[secName]['syns'] = syns
+		if syns: secDic[secName]['synMechs'] = syns
 		if pointps: secDic[secName]['pointps'] = pointps
 
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
@@ -279,7 +279,7 @@ def importConnFromExcel(fileName, sheetName):
 					line = line + "'" + cond2[0].replace(' ','') + "': " + cond2[1].replace(' ','')   # generate line
 				line = line + "}" # end of postTags			
 				line = line + ",\n'connFunc': '" + func + "'"  # write connFunc
-				line = line + ",\n'syn': '" + syn + "'"  # write synReceptor
+				line = line + ",\n'synMech': '" + syn + "'"  # write synReceptor
 				line = line + ",\n'probability': " + str(prob)  # write prob
 				line = line + ",\n'weight': " + str(weight)  # write prob
 				line = line + "})"  # add closing brackets

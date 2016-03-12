@@ -32,26 +32,26 @@ cellRule['sections']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, '
 for secName in cellRule['sections']:
 	cellRule['sections'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 	cellRule['sections'][secName]['geom']['cm'] = 10
-cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Traub
 cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
 somaSec = cellRule['sectionLists']['Soma'][0] 
-cellRule['sections'][somaSec]['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections'][somaSec]['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Mainen
 cellRule = {'label': 'PYR_Mainen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='mainen.py', cellName='PYR2')
-cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  
 
 ### Friesen
 cellRule = {'label': 'PYR_Friesen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
-cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 cellRule['sections']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 netParams['cellParams'].append(cellRule)  
 
@@ -64,7 +64,7 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2003b (section voltage)
 cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
-cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007a (independent voltage)
@@ -77,7 +77,7 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2007b (section voltage)
 cellRule = {'label': 'PYR_Izhi07b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
-cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 
@@ -103,7 +103,7 @@ netParams['connParams'].append({
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'syn':'NMDA',
+	'synMech':'NMDA',
 	'sec': 'soma'})				
 
 netParams['connParams'].append({

@@ -4,19 +4,24 @@ Overview
 What is NetPyNE?
 ----------------
 
-NetPyNE is a python package to facilitate the development and parallel simulation of biological cell networks using the NEURON simulator.
+NetPyNE (Network development Python package for NEURON) is a python package to facilitate the development and parallel simulation of biological cell networks using the NEURON simulator.
 
 .. image:: figs/overview.png
-	:width: 80%
-	:align: center
+	:width: 80%	:align: center
 
-The modularized framework allows the user to define the network parameters (including cell populations, cell properties and conectivity rules) and the simulation configuration (eg. duration, integration step, plotting options etc) using a simple and flexible format. The format is based solely on Python dictionaries and lists and does not require the NEURON simulator, or even the netpyne package. Therefore, the model specifications/parameters are independent from the model execution/simulation.
+NEURON is a widely used neuronal simulator, with over 1600 published models. It enables multiscale simulation ranging from the molecular to the network level. However, learning to use NEURON, especially running parallel simulations, requires much technical training. NetPyNE (Network development Python package for NEURON) greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON, potentially bringing its benefits to a wider audience, including experimentalists. It is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
-Based on these input parameters, the framework instantiates the network as a hierarchical python structure, and creates the NEURON objects required to simulate the network. The user can then easily run a parallel simulation (using mpi) and plot graphs such as raster plots or cell voltage traces. The framework allows to save the data generated at each stages (model specifications, instantiated network, and simulation results) into different formats (eg. pickle, json, mat).
+What can I do with NetPyNE?
+---------------------------
 
-The framework was designed in collaboration with experimentalists with the aim of facilitating the incorporation of anatomical and physiological data into network models. It therefore includes powerful features such as the ability to define connectivity rules based on any set of arbitrary cell attributes, define cell density and connectivity as a function of cortical depth, or easily exchange the cell model (eg. Izhikevich vs multicompartment) employed for a given population. However, the underlying complexity is hidden to the user, who can use a use the simple Python-based interface to specify these features, run simulations and share models and data.
+NetPyNE seamlessly converts a set of high-level specifications into a NEURON model. Specifications are provided in a simple, standardized, declarative format, based solely on Python’s lists and dictionaries. The user can define network populations and their properties, including cell type, number or density. For each cell type, the user can define morphology, biophysics and implementation, or choose to import these from existing files (HOC templates or Python classes). Cell models for each population can be easily changed, and several models can be combined to generate efficient hybrid networks, eg. composed of Hodgkin-Huxley multicompartment cells and Izhikevich point neurons. 
 
-Therefore, the package is useful both for beginners with little knowledge of NEURON, as well as for experienced users who wish to easily develop and share networks with complex cell property and connectivity rules.
+NetPyNE provides an extremely flexible format to specify connectivity, with rules based on pre- and post-synaptic cell properties, such as cell type or location. Multiple connectivity functions are available, including all-to-all, probabilistic, convergent or divergent. Additionally, connectivity parameters (eg. weight, probability or delay) can be specified as a function of pre/post-synaptic spatial properties. This enables implementation of complex biological patterns, such as delays or connection probabilities that depend on distance between cells, or weights that depend on the post-synaptic neuron’s cortical depth. The subcellular distribution of synapses along the dendrites can be specified, and is automatically adapted to the morphology of each model neuron. Learning mechanisms, including spike-timing dependent plasticity and reinforcement learning, can be readily incorporated.
+
+Using the high-level network specifications, NetPyNE instantiates the full model (all cells and connections) as a hierarchical Python structure including the NEURON objects necessary for simulation. Based on a set of simulation options (eg. duration, integration step), NetPyNE runs the model in parallel using MPI, eliminating the burdensome task of manually distributing the workload and gathering data across computing nodes. Optionally NetPyNE plots output data, such as spike raster plots, LFP power spectra, connectivity matrix, or intrinsic time-varying variables (eg. voltage) of any subset of cells. To facilitate data sharing, the package saves and loads the high-level specifications, instantiated network, and simulation results using common file formats (Pickle, Matlab, JSON or HDF5). NetPyNE can convert instantiated networks to and from NeuroML, a standard data format for exchanging models in computational neuroscience.
+
+NetPyNE has been used to develop a variety of multiscale models: primary motor cortex with cortical depth-dependent connectivity; the claustrum; and sensorimotor cortex that learns to control a virtual arm. The package is open source, easily installed, and includes comprehensive online documentation, a step-by-step tutorial and example networks. We believe this tool will strengthen the neuroscience community and encourage collaborations between experimentalists and modelers.
+
 
 .. image:: figs/netstruct.png
 	:width: 80%

@@ -129,19 +129,19 @@ Now we need to define the properties of each cell type, by adding items to the `
 
 * ``conditions`` - these arbitrary conditions need to be met by cells in order to apply them these cell properties. Usually defined specifying an attribute/tag of the cell and the required value e.g. 'cellType': 'PYR'
 
-* ``sections`` - dictionary containing the properties of sections, eg. geometry, mechanisms, synapses
+* ``sections`` - dictionary containing the properties of sections, eg. geometry, mechanisms, synaptic mechanisms
 
 The idea of conditional cell properties is that you can apply cell properties to subsets of neurons - eg. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
 
-In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``), and a double exponential synapse::
+In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``), and a double exponential synaptic mechanism::
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}      # cell rule dict
-	soma = {'geom': {}, 'mechs': {}, 'syns': {}}                                             # soma params dict
+	soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                             # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}           # soma hh mechanism
-	soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0} # soma NMDA synapse
+	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0} # soma NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma}                                                    # add soma section to dict
 	netParams['cellParams'].append(cellRule)  	
 
@@ -151,9 +151,9 @@ Take a moment to examine the nested dictionary structure used to define the cell
 	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'sections': 
 		{'soma': {'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
 			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}, 
-			  'syns': {'NMDA': {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.1, 'tau2': 1, 'e': 0}}}}]
+			  'synMechs': {'NMDA': {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.1, 'tau2': 1, 'e': 0}}}}]
 
-.. note:: We use an underscore for ``_type`` and ``_loc`` to indicate these are not variables that need to be set inside the synapse point process, but provide NetPyNE with information about the object.
+.. note:: We use an underscore for ``_type`` and ``_loc`` to indicate these are not variables that need to be set inside the synaptic mechanism point process, but provide NetPyNE with information about the object.
 
 Connectivity rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -178,14 +178,14 @@ We will first add a rule to randomly connect the sensory to the motor population
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5,			# transmission delay (ms) 
-		'syn': 'NMDA'})   	# target synapse 
+		'synMech': 'NMDA'})   	# target synaptic mechanism 
 
 Next we will connect background inputs (NetStims) to all cells of both populations::
 
 	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5, 			# transmission delay (ms) 
-		'syn': 'NMDA'})  	# target synapse 
+		'synMech': 'NMDA'})  	# target synaptic mechanism 
 
 
 Simulation configuration options
@@ -261,15 +261,15 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}       # cell rule dict
-	soma = {'geom': {}, 'mechs': {}, 'syns': {}}                                              # soma params dict
+	soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                              # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
-	soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # soma NMDA synapse
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}                                 # dend params dict
+	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # soma NMDA synaptic mechanism
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                                 # dend params dict
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms
-	dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # dend NMDA synapse
+	dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # dend NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                  # add dict to list of cell parameters
 
@@ -281,7 +281,7 @@ We can also update the connectivity rule to specify that the ``S`` cells should 
 		'weight': 0.01,             # synaptic weight 
 		'delay': 5,                 # transmission delay (ms) 
 		'sec': 'dend',              # section to connect to
-		'syn': 'NMDA'})     # target synapse 
+		'synMech': 'NMDA'})     # target synaptic mechanism 
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.
 
@@ -310,10 +310,10 @@ And we need to create a new cell rule for the Izhikevich cell. But first we need
 Finally we can create the new rule for the Izhikevich cell model::
 
 	cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 		# cell rule dict
-	soma = {'geom': {}, 'pointps': {}, 'syns': {}}  											# soma params dict
+	soma = {'geom': {}, 'pointps': {}, 'synMechs': {}}  											# soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  										# soma geometry
 	soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
-	soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  				# soma NMDA synapse
+	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  				# soma NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma}  											# add soma section to dict
 	netParams['cellParams'].append(cellRule)  
 

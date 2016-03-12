@@ -79,7 +79,7 @@ class Network(object):
 
         for connParam in self.params['connParams']:  # for each conn rule or parameter set
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'syn' not in connParam: connParam['syn'] = None  # if synapse not specified, make None (will be assigned to first synapse in cell)  
+            if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
             if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)
             if 'weight' not in connParam: connParam['weight'] = f.net.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = f.net.params['defaultDelay'] # if no delay, set default
@@ -234,7 +234,7 @@ class Network(object):
                         'source': preCellTags['source'], 
                         'number': preCellTags['number'],
                         'sec': connParam['sec'], 
-                        'syn': connParam['syn'], 
+                        'synMech': connParam['synMech'], 
                         'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else connParam['weight'],
                         'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else connParam['delay'],
                         'threshold': connParam['threshold']}
@@ -243,7 +243,7 @@ class Network(object):
                         # if not self-connection
                         params = {'preGid': preCellGid, 
                         'sec': connParam['sec'], 
-                        'syn': connParam['syn'], 
+                        'synMech': connParam['synMech'], 
                         'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else connParam['weight'],
                         'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else connParam['delay'],
                         'threshold': connParam['threshold'],
@@ -280,7 +280,7 @@ class Network(object):
                                     'source': preCellTags['source'], 
                                     'number': preCellTags['number'],
                                     'sec': connParam['sec'], 
-                                    'syn': connParam['syn'], 
+                                    'synMech': connParam['synMech'], 
                                     'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                     'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                     'threshold': connParam['threshold']}
@@ -289,7 +289,7 @@ class Network(object):
                             # if not self-connection
                             params = {'preGid': preCellGid, 
                                     'sec': connParam['sec'], 
-                                    'syn': connParam['syn'], 
+                                    'synMech': connParam['synMech'], 
                                     'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                     'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                     'threshold': connParam['threshold'],
@@ -324,7 +324,7 @@ class Network(object):
                     elif preCellGid != postCellGid: # if not self-connection
                         params = {'preGid': preCellGid, 
                                 'sec': connParam['sec'], 
-                                'syn': connParam['syn'], 
+                                'synMech': connParam['synMech'], 
                                 'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                 'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                 'threshold': connParam['threshold'],
@@ -357,7 +357,7 @@ class Network(object):
                 elif preCellGid != postCellGid: # if not self-connection
                     params = {'preGid': preCellGid, 
                             'sec': connParam['sec'], 
-                            'syn': connParam['syn'], 
+                            'synMech': connParam['synMech'], 
                             'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                             'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                             'threshold': connParam['threshold'],

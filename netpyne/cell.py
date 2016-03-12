@@ -44,7 +44,7 @@ class Cell(object):
                 if f.cfg['createPyStruct']:
                     self.createPyStruct(prop)
                 if f.cfg['createNEURONObj']:
-                    self.createNEURONObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
     def createPyStruct(self, prop):
@@ -77,15 +77,15 @@ class Cell(object):
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
-            # add synapses 
-            if 'syns' in sectParams:
-                for synName,synParams in sectParams['syns'].iteritems(): 
-                    if 'syns' not in sec:
-                        sec['syns'] = {}
-                    if synName not in sec['syns']:
-                        sec['syns'][synName] = {}
-                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                        sec['syns'][synName][synParamName] = synParamValue
+            # add synaptic mechanisms 
+            if 'synMechs' in sectParams:
+                for synName,synParams in sectParams['synMechs'].iteritems(): 
+                    if 'synMechs' not in sec:
+                        sec['synMechs'] = {}
+                    if synName not in sec['synMechs']:
+                        sec['synMechs'][synName] = {}
+                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synaptic mechanism
+                        sec['synMechs'][synName][synParamName] = synParamValue
 
             # add geometry params 
             if 'geom' in sectParams:
@@ -161,17 +161,17 @@ class Cell(object):
                         if not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
                         
-            # add synapses 
-            if 'syns' in sectParams:
-                for synName,synParams in sectParams['syns'].iteritems(): 
-                    if synName not in sec['syns']:
-                        sec['syns'][synName] = {} 
+            # add synaptic mechanisms 
+            if 'synMechs' in sectParams:
+                for synName,synParams in sectParams['synMechs'].iteritems(): 
+                    if synName not in sec['synMechs']:
+                        sec['synMechs'][synName] = {} 
                     synObj = getattr(h, synParams['_type'])
                     loc = synParams['_loc'] if '_loc' in synParams else 0.5  # set location
-                    sec['syns'][synName]['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
-                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
+                    sec['synMechs'][synName]['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
+                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synaptic mechanism
                         if not synParamName.startswith('_'):
-                            setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
+                            setattr(sec['synMechs'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
             if 'geom' in sectParams:
@@ -239,9 +239,9 @@ class Cell(object):
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synapse
-                    if 'syns' in secParams:
-                        if secParams['syns']:
+                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
+                    if 'synMechs' in secParams:
+                        if secParams['synMechs']:
                             params['sec'] = secName
                             break
             else:  
@@ -254,23 +254,23 @@ class Cell(object):
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['syn'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
+                        if params['synMech'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
 
         if not pointp: # not a point process
-            if 'syns' in sec: # section has synapses
-                if params['syn']: # desired synapse specified in conn params
-                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
+            if 'synMechs' in sec: # section has synaptic mechanisms
+                if params['synMech']: # desired synaptic mechanism specified in conn params
+                    if params['synMech'] not in sec['synMechs']:  # if exact name of desired synaptic mechanism doesn't exist
                         synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
-                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
-                else:  # if no synapse specified            
-                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
-            else: # if still no synapse  
+                        synIndex.extend([i for i,syn in enumerate(sec['synMechs']) if params['synMech'] in syn])  # check if contained in any of the synaptic mechanism names
+                        params['synMech'] = sec['synMechs'].keys()[synIndex[-1]]
+                else:  # if no synaptic mechanism specified            
+                    params['synMech'] = sec['synMechs'].keys()[0]  # use first synaptic mechanism available in section
+            else: # if still no synaptic mechanism  
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
@@ -281,14 +281,14 @@ class Cell(object):
         if pointp:
             postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
         else:
-            postTarget= sec['syns'][params['syn']]['hSyn'] # local synapse
+            postTarget= sec['synMechs'][params['synMech']]['hSyn'] # local synaptic mechanism
         netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
         netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['syn'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['synMech'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
 
         plasticity = params.get('plasticity')
         if plasticity:  # add plasticity
@@ -306,7 +306,7 @@ class Cell(object):
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
                     self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if f.cfg['verbose']: print('  Added STDP plasticity to synapse')
+                    if f.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
@@ -318,9 +318,9 @@ class Cell(object):
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synapse
-                    if 'syns' in secParams:
-                        if secParams['syns']:
+                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
+                    if 'synMechs' in secParams:
+                        if secParams['synMechs']:
                             params['sec'] = secName
                             break
             else:  
@@ -333,23 +333,23 @@ class Cell(object):
         pointp = None
         if 'pointps' in sec:  # check if point processes (artificial cell)
             for pointpName, pointpParams in sec['pointps'].iteritems():
-                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['syn'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
+                        if params['synMech'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
 
         if not pointp: # not a point process
-            if 'syns' in sec: # section has synapses
-                if params['syn']: # desired synapse specified in conn params
-                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
+            if 'synMechs' in sec: # section has synaptic mechanisms
+                if params['synMech']: # desired synaptic mechanism specified in conn params
+                    if params['synMech'] not in sec['synMechs']:  # if exact name of desired synaptic mechanism doesn't exist
                         synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
-                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
-                else:  # if no synapse specified            
-                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
-            else: # if still no synapse  
+                        synIndex.extend([i for i,syn in enumerate(sec['synMechs']) if params['synMech'] in syn])  # check if contained in any of the synaptic mechanism names
+                        params['synMech'] = sec['synMechs'].keys()[synIndex[-1]]
+                else:  # if no synaptic mechanism specified            
+                    params['synMech'] = sec['synMechs'].keys()[0]  # use first synaptic mechanism available in section
+            else: # if still no synaptic mechanism  
                 print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
@@ -385,14 +385,14 @@ class Cell(object):
         if pointp:
             netcon = h.NetCon(netstim, sec['pointps'][pointp]['hPointp'])  # create Netcon between global gid and local point neuron
         else:
-            netcon = h.NetCon(netstim, sec['syns'][params['syn']]['hSyn']) # create Netcon between global gid and local synapse
+            netcon = h.NetCon(netstim, sec['synMechs'][params['synMech']]['hSyn']) # create Netcon between global gid and local synaptic mechanism
         netcon.weight[weightIndex] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         self.stims[-1]['weightIndex'] = weightIndex
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
-            (params['popLabel'], self.gid, params['sec'], params['syn'], params['weight'], params['delay']))
+            (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
 
     def recordTraces (self):
@@ -403,8 +403,8 @@ class Cell(object):
                 if 'pos' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
-                    elif 'syn' in params:  # eg. soma(0.5).AMPA._ref_g
-                        ptr = self.secs[params['sec']]['syns'][params['syn']]['hSyn'].__getattribute__('_ref_'+params['var'])
+                    elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
+                        ptr = self.secs[params['sec']]['synMechs'][params['synMech']]['hSyn'].__getattribute__('_ref_'+params['var'])
                     else:  # eg. soma(0.5)._ref_v
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
                 else:

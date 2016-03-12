@@ -55,7 +55,7 @@ Hodgkin-Huxley model
 Hodgkin-Huxley model with 3D geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* A multi-compartment cell. Defined as hoc cell template. Only the cell geometry is included. Example of importing only geometry, and then adding biophysics (``hh`` and ``pas`` channels) and synapses from NetPyNE.
+*Description:* A multi-compartment cell. Defined as hoc cell template. Only the cell geometry is included. Example of importing only geometry, and then adding biophysics (``hh`` and ``pas`` channels) and synaptic mechanisms from NetPyNE.
 
 *Required files:*
 :download:`geom.hoc <code/geom.hoc>`
@@ -68,7 +68,7 @@ Hodgkin-Huxley model with 3D geometry
 	for secName in cellRule['sections']:
 		cellRule['sections'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 		cellRule['sections'][secName]['geom']['cm'] = 10
-	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	netParams['cellParams'].append(cellRule)  
 
 
@@ -100,7 +100,7 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showmodel.cshtml?model=20756
 
 	cellRule = {'label': 'PYR_Traub_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
-	cellRule['sections']['comp_1']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['comp_1']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	netParams['cellParams'].append(cellRule) 
 
 
@@ -126,7 +126,7 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showModel.cshtml?model=2488 (
 
 	cellRule = {'label': 'PYR_Mainen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule,fileName='mainen.py', cellName='PYR2')
-	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	netParams['cellParams'].append(cellRule)  
 
 
@@ -135,7 +135,7 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showModel.cshtml?model=2488 (
 Friesen model 
 ^^^^^^^^^^^^^^
 
-*Required files:* Friesen cell model defined as python class. Requires multiple mechanisms (including point processes) defined in mod files. Although it includes synapses, an additional synapse at the soma is added from NetPyNE. Spike generation happens at the ``axon`` section (not the ``soma``). This is indicated in NetPyNE adding the ``spikeGenLoc`` item to the ``axon`` section entry, and specifying the section location (eg. 0.5).
+*Required files:* Friesen cell model defined as python class. Requires multiple mechanisms (including point processes) defined in mod files. Although it includes synaptic mechanisms, an additional synaptic mechanism at the soma is added from NetPyNE. Spike generation happens at the ``axon`` section (not the ``soma``). This is indicated in NetPyNE adding the ``spikeGenLoc`` item to the ``axon`` section entry, and specifying the section location (eg. 0.5).
 
 *Required files:*
 :download:`friesen.py <code/friesen.py>`,
@@ -150,7 +150,7 @@ Friesen model
 
 	cellRule = {'label': 'PYR_Friesen_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
-	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	cellRule['sections']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 	netParams['cellParams'].append(cellRule)  
 
@@ -160,7 +160,7 @@ Friesen model
 Izhikevich 2003a model (independent voltage variable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synapses. Instead it uses its own internal voltage variable and synapse. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``).
+*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``).
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -181,7 +181,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 Izhikevich 2003b model (uses section voltage)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section and shares the section voltage and synapses. A synapse is added from NetPyNE.
+*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section and shares the section voltage and synaptic mechanisms. A synaptic mechanism is added from NetPyNE.
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -193,7 +193,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 	cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell', cellArgs={'type':'tonic spiking'})
-	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	netParams['cellParams'].append(cellRule) 
 
 
@@ -202,7 +202,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 Izhikevich 2007a model (independent voltage variable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2007 cell model defined as python clas. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synapses. Instead it uses its own internal voltage variable and synapse. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``). The cell model includes several internal synapses, which can be specified as a list in NetPyNE by adding the ``_synList`` item to the point process entry.
+*Description:* Izhikevich, 2007 cell model defined as python clas. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``). The cell model includes several internal synaptic mechanisms, which can be specified as a list in NetPyNE by adding the ``_synList`` item to the point process entry.
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -215,7 +215,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 	cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
 	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
-	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
+	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
 	netParams['cellParams'].append(cellRule) 
 
 
@@ -224,7 +224,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 Izhikevich 2007b model (uses section voltage)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2007 cell model defined as python class. Requires point process defined in mod file. This version is added to a section and shares the section voltage and synapses. A synapse is added from NetPyNE.
+*Description:* Izhikevich, 2007 cell model defined as python class. Requires point process defined in mod file. This version is added to a section and shares the section voltage and synaptic mechanisms. A synaptic mechanism is added from NetPyNE.
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -236,7 +236,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 	cellRule = {'label': 'PYR_Izhi07b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
-	cellRule['sections']['soma']['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+	cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synaptic mechanism
 	netParams['cellParams'].append(cellRule)  	
 
 

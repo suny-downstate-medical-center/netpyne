@@ -10,8 +10,9 @@ Contributors: salvadordura@gmail.com
 import sim
 import analysis
 from network import Network
-from cell import Cell, PointNeuron
 from pop import Pop 
+from cell import Cell, PointNeuron
+from conn import CellConn
 import utils
 import default
 

@@ -739,6 +739,82 @@ Advantage - can have subcelullar methods inside
 </alphaSynapse>
 
 ** Ben's sCRACM code
+*** insertSyn
+- vecstim
+- netcon
+- expsyn
+
+*** uniformSynapseLocations
+- total length
+- list of secs
+- sec lens
+
+- find total length, divide by num syns, find absolute locs, find local secs and locs for each syn (use list with cum lengths
+  and corresponding section)
+
+*** pointFromLoc
+- section, loc
+- return anatomical point x,y,z
+
+*** loadratio
+- load file wiht synaptic dist ratios - rel syn strength for 10x30 grid 
+
+*** setup_grid
+create grid with 10 cols, 30 rows
+
+*** calculateGridSigma
+ vector of local synaptic strength at each grid point, e.g. ratio peak_experimental / peak_uniform
+
+*** distanceFromGrid
+// arg 1: x
+// arg 2: y
+// arg 3: Vector to hold the distances
+
+*** interpolateSegmentSigma
+- arg 1: SectionList to receive synapses, e.g. spiny
+- arg 2: Vector to be filled with the calculated sigma
+- Note: the dendrites must be fully enclosed by the grid (i.e. there must be 4 nearest grid points surrounding every segment)
+
+- for each section loc:
+-- find x,y pos
+-- find 4 closest grid points and their sigmas (syn strengths)
+-- bilinear interpolation of sigma
+
+*** mappedSynapseLocations
+- arg 1: SectionList for which to calculate sigma
+- arg 2: Vector of sigmas for each segment
+- arg 3: SectionList to be filled
+- arg 4: Vector of x-vals to be filled
+
+- Load ratio (vals between 0-15) of syn strength  in 10x30 grid 
+- Obtain norm sigma values based on ratio
+- Calculate sigma via interpolation for every segment location
+- Calculate synapses to insert in each segment
+
+*** radialSynapseLocations
+- arg 1: SectionList that can accept synapses (e.g. spiny)
+- arg 2: sigma_uniform (e.g. 1.5/8)
+- arg 3: y_min
+- arg 4: y_max
+- arg 5: SectionList to carry synapses, 1 for each synapse (e.g. synsecs)
+- arg 6: Vector of x-values, 1 for each synapse (e.g. synxs)
+
+- uniform distibution of synapse based on radial distance from soma
+- specify y range
+- calculate num synapses based on section length / nseg
+- store section and loc of each syn
+
+*** distributeSynapse
+- arg 1: SectionList that can accept synapses (e.g. spiny)
+- arg 2: sigma_uniform (e.g. 1.5/8)
+- arg 3: mode: 0 = uniform, 1 = non-uniform aka mapped, 2 = non-uniform based on laminar depth
+- arg 4: SectionList to carry synapses, 1 for each synapse (e.g. synsecs)
+- arg 5: Vector of x-values, 1 for each synapse (e.g. synxs)
+- arg 6: optional, for mode 2: y_min
+- arg 7: optional, for mode 2: y_max
+
+- wrapper: selects 1 of 3 modes and passes in arguments
+
 
 ** netpyne implementation
 - check number of presyn cells connecting to post (cellCons)
@@ -746,6 +822,106 @@ Advantage - can have subcelullar methods inside
 - need to calculate num of synConns based on weight?? or fixed weight for synConn (divide cellConn weight by num of synConns?)
 - create synConns and synMechs 
 
+- Is it worth having CellConn as class with SynConn attribute and methods? 
+-- only 5 syns/cell
+-- need to know all cellconns before start synconns, but method cannot be inside cellconn cause need to check all cellconns
+-- have to call method createSubCellConn if params includes subCell - do once for each conn rule (from network.py)
+-- subcellular syn dist shouldn't be replicated on each CellConn, just once on conn rule
+
+- createConns
+-- for each rule:
+--- probConn/convConn
+---- cellConns.append(CellConn) (but no subcellular)
+-- for all cellConns:
+---  cellConns.addSubcellular 
+
+- but needs subcell params from rule!! so either 
+-- need to be stored in each cellConn / pointer to f.net.params -- shouldn't occupy extra space since pointer (can remove
+after so not saved?)
+
+- do we need subcellular info for each conn rule?! or just for each cell type and synMech?! Ben mentioned 'after logic conns,
+  create subcellular based on presyn+postsyn cell type"
+
+- weight + delay a property of CellConn or SynConn ?! both?
+
+- how to create extra synMechs needed? identical properties to cellprop syn mechs?
+
+- maybe there's no need for cellconns vs synconns? 
+-- if subcellular info: create temporal cellconns, then synconns (from synconns can generate cellconns after)
+-- if no subcellular info: create synconns directly
+
+- or create cellconns and synconns as independent lists (redundant)
+
+- maybe create separate rules for subcellular distribution; needed because:
+-- conn data as func of yfrac (eg. [0.1 - 0.2])
+-- syn dist for presyn layer/type (eg. L2/3)
+-- wouldn't make sense to repeat for each yfrac-based conn rule (or cell type rule), plus need all 
+
+- maybe add subcellular distribution to cell prop rules:
+-- for each cell prop, create conditions of subcellular distribution eg. ['conditions': {'yfrac': [0.1-0.4]}]
+-- default: assume uniform distribution
+
+- where to put properties of synapses?
+-- can add to sections in properties 
+-- can just add generic, by setting '_loc': 'generic' ? -- but still inside a section! :/
+-- just make algorithm look for synmechs in all sections, and use same params to replicate
+-- maybe move 'synMechs' out, to same level as 'sections' ? 
+-- add to sectionList !?
+
+** sCRACM (Petreanu 2009; Suter,2015)
+- inject ChR2 in certain presyn axons (eg. L2/3)
+- short pohotostimulation 1ms 2mW in specific grid (12x24, 50um) location
+- depolarizes axons; use TTX (blocked Na+ and K+ ->no AP)
+- axon terminal Ca2+ channels open -> glutamate release
+- measure EPSC in soma
+
+- provides a two-dimensional ‘image’ of the distribution of specific input within the dendritic arbors of the recorded cell
+
+- EPSCsCRACM amplitudes depend on the density of ChR2-positive axons, the fraction of axons that make synapses with the
+  recorded neuron, the strength of the synapses, and their electrotonic distance from the soma
+
+- sCRACM maps were normalized to the largest pixels within a map and thus represent the relative strength of input within the dendritic tree.
+
+- Average sCRACM map of layer 2/3 inputs to M1-CSPs (n 􏰁 23 neurons). L, Input profiles by soma depth. M, Location of perisomatic input from layer 2/3 relative to soma position, plotted as a function of soma depth. For each profile, the input depth was calculated as the center of mass across the perisomatic pixels.
+
+[[file+sys:/u/salvadord/Documents/ISB/Models/netpyne_repo/gif/20160313_212734.png][fig]]
+
+** questions for ben
+- always have to specify num contacts or distribution?
+-- Yes, or distribution
+
+- Weight+delay in cellConn or synConn or both?
+-- if data from unitary conn EPSP, the cellConn, but need to calculate weight/synConn (h.NetCon)
+-- delay could be identical for each synConn, or add small distance-based delay
+
+- Syn dist specific to postsyn mech? depends on presyn cell props,loc?
+-- Specific to eg. AMPA/NMDA, or just exc vs inh?
+- depends on presyn cell type and layer (eg. L2/3 exc vs L5B IT vs L5B PT)
+
+- Why need to know num of conns before start? Can have prob dist of synapse, and map on a cell-by-cell basis, adapt
+  probabilities based on current num contacts
+-- wouldn't be exact since probability based; but need final distribution to match ratios
+
+- The non-uniform mapped / distance from soma-based would be given in the form of 30x10 map, distribution across segments?
+-- exp data is in 30x10 map format; distr across segments would vary depending on cell morphology
+
+** testing implementation with MC SPI cells
+- Initial implementation of conns:
+-- use existing conn inside Cell
+-- sec: can contain multiple sections or sectionLists
+-- synMech: AMPA
+-- synsPerConn: fixed initially but could be dist (eg. gauss, uniform)
+
+- for now can just provide single synList
+
+- if synsPerConn > 1, distribute across 1st N sections in sectList, at loc 0.5 (simple adhoc implementation)
+
+- creates synapses if required
+
+- testing on m1/sim/params/M1_yfrac_hybrid.py
+
+- sam: I put simplified model with good params into /usr/site/nrniv/local/python/SPI6.py
+- sam: updated params for /usr/site/nrniv/local/hoc/PTcell.hoc /usr/site/nrniv/local/python/PTcell.py
 
 * Netpyne Models/Users
 ** Github examples folder
@@ -922,6 +1098,7 @@ EMstim == EM !!
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
 
+** import python lists of sections (equivalent hoc sectionLists)
 
 ** Plasticity (paper?)
 - Hebbian

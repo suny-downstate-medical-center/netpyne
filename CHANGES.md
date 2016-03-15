@@ -1,8 +1,20 @@
+## Version 0.3.8
+
+- Added synapses (subcellular) per connection parameter
+
+- importCell use either *args or *kwargs
+
+- Fixed bug when importing distributed mechanisms of cells
+
+- Independent scale conn weight for each cell model 
+
 ## Version 0.3.7
 
 - Made conn functions more efficient using gid2lid and lid2gid
 
-- Replaced 'syn' (synapse) with 'synMech' (synaptic mechanism) to avoid confusion with synaptic connections
+- Moved Pop class to separate file pop.py
+
+- Replaced 'syn' and 'syns' (synapses) with 'synMech' and 'synMechs' (synaptic mechanisms) to avoid confusion with synaptic connections
 
 ## Version 0.3.6
 

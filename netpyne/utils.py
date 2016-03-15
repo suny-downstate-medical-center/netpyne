@@ -66,11 +66,14 @@ def mechVarList():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
-def importCell(cellRule, fileName, cellName, cellArgs = {}):
+def importCell(cellRule, fileName, cellName, cellArgs = []):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
-		cell = getattr(h, cellName)(**cellArgs)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
+		if isinstance(cellArgs, dict):
+			cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+		else:
+			cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
 		secs = list(cell.allsec())
 		dirCell = dir(cell)
 	elif fileName.endswith('.py'):
@@ -80,7 +83,11 @@ def importCell(cellRule, fileName, cellName, cellArgs = {}):
 		moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
 		exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
 		modulePointer = tempModule
-		cell = getattr(modulePointer, cellName)(**cellArgs)  # create cell and pass type as argument
+		if isinstance(cellArgs, dict):
+			cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
+		else:
+			cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
+		
 		dirCell = dir(cell)
 
 		if 'all_sec' in dirCell:
@@ -145,7 +152,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = {}):
 		varList = mechVarList()  # list of properties for all density mechanisms and point processes
 		ignoreMechs = ['dist']  # dist only used during cell creation 
 		mechDic = {}
-		for mech in dir(sec(0.5)):  
+		sec.push()	# access current section so ismembrane() works
+		for mech in dir(sec(0.5)): 
 			if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
 				mechDic[mech] = {}  # create dic for mechanism properties
 				varNames = [varName.replace('_'+mech, '') for varName in varList['mechs'][mech]]

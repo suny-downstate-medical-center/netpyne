@@ -71,6 +71,8 @@ class Network(object):
             print('Making connections...')
             f.sim.timing('start', 'connectTime')
 
+        self.cellConns = []  # create empty list for cell connections (CellConn objects)
+
         if f.nhosts > 1: # Gather tags from all cells 
             allCellTags = f.sim.gatherAllCellTags()  
         else:
@@ -80,6 +82,7 @@ class Network(object):
         for connParam in self.params['connParams']:  # for each conn rule or parameter set
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
+            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1  # default value of synapses per connection
             if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)
             if 'weight' not in connParam: connParam['weight'] = f.net.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = f.net.params['defaultDelay'] # if no delay, set default
@@ -290,12 +293,13 @@ class Network(object):
                             params = {'preGid': preCellGid, 
                                     'sec': connParam['sec'], 
                                     'synMech': connParam['synMech'], 
+                                    'synsPerConn': connParam['synsPerConn'],
                                     'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                     'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                     'threshold': connParam['threshold'],
                                     'plasticity': connParam.get('plasticity')}
                             postCell.addConn(params)  # call cell method to add connections
-       
+                            #f.net.cellConns.append(f.CellConn(params))
 
 
     ###############################################################################
@@ -325,6 +329,7 @@ class Network(object):
                         params = {'preGid': preCellGid, 
                                 'sec': connParam['sec'], 
                                 'synMech': connParam['synMech'], 
+                                'synsPerConn': connParam['synsPerConn'],
                                 'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                 'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                 'threshold': connParam['threshold'],
@@ -358,6 +363,7 @@ class Network(object):
                     params = {'preGid': preCellGid, 
                             'sec': connParam['sec'], 
                             'synMech': connParam['synMech'], 
+                            'synsPerConn': connParam['synsPerConn'],
                             'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                             'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                             'threshold': connParam['threshold'],

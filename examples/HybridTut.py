@@ -28,18 +28,18 @@ netParams['cellParams'] = []
 ## PYR cell properties (HH)
 cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]}
 soma['geom']['pt3d'].append((0, 0, 0, 20))
 soma['geom']['pt3d'].append((0, 0, 20, 20))
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
-dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # dend properties
+dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 
 cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
@@ -49,10 +49,10 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 ## PYR cell properties (Izhi)
 cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
 
-soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
+soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0}
 soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
@@ -78,7 +78,7 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 0.004, 
-    'syn': 'NMDA',
+    'synMech': 'NMDA',
     'delay': 'uniform(1,5)'})  
 
 
@@ -86,7 +86,7 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 20, 
-    'syn': 'NMDA',
+    'synMech': 'NMDA',
     'sec': 'dend',
     'loc': 1.0,
     'delay': 'uniform(1,5)'})  
@@ -114,8 +114,8 @@ simConfig['recordCells'] = []  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'NMDA_g': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'g'},
-    'NMDA_i': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'i'}}
+    'NMDA_g': {'sec':'soma', 'pos':'0.5', 'synMech':'NMDA', 'var':'g'},
+    'NMDA_i': {'sec':'soma', 'pos':'0.5', 'synMech':'NMDA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 

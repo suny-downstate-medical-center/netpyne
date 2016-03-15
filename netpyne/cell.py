@@ -17,12 +17,13 @@ import framework as f
 ###############################################################################
 
 class Cell(object):
-    ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
+    ''' Generic 'Cell' class used to instantiate individual neurons '''
     
     def __init__(self, gid, tags):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
+        self.secLists = {}  # dict of section lists
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
@@ -117,8 +118,8 @@ class Cell(object):
                 sec['vinit'] = sectParams['vinit']
 
         # add sectionLists
-        if 'secLists' in prop:
-            self.secLists = prop['secLists']  # diction of section lists
+        if prop.get('secLists'):
+            self.secLists.update(prop['secLists'])  # diction of section lists
 
 
     def initV(self): 
@@ -198,10 +199,6 @@ class Cell(object):
                 if sectParams['topol']:
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
-        # add sectionLists
-        if 'secLists' in prop:
-            self.secLists = prop['secLists']  # diction of section lists
-
 
     def associateGid (self, threshold = 10.0):
         if self.secs:
@@ -228,13 +225,12 @@ class Cell(object):
 
 
 
-
     def addConn(self, params):
         if params['preGid'] == self.gid:
             print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
             return  # if self-connection return
 
-        if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
+        if not params['sec'] or not params['sec'] in self.secs.keys()+self.secLists.keys():  # if no section specified or section specified doesnt exist
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
@@ -247,12 +243,19 @@ class Cell(object):
             else:  
                 print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 return  # if no Sections available print error and exit
-        sec = self.secs[params['sec']]
+        
+        ### ADHOC CODE FOR SUBCELLULAR SYNAPSE
+        if params['sec'] in self.secLists:
+            secList = self.secLists[params['sec']]
+            sec = self.secs[secList[0]]
+        else:  
+            secList = []  
+            sec = self.secs[params['sec']]
 
         weightIndex = 0  # set default weight matrix index
 
         pointp = None
-        if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
+        if not secList and 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
                 if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
@@ -277,38 +280,71 @@ class Cell(object):
         if not params['threshold']:
             params['threshold'] = 10.0
 
-        self.conns.append(params)
-        if pointp:
-            postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
+        ###  NEW ADHOC SOLUTION TO PLACE MULTIPLE SYNS ###
+        if pointp:  # if point process, make syns per conn = 1, and increase weight proportionally
+            weight = params['weight'] * params['synsPerConn']
+            synsPerConn = 1
         else:
-            postTarget= sec['synMechs'][params['synMech']]['hSyn'] # local synaptic mechanism
-        netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-        netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
-        netcon.delay = params['delay']  # set Netcon delay
-        netcon.threshold = params['threshold']  # set Netcon delay
-        self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synMech'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+            synsPerConn = params['synsPerConn']
+            weight = params['weight']
 
-        plasticity = params.get('plasticity')
-        if plasticity:  # add plasticity
-            try:
-                plastSection = h.Section()
-                plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
-                for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
-                    setattr(plastMech, plastParamName, plastParamValue)
-                if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
-                    precon = f.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
-                    pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
-                    h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
-                    self.conns[-1]['hPlastSection'] = plastSection
-                    self.conns[-1]['hSTDP']         = plastMech
-                    self.conns[-1]['hSTDPprecon']   = precon
-                    self.conns[-1]['hSTDPpstcon']   = pstcon
-                    self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if f.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
-            except:
-                print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
+        synParams = {k:v for k,v in sec['synMechs'][params['synMech']].iteritems() if k not in ['hSyn']}    # store syn params in case need to create new ones
+
+        for isyn in range(synsPerConn):   # for each synapse create netcon
+            if secList:
+                params['sec'] = secList[isyn%len(secList)]
+                sec = self.secs[params['sec']]  # use next section in sectionList
+
+            self.conns.append(dict(params))  # add connection params
+
+            if 'synMechs' not in sec: sec['synMechs'] = {}  # if section doesn't have dict for synMechs, then create
+            if params['synMech'] not in sec['synMechs']: #  if synapse mech doesn't exist in this section, then create
+                # add synapse (python+Neuron)
+                synName = params['synMech'] 
+                sec['synMechs'][synName] = {}
+                synObj = getattr(h, synParams['_type'])
+                loc = synParams['_loc'] if '_loc' in synParams else 0.5  # set location
+                sec['synMechs'][synName]['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
+                for synParamName,synParamValue in synParams.iteritems():  # add params of the synaptic mechanism
+                    sec['synMechs'][synName][synParamName] = synParamValue
+                    if not synParamName.startswith('_'):
+                        setattr(sec['synMechs'][synName]['hSyn'], synParamName, synParamValue)
+
+            if pointp:
+                postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
+            else:
+                postTarget = sec['synMechs'][params['synMech']]['hSyn'] # local synaptic mechanism
+            netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+            if 'scaleConnWeightModels' in f.net.params and self.tags['cellModel'] in f.net.params['scaleConnWeightModels']:
+                scaleConnWeight = f.net.params['scaleConnWeightModels'][self.tags['cellModel']]
+            else:
+                scaleConnWeight = f.net.params['scaleConnWeight']
+            netcon.weight[weightIndex] = scaleConnWeight*weight  # set Netcon weight
+            netcon.delay = params['delay']  # set Netcon delay
+            netcon.threshold = params['threshold']  # set Netcon delay
+            self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+            if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
+                (params['preGid'], self.gid, params['sec'], params['synMech'], f.net.params['scaleConnWeight']*weight, params['delay']))
+
+            plasticity = params.get('plasticity')
+            if plasticity:  # add plasticity
+                try:
+                    plastSection = h.Section()
+                    plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
+                    for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
+                        setattr(plastMech, plastParamName, plastParamValue)
+                    if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
+                        precon = f.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                        pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                        h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
+                        self.conns[-1]['hPlastSection'] = plastSection
+                        self.conns[-1]['hSTDP']         = plastMech
+                        self.conns[-1]['hSTDPprecon']   = precon
+                        self.conns[-1]['hSTDPpstcon']   = pstcon
+                        self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
+                        if f.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
+                except:
+                    print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
 
 

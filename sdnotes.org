@@ -905,23 +905,6 @@ after so not saved?)
 - The non-uniform mapped / distance from soma-based would be given in the form of 30x10 map, distribution across segments?
 -- exp data is in 30x10 map format; distr across segments would vary depending on cell morphology
 
-** testing implementation with MC SPI cells
-- Initial implementation of conns:
--- use existing conn inside Cell
--- sec: can contain multiple sections or sectionLists
--- synMech: AMPA
--- synsPerConn: fixed initially but could be dist (eg. gauss, uniform)
-
-- for now can just provide single synList
-
-- if synsPerConn > 1, distribute across 1st N sections in sectList, at loc 0.5 (simple adhoc implementation)
-
-- creates synapses if required
-
-- testing on m1/sim/params/M1_yfrac_hybrid.py
-
-- sam: I put simplified model with good params into /usr/site/nrniv/local/python/SPI6.py
-- sam: updated params for /usr/site/nrniv/local/hoc/PTcell.hoc /usr/site/nrniv/local/python/PTcell.py
 
 * Netpyne Models/Users
 ** Github examples folder

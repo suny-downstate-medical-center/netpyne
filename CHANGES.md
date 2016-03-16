@@ -8,6 +8,10 @@
 
 - Independent scale conn weight for each cell model 
 
+- Synaptic mechanism weight fraction
+
+- Fix recording of single cell of population when using MPI
+
 ## Version 0.3.7
 
 - Made conn functions more efficient using gid2lid and lid2gid

@@ -6,6 +6,7 @@ Contains Cell related classes
 Contributors: salvadordura@gmail.com
 """
 
+from random import seed,shuffle
 from neuron import h # Import NEURON
 import framework as f
 
@@ -118,8 +119,8 @@ class Cell(object):
                 sec['vinit'] = sectParams['vinit']
 
         # add sectionLists
-        if prop.get('secLists'):
-            self.secLists.update(prop['secLists'])  # diction of section lists
+        if prop.get('sectionLists'):
+            self.secLists.update(prop['sectionLists'])  # diction of section lists
 
 
     def initV(self): 
@@ -246,8 +247,10 @@ class Cell(object):
         
         ### ADHOC CODE FOR SUBCELLULAR SYNAPSE
         if params['sec'] in self.secLists:
-            secList = self.secLists[params['sec']]
-            sec = self.secs[secList[0]]
+            secList = list(self.secLists[params['sec']])
+            seed(f.sim.id32('%d'%(f.cfg['randseed']+self.gid)))
+            shuffle(secList)
+            sec = self.secs['soma'] # should be [secList[0]] but hard-coded to soma - FIX!!
         else:  
             secList = []  
             sec = self.secs[params['sec']]
@@ -281,7 +284,7 @@ class Cell(object):
             params['threshold'] = 10.0
 
         ###  NEW ADHOC SOLUTION TO PLACE MULTIPLE SYNS ###
-        if pointp:  # if point process, make syns per conn = 1, and increase weight proportionally
+        if len(self.secs) == 1:  # if have single section, create single synapse with proportional weight
             weight = params['weight'] * params['synsPerConn']
             synsPerConn = 1
         else:

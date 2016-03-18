@@ -905,6 +905,83 @@ after so not saved?)
 - The non-uniform mapped / distance from soma-based would be given in the form of 30x10 map, distribution across segments?
 -- exp data is in 30x10 map format; distr across segments would vary depending on cell morphology
 
+** comments by ben
+If you want to see which dendrites are on basal, apical, etc. then better to look at the profiles sorted by soma depth, i.e. where you can see each individual neuron's input collapsed to a radial profile.
+
+[5:17] 
+Or a soma-aligned average map.
+
+[5:18] 
+The former is in my paper. The latter I have as figs.
+
+[5:19] 
+In my paper I also show analysis of where the "perisomatic" input is centered, relative to the soma - generally above the soma with an offset of ~50 um, but depends on projection and on soma depth.
+
+[5:19] 
+One consistent finding was that while the basals do get input from all sources, it's a bit weaker below the soma (note that there are basals above the soma too).
+
+[5:21] 
+The sCRACM technique probably won't work well for local L5->L5 connections (Taro tried this with Rabies - not mapping, but
+LED flash - and said the input was too weak). But for L5-L5 connections we can turn to pair recording studies with full
+reconstructions of dendrites and axons - such as published by Markram et al 1997 (methinks), with Sakmann.
+
+There is substantial variability within each projection - seen clearly in the example Salva just pasted. Some CSP get strong L2/3 input, while others don't - even if their soma depth is similar.
+
+[5:29] 
+So my thought was to take each actual map and apply the inferred synapse density onto reconstructions at approximately matched soma depths. Do this for each projection.
+
+[5:29] 
+For the L2/3 -> CSP data set, I have reconstructions and maps in the same neuron, for a subset of the data set. For the other projections, I don't have reconstructions.
+
+[5:30] 
+So the idea would be to take each mapped neuron, use it's soma depth to find the reconstruction with closest matching soma depth, and instantiate that.
+
+[5:31] 
+Or alternatively (and probably better), take each reconstructed neuron, and then apply synapses to it according to every projection - where for each projection, you find the map whose soma depth best matches the reconstructed neuron.
+
+[5:32] 
+Another approach I started working on is to parameterize each projection's pattern as a function of soma depth, so that there is a formula M_i(somadepth) for each projection i, which lets you determine the synapse distribution for neuron's at any depth.
+
+[5:34] 
+However, because the sCRACM maps don't tell you synapse density (but rather, synaptic strength measured at soma under strange pharmacological conditions), before you can calculate a formula for the whole projection, you'd need to simulate each map to infer the synapse density. Unless ... it turns out that there is a nice analytic way to convert the input maps into synapse densities, i.e. without simulating each one. From the few simulations I've done, this might actually be possible.
+
+
+** Features implemented with adhoc solution -- need to be fixed
+*** conn rule with list of synMechs
+- 
+
+*** default synMech placed in soma - where to define?
+- don't create synMechs until needed by connections -- just specify params? but need to store somewhere
+- can look up in f.net.params using tags['propList'] but probably slow
+
+- in Cell class have pointer to f.net.params from synMechs but dont create new python/neuron object
+- place synapse together with connection instead of cell? confusing since many conns can project to single synapse
+
+-  In neuroml, syns are defined independently, and associated with connections - do same thing:
+
+netParams['synMechParams'] = {'NMDA': {'mod': 'ExpSyn', 'tau': 0.1, 'e': 0}}
+cell.secs['soma']['synMechs'][0]['label': 'NMDA', 'loc': 0.5, 'hSyn': ]
+
+when create conn check if synMech exists in that section, ie. has same 'label' and 'loc', if not, then create
+
+- make addSyn function
+
+*** distribute syns in sectionList or list of sectionLists
+-
+
+*** create 1st conns, then syns 
+
+*** weight/delay of conn and syns
+
+*** synsPerConn as distribution
+
+*** independent scale conn weight for each cell model - where to store?
+- useful for feature
+- maybe by default should be stored by cell model
+- or allow both options, 
+
+*** move conns and stims out of Cell class
+
 
 * Netpyne Models/Users
 ** Github examples folder
@@ -1106,6 +1183,8 @@ cliff?
 cliff?
 ** Granger causality
 cliff?
+** 3D animation of network
+- use johns code
 ** Add support for point neuron outside of section
 eg. IntFire1,2,3,4 
  ARTIFICIAL_CELL means
@@ -1138,3 +1217,5 @@ making suggestions for improvements;
 fixing bugs and other mistakes;
 adding or maintaining a simulator backend;
 major refactoring to improve performance, reduce code complexity, or both.
+** Replace search in list with next()
+a = next((i for i in userInput if i in wordsTask), None)

@@ -1,16 +1,19 @@
 ## Version 0.3.8
 
-- Added synapses (subcellular) per connection parameter
+- Made synMechParams independent of cell and referenced by labels
+
+- Fixed raster plotting based on NCD when using MPI
+
+- Fix recording of single cell of population when using MPI
 
 - importCell use either *args or *kwargs
 
-- Fixed bug when importing distributed mechanisms of cells
+- Fixed bug when importing distributed mechanisms of cells 
 
-- Independent scale conn weight for each cell model 
+- Preliminary support for multiple synMechs and synsPerConn parameter in conn rule
 
-- Synaptic mechanism weight fraction
+- Preliminary support for independent scale conn weight for each cell model 
 
-- Fix recording of single cell of population when using MPI
 
 ## Version 0.3.7
 

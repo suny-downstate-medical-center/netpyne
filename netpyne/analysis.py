@@ -71,9 +71,9 @@ def plotRaster():
         if f.cfg['orderRasterYnorm']:
             gids = [cell['gid'] for cell in f.net.allCells]
             ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
-            sortInds = sorted(range(len(ynorms)), key=lambda k:ynorms[k])
-            posdic = {gid: pos for gid,pos in zip(gids,sortInds)}
-            spkids = [posdic[gid] for gid in spkids]  # spkids now contain indices ordered according to ynorm
+            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(ynorms,gids)))}
+
+            spkids = [sortedGids[gid] for gid in spkids]
             ylabelText = 'Cell id (arranged by NCD)'
     except:
         pass     
@@ -112,7 +112,7 @@ def plotTraces():
                 data = f.allSimData[trace]['cell_'+str(gid)]
                 t = arange(0, duration+recordStep, recordStep)
                 subplot(len(tracesList),1,itrace+1)
-                plot(t, data, linewidth=1.5)
+                plot(t[:len(data)], data, linewidth=1.5)
                 xlabel('Time (ms)', fontsize=fontsiz)
                 ylabel(trace, fontsize=fontsiz)
                 xlim(0,f.cfg['duration'])

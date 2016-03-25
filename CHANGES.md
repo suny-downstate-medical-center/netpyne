@@ -1,4 +1,4 @@
-## Version 0.3.8
+## Version 0.3.9
 
 - Made synMechParams independent of cell and referenced by labels
 
@@ -16,6 +16,8 @@
 
 - Preliminary support for independent scale conn weight for each cell model 
 
+
+## Version 0.3.8
 
 ## Version 0.3.7
 

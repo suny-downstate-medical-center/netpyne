@@ -1049,7 +1049,8 @@ However, because the sCRACM maps don't tell you synapse density (but rather, syn
 netParams['synMechParams'] = {'NMDA': {'mod': 'ExpSyn', 'tau': 0.1, 'e': 0}}
 cell.secs['soma']['synMechs'][0]['label': 'NMDA', 'loc': 0.5, 'hSyn': ]
 
-when create conn check if synMech exists in that section, ie. has same 'label' and 'loc', if not, then create
+- no need to add in netParams, specified in connRule, and created together with connections
+- when create conn check if synMech exists in that section, ie. has same 'label' and 'loc', if not, then create
 
 - make addSyn function
 

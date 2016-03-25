@@ -291,7 +291,7 @@ class Cell(object):
             synsPerConn = params['synsPerConn']
             weight = params['weight']
 
-        synParams = {k:v for k,v in sec['synMechs'][params['synMech']].iteritems() if k not in ['hSyn']}    # store syn params in case need to create new ones
+        if params['synMech']: synParams = {k:v for k,v in sec['synMechs'][params['synMech']].iteritems() if k not in ['hSyn']}    # store syn params in case need to create new ones
 
         for isyn in range(synsPerConn):   # for each synapse create netcon
             if secList:
@@ -301,7 +301,7 @@ class Cell(object):
             self.conns.append(dict(params))  # add connection params
 
             if 'synMechs' not in sec: sec['synMechs'] = {}  # if section doesn't have dict for synMechs, then create
-            if params['synMech'] not in sec['synMechs']: #  if synapse mech doesn't exist in this section, then create
+            if params['synMech'] and params['synMech'] not in sec['synMechs']: #  if synapse mech doesn't exist in this section, then create
                 # add synapse (python+Neuron)
                 synName = params['synMech'] 
                 sec['synMechs'][synName] = {}

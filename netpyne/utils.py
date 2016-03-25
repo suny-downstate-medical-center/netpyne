@@ -178,7 +178,7 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 			for ipoint,point in enumerate(seg.point_processes()):
 				pptype = point.hname().split('[')[0]
 				varNames = varList['pointps'][pptype]
-				if any([s in pptype.lower() for s in ['synMech', 'ampa', 'gaba', 'nmda', 'glu']]):
+				if any([s in pptype.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
 				#if 'synMech' in pptype.lower(): # if syn in name of point process then assume synapse
 					synName = pptype + '_' + str(len(syns))
 					syns[synName] = {}

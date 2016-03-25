@@ -10,6 +10,8 @@
 
 - Fixed bug when importing distributed mechanisms of cells 
 
+- Added support to save data in .csv format
+
 - Preliminary support for multiple synMechs and synsPerConn parameter in conn rule
 
 - Preliminary support for independent scale conn weight for each cell model 

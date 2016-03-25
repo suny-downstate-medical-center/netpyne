@@ -887,23 +887,113 @@ after so not saved?)
 [[file+sys:/u/salvadord/Documents/ISB/Models/netpyne_repo/gif/20160313_212734.png][fig]]
 
 ** questions for ben
-- always have to specify num contacts or distribution?
+*** always have to specify num contacts or distribution?
 -- Yes, or distribution
+-- Ben: if full model the could calculate exactly; but since scaled down, we want syns per conn to be correct eg. 5
+-- assume in M1 model, realistic density, but reduced volume -- experiments found ~5 for PT->PT not in motor cx
+-- likely that there is data 
+-- does it vary significantly? Thalamocortical could be very different; assume every proj has 4-6 contacts as measured
+-- select a fixed value eg 5. and value strength/weight of each synConn
 
-- Weight+delay in cellConn or synConn or both?
+
+*** Weight+delay in cellConn or synConn or both?
 -- if data from unitary conn EPSP, the cellConn, but need to calculate weight/synConn (h.NetCon)
+-- allow weights both at cellConn and synConn level
+-- if weight * 2 makes the synapse twice as strong?
+-- can know max conductance, and temp response
+-- Lefort used EPSP mV in soma for cellConn -- need to know how to calculate synConn -- is there a way to do this
+ analytically?
+-- he did in scracm code- assume syn density is correct, electrotonic difference made different between measured and simualated -- multiply by factor difference, resimulate and compare again
+-- syns close to soma were fine; syns far away, original map had understimated response of far away syns, and rescaled far
+ away syns
+-- pattern of syn density for cell -- function of yfrac -- only need to calculate for original scracm map, and output should
+ be rule
+-- but for cellConn -> 5 synConns get 1mV in soma when activated simultaneously -- but will be distributed along dendrites so
+ different transmission delays -- difficult to calculate accurately
+-- most models dont distribute syns over dendrite with realistic syn density
+
 -- delay could be identical for each synConn, or add small distance-based delay
+-- delay would vary due to extra distance traveled through unmyelinated axon (1 m/s) -- 1.1ms diff for different pyramidal
+ neurons - can omit for now - euclidean distance between cell bodies - condVelocity = 1m/s
+-- minDelay value = 2ms -- too high! set to maybe 0.5 ms or 1ms -- max(0.5, 3d distance based) ; for closeby cells, axon goes
+ down ~100um (fat axon), collaterals branch off, come back up 100 or 200um ; localDelay = 0.5ms
+-- for long-range conns use longer delays - eg. 4 ms - kind of aritraty seems noise 
 
-- Syn dist specific to postsyn mech? depends on presyn cell props,loc?
+- Bill: have to normalize by position based on a transfer function between locations and soma
+-- can use someting like ted's multifreq transfer func program to get tha map
+-- yes have to scale baesd on loc and based on freq of input -- eg a high freq (short) input like AMPA has less effect on soma than a slow eg NMDA
+-- was looking at paper on that recently but is just for passive case
+-- jnsci15:1669.pdf The morphoelectrotonic transform: a graphical approach to dendritic function
+/u/billl/articles/jnsci15:1669.pdf
+-- reshaping tree based on electrical distance
+-- another old paper --   author =    "Jaffe, DB and Carnevale, NT",
+ title =    "Passive normalization of synaptic integration influenced by dendritic architecture",
+/u/billl/articles/jnphys82:3268.pdf
+-- http:/www.neuron.yale.edu/phpbb/viewtopic.php?f=8&t=2404&p=9487&hilit=frequency+response#p9487 
+-- calculate the space constant in response to a AC current // lamda_AC(f) = 1/2*sqrt(diam/PI*f*Ra*Cm)
+-- think he has a little package for this but not finding now
+http://www.neuron.yale.edu/phpbb/viewtopic.php?f=15&t=313&p=870&hilit=frequency+response#p870
+a 'frequency tool'
+-- also depends on the Rm and on active conductances, 
+eg an EPSP can end up being terminated by K chans or can be primarily and active response so that the actual gsyn is only a small piece
+
+*** Syn dist specific to postsyn mech? depends on presyn cell props,loc?
 -- Specific to eg. AMPA/NMDA, or just exc vs inh?
+-- we dont have specific data on differnt receptors -- assume all exc are both AMPA and NMDA, and have a conductance ratio
+ between them - has been measured (maybe ratio different in tuft vs basal, but ignore for now); allow to customize ratio
 - depends on presyn cell type and layer (eg. L2/3 exc vs L5B IT vs L5B PT)
+-- M1 L2/3 -> SPI sCRACM map
+-- Petreanu barrel cortex L2/3 or L4 -> yfrac sCRACM map
+-- long range inputs sCRACM maps (both Ben and Petreanu)
 
-- Why need to know num of conns before start? Can have prob dist of synapse, and map on a cell-by-cell basis, adapt
+
+*** Why need to know num of conns before start? Can have prob dist of synapse, and map on a cell-by-cell basis, adapt
   probabilities based on current num contacts
 -- wouldn't be exact since probability based; but need final distribution to match ratios
 
-- The non-uniform mapped / distance from soma-based would be given in the form of 30x10 map, distribution across segments?
+
+*** The non-uniform mapped / distance from soma-based would be given in the form of 30x10 map, distribution across segments?
 -- exp data is in 30x10 map format; distr across segments would vary depending on cell morphology
+-- netpyne should be a 30x10 length density
+-- num of syns/um 
+-- within given pixel stimulated with blue light, pixel = 50x50 um, num of syns/um/dendrite - homogeneous within 50x50um 
+-- convert scracm map -> map of how many syns per length of dendrite at each region of the map (at each pixel)
+-- need to know how much dendrite in that pixel, and how many sysn were coactivated to get soma response
+-- his method: put fixed number of dendrite, and then adjusted weight of these syns
+-- couldnt really separate weights from num of synapses -- started with plausible weight and num of syns 
+-- length density for a specific assumption of conductances (used to convert map)
+-- input to netpyne should be free from Neuron peculiarities -- relates to somehting experimentally -- num of syn per length
+ of dendrite and strength of each of thsoe syns as a peak conductance
+- 2 types of map: 1) num syns/um of dendrite, 2) conductance of syns/um dendrite (probably uniform everywhere) 
+- remain within bounds that exp plausible - eg. now num of spines in a dend tree (eg max 20k)
+- L5->L5 somatic epsp unitary conns 0.2 0.5 mv for 5 syns/conn --> each syn has g that will result in 0.1 mV epsp soma
+-- but will depend on location eg apical tuft won't give you value
+-- 5 number comes mostly from counting dyns in basal -- but maybe also in apical tuft but weren't undetected (90% came from
+ basals)
+-- so probably ok to assume most syns are in basal not apical tuft
+-- in his model he calculated conduc value for standard synapse that gives 0.1 or 0.2 mV (assume uniform over all arbor), so
+ need to vary num of contacts and location
+
+*** Other formats apart from length density map and conductance map (50um and 10x30 map,aligned to pia, centerd on soma):
+-- for STR assume they get same input and infer similar density map for STR cells -- convert using dendritic density of STR
+cells
+-- simpler way: syn length density maps are also radial functions -- if account for how much dendrite there is, the x
+dimension of map may not contain any info -- so rule is based on 1d map (radial function) - 30x1 map - function of yfrac (in
+50 um bins)
+-- could be averaged or represent individual neurons -- for scracm map doesnt make sense to average 
+-- sectionLists - scracm has 50um resoulution but actually more like 100um resoulution -- if you look at dends, 1st 50um of
+apical trunk have no syns; 1st 20um of root basal dont have any syns (just few) -- at a scale where scracm doesnt reach there
+might be no syns
+-- so where scracm doesnt reach can use sectionList to complement and tell u there are no syns thre -- eg. spiny sectionList
+contains all sections except where they were no spines/syns - so set density to 0 
+-- in neuron if u didnt reconstruct eveyr spine, you account for that by increasing cm -- in detailed model I'm using --
+compensated by increasing membrane area 
+- syn density maps are not common - so need other way to specify for rest -- more common data in literature,
+  anatomical/categorical statements eg. this interneuron targets apical tuft -- but no specific numeric values (details not
+  known) -- usually always anatomical 
+- he can send SPI syn length density map -- SEND EMAIL!
+
+
 
 ** comments by ben
 If you want to see which dendrites are on basal, apical, etc. then better to look at the profiles sorted by soma depth, i.e. where you can see each individual neuron's input collapsed to a radial profile.
@@ -947,10 +1037,7 @@ However, because the sCRACM maps don't tell you synapse density (but rather, syn
 
 
 ** Features implemented with adhoc solution -- need to be fixed
-*** conn rule with list of synMechs
-- 
-
-*** default synMech placed in soma - where to define?
+*** default synMech placed in soma - where to define? make syns separate like neuroml
 - don't create synMechs until needed by connections -- just specify params? but need to store somewhere
 - can look up in f.net.params using tags['propList'] but probably slow
 
@@ -966,22 +1053,184 @@ when create conn check if synMech exists in that section, ie. has same 'label' a
 
 - make addSyn function
 
-*** distribute syns in sectionList or list of sectionLists
--
-
-*** create 1st conns, then syns 
-
-*** weight/delay of conn and syns
-
-*** synsPerConn as distribution
-
 *** independent scale conn weight for each cell model - where to store?
-- useful for feature
+- useful feature
 - maybe by default should be stored by cell model
-- or allow both options, 
+- allow both options (same variable)
+
 
 *** move conns and stims out of Cell class
+- make stims be normal populations?
+- stims from S2 projection could make 2000 syns into single cell!
+- maybe place netstim part of stim outside of cell, but keep netcon inside
+- maybe keep conns inside cell for now? seems to make things easier eg. have all synConns of that cell ready to distribute
 
+*** conn rule with list of synMechs
+- weightFraction or weightRatio - eg. 
+- synWeightFraction = [0.9, 0.1]
+
+
+*** synsPerConn as distribution
+- allows functional - seems to be gauss around 5 (E->) or 1 (I->)
+
+
+
+*** weight/delay of conn and syns
+- allow to provide single weight -- find way to estimate weight of syn contacts -- check 16mar24 entry with papers to read!
+- allow to provide list of synweights -- one per synConn (eg. 5 values) by convention assign starting from pia
+- allow functional only for single value (otherwise code would get overcomplicated)
+- maybe allow argument that represents location of synapse (not of cell) ??
+
+*** create 1st conns, then syns 
+- 2 steps, so can distribute syns 
+- create temporary cellConns or keep?
+- need somewhere to store unitary weight? or when convert to subcellular lose?
+- 1) create synConns but don't assign locs/delays/weights; 2) for each cell distribute syns, based on sep subcellular rules
+-- maybe add subcellular distribution to cell prop rules:
+--- for each cell prop, create conditions of subcellular distribution eg. ['conditions': {'yfrac': [0.1-0.4]}]
+--- default: assume uniform distribution
+--- wouldn't make sense to repeat for each yfrac-based conn rule (or cell type rule), plus need all 
+
+
+*** distribute syns in sectionList or list of sectionLists
+- add suport for list of sectionLists - or even combination?!
+*** syn distribution specification
+- 2d syn density map
+- 1d syn density map (yfrac)
+- apply 1d or 2d map only to certain sectionList, eg. spiny
+- categorical data - eg. by sectionLists + distribution function (uniform, gauss)
+
+
+** Meeting with Ben (March 18)
+*** Comments from Ben
+- conceptual framework makes sense
+- HBP approach - axodendritic approach vs. know unitary and subcellular = refinement
+- 2 netcons to same synapse - what happens if input at same timestep ? coincident spiking
+- 1st pass + 2nd pass - approves
+- network model indep of subcellular info
+- single synapse could represent a projection between 
+- unitary conn from preCell A could project to postCell B and C (so not totally accurate in terms of anatomy)
+- Do we need subcellular map for each presyn and postyn cell type, or per conn rule
+-- only pero conn rule if you average maps; but could also use indiv cell maps for each cell model
+-- upper and deeper SPI cells scracm maps suggests they would have different input-output relations in networks 
+-- for a given  density map could end with different syn density (and input-output relation) by applying to diff morphologies 
+-- yfrac dep of subcellular conn 
+-- also variabilty 
+-- CSP morphology very consistent for diff cortical depths; difference is in linker segments (eg 8% vs 12%) so not big diff
+-- CSTR differences based on yfrac - within L5A and L5B - dont know if intrinsic diffs in CSTR
+
+- Make 3 CSP models - upper, middle, lower - 100 um apart -- get data from 10 cells for each and fit -- then test if can
+  replace each of them and still get consistent results or very different (1 membrane model into 3 diff morphologies)
+
+- For IT have upper layer, L5A, L5B, and L6 -- CSTR give you L5A, L5B, and have data for IT upper layers
+
+- IT cells - corticortical (corticocollosal; not exclusive) in L2/3; corticostriatal mostly in L5 (also corticocortical; not
+  exclusive); not all 1 class (eg. project to S2 and M1, non-overlapping, intrinsics are different) 
+- Naoki looked at IT L/3, L4 and L5 -- different intrinsic? no consistent answer
+
+- cellConns vs synConns needed? 
+-- single S2 prjection can make 2000-3000 synapses /contacts into single cell
+
+* 16mar24 Estimating synConn weights from cellConn weight
+** Discussion with Ben+Bill
+*** Weight+delay in cellConn or synConn or both? (Ben)
+-- if data from unitary conn EPSP, the cellConn, but need to calculate weight/synConn (h.NetCon)
+-- allow weights both at cellConn and synConn level
+-- if weight * 2 makes the synapse twice as strong?
+-- can know max conductance, and temp response
+-- Lefort used EPSP mV in soma for cellConn -- need to know how to calculate synConn -- is there a way to do this
+ analytically?
+-- he did in scracm code- assume syn density is correct, electrotonic difference made different between measured and simualated -- multiply by factor difference, resimulate and compare again
+-- syns close to soma were fine; syns far away, original map had understimated response of far away syns, and rescaled far
+ away syns
+-- pattern of syn density for cell -- function of yfrac -- only need to calculate for original scracm map, and output should
+ be rule
+-- but for cellConn -> 5 synConns get 1mV in soma when activated simultaneously -- but will be distributed along dendrites so
+ different transmission delays -- difficult to calculate accurately
+-- most models dont distribute syns over dendrite with realistic syn density
+
+-- delay could be identical for each synConn, or add small distance-based delay
+-- delay would vary due to extra distance traveled through unmyelinated axon (1 m/s) -- 1.1ms diff for different pyramidal
+ neurons - can omit for now - euclidean distance between cell bodies - condVelocity = 1m/s
+-- minDelay value = 2ms -- too high! set to maybe 0.5 ms or 1ms -- max(0.5, 3d distance based) ; for closeby cells, axon goes
+ down ~100um (fat axon), collaterals branch off, come back up 100 or 200um ; localDelay = 0.5ms
+-- for long-range conns use longer delays - eg. 4 ms - kind of aritraty seems noise 
+
+*** Bill
+- Bill: have to normalize by position based on a transfer function between locations and soma
+-- can use someting like ted's multifreq transfer func program to get tha map
+-- yes have to scale baesd on loc and based on freq of input -- eg a high freq (short) input like AMPA has less effect on soma than a slow eg NMDA
+-- was looking at paper on that recently but is just for passive case
+-- jnsci15:1669.pdf The morphoelectrotonic transform: a graphical approach to dendritic function
+/u/billl/articles/jnsci15:1669.pdf
+-- reshaping tree based on electrical distance
+-- another old paper --   author =    "Jaffe, DB and Carnevale, NT",
+ title =    "Passive normalization of synaptic integration influenced by dendritic architecture",
+/u/billl/articles/jnphys82:3268.pdf
+-- http:/www.neuron.yale.edu/phpbb/viewtopic.php?f=8&t=2404&p=9487&hilit=frequency+response#p9487 
+-- calculate the space constant in response to a AC current // lamda_AC(f) = 1/2*sqrt(diam/PI*f*Ra*Cm)
+-- think he has a little package for this but not finding now
+http://www.neuron.yale.edu/phpbb/viewtopic.php?f=15&t=313&p=870&hilit=frequency+response#p870
+a 'frequency tool'
+-- also depends on the Rm and on active conductances, 
+eg an EPSP can end up being terminated by K chans or can be primarily and active response so that the actual gsyn is only a small piece
+
+** TO READ!
+*** Mark15
+-Pathway specific values for the parameter “utilization of synaptic efficacy” (U, analogous to the probability of
+neurotransmitter release) were unified from various experimental studies of synaptic transmission in juvenile rat
+somatosensory cortex (Le Bé et al., 2007; Brémaud et al., 2007; Feldmeyer, 2006; Koester and Johnston, 2005; Markram et al.,
+1997; Silver et al., 2003).
+
+- The axonal conduction delay for each synaptic contact was computed using the axonal path distance from the soma, and a AP
+  conduction velocity of 300 μm/ms, based on experimental estimates (Stuart et al., 1997). Furthermore, experimentally
+  measured ratios of NMDA and AMPA conductances were used in order to model their relative contribution to unitary the EPSC
+  (Feldmeyer, 2006; Myme et al., 2003; Rinaldi et al., 2007; Silver et al., 2003; Wang and Gao, 2009). 
+*** Reim15
+- interbouton interval: 1-10 um
+- syns/bouton: 1 (2 low prob)
+- bouton density: ~0.2/um
+- syns/conn: E->E/I ~5 , I->E/I-> ~15
+*** Zado95
+- attenuation in and out - graphical rep 
+*** Huys06
+*** Lond02
+*** Kome09
+*** Jaff99
+[[file+sys:/u/salvadord/Documents/ISB/Models/netpyne_repo/gif/20160324_194357.png][fig]] - pyr L5 cell
+*** http://www.neuron.yale.edu/phpbb/viewtopic.php?f=8&t=2404&p=9487&hilit=frequency+response#p9487
+*** http://www.neuron.yale.edu/phpbb/viewtopic.php?f=15&t=313&p=870&hilit=frequency+response#p870
+- what is 
+> the significance of this Z transfer for neural communication? 
+
+Very simple. Transfer impedance is the best predictor of the 
+effect of synaptic location on synaptic efficacy. This is 
+a consequence of these two facts: 
+1. Peak depolarization at the synaptic trigger zone is the 
+primary determinant of whether or not an epsp will trigger 
+a spike. This is easily shown by computational modeling. 
+2. Most synapses act like current sources, not voltage sources. 
+Also easily shown by computational modeling. 
+
+Therefore, despite everything you might find in textbooks, hear 
+in the classroom, or read in most journal articles, voltage 
+attenuation is not a useful predictor of the effect of synaptic 
+location on synaptic efficacy. The best predictor is transfer 
+impedance, which tells you how strongly a current, injected at 
+one point in the cell, will affect membrane potential throughout 
+the cell. See 
+Jaffe, D.B. and Carnevale, N.T. Passive normalization of 
+synaptic integration influenced by dendritic architecture. 
+Journal of Neurophysiology 82:3268-3285, 1999. 
+
+So if you want to understand how the distribution of synaptic 
+inputs over the surface of a cell will affect the spiking 
+output of that cell, study the spatial variation of 
+transfer impedance from a reference point located at the 
+cell's spike trigger zone (since transfer impedance between 
+any two points is independent of the direction of signal 
+propagation, the transfer impedance from any point to the 
+soma is the same as from the soma to that point). 
 
 * Netpyne Models/Users
 ** Github examples folder
@@ -1200,6 +1449,13 @@ eg. IntFire1,2,3,4
 ** RxD 
 /u/samn/m1dyst -> models/m1dyst
 https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html
+** recreating spikes
+ 
+Setting up the re-simulation utilizes {\tt PatternStim} to feed the spikes back into the single cell.  The setup code is
+
+pattern = h.PatternStim()
+pattern.fake_output = 1
+pattern.play(tvec, idvec)
 ** Saving at intervals
 ** modify instantiated network
 - load net and provide new set of params

@@ -14,7 +14,6 @@ from time import time
 from collections import OrderedDict
 import csv
 import pickle
-from mpl_toolkits.mplot3d import Axes3D
 
 import framework as f
 

@@ -65,66 +65,66 @@ netParams['cellParams'] = []
 
 ## IT cell params
 cellRule = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH
 soma['pointps']['Izhi'] = izhiParams['RS'] 
-soma['syns']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['syns']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['syns']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
+soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## PT cell params
 cellRule = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi'] = izhiParams['IB'] 
-soma['syns']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['syns']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['syns']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
+soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## CT cell params
 cellRule = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'RS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'RS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi'] = izhiParams['RS'] 
-soma['syns']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['syns']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['syns']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
+soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## SOM cell params
 cellRule = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'LTS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'LTS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi'] = izhiParams['LTS'] 
-soma['syns']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['syns']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['syns']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
+soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties 
 
 ## PV cell params
 cellRule = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'syns': {}, 'Izhi2007Type': 'FS'}  #  soma
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'FS'}  #  soma
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
 soma['pointps']['Izhi'] = izhiParams['FS'] 
-soma['syns']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['syns']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['syns']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
+soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
+soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
@@ -166,159 +166,159 @@ netParams['connParams'] = []
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['IT', 'PT', 'CT', 'PV', 'SOM']}, # background -> All
     'connFunc': 'fullConn',
     'weight': 10, 
-    'syn': 'NMDA',
+    'synMech': 'NMDA',
     'delay': 5})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'IT'}, # IT->IT rule
     'divergence': '10*pre_y+0.01/pre_y',
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5,
-    'syn': 'AMPA',
+    'synMech': 'AMPA',
     'annot': 'ITtoITconn'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PT'}, # IT->PT rule    
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'CT'}, # IT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'PV'}, # IT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'IT'}, 'postTags': {'cellType': 'SOM'}, # IT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'IT'}, # PT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PT'}, # PT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'CT'}, # PT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'PV'}, # PT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PT'}, 'postTags': {'cellType': 'SOM'}, # PT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'IT'}, # CT->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PT'}, # CT->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'CT'}, # CT->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'PV'}, # CT->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'CT'}, 'postTags': {'cellType': 'SOM'}, # CT->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'IT'}, # PV->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PT'}, # PV->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'CT'}, # PV->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'PV'}, # PV->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'PV'}, 'postTags': {'cellType': 'SOM'}, # PV->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'IT'}, # SOM->IT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PT'}, # SOM->PT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})               
+    'synMech': 'GABAA'})               
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'CT'}, # SOM->CT rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'PV'}, # SOM->PV rule 
     'probability': '0.1*pre_y+0.01/post_y', 
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 netParams['connParams'].append({'preTags': {'cellType': 'SOM'}, 'postTags': {'cellType': 'SOM'}, # SOM->SOM rule 
     'probability': '0.1*pre_y+0.01/post_y',
     'weight': '1*exp(-dist_2D/connfalloff)', 
     'delay': 5, 
-    'syn': 'GABAA'})  
+    'synMech': 'GABAA'})  
 
 
 

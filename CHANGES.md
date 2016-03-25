@@ -1,3 +1,14 @@
+## Version 0.3.8
+
+- Fixed bug when importing distributed mechanisms of cells
+
+- importCell can use either *args or **kwargs
+
+- Fixed bug in secLists implementation
+
+- Removed mpl_toolkits.mplot3d import (unused and produced error in some Mac OS versions)
+
+
 ## Version 0.3.7
 
 - Made conn functions more efficient using gid2lid and lid2gid

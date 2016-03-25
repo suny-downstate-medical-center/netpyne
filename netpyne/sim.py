@@ -371,10 +371,8 @@ def gatherData():
 def saveData():
     if f.rank == 0:
         timing('start', 'saveTime')
-        #dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
-        dataSave = {'simData': f.allSimData}
-        dataSave = f.allSimData['spkt']+f.allSimData['spkid']
-
+        dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
+        
         if 'timestampFilename' in f.cfg:  # add timestamp to filename
             if f.cfg['timestampFilename']: 
                 timestamp = time()
@@ -385,77 +383,55 @@ def saveData():
         if f.cfg['savePickle']:
             import pickle
             print('Saving output as %s ... ' % (f.cfg['filename']+'.pkl'))
-            timing('start', 'savePkl')
             with open(f.cfg['filename']+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
-            timing('stop', 'savePkl')   
             print('Finished saving!')
 
         # Save to dpk file
         if f.cfg['saveDpk']:
             import os,gzip
             print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
-            #fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
-            timing('start', 'saveDpk')
             gzip.open(f.cfg['filename']+'.dpk', 'wb').write(pk.dumps(dataSave)) # write compressed string
-            timing('stop', 'saveDpk')
+            print('Finished saving!')
             
         # Save to json file
         if f.cfg['saveJson']:
             import json
             print('Saving output as %s ... ' % (f.cfg['filename']+'.json '))
-            timing('start', 'saveJson')
             with open(f.cfg['filename']+'.json', 'w') as fileObj:
                 json.dump(dataSave, fileObj)
-            timing('stop', 'saveJson')
             print('Finished saving!')
 
         # Save to mat file
         if f.cfg['saveMat']:
             from scipy.io import savemat 
             print('Saving output as %s ... ' % (f.cfg['filename']+'.mat'))
-            timing('start', 'saveMat')
-            #savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-            savemat(f.cfg['filename']+'.mat', {'data':dataSave}) 
-            timing('stop', 'saveMat')
+            savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
-        # Save to csv file
+        # Save to csv file (currently only saves spikes)
         if f.cfg['saveCSV']:
             import csv
             print('Saving output as %s ... ' % (f.cfg['filename']+'.csv'))
-            timing('start', 'saveCSV')
             writer = csv.writer(open(f.cfg['filename']+'.csv', 'wb'))
-            #for value in dataSave:
-            writer.writerow(dataSave)
-            timing('stop', 'saveCSV')
+            for dic in dataSave['simData']:
+                for values in dic:
+                    writer.writerow(values)
             print('Finished saving!')
 
 
-        # Save to HDF5 file
+        # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
         if f.cfg['saveHDF5']:
             dataSaveUTF8 = dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
-            #import hdf5storage
-            import h5py
+            import hdf5storage
+            #import h5py
             if os.path.isfile(f.cfg['filename']+'.hdf5'): os.remove(f.cfg['filename']+'.hdf5')
             print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
-            timing('start', 'saveHDF5')
-            file = h5py.File(f.cfg['filename']+'.hdf5', "w")
-            #hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
-            
-            dset = file.create_dataset("dataSave", (len(dataSave),))#array(data))
-            dset[...] = dataSave
-            timing('stop', 'saveHDF5')
+            hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
+            #file = h5py.File(f.cfg['filename']+'.hdf5', "w")
+            #dset = file.create_dataset("dataSave", (len(dataSave),))#array(data))
+            #dset[...] = dataSave
             print('Finished saving!')
-
-
-        #  for i in range(int(mynqs.m[0])): f[mynqsName].create_dataset(mynqs.s[i].s, data=np.array(mynqs.getcol(mynqs.s[i].s)), *args, **kwargs)
-
-
-        # def saveVec_h5pyDataset(f, myvec, myvecName, *args, **kwargs):
-        #     '''will save hoc vector as numpy arrays dataset in h5py file f (which has to be open for write)'''
-        #     f.create_dataset(myvecName, data=np.array(myvec), *args, **kwargs)
-
 
 
         # Save timing
@@ -464,8 +440,7 @@ def saveData():
             import pickle
             with open('timing.pkl', 'wb') as file: pickle.dump(f.timing, file)
 
-            print {label:time for label,time in f.timing.iteritems() if label in ['savePkl', 'saveDpk', 'saveJson', 'saveMat', 'saveCSV', 'saveHDF5']}
-
+            
 ###############################################################################
 ### Timing - Stop Watch
 ###############################################################################

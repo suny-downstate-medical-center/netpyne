@@ -2,6 +2,10 @@
 
 - Fix recording of single cell of population when using MPI
 
+- Fixed raster plotting based on NCD when using MPI
+
+- Replaced save as .txt format with save as .csv
+
 
 ## Version 0.3.8
 

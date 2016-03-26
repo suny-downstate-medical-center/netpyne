@@ -392,9 +392,10 @@ def saveData():
             import os,gzip
             print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
             fn=f.params['filename'].split('.')
-            fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
+            #fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
-            print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
+            print('Finished saving!')
+            #print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
 
         # Save to json file
         if f.cfg['saveJson']:
@@ -411,13 +412,24 @@ def saveData():
             savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
-        # Save to HDF5 file
+        # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
         if f.cfg['saveHDF5']:
             dataSaveUTF8 = dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
             hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
             print('Finished saving!')
+
+        # Save to CSV file (currently only saves spikes)
+        if f.cfg['saveCSV']:
+            import csv
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.csv'))
+            writer = csv.writer(open(f.cfg['filename']+'.csv', 'wb'))
+            for dic in dataSave['simData']:
+                for values in dic:
+                    writer.writerow(values)
+            print('Finished saving!')
+
 
         # Save timing
         timing('stop', 'saveTime')

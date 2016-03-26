@@ -72,7 +72,7 @@ simConfig['timestampFilename'] = False  # Add timestamp to filename to avoid ove
 simConfig['savePickle'] = False # save to pickle file
 simConfig['saveJson'] = False # save to json file
 simConfig['saveMat'] = False # save to mat file
-simConfig['saveTxt'] = False # save to txt file
+simConfig['saveCSV'] = False # save to txt file
 simConfig['saveDpk'] = False # save to .dpk pickled file
 simConfig['saveHDF5'] = False # save to HDF5 file 
 

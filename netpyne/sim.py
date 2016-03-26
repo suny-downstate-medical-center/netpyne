@@ -225,11 +225,12 @@ def setupRecording():
                 for cell in f.net.cells: cell.recordTraces()
                 break
             elif isinstance(entry, str):  # if str, record 1st cell of this population
-                for pop in f.net.pops:
-                    if pop.tags['popLabel'] == entry and pop.cellGids:
-                        gid = pop.cellGids[0]
-                        for cell in f.net.cells: 
-                            if cell.gid == gid: cell.recordTraces()
+                if f.rank == 0:  # only record on node 0
+                    for pop in f.net.pops:
+                        if pop.tags['popLabel'] == entry and pop.cellGids:
+                            gid = pop.cellGids[0]
+                            for cell in f.net.cells: 
+                                if cell.gid == gid: cell.recordTraces()
             elif isinstance(entry, int):  # if int, record from cell with this gid
                 for cell in f.net.cells: 
                     if cell.gid == entry: cell.recordTraces()

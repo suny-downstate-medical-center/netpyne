@@ -210,7 +210,7 @@ class Cell(object):
                 # add synaptic mechanism to python struct
                 if 'synMechs' not in sec:
                     sec['synMechs'] = []
-                synMech = next((synMech) for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc, None)
+                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc), None)
                 if not synMech:  # if synMech not in section, then create
                     synMech = {'label': label, 'loc': loc}
                     sec['synMechs'].append(synMech)
@@ -219,17 +219,18 @@ class Cell(object):
                 # add synaptic mechanism NEURON objectes 
                 if 'synMechs' not in sec:
                     sec['synMechs'] = []
-                    if not synMech:  # if pointer not created in createPyStruct, then check 
-                        synMech = next((synMech) for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc, None)
-                    if not synMech:  # if still doesnt exist, then create
-                        synMech = {}
-                        sec['synMechs'].append(synMech)
-                    if not 'hSyn' in synMech :  # if synMech doesn't have NEURON obj, then create
-                        synObj = getattr(h, synMechParams['mod'])
-                        synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
-                        for synParamName,synParamValue in synParams.iteritems():  # add params of the synaptic mechanism
-                            if not synParamName in ['label', 'mod']:
-                                setattr(synMech['hSyn'], synParamName, synParamValue)
+                if not synMech:  # if pointer not created in createPyStruct, then check 
+                    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc), None)
+                if not synMech:  # if still doesnt exist, then create
+                    synMech = {}
+                    sec['synMechs'].append(synMech)
+                if not 'hSyn' in synMech:  # if synMech doesn't have NEURON obj, then create
+                    synObj = getattr(h, synMechParams['mod'])
+                    synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
+                    for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
+                        if not synParamName in ['label', 'mod']:
+                            setattr(synMech['hSyn'], synParamName, synParamValue)
+            return synMech
 
     def addConn(self, params):
         if params['preGid'] == self.gid:
@@ -252,7 +253,7 @@ class Cell(object):
         sec = self.secs[params['sec']]
 
         weightIndex = 0  # set default weight matrix index
-        if not params['loc']: params['loc'] = 0.5  # default synMech location  
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location  
         if not params['threshold']: params['threshold'] = 10.0  # default NetCon threshold    
 
         pointp = None
@@ -266,11 +267,11 @@ class Cell(object):
 
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
-                self.addSynMech (self, params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
+                synMech = self.addSynMech (self, params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
             elif f.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
-                self.addSynMech(self, params['synMech'], params['sec'], params['loc'])  # add synapse
+                synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
             else: # if no synaptic mechanism specified and no synMech params available 
                 print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
@@ -279,7 +280,7 @@ class Cell(object):
         if pointp:
             postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
         else:
-            postTarget= sec['synMechs'][params['synMech']]['hSyn'] # local synaptic mechanism
+            postTarget = synMech['hSyn'] # local synaptic mechanism
         netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
         netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
@@ -327,7 +328,7 @@ class Cell(object):
         sec = self.secs[params['sec']]
 
         weightIndex = 0  # set default weight matrix index
-        if not params['loc']: params['loc'] = 0.5  # default synMech location  
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
         if not params['threshold']: params['threshold'] = 10.0  # default NetCon threshold      
 
         pointp = None
@@ -341,11 +342,11 @@ class Cell(object):
 
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
-                self.addSynMech (self, params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (won't be added if exists)
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (won't be added if exists)
             elif f.net.params['synMechParams']:  # if some synMech params defined
                 synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
-                self.addSynMech (self, params['synMech'], params['sec'], params['loc'])  # add synapse
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synapse
             else: # if no synaptic mechanism specified and no synMech params available 
                 print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
@@ -379,7 +380,7 @@ class Cell(object):
         if pointp:
             netcon = h.NetCon(netstim, sec['pointps'][pointp]['hPointp'])  # create Netcon between global gid and local point neuron
         else:
-            netcon = h.NetCon(netstim, sec['synMechs'][params['synMech']]['hSyn']) # create Netcon between global gid and local synaptic mechanism
+            netcon = h.NetCon(netstim, synMech['hSyn']) # create Netcon between global gid and local synaptic mechanism
         netcon.weight[weightIndex] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay

@@ -22,6 +22,11 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
+# Population parameters
+netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 500}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
+
 # Cell properties list
 netParams['cellParams'] = []
 
@@ -30,19 +35,14 @@ cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.1, 'tau2': 5, 'e': 0}
 
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
-
-# Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 500}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
-
-netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
-
+# Synaptic mechanism parameters
+netParams['synMechParams'] = []
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
+ 
 
 # Connectivity parameters
 netParams['connParams'] = []  

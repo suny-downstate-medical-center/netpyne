@@ -25,112 +25,21 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 
 # General network parameters
 netParams['scale'] = 1 # Scale factor for number of cells
-netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
-netParams['sizeY'] = 100 # y-dimension (vertical height or cortical depth) size in um
-netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
-
-## General connectivity parameters
-netParams['scaleConnWeight'] = 1 # Connection weight scale factor
-
-# Cell properties list
-netParams['cellParams'] = []
-
-# Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType']
-
-
-# General network parameters
-netParams['scale'] = 1 # Scale factor for number of cells
 netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
 netParams['sizeY'] = 1500 # y-dimension (vertical height or cortical depth) size in um
 netParams['sizeZ'] = 1000 # z-dimension (horizontal depth) size in um
+
 
 ## General connectivity parameters
 netParams['scaleConnWeight'] = 0.025 # Connection weight scale factor
 netParams['defaultDelay'] = 2.0 # default conn delay (ms)
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
 netParams['connfalloff'] = 200 # connection fall off constant (um)
+netParams['scaleConnWeight'] = 1 # Connection weight scale factor
 
 
-# Izhi cell params (used in cell properties)
-izhiParams = {}
-izhiParams['RS'] = {'_type':'Izhi2007b', 'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-izhiParams['IB'] = {'_type':'Izhi2007b', 'C':150, 'k':1.2, 'vr':-75, 'vt':-45, 'vpeak':50, 'a':0.01, 'b':5, 'c':-56, 'd':130, 'celltype':2}
-izhiParams['LTS'] = {'_type':'Izhi2007b', 'C':100, 'k':1.0, 'vr':-56, 'vt':-42, 'vpeak':40, 'a':0.03, 'b':8, 'c':-53, 'd':20, 'celltype':4}
-izhiParams['FS'] = {'_type':'Izhi2007b', 'C':20, 'k':1.0, 'vr':-55, 'vt':-40, 'vpeak':25, 'a':0.2, 'b':-2, 'c':-45, 'd':-55, 'celltype':5}
-
-# Cell properties list
-netParams['cellParams'] = []
-
-## IT cell params
-cellRule = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}}  #  soma
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH
-soma['pointps']['Izhi'] = izhiParams['RS'] 
-soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
-
-## PT cell params
-cellRule = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}}  #  soma
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
-soma['pointps']['Izhi'] = izhiParams['IB'] 
-soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
-
-## CT cell params
-cellRule = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'RS'}  #  soma
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
-soma['pointps']['Izhi'] = izhiParams['RS'] 
-soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
-
-## SOM cell params
-cellRule = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'LTS'}  #  soma
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
-soma['pointps']['Izhi'] = izhiParams['LTS'] 
-soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties 
-
-## PV cell params
-cellRule = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}, 'Izhi2007Type': 'FS'}  #  soma
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
-soma['pointps']['Izhi'] = izhiParams['FS'] 
-soma['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.05, 'tau2':5.3, 'e': 0}  # AMPA
-soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.15, 'tau2': 1.50, 'e': 0}  # NMDA
-soma['synMechs']['GABAA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-soma['synMechs']['GABAB'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
-
-
-## create list of populations, where each item contains a dict with the pop params
-netParams['popParams'] = []  
+# Population parameters
+netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
      
 netParams['popParams'].append({'popLabel': 'IT_L23', 'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.1, 0.26], 'density': '1e3*ynorm'}) #  L2/3 IT
 netParams['popParams'].append({'popLabel': 'IT_L4',  'cellModel': 'Izhi2007b', 'cellType': 'IT',  'projTarget': '', 'ynormRange': [0.26, 0.31], 'density': '1e3*ynorm'}) #  L4 IT
@@ -157,7 +66,69 @@ cellsList.append({'cellLabel':'bs50', 'cellType':'PT', 'projTarget':'',       'x
 cellsList.append({'cellLabel':'bs91', 'cellType':'PT', 'projTarget':'lumbar', 'x': 2, 'ynorm': 0.5 , 'z': 3})
 netParams['popParams'].append({'popLabel': 'PT_cells', 'cellModel':'HH', 'cellsList': cellsList}) #  PT individual cells
 
-netParams['popTagsCopiedToCells'] = ['popLabel', 'cellModel', 'cellType', 'projTarget']  # tags from population that are copied over to the cells
+# Cell parameters
+
+## Izhi cell params (used in cell properties)
+izhiParams = {}
+izhiParams['RS'] = {'_type':'Izhi2007b', 'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+izhiParams['IB'] = {'_type':'Izhi2007b', 'C':150, 'k':1.2, 'vr':-75, 'vt':-45, 'vpeak':50, 'a':0.01, 'b':5, 'c':-56, 'd':130, 'celltype':2}
+izhiParams['LTS'] = {'_type':'Izhi2007b', 'C':100, 'k':1.0, 'vr':-56, 'vt':-42, 'vpeak':40, 'a':0.03, 'b':8, 'c':-53, 'd':20, 'celltype':4}
+izhiParams['FS'] = {'_type':'Izhi2007b', 'C':20, 'k':1.0, 'vr':-55, 'vt':-40, 'vpeak':25, 'a':0.2, 'b':-2, 'c':-45, 'd':-55, 'celltype':5}
+
+netParams['cellParams'] = []
+
+## IT cell params
+cellRule = {'label': 'IT', 'conditions': {'cellType': 'IT'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}, 'synMechs': {}}  #  soma
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH
+soma['pointps']['Izhi'] = izhiParams['RS'] 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+
+## PT cell params
+cellRule = {'label': 'PT', 'conditions': {'cellType': 'PT'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}}  #  soma
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi'] = izhiParams['IB'] 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+
+## CT cell params
+cellRule = {'label': 'CT', 'conditions': {'cellType': 'CT'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}}  #  soma
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi'] = izhiParams['RS'] 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+
+## SOM cell params
+cellRule = {'label': 'SOM', 'conditions': {'cellType': 'SOM'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}}  #  soma
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi'] = izhiParams['LTS'] 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties 
+
+## PV cell params
+cellRule = {'label': 'PV', 'conditions': {'cellType': 'PV'}, 'sections': {}}
+soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'pointps':{}}  #  soma
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+soma['mechs']['hh'] = {'gnabar': 1, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # HH 
+soma['pointps']['Izhi'] = izhiParams['FS'] 
+cellRule['sections'] = {'soma': soma}  # add sections to dict
+netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+
+
+# Synaptic mechanism parameters
+netParams['synMechParams'] = []
+netParams['synMechParams'].append({'label':'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0})  # AMPA
+netParams['synMechParams'].append({'label':'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 1.50, 'e': 0})  # NMDA
+netParams['synMechParams'].append({'label':'GABAA', 'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAA
+netParams['synMechParams'].append({'label':'GABAB', 'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAB
 
 
 # List of connectivity rules/params

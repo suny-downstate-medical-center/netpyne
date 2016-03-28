@@ -228,7 +228,7 @@ class Cell(object):
                     synObj = getattr(h, synMechParams['mod'])
                     synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
-                        if not synParamName in ['label', 'mod']:
+                        if synParamName not in ['label', 'mod']:
                             setattr(synMech['hSyn'], synParamName, synParamValue)
             return synMech
 
@@ -267,7 +267,7 @@ class Cell(object):
 
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
-                synMech = self.addSynMech (self, params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
             elif f.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel

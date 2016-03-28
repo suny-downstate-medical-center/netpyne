@@ -1057,6 +1057,16 @@ cell.secs['soma']['synMechs'][0]['label': 'NMDA', 'loc': 0.5, 'hSyn': ]
 
 - make addSyn function
 
+- comparison of searching inside list vs accessing dict (~20x faster, for 1M conns: 0.75 sec vs 0.03sec; for 100M conns: 75
+  sec vs 4 sec):
+-- but have to add time of searching for specific location too 
+
+timeit.timeit("b=next((item for item in a if item['label']=='ampa'), None)", setup="a=[{'label':'gabab','v':10},{'label':'gaba','v':10},{'label':'nmda','v':10},{'label':'ampa','v':10}]", number=1000000)
+Out[13]: 0.7533509731292725
+
+timeit.timeit("b=a['ampa']", setup="a={'gabab':{'v':10},'gaba':{'v':10},'nmda':{'v':10},'ampa':{'v':10}}", number=1000000)
+Out[18]: 0.038023948669433594
+
 *** independent scale conn weight for each cell model 
 - where to store?
 - useful feature
@@ -1469,7 +1479,15 @@ pattern.fake_output = 1
 pattern.play(tvec, idvec)
 ** Saving at intervals
 ** modify instantiated network
+- don't destroy NEURON objects, so can interact with them
 - load net and provide new set of params
+** Add sim options for efficient parallel sim
+- add timing of computational vs exchange
+- load balance
+- cvode.cache_efficient
+- compress spikes
+- bin queue
+
 ** Save space using __slots__
 http://tech.oyster.com/save-ram-with-python-slots/
 ** Make simulator-indep using NeuroML internal format

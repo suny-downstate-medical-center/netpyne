@@ -27,12 +27,12 @@ netParams['popParams'] = []  # create list of populations - each item will conta
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 500}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
 
-# Cell properties list
+# Cell parameters
 netParams['cellParams'] = []
 
 ## PYR cell properties
 cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
+soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 
@@ -49,7 +49,7 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': 0.001,                    # weight of each connection
+    'weight': 0.05,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
@@ -57,7 +57,7 @@ netParams['connParams'].append(
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
     'connFunc': 'fullConn',             # all-to-all (can omit this param)
-    'weight': 0.008,                    # fixed weight of 0.08
+    'weight': 0.1,                    # fixed weight of 0.08
     'synMech': 'NMDA',                      # target NMDA synapse
     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 

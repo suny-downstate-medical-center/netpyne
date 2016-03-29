@@ -1059,7 +1059,7 @@ cell.secs['soma']['synMechs'][0]['label': 'NMDA', 'loc': 0.5, 'hSyn': ]
 
 - comparison of searching inside list vs accessing dict (~20x faster, for 1M conns: 0.75 sec vs 0.03sec; for 100M conns: 75
   sec vs 4 sec):
--- but have to add time of searching for specific location too 
+-- but have to add time of searching for specific location too
 
 timeit.timeit("b=next((item for item in a if item['label']=='ampa'), None)", setup="a=[{'label':'gabab','v':10},{'label':'gaba','v':10},{'label':'nmda','v':10},{'label':'ampa','v':10}]", number=1000000)
 Out[13]: 0.7533509731292725

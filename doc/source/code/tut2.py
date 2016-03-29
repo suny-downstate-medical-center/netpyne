@@ -19,6 +19,12 @@ soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2'
 cellRule['sections'] = {'soma': soma}  													# add soma section to dict
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell par
 
+
+## Synaptic mechanism parameters
+netParams['synMechParams'] = []
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+ 
+
 ## Cell connectivity rules
 netParams['connParams'] = [] 
 

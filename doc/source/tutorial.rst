@@ -286,7 +286,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 	soma = {'geom': {}, 'mechs': {}}        		                                      # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                                 # dend params dict
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}}                   		              # dend params dict
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms

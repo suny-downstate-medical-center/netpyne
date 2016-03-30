@@ -5,35 +5,64 @@ netParams = {}  # dictionary to store sets of network parameters
 
 ## Population parameters
 netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'S', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'M', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'ES', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'IS', 'cellType': 'BAS', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'EM', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'IM', 'cellType': 'BAS', 'numCells': 20, 'cellModel': 'HH'}) 
 netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}} 	# cell rule dict
-soma = {'geom': {}, 'mechs': {}}  											# soma params dict
+soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}  											# soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
 cellRule['sections'] = {'soma': soma}  													# add soma section to dict
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell par
 
+cellRule = {'label': 'BASrule', 'conditions': {'cellType': 'BAS'},  'sections': {}} 	# cell rule dict
+soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}  											# soma params dict
+soma['geom'] = {'diam': 10.0, 'L': 10.0, 'Ra': 80.0}  									# soma geometry
+soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+cellRule['sections'] = {'soma': soma}  													# add soma section to dict
+netParams['cellParams'].append(cellRule)  												# add dict to list of cell par
+
+
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+netParams['synMechParams'].append({'label': 'GABA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 4.0, 'e': -80})  # GABA synaptic mechanism
  
 
 ## Cell connectivity rules
 netParams['connParams'] = [] 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+netParams['connParams'].append({'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'EM'},  #  ES -> EM
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'synMech': 'NMDA'})   		# synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+netParams['connParams'].append({'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'ES'},  #  ES -> EM
+	'probability': 0.5, 		# probability of connection
+	'weight': 0.01, 			# synaptic weight 
+	'delay': 5,					# transmission delay (ms) 
+	'synMech': 'NMDA'})   		# synaptic mechanism 
+
+netParams['connParams'].append({'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ES'},  #  IS -> IM
+	'probability': 0.5, 		# probability of connection
+	'weight': 0.01, 			# synaptic weight 
+	'delay': 5,					# transmission delay (ms) 
+	'synMech': 'GABA'})   		# synaptic mechanism 
+
+netParams['connParams'].append({'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'EM'},  #  IS -> IM
+	'probability': 0.5, 		# probability of connection
+	'weight': 0.01, 			# synaptic weight 
+	'delay': 5,					# transmission delay (ms) 
+	'synMech': 'GABA'})   		# synaptic mechanism 
+
+netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['PYR', 'BAS']}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'NMDA'})  		# synaptic mechanism 

@@ -55,6 +55,18 @@ def plotData():
             print('\nTotal time = %0.2f s' % f.timing['totalTime'])
         show(block=False)
 
+## Sync measure
+def syncMeasure():
+    t0=-1 
+    width=1 
+    cnt=0
+    for spkt in f.allSimData['spkt']:
+        if (spkt>=t0+width): 
+            t0=spkt 
+            cnt+=1
+    return 1-cnt/(f.cfg['duration']/width)
+
+
 ## Raster plot 
 def plotRaster(): 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
@@ -78,10 +90,15 @@ def plotRaster():
         pass     
     figure(figsize=(10,8)) # Open a new figure
     fontsiz = 12
-    scatter(f.allSimData['spkt'], spkids, 10, linewidths=1.5, marker='|', color = spkidColors) # Create raster  
+    scatter(f.allSimData['spkt'], spkids, 10, linewidths=2, marker='|', color = spkidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
     ylabel(ylabelText, fontsize=fontsiz)
-    title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
+    if f.cfg['plotSync']:
+        for spkt in f.allSimData['spkt']:
+            plot((spkt, spkt), (0, f.numCells), 'r-', linewidth=0.1)
+        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (f.numCells,f.connsPerCell,f.firingRate,syncMeasure()), fontsize=fontsiz)
+    else:
+        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
     xlim(0,f.cfg['duration'])
     ylim(0,f.numCells)
     for popLabel in popLabels[::-1]:

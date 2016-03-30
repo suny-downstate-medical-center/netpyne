@@ -41,7 +41,7 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
  
 
 # Connectivity parameters
@@ -49,16 +49,15 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': 0.05,                    # weight of each connection
+    'weight': 0.005,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'connFunc': 'fullConn',             # all-to-all (can omit this param)
     'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'NMDA',                      # target NMDA synapse
+    'synMech': 'NMDA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
@@ -74,11 +73,11 @@ simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['randseed'] = 1 # Random seed to use
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 1  # show detailed messages 
+simConfig['verbose'] = False  # show detailed messages 
 
 
 # Recording 
-simConfig['recordCells'] = []  # whether to record cell traces or not
+simConfig['recordCells'] = []  # which cells to record from
 simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -95,7 +94,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [] # plot recorded traces for this list of cells
+simConfig['plotCells'] = [0] # plot recorded traces for this list of cells
 simConfig['plotLFPSpectrum'] = False # plot power spectral density
 simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix

@@ -14,7 +14,7 @@ netParams['popParams'].append({'popLabel': 'Izhi03a_pop', 'cellType': 'PYR', 'nu
 netParams['popParams'].append({'popLabel': 'Izhi03b_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'}) 
 netParams['popParams'].append({'popLabel': 'Izhi07a_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'}) 
 netParams['popParams'].append({'popLabel': 'Izhi07b_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'}) 
-netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.5, 'source': 'random', 'cellModel': 'NetStim'})
+netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties

@@ -14,7 +14,6 @@
 
 - Replaced save as .txt format with save as .csv
 
-
 ## Version 0.3.8
 
 - Fixed bug when importing distributed mechanisms of cells

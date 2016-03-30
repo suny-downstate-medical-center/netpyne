@@ -7,7 +7,7 @@ netParams = {}  # dictionary to store sets of network parameters
 netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'S', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
 netParams['popParams'].append({'popLabel': 'M', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'source': 'random', 'cellModel': 'NetStim'})
+netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties

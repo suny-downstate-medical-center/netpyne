@@ -7,7 +7,7 @@ netParams = {}  # dictionary to store sets of network parameters
 netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'S', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
 netParams['popParams'].append({'popLabel': 'M', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.5, 'source': 'random', 'cellModel': 'NetStim'})
+netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
@@ -22,7 +22,7 @@ netParams['cellParams'].append(cellRule)  												# add dict to list of cell
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
  
 
 ## Cell connectivity rules
@@ -32,12 +32,12 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'NMDA'})   	# target synapse 
+	'synMech': 'NMDA'})   		# synaptic mechanism 
 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'NMDA'})  	# target synapse 
+	'synMech': 'NMDA'})  		# synaptic mechanism 
 
 
 # Simulation options

@@ -66,6 +66,8 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
+.. _pop_params:
+
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

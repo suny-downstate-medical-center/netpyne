@@ -1067,6 +1067,8 @@ Out[13]: 0.7533509731292725
 timeit.timeit("b=a['ampa']", setup="a={'gabab':{'v':10},'gaba':{'v':10},'nmda':{'v':10},'ampa':{'v':10}}", number=1000000)
 Out[18]: 0.038023948669433594
 
+- NEED TO IMPORT SYNAPSES INTO SYNMECHPARAMS
+
 *** independent scale conn weight for each cell model 
 - where to store?
 - useful feature
@@ -1412,6 +1414,7 @@ EMstim == EM !!
 ** DONE Add support for SectionLists (paper)
 - also when importing
 
+** Import synapses into synMechParams
 ** Cell position in ellipsoid 
 
 ** Subcellular synaptic connectivity (paper)

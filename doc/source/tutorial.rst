@@ -31,7 +31,7 @@ The third line calls the ``createAndSimulate`` function, which runs a standard s
 
 In this case we are using a set of predefined parameters defined in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required dictionaries: ``netParams`` and ``simConfig``. 
 
-To run the model just type from shell::
+To run the model just execute the `tut1.py` script. One way to do this is to run this shell command::
 
 	nrniv -python tut1.py
 
@@ -41,11 +41,11 @@ If you successfully installed MPI (eg. OpenMPI) and NEURON with MPI support, you
 
 , where you would replace the `4` with the number of cores you want to use.
 
-If you want to avoid typing that long line every time, you can download this simple shell script (:download:`runsim <code/runsim>`) and just type::
+If you want to avoid typing that long line every time, you can download this simple Unix shell script (:download:`runsim <code/runsim>`) and just type::
 
 	./runsim 4 tut1.py
 
-To use the script make sure you change its permissions so its executable (``chmod +x runsim``) 
+.. note:: To use the script make sure you change its permissions so its executable (eg. ``chmod +x runsim``) 
 
 Whatever method you use, you should get a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
 
@@ -68,13 +68,15 @@ We begin with an overview of the Python dictionary structure where you will defi
 Network parameters
 ----------------------
 
-The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 3 lists:
+The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 4 lists:
 
-* ``popParams`` - list of populations in the network
+* ``popParams`` - list of populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules (eg. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
 
-* ``connParams`` - list of network connectivity rules
+* ``synMechParams`` - list of synaptic mechanisms and their parameters
+
+* ``connParams`` - list of network connectivity rules and their associated parameters. 
 
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
@@ -83,7 +85,7 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions). 
+* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
 The image below illustrates this process:
 
@@ -97,15 +99,15 @@ We will now create a new model file (call it ``tut2.py``) where we will specify 
 Populations
 ^^^^^^^^^^^^^^^^^^^^^^
 
-First, we need to create some populations for our network, by adding items to the ``popParams`` list. Each ``popParams`` item consists of a dictionary with 4 fields:
+First, we need to create some populations for our network, by adding items to the ``popParams`` list. Each ``popParams`` item consists of a dictionary with at least 4 fields (see :ref:`pop_params` for more details):
 
 * ``popLabel`` - an arbitrary label for this population (can be used to define connectivtiy later)
 
-* ``cellType`` - this is an attribute or tag that will be assigned to cells in this population, and can be later used to set certain cell properties to cells with this tag
+* ``cellType`` - an attribute/tag assigned to cells in this population, can later be used to set certain cell properties to cells with this tag.
 
 * ``numCells`` - number of cells in this population (can also specify using cell density)
 
-* ``cellModel`` - python class with specific cell model implementation used for cells in this population. Eg. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007b' (Izhikevich 2007 point neuron model). Additional cell models can be defined by the user or imported.
+* ``cellModel`` - an attribute or tag that will be assigned to cells in this population, can later be used to set specific cell model implementation for cells with this tag. Eg. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007b' (Izhikevich 2007 point neuron model). Cell models can be defined by the user or imported.
 
 We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor), with ``20`` cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell)::
 
@@ -119,9 +121,9 @@ We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor
 
 During execution, this will tell the framework to create 40 ``Cell`` objects, each of which will include the attributes or tags of its population, i.e. 'cellType': 'PYR', etc. These tags can later be used to define the properties of the cells, or connectivity rules.
 
-Lets now add a special type of population used to provide background driving inputs to the cells, labeled ``background``. In this case the cell model will be ``NetStim`` (NEURON's artificial spike generator), and we will specify we want a firing rate of ``100`` Hz, with ``0.5`` noise level, and a ``random`` number generator as the source of noise::
+Lets now add a special type of population used to provide background driving inputs to the cells, labeled ``background``. In this case the cell model will be ``NetStim`` (NEURON's artificial spike generator), and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
 
-	netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'source': 'random', 'cellModel': 'NetStim'})
+	netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 
 Cell property rules
@@ -133,19 +135,18 @@ Now we need to define the properties of each cell type, by adding items to the `
 
 * ``conditions`` - these arbitrary conditions need to be met by cells in order to apply them these cell properties. Usually defined specifying an attribute/tag of the cell and the required value e.g. 'cellType': 'PYR'
 
-* ``sections`` - dictionary containing the properties of sections, eg. geometry, mechanisms, synaptic mechanisms
+* ``sections`` - dictionary containing the properties of sections, eg. geometry, mechanisms
 
 The idea of conditional cell properties is that you can apply cell properties to subsets of neurons - eg. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
 
-In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``), and a double exponential synaptic mechanism::
+In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``)::
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}      # cell rule dict
-	soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                             # soma params dict
+	soma = {'geom': {}, 'mechs': {}} 			                                            # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}           # soma hh mechanism
-	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0} # soma NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma}                                                    # add soma section to dict
 	netParams['cellParams'].append(cellRule)  	
 
@@ -154,15 +155,30 @@ Take a moment to examine the nested dictionary structure used to define the cell
 	>>> netParams['cellParams']
 	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'sections': 
 		{'soma': {'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
-			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}, 
-			  'synMechs': {'NMDA': {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 0.1, 'tau2': 1, 'e': 0}}}}]
+			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}}}}]
 
-.. note:: We use an underscore for ``_type`` and ``_loc`` to indicate these are not variables that need to be set inside the synaptic mechanism point process, but provide NetPyNE with information about the object.
+Synaptic mechanisms parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next we need to define the parameteres of at least one synaptic mechanism, by adding items to the ``synMechParams`` list.  Each ``synMechParams`` item consists of a dictionary with the following fields:
+
+* ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
+
+* ``mod`` - the NMODL mechanism (eg. 'ExpSyn')
+
+* mechanism parameters (eg. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
+
+Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. In our network we will define the parameters of a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
+
+	## Synaptic mechanism parameters
+	netParams['synMechParams'] = []
+	netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+ 
 
 Connectivity rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Next we need to specify how to connect the cells, by adding items to the ``connParams`` list. Each ``connParams`` item (connectivity rule) consists of a dictionary with the following fields:
+Finally, we need to specify how to connect the cells, by adding items to the ``connParams`` list. Each ``connParams`` item (connectivity rule) consists of a dictionary with the following fields:
 
 * ``preTags`` - specifies the conditions of the presynaptic cells
 
@@ -171,6 +187,8 @@ Next we need to specify how to connect the cells, by adding items to the ``connP
 * ``weight`` - synaptic strength of the connections
 
 * ``delay`` - delay (in ms) for the presynaptic spike to reach the postsynaptic neuron
+
+* ``synMech`` - synpatic mechanism parameters to use
 
 * ``probability`` or ``convergence`` or ``divergence`` - optional parameter to specify the probability of connection (0 to 1), convergence (number of presyn cells per postsyn cell), or divergence (number of postsyn cells per presyn cell), respectively. If omitted, all-to-all connectivity is implemented.
 
@@ -182,14 +200,14 @@ We will first add a rule to randomly connect the sensory to the motor population
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5,			# transmission delay (ms) 
-		'synMech': 'NMDA'})   	# target synaptic mechanism 
+		'synMech': 'NMDA'})   	# synaptic mechanism 
 
 Next we will connect background inputs (NetStims) to all cells of both populations::
 
 	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5, 			# transmission delay (ms) 
-		'synMech': 'NMDA'})  	# target synaptic mechanism 
+		'synMech': 'NMDA'})  	# synaptic mechanism 
 
 
 Simulation configuration options
@@ -231,7 +249,7 @@ The full tutorial code for this example is available here: :download:`tut2.py <c
 
 To run the model we can use any of the methods previously described in :ref:`simple_example`:
 
-If mpi not working::
+If mpi not installed::
 
 	nrniv -python tut2.py
 
@@ -265,15 +283,13 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}       # cell rule dict
-	soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                              # soma params dict
+	soma = {'geom': {}, 'mechs': {}}        		                                      # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
-	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # soma NMDA synaptic mechanism
 	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                                 # dend params dict
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms
-	dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # dend NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                  # add dict to list of cell parameters
 
@@ -314,10 +330,9 @@ And we need to create a new cell rule for the Izhikevich cell. But first we need
 Finally we can create the new rule for the Izhikevich cell model::
 
 	cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 		# cell rule dict
-	soma = {'geom': {}, 'pointps': {}, 'synMechs': {}}  											# soma params dict
+	soma = {'geom': {}, 'pointps': {}}  											# soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  										# soma geometry
 	soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
-	soma['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  				# soma NMDA synaptic mechanism
 	cellRule['sections'] = {'soma': soma}  											# add soma section to dict
 	netParams['cellParams'].append(cellRule)  
 

@@ -46,13 +46,13 @@ netParams['connParams'] = []
 
 netParams['connParams'].append({'preTags': {'cellType': 'PYR'}, 'postTags': {'popLabel': ['PYR','BAS']},  #  E -> all
 	'probability': '0.5*post_normy', 		# probability of connection
-	'weight': 0.01, 						# synaptic weight 
+	'weight': 0.00, 						# synaptic weight 
 	'delay': 'dist3D/propVelocity',			# transmission delay (ms) 
 	'synMech': 'exc'})   					# synaptic mechanism 
 
 netParams['connParams'].append({'preTags': {'cellType': 'BAS'}, 'postTags': {'popLabel': ['PYR','BAS']},  #  I -> all
 	'probability': '1*exp(-dist3D/probLengthConst)', 	# probability of connection
-	'weight': 0.01, 									# synaptic weight 
+	'weight': 0.00, 									# synaptic weight 
 	'delay': 'dist3D/propVelocity',						# transmission delay (ms) 
 	'synMech': 'inh'})   								# synaptic mechanism 
 

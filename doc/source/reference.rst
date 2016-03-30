@@ -479,6 +479,7 @@ Related to plotting and analysis:
 * **plotRaster** - Whether or not to plot a raster (default: True)
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
+* **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
 * **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
 * **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)

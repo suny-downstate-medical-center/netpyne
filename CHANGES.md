@@ -1,4 +1,4 @@
-## Version 0.4.0
+## Version 0.3.9
 
 - Made synMech params independent of cell and referenced by labels (similar to NeuroML)
 
@@ -6,15 +6,13 @@
 
 - Only gather data via py_alltoall if running on more than 1 node
 
-## Version 0.3.9
+## Version 0.3.8
 
 - Fix recording of single cell of population when using MPI
 
 - Fixed raster plotting based on NCD when using MPI
 
 - Replaced save as .txt format with save as .csv
-
-## Version 0.3.8
 
 - Fixed bug when importing distributed mechanisms of cells
 

@@ -3,7 +3,7 @@
 Tutorial
 =======================================
 
-This tutorial provides an overview of how to use the NetPyNE python package to create a simple network. For simplicity, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file.
+This tutorial provides an overview of how to use the NetPyNE python package to create a simple network. 
 
 Downloading and installation instructions here: :ref:`install`
 
@@ -57,9 +57,13 @@ Whatever method you use, you should get a raster plot (spikes as cell vs time) a
 	:width: 35%
 	:align: center
 
-Congratulations! You have created and simulated a biological neuronal network in NEURON! In the remaining of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations.
+Congratulations! You have created and simulated a biological neuronal network in NEURON! 
 
 .. note:: In some systems the figures that pop up may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``raster.png`` and ``traces.png``.
+
+In the remaining of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, in the rest of the tutorial, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
+
+We begin with an overview of the Python dictionary structure where you will define all your network parameters.
 
 Network parameters
 ----------------------

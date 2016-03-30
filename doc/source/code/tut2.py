@@ -21,7 +21,7 @@ netParams['cellParams'].append(cellRule)  												# add dict to list of cell
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
 
 ## Cell connectivity rules
@@ -31,12 +31,12 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'NMDA'})   		# synaptic mechanism 
+	'synMech': 'exc'})   		# synaptic mechanism 
 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'NMDA'})  		# synaptic mechanism 
+	'synMech': 'exc'})  		# synaptic mechanism 
 
 
 # Simulation options

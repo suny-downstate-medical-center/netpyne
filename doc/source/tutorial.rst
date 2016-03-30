@@ -9,6 +9,8 @@ Downloading and installation instructions here: :ref:`install`
 
 A good understading of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, eg: http://www.practicepython.org , http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/ .
 
+.. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
+
 .. _simple_example:
 
 Very simple and quick example
@@ -168,11 +170,11 @@ Next we need to define the parameteres of at least one synaptic mechanism, by ad
 
 * mechanism parameters (eg. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
-Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. In our network we will define the parameters of a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
+Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. In our network we will define the parameters of a simple excitatory synaptic mechanism labeled ``exc``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
 
 	## Synaptic mechanism parameters
 	netParams['synMechParams'] = []
-	netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+	netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
 
 Connectivity rules
@@ -200,14 +202,14 @@ We will first add a rule to randomly connect the sensory to the motor population
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5,			# transmission delay (ms) 
-		'synMech': 'NMDA'})   	# synaptic mechanism 
+		'synMech': 'exc'})   	# synaptic mechanism 
 
 Next we will connect background inputs (NetStims) to all cells of both populations::
 
 	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5, 			# transmission delay (ms) 
-		'synMech': 'NMDA'})  	# synaptic mechanism 
+		'synMech': 'exc'})  	# synaptic mechanism 
 
 
 Simulation configuration options
@@ -301,7 +303,7 @@ We can also update the connectivity rule to specify that the ``S`` cells should 
 		'weight': 0.01,             # synaptic weight 
 		'delay': 5,                 # transmission delay (ms) 
 		'sec': 'dend',              # section to connect to
-		'synMech': 'NMDA'})     # target synaptic mechanism 
+		'synMech': 'exc'})     # target synaptic mechanism 
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.
 
@@ -344,4 +346,10 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 
 .. seealso:: NetPyNE also supports importing cells defined in other files (eg. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
 
-.. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
+
+Position and distance based connectivity
+------------------------------------------
+
+
+Modifying the instantiated network interactively
+-------------------------------------------------

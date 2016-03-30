@@ -43,18 +43,11 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
  
 
 # Connectivity parameters
 netParams['connParams'] = []  
-
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': -0.02,                    # weight of each connection
-    'delay': 5,     					# delay 
-    'threshold': 10}) # ,                # threshold
-    #'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
@@ -62,47 +55,28 @@ netParams['connParams'].append(
     'synMech': 'NMDA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': -0.02,                    # weight of each connection
+    'delay': 5,     					# delay 
+    'threshold': 10}) # ,                # threshold
 
-###############################################################################
+
 # SIMULATION PARAMETERS
-###############################################################################
-
 simConfig = {}  # dictionary to store simConfig
 
-# Simulation parameters
-simConfig['duration'] = 0.5*1e3 # Duration of the simulation, in ms
-simConfig['dt'] = 0.025 # Internal integration timestep to use
-simConfig['randseed'] = 1 # Random seed to use
-simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = False  # show detailed messages 
-
-
-# Recording 
-simConfig['recordCells'] = []  # which cells to record from
-simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','pos':0.5,'var':'v'}}
-simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
-
-# Saving
-simConfig['filename'] = 'mpiHHTut'  # Set file output name
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveTxt'] = False # save spikes and conn to txt file
-simConfig['saveDpk'] = False # save to a .dpk pickled file
-
-
-# Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [0] # plot recorded traces for this list of cells
+# Simulation options
+simConfig = {}
+simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
+simConfig['dt'] = 0.025 				# Internal integration timestep to use
+simConfig['verbose'] = False  			# Show detailed messages 
+simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['filename'] = 'model_output'  # Set file output name
+simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+simConfig['plotRaster'] = True 			# Plot a raster
 simConfig['plotSync'] = True  # add vertical lines for all spikes as an indication of synchrony
-simConfig['plotLFPSpectrum'] = False # plot power spectral density
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3dArch'] = False # plot 3d architecture
+simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation

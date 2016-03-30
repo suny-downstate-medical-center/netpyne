@@ -32,7 +32,7 @@ netParams['cellParams'].append(cellRule)
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synapse
  
 
 ## Cell connectivity rules
@@ -43,11 +43,11 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
-	'synMech': 'NMDA'})   	# target synapse 
+	'synMech': 'exc'})   	# target synapse 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.0001, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'NMDA'})  	# target synapse 
+	'synMech': 'exc'})  	# target synapse 
 
 
 # Simulation options

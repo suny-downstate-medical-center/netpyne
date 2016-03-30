@@ -1,3 +1,11 @@
+## Version 0.4.0
+
+- Made synMech params independent of cell and referenced by labels (similar to NeuroML)
+
+- Keep Neuron objects after sim so can explore, modify and/or rerun sim.
+
+- Only gather data via py_alltoall if running on more than 1 node
+
 ## Version 0.3.9
 
 - Fix recording of single cell of population when using MPI

@@ -350,10 +350,10 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 Position and distance based connectivity
 ------------------------------------------
 
-In this example
+This example shows how to spatially separate populations, add inhbitory populations, and implement distance-dependent weights, probabilities of connection, and delays.
 
 .. image:: figs/tut5.png
-	:width: 50%
+	:width: 100%
 	:align: center
 
 The full tutorial code for this example is available here: :download:`tut5.py <code/tut4.py>`.

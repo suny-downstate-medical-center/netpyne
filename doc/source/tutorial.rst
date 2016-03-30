@@ -356,7 +356,7 @@ This example shows how to spatially separate populations, add inhbitory populati
 	:width: 100%
 	:align: center
 
-The full tutorial code for this example is available here: :download:`tut5.py <code/tut4.py>`.
+The full tutorial code for this example is available here: :download:`tut5.py <code/tut5.py>`.
 
 
 Modifying the instantiated network interactively

@@ -150,9 +150,9 @@ class Network(object):
         dictVars['post_x']      = lambda preTags,postTags: postTags['x'] 
         dictVars['post_y']      = lambda preTags,postTags: postTags['y'] 
         dictVars['post_z']      = lambda preTags,postTags: postTags['z'] 
-        dictVars['post_xnorm']  = lambda preTags,postTags: postTags['tags']['xnorm'] 
-        dictVars['post_ynorm']  = lambda preTags,postTags: postTags['tags']['ynorm'] 
-        dictVars['post_znorm']  = lambda preTags,postTags: postTags['tags']['znorm'] 
+        dictVars['post_xnorm']  = lambda preTags,postTags: postTags['xnorm'] 
+        dictVars['post_ynorm']  = lambda preTags,postTags: postTags['ynorm'] 
+        dictVars['post_znorm']  = lambda preTags,postTags: postTags['znorm'] 
         dictVars['dist_x']      = lambda preTags,postTags: abs(preTags['x'] - postTags['x'])
         dictVars['dist_y']      = lambda preTags,postTags: abs(preTags['y'] - postTags['y']) 
         dictVars['dist_z']      = lambda preTags,postTags: abs(preTags['z'] - postTags['z'])

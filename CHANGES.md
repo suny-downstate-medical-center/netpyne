@@ -2,6 +2,8 @@
 
 - Fixed bug when distributing cells spatially based on normRange pop parameter
 
+- Fixed bug in functional connectivity variables post_xnorm, post_ynorm, post_znorm
+
 - Added option to plot sync lines in raster and show sync measure
 
 ## Version 0.3.9

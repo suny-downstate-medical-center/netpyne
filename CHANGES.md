@@ -4,7 +4,13 @@
 
 - Fixed bug in functional connectivity variables post_xnorm, post_ynorm, post_znorm
 
+- Reversed ynorm based raster so higher y values are shown at the bottom (cortical-like)
+
 - Added option to plot sync lines in raster and show sync measure
+
+- Added 2D visualization of network cells and conns
+
+- Fixed randomization of cell positions by adding lastGid
 
 ## Version 0.3.9
 

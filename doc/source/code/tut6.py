@@ -13,13 +13,6 @@ from netpyne import framework as f
 netParams = {}  # dictionary to store sets of network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
-
-###############################################################################
-#
-# MPI HH TUTORIAL PARAMS
-#
-###############################################################################
-
 ###############################################################################
 # NETWORK PARAMETERS
 ###############################################################################
@@ -37,7 +30,6 @@ cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
@@ -45,24 +37,25 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
  
-
 # Connectivity parameters
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'NMDA',                     # target NMDA synapse
+    'synMech': 'exc',                     # target NMDA synapse
     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': -0.02,                    # weight of each connection
+    'weight': 0.0,                    # weight of each connection
     'delay': 5,     					# delay 
     'threshold': 10}) # ,                # threshold
 
 
+###############################################################################
 # SIMULATION PARAMETERS
+###############################################################################
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation options
@@ -79,8 +72,11 @@ simConfig['plotSync'] = True  # add vertical lines for all spikes as an indicati
 simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 
+###############################################################################
+# EXECUTION CODE (via netpyne)
+###############################################################################
+
 # Create network and run simulation
-# init.createAndSimulate(netParams = netParams, simConfig = simConfig)   
 f.sim.initialize(                       # create network object and set cfg and net params
     simConfig = simConfig,   # pass simulation config and network params as arguments
     netParams = netParams)   
@@ -94,5 +90,33 @@ f.sim.saveData()                        # save params, cell info and sim output 
 f.analysis.plotData()                   # plot spike raster
 
 
-# f.net.changeAllWeights() or just changeAllWeights() not part of netpyne
-# changeFracWeights() random fraction of weights
+###############################################################################
+# INTERACTING WITH INSTANTIATED NETWORK
+###############################################################################
+
+def changeWeights(net, newWeight, connFraction=1):
+	netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
+	for netcon in netcons: netcon.weight[0] = newWeight
+
+changeWeights(f.net, -0.03)  # set negative weights to increase syn
+
+f.sim.runSim()                          # run parallel Neuron simulation  
+f.sim.gatherData()                      # gather spiking data and cell info from each node
+f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+f.analysis.plotData()                   # plot spike raster
+
+changeWeights(f.net, +0.03)  # set positive weights to increase syn
+
+f.sim.runSim()                          # run parallel Neuron simulation  
+f.sim.gatherData()                      # gather spiking data and cell info from each node
+f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+f.analysis.plotData()                   # plot spike raster
+
+
+
+
+
+
+
+
+

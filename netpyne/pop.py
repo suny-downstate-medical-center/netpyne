@@ -58,7 +58,7 @@ class Pop(object):
         ''' Create population cells based on fixed number of cells'''
         cellModelClass = f.Cell
         cells = []
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
+        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells']+f.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized

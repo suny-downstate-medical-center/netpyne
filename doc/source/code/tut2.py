@@ -12,11 +12,11 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}} 	# cell rule dict
-soma = {'geom': {}, 'mechs': {}}  											# soma params dict
+soma = {'geom': {}, 'mechs': {}}  														# soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
 cellRule['sections'] = {'soma': soma}  													# add soma section to dict
-netParams['cellParams'].append(cellRule)  												# add dict to list of cell par
+netParams['cellParams'].append(cellRule)  												# add dict to list of cell params
 
 
 ## Synaptic mechanism parameters

@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+from pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -40,8 +40,11 @@ def plotData():
             print('Plotting connectivity matrix...')
             f.analysis.plotConn()
         if f.cfg['plotLFPSpectrum']:
-            print('Plotting LFP power spectral density')
+            print('Plotting LFP power spectral density...')
             f.analysis.plotLFPSpectrum()
+        if f.cfg['plot2Dnet']:
+            print('Plotting 2D visualization of network...')
+            f.analysis.plot2Dnet()    
         if f.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             f.analysis.plotWeightChanges()
@@ -83,6 +86,7 @@ def plotRaster():
         if f.cfg['orderRasterYnorm']:
             gids = [cell['gid'] for cell in f.net.allCells]
             ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
+            #ynorms.reverse()
             sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(ynorms,gids)))}
             spkids = [sortedGids[gid] for gid in spkids]
             ylabelText = 'Cell id (arranged by NCD)'
@@ -106,6 +110,10 @@ def plotRaster():
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
     subplots_adjust(right=(0.9-0.01*maxLabelLen))
+    if f.cfg['orderRasterYnorm']:
+        ax = gca()
+        ax.invert_yaxis()
+
     #savefig('raster.png')
 
 ## Traces (v,i,g etc) plot
@@ -228,6 +236,32 @@ def plotConn():
     colorbar()
     #show()
 
+# Plot 2D visualization of network cell positions and connections
+def plot2Dnet():
+    figure(figsize=(12,12))
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+    popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    cellColors = [popColors[cell.tags['popLabel']] for cell in f.net.cells]
+    posX = [cell.tags['x'] for cell in f.net.cells]  # get all x positions
+    posY = [cell.tags['y'] for cell in f.net.cells]  # get all y positions
+    scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
+    for postCell in f.net.cells:
+        for con in postCell.conns:  # plot connections between cells
+            posXpre = f.net.cells[f.net.gid2lid[con['preGid']]].tags['x']  
+            posYpre = f.net.cells[f.net.gid2lid[con['preGid']]].tags['y']
+            posXpost = postCell.tags['x']
+            posYpost = postCell.tags['y']           
+            color='red'
+            if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                color = 'blue'
+            width = 0.1 #50*con['weight']
+            plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+    ax = gca()
+    ax.invert_yaxis()
 
 ## Plot weight changes
 def plotWeightChanges():

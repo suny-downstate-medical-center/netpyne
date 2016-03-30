@@ -20,13 +20,15 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` dictionary includes all the information necessary to define your network. It is composed of the following 3 lists:
+The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 4 lists:
 
-* **popParams** - list of populations in the network
+* ``popParams`` - list of populations in the network and their parameters
 
-* **cellParams** - list of cell property rules (e.g. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
 
-* **connParams** - list of network connectivity rules
+* ``synMechParams`` - list of synaptic mechanisms and their parameters
+
+* ``connParams`` - list of network connectivity rules and their associated parameters. 
 
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
@@ -35,7 +37,8 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the connectivity rule conditions). 
+* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
 
 The image below illustrates this process:
 
@@ -216,6 +219,29 @@ Example of two cell property rules::
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
+
+
+Synaptic mechanisms parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` list.  Each ``synMechParams`` item consists of a dictionary with the following fields:
+
+* ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
+
+* ``mod`` - the NMODL mechanism (eg. 'ExpSyn')
+
+* mechanism parameters (eg. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
+
+Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
+
+Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
+:
+
+.. code-block:: python
+
+	## Synaptic mechanism parameters
+	netParams['synMechParams'] = []
+	netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -409,6 +435,8 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 			'probability': 'exp(-dist_2D/lengthConst)', 
 		# ...
 
+
+.. _sim_config: 
 
 Simulation configuration
 --------------------------

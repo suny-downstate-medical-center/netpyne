@@ -1,3 +1,9 @@
+## Version 0.4.0
+
+- Fixed bug when distributing cells spatially based on normRange pop parameter
+
+- Added option to plot sync lines in raster and show sync measure
+
 ## Version 0.3.9
 
 - Made synMech params independent of cell and referenced by labels (similar to NeuroML)

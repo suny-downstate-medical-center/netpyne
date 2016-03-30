@@ -350,15 +350,15 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 * Cell location variables:
 	* 'pre_x', 'pre_y', 'pre_z': post-synaptic cell x, y or z location.
 
-	* 'pre_normx', 'pre_normy', 'pre_normz': normalized pre-synaptic cell x, y or z location.
+	* 'pre_ynorm', 'pre_ynorm', 'pre_znorm': normalized pre-synaptic cell x, y or z location.
 	
 	* 'post_x', 'post_y', 'post_z': post-synaptic cell x, y or z location.
 	
-	* 'post_normx', 'post_normy', 'post_normz': normalized post-synaptic cell x, y or z location.
+	* 'post_xnorm', 'post_ynorm', 'post_znorm': normalized post-synaptic cell x, y or z location.
 	
 	* 'dist_x', 'dist_y', 'dist_z': absolute Euclidean distance between pre- and postsynaptic cell x, y or z locations.
 	
-	* 'dist_normx', 'dist_normy', 'dist_normz': absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
+	* 'dist_xnorm', 'dist_ynorm', 'dist_znorm': absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
 	
 	* 'dist_2D', 'dist_3D': absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between pre- and postsynaptic cells.
 

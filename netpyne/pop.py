@@ -66,7 +66,7 @@ class Pop(object):
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
-                randLocs[:,icoord] = randLocs[:,icoord] / (maxv-minv) + minv
+                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
         
         for i in xrange(int(f.rank), f.net.params['scale'] * self.tags['numCells'], f.nhosts):
             gid = f.net.lastGid+i

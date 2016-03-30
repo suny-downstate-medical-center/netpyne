@@ -3,12 +3,19 @@ from netpyne import init
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
 
+netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
+netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
+netParams['sizeZ'] = 1 # y-dimension (vertical height or cortical depth) size in um
+netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+netParams['probLengthConst'] = 200.0 # propagation velocity (um/ms)
+
+
 ## Population parameters
 netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'ES', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'IS', 'cellType': 'BAS', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'EM', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'IM', 'cellType': 'BAS', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'ES', 'cellType': 'PYR', 'numCells': 10, 'xnormRange': [0,1.0], 'ynormRange': [0,0.5], 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'IS', 'cellType': 'BAS', 'numCells': 10, 'xnormRange': [0,1.0], 'ynormRange': [0,0.5], 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'EM', 'cellType': 'PYR', 'numCells': 10, 'xnormRange': [0,1.0], 'ynormRange': [0.5,1.0], 'cellModel': 'HH'}) 
+netParams['popParams'].append({'popLabel': 'IM', 'cellType': 'BAS', 'numCells': 10, 'xnormRange': [0,1.0], 'ynormRange': [0.5,1.0], 'cellModel': 'HH'}) 
 netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
@@ -28,7 +35,6 @@ cellRule['sections'] = {'soma': soma}  													# add soma section to dict
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell par
 
 
-
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
@@ -38,34 +44,22 @@ netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.1
 ## Cell connectivity rules
 netParams['connParams'] = [] 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'EM'},  #  ES -> EM
-	'probability': 0.5, 		# probability of connection
-	'weight': 0.01, 			# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'exc'})   		# synaptic mechanism 
+netParams['connParams'].append({'preTags': {'cellType': 'PYR'}, 'postTags': {'popLabel': ['PYR','BAS']},  #  E -> all
+	'probability': '0.5*post_normy', 		# probability of connection
+	'weight': 0.01, 						# synaptic weight 
+	'delay': 'dist3D/propVelocity',			# transmission delay (ms) 
+	'synMech': 'exc'})   					# synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'ES'},  #  ES -> EM
-	'probability': 0.5, 		# probability of connection
-	'weight': 0.01, 			# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'exc'})   		# synaptic mechanism 
+netParams['connParams'].append({'preTags': {'cellType': 'BAS'}, 'postTags': {'popLabel': ['PYR','BAS']},  #  I -> all
+	'probability': '1*exp(-dist3D/probLengthConst)', 	# probability of connection
+	'weight': 0.01, 									# synaptic weight 
+	'delay': 'dist3D/propVelocity',						# transmission delay (ms) 
+	'synMech': 'inh'})   								# synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ES'},  #  IS -> IM
-	'probability': 0.5, 		# probability of connection
-	'weight': 0.01, 			# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'inh'})   		# synaptic mechanism 
-
-netParams['connParams'].append({'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'EM'},  #  IS -> IM
-	'probability': 0.5, 		# probability of connection
-	'weight': 0.01, 			# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'synMech': 'inh'})   		# synaptic mechanism 
-
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['PYR', 'BAS']}, # background -> PYR
-	'weight': 0.01, 				# synaptic weight 
-	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'inh'})  		# synaptic mechanism 
+netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['PYR', 'BAS']}, # background -> all
+	'weight': 0.01, 					# synaptic weight 
+	'delay': 'max(1, uniform(5,2))', 	# transmission delay (ms) 
+	'synMech': 'exc'})  				# synaptic mechanism 
 
 
 # Simulation options
@@ -78,6 +72,7 @@ simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP
 simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
 simConfig['plotRaster'] = True 			# Plot a raster
+simConfig['orderRasterYnorm'] = 1 	# Order cells in raster by yfrac (default is by pop and cell id)
 simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 

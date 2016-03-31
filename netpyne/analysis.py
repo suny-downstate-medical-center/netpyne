@@ -259,7 +259,9 @@ def plot2Dnet():
             width = 0.1 #50*con['weight']
             plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
     xlabel('x (um)')
-    ylabel('y (um)')  
+    ylabel('y (um)') 
+    xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
+    ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
     fontsiz = 12
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)

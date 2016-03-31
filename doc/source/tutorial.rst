@@ -350,13 +350,104 @@ Position and distance based connectivity
 
 The following example demonstrates how to spatially separate populations, add inhbitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
-We will build a cortical-like network with 6 populations (3 excitatory and 3 inhubitory) distributed in 3 layers: layer 2/3, layer 4 and layer 5.
+We will build a cortical-like network with 6 populations (3 excitatory and 3 inhibitory) distributed in 3 layers: 2/3, 4 and 5. Create a new empty file called ``tut5.py`` and lets add the required code.   
+
+Since we want to distribute the cells spatially, the first thing we need to do is define the volume dimensions where cells will be placed. By convention we take the X and Z to be the horizontal or lateral dimensions, and Y to be the vertical dimension (representing cortical depth in this case.) To define a cuboid with volume of 100x1000x100 um (ie. horizontal spread of 100x100 um and cortical depth of 1000um) we can use the ``sizeX``, ``sizeY`` and ``sizeZ`` network parameters as follows::
+
+	from netpyne import init
+
+	# Network parameters
+	netParams = {}  # dictionary to store sets of network parameters
+
+	netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
+	netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
+	netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
+
+Next we can create our background input popualtion and the 6 cortical populations labeled according to the cell type and layer eg. 'E2' for excitatory cells in layer 2. We can define the cortical depth range of each population by using the ``yRange`` parameter, eg. to place layer 2 cells between 100 and 300 um depth: ``'yRange': [100,300]``. This range can also be specified using normalized values, eg. ``'yRange': [0.1,0.3]``. In the code below we provide examples of both methods for illustration::
+
+	## Population parameters
+	netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
+	netParams['popParams'].append({'popLabel': 'E2', 'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'I2', 'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'E4', 'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'I4', 'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'E5', 'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'I5', 'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
+	netParams['popParams'].append({'popLabel': 'background', 'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'})
+
+
+Next we define the cell properties of each type of cell ('E' for excitatory and 'I' for inhibitory). We have made minor random modifications of some cell parameters just to illustrate that different cell types can have different properties::
+
+	## Cell property rules
+	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
+	cellRule = {'label': 'Erule', 'conditions': {'cellType': 'E'},  'sections': {}}     # cell rule dict
+	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
+	soma['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                                   # soma geometry
+	soma['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
+
+	cellRule = {'label': 'Irule', 'conditions': {'cellType': 'I'},  'sections': {}}     # cell rule dict
+	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
+	soma['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                                    # soma geometry
+	soma['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
+
+
+As in previous examples we also add the parameters of the excitatory and inhibitory synaptic mechanisms, which will be added to cells when the connections are created::
+
+	## Synaptic mechanism parameters
+	netParams['synMechParams'] = []
+	netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0})  # exc synaptic mechanism
+	netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75})  # inh synaptic mechanism
+
+
+In terms of connectivity, we'll start by adding background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, gauss(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background inputs looks like this::
+
+
+	## Cell connectivity rules
+	netParams['connParams'] = [] 
+
+	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['E', 'I']}, # background -> all
+	  'weight': 0.01,                     # synaptic weight 
+	  'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
+	  'synMech': 'exc'})                  # synaptic mechanism 
+
+
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``) , and to show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True)``)::
+
+	# Simulation options
+	simConfig = {}
+	simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
+	simConfig['dt'] = 0.1                 # Internal integration timestep to use
+	simConfig['verbose'] = False            # Show detailed messages 
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig['filename'] = 'model_output'  # Set file output name
+	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
+	simConfig['plotRaster'] = True          # Plot a raster
+	simConfig['orderRasterYnorm'] = 1       # Order cells in raster by yfrac (default is by pop and cell id)
+	simConfig['plotCells'] = ['E2','E4','E5']    # Plot recorded traces for this list of cells
+	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+
+	# Create network and run simulation
+	init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+
+
 
 First we will create the populations, distribute them spatially, and provide background input:
 
 .. image:: figs/tut5_1.png
 	:width: 95%
 	:align: center
+
+
+
+netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+netParams['probLengthConst'] = 150.0 # propagation velocity (um/ms)
+
+
 
 Next, add cortical-depth dependent excitatory connections (notice depolarization blockade due to higher weights in lowe layer):
 

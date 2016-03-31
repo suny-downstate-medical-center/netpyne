@@ -105,14 +105,13 @@ def plotRaster():
         title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
     xlim(0,f.cfg['duration'])
     ylim(0,f.numCells)
-    for popLabel in popLabels[::-1]:
+    for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
     subplots_adjust(right=(0.9-0.01*maxLabelLen))
-    if f.cfg['orderRasterYnorm']:
-        ax = gca()
-        ax.invert_yaxis()
+    ax = gca()
+    ax.invert_yaxis()
 
     #savefig('raster.png')
 
@@ -263,7 +262,7 @@ def plot2Dnet():
     xlabel('x (um)')
     ylabel('y (um)')  
     fontsiz = 12
-    for popLabel in popLabels[::-1]:
+    for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     ax = gca()

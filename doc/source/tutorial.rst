@@ -350,9 +350,26 @@ Position and distance based connectivity
 
 The following example demonstrates how to spatially separate populations, add inhbitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
-.. image:: figs/tut5.png
+We will build a cortical-like network with 6 populations (3 excitatory and 3 inhubitory) distributed in 3 layers: layer 2/3, layer 4 and layer 5.
+
+First we will create the populations, distribute them spatially, and provide background input:
+
+.. image:: figs/tut5_1.png
 	:width: 100%
 	:align: center
+
+Next, add cortical-depth dependent excitatory connections (notice depolarization blockade due to higher weights in lowe layer):
+
+.. image:: figs/tut5_2.png
+	:width: 100%
+	:align: center
+
+And finally, add distance-dependent inhibitory connections:
+
+.. image:: figs/tut5_3.png
+	:width: 100%
+	:align: center
+
 
 The full tutorial code for this example is available here: :download:`tut5.py <code/tut5.py>`.
 

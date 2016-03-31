@@ -4,7 +4,7 @@
 
 - Added axis labels to 2D visualization, and now works when running on multiple nodes too
 
-- Reset Netstim random generatros within runSim() so have reproducible results if working interactively 
+- Reset Netstim random generators within runSim() so have reproducible results if working interactively 
 
 ## Version 0.4.0
 

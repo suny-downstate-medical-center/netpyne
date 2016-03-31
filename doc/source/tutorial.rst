@@ -457,11 +457,11 @@ Second, lets make the the connection weight be proportional to the cortical dept
 
 Finally, we can specify the delay based on the distance between the cells (``dist_3D``) and the propagation velocity (given as a parameter at the beginning of the code), as follows: ``'delay': 'dist_3D/propVelocity'``. The full code for this connectivity rules is::
 
-netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
-  'probability': 0.1,    # probability of connection
-  'weight': '0.005*post_ynorm',         # synaptic weight 
-  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-  'synMech': 'exc'})                    # synaptic mechanism 
+	netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+	  'probability': 0.1,    # probability of connection
+	  'weight': '0.005*post_ynorm',         # synaptic weight 
+	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
+	  'synMech': 'exc'})                    # synaptic mechanism 
 
 
 Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells:
@@ -476,11 +476,11 @@ Finally, we add inhibitory connections which will project only onto excitatory c
 To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 
-netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
-  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.001,                                     # synaptic weight 
-  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
-  'synMech': 'inh'})                                  # synaptic mechanism 
+	netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+	  'weight': 0.001,                                     # synaptic weight 
+	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
+	  'synMech': 'inh'})                                  # synaptic mechanism 
 
 
 Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.

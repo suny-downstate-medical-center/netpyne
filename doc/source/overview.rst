@@ -6,11 +6,11 @@ What is NetPyNE?
 
 NetPyNE (Network development Python package for NEURON) is a python package to facilitate the development and parallel simulation of biological cell networks using the NEURON simulator.
 
+NEURON is a widely used neuronal simulator, with over 1600 published models. It enables multiscale simulation ranging from the molecular to the network level. However, learning to use NEURON, especially running parallel simulations, requires much technical training. NetPyNE (Network development Python package for NEURON) greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON, potentially bringing its benefits to a wider audience, including experimentalists. It is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
+
 .. image:: figs/overview.png
 	:width: 80%	
 	:align: center
-
-NEURON is a widely used neuronal simulator, with over 1600 published models. It enables multiscale simulation ranging from the molecular to the network level. However, learning to use NEURON, especially running parallel simulations, requires much technical training. NetPyNE (Network development Python package for NEURON) greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON, potentially bringing its benefits to a wider audience, including experimentalists. It is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
 What can I do with NetPyNE?
 ---------------------------
@@ -24,10 +24,6 @@ Using the high-level network specifications, NetPyNE instantiates the full model
 NetPyNE has been used to develop a variety of multiscale models: primary motor cortex with cortical depth-dependent connectivity; the claustrum; and sensorimotor cortex that learns to control a virtual arm. The package is open source, easily installed, and includes comprehensive online documentation, a step-by-step tutorial and example networks. We believe this tool will strengthen the neuroscience community and encourage collaborations between experimentalists and modelers.
 
 
-.. image:: figs/netstruct.png
-	:width: 80%
-	:align: center
-
 
 Main Features
 --------------
@@ -38,18 +34,19 @@ Main Features
 	* Cell property rules 
 	* Connectivity rules
 	* Simulation configuration
-* Support for normalized cortical depth (yfrac) dependence of cell density and connectivity.
+* Support for normalized cortical depth dependence of cell density and connectivity.
 * Easy specification, importing and swapping of cell models (eg. point neuron vs multicompartment)
 * Support for hybrid networks eg. combining point and multicompartment neurons. 
 * Multiple connectivity functions (eg. full, random, probabilistic) with optional parameters (eg. delay range)
-* Support for user-defined connectivity functions.
+* Support for position and distance dependence of connectivity parameters (eg. probability decaying with distance)
+* Support for STDP plasticity 
 * Populations, cell properties and connectivity rules can include reference to annotations (eg. for provenance).
 * NEURON-independent instantiation of network (all cells, connections, ...) using Python objects and containers.
 * NEURON-specific instantiation of network ready for simulation.
 * Enables sharing of Python-based network objects, which can then be instantiated and simulated in NEURON.
 * Easy MPI parallel simulation of network, including cell distribution across nodes and gathering of data from all nodes.
-* Analysis and visualization of network (eg. connectivity matrix) and simulation output (eg. voltage traces, raster plot)
-* Data exporting/sharing to several formats (pickle, Matlab, JSON, HDF5, NeuroML) of the following:
+* Analysis and visualization of network (eg. connectivity matrix, 2D cell map) and simulation output (eg. voltage traces, raster plot)
+* Data saving to several formats (pickle, Matlab, JSON, HDF5) and exporting/importing to/from NeuroML of the following:
 	* Parameters/specifications
 	* Instantiated networks
 	* Simulation results

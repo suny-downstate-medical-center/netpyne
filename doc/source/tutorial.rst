@@ -492,3 +492,8 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 Modifying the instantiated network interactively
 -------------------------------------------------
 
+This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects.
+
+.. image:: figs/netstruct.png
+	:width: 80%
+	:align: center

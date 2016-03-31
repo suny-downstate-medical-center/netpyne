@@ -21,7 +21,7 @@ To start in an encouraging way, we will implement the simplest example possible 
 	from netpyne import init
 	init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
 
-The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to **download the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)** 
+The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to **download the ``HHTut.py`` example parameter file ** (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)
 
 The second line imports the ``init`` module from the ``netpyne`` package. The `init`` module provides functions to easily create and simulate networks based on these parameters.
 

@@ -80,6 +80,10 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
+.. image:: figs/netparams.png
+	:width: 80%
+	:align: center
+
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
 

@@ -88,7 +88,7 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
 
-* creates a ``Network`` object and adding inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
+* creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
 

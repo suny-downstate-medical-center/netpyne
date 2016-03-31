@@ -415,7 +415,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	  'synMech': 'exc'})                  # synaptic mechanism 
 
 
-We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``) , and to show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True)``)::
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True)``)::
 
 	# Simulation options
 	simConfig = {}
@@ -435,13 +435,20 @@ We can now add the standard simulation configuration options and the code to cre
 	init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
 
 
-
-First we will create the populations, distribute them spatially, and provide background input:
+If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input::
 
 .. image:: figs/tut5_1.png
 	:width: 95%
 	:align: center
 
+
+Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First we will specify that we want all excitatory cells to target all cells within a cortical depth of 100 and 1000 um: ``'postTags': {'y': [100,1000]}``. Second, for 
+
+netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+  'probability': 0.1,    # probability of connection
+  'weight': '0.005*post_ynorm',         # synaptic weight 
+  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
+  'synMech': 'exc'})                    # synaptic mechanism 
 
 
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)

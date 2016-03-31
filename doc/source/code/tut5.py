@@ -51,11 +51,11 @@ netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags
   'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
   'synMech': 'exc'})                  # synaptic mechanism 
 
-# netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
-#   'probability': 0.1,#'uniform(0.05,0.2)',    # probability of connection
-#   'weight': '0.005*post_ynorm',         # synaptic weight 
-#   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-#   'synMech': 'exc'})                    # synaptic mechanism 
+netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+  'probability': 0.1,#'uniform(0.05,0.2)',    # probability of connection
+  'weight': '0.005*post_ynorm',         # synaptic weight 
+  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
+  'synMech': 'exc'})                    # synaptic mechanism 
 
 # netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
 #   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection

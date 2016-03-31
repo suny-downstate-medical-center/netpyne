@@ -492,8 +492,143 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 Modifying the instantiated network interactively
 -------------------------------------------------
 
-This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects.
+This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and fires synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which wel will modify interactively.
+
+We begin by creating a new file (``net6.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 40 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all connections within the ``hop`` population, but set the weights to 0 initially:: 
+
+	###############################################################################
+	# NETWORK PARAMETERS
+	###############################################################################
+
+	netParams = {}  # dictionary to store sets of network parameters
+
+	# Population parameters
+	netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
+	netParams['popParams'].append({'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
+	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 40, 'noise': 0.5, 'source': 'random'})  # background inputs
+
+	# Cell parameters
+	netParams['cellParams'] = []
+
+	## PYR cell properties
+	cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+	soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+	cellRule['sections'] = {'soma': soma}  # add sections to dict
+	netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+
+	# Synaptic mechanism parameters
+	netParams['synMechParams'] = []
+	netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+	 
+	# Connectivity parameters
+	netParams['connParams'] = []  
+
+	netParams['connParams'].append(
+	    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
+	    'weight': 0.1,                    # fixed weight of 0.08
+	    'synMech': 'exc',                     # target NMDA synapse
+	    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+
+	netParams['connParams'].append(
+	    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
+	    'weight': 0.0,                      # weight of each connection
+	    'delay': 5})       				    # delay 
+
+
+We now add the standard simulation configuration options, and add the ``plotSync`` so that raster plots shown vertical lines at for each spike as an indication of synchrony::
+
+	###############################################################################
+	# SIMULATION PARAMETERS
+	###############################################################################
+	simConfig = {}  # dictionary to store simConfig
+
+	# Simulation options
+	simConfig = {}
+	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
+	simConfig['dt'] = 0.025 				# Internal integration timestep to use
+	simConfig['verbose'] = False  			# Show detailed messages 
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig['filename'] = 'model_output'  # Set file output name
+	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+	simConfig['plotRaster'] = True 			# Plot a raster
+	simConfig['plotSync'] = True  # add vertical lines for all spikes as an indication of synchrony
+	simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
+	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+
+
+Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``init.createAndSimulate()`` function used before)::
+
+	###############################################################################
+	# EXECUTION CODE (via netpyne)
+	###############################################################################
+	from netpyne import framework as f
+
+	# Create network and run simulation
+	f.sim.initialize(                       # create network object and set cfg and net params
+	    simConfig = simConfig,   # pass simulation config and network params as arguments
+	    netParams = netParams)   
+	f.net.createPops()                      # instantiate network populations
+	f.net.createCells()                     # instantiate network cells based on defined populations
+	f.net.connectCells()                    # create connections between cells based on params
+	f.sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
+	f.sim.runSim()                          # run parallel Neuron simulation  
+	f.sim.gatherData()                      # gather spiking data and cell info from each node
+	f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	f.analysis.plotData()                   # plot spike raster
+
+
+If we run the above code, the resulting network 2D map shows the excitatory connections in red, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 40 Hz background inputs, and a low sync measure of 0.33 (vertical red lines illustrate poor synchrony)::
+
+.. image:: figs/tut6_1.png
+	:width: 100%
+	:align: center
+
+We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``f`` object (which stands for framework), contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells`` list. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). 
+
+A list of population objects is available via ``f.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.
+
+Spiking data is available via ``f.allSimData['spkt']`` and ``f.allSimData['spkid']``. Voltage traces are available via eg. ``f.allSimData['V']['cell_25']`` (for cell with gid 25).
+
+A representation of the instantiated network structure generated by NetPyNE is shown below::
 
 .. image:: figs/netstruct.png
-	:width: 80%
+	:width: 100%
 	:align: center
+
+
+
+	###############################################################################
+	# INTERACTING WITH INSTANTIATED NETWORK
+	###############################################################################
+
+	def changeWeights(net, newWeight):
+		netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
+		for netcon in netcons: netcon.weight[0] = newWeight
+
+	changeWeights(f.net, -0.03)  # set negative weights to increase sync
+
+	f.sim.runSim()                          # run parallel Neuron simulation  
+	f.sim.gatherData()                      # gather spiking data and cell info from each node
+	f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	f.analysis.plotData()                   # plot spike raster
+
+	changeWeights(f.net, +0.03)  # set positive weights to increase sync
+
+	f.sim.runSim()                          # run parallel Neuron simulation  
+	f.sim.gatherData()                      # gather spiking data and cell info from each node
+	f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	f.analysis.plotData()                   # plot spike raster
+
+
+
+.. image:: figs/tut6_1.png
+	:width: 100%
+	:align: center
+
+
+The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
+
+.. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

@@ -624,7 +624,7 @@ Given the information above, we can now create a simple function ``changeWeights
 The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.72:
 
 .. image:: figs/tut6_2.png
-	:width: 100%
+	:width: 70%
 	:align: center
 
 

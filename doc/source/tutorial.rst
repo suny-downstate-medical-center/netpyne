@@ -355,19 +355,19 @@ We will build a cortical-like network with 6 populations (3 excitatory and 3 inh
 First we will create the populations, distribute them spatially, and provide background input:
 
 .. image:: figs/tut5_1.png
-	:width: 100%
+	:width: 95%
 	:align: center
 
 Next, add cortical-depth dependent excitatory connections (notice depolarization blockade due to higher weights in lowe layer):
 
 .. image:: figs/tut5_2.png
-	:width: 100%
+	:width: 95%
 	:align: center
 
 And finally, add distance-dependent inhibitory connections:
 
 .. image:: figs/tut5_3.png
-	:width: 100%
+	:width: 95%
 	:align: center
 
 

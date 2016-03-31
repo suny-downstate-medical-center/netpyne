@@ -266,7 +266,7 @@ If mpi working and have ``runsim`` shell script::
 
 You should get the raster plot and voltage trace figures shown below. Notice how the ``M`` population firing rate is higher than that of the ``S`` population. This makes sense since they both receive the same background inputs, but ``S`` cells connect randomly to ``M`` cells thus increasing the ``M`` firing rate. 
 
-.. image:: figs/tut.png
+.. image:: figs/tut2.png
 	:width: 100%
 	:align: center
 

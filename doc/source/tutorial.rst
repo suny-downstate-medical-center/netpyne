@@ -15,13 +15,13 @@ A good understading of python nested dictionaries and lists is recommended, sinc
 
 Very simple and quick example
 -------------------------------
-To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (500 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
+To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
 	import HHTut
 	from netpyne import init
 	init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
 
-The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to download the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.) 
+The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to **download the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)** 
 
 The second line imports the ``init`` module from the ``netpyne`` package. The `init`` module provides functions to easily create and simulate networks based on these parameters.
 
@@ -78,7 +78,7 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
 .. image:: figs/netparams.png
-	:width: 50%
+	:width: 40%
 	:align: center
 
 
@@ -266,13 +266,10 @@ If mpi working and have ``runsim`` shell script::
 
 You should get the raster plot and voltage trace figures shown below. Notice how the ``M`` population firing rate is higher than that of the ``S`` population. This makes sense since they both receive the same background inputs, but ``S`` cells connect randomly to ``M`` cells thus increasing the ``M`` firing rate. 
 
-.. image:: figs/tut2_raster.png
-	:width: 35%
+.. image:: figs/tut.png
+	:width: 100%
 	:align: center
 
-.. image:: figs/tut2_vtrace.png
-	:width: 35%
-	:align: center
 
 
 Feel free to explore the effect of changing any of the model parameters, eg. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
@@ -351,7 +348,7 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 Position and distance based connectivity
 ------------------------------------------
 
-This example shows how to spatially separate populations, add inhbitory populations, and implement distance-dependent weights, probabilities of connection, and delays.
+The following example demonstrates how to spatially separate populations, add inhbitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
 .. image:: figs/tut5.png
 	:width: 100%

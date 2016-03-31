@@ -362,6 +362,11 @@ Since we want to distribute the cells spatially, the first thing we need to do i
 	netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
 	netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
 	netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
+	
+	netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+	netParams['probLengthConst'] = 150.0 # propagation velocity (um/ms)
+
+Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
 
 Next we can create our background input popualtion and the 6 cortical populations labeled according to the cell type and layer eg. 'E2' for excitatory cells in layer 2. We can define the cortical depth range of each population by using the ``yRange`` parameter, eg. to place layer 2 cells between 100 and 300 um depth: ``'yRange': [100,300]``. This range can also be specified using normalized values, eg. ``'yRange': [0.1,0.3]``. In the code below we provide examples of both methods for illustration::
 
@@ -415,7 +420,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	  'synMech': 'exc'})                  # synaptic mechanism 
 
 
-We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True)``)::
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True``)::
 
 	# Simulation options
 	simConfig = {}
@@ -442,7 +447,11 @@ If we run the model at this point we will see the cells are distributed into thr
 	:align: center
 
 
-Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First we will specify that we want all excitatory cells to target all cells within a cortical depth of 100 and 1000 um: ``'postTags': {'y': [100,1000]}``. Second, for 
+Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First,lets  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postTags': {'y': [100,1000]}``. 
+
+Second, lets make the the connection weight be proportional to the cortical depth of the cell, ie. postsynaptic cells in deeper layers will receive stronger connections than those in superficial layers. To do this we make use of the distance-related variables that NetPyNE makes available to use in string-based functions; in this case ``post_ynorm``, which represents the normalized y location of the postsynaptic cell. For a complete list of available variables see: :ref:`function_string`.
+
+Finally, we can specify the delay based on the distance between the cells (``dist_3D``) and the propagation velocity (given as a parameter at the beginning of the code), as follows: ``'delay': 'dist_3D/propVelocity'``. The full code for this connectivity rules is::
 
 netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
   'probability': 0.1,    # probability of connection
@@ -451,18 +460,26 @@ netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': 
   'synMech': 'exc'})                    # synaptic mechanism 
 
 
-netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
-netParams['probLengthConst'] = 150.0 # propagation velocity (um/ms)
-
-
-
-Next, add cortical-depth dependent excitatory connections (notice depolarization blockade due to higher weights in lowe layer):
+Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells::
 
 .. image:: figs/tut5_2.png
 	:width: 95%
 	:align: center
 
-And finally, add distance-dependent inhibitory connections:
+
+Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postTags': {'cellType': 'E'}``). 
+
+To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
+
+
+netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+  'weight': 0.001,                                     # synaptic weight 
+  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
+  'synMech': 'inh'})                                  # synaptic mechanism 
+
+
+Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.
 
 .. image:: figs/tut5_3.png
 	:width: 95%
@@ -474,3 +491,4 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 
 Modifying the instantiated network interactively
 -------------------------------------------------
+

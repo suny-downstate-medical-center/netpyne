@@ -57,11 +57,11 @@ netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': 
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'})                    # synaptic mechanism 
 
-# netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
-#   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-#   'weight': 0.001,                                     # synaptic weight 
-#   'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
-#   'synMech': 'inh'})                                  # synaptic mechanism 
+netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+  'weight': 0.001,                                     # synaptic weight 
+  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
+  'synMech': 'inh'})                                  # synaptic mechanism 
 
 
 # Simulation options

@@ -81,7 +81,7 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
 .. image:: figs/netparams.png
-	:width: 80%
+	:width: 50%
 	:align: center
 
 

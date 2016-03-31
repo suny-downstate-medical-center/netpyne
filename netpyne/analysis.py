@@ -237,6 +237,7 @@ def plotConn():
 
 # Plot 2D visualization of network cell positions and connections
 def plot2Dnet():
+    allCells = f.net.allCells
     figure(figsize=(12,12))
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
@@ -245,15 +246,13 @@ def plot2Dnet():
     popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell.tags['popLabel']] for cell in f.net.cells]
-    posX = [cell.tags['x'] for cell in f.net.cells]  # get all x positions
-    posY = [cell.tags['y'] for cell in f.net.cells]  # get all y positions
+    posX = [cell['tags']['x'] for cell in allCells]  # get all x positions
+    posY = [cell['tags']['y'] for cell in allCells]  # get all y positions
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
-    for postCell in f.net.cells:
-        for con in postCell.conns:  # plot connections between cells
-            posXpre = f.net.cells[f.net.gid2lid[con['preGid']]].tags['x']  
-            posYpre = f.net.cells[f.net.gid2lid[con['preGid']]].tags['y']
-            posXpost = postCell.tags['x']
-            posYpost = postCell.tags['y']           
+    for postCell in allCells:
+        for con in postCell['conns']:  # plot connections between cells
+            posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
+            posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
             color='red'
             if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
                 color = 'blue'

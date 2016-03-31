@@ -1,3 +1,9 @@
+## Version 0.4.1
+
+- Fixed bug when distributing cells spatially based on xRange,yRange,zRange pop parameters
+
+- Added axis labels to 2D visualization
+
 ## Version 0.4.0
 
 - Fixed bug when distributing cells spatially based on normRange pop parameter

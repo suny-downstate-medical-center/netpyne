@@ -7,6 +7,7 @@ netParams['sizeX'] = 1000 # x-dimension (horizontal length) size in um
 netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
 netParams['sizeZ'] = 1 # y-dimension (vertical height or cortical depth) size in um
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+netParams['defaultDelay'] = 2.0 # propagation velocity (um/ms)
 netParams['probLengthConst'] = 200.0 # propagation velocity (um/ms)
 
 
@@ -21,7 +22,7 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 10, 'noise': 0.
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}     # cell rule dict
-soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
+soma = {'geom': {}, 'mechs': {}}                                                        # soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
 cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
@@ -44,19 +45,25 @@ netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 1, 
 ## Cell connectivity rules
 netParams['connParams'] = [] 
 
-netParams['connParams'].append({'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': ['PYR','BAS']},  #  E -> all
+netParams['connParams'].append({
+  'preTags': {'cellType': 'PYR'}, 
+  'postTags': {'cellType': ['PYR','BAS']},  #  E -> all
   'probability': 0.2,                 # probability of connection
   'weight': '0.005*post_ynorm',       # synaptic weight 0.005
   'delay': 'dist_3D/propVelocity',    # transmission delay (ms) 
   'synMech': 'exc'})                  # synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'cellType': 'BAS'}, 'postTags': {'cellType': ['PYR']},  #  I -> all
+netParams['connParams'].append({
+  'preTags': {'cellType': 'BAS'}, 
+  'postTags': {'cellType': ['PYR']},                  #  I -> all
   'probability': '1*exp(-dist_3D/probLengthConst)',   # probability of connection
   'weight': 0.004,                                    # synaptic weight 
   'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
   'synMech': 'inh'})                                  # synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['PYR', 'BAS']}, # background -> all
+netParams['connParams'].append(
+   {'preTags': {'popLabel': 'background'}, 
+   'postTags': {'cellType': ['PYR', 'BAS']}, # background -> all
     'weight': 0.01,                     # synaptic weight 
     'delay': 'max(1, uniform(5,2))',    # transmission delay (ms) 
     'synMech': 'exc'})                  # synaptic mechanism 
@@ -65,7 +72,7 @@ netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags
 # Simulation options
 simConfig = {}
 simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
-simConfig['dt'] = 0.025                 # Internal integration timestep to use
+simConfig['dt'] = 0.1                 # Internal integration timestep to use
 simConfig['verbose'] = False            # Show detailed messages 
 simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
 simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)

@@ -260,6 +260,12 @@ def plot2Dnet():
                 color = 'blue'
             width = 0.1 #50*con['weight']
             plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+    xlabel('x (um)')
+    ylabel('y (um)')  
+    fontsiz = 12
+    for popLabel in popLabels[::-1]:
+        plot(0,0,color=popColors[popLabel],label=popLabel)
+    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     ax = gca()
     ax.invert_yaxis()
 

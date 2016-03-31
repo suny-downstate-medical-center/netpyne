@@ -49,15 +49,12 @@ If you want to avoid typing that long line every time, you can download this sim
 
 .. note:: To use the script make sure you change its permissions so its executable (eg. ``chmod +x runsim``) 
 
-Whatever method you use, you should get a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
+Whatever method you use, you should a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
 
-.. image:: figs/tut1_raster.png
-	:width: 35%
+.. image:: figs/tut1.png
+	:width: 100%
 	:align: center
 
-.. image:: figs/tut1_vtrace.png
-	:width: 35%
-	:align: center
 
 Congratulations! You have created and simulated a biological neuronal network in NEURON! 
 

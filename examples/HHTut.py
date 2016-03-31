@@ -24,7 +24,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 500}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 # Cell parameters
@@ -100,5 +100,7 @@ simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
 simConfig['plotConn'] = False # whether to plot conn matrix
 simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
 simConfig['plot3dArch'] = False # plot 3d architecture
+simConfig['plot2Dnet'] = True           # Plot recorded traces for this list of cells
+
 
 

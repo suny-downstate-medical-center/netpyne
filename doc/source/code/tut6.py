@@ -42,13 +42,13 @@ netParams['connParams'] = []
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'exc',                     # target NMDA synapse
-    'delay': 1})           # uniformly distributed delays between 1-5ms
+    'synMech': 'exc',                 # target exc synapse
+    'delay': 1})                      # uniformly distributed delays between 1-5ms
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
     'weight': 0.0,                      # weight of each connection
-    'synMech': 'inh',
+    'synMech': 'inh',                   # target inh synapse
     'delay': 5})       				    # delay 
 
 
@@ -59,7 +59,7 @@ simConfig = {}  # dictionary to store simConfig
 
 # Simulation options
 simConfig = {}
-simConfig['duration'] = 0.5*1e3 			# Duration of the simulation, in ms
+simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
 simConfig['dt'] = 0.025 				# Internal integration timestep to use
 simConfig['verbose'] = False  			# Show detailed messages 
 simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
@@ -69,7 +69,7 @@ simConfig['savePickle'] = False 		# Save params, network and sim output to pickl
 simConfig['plotRaster'] = True 			# Plot a raster
 simConfig['plotSync'] = True  # add vertical lines for all spikes as an indication of synchrony
 simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
-simConfig['plot2Dnet'] = 0           # plot 2D visualization of cell positions and connections
+simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 
 
 ###############################################################################

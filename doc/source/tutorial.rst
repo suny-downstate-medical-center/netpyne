@@ -494,7 +494,7 @@ Modifying the instantiated network interactively
 
 This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and fires synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which wel will modify interactively.
 
-We begin by creating a new file (``net6.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 40 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all connections within the ``hop`` population, but set the weights to 0 initially:: 
+We begin by creating a new file (``net6.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 50 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all connections within the ``hop`` population, but set the weights to 0 initially:: 
 
 	###############################################################################
 	# NETWORK PARAMETERS
@@ -505,7 +505,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	# Population parameters
 	netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 	netParams['popParams'].append({'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
-	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 40, 'noise': 0.5, 'source': 'random'})  # background inputs
+	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5, 'source': 'random'})  # background inputs
 
 	# Cell parameters
 	netParams['cellParams'] = []
@@ -513,7 +513,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	## PYR cell properties
 	cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 	soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+	soma['geom'] = {'diam': 18.8, 'L': 18.8}
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
@@ -521,6 +521,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	# Synaptic mechanism parameters
 	netParams['synMechParams'] = []
 	netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+	netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80})
 	 
 	# Connectivity parameters
 	netParams['connParams'] = []  
@@ -528,12 +529,13 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams['connParams'].append(
 	    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
 	    'weight': 0.1,                    # fixed weight of 0.08
-	    'synMech': 'exc',                     # target NMDA synapse
-	    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+	    'synMech': 'exc',                 # target exc synapse
+	    'delay': 1})                      # uniformly distributed delays between 1-5ms
 
 	netParams['connParams'].append(
 	    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
+	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5})       				    # delay 
 
 
@@ -546,7 +548,7 @@ We now add the standard simulation configuration options, and add the ``plotSync
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
+	simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
 	simConfig['dt'] = 0.025 				# Internal integration timestep to use
 	simConfig['verbose'] = False  			# Show detailed messages 
 	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
@@ -580,7 +582,7 @@ Finally, we add the code to create the network and run the simulation, but for i
 	f.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the excitatory connections in red, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 40 Hz background inputs, and a low sync measure of 0.33 (vertical red lines illustrate poor synchrony)::
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.33 (vertical red lines illustrate poor synchrony)::
 
 .. image:: figs/tut6_1.png
 	:width: 100%
@@ -611,7 +613,7 @@ Given the information above, we can now create a simple function ``changeWeights
 		netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
 		for netcon in netcons: netcon.weight[0] = newWeight
 
-	changeWeights(f.net, -0.03)  # set negative weights to increase sync
+	changeWeights(f.net, 0.5)  # set negative weights to increase sync
 
 	f.sim.runSim()                          # run parallel Neuron simulation  
 	f.sim.gatherData()                      # gather spiking data and cell info from each node

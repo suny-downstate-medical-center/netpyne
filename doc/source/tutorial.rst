@@ -440,7 +440,7 @@ We can now add the standard simulation configuration options and the code to cre
 	init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
 
 
-If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input::
+If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input:
 
 .. image:: figs/tut5_1.png
 	:width: 95%
@@ -460,7 +460,7 @@ netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': 
   'synMech': 'exc'})                    # synaptic mechanism 
 
 
-Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells::
+Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells:
 
 .. image:: figs/tut5_2.png
 	:width: 95%

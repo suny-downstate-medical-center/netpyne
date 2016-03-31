@@ -17,7 +17,7 @@ Very simple and quick example
 -------------------------------
 To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
 
-You will need to ** download the ``HHTut.py`` example parameter file ** (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)
+You will need to ** download ** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)
 
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 

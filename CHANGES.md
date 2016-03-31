@@ -2,7 +2,9 @@
 
 - Fixed bug when distributing cells spatially based on xRange,yRange,zRange pop parameters
 
-- Added axis labels to 2D visualization, and now works when running on multiple nodes too 
+- Added axis labels to 2D visualization, and now works when running on multiple nodes too
+
+- Reset Netstim random generatros within runSim() so have reproducible results if working interactively 
 
 ## Version 0.4.0
 

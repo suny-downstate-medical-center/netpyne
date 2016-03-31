@@ -355,8 +355,8 @@ class Cell(object):
 
         if params['source'] == 'random':
             rand = h.Random()
-            rand.Random123(self.gid,self.gid*2)
-            rand.negexp(1)
+            #rand.Random123(self.gid,self.gid*2)
+            #rand.negexp(1)
             self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
             if isinstance(params['rate'], str):

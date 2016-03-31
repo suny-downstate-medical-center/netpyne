@@ -283,6 +283,13 @@ def runSim():
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    
+    # reset all netstims so runs are always equivalent
+    for cell in f.net.cells:
+        for stim in cell.stims:
+            stim['hRandom'].Random123(cell.gid,cell.gid*2)
+            stim['hRandom'].negexp(1)
+
     init()
     f.pc.psolve(f.cfg['duration'])
     if f.rank==0: 

@@ -15,13 +15,17 @@ A good understading of python nested dictionaries and lists is recommended, sinc
 
 Very simple and quick example
 -------------------------------
-To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
+To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
+
+You will need to **download the ``HHTut.py`` example parameter file ** (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)
+
+The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
 	import HHTut
 	from netpyne import init
 	init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
 
-The first line imports the ``HHTut`` module with the network and simulation parameters. You will need to **download the ``HHTut.py`` example parameter file ** (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_.)
+The first line imports the ``HHTut`` module with the network and simulation parameters. 
 
 The second line imports the ``init`` module from the ``netpyne`` package. The `init`` module provides functions to easily create and simulate networks based on these parameters.
 

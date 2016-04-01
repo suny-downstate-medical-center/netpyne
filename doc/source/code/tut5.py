@@ -7,7 +7,7 @@ netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
 netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
 netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
-netParams['probLengthConst'] = 150.0 # propagation velocity (um/ms)
+netParams['probLengthConst'] = 150.0 # length constant for conn probability (um)
 
 
 ## Population parameters

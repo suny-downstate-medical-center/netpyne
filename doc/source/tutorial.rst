@@ -368,7 +368,7 @@ Since we want to distribute the cells spatially, the first thing we need to do i
 	netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
 	
 	netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
-	netParams['probLengthConst'] = 150.0 # propagation velocity (um/ms)
+	netParams['probLengthConst'] = 150.0 # length constant for conn probability (um)
 
 Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
 

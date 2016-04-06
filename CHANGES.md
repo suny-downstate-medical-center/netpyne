@@ -4,6 +4,10 @@
 
 - Create parallel context before re-creating net to avoid seg fault 
 
+- Removed unnecessary modules in analysis.py
+
+- Only call show() in analysis if some figure to show
+
 ## Version 0.4.1
 
 - Fixed bug when distributing cells spatially based on xRange,yRange,zRange pop parameters

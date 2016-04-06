@@ -7,20 +7,19 @@ Contributors: salvadordura@gmail.com
 """
 
 from pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
-from scipy.io import loadmat
-from scipy import loadtxt, size, array, linspace, ceil
-from datetime import datetime
-from time import time
-from collections import OrderedDict
-import csv
-import pickle
-from mpl_toolkits.mplot3d import Axes3D
+from scipy import size, array, linspace, ceil
 
 import framework as f
 
 ###############################################################################
 ### Simulation-related graph plotting functions
 ###############################################################################
+
+def showFig():
+    try:
+        show(block=False)
+    except:
+        show()
 
 # sequence of generic plots (raster, connectivity,psd,...)
 def plotData():
@@ -33,33 +32,37 @@ def plotData():
             else: 
                 print('Plotting raster...')
                 f.analysis.plotRaster() 
+                showFig()
         if f.cfg['plotCells']:
             print('Plotting recorded traces ...')
             f.analysis.plotTraces() 
+            showFig()
         if f.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             f.analysis.plotConn()
+            showFig()
         if f.cfg['plotLFPSpectrum']:
             print('Plotting LFP power spectral density...')
             f.analysis.plotLFPSpectrum()
+            showFig()
         if f.cfg['plot2Dnet']:
             print('Plotting 2D visualization of network...')
-            f.analysis.plot2Dnet()    
+            f.analysis.plot2Dnet()   
+            showFig() 
         if f.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             f.analysis.plotWeightChanges()
+            showFig()
         if f.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
             f.analysis.plot3dArch()
+            showFig()
         if f.cfg['timing']:
             f.sim.timing('stop', 'plotTime')
             print('  Done; plotting time = %0.2f s' % f.timing['plotTime'])
             f.sim.timing('stop', 'totalTime')
             print('\nTotal time = %0.2f s' % f.timing['totalTime'])
-        try:
-            show(block=False)
-        except:
-            show()
+
 
 ## Sync measure
 def syncMeasure():

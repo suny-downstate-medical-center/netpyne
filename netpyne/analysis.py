@@ -56,7 +56,10 @@ def plotData():
             print('  Done; plotting time = %0.2f s' % f.timing['plotTime'])
             f.sim.timing('stop', 'totalTime')
             print('\nTotal time = %0.2f s' % f.timing['totalTime'])
-        show(block=False)
+        try:
+            show(block=False)
+        except:
+            show()
 
 ## Sync measure
 def syncMeasure():

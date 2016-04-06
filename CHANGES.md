@@ -1,3 +1,9 @@
+## Version 0.4.2
+
+- Placed show(block=False) in try except block since not supported by some graphic backends
+
+- Create parallel context before re-creating net to avoid seg fault 
+
 ## Version 0.4.1
 
 - Fixed bug when distributing cells spatially based on xRange,yRange,zRange pop parameters

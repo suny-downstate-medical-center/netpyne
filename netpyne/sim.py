@@ -26,6 +26,8 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     f.rank = 0  # initialize rank
     f.timing = {}  # dict to store timing
 
+    createParallelContext()  # iniitalize PC, nhosts and rank
+    
     setSimCfg(simConfig)  # set simulation configuration
     
     timing('start', 'initialTime')
@@ -39,7 +41,6 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     if netParams: 
         setNetParams(netParams)  # set network parameters
 
-    createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
 
     timing('stop', 'initialTime')
@@ -86,12 +87,12 @@ def loadSimParams(paramFile):
 ###############################################################################
 def createParallelContext():
     f.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    f.pc.done()
     f.nhosts = int(f.pc.nhost()) # Find number of hosts
     f.rank = int(f.pc.id())     # rank or node number (0 will be the master)
 
     if f.rank==0: 
         f.pc.gid_clear()
-
 
 ###############################################################################
 # Hash function to obtain random value

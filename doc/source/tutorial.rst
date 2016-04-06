@@ -7,7 +7,7 @@ This tutorial provides an overview of how to use the NetPyNE python package to c
 
 Downloading and installation instructions here: :ref:`install`
 
-A good understading of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, eg: http://www.practicepython.org , http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/ .
+A good understading of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, eg. http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/.
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
 

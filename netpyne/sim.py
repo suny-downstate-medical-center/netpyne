@@ -22,13 +22,12 @@ import framework as f
 
 def initialize(netParams = {}, simConfig = {}, net = None):
     f.simData = {}  # used to store output simulation data (spikes etc)
-    f.gidVec =[] # Empty list for storing GIDs (index = local id; value = gid)
-    f.gidDic = {} # Empty dict for storing GIDs (key = gid; value = local id) -- ~x6 faster than gidVec.index()  
-    f.lastGid = 0  # keep track of las cell gid
     f.fih = []  # list of func init handlers
     f.rank = 0  # initialize rank
     f.timing = {}  # dict to store timing
 
+    createParallelContext()  # iniitalize PC, nhosts and rank
+    
     setSimCfg(simConfig)  # set simulation configuration
     
     timing('start', 'initialTime')
@@ -42,7 +41,6 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     if netParams: 
         setNetParams(netParams)  # set network parameters
 
-    createParallelContext()  # iniitalize PC, nhosts and rank
     readArgs()  # read arguments from commandline
 
     timing('stop', 'initialTime')
@@ -89,12 +87,12 @@ def loadSimParams(paramFile):
 ###############################################################################
 def createParallelContext():
     f.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    f.pc.done()
     f.nhosts = int(f.pc.nhost()) # Find number of hosts
     f.rank = int(f.pc.id())     # rank or node number (0 will be the master)
 
     if f.rank==0: 
         f.pc.gid_clear()
-
 
 ###############################################################################
 # Hash function to obtain random value
@@ -102,6 +100,39 @@ def createParallelContext():
 def id32(obj): 
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
+
+###############################################################################
+### Replace item with specific key from dict or list (used to remove h objects)
+###############################################################################
+def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT'):
+    if type(obj) == list:
+        if objCopy=='ROOT': 
+            objCopy = []
+        for item in obj:
+            if type(item) in [list]:
+                objCopy.append([])
+                copyReplaceItemObj(item, keystart, newval, objCopy[-1])
+            elif type(item) in [dict]:
+                objCopy.append({})
+                copyReplaceItemObj(item, keystart, newval, objCopy[-1])
+            else:
+                objCopy.append(item)
+
+    elif type(obj) == dict:
+        if objCopy == 'ROOT':
+            objCopy = {}
+        for key,val in obj.iteritems():
+            if type(val) in [list]:
+                objCopy[key] = [] 
+                copyReplaceItemObj(val, keystart, newval, objCopy[key])
+            elif type(val) in [dict]:
+                objCopy[key] = {}
+                copyReplaceItemObj(val, keystart, newval, objCopy[key])
+            elif key.startswith(keystart):
+                objCopy[key] = newval
+            else:
+                objCopy[key] = val
+    return objCopy
 
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
@@ -228,11 +259,12 @@ def setupRecording():
                 for cell in f.net.cells: cell.recordTraces()
                 break
             elif isinstance(entry, str):  # if str, record 1st cell of this population
-                for pop in f.net.pops:
-                    if pop.tags['popLabel'] == entry and pop.cellGids:
-                        gid = pop.cellGids[0]
-                        for cell in f.net.cells: 
-                            if cell.gid == gid: cell.recordTraces()
+                if f.rank == 0:  # only record on node 0
+                    for pop in f.net.pops:
+                        if pop.tags['popLabel'] == entry and pop.cellGids:
+                            gid = pop.cellGids[0]
+                            for cell in f.net.cells: 
+                                if cell.gid == gid: cell.recordTraces()
             elif isinstance(entry, int):  # if int, record from cell with this gid
                 for cell in f.net.cells: 
                     if cell.gid == entry: cell.recordTraces()
@@ -252,6 +284,13 @@ def runSim():
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    
+    # reset all netstims so runs are always equivalent
+    for cell in f.net.cells:
+        for stim in cell.stims:
+            stim['hRandom'].Random123(cell.gid,cell.gid*2)
+            stim['hRandom'].negexp(1)
+
     init()
     f.pc.psolve(f.cfg['duration'])
     if f.rank==0: 
@@ -315,38 +354,42 @@ def gatherData():
     if f.rank==0: 
         print('\nGathering spikes...')
 
-    nodeData = {'netCells': [c.__getstate__() for c in f.net.cells], 'simData': f.simData} 
-    data = [None]*f.nhosts
-    data[0] = {}
-    for k,v in nodeData.iteritems():
-        data[0][k] = v 
-    gather = f.pc.py_alltoall(data)
-    f.pc.barrier()
-    simDataVecs = ['spkt','spkid','stims']+f.cfg['recordTraces'].keys()
-    if f.rank == 0:
-        allCells = []
-        f.allSimData = {} 
-        for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-            f.allSimData[k] = {}
-        #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND UPDATE ALLSIMDATA ACCORDINGLY ####
-        for node in gather:  # concatenate data from each node
-            allCells.extend(node['netCells'])  # extend allCells list
-            for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
-                if key in simDataVecs:          # simData dicts that contain Vectors
-                    if isinstance(val,dict):                
-                        for cell,val2 in val.iteritems():
-                            if isinstance(val2,dict):       
-                                f.allSimData[key].update({cell:{}})
-                                for stim,val3 in val2.iteritems():
-                                    f.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                            else:
-                                f.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                    else:                                   
-                        f.allSimData[key] = list(f.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                else: 
-                    f.allSimData[key].update(val)           # update simData dicts which are not Vectors
-        f.net.allCells = allCells
-
+    if f.nhosts > 1:  # only gather if >1 nodes 
+        nodeData = {'netCells': [c.__getstate__() for c in f.net.cells], 'simData': f.simData} 
+        data = [None]*f.nhosts
+        data[0] = {}
+        for k,v in nodeData.iteritems():
+            data[0][k] = v 
+        gather = f.pc.py_alltoall(data)
+        f.pc.barrier()
+        simDataVecs = ['spkt','spkid','stims']+f.cfg['recordTraces'].keys()
+        if f.rank == 0:
+            allCells = []
+            f.allSimData = {} 
+            for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
+                f.allSimData[k] = {}
+            #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND UPDATE ALLSIMDATA ACCORDINGLY ####
+            for node in gather:  # concatenate data from each node
+                allCells.extend(node['netCells'])  # extend allCells list
+                for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
+                    if key in simDataVecs:          # simData dicts that contain Vectors
+                        if isinstance(val,dict):                
+                            for cell,val2 in val.iteritems():
+                                if isinstance(val2,dict):       
+                                    f.allSimData[key].update({cell:{}})
+                                    for stim,val3 in val2.iteritems():
+                                        f.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                else:
+                                    f.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                        else:                                   
+                            f.allSimData[key] = list(f.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                    else: 
+                        f.allSimData[key].update(val)           # update simData dicts which are not Vectors
+            f.net.allCells = allCells
+    
+    else:  # if single node, save data in same format as for multiple nodes for consistency
+        f.net.allCells = [c.__getstate__() for c in f.net.cells]
+        f.allSimData = f.simData
 
     ## Print statistics
     if f.rank == 0:
@@ -394,9 +437,10 @@ def saveData():
             import os,gzip
             print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
             fn=f.params['filename'].split('.')
-            fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
+            #fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
             gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
-            print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
+            print('Finished saving!')
+            #print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
 
         # Save to json file
         if f.cfg['saveJson']:
@@ -413,13 +457,24 @@ def saveData():
             savemat(f.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
-        # Save to HDF5 file
+        # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
         if f.cfg['saveHDF5']:
             dataSaveUTF8 = dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (f.cfg['filename']+'.hdf5'))
             hdf5storage.writes(dataSaveUTF8, filename=f.cfg['filename']+'.hdf5')
             print('Finished saving!')
+
+        # Save to CSV file (currently only saves spikes)
+        if f.cfg['saveCSV']:
+            import csv
+            print('Saving output as %s ... ' % (f.cfg['filename']+'.csv'))
+            writer = csv.writer(open(f.cfg['filename']+'.csv', 'wb'))
+            for dic in dataSave['simData']:
+                for values in dic:
+                    writer.writerow(values)
+            print('Finished saving!')
+
 
         # Save timing
         timing('stop', 'saveTime')

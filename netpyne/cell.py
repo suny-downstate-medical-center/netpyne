@@ -1,12 +1,11 @@
 """
 cell.py 
 
-Contains Synapse, Conn, Cell and Population classes 
+Contains Cell related classes 
 
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, seed, rand, array
 from neuron import h # Import NEURON
 import framework as f
 
@@ -45,7 +44,7 @@ class Cell(object):
                 if f.cfg['createPyStruct']:
                     self.createPyStruct(prop)
                 if f.cfg['createNEURONObj']:
-                    self.createNEURONObj(prop)  # add sections, mechanisms, synapses, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
     def createPyStruct(self, prop):
@@ -78,16 +77,6 @@ class Cell(object):
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
-            # add synapses 
-            if 'syns' in sectParams:
-                for synName,synParams in sectParams['syns'].iteritems(): 
-                    if 'syns' not in sec:
-                        sec['syns'] = {}
-                    if synName not in sec['syns']:
-                        sec['syns'][synName] = {}
-                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                        sec['syns'][synName][synParamName] = synParamValue
-
             # add geometry params 
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
@@ -116,6 +105,11 @@ class Cell(object):
 
             if 'vinit' in sectParams:
                 sec['vinit'] = sectParams['vinit']
+
+        # add sectionLists
+        if prop.get('secLists'):
+            self.secLists.update(prop['secLists'])  # diction of section lists
+
 
 
     def initV(self): 
@@ -157,18 +151,6 @@ class Cell(object):
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
                         if not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
-                        
-            # add synapses 
-            if 'syns' in sectParams:
-                for synName,synParams in sectParams['syns'].iteritems(): 
-                    if synName not in sec['syns']:
-                        sec['syns'][synName] = {} 
-                    synObj = getattr(h, synParams['_type'])
-                    loc = synParams['_loc'] if '_loc' in synParams else 0.5  # set location
-                    sec['syns'][synName]['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
-                    for synParamName,synParamValue in synParams.iteritems():  # add params of the synapse
-                        if not synParamName.startswith('_'):
-                            setattr(sec['syns'][synName]['hSyn'], synParamName, synParamValue)
 
             # set geometry params 
             if 'geom' in sectParams:
@@ -216,12 +198,39 @@ class Cell(object):
                 nc = h.NetCon(sec['hSection'](loc)._ref_v, None, sec=sec['hSection'])
             nc.threshold = threshold
             f.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-            f.gidVec.append(self.gid) # index = local id; value = global id
-            f.gidDic[self.gid] = len(f.gidVec)
+            f.net.gid2lid[self.gid] = len(f.net.lid2gid)
+            f.net.lid2gid.append(self.gid) # index = local id; value = global id
             del nc # discard netcon
 
+    def addSynMech (self, label, secName, loc):
+        synMechParams = next((params for params in f.net.params['synMechParams'] if params['label'] == label), None)  # get params for this synMech
+        sec = self.secs.get(secName, None)
+        if synMechParams and sec:  # if both the synMech and the section exist
+            if f.cfg['createPyStruct']:
+                # add synaptic mechanism to python struct
+                if 'synMechs' not in sec:
+                    sec['synMechs'] = []
+                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc), None)
+                if not synMech:  # if synMech not in section, then create
+                    synMech = {'label': label, 'loc': loc}
+                    sec['synMechs'].append(synMech)
 
-
+            if f.cfg['createNEURONObj']:
+                # add synaptic mechanism NEURON objectes 
+                if 'synMechs' not in sec:
+                    sec['synMechs'] = []
+                if not synMech:  # if pointer not created in createPyStruct, then check 
+                    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==label and synMech['loc']==loc), None)
+                if not synMech:  # if still doesnt exist, then create
+                    synMech = {}
+                    sec['synMechs'].append(synMech)
+                if not 'hSyn' in synMech:  # if synMech doesn't have NEURON obj, then create
+                    synObj = getattr(h, synMechParams['mod'])
+                    synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
+                    for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
+                        if synParamName not in ['label', 'mod']:
+                            setattr(synMech['hSyn'], synParamName, synParamValue)
+            return synMech
 
     def addConn(self, params):
         if params['preGid'] == self.gid:
@@ -233,9 +242,9 @@ class Cell(object):
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synapse
-                    if 'syns' in secParams:
-                        if secParams['syns']:
+                for secName, secParams in self.secs.iteritems():   # replace with first section that includes synaptic mechanism
+                    if 'synMechs' in secParams:
+                        if secParams['synMechs']:
                             params['sec'] = secName
                             break
             else:  
@@ -244,45 +253,41 @@ class Cell(object):
         sec = self.secs[params['sec']]
 
         weightIndex = 0  # set default weight matrix index
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location  
+        if not params['threshold']: params['threshold'] = 10.0  # default NetCon threshold    
 
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
-                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['syn'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
-
+                        if params['synMech'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
         if not pointp: # not a point process
-            if 'syns' in sec: # section has synapses
-                if params['syn']: # desired synapse specified in conn params
-                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
-                        synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
-                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
-                else:  # if no synapse specified            
-                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
-            else: # if still no synapse  
-                print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
+            if params['synMech']: # if desired synaptic mechanism specified in conn params
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
+            elif f.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
+                synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+                params['synMech'] = synLabel
+                synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
+            else: # if no synaptic mechanism specified and no synMech params available 
+                print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
-
-        if not params['threshold']:
-            params['threshold'] = 10.0
 
         self.conns.append(params)
         if pointp:
             postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
         else:
-            postTarget= sec['syns'][params['syn']]['hSyn'] # local synapse
+            postTarget = synMech['hSyn'] # local synaptic mechanism
         netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
         netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['syn'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['synMech'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
 
         plasticity = params.get('plasticity')
         if plasticity:  # add plasticity
@@ -300,7 +305,7 @@ class Cell(object):
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
                     self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if f.cfg['verbose']: print('  Added STDP plasticity to synapse')
+                    if f.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
@@ -312,9 +317,9 @@ class Cell(object):
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synapse
-                    if 'syns' in secParams:
-                        if secParams['syns']:
+                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
+                    if 'synMechs' in secParams:
+                        if secParams['synMechs']:
                             params['sec'] = secName
                             break
             else:  
@@ -323,39 +328,35 @@ class Cell(object):
         sec = self.secs[params['sec']]
 
         weightIndex = 0  # set default weight matrix index
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
+        if not params['threshold']: params['threshold'] = 10.0  # default NetCon threshold      
 
         pointp = None
         if 'pointps' in sec:  # check if point processes (artificial cell)
             for pointpName, pointpParams in sec['pointps'].iteritems():
-                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synapses
+                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if '_synList' in pointpParams:
-                        if params['syn'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['syn'])  # udpate weight index based pointp synList
-
+                        if params['synMech'] in pointpParams['_synList']: 
+                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
         if not pointp: # not a point process
-            if 'syns' in sec: # section has synapses
-                if params['syn']: # desired synapse specified in conn params
-                    if params['syn'] not in sec['syns']:  # if exact name of desired synapse doesn't exist
-                        synIndex = [0]  # by default use syn 0
-                        synIndex.extend([i for i,syn in enumerate(sec['syns']) if params['syn'] in syn])  # check if contained in any of the synapse names
-                        params['syn'] = sec['syns'].keys()[synIndex[-1]]
-                else:  # if no synapse specified            
-                    params['syn'] = sec['syns'].keys()[0]  # use first synapse available in section
-            else: # if still no synapse  
-                print 'Error: no Synapse or point process available on cell gid=%d, section=%s to add stim'%(self.gid, params['sec'])
+            if params['synMech']: # if desired synaptic mechanism specified in conn params
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (won't be added if exists)
+            elif f.net.params['synMechParams']:  # if some synMech params defined
+                synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+                params['synMech'] = synLabel
+                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synapse
+            else: # if no synaptic mechanism specified and no synMech params available 
+                print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
-        if not params['threshold']:
-            params['threshold'] = 10.0
-
-        self.stims.append(params)
+        self.stims.append(params)  # add new stim to Cell object
 
         if params['source'] == 'random':
             rand = h.Random()
-            rand.Random123(self.gid,self.gid*2)
-            rand.negexp(1)
+            #rand.Random123(self.gid,self.gid*2)
+            #rand.negexp(1)
             self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
             if isinstance(params['rate'], str):
@@ -379,14 +380,14 @@ class Cell(object):
         if pointp:
             netcon = h.NetCon(netstim, sec['pointps'][pointp]['hPointp'])  # create Netcon between global gid and local point neuron
         else:
-            netcon = h.NetCon(netstim, sec['syns'][params['syn']]['hSyn']) # create Netcon between global gid and local synapse
+            netcon = h.NetCon(netstim, synMech['hSyn']) # create Netcon between global gid and local synaptic mechanism
         netcon.weight[weightIndex] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         self.stims[-1]['weightIndex'] = weightIndex
         if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
-            (params['popLabel'], self.gid, params['sec'], params['syn'], params['weight'], params['delay']))
+            (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
 
     def recordTraces (self):
@@ -397,8 +398,8 @@ class Cell(object):
                 if 'pos' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
-                    elif 'syn' in params:  # eg. soma(0.5).AMPA._ref_g
-                        ptr = self.secs[params['sec']]['syns'][params['syn']]['hSyn'].__getattribute__('_ref_'+params['var'])
+                    elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
+                        ptr = self.secs[params['sec']]['synMechs'][params['synMech']]['hSyn'].__getattribute__('_ref_'+params['var'])
                     else:  # eg. soma(0.5)._ref_v
                         ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
                 else:
@@ -426,7 +427,7 @@ class Cell(object):
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = f.sim.replaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = f.sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         return odict
 
 
@@ -442,185 +443,4 @@ class PointNeuron(Cell):
     Point Neuron that doesn't use v from Section - TO DO
     '''
     pass
-
-
-###############################################################################
-# 
-# POP CLASS
-#
-###############################################################################
-
-class Pop(object):
-    ''' Python class used to instantiate the network population '''
-    def __init__(self,  tags):
-        self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
-        self.cellGids = []  # list of cell gids beloging to this pop
-
-    # Function to instantiate Cell objects based on the characteristics of this population
-    def createCells(self):
-
-        # add individual cells
-        if 'cellsList' in self.tags:
-            cells = self.createCellsList()
-
-        # if NetStim pop do not create cell objects (Netstims added to postsyn cell object when creating connections)
-        elif self.tags['cellModel'] == 'NetStim':
-            cells = []
-
-        # create cells based on fixed number of cells
-        elif 'numCells' in self.tags:
-            cells = self.createCellsFixedNum()
-
-        # create cells based on density (optional ynorm-dep)
-        elif 'ynormRange' in self.tags and 'density' in self.tags:
-            cells = self.createCellsDensity()
-
-        # not enough tags to create cells
-        else:
-            cells = []
-            if 'popLabel' not in self.tags:
-                self.tags['popLabel'] = 'unlabeled'
-            print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
-
-        return cells
-
-
-    # population based on numCells
-    def createCellsFixedNum(self):
-        ''' Create population cells based on fixed number of cells'''
-        cellModelClass = Cell
-        cells = []
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
-        randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
-        for icoord, coord in enumerate(['x', 'y', 'z']):
-            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [point / f.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
-            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                minv = self.tags[coord+'normRange'][0] 
-                maxv = self.tags[coord+'normRange'][1] 
-                randLocs[:,icoord] = randLocs[:,icoord] / (maxv-minv) + minv
-        
-        for i in xrange(int(f.rank), f.net.params['scale'] * self.tags['numCells'], f.nhosts):
-            gid = f.lastGid+i
-            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['xnorm'] = randLocs[i,0] # set x location (um)
-            cellTags['ynorm'] = randLocs[i,1] # set y location (um)
-            cellTags['znorm'] = randLocs[i,2] # set z location (um)
-            cellTags['x'] = f.net.params['sizeX'] * randLocs[i,0] # set x location (um)
-            cellTags['y'] = f.net.params['sizeY'] * randLocs[i,1] # set y location (um)
-            cellTags['z'] = f.net.params['sizeZ'] * randLocs[i,2] # set z location (um)
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, f.net.params['scale'] * self.tags['numCells']-1, gid, self.tags['popLabel'], f.rank))
-        f.lastGid = f.lastGid + self.tags['numCells'] 
-        return cells
-
-                
-    def createCellsDensity(self):
-        ''' Create population cells based on density'''
-        cellModelClass = Cell
-        cells = []
-        volume =  f.net.params['sizeY']/1e3 * f.net.params['sizeX']/1e3 * f.net.params['sizeZ']/1e3  # calculate full volume
-        for coord in ['x', 'y', 'z']:
-            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [point / f.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
-            if coord+'normRange' in self.tags:  # if normalized range, rescale volume
-                minv = self.tags[coord+'normRange'][0] 
-                maxv = self.tags[coord+'normRange'][1] 
-                volume = volume * (maxv-minv)
-
-        funcLocs = None  # start with no locations as a function of density function
-        if isinstance(self.tags['density'], str): # check if density is given as a function
-            strFunc = self.tags['density']  # string containing function
-            strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used 
-            if not len(strVars) == 1:
-                print 'Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['popLabel'])
-                return
-            coordFunc = strVars[0] 
-            lambdaStr = 'lambda ' + coordFunc +': ' + strFunc # convert to lambda function 
-            densityFunc = eval(lambdaStr)
-            minRange = self.tags[coordFunc+'Range'][0]
-            maxRange = self.tags[coordFunc+'Range'][1]
-
-            interval = 0.001  # interval of location values to evaluate func in order to find the max cell density
-            maxDensity = max(map(densityFunc, (arange(minRange, maxRange, interval))))  # max cell density 
-            maxCells = volume * maxDensity  # max number of cells based on max value of density func 
-            
-            seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
-            locsAll = minRange + ((maxRange-minRange)) * rand(int(maxCells), 1)  # random location values 
-            locsProb = array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)
-            allrands = rand(len(locsProb))  # create an array of random numbers for checking each location pos 
-            
-            makethiscell = locsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-            funcLocs = [locsAll[i] for i in range(len(locsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfuncLocs based on density func
-            self.tags['numCells'] = len(funcLocs)  # final number of cells after pruning of location values based on density func
-            if f.cfg['verbose']: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
-
-        else:  # NO ynorm-dep
-            self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
-
-        # calculate locations of cells 
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
-        randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
-        for icoord, coord in enumerate(['x', 'y', 'z']):
-            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                minv = self.tags[coord+'normRange'][0] 
-                maxv = self.tags[coord+'normRange'][1] 
-                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
-            if funcLocs and coordFunc == coord+'norm':  # if locations for this coordinate calcualated using density function
-                randLocs[:,icoord] = funcLocs
-
-        if f.cfg['verbose'] and not funcLocs: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
-
-
-        for i in xrange(int(f.rank), self.tags['numCells'], f.nhosts):
-            gid = f.lastGid+i
-            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
-            cellTags['ynorm'] = randLocs[i,1]  # calculate x location (um)
-            cellTags['znorm'] = randLocs[i,2]  # calculate z location (um)
-            cellTags['x'] = f.net.params['sizeX'] * randLocs[i,0]  # calculate x location (um)
-            cellTags['y'] = f.net.params['sizeY'] * randLocs[i,1]  # calculate x location (um)
-            cellTags['z'] = f.net.params['sizeZ'] * randLocs[i,2]  # calculate z location (um)
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if f.cfg['verbose']: 
-                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['ynorm'], cellTags['z'], f.rank))
-        f.lastGid = f.lastGid + self.tags['numCells'] 
-        return cells
-
-
-    def createCellsList(self):
-        ''' Create population cells based on list of individual cells'''
-        cellModelClass = Cell
-        cells = []
-        self.tags['numCells'] = len(self.tags['cellsList'])
-        for i in xrange(int(f.rank), len(self.tags['cellsList']), f.nhosts):
-            #if 'cellModel' in self.tags['cellsList'][i]:
-            #    cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
-            gid = f.lastGid+i
-            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in f.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
-            for coord in ['x','y','z']:
-                if coord in cellTags:  # if absolute coord exists
-                    cellTags[coord+'norm'] = cellTags[coord]/f.net.params['size'+coord.upper()]  # calculate norm coord
-                elif coord+'norm' in cellTags:  # elif norm coord exists
-                    cellTags[coord] = cellTags[coord+'norm']*f.net.params['size'+coord.upper()]  # calculate norm coord
-                else:
-                    cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if f.cfg['verbose']: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, f.rank))
-        f.lastGid = f.lastGid + len(self.tags['cellsList'])
-        return cells
-
-
-    def __getstate__(self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        odict = self.__dict__.copy() # copy the dict since we change it
-        odict = f.sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
-        return odict
 

@@ -20,13 +20,15 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` dictionary includes all the information necessary to define your network. It is composed of the following 3 lists:
+The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 4 lists:
 
-* **popParams** - list of populations in the network
+* ``popParams`` - list of populations in the network and their parameters
 
-* **cellParams** - list of cell property rules (e.g. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
 
-* **connParams** - list of network connectivity rules
+* ``synMechParams`` - list of synaptic mechanisms and their parameters
+
+* ``connParams`` - list of network connectivity rules and their associated parameters. 
 
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
@@ -35,7 +37,8 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the connectivity rule conditions). 
+* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
 
 The image below illustrates this process:
 
@@ -65,6 +68,8 @@ Additionally, ``netParams`` may contain the following single-valued params:
 * **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['popLabel', 'cellModel', 'cellType'])
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
+
+.. _pop_params:
 
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,25 +154,25 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 	
-	* **syns**: Dictionary of synapses (point processes). 
-		The key contains an arbitrary label for the synapse (e.g. 'NMDA').
-		The value contains a dictionary with the synapse properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
+	* **syns**: Dictionary of synaptic mechanisms (point processes). 
+		The key contains an arbitrary label for the synaptic mechanism (e.g. 'NMDA').
+		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore:
 
 		* ``_type``, the name of the NEURON mechanism, e.g. ``'Exp2Syn'``.
-		* ``_loc``, section location where to place synapse, e.g. 1.0, default=0.5.
+		* ``_loc``, section location where to place synaptic mechanism, e.g. 1.0, default=0.5.
 	
-	* **pointps**: Dictionary of point processes (excluding synapses). 
+	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
 		The value contains a dictionary with the point process properties (e.g. ``{'_type':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore: 
 
 		* ``_type``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``_loc``, section location where to place synapse, e.g. ``1.0``, default=0.5.
+		* ``_loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
 		* ``_vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
-		* ``_synList`` (optional), list of internal mechanism synapse labels, e.g. ['AMPA', 'NMDA', 'GABAB']
+		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
@@ -180,18 +185,18 @@ Example of two cell property rules::
 	## PYR cell properties (HH)
 	cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
 
-	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # soma properties
+	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # dend properties
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['syns']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+	dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
@@ -200,10 +205,10 @@ Example of two cell property rules::
 	## PYR cell properties (Izhi)
 	cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'sections': {}}
 
-	soma = {'geom': {}, 'pointps':{}, 'syns': {}}  # soma properties
+	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'_type':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['syns']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
@@ -214,6 +219,29 @@ Example of two cell property rules::
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
+
+
+Synaptic mechanisms parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` list.  Each ``synMechParams`` item consists of a dictionary with the following fields:
+
+* ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
+
+* ``mod`` - the NMODL mechanism (eg. 'ExpSyn')
+
+* mechanism parameters (eg. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
+
+Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
+
+Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
+:
+
+.. code-block:: python
+
+	## Synaptic mechanism parameters
+	netParams['synMechParams'] = []
+	netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -234,11 +262,11 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ''`soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. 
 
-* **synReceptor** (optional) - Label of target synapse on the postsynaptic neuron (e.g. ``'AMPA'``). 
-	If omitted employs first synapse in the cell synapses list.
+* **synReceptor** (optional) - Label of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'``). 
+	If omitted employs first synaptic mechanism in the cell synaptic mechanisms list.
 	
 * **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``). 
-	Associated to a change in conductance, but has different meaning and scale depending on the synapse and cell model. 
+	Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. 
 
 	Can be defined as a function (see :ref:`function_string`).
 
@@ -289,7 +317,7 @@ Example of connectivity rules:
 		'preTags': {'popLabel': 'S'}, 
 		'postTags': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
-		'syn': 'NMDA',					# target synapse
+		'synMech': 'NMDA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
 		'probability': 0.5})				# probability of connection		
@@ -297,7 +325,7 @@ Example of connectivity rules:
 	netParams['connParams'].append(
 		{'preTags': {'popLabel': 'background'}, 
 		'postTags': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
-		'synReceptor': 'NMDA',					# target synapse 
+		'synReceptor': 'NMDA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
@@ -322,15 +350,15 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 * Cell location variables:
 	* 'pre_x', 'pre_y', 'pre_z': post-synaptic cell x, y or z location.
 
-	* 'pre_normx', 'pre_normy', 'pre_normz': normalized pre-synaptic cell x, y or z location.
+	* 'pre_ynorm', 'pre_ynorm', 'pre_znorm': normalized pre-synaptic cell x, y or z location.
 	
 	* 'post_x', 'post_y', 'post_z': post-synaptic cell x, y or z location.
 	
-	* 'post_normx', 'post_normy', 'post_normz': normalized post-synaptic cell x, y or z location.
+	* 'post_xnorm', 'post_ynorm', 'post_znorm': normalized post-synaptic cell x, y or z location.
 	
 	* 'dist_x', 'dist_y', 'dist_z': absolute Euclidean distance between pre- and postsynaptic cell x, y or z locations.
 	
-	* 'dist_normx', 'dist_normy', 'dist_normz': absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
+	* 'dist_xnorm', 'dist_ynorm', 'dist_znorm': absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
 	
 	* 'dist_2D', 'dist_3D': absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between pre- and postsynaptic cells.
 
@@ -408,6 +436,8 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+.. _sim_config: 
+
 Simulation configuration
 --------------------------
 
@@ -449,7 +479,9 @@ Related to plotting and analysis:
 * **plotRaster** - Whether or not to plot a raster (default: True)
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
+* **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
 * **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
+* **plot2Dnet - plot 2D visualization of cell positions and connections (default: False)
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
 * **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)
 * **plotWeightChanges** - Plot weight changes (default: False) (not yet implemented)
@@ -462,6 +494,13 @@ Structure of data and code
 * Framework module 
 * Network, Population and Cell classes
 * Simulation and analysis modules
+
+A representation of the instantiated network structure generated by NetPyNE is shown below:
+
+.. image:: figs/netstruct.png
+	:width: 100%
+	:align: center
+	
 
 Network, Population and Cell classes
 -------------------------------------

@@ -1,3 +1,9 @@
+## Version 0.4.3
+
+- Fixed bug in runSimWithIntervalFunc 
+
+- Variable Netstims (NSLOCs) can now have noise > 0
+
 ## Version 0.4.2
 
 - Placed show(block=False) in try except block since not supported by some graphic backends

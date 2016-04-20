@@ -364,7 +364,7 @@ class Cell(object):
                     try:
                         netstim = h.NSLOC()
                         netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                        netstim.noise = 0
+                        netstim.noise = params['noise']
                     except:
                         print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
                 else:

@@ -315,7 +315,7 @@ simConfig['verbose'] = 0 # Whether to write nothing (0) or diagnostic informatio
 
 # Recording 
 simConfig['recordCells'] = []  # list of cells to record from
-simConfig['recordTraces'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
+simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 'u':{'sec':'soma', 'pointProcess':'hPoint', 'var':'u'}, 'I':{'sec':'soma', 'pointProcess':'hPoint', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 10 # Step size in ms to save data (eg. V traces, LFP, etc)
 

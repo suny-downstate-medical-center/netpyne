@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+from pylab import arange, scatter, figure, hold, subplot, subplots, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy.io import loadmat
 from scipy import loadtxt, size, array, linspace, ceil
 from datetime import datetime
@@ -130,6 +130,9 @@ def plotTraces():
                 for itrace, trace in enumerate(tracesList):
                     try:
                         data = f.allSimData[trace]['cell_'+str(gid)]
+#                        print(data)
+#                        print len(data)
+#                        wait = input('Current data printed')
                         t = arange(0, len(data)*recordStep, recordStep)
                         subplot(len(tracesList),1,itrace+1)
                         plot(t, data, linewidth=1.5)
@@ -145,35 +148,150 @@ def plotTraces():
 
 ## Plot power spectra density
 def plotLFPSpectrum():
-    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
-
-    lfpv=[[] for c in range(len(f.lfppops))]    
-    # Get last modified .mat file if no input and plot
-    for c in range(len(f.lfppops)):
-        lfpv[c] = f.lfps[:,c]    
-    lfptot = sum(lfpv)
+#    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
+    
+    import math
+    import numpy as np
+    #Electrode positions
+    electrode_x = [50]*3
+    electrode_y = [50]*3
+    electrode_z = [30, 60, 90] 
+    num_e = len(electrode_x)
+    
+    input('Beginning of plotLFPSpectrum')
+    #Weighted sum of synapse currents
+    SynCurrents = {'NMDA': {},
+                   'AMPA': {},
+                   'GABA': {}}
+    for cell in f.net.cells:
+        if cell.conns:
+            syn_type = cell.conns[0]['syn']
+            if 'cell_'+str(cell.gid) in f.allSimData['I']:            
+#                SynCurrents[syn_type][cell.gid] = f.allSimData['I']['cell_'+str(cell.gid)]
+                SynCurrents[syn_type][cell.gid] = {}                
+                r = [0]*3
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+        elif cell.stims:
+            syn_type = cell.stims[0]['syn']
+            if 'cell_'+str(cell.gid) in f.allSimData['I']: 
+                SynCurrents[syn_type][cell.gid] = {}                
+                r = [0]*3
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+            
+    print SynCurrents['AMPA']
+    print SynCurrents['GABA']
+    print SynCurrents['NMDA'].keys()
+    print SynCurrents['AMPA'].keys()
+    print SynCurrents['GABA'].keys()
+    input('SynCurrents set up')
+    
+    N_const = 1
+    A_const = 1
+    G_const = 1.65
+    
+    AMPA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    for key,val in SynCurrents['AMPA'].iteritems():
+        for el,meas in val.iteritems():        
+            iterator = 0        
+            for n in meas:        
+                AMPA_currents[int(el)][iterator] = AMPA_currents[int(el)][iterator] + n
+                iterator += 1
+    
+    NMDA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    for key,val in SynCurrents['NMDA'].iteritems():
+        for el,meas in val.iteritems():        
+            iterator = 0        
+            for n in meas:        
+                NMDA_currents[int(el)][iterator] = NMDA_currents[int(el)][iterator] + n
+                iterator += 1
         
-    # plot pops separately
-    plotPops = 0
-    if plotPops:    
-        figure() # Open a new figure
-        for p in range(len(f.lfppops)):
-            psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
-            xlabel('Frequency (Hz)')
-            ylabel('Power')
-            h=axes()
-            h.set_yticklabels([])
-        legend(['L2/3','L5A', 'L5B', 'L6'])
+    GABA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    for key,val in SynCurrents['NMDA'].iteritems():
+        for el,meas in val.iteritems():        
+            iterator = 0        
+            for n in meas:        
+                GABA_currents[int(el)][iterator] = GABA_currents[int(el)][iterator] + n
+                iterator += 1
+    
+    N_delay = 0
+    A_delay = 6
+    G_delay = 0
+    
+    for el in range(num_e):
+        AMPA_currents[el]=[0]*A_delay + AMPA_currents[el]
+        NMDA_currents[el]=[0]*N_delay + NMDA_currents[el]
+        GABA_currents[el]=[0]*G_delay + GABA_currents[el]
+    
+#    print(AMPA_currents)
+#    input('wait')
+    
+    empty = np.array([0.]*1000)    
+    Sum_Currents = np.array([empty]*num_e)
+    for el in range(num_e):        
+        for t in range(0,1000):
+             Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
 
-    # plot overall psd
-    figure() # Open a new figure
-    psd(lfptot,Fs=200, linewidth= 2)
-    xlabel('Frequency (Hz)')
-    ylabel('Power')
-    h=axes()
-    h.set_yticklabels([])
+#    print(Sum_Currents[0])
+#   Normalise Weighted Sum
+    for el in range(num_e):     
+        for iters in range(len(Sum_Currents[el])):
+            Sum_Currents[el][iters] = Sum_Currents[el][iters] - (1./1000)*sum(Sum_Currents[el])
+        
+#    Plot the LFP signal from all electrodes
+    g, axarr = subplots(num_e, sharex=True)
+    xlabel('Time (ms)')
+    ylabel('LFP')
+    for el in range(num_e):
+        x = np.array(range(1000))
+        axarr[el].plot(x, Sum_Currents[el], color='b')
+#        axarr[el].ylabel('Electrode '+str(el+1))
+    
+    
+    
+#    Sum_Currents
+#    print Sum_Currents
+#    print NMDA_currents
+#    wait = input('sldkjf')
 
-    show()
+        
+#    for pop in f.net.pops:
+#        for gid in pop.cellGids:
+#            data = f.allSimData['I']['cell_'+str(gid)]
+#            data_one = {cell.gid: cell.tags for cell in f.net.cells}
+            
+    
+    
+#    lfpv=[[] for c in range(len(f.lfppops))]    
+#    # Get last modified .mat file if no input and plot
+#    for c in range(len(f.lfppops)):
+#        lfpv[c] = f.lfps[:,c]    
+#    lfptot = sum(lfpv)
+#        
+#    # plot pops separately
+#    plotPops = 0
+#    if plotPops:    
+#        figure() # Open a new figure
+#        for p in range(len(f.lfppops)):
+#            psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
+#            xlabel('Frequency (Hz)')
+#            ylabel('Power')
+#            h=axes()
+#            h.set_yticklabels([])
+#        legend(['L2/3','L5A', 'L5B', 'L6'])
+#
+#    # plot overall psd
+#    figure() # Open a new figure
+#    psd(lfptot,Fs=200, linewidth= 2)
+#    xlabel('Frequency (Hz)')
+#    ylabel('Power')
+#    h=axes()
+#    h.set_yticklabels([])
+#
+#    show()
 
 
 ## Plot connectivityFor diagnostic purposes . Based on conndiagram.py.

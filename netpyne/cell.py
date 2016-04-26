@@ -364,7 +364,7 @@ class Cell(object):
                     try:
                         netstim = h.NSLOC()
                         netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                        netstim.noise = 0
+                        netstim.noise = params['noise']
                     except:
                         print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
                 else:
@@ -395,13 +395,15 @@ class Cell(object):
         for key, params in f.cfg['recordTraces'].iteritems():
             ptr = None
             try: 
-                if 'pos' in params:
+                if 'loc' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
                     elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
-                        ptr = self.secs[params['sec']]['synMechs'][params['synMech']]['hSyn'].__getattribute__('_ref_'+params['var'])
+                        sec = self.secs[params['sec']]
+                        synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
+                        ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
                     else:  # eg. soma(0.5)._ref_v
-                        ptr = self.secs[params['sec']]['hSection'](params['pos']).__getattribute__('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__('_ref_'+params['var'])
                 else:
                     if 'pointp' in params: # eg. soma.izh._ref_u
                         #print self.secs[params['sec']]

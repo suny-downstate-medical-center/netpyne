@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name = 'netpyne',
     
-    version = '0.4.2',
+    version = '0.4.4',
     description = 'A Python package to facilitate the development and simulation of biological networks in NEURON.',
     long_description = long_description,
     

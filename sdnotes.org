@@ -1430,6 +1430,9 @@ EMstim == EM !!
 ** importCell can modify h variables (eg. celsius) (paper)
 - maybe just note in documentation that shouldnt modify h.vars - undesired effects
 
+** change probConn so exact probability not based on random (paper)
+- selected cells still based on random
+- but always same exact percentage
 
 ** import python lists of sections (equivalent hoc sectionLists)
 
@@ -1507,3 +1510,6 @@ adding or maintaining a simulator backend;
 major refactoring to improve performance, reduce code complexity, or both.
 ** Replace search in list with next()
 a = next((i for i in userInput if i in wordsTask), None)
+** Netstim with different types of random input
+- emphasize alpha, beta, gamma
+- external pre-recorded signal

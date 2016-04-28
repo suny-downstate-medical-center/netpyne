@@ -128,7 +128,7 @@ def plotTraces():
     gidList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, int)]
     popList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, str)]
     if 'all' in popList:
-        gidList = [cell.gid for cell in f.net.allCell]
+        gidList = [cell['gid'] for cell in f.net.allCells]
         popList = []
     duration = f.cfg['duration']
     recordStep = f.cfg['recordStep']

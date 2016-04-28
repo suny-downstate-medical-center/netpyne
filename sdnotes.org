@@ -1414,6 +1414,7 @@ EMstim == EM !!
 ** DONE Add support for SectionLists (paper)
 - also when importing
 
+** Rename point process '_type' -> 'mod', '_loc' -> 'loc'
 ** Import synapses into synMechParams
 ** Cell position in ellipsoid 
 

@@ -361,6 +361,7 @@ def gatherData():
     if f.rank==0: 
         print('\nGathering spikes...')
 
+    simDataVecs = ['spkt','spkid','stims']+f.cfg['recordTraces'].keys()
     if f.nhosts > 1:  # only gather if >1 nodes 
         nodeData = {'netCells': [c.__getstate__() for c in f.net.cells], 'simData': f.simData} 
         data = [None]*f.nhosts
@@ -368,8 +369,7 @@ def gatherData():
         for k,v in nodeData.iteritems():
             data[0][k] = v 
         gather = f.pc.py_alltoall(data)
-        f.pc.barrier()
-        simDataVecs = ['spkt','spkid','stims']+f.cfg['recordTraces'].keys()
+        f.pc.barrier()  
         if f.rank == 0:
             allCells = []
             f.allSimData = {} 
@@ -396,7 +396,24 @@ def gatherData():
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
         f.net.allCells = [c.__getstate__() for c in f.net.cells]
-        f.allSimData = f.simData
+        #f.allSimData = f.simData
+        f.allSimData = {} 
+        for k in f.simData.keys():  # initialize all keys of allSimData dict
+                f.allSimData[k] = {}
+        for key,val in f.simData.iteritems():  # update simData dics of dics of h.Vector 
+                if key in simDataVecs:          # simData dicts that contain Vectors
+                    if isinstance(val,dict):                
+                        for cell,val2 in val.iteritems():
+                            if isinstance(val2,dict):       
+                                f.allSimData[key].update({cell:{}})
+                                for stim,val3 in val2.iteritems():
+                                    f.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                            else:
+                                f.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                    else:                                   
+                        f.allSimData[key] = list(f.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                else: 
+                    f.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
     ## Print statistics
     if f.rank == 0:
@@ -424,6 +441,9 @@ def saveData():
     if f.rank == 0:
         timing('start', 'saveTime')
         dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
+
+        #dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg,  'netCells': f.net.allCells}
+
 
         if 'timestampFilename' in f.cfg:  # add timestamp to filename
             if f.cfg['timestampFilename']: 

@@ -231,7 +231,7 @@ Below we include the options required to run a simulation of 1 second, with intg
 	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
 	simConfig['dt'] = 0.025 			# Internal integration timestep to use
 	simConfig['verbose'] = False 			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  	# Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
@@ -431,7 +431,7 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
 	simConfig['dt'] = 0.1                 # Internal integration timestep to use
 	simConfig['verbose'] = False            # Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
@@ -555,7 +555,7 @@ We now add the standard simulation configuration options, and include the ``plot
 	simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
 	simConfig['dt'] = 0.025 				# Internal integration timestep to use
 	simConfig['verbose'] = False  			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file

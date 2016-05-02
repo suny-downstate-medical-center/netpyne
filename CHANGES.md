@@ -1,3 +1,21 @@
+## Version 0.4.5
+
+- Fixed bug saving to JSON on single node
+
+- Fixed plotting traces from using 'all' cells option
+
+## Version 0.4.4
+
+- Fixed bug when plottinc synMech traces
+
+- Renamed 'pos' with 'loc' in recordTraces list
+
+## Version 0.4.3
+
+- Fixed bug in runSimWithIntervalFunc 
+
+- Variable Netstims (NSLOCs) can now have noise > 0
+
 ## Version 0.4.2
 
 - Placed show(block=False) in try except block since not supported by some graphic backends

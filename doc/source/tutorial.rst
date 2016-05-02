@@ -17,7 +17,7 @@ Very simple and quick example
 -------------------------------
 To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
 
-You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
+You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
 
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
@@ -231,7 +231,7 @@ Below we include the options required to run a simulation of 1 second, with intg
 	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
 	simConfig['dt'] = 0.025 			# Internal integration timestep to use
 	simConfig['verbose'] = False 			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  	# Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
@@ -431,7 +431,7 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
 	simConfig['dt'] = 0.1                 # Internal integration timestep to use
 	simConfig['verbose'] = False            # Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
@@ -555,7 +555,7 @@ We now add the standard simulation configuration options, and include the ``plot
 	simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
 	simConfig['dt'] = 0.025 				# Internal integration timestep to use
 	simConfig['verbose'] = False  			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file

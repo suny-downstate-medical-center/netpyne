@@ -458,7 +458,7 @@ Related to the simulation and netpyne framework:
 Related to recording:
 
 * **recordCells** - List of cells from which to record traces. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [])
-* **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','pos':0.5,'var':'v'}})
+* **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordStep** - Step size in ms for data recording (e.g. 1)
 

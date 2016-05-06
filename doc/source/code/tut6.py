@@ -101,7 +101,7 @@ def changeWeights(net, newWeight):
         netcon.weight[0] = newWeight
 
 
-changeWeights(f.net, 0.5)  # set negative weights to increase sync
+changeWeights(f.net, 0.5)  # increase inh conns weight increase sync
 
 f.sim.runSim()                          # run parallel Neuron simulation  
 f.sim.gatherData()                      # gather spiking data and cell info from each node

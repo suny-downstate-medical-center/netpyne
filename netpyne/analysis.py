@@ -232,24 +232,25 @@ def plotLFPSpectrum():
 #    input('wait')
     
     empty = np.array([0.]*1000)    
-    Sum_Currents = np.array([empty]*num_e)
+    f.Sum_Currents = np.array([empty]*num_e)
     for el in range(num_e):        
         for t in range(0,1000):
-             Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
+             f.Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
 
-#    print(Sum_Currents[0])
+    
 #   Normalise Weighted Sum
-    for el in range(num_e):     
-        for iters in range(len(Sum_Currents[el])):
-            Sum_Currents[el][iters] = Sum_Currents[el][iters] - (1./1000)*sum(Sum_Currents[el])
-        
+#    for el in range(num_e):     
+#        for iters in range(len(f.Sum_Currents[el])):
+#            f.Sum_Currents[el][iters] = f.Sum_Currents[el][iters] - (1./1000)*sum(f.Sum_Currents[el])
+    
+    print(min(f.Sum_Currents[0]))
 #    Plot the LFP signal from all electrodes
     g, axarr = subplots(num_e, sharex=True)
     xlabel('Time (ms)')
     ylabel('LFP')
     for el in range(num_e):
         x = np.array(range(1000))
-        axarr[el].plot(x, Sum_Currents[el], color='b')
+        axarr[el].plot(x, f.Sum_Currents[el], color='b')
 #        axarr[el].ylabel('Electrode '+str(el+1))
     
     

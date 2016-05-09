@@ -108,33 +108,33 @@ netParams['connParams'].append(
     'connFunc': 'fullConn',
     'weight': 0.004, 
     'delay': 'uniform(1,5)',
-    'syn': 'NMDA'})  
+    'synMech': 'NMDA'})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'backgroundE'}, 'postTags': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
     'connFunc': 'fullConn',
     'weight': 0.004, 
     'delay': 'uniform(1,5)',
-    'syn': 'NMDA'})   
+    'synMech': 'NMDA'})   
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'stimPsh'}, 'postTags': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
     'weight': 0.001,                   
     'delay': 1,     
-    'syn': 'NMDA'}) 
+    'synMech': 'NMDA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'stimPel'}, 'postTags': {'popLabel': 'Pel'},  # Pstim_el -> P_el
     'weight': 0.001,                  
     'delay': 1,     
-    'syn': 'NMDA'})
+    'synMech': 'NMDA'})
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'stimEM'}, 'postTags': {'popLabel': 'EM'}, # EMstim-> Exc
     'connFunc': 'fullConn',
     'weight': 0.004, 
     'delay': 'uniform(1,5)',
-    'syn': 'NMDA'})  
+    'synMech': 'NMDA'})  
 
 
 # Sensory
@@ -144,14 +144,14 @@ netParams['connParams'].append(
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
-    'syn': 'AMPA'}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES (plastic)
     'weight': 1.98,      
     'probability': 0.05625,              
     'delay': 5,     
-    'syn': 'AMPA',
+    'synMech': 'AMPA',
     'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 
@@ -160,63 +160,63 @@ netParams['connParams'].append(
     'weight': 0.48375,      
     'probability': 1.150,              
     'delay': 5,     
-    'syn': 'AMPA'}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ISL'},  # ES -> ISL (plastic)
     'weight': 0.57375,      
     'probability': 0.575,              
     'delay': 5,     
-    'syn': 'AMPA'}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'EM'},  # ES -> EM (plastic)
     'weight': 2.640,      
     'probability': 0.33750,              
     'delay': 5,     
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ES'},  # IS -> ES
     'weight': 4.5,      
     'probability': 0.495,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'IS'},  # IS -> IS
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ISL'},  # IS -> ISL
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'IS'},  # ISL -> ES
     'weight': 2.25,      
     'probability': 0.39375,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'IS'},  # ISL -> IS
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'ISL'},  # ISL -> ISL
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 
 netParams['connParams'].append(
@@ -224,7 +224,7 @@ netParams['connParams'].append(
     'weight': 0.72,      
     'probability': 0.01125,              
     'delay': 5,     
-    'syn': 'AMPA',
+    'synMech': 'AMPA',
     'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 
@@ -235,63 +235,63 @@ netParams['connParams'].append(
     'weight': 1.782,      
     'probability': 0.05625,              
     'delay': 5,     
-    'syn': 'AMPA'}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IM'},  # EM -> IM (plastic)
     'weight': 1.15,      
     'probability': 0.48375,          
     'delay': 5,     
-    'syn': 'AMPA'}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IML'},  # EM -> IML (plastic)
     'weight': 0.575,      
     'probability': 0.57375,              
     'delay': 5,     
-    'syn': 'AMPA'})  
+    'synMech': 'AMPA'})  
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'EM'},  # IM -> EM
     'weight': 9,      
     'probability': 0.495,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'IM'},  # IM -> IM
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'IML'},  # IM -> IML 
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'EM'},  # IML -> EM 
     'weight': 2.49,      
     'probability': 0.39375,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'IM'},  # IML -> IM 
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'IML'},  # IML -> IML
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     
-    'syn': 'GABA'}) 
+    'synMech': 'GABA'}) 
 
 ###############################################################################
 # SIMULATION PARAMETERS
@@ -314,8 +314,8 @@ simConfig['recordCells'] = ['all']  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','pos':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'NMDA_g': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'g'},
-    'NMDA_i': {'sec':'soma', 'pos':'0.5', 'syn':'NMDA', 'var':'i'}}
+    'NMDA_g': {'sec':'soma', 'pos':'0.5', 'synMech':'NMDA', 'var':'g'},
+    'NMDA_i': {'sec':'soma', 'pos':'0.5', 'synMech':'NMDA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 1.0 # Step size in ms to save data (eg. V traces, LFP, etc)
 

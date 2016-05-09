@@ -116,7 +116,8 @@ def runArm(t):
 
 f.sim.runSimWithIntervalFunc(f.updateInterval, runArm)                     # run parallel Neuron simulation  
 f.sim.gatherData()                  # gather spiking data and cell info from each node
-f.sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+
 f.analysis.plotData()               # plot spike raster
+f.sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
 f.arm.close(f)
 

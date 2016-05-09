@@ -534,7 +534,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
 	    'weight': 0.1,                    # fixed weight of 0.08
 	    'synMech': 'exc',                 # target exc synapse
-	    'delay': 1})                      # uniformly distributed delays between 1-5ms
+	    'delay': 1})                      # fixed delay of 1-5ms
 
 	netParams['connParams'].append(
 	    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},

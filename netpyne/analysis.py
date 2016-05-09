@@ -6,22 +6,21 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, gca, scatter, figure, hold, subplot, subplots, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, subplots_adjust
-from scipy import size, array
-import math
-import numpy as np
+from pylab import arange, scatter, figure, hold, subplot, subplots, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+from scipy.io import loadmat
+from scipy import loadtxt, size, array, linspace, ceil
+from datetime import datetime
+from time import time
+from collections import OrderedDict
+import csv
+import pickle
+from mpl_toolkits.mplot3d import Axes3D
 
 import framework as f
 
 ###############################################################################
 ### Simulation-related graph plotting functions
 ###############################################################################
-
-def showFig():
-    try:
-        show(block=False)
-    except:
-        show()
 
 # sequence of generic plots (raster, connectivity,psd,...)
 def plotData():
@@ -34,49 +33,27 @@ def plotData():
             else: 
                 print('Plotting raster...')
                 f.analysis.plotRaster() 
-                showFig()
         if f.cfg['plotCells']:
             print('Plotting recorded traces ...')
             f.analysis.plotTraces() 
-            showFig()
         if f.cfg['plotConn']:
             print('Plotting connectivity matrix...')
             f.analysis.plotConn()
-            showFig()
         if f.cfg['plotLFPSpectrum']:
-            print('Plotting LFP power spectral density...')
+            print('Plotting LFP power spectral density')
             f.analysis.plotLFPSpectrum()
-            showFig()
-        if f.cfg['plot2Dnet']:
-            print('Plotting 2D visualization of network...')
-            f.analysis.plot2Dnet()   
-            showFig() 
         if f.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             f.analysis.plotWeightChanges()
-            showFig()
         if f.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
             f.analysis.plot3dArch()
-            showFig()
         if f.cfg['timing']:
             f.sim.timing('stop', 'plotTime')
             print('  Done; plotting time = %0.2f s' % f.timing['plotTime'])
             f.sim.timing('stop', 'totalTime')
             print('\nTotal time = %0.2f s' % f.timing['totalTime'])
-
-
-## Sync measure
-def syncMeasure():
-    t0=-1 
-    width=1 
-    cnt=0
-    for spkt in f.allSimData['spkt']:
-        if (spkt>=t0+width): 
-            t0=spkt 
-            cnt+=1
-    return 1-cnt/(f.cfg['duration']/width)
-
+        show(block=False)
 
 ## Raster plot 
 def plotRaster(): 
@@ -94,33 +71,25 @@ def plotRaster():
         if f.cfg['orderRasterYnorm']:
             gids = [cell['gid'] for cell in f.net.allCells]
             ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
-            #ynorms.reverse()
-            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(ynorms,gids)))}
-            spkids = [sortedGids[gid] for gid in spkids]
+            sortInds = sorted(range(len(ynorms)), key=lambda k:ynorms[k])
+            posdic = {gid: pos for gid,pos in zip(gids,sortInds)}
+            spkids = [posdic[gid] for gid in spkids]  # spkids now contain indices ordered according to ynorm
             ylabelText = 'Cell id (arranged by NCD)'
     except:
         pass     
     figure(figsize=(10,8)) # Open a new figure
     fontsiz = 12
-    scatter(f.allSimData['spkt'], spkids, 10, linewidths=2, marker='|', color = spkidColors) # Create raster  
+    scatter(f.allSimData['spkt'], spkids, 10, linewidths=1.5, marker='|', color = spkidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
     ylabel(ylabelText, fontsize=fontsiz)
-    if f.cfg['plotSync']:
-        for spkt in f.allSimData['spkt']:
-            plot((spkt, spkt), (0, f.numCells), 'r-', linewidth=0.1)
-        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (f.numCells,f.connsPerCell,f.firingRate,syncMeasure()), fontsize=fontsiz)
-    else:
-        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
+    title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
     xlim(0,f.cfg['duration'])
     ylim(0,f.numCells)
-    for popLabel in popLabels:
+    for popLabel in popLabels[::-1]:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
     subplots_adjust(right=(0.9-0.01*maxLabelLen))
-    ax = gca()
-    ax.invert_yaxis()
-
     #savefig('raster.png')
 
 ## Traces (v,i,g etc) plot
@@ -130,7 +99,7 @@ def plotTraces():
     gidList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, int)]
     popList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, str)]
     if 'all' in popList:
-        gidList = [cell['gid'] for cell in f.net.allCells]
+        gidList = [cell.gid for cell in f.net.allCell]
         popList = []
     duration = f.cfg['duration']
     recordStep = f.cfg['recordStep']
@@ -143,7 +112,7 @@ def plotTraces():
                 data = f.allSimData[trace]['cell_'+str(gid)]
                 t = arange(0, duration+recordStep, recordStep)
                 subplot(len(tracesList),1,itrace+1)
-                plot(t[:len(data)], data, linewidth=1.5)
+                plot(t, data, linewidth=1.5)
                 xlabel('Time (ms)', fontsize=fontsiz)
                 ylabel(trace, fontsize=fontsiz)
                 xlim(0,f.cfg['duration'])
@@ -161,6 +130,9 @@ def plotTraces():
                 for itrace, trace in enumerate(tracesList):
                     try:
                         data = f.allSimData[trace]['cell_'+str(gid)]
+#                        print(data)
+#                        print len(data)
+#                        wait = input('Current data printed')
                         t = arange(0, len(data)*recordStep, recordStep)
                         subplot(len(tracesList),1,itrace+1)
                         plot(t, data, linewidth=1.5)
@@ -176,12 +148,16 @@ def plotTraces():
 
 ## Plot power spectra density
 def plotLFPSpectrum():
+#    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
     
+    import math
+    import numpy as np
     #Electrode positions
     electrode_x = [50]*3
     electrode_y = [50]*3
     electrode_z = [30, 60, 90] 
     num_e = len(electrode_x)
+    
     
     input('Beginning of plotLFPSpectrum')
     #Weighted sum of synapse currents
@@ -190,28 +166,58 @@ def plotLFPSpectrum():
                    'GABA': {}}
     for cell in f.net.cells:
         if cell.conns:
-            syn_type = cell.conns[0]['syn']
+            syn_type = cell.conns[0]['synMech']
             if 'cell_'+str(cell.gid) in f.allSimData['I']:            
 #                SynCurrents[syn_type][cell.gid] = f.allSimData['I']['cell_'+str(cell.gid)]
                 SynCurrents[syn_type][cell.gid] = {}                
-                r = [0]*3
+                r = [0]*num_e
                 for t in range(0,num_e):
                     r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
                     SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+            
+            if 'cell_'+str(cell.gid) in f.allSimData['NMDA_i']:
+                SynCurrents['NMDA'][cell.gid] = {}
+                r = [0]*num_e
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents['NMDA'][cell.gid][str(t)] = np.array(f.allSimData['NMDA_i']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+                    
+            if 'cell_'+str(cell.gid) in f.allSimData['GABA_i']:
+                SynCurrents['GABA'][cell.gid] = {}
+                r = [0]*num_e
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents['GABA'][cell.gid][str(t)] = np.array(f.allSimData['GABA_i']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+                    
         elif cell.stims:
-            syn_type = cell.stims[0]['syn']
+#            print cell.stims[0]
+            syn_type = cell.stims[0]['synMech']
             if 'cell_'+str(cell.gid) in f.allSimData['I']: 
                 SynCurrents[syn_type][cell.gid] = {}                
                 r = [0]*3
                 for t in range(0,num_e):
                     r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
                     SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+                    
+            if 'cell_'+str(cell.gid) in f.allSimData['NMDA_i']:
+                SynCurrents['NMDA'][cell.gid] = {}
+                r = [0]*num_e
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents['NMDA'][cell.gid][str(t)] = np.array(f.allSimData['NMDA_i']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
+                    
+            if 'cell_'+str(cell.gid) in f.allSimData['GABA_i']:
+                SynCurrents['GABA'][cell.gid] = {}
+                r = [0]*num_e
+                for t in range(0,num_e):
+                    r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
+                    SynCurrents['GABA'][cell.gid][str(t)] = np.array(f.allSimData['GABA_i']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
             
-    print SynCurrents['AMPA']
-    print SynCurrents['GABA']
-    print SynCurrents['NMDA'].keys()
-    print SynCurrents['AMPA'].keys()
-    print SynCurrents['GABA'].keys()
+#    print SynCurrents['AMPA']
+#    print SynCurrents['GABA']
+#    print SynCurrents['NMDA'].keys()
+#    print SynCurrents['AMPA'].keys()
+#    print SynCurrents['GABA'].keys()
     input('SynCurrents set up')
     
     N_const = 1
@@ -255,24 +261,25 @@ def plotLFPSpectrum():
 #    input('wait')
     
     empty = np.array([0.]*1000)    
-    Sum_Currents = np.array([empty]*num_e)
+    f.Sum_Currents = np.array([empty]*num_e)
     for el in range(num_e):        
         for t in range(0,1000):
-             Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
+             f.Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
 
-#    print(Sum_Currents[0])
+    
 #   Normalise Weighted Sum
     for el in range(num_e):     
-        for iters in range(len(Sum_Currents[el])):
-            Sum_Currents[el][iters] = Sum_Currents[el][iters] - (1./1000)*sum(Sum_Currents[el])
-        
+        for iters in range(len(f.Sum_Currents[el])):
+            f.Sum_Currents[el][iters] = f.Sum_Currents[el][iters] - (1./1000)*sum(f.Sum_Currents[el])
+    
+    print(min(f.Sum_Currents[0]))
 #    Plot the LFP signal from all electrodes
     g, axarr = subplots(num_e, sharex=True)
     xlabel('Time (ms)')
     ylabel('LFP')
     for el in range(num_e):
         x = np.array(range(1000))
-        axarr[el].plot(x, Sum_Currents[el], color='b')
+        axarr[el].plot(x, f.Sum_Currents[el], color='b')
 #        axarr[el].ylabel('Electrode '+str(el+1))
     
     
@@ -355,39 +362,6 @@ def plotConn():
     colorbar()
     #show()
 
-# Plot 2D visualization of network cell positions and connections
-def plot2Dnet():
-    allCells = f.net.allCells
-    figure(figsize=(12,12))
-    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-    popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
-    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    cellColors = [popColors[cell.tags['popLabel']] for cell in f.net.cells]
-    posX = [cell['tags']['x'] for cell in allCells]  # get all x positions
-    posY = [cell['tags']['y'] for cell in allCells]  # get all y positions
-    scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
-    for postCell in allCells:
-        for con in postCell['conns']:  # plot connections between cells
-            posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
-            posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
-            color='red'
-            if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
-                color = 'blue'
-            width = 0.1 #50*con['weight']
-            plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
-    xlabel('x (um)')
-    ylabel('y (um)') 
-    xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
-    ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
-    fontsiz = 12
-    for popLabel in popLabels:
-        plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
-    ax = gca()
-    ax.invert_yaxis()
 
 ## Plot weight changes
 def plotWeightChanges():
@@ -437,7 +411,7 @@ def plot3dArch():
     # figh.subplots_adjust(top=0.98) # Less space on bottom
     # figh.subplots_adjust(bottom=0.02) # Less space on bottom
     ax = figh.add_subplot(1,1,1, projection='3d')
-    axes()
+    h = axes()
 
     #print len(f.xlocs),len(f.ylocs),len(f.zlocs)
     xlocs =[1,2,3]

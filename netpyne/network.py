@@ -83,7 +83,6 @@ class Network(object):
             if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)
             if 'weight' not in connParam: connParam['weight'] = f.net.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = f.net.params['defaultDelay'] # if no delay, set default
-
             preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
             prePops = allPopTags  # initialize with all presyn pops
 

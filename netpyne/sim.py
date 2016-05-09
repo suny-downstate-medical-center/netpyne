@@ -440,7 +440,7 @@ def gatherData():
 def saveData():
     if f.rank == 0:
         timing('start', 'saveTime')
-        dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells}
+        dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg, 'simData': f.allSimData, 'netCells': f.net.allCells, 'sumCurrents': f.Sum_Currents}
 
         #dataSave = {'netParams': replaceFuncObj(f.net.params), 'simConfig': f.cfg,  'netCells': f.net.allCells}
 

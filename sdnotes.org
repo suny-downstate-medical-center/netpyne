@@ -1255,6 +1255,7 @@ soma is the same as from the soma to that point).
 PointProcessDistributor.hoc
 http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002545
 
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -1445,12 +1446,15 @@ EMstim == EM !!
 - maybe iclamp for paper?
 - can implement via pointp in cell properties
 
+** Upload examples to netpyne repo (paper)
+- Evol params batch
+- virtual arm with RL+STDP
+- robot control
 
 ** User input error checking
 eg. getattr(a,b, DEFAULT VALUE!)
 ** Travis CI
 test automatically examples
-** Evol params batch
 ** Set positions in Neuron's 3D space
 ** LFPy
 cliff?
@@ -1514,3 +1518,6 @@ a = next((i for i in userInput if i in wordsTask), None)
 ** Netstim with different types of random input
 - emphasize alpha, beta, gamma
 - external pre-recorded signal
+** Add connecitity patterns for individual cells
+- eg. LGN -> V1 patterns
+- shared weights across input image

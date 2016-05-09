@@ -158,6 +158,7 @@ def plotLFPSpectrum():
     electrode_z = [30, 60, 90] 
     num_e = len(electrode_x)
     
+    
     input('Beginning of plotLFPSpectrum')
     #Weighted sum of synapse currents
     SynCurrents = {'NMDA': {},
@@ -165,7 +166,7 @@ def plotLFPSpectrum():
                    'GABA': {}}
     for cell in f.net.cells:
         if cell.conns:
-            syn_type = cell.conns[0]['syn']
+            syn_type = cell.conns[0]['synMech']
             if 'cell_'+str(cell.gid) in f.allSimData['I']:            
 #                SynCurrents[syn_type][cell.gid] = f.allSimData['I']['cell_'+str(cell.gid)]
                 SynCurrents[syn_type][cell.gid] = {}                
@@ -174,7 +175,8 @@ def plotLFPSpectrum():
                     r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
                     SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
         elif cell.stims:
-            syn_type = cell.stims[0]['syn']
+#            print cell.stims[0]
+            syn_type = cell.stims[0]['synMech']
             if 'cell_'+str(cell.gid) in f.allSimData['I']: 
                 SynCurrents[syn_type][cell.gid] = {}                
                 r = [0]*3
@@ -182,10 +184,10 @@ def plotLFPSpectrum():
                     r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
                     SynCurrents[syn_type][cell.gid][str(t)] = np.array(f.allSimData['I']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
             
-    print SynCurrents['AMPA']
+#    print SynCurrents['AMPA']
     print SynCurrents['GABA']
-    print SynCurrents['NMDA'].keys()
-    print SynCurrents['AMPA'].keys()
+#    print SynCurrents['NMDA'].keys()
+#    print SynCurrents['AMPA'].keys()
     print SynCurrents['GABA'].keys()
     input('SynCurrents set up')
     

@@ -66,12 +66,15 @@ def mechVarList():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
-def importCell(fileName, cellName, cellArgs = {}):
+def importCell(cellRule, fileName, cellName, cellArgs = []):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
-		cell = getattr(h, cellName)(**cellArgs)  # arguments correspond to zloc, type and id -- remove in future (not used internally)
-		secList = list(cell.allsec())
+		if isinstance(cellArgs, dict):
+			cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+		else:
+			cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
+		secs = list(cell.allsec())
 		dirCell = dir(cell)
 	elif fileName.endswith('.py'):
  		filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
@@ -80,19 +83,23 @@ def importCell(fileName, cellName, cellArgs = {}):
 		moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
 		exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
 		modulePointer = tempModule
-		cell = getattr(modulePointer, cellName)(**cellArgs)  # create cell and pass type as argument
+		if isinstance(cellArgs, dict):
+			cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
+		else:
+			cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
+		
 		dirCell = dir(cell)
 
 		if 'all_sec' in dirCell:
-			secList = cell.all_sec
+			secs = cell.all_sec
 		elif 'sec' in dirCell:
-			secList = [cell.sec]
+			secs = [cell.sec]
 		elif 'allsec' in dir(h):
-			secList = [sec for sec in h.allsec()]
+			secs = [sec for sec in h.allsec()]
 		elif 'soma' in dirCell:
-			secList = [cell.soma]
+			secs = [cell.soma]
 		else:
-			secList = []
+			secs = []
 		sys.path.remove(filePath)
 	else:
 		print "File name should be either .hoc or .py file"
@@ -102,22 +109,22 @@ def importCell(fileName, cellName, cellArgs = {}):
 	dirCellHnames = {}  
 	for dirCellName in dirCell:
 		try:
-			dirCellHnames.update({cell.__dict__[dirCellName].hname(): dirCellName})
+			dirCellHnames.update({getattr(cell, dirCellName).hname(): dirCellName})
 		except:
 			pass
 	# create dict with dir(cell) name corresponding to each hname 
 	dirCellSecNames = {} 
-	for sec in secList:
+	for sec in secs:
 		dirCellSecNames.update({hname: name for hname,name in dirCellHnames.iteritems() if hname == sec.hname()})
 
 	secDic = {}
-	for sec in secList: 
+	for sec in secs: 
 		# create new section dict with name of section
 		secName = getSecName(sec, dirCellSecNames)
 
-		if len(secList) == 1:
+		if len(secs) == 1:
 			secName = 'soma' # if just one section rename to 'soma'
-		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'syns': {}}  # create dictionary to store sec info
+		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # create dictionary to store sec info
 
 		# store geometry properties
 		standardGeomParams = ['L', 'nseg', 'diam', 'Ra', 'cm']
@@ -145,7 +152,8 @@ def importCell(fileName, cellName, cellArgs = {}):
 		varList = mechVarList()  # list of properties for all density mechanisms and point processes
 		ignoreMechs = ['dist']  # dist only used during cell creation 
 		mechDic = {}
-		for mech in dir(sec(0.5)):  
+		sec.push()	# access current section so ismembrane() works
+		for mech in dir(sec(0.5)): 
 			if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
 				mechDic[mech] = {}  # create dic for mechanism properties
 				varNames = [varName.replace('_'+mech, '') for varName in varList['mechs'][mech]]
@@ -171,7 +179,7 @@ def importCell(fileName, cellName, cellArgs = {}):
 				pptype = point.hname().split('[')[0]
 				varNames = varList['pointps'][pptype]
 				if any([s in pptype.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
-				#if 'syn' in pptype.lower(): # if syn in name of point process then assume synapse
+				#if 'synMech' in pptype.lower(): # if syn in name of point process then assume synapse
 					synName = pptype + '_' + str(len(syns))
 					syns[synName] = {}
 					syns[synName]['_type'] = pptype
@@ -195,7 +203,7 @@ def importCell(fileName, cellName, cellArgs = {}):
 						except:
 							print 'Could not read %s variable from point process %s'%(varName,synName)
 
-		if syns: secDic[secName]['syns'] = syns
+		if syns: secDic[secName]['synMechs'] = syns
 		if pointps: secDic[secName]['pointps'] = pointps
 
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
@@ -205,10 +213,27 @@ def importCell(fileName, cellName, cellArgs = {}):
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
 
+	# store section lists
+	secLists = h.List('SectionList')
+	if int(secLists.count()): 
+		secListDic = {}
+		for i in xrange(int(secLists.count())):  # loop over section lists
+			hname = secLists.o(i).hname()
+			if hname in dirCellHnames:  # use python variable name
+				secListName = dirCellHnames[hname]
+			else:
+				secListName = hname
+			secListDic[secListName] = [getSecName(sec, dirCellSecNames) for sec in secLists.o(i)]
+	else:
+		secListDic = None
+
+	# clean 
 	del(cell) # delete cell
 	import gc; gc.collect()
 
-	return secDic
+	cellRule['sections'] = secDic
+	if secListDic:
+		cellRule['sectionLists'] = secListDic
 
 
 def importConnFromExcel(fileName, sheetName):
@@ -262,7 +287,7 @@ def importConnFromExcel(fileName, sheetName):
 					line = line + "'" + cond2[0].replace(' ','') + "': " + cond2[1].replace(' ','')   # generate line
 				line = line + "}" # end of postTags			
 				line = line + ",\n'connFunc': '" + func + "'"  # write connFunc
-				line = line + ",\n'syn': '" + syn + "'"  # write synReceptor
+				line = line + ",\n'synMech': '" + syn + "'"  # write synReceptor
 				line = line + ",\n'probability': " + str(prob)  # write prob
 				line = line + ",\n'weight': " + str(weight)  # write prob
 				line = line + "})"  # add closing brackets

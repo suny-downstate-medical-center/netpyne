@@ -1,3 +1,91 @@
+## Version 0.4.5
+
+- Fixed bug saving to JSON on single node
+
+- Fixed plotting traces from using 'all' cells option
+
+## Version 0.4.4
+
+- Fixed bug when plottinc synMech traces
+
+- Renamed 'pos' with 'loc' in recordTraces list
+
+## Version 0.4.3
+
+- Fixed bug in runSimWithIntervalFunc 
+
+- Variable Netstims (NSLOCs) can now have noise > 0
+
+## Version 0.4.2
+
+- Placed show(block=False) in try except block since not supported by some graphic backends
+
+- Create parallel context before re-creating net to avoid seg fault 
+
+- Removed unnecessary modules in analysis.py
+
+- Only call show() in analysis if some figure to show
+
+## Version 0.4.1
+
+- Fixed bug when distributing cells spatially based on xRange,yRange,zRange pop parameters
+
+- Added axis labels to 2D visualization, and now works when running on multiple nodes too
+
+- Reset Netstim random generators within runSim() so have reproducible results if working interactively 
+
+## Version 0.4.0
+
+- Fixed bug when distributing cells spatially based on normRange pop parameter
+
+- Fixed bug in functional connectivity variables post_xnorm, post_ynorm, post_znorm
+
+- Reversed ynorm based raster so higher y values are shown at the bottom (cortical-like)
+
+- Added option to plot sync lines in raster and show sync measure
+
+- Added 2D visualization of network cells and conns
+
+- Fixed randomization of cell positions by adding lastGid
+
+## Version 0.3.9
+
+- Made synMech params independent of cell and referenced by labels (similar to NeuroML)
+
+- Keep Neuron objects after sim so can explore, modify and/or rerun sim.
+
+- Only gather data via py_alltoall if running on more than 1 node
+
+## Version 0.3.8
+
+- Fix recording of single cell of population when using MPI
+
+- Fixed raster plotting based on NCD when using MPI
+
+- Replaced save as .txt format with save as .csv
+
+- Fixed bug when importing distributed mechanisms of cells
+
+- importCell can use either *args or **kwargs
+
+- Fixed bug in secLists implementation
+
+- Removed mpl_toolkits.mplot3d import (unused and produced error in some Mac OS versions)
+
+## Version 0.3.7
+
+- Made conn functions more efficient using gid2lid and lid2gid
+
+- Replaced 'syn' (synapse) with 'synMech' (synaptic mechanism) to avoid confusion with synaptic connections
+
+## Version 0.3.6
+
+- Fixed bug: STDP objects need to be stored so it works.
+
+- Added support for SectionLists (modified format of importCell so also works)
+
+- Fixed bugs: function-based connectivity 
+
 ## Version 0.3.5
 
 - Fixed bugs: not checking connectivity rule conditions properly

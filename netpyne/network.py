@@ -363,5 +363,44 @@ class Network(object):
                             'threshold': connParam['threshold'],
                             'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
+                    
+                    
+
+    ###############################################################################
+    ### Export generated structure of network to NeuroML 2 
+    ###############################################################################         
+    def exportNeuroML2(self, reference):
+
+        print("Exporting network to NeuroML 2, reference: %s"%reference)
+        # Only import libNeuroML if this method is called...
+        import neuroml
+        import neuroml.writers as writers
+
+        nml_doc = neuroml.NeuroMLDocument(id='%s'%reference)
+        net = neuroml.Network(id='%s'%reference)
+        nml_doc.networks.append(net)
+
+        nml_doc.notes = 'NeuroML 2 file exported from NetPyNE'
+
+        for np_pop in self.pops: 
+            print("Adding: %s"%np_pop.tags)
+            positioned = len(np_pop.cellGids)>0
+            type = 'populationList'
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                pop = neuroml.Population(id=np_pop.tags['popLabel'],component=np_pop.tags['cellModel'], type=type)
+                net.populations.append(pop)
+
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        inst = neuroml.Instance(id=cell.gid)
+                        pop.instances.append(inst)
+                        inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
+
+
+        nml_file_name = '%s.net.nml'%reference
+
+        writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+
+
    
 

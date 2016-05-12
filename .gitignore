@@ -2,3 +2,9 @@
 *.egg-info
 build
 dist
+x86_64
+i386
+*.dll
+umac
+/examples/HHTut/HHTut.net.nml
+/examples/HybridTut/HybridTut.net.nml

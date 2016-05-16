@@ -389,6 +389,7 @@ class Network(object):
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 pop = neuroml.Population(id=np_pop.tags['popLabel'],component=np_pop.tags['cellModel'], type=type)
                 net.populations.append(pop)
+                nml_doc.includes.append(neuroml.IncludeType('%s.cell.nml'%np_pop.tags['cellModel']))
 
                 for cell in self.cells:
                     if cell.gid in np_pop.cellGids:

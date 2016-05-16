@@ -502,6 +502,20 @@ def saveData():
                     writer.writerow(values)
             print('Finished saving!')
 
+        # Save to Dat file(s) 
+        if f.cfg['saveDat']:
+            traces = f.cfg['recordTraces']
+            for ref in traces.keys():
+                for cellid in f.allSimData[ref].keys():
+                    dat_file_name = '%s_%s.dat'%(ref,cellid)
+                    dat_file = open(dat_file_name, 'w')
+                    trace = f.allSimData[ref][cellid]
+                    print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+                    for i in range(len(trace)):
+                        dat_file.write('%s\t%s\n'%((i*f.cfg['dt']/1000),trace[i]/1000))
+
+            print('Finished saving!')
+
 
         # Save timing
         timing('stop', 'saveTime')

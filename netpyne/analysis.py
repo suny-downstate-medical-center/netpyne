@@ -157,9 +157,9 @@ def plotLFPSpectrum():
     electrode_y = [50]*3
     electrode_z = [30, 60, 90] 
     num_e = len(electrode_x)
+    dur = int(f.testTime)
     
     
-    input('Beginning of plotLFPSpectrum')
     #Weighted sum of synapse currents
     SynCurrents = {'NMDA': {},
                    'AMPA': {},
@@ -213,18 +213,13 @@ def plotLFPSpectrum():
                     r[t] = ((electrode_x[t]-cell.tags.get('x'))**2 + (electrode_y[t]-cell.tags.get('y'))**2 + (electrode_z[t]-cell.tags.get('z'))**2)**1/2
                     SynCurrents['GABA'][cell.gid][str(t)] = np.array(f.allSimData['GABA_i']['cell_'+str(cell.gid)])*math.exp(-(1./100)*r[t])
             
-#    print SynCurrents['AMPA']
-#    print SynCurrents['GABA']
-#    print SynCurrents['NMDA'].keys()
-#    print SynCurrents['AMPA'].keys()
-#    print SynCurrents['GABA'].keys()
-    input('SynCurrents set up')
+
     
     N_const = 1
     A_const = 1
-    G_const = 1.65
+    G_const = 1.65    
     
-    AMPA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    AMPA_currents=[[0]*dur,[0]*dur,[0]*dur]
     for key,val in SynCurrents['AMPA'].iteritems():
         for el,meas in val.iteritems():        
             iterator = 0        
@@ -232,7 +227,7 @@ def plotLFPSpectrum():
                 AMPA_currents[int(el)][iterator] = AMPA_currents[int(el)][iterator] + n
                 iterator += 1
     
-    NMDA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    NMDA_currents=[[0]*dur,[0]*dur,[0]*dur]
     for key,val in SynCurrents['NMDA'].iteritems():
         for el,meas in val.iteritems():        
             iterator = 0        
@@ -240,7 +235,7 @@ def plotLFPSpectrum():
                 NMDA_currents[int(el)][iterator] = NMDA_currents[int(el)][iterator] + n
                 iterator += 1
         
-    GABA_currents=[[0]*1000,[0]*1000,[0]*1000]
+    GABA_currents=[[0]*dur,[0]*dur,[0]*dur]
     for key,val in SynCurrents['NMDA'].iteritems():
         for el,meas in val.iteritems():        
             iterator = 0        
@@ -257,13 +252,12 @@ def plotLFPSpectrum():
         NMDA_currents[el]=[0]*N_delay + NMDA_currents[el]
         GABA_currents[el]=[0]*G_delay + GABA_currents[el]
     
-#    print(AMPA_currents)
-#    input('wait')
+
     
-    empty = np.array([0.]*1000)    
+    empty = np.array([0.]*dur)    
     f.Sum_Currents = np.array([empty]*num_e)
     for el in range(num_e):        
-        for t in range(0,1000):
+        for t in range(0,dur):
              f.Sum_Currents[el][t] = A_const*AMPA_currents[el][t] + N_const*NMDA_currents[el][t] - G_const*GABA_currents[el][t]
 
     
@@ -272,13 +266,12 @@ def plotLFPSpectrum():
         for iters in range(len(f.Sum_Currents[el])):
             f.Sum_Currents[el][iters] = f.Sum_Currents[el][iters] - (1./1000)*sum(f.Sum_Currents[el])
     
-    print(min(f.Sum_Currents[0]))
 #    Plot the LFP signal from all electrodes
     g, axarr = subplots(num_e, sharex=True)
     xlabel('Time (ms)')
     ylabel('LFP')
     for el in range(num_e):
-        x = np.array(range(1000))
+        x = np.array(range(dur))
         axarr[el].plot(x, f.Sum_Currents[el], color='b')
 #        axarr[el].ylabel('Electrode '+str(el+1))
     

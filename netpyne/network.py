@@ -365,11 +365,45 @@ class Network(object):
                     postCell.addConn(params)  # call cell method to add connections
                     
                     
+    
+
+    ###############################################################################
+    ### Get connection centric network representation as used in NeuroML2
+    ###############################################################################  
+    def _convertNetworkRepresentation(self,gids_vs_pop_indices):
+        
+        nn = {}
+        
+        for np_pop in self.pops: 
+            print("Adding conns for: %s"%np_pop.tags)
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        popPost, indexPost = gids_vs_pop_indices[cell.gid]
+                        print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
+                        for conn in cell.conns:
+                            preGid = conn['preGid']
+                            popPre, indexPre = gids_vs_pop_indices[preGid]
+                            loc = conn['loc']
+                            weight = conn['weight']
+                            delay = conn['delay']
+                            sec = conn['sec']
+                            synMech = conn['synMech']
+                            threshold = conn['threshold']
+
+                            print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            
+                            projection_info = (popPre,popPost,synMech)
+                            if not projection_info in nn.keys():
+                                nn[projection_info] = []
+                            
+                            nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
+        return nn
 
     ###############################################################################
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
-    def exportNeuroML2(self, reference):
+    def exportNeuroML2(self, reference, connections=True):
 
         print("Exporting network to NeuroML 2, reference: %s"%reference)
         # Only import libNeuroML if this method is called...
@@ -381,22 +415,61 @@ class Network(object):
         nml_doc.networks.append(net)
 
         nml_doc.notes = 'NeuroML 2 file exported from NetPyNE'
+        
+        gids_vs_pop_indices ={}
+        populations_vs_components = {}
 
         for np_pop in self.pops: 
+            index = 0
             print("Adding: %s"%np_pop.tags)
             positioned = len(np_pop.cellGids)>0
             type = 'populationList'
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 pop = neuroml.Population(id=np_pop.tags['popLabel'],component=np_pop.tags['cellModel'], type=type)
+                populations_vs_components[pop.id]=pop.component
                 net.populations.append(pop)
                 nml_doc.includes.append(neuroml.IncludeType('%s.cell.nml'%np_pop.tags['cellModel']))
 
                 for cell in self.cells:
                     if cell.gid in np_pop.cellGids:
-                        inst = neuroml.Instance(id=cell.gid)
+                        gids_vs_pop_indices[cell.gid] = (np_pop.tags['popLabel'],index)
+                        inst = neuroml.Instance(id=index)
+                        index+=1
                         pop.instances.append(inst)
                         inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
+            
+        if connections:
+            nn = self._convertNetworkRepresentation(gids_vs_pop_indices)
 
+            for proj_info in nn.keys():
+
+                prefix = "NetConn"
+                popPre,popPost,synMech = proj_info
+
+                nml_doc.includes.append(neuroml.IncludeType('%s.synapse.nml'%synMech))
+
+                projection = neuroml.Projection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
+                                  presynaptic_population=popPre, 
+                                  postsynaptic_population=popPost, 
+                                  synapse=synMech)
+                index = 0      
+                for conn in nn[proj_info]:
+
+                    connection = neuroml.ConnectionWD(id=index, \
+                                pre_cell_id="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
+                                pre_segment_id=0, \
+                                pre_fraction_along=0.5,
+                                post_cell_id="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
+                                post_segment_id=0,
+                                post_fraction_along=0.5,
+                                delay = '%s ms'%conn['delay'],
+                                weight = conn['weight'])
+                    index+=1
+
+                    projection.connection_wds.append(connection)
+
+                net.projections.append(projection)
+            
 
         nml_file_name = '%s.net.nml'%reference
 

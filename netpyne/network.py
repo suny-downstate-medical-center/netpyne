@@ -398,12 +398,84 @@ class Network(object):
                                 nn[projection_info] = []
                             
                             nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
-        return nn
+        return nn                 
+    
+
+    ###############################################################################
+    ### Get stimulations in representation as used in NeuroML2
+    ###############################################################################  
+    def _convertStimulationRepresentation(self,gids_vs_pop_indices, nml_doc):
+        
+        stims = {}
+        
+        for np_pop in self.pops: 
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                print("Adding stims for: %s"%np_pop.tags)
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        pop, index = gids_vs_pop_indices[cell.gid]
+                        print("    Cell %s: %s\n    %s[%i]\n    %s\n"%(cell.gid,cell.tags,pop, index,cell.stims))
+                        for stim in cell.stims:
+                            '''
+                            [{'noise': 0, 'weight': 0.1, 'popLabel': 'background', 'number': 1000000000000.0, 'rate': 10, 
+                            'sec': 'soma', 'synMech': 'NMDA', 'threshold': 10.0, 'weightIndex': 0, 'loc': 0.5, 
+                            'hRandom': <hoc.HocObject object at 0x7fda27f1fd20>, 'hNetcon': <hoc.HocObject object at 0x7fda27f1fdb0>, 
+                            'hNetStim': <hoc.HocObject object at 0x7fda27f1fd68>, 'delay': 0, 'source': 'random'}]'''
+                            ref = stim['popLabel']
+                            rate = stim['rate']
+                            synMech = stim['synMech']
+                            threshold = stim['threshold']
+                            delay = stim['delay']
+                            weight = stim['weight']
+                            noise = stim['noise']
+                            
+                            name_stim = 'NetStim_%s_%s_%s_%s'%(ref,rate,noise,synMech)
+                            
+                            stim_info = (name_stim, pop, rate, noise,synMech)
+                            if not stim_info in stims.keys():
+                                stims[stim_info] = []
+                                    
+                             
+                            stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
+                                
+        print stims             
+        return stims
+    
+    
+    ###############################################################################
+    ### Export synapses to NeuroML2
+    ############################################################################### 
+    def _export_synapses(self, nml_doc):
+        
+        import neuroml
+        
+        for syn in f.net.params['synMechParams']:
+
+            print('Exporting details of syn: %s'%syn)
+            if syn['mod'] == 'Exp2Syn':
+                syn0 = neuroml.ExpTwoSynapse(id=syn['label'], 
+                                             gbase='1nS',
+                                             erev='%smV'%syn['e'],
+                                             tau_rise='%sms'%syn['tau1'],
+                                             tau_decay='%sms'%syn['tau2'])
+
+                nml_doc.exp_two_synapses.append(syn0)
+            elif syn['mod'] == 'ExpSyn':
+                syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
+                                             gbase='1nS',
+                                             erev='%smV'%syn['e'],
+                                             tau_decay='%sms'%syn['tau'])
+
+                nml_doc.exp_one_synapses.append(syn0)
+            else:
+                raise Exception("Cannot yet export synapse type: %s"%syn['mod'])
+                
+        
 
     ###############################################################################
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
-    def exportNeuroML2(self, reference, connections=True):
+    def exportNeuroML2(self, reference, connections=True, stimulations=True):
 
         print("Exporting network to NeuroML 2, reference: %s"%reference)
         # Only import libNeuroML if this method is called...
@@ -437,6 +509,8 @@ class Network(object):
                         index+=1
                         pop.instances.append(inst)
                         inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
+                        
+        self._export_synapses(nml_doc)
             
         if connections:
             nn = self._convertNetworkRepresentation(gids_vs_pop_indices)
@@ -445,8 +519,6 @@ class Network(object):
 
                 prefix = "NetConn"
                 popPre,popPost,synMech = proj_info
-
-                nml_doc.includes.append(neuroml.IncludeType('%s.synapse.nml'%synMech))
 
                 projection = neuroml.Projection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
                                   presynaptic_population=popPre, 
@@ -469,11 +541,65 @@ class Network(object):
                     projection.connection_wds.append(connection)
 
                 net.projections.append(projection)
+        
+        if stimulations:
+            stims = self._convertStimulationRepresentation(gids_vs_pop_indices, nml_doc)
+            
+            for stim_info in stims.keys():
+                name_stim, pop, rate, noise, synMech = stim_info
+                
+                print("Adding stim: %s"%name_stim)
+                
+                if noise==0:
+                    source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
+                    nml_doc.spike_generators.append(source)
+                else:
+                    raise Exception("Noise = %s is not yet supported!"%noise)
+                    
+                
+                pop = neuroml.Population(id=name_stim,component=source.id,size=len(stims[stim_info]))
+                net.populations.append(pop)
+                
+                
+                proj = neuroml.Projection(id="NetConn_%s_%s"%(name_stim, pop.id), 
+                      presynaptic_population=name_stim, 
+                      postsynaptic_population=pop.id, 
+                      synapse=synMech)
+                      
+                net.projections.append(proj)
+                
+                for stim in stims[stim_info]:
+                    print("  Adding stim: %s"%stim)
             
 
         nml_file_name = '%s.net.nml'%reference
 
         writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+        
+        '''
+        from pyneuroml.lems import LEMSSimulation
+         
+        ls = LEMSSimulation('Sim_%s'%reference, f.cfg['dt'],f.cfg['duration'],reference)
+        
+        ls.include_neuroml2_file(nml_file_name)'''
+        
+        import pyneuroml.lems
+        
+        pyneuroml.lems.generate_lems_file_for_neuroml("Sim_%s"%reference, 
+                                   nml_file_name, 
+                                   reference, 
+                                   f.cfg['duration'], 
+                                   f.cfg['dt'], 
+                                   'LEMS_%s.xml'%reference,
+                                   '.',
+                                   copy_neuroml = False,
+                                   include_extra_files = [],
+                                   gen_plots_for_all_v = True,
+                                   plot_all_segments = False, 
+                                   gen_saves_for_all_v = True,
+                                   save_all_segments = False,
+                                   seed=1234)
+        
 
 
    

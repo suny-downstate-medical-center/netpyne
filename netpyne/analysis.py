@@ -42,6 +42,9 @@ def plotData():
         if f.cfg['plotLFPSpectrum']:
             print('Plotting LFP power spectral density')
             f.analysis.plotLFPSpectrum()
+        if f.cfg['plot2Dnet']:
+            print('Plotting 2D visualization of network...')
+            f.analysis.plot2Dnet()  
         if f.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
             f.analysis.plotWeightChanges()
@@ -354,6 +357,39 @@ def plotConn():
     clim(-abs(totalconns).max(),abs(totalconns).max())
     colorbar()
     #show()
+
+
+# Plot 2D visualization of network cell positions and connections
+def plot2Dnet():
+    allCells = f.net.allCells
+    figure(figsize=(12,12))
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+    popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    cellColors = [popColors[cell.tags['popLabel']] for cell in f.net.cells]
+    posX = [cell['tags']['x'] for cell in allCells]  # get all x positions
+    posY = [cell['tags']['y'] for cell in allCells]  # get all y positions
+    scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
+    for postCell in allCells:
+        for con in postCell['conns']:  # plot connections between cells
+            posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
+            posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
+            color='red'
+            if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                color = 'blue'
+            width = 0.1 #50*con['weight']
+            plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+    xlabel('x (um)')
+    ylabel('y (um)') 
+    xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
+    ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
+    fontsiz = 12
+    for popLabel in popLabels:
+        plot(0,0,color=popColors[popLabel],label=popLabel)
+    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
 
 
 ## Plot weight changes

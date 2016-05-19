@@ -310,7 +310,6 @@ class Cell(object):
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
 
-
     def addStim (self, params):
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
             if 'soma' in self.secs:  
@@ -374,7 +373,7 @@ class Cell(object):
                 netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
                 netstim.noise = params['noise']
             netstim.noiseFromRandom(rand)  # use random number generator
-            netstim.number = params['number']   
+            netstim.number = params['number']
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if pointp:
@@ -382,6 +381,71 @@ class Cell(object):
         else:
             netcon = h.NetCon(netstim, synMech['hSyn']) # create Netcon between global gid and local synaptic mechanism
         netcon.weight[weightIndex] = params['weight']  # set Netcon weight
+        
+        # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
+        def shapeStim(isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
+            from pylab import r_, convolve, shape, exp, zeros, hstack, array, rand
+            
+            # Create event times
+            timeres = 0.001 # Time resolution = 1 ms = 500 Hz
+            pulselength = 10 # Length of pulse in units of width
+            currenttime = 0
+            timewindow = finish-start
+            allpts = int(timewindow/timeres)
+            output = []
+            while currenttime<timewindow:
+                if currenttime>=0 and currenttime<timewindow: output.append(currenttime)
+                currenttime = currenttime+isi+variation*(rand()-0.5)
+            
+            # Create single pulse
+            npts = min(pulselength*width/timeres,allpts) # Calculate the number of points to use
+            x = (r_[0:npts]-npts/2+1)*timeres
+            if stimshape=='gaussian': 
+                pulse = exp(-(x/width*2-2)**2) # Offset by 2 standard deviations from start
+                pulse = pulse/max(pulse)
+            elif stimshape=='square': 
+                pulse = zeros(shape(x))
+                pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
+            else:
+                raise Exception('Stimulus shape "%s" not recognized' % stimshape)
+            
+            # Create full stimulus
+            events = zeros((allpts))
+            events[array(array(output)/timeres,dtype=int)] = 1
+            fulloutput = convolve(events,pulse,mode='same')*weight # Calculate the convolved input signal, scaled by rate
+            fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
+            fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
+            fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
+            events = hstack((0,events,0)) # Ditto
+            stimvecs = [fulltime, fulloutput, events] # Combine vectors into a matrix           
+            
+            return stimvecs        
+        
+        # Time-dependently shaping connection weights of NetStim...
+        stimtimevecs = [] # Create array for storing time vectors
+        stimweightvecs = [] # Create array for holding weight vectors
+        stimvecs = shapeStim(finish=1, stimshape='square')
+        stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
+        stimweightvecs.append(h.Vector().from_python(stimvecs[1]))
+#        stimweightvecs[-1].play(netcon._ref_weight[weightIndex], stimtimevecs[-1]) # Play most-recently-added vectors into weight
+#        print stimvecs[0]
+#        print stimvecs[1]
+#        blah1 = h.Vector()
+#        blah2 = h.Vector()
+#        blah1 = blah1.from_python(stimvecs[0])
+#        blah2 = blah2.from_python(stimvecs[1])
+#        blah1.printf()
+#        print 'Blah1'
+#        blah2.printf()
+#        print 'Blah2'
+#        stimtimevecs[-1].printf()
+#        print 'Yo'
+#        stimweightvecs[-1].printf()
+#        print 'Ho'
+#        netcon._ref_weight[0].printf()
+        stimweightvecs[-1].play(netcon.weight[weightIndex], stimtimevecs[-1]) # Play most-recently-added vectors into weight   
+#        netcon.weight[weightIndex].printf()
+        
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list

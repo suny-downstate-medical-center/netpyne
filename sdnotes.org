@@ -1539,3 +1539,12 @@ maybe can define generic wrappers for some of the most common cases; maybe inclu
 http://neurosimlab.org/netpyne/_images/netstruct.png
 ** add units
 - uS for synMech weight
+** Netstim default start
+** Plot cell subset of each population, indicating relative index
+** DONE ? Connection function with specific connections
+- fromList 
+- relativePreIds
+- relativePostIds
+- connList
+** Update Cm of section based on C of Izhi
+

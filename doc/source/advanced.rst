@@ -210,7 +210,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 	cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
 	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
-	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
+	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'AMPA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
 	netParams['cellParams'].append(cellRule) 
 
 

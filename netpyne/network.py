@@ -546,7 +546,7 @@ class Network(object):
             stims = self._convertStimulationRepresentation(gids_vs_pop_indices, nml_doc)
             
             for stim_info in stims.keys():
-                name_stim, postPop, rate, noise, synMech = stim_info
+                name_stim, post_pop, rate, noise, synMech = stim_info
                 
                 print("Adding stim: %s"%[stim_info])
                 
@@ -557,13 +557,13 @@ class Network(object):
                     raise Exception("Noise = %s is not yet supported!"%noise)
                     
                 
-                pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
-                net.populations.append(pop)
+                stim_pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
+                net.populations.append(stim_pop)
                 
                 
-                proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, postPop), 
-                      presynaptic_population=name_stim, 
-                      postsynaptic_population=postPop, 
+                proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, post_pop), 
+                      presynaptic_population=stim_pop.id, 
+                      postsynaptic_population=post_pop, 
                       synapse=synMech)
                       
                 net.projections.append(proj)
@@ -573,10 +573,10 @@ class Network(object):
                     print("  Adding stim: %s"%stim)
 
                     connection = neuroml.ConnectionWD(id=count, \
-                            pre_cell_id="../%s[%i]"%(pop.id, 0), \
+                            pre_cell_id="../%s[%i]"%(stim_pop.id, 0), \
                             pre_segment_id=0, \
                             pre_fraction_along=0.5,
-                            post_cell_id="../%s/%i/%s"%(postPop, stim['index'], populations_vs_components[postPop]), \
+                            post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \
                             post_segment_id=0,
                             post_fraction_along=0.5,
                             delay = '%s ms'%stim['delay'],

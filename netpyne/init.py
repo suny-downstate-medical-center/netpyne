@@ -33,3 +33,15 @@ def createAndSimulate(netParams, simConfig):
 #    simConfig = M1yfrac.simConfig,     # pass simulation config options and network params as arguments
 #    netParams = M1yfrac.netParams)      
 
+
+
+def createAndExport(netParams, simConfig, reference, connections=True,stimulations=True):
+    ''' Sequence of commands to run full model '''
+    f.sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+    f.net.createPops()                  # instantiate network populations
+    f.net.createCells()                 # instantiate network cells based on defined populations
+    f.net.connectCells()                # create connections between cells based on params
+    f.sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    f.net.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
+
+    

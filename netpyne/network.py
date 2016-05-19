@@ -363,5 +363,260 @@ class Network(object):
                             'threshold': connParam['threshold'],
                             'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
+                    
+                    
+    
+
+    ###############################################################################
+    ### Get connection centric network representation as used in NeuroML2
+    ###############################################################################  
+    def _convertNetworkRepresentation(self,gids_vs_pop_indices):
+        
+        nn = {}
+        
+        for np_pop in self.pops: 
+            print("Adding conns for: %s"%np_pop.tags)
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        popPost, indexPost = gids_vs_pop_indices[cell.gid]
+                        print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
+                        for conn in cell.conns:
+                            preGid = conn['preGid']
+                            popPre, indexPre = gids_vs_pop_indices[preGid]
+                            loc = conn['loc']
+                            weight = conn['weight']
+                            delay = conn['delay']
+                            sec = conn['sec']
+                            synMech = conn['synMech']
+                            threshold = conn['threshold']
+
+                            print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            
+                            projection_info = (popPre,popPost,synMech)
+                            if not projection_info in nn.keys():
+                                nn[projection_info] = []
+                            
+                            nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
+        return nn                 
+    
+
+    ###############################################################################
+    ### Get stimulations in representation as used in NeuroML2
+    ###############################################################################  
+    def _convertStimulationRepresentation(self,gids_vs_pop_indices, nml_doc):
+        
+        stims = {}
+        
+        for np_pop in self.pops: 
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                print("Adding stims for: %s"%np_pop.tags)
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        pop, index = gids_vs_pop_indices[cell.gid]
+                        print("    Cell %s: %s\n    %s[%i]\n    %s\n"%(cell.gid,cell.tags,pop, index,cell.stims))
+                        for stim in cell.stims:
+                            '''
+                            [{'noise': 0, 'weight': 0.1, 'popLabel': 'background', 'number': 1000000000000.0, 'rate': 10, 
+                            'sec': 'soma', 'synMech': 'NMDA', 'threshold': 10.0, 'weightIndex': 0, 'loc': 0.5, 
+                            'hRandom': <hoc.HocObject object at 0x7fda27f1fd20>, 'hNetcon': <hoc.HocObject object at 0x7fda27f1fdb0>, 
+                            'hNetStim': <hoc.HocObject object at 0x7fda27f1fd68>, 'delay': 0, 'source': 'random'}]'''
+                            ref = stim['popLabel']
+                            rate = stim['rate']
+                            synMech = stim['synMech']
+                            threshold = stim['threshold']
+                            delay = stim['delay']
+                            weight = stim['weight']
+                            noise = stim['noise']
+                            
+                            name_stim = 'NetStim_%s_%s_%s_%s_%s'%(ref,pop,rate,noise,synMech)
+                            
+                            stim_info = (name_stim, pop, rate, noise,synMech)
+                            if not stim_info in stims.keys():
+                                stims[stim_info] = []
+                                    
+                             
+                            stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
+                                
+        print stims             
+        return stims
+    
+    
+    ###############################################################################
+    ### Export synapses to NeuroML2
+    ############################################################################### 
+    def _export_synapses(self, nml_doc):
+        
+        import neuroml
+        
+        for syn in f.net.params['synMechParams']:
+
+            print('Exporting details of syn: %s'%syn)
+            if syn['mod'] == 'Exp2Syn':
+                syn0 = neuroml.ExpTwoSynapse(id=syn['label'], 
+                                             gbase='1uS',
+                                             erev='%smV'%syn['e'],
+                                             tau_rise='%sms'%syn['tau1'],
+                                             tau_decay='%sms'%syn['tau2'])
+
+                nml_doc.exp_two_synapses.append(syn0)
+            elif syn['mod'] == 'ExpSyn':
+                syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
+                                             gbase='1uS',
+                                             erev='%smV'%syn['e'],
+                                             tau_decay='%sms'%syn['tau'])
+
+                nml_doc.exp_one_synapses.append(syn0)
+            else:
+                raise Exception("Cannot yet export synapse type: %s"%syn['mod'])
+                
+        
+
+    ###############################################################################
+    ### Export generated structure of network to NeuroML 2 
+    ###############################################################################         
+    def exportNeuroML2(self, reference, connections=True, stimulations=True):
+
+        print("Exporting network to NeuroML 2, reference: %s"%reference)
+        # Only import libNeuroML if this method is called...
+        import neuroml
+        import neuroml.writers as writers
+
+        nml_doc = neuroml.NeuroMLDocument(id='%s'%reference)
+        net = neuroml.Network(id='%s'%reference)
+        nml_doc.networks.append(net)
+
+        nml_doc.notes = 'NeuroML 2 file exported from NetPyNE'
+        
+        gids_vs_pop_indices ={}
+        populations_vs_components = {}
+
+        for np_pop in self.pops: 
+            index = 0
+            print("Adding: %s"%np_pop.tags)
+            positioned = len(np_pop.cellGids)>0
+            type = 'populationList'
+            if not np_pop.tags['cellModel'] ==  'NetStim':
+                pop = neuroml.Population(id=np_pop.tags['popLabel'],component=np_pop.tags['cellModel'], type=type)
+                populations_vs_components[pop.id]=pop.component
+                net.populations.append(pop)
+                nml_doc.includes.append(neuroml.IncludeType('%s.cell.nml'%np_pop.tags['cellModel']))
+
+                for cell in self.cells:
+                    if cell.gid in np_pop.cellGids:
+                        gids_vs_pop_indices[cell.gid] = (np_pop.tags['popLabel'],index)
+                        inst = neuroml.Instance(id=index)
+                        index+=1
+                        pop.instances.append(inst)
+                        inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
+                        
+        self._export_synapses(nml_doc)
+            
+        if connections:
+            nn = self._convertNetworkRepresentation(gids_vs_pop_indices)
+
+            for proj_info in nn.keys():
+
+                prefix = "NetConn"
+                popPre,popPost,synMech = proj_info
+
+                projection = neuroml.Projection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
+                                  presynaptic_population=popPre, 
+                                  postsynaptic_population=popPost, 
+                                  synapse=synMech)
+                index = 0      
+                for conn in nn[proj_info]:
+
+                    connection = neuroml.ConnectionWD(id=index, \
+                                pre_cell_id="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
+                                pre_segment_id=0, \
+                                pre_fraction_along=0.5,
+                                post_cell_id="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
+                                post_segment_id=0,
+                                post_fraction_along=0.5,
+                                delay = '%s ms'%conn['delay'],
+                                weight = conn['weight'])
+                    index+=1
+
+                    projection.connection_wds.append(connection)
+
+                net.projections.append(projection)
+        
+        if stimulations:
+            stims = self._convertStimulationRepresentation(gids_vs_pop_indices, nml_doc)
+            
+            for stim_info in stims.keys():
+                name_stim, post_pop, rate, noise, synMech = stim_info
+                
+                print("Adding stim: %s"%[stim_info])
+                
+                if noise==0:
+                    source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
+                    nml_doc.spike_generators.append(source)
+                else:
+                    raise Exception("Noise = %s is not yet supported!"%noise)
+                    
+                
+                stim_pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
+                net.populations.append(stim_pop)
+                
+                
+                proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, post_pop), 
+                      presynaptic_population=stim_pop.id, 
+                      postsynaptic_population=post_pop, 
+                      synapse=synMech)
+                      
+                net.projections.append(proj)
+                
+                count = 0
+                for stim in stims[stim_info]:
+                    print("  Adding stim: %s"%stim)
+
+                    connection = neuroml.ConnectionWD(id=count, \
+                            pre_cell_id="../%s[%i]"%(stim_pop.id, 0), \
+                            pre_segment_id=0, \
+                            pre_fraction_along=0.5,
+                            post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \
+                            post_segment_id=0,
+                            post_fraction_along=0.5,
+                            delay = '%s ms'%stim['delay'],
+                            weight = stim['weight'])
+                    count+=1
+
+                    proj.connection_wds.append(connection)
+            
+
+        nml_file_name = '%s.net.nml'%reference
+
+        writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+        
+        '''
+        from pyneuroml.lems import LEMSSimulation
+         
+        ls = LEMSSimulation('Sim_%s'%reference, f.cfg['dt'],f.cfg['duration'],reference)
+        
+        ls.include_neuroml2_file(nml_file_name)'''
+        
+        import pyneuroml.lems
+        
+        pyneuroml.lems.generate_lems_file_for_neuroml("Sim_%s"%reference, 
+                                   nml_file_name, 
+                                   reference, 
+                                   f.cfg['duration'], 
+                                   f.cfg['dt'], 
+                                   'LEMS_%s.xml'%reference,
+                                   '.',
+                                   copy_neuroml = False,
+                                   include_extra_files = [],
+                                   gen_plots_for_all_v = False,
+                                   gen_plots_for_only_populations = populations_vs_components.keys(),
+                                   gen_saves_for_all_v = False,
+                                   plot_all_segments = False, 
+                                   gen_saves_for_only_populations = populations_vs_components.keys(),
+                                   save_all_segments = False,
+                                   seed=1234)
+        
+
+
    
 

@@ -429,7 +429,7 @@ class Network(object):
                             weight = stim['weight']
                             noise = stim['noise']
                             
-                            name_stim = 'NetStim_%s_%s_%s_%s'%(ref,rate,noise,synMech)
+                            name_stim = 'NetStim_%s_%s_%s_%s_%s'%(ref,pop,rate,noise,synMech)
                             
                             stim_info = (name_stim, pop, rate, noise,synMech)
                             if not stim_info in stims.keys():
@@ -454,7 +454,7 @@ class Network(object):
             print('Exporting details of syn: %s'%syn)
             if syn['mod'] == 'Exp2Syn':
                 syn0 = neuroml.ExpTwoSynapse(id=syn['label'], 
-                                             gbase='1nS',
+                                             gbase='1uS',
                                              erev='%smV'%syn['e'],
                                              tau_rise='%sms'%syn['tau1'],
                                              tau_decay='%sms'%syn['tau2'])
@@ -462,7 +462,7 @@ class Network(object):
                 nml_doc.exp_two_synapses.append(syn0)
             elif syn['mod'] == 'ExpSyn':
                 syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
-                                             gbase='1nS',
+                                             gbase='1uS',
                                              erev='%smV'%syn['e'],
                                              tau_decay='%sms'%syn['tau'])
 
@@ -546,9 +546,9 @@ class Network(object):
             stims = self._convertStimulationRepresentation(gids_vs_pop_indices, nml_doc)
             
             for stim_info in stims.keys():
-                name_stim, pop, rate, noise, synMech = stim_info
+                name_stim, postPop, rate, noise, synMech = stim_info
                 
-                print("Adding stim: %s"%name_stim)
+                print("Adding stim: %s"%[stim_info])
                 
                 if noise==0:
                     source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
@@ -557,19 +557,33 @@ class Network(object):
                     raise Exception("Noise = %s is not yet supported!"%noise)
                     
                 
-                pop = neuroml.Population(id=name_stim,component=source.id,size=len(stims[stim_info]))
+                pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
                 net.populations.append(pop)
                 
                 
-                proj = neuroml.Projection(id="NetConn_%s_%s"%(name_stim, pop.id), 
+                proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, postPop), 
                       presynaptic_population=name_stim, 
-                      postsynaptic_population=pop.id, 
+                      postsynaptic_population=postPop, 
                       synapse=synMech)
                       
                 net.projections.append(proj)
                 
+                count = 0
                 for stim in stims[stim_info]:
                     print("  Adding stim: %s"%stim)
+
+                    connection = neuroml.ConnectionWD(id=count, \
+                            pre_cell_id="../%s[%i]"%(pop.id, 0), \
+                            pre_segment_id=0, \
+                            pre_fraction_along=0.5,
+                            post_cell_id="../%s/%i/%s"%(postPop, stim['index'], populations_vs_components[postPop]), \
+                            post_segment_id=0,
+                            post_fraction_along=0.5,
+                            delay = '%s ms'%stim['delay'],
+                            weight = stim['weight'])
+                    count+=1
+
+                    proj.connection_wds.append(connection)
             
 
         nml_file_name = '%s.net.nml'%reference
@@ -594,9 +608,11 @@ class Network(object):
                                    '.',
                                    copy_neuroml = False,
                                    include_extra_files = [],
-                                   gen_plots_for_all_v = True,
+                                   gen_plots_for_all_v = False,
+                                   gen_plots_for_only_populations = populations_vs_components.keys(),
+                                   gen_saves_for_all_v = False,
                                    plot_all_segments = False, 
-                                   gen_saves_for_all_v = True,
+                                   gen_saves_for_only_populations = populations_vs_components.keys(),
                                    save_all_segments = False,
                                    seed=1234)
         

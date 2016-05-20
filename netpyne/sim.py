@@ -722,6 +722,9 @@ def exportNeuroML2(reference, connections=True, stimulations=True):
             if noise==0:
                 source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
                 nml_doc.spike_generators.append(source)
+            elif noise==1:
+                source = neuroml.SpikeGeneratorPoisson(id=name_stim,average_rate="%s Hz"%(rate))
+                nml_doc.spike_generator_poissons.append(source)
             else:
                 raise Exception("Noise = %s is not yet supported!"%noise)
 
@@ -742,7 +745,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True):
                 print("  Adding stim: %s"%stim)
 
                 connection = neuroml.ConnectionWD(id=count, \
-                        pre_cell_id="../%s[%i]"%(stim_pop.id, 0), \
+                        pre_cell_id="../%s[%i]"%(stim_pop.id, stim['index']), \
                         pre_segment_id=0, \
                         pre_fraction_along=0.5,
                         post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \

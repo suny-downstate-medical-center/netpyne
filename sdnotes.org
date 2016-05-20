@@ -1264,6 +1264,8 @@ http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002545
 - waffle - organize issues
 - pull request to release
 
+** neuroml -> netpyne
+- if make changes then post comment or pull request in show case: https://github.com/OpenSourceBrain/NetPyNEShowcase/tree/master/NetPyNE
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -1452,7 +1454,11 @@ EMstim == EM !!
 
 ** Stimulation - iclamp,vclamp, opto, microelectrode (paper?)
 - maybe iclamp for paper?
-- can implement via pointp in cell properties
+- can implement via pointp in cell properties? - no, so can assign to multiple
+- create new struct stimParams
+- netParams['stimParams']
+- netParams['stimParams']['
+
 
 ** Upload examples to netpyne repo (paper)
 - Evol params batch

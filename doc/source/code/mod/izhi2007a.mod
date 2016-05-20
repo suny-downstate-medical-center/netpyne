@@ -43,7 +43,7 @@ UNITS {
 
 : Parameters from Izhikevich 2007, MIT Press for regular spiking pyramidal cell
 PARAMETER {
-  C = 100 : Capacitance
+  C = 1 : Capacitance
   k = 0.7
   vr = -60 (mV) : Resting membrane potential
   vt = -40 (mV) : Membrane threhsold
@@ -84,7 +84,7 @@ ASSIGNED {
 : Initial conditions
 INITIAL {
   V = vr
-  u = 0.2*vr
+  u = 0.0
   t0 = t
   gAMPA = 0
   gNMDA = 0

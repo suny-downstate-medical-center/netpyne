@@ -43,6 +43,16 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
  
+# Stimulation parameters
+netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 100, 'dur': 100, 'amp': 5})
+netParams['stimParams']['stimList'].append({
+	'source': 'Input_1', 
+	'sec':'soma', 
+	'loc': 0.5, 
+	'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
+
+
 
 # Connectivity parameters
 netParams['connParams'] = []  
@@ -62,11 +72,11 @@ netParams['connParams'].append(
     'threshold': 10})                   # threshold
 
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+#     'weight': 0.1,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
 ###############################################################################

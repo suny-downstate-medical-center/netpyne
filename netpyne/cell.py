@@ -310,8 +310,7 @@ class Cell(object):
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
 
-
-    def addStim (self, params):
+    def addNetStim (self, params):
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -386,8 +385,37 @@ class Cell(object):
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         self.stims[-1]['weightIndex'] = weightIndex
-        if f.cfg['verbose']: print('Created stim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
+        if f.cfg['verbose']: print('Created NetStim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
+
+
+    def addIClamp (self, params):
+        if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
+            if 'soma' in self.secs:  
+                params['sec'] = 'soma'  # use 'soma' if exists
+            elif self.secs:  
+                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
+                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
+                    if 'synMechs' in secParams:
+                        if secParams['synMechs']:
+                            params['sec'] = secName
+                            break
+            else:  
+                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                return  # if no Sections available print error and exit
+        sec = self.secs[params['sec']]
+        
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
+
+        iclamp = h.IClamp(sec['hSection'](params['loc']))  # create Netcon between global gid and local point neuron
+        iclamp.amp = params['amp']
+        iclamp.delay = params['delay']
+        iclamp.dur = params['dur']
+
+        self.stims.append(params)
+        self.stims[-1]['hIClamp'] = iclamp  # add netcon object to dict in conns list
+        if f.cfg['verbose']: print('Created IClamp postGid=%d, sec=%s, loc=%.4g, amp=%.4g, delay=%.4g, dur=%.4g'%
+            (self.gid, params['sec'], params['loc'], params['amp'], params['delay'], params['dur']))
 
 
     def recordTraces (self):
@@ -421,9 +449,10 @@ class Cell(object):
     def recordStimSpikes (self):
         f.simData['stims'].update({'cell_'+str(self.gid): {}})
         for stim in self.stims:
-            stimSpikeVecs = h.Vector() # initialize vector to store 
-            stim['hNetcon'].record(stimSpikeVecs)
-            f.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+            if 'hNetcon' in stim:
+                stimSpikeVecs = h.Vector() # initialize vector to store 
+                stim['hNetcon'].record(stimSpikeVecs)
+                f.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
 
     def __getstate__(self): 

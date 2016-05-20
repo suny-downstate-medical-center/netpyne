@@ -30,8 +30,9 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     
     setSimCfg(simConfig)  # set simulation configuration
     
-    timing('start', 'initialTime')
-    timing('start', 'totalTime')
+    if f.rank==0: 
+        timing('start', 'initialTime')
+        timing('start', 'totalTime')
 
     if net:
         setNet(f.net)  # set existing external network
@@ -288,8 +289,9 @@ def runSim():
     # reset all netstims so runs are always equivalent
     for cell in f.net.cells:
         for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid,cell.gid*2)
-            stim['hRandom'].negexp(1)
+            if 'hRandom' in stim:
+                stim['hRandom'].Random123(cell.gid,cell.gid*2)
+                stim['hRandom'].negexp(1)
 
     init()
     f.pc.psolve(f.cfg['duration'])

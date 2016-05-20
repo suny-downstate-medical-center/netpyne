@@ -107,7 +107,8 @@ simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat 
 simConfig['saveJson'] = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveMat'] = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveDpk'] = 1 # save to a .dpk pickled file
-
+simConfig['saveHDF5'] = 1
+simConfig['saveCSV'] = 1
 
 # Analysis and plotting 
 simConfig['plotRaster'] = True # Whether or not to plot a raster

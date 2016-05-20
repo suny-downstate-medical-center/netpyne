@@ -128,7 +128,8 @@ class Network(object):
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
-        for connParam in self.params['connParams']:  # for each conn rule or parameter set
+        for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
+            connParam = connParamTemp.copy()
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
             if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)

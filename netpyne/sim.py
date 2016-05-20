@@ -463,13 +463,11 @@ def saveData():
 
         # Save to dpk file
         if f.cfg['saveDpk']:
-            import os,gzip
+            import gzip
             print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
-            fn=f.params['filename'].split('.')
-            #fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
-            gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
+            fn=f.cfg['filename'] #.split('.')
+            gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
             print('Finished saving!')
-            #print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
 
         # Save to json file
         if f.cfg['saveJson']:

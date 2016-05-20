@@ -61,7 +61,7 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
  
 
 # Connectivity parameters
@@ -73,7 +73,7 @@ netParams['connParams'].append(
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(0,5)',       # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
-    'synMech': 'AMPA'})    
+    'synMech': 'NMDA'})    
 
 
 netParams['connParams'].append(
@@ -81,14 +81,14 @@ netParams['connParams'].append(
     'connFunc': 'fullConn',
     'weight': 0.004, 
     'delay': 'uniform(1,5)',
-    'synMech': 'AMPA'})  
+    'synMech': 'NMDA'})  
 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 20, 
-    'synMech': 'AMPA',
+    'synMech': 'NMDA',
     'sec': 'dend',
     'loc': 1.0,
     'delay': 'uniform(1,5)'})  
@@ -116,8 +116,8 @@ simConfig['recordCells'] = []  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'AMPA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'g'},
-    'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'}}
+    'NMDA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'g'},
+    'NMDA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 

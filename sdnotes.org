@@ -1541,11 +1541,13 @@ http://neurosimlab.org/netpyne/_images/netstruct.png
 - uS for synMech weight
 ** Netstim default start
 ** Plot cell subset of each population, indicating relative index
+** Connection function with specific connections
 ** DONE ? Connection function with specific connections
 - fromList 
 - relativePreIds
 - relativePostIds
 - connList
+
 ** Update Cm of section based on C of Izhi
 ** Add option to save different data (specs, instance, output) to different file names
 including dat (txt) format

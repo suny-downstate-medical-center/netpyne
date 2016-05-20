@@ -152,6 +152,7 @@ class Network(object):
             if not preCellsTags: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     for prePop in prePops.values():
+                        if not 'start' in prePop: prePop['start'] = 5  # add default start time
                         if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
                         if not 'source' in prePop: prePop['source'] = 'random'  # add default source
                     preCellsTags = prePops
@@ -285,6 +286,7 @@ class Network(object):
                         'noise': preCellTags['noise'],
                         'source': preCellTags['source'], 
                         'number': preCellTags['number'],
+                        'start': preCellTags['start'],
                         'sec': connParam['sec'], 
                         'synMech': connParam['synMech'], 
                         'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else connParam['weight'],
@@ -330,6 +332,7 @@ class Network(object):
                                     'rate': preCellTags['rate'],
                                     'noise': preCellTags['noise'],
                                     'source': preCellTags['source'], 
+                                    'start': preCellTags['start'],
                                     'number': preCellTags['number'],
                                     'sec': connParam['sec'], 
                                     'synMech': connParam['synMech'], 
@@ -447,6 +450,7 @@ class Network(object):
                     'rate': preCellTags['rate'],
                     'noise': preCellTags['noise'],
                     'source': preCellTags['source'], 
+                    'start': preCellTags['start'],
                     'number': preCellTags['number'],
                     'sec': connParam['sec'], 
                     'synMech': connParam['synMech'], 

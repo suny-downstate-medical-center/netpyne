@@ -25,7 +25,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 4}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'source': 'random'})  # background inputs
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'start':500, 'source': 'random'})  # background inputs
 
 # Cell parameters
 netParams['cellParams'] = []
@@ -72,11 +72,11 @@ netParams['connParams'].append(
     'threshold': 10})                   # threshold
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-#     'weight': 0.1,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+    'weight': 0.1,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
 ###############################################################################

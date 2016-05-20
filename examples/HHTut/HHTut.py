@@ -104,10 +104,9 @@ simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP,
 simConfig['filename'] = 'mpiHHTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
 simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveTxt'] = False # save spikes and conn to txt file
-simConfig['saveDpk'] = False # save to a .dpk pickled file
+simConfig['saveJson'] = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig['saveMat'] = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig['saveDpk'] = 1 # save to a .dpk pickled file
 
 
 # Analysis and plotting 

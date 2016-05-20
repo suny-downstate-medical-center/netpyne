@@ -86,14 +86,14 @@ netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.
 netParams['connParams'] = []  
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['Traub', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.001)
+	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['Traub', 'Mainen']}, # background -> PYR (weight=0.001)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.001, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})		
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['HH', 'HH3D']}, # background -> PYR (weight=0.1)
+	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['HH', 'HH3D', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 

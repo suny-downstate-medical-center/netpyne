@@ -22,15 +22,15 @@ from neuron import h
 dummy = h.Section()
 type2007 = collections.OrderedDict([
   #              C    k     vr  vt vpeak   a      b   c    d  celltype
-  ('RS',        (100, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
-  ('IB',        (150, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
-  ('CH',        (50,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
-  ('LTS',       (100, 1.0,  -56, -42, 40, 0.03,   8, -53,   20,   4)),
-  ('FS',        (20,  1.0,  -55, -40, 25, 0.2,   -2, -45,  -55,   5)),
-  ('TC',        (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
-  ('TC_burst',  (200, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
-  ('RTN',       (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7)),
-  ('RTN_burst', (40,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
+  ('RS',        (1, 0.7,  -60, -40, 35, 0.03,   -2, -50,  100,  1)),
+  ('IB',        (1.5, 1.2,  -75, -45, 50, 0.01,   5, -56,  130,   2)),
+  ('CH',        (0.5,  1.5,  -60, -40, 25, 0.03,   1, -40,  150,   3)),
+  ('LTS',       (1, 1.0,  -56, -42, 40, 0.03,   8, -53,   20,   4)),
+  ('FS',        (0.2,  1.0,  -55, -40, 25, 0.2,   -2, -45,  -55,   5)),
+  ('TC',        (2.0, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
+  ('TC_burst',  (2.0, 1.6,  -60, -50, 35, 0.01,  15, -60,   10,   6)),
+  ('RTN',       (0.4,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7)),
+  ('RTN_burst', (0.4,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
 # class of basic Izhikevich neuron based on parameters in type2007
 class IzhiCell (): 
@@ -44,7 +44,7 @@ class IzhiCell ():
     self.type=type
     if host is None:  # need to set up a sec for this
       self.sec=h.Section(name='izhi2007'+type+str(cellid))
-      self.sec.L, self.sec.diam = 6.3, 5 # empirically tuned
+      self.sec.L, self.sec.diam, self.sec.cm = 10, 10, 31.831 # empirically tuned
       self.izh = h.Izhi2007b(0.5, sec=self.sec) 
       self.vinit = -60
     else: 

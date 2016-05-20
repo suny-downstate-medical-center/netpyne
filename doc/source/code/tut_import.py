@@ -68,7 +68,7 @@ netParams['cellParams'].append(cellRule)
 cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
 cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
-cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'AMPA', 'GABAA', 'GABAB']  # specify its own synapses
+cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007b (section voltage)

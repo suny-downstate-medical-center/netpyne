@@ -172,7 +172,7 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		* ``_type``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
 		* ``_loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
 		* ``_vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
-		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'AMPA', 'GABAB']
+		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['sections']['soma']['vinit'] = -72``

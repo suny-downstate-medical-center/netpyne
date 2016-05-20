@@ -1547,4 +1547,7 @@ http://neurosimlab.org/netpyne/_images/netstruct.png
 - relativePostIds
 - connList
 ** Update Cm of section based on C of Izhi
+** Add option to save different data (specs, instance, output) to different file names
+including dat (txt) format
+
 

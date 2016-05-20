@@ -116,8 +116,8 @@ simConfig['recordCells'] = []  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'NMDA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'g'},
-    'NMDA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'}}
+    'AMPA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'g'},
+    'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 

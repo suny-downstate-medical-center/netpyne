@@ -61,7 +61,7 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2003b (section voltage)
 cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
-cellRule['sections']['soma']['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007a (independent voltage)
@@ -79,7 +79,7 @@ netParams['cellParams'].append(cellRule)
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
  
 
 ## Connectivity params
@@ -104,7 +104,7 @@ netParams['connParams'].append({
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'synMech':'AMPA',
+	'synMech':'NMDA',
 	'sec': 'soma'})				
 
 netParams['connParams'].append({

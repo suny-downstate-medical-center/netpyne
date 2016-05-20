@@ -75,7 +75,6 @@ simConfig['saveMat'] = False # save to mat file
 simConfig['saveCSV'] = False # save to txt file
 simConfig['saveDpk'] = False # save to .dpk pickled file
 simConfig['saveHDF5'] = False # save to HDF5 file 
-simConfig['saveDat'] = False # save traces to .dat file(s)
 
 
 # Analysis and plotting 

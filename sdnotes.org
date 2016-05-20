@@ -1256,14 +1256,6 @@ PointProcessDistributor.hoc
 http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002545
 
 
-* 16may19 Meeting with Padraig
-** mod 
-- most channels already exist in NeuroML2
-- converting NeuroML2 -> mod is possible
-** github
-- waffle - organize issues
-- pull request to release
-
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -1529,27 +1521,3 @@ a = next((i for i in userInput if i in wordsTask), None)
 ** Add connecitity patterns for individual cells
 - eg. LGN -> V1 patterns
 - shared weights across input image
-
-** Allow range of properties
-eg. 'gnabar':[0.11, 0.13] and each cell being assigned a random value within that range
-** Wrappers to change properties interactively both of NEURON+netpyne object
-maybe can define generic wrappers for some of the most common cases; maybe include within same global wrapper that checks which needs to be used
-** generate interactive net struct from code
-- collapse/expand
-http://neurosimlab.org/netpyne/_images/netstruct.png
-** add units
-- uS for synMech weight
-** Netstim default start
-** Plot cell subset of each population, indicating relative index
-** Connection function with specific connections
-** DONE ? Connection function with specific connections
-- fromList 
-- relativePreIds
-- relativePostIds
-- connList
-
-** Update Cm of section based on C of Izhi
-** Add option to save different data (specs, instance, output) to different file names
-including dat (txt) format
-
-

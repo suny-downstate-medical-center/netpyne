@@ -155,7 +155,7 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 	
 	* **syns**: Dictionary of synaptic mechanisms (point processes). 
-		The key contains an arbitrary label for the synaptic mechanism (e.g. 'AMPA').
+		The key contains an arbitrary label for the synaptic mechanism (e.g. 'NMDA').
 		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore:
@@ -190,13 +190,13 @@ Example of two cell property rules::
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['synMechs']['AMPA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+	dend['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
@@ -208,7 +208,7 @@ Example of two cell property rules::
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'_type':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['synMechs']['AMPA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['NMDA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
@@ -241,7 +241,7 @@ Example of synaptic mechanism parameters for a simple excitatory synaptic mechan
 
 	## Synaptic mechanism parameters
 	netParams['synMechParams'] = []
-	netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+	netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -317,7 +317,7 @@ Example of connectivity rules:
 		'preTags': {'popLabel': 'S'}, 
 		'postTags': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
-		'synMech': 'AMPA',					# target synaptic mechanism
+		'synMech': 'NMDA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
 		'probability': 0.5})				# probability of connection		
@@ -325,7 +325,7 @@ Example of connectivity rules:
 	netParams['connParams'].append(
 		{'preTags': {'popLabel': 'background'}, 
 		'postTags': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
-		'synReceptor': 'AMPA',					# target synaptic mechanism 
+		'synReceptor': 'NMDA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 

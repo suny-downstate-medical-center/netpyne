@@ -13,9 +13,9 @@ The data file is available in Pickle, JSON and Matlab formats.
 
 Three example model parameters are provided: 
 
-1. **[HHTut.py](examples/HHTut/HHTut.py)** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
-2. **[HybridTut.py](examples/HybridTut/HybridTut.py)** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
-3. **[M1.py](examples/M1/M1.py)** - mouse M1 model with 14 populations and cortical depth-dependent connectivity.
+1. **HHTut.py** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
+2. **HybridTut.py** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
+3. **M1.py** - mouse M1 model with 14 populations and cortical depth-dependent connectivity.
 
 Additional details of the modelling framework can be found here:
 
@@ -30,7 +30,7 @@ Requires NEURON with Python and MPI support.
 
 1. Install package via `pip install netpyne`.
 
-2. Create a model file (eg. model.py) where you import the netpyne package and set the parameters (you can use some of the parameter files included in the `examples` folder, e.g. `HHTut.py`):
+2. Create a model file (eg. model.py) where you import the netpyne package and set the parameters (you can use some of the parameter files incldued in the `examples` folder, eg. `HHTut.py`):
 
 	```
 	import HHTut
@@ -43,14 +43,6 @@ Requires NEURON with Python and MPI support.
 3. Type `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 
 4. To run type `python model.py` (or `mpiexec -np [num_proc] nrniv -python -mpi model.py` for parallel simulation).
-
-5. The example mentioned above can be run with:
-    
-	```
-     cd examples/HHTut
-     python HHTut_run.py
-	```
-    
 
 ## Overview of files:
 

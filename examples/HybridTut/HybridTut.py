@@ -53,15 +53,15 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
 
 soma = {'geom': {}, 'pointps':{}}  # soma properties
-soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0}
-soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
+netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'ExpSyn', 'tau': 0.1, 'e': 0})
  
 
 # Connectivity parameters
@@ -69,26 +69,26 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},
-    'weight': 0.004,                    # weight of each connection
+    'weight': 0.2,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(0,5)',       # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
-    'synMech': 'NMDA'})    
+    'synMech': 'AMPA'})    
 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
-    'weight': 0.004, 
+    'weight': 1, 
     'delay': 'uniform(1,5)',
-    'synMech': 'NMDA'})  
+    'synMech': 'AMPA'})  
 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
-    'weight': 20, 
-    'synMech': 'NMDA',
+    'weight': 1, 
+    'synMech': 'AMPA',
     'sec': 'dend',
     'loc': 1.0,
     'delay': 'uniform(1,5)'})  
@@ -116,8 +116,8 @@ simConfig['recordCells'] = []  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'NMDA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'g'},
-    'NMDA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'i'}}
+    'AMPA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'g'},
+    'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 

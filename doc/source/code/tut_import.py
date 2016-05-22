@@ -61,7 +61,7 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2003b (section voltage)
 cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
-cellRule['sections']['soma']['synMechs']['NMDA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
+cellRule['sections']['soma']['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007a (independent voltage)
@@ -79,21 +79,21 @@ netParams['cellParams'].append(cellRule)
 
 ## Synaptic mechanism parameters
 netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
  
 
 ## Connectivity params
 netParams['connParams'] = []  
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['Traub', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.001)
+	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['Traub', 'Mainen']}, # background -> PYR (weight=0.001)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.001, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})		
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['HH', 'HH3D']}, # background -> PYR (weight=0.1)
+	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['HH', 'HH3D', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
@@ -104,7 +104,7 @@ netParams['connParams'].append({
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'synMech':'NMDA',
+	'synMech':'AMPA',
 	'sec': 'soma'})				
 
 netParams['connParams'].append({

@@ -12,7 +12,7 @@ UNITS {
 
 INITIAL {
   v=-65
-  u=0.2*v
+  u=0.0
   net_send(0,1)  
 }
 

@@ -45,7 +45,8 @@ class Network(object):
     def createCells(self):
         f.pc.barrier()
         f.sim.timing('start', 'createTime')
-        if f.rank==0: print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), f.cfg['duration']/1000.,f.nhosts)) 
+        if f.rank==0: 
+            print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), f.cfg['duration']/1000.,f.nhosts)) 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
         self.lastGid = 0  # keep track of last cell gid 
@@ -60,16 +61,67 @@ class Network(object):
         f.pc.barrier()
         f.sim.timing('stop', 'createTime')
         if f.rank == 0 and f.cfg['timing']: print('  Done; cell creation time = %0.2f s.' % f.timing['createTime'])
-        
+    
+    ###############################################################################
+    #  Add stims
+    ###############################################################################
+    def addStims(self):
+        f.sim.timing('start', 'stimsTime')
+        if 'stimParams' in self.params:
+            if f.rank==0: 
+                print('Adding stims...')
+                
+            if f.nhosts > 1: # Gather tags from all cells 
+                allCellTags = f.sim.gatherAllCellTags()  
+            else:
+                allCellTags = {cell.gid: cell.tags for cell in self.cells}
+            # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
+
+            sources = self.params['stimParams']['sourceList']
+
+            for stim in self.params['stimParams']['stimList']:  # for each conn rule or parameter set
+                if 'sec' not in stim: stim['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+                
+                source = next((source for source in sources if source['label'] == stim['source']), None)
+
+                postCellsTags = allCellTags
+                for condKey,condValue in stim['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
+                    if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    elif condKey == 'cellList':
+                        pass
+                    elif isinstance(condValue, list): 
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                    else:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+                    
+                if 'cellList' in stim['conditions']:
+                    orderedPostGids = sorted(postCellsTags.keys())
+                    gidList = [orderedPostGids[i] for i in stim['conditions']['cellList']]
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
+
+                for postCellGid in postCellsTags:  # for each postsyn cell
+                    if postCellGid in f.net.lid2gid:  # check if postsyn is in this node's list of gids
+                        postCell = f.net.cells[f.net.gid2lid[postCellGid]]  # get Cell object 
+                        params = {'sec': stim['sec'], 
+                                'loc': stim['loc'],
+                                'delay': source['delay'],
+                                'dur': source['dur'],
+                                'amp': source['amp']}
+                        if source['type'] == 'IClamp':
+                            postCell.addIClamp(params)  # call cell method to add connections
+
+            f.sim.timing('stop', 'stimsTime')
+
 
     ###############################################################################
     # Connect Cells
     ###############################################################################
     def connectCells(self):
         # Instantiate network connections based on the connectivity rules defined in params
+        f.sim.timing('start', 'connectTime')
         if f.rank==0: 
             print('Making connections...')
-            f.sim.timing('start', 'connectTime')
 
         if f.nhosts > 1: # Gather tags from all cells 
             allCellTags = f.sim.gatherAllCellTags()  
@@ -77,7 +129,8 @@ class Network(object):
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
-        for connParam in self.params['connParams']:  # for each conn rule or parameter set
+        for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
+            connParam = connParamTemp.copy()
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
             if 'threshold' not in connParam: connParam['threshold'] = None  # if no threshold specified, make None (will be assigned default value)
@@ -101,6 +154,7 @@ class Network(object):
             if not preCellsTags: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     for prePop in prePops.values():
+                        if not 'start' in prePop: prePop['start'] = 5  # add default start time
                         if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
                         if not 'source' in prePop: prePop['source'] = 'random'  # add default source
                     preCellsTags = prePops
@@ -120,6 +174,7 @@ class Network(object):
                     if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
                     elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
                     elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
+                    elif 'connList' in connParam: connParam['connFunc'] = 'fromListConn'  # from list function
                     else: connParam['connFunc'] = 'fullConn'  # convergence function
 
                 connFunc = getattr(self, connParam['connFunc'])  # get function name from params
@@ -181,7 +236,7 @@ class Network(object):
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
        
-             # initialize randomizer in case used in function
+            # initialize randomizer in case used in function
             seed(f.sim.id32('%d'%(f.cfg['randseed'])))
 
             if paramStrFunc in ['probability']:
@@ -233,12 +288,13 @@ class Network(object):
                         'noise': preCellTags['noise'],
                         'source': preCellTags['source'], 
                         'number': preCellTags['number'],
+                        'start': preCellTags['start'],
                         'sec': connParam['sec'], 
                         'synMech': connParam['synMech'], 
                         'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else connParam['weight'],
                         'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else connParam['delay'],
                         'threshold': connParam['threshold']}
-                        postCell.addStim(params)  # call cell method to add connections              
+                        postCell.addNetStim(params)  # call cell method to add connections              
                     elif preCellGid != postCellGid:
                         # if not self-connection
                         params = {'preGid': preCellGid, 
@@ -278,13 +334,14 @@ class Network(object):
                                     'rate': preCellTags['rate'],
                                     'noise': preCellTags['noise'],
                                     'source': preCellTags['source'], 
+                                    'start': preCellTags['start'],
                                     'number': preCellTags['number'],
                                     'sec': connParam['sec'], 
                                     'synMech': connParam['synMech'], 
                                     'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                     'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
                                     'threshold': connParam['threshold']}
-                            postCell.addStim(params)  # call cell method to add connections              
+                            postCell.addNetStim(params)  # call cell method to add connections              
                         elif preCellGid != postCellGid:
                             # if not self-connection
                             params = {'preGid': preCellGid, 
@@ -363,5 +420,56 @@ class Network(object):
                             'threshold': connParam['threshold'],
                             'plasticity': connParam.get('plasticity')}
                     postCell.addConn(params)  # call cell method to add connections
-   
+                    
+                    
+    ###############################################################################
+    ### From list connectivity 
+    ###############################################################################
+    def fromListConn(self, preCellsTags, postCellsTags, connParam):
+        ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
+        if f.cfg['verbose']: print 'Generating set of connections from list...'
+
+        # list of params that can have a lambda function
+        paramsStrFunc = [param for param in ['weightFunc', 'delayFunc'] if param in connParam] 
+        for paramStrFunc in paramsStrFunc:
+            # replace lambda function (with args as dict of lambda funcs) with list of values
+            seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
+            connParam[paramStrFunc] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
+                    for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
+        
+        orderedPreGids = sorted(preCellsTags.keys())
+        orderedPostGids = sorted(postCellsTags.keys())
+        for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
+            preCellGid = orderedPreGids[relativePreId]
+            preCellTags = preCellsTags[preCellGid]  # get pre cell based on relative id        
+            postCellGid = orderedPostGids[relativePostId]
+            if postCellGid in f.net.lid2gid:  # check if postsyn is in this node's list of gids
+                postCell = f.net.cells[f.net.gid2lid[postCellGid]]  # get Cell object 
+                weight = connParam['weight'][iconn] if isinstance(connParam['weight'], list) else connParam['weight']
+                delay = connParam['delay'][iconn] if isinstance(connParam['delay'], list) else connParam['delay']
+                if preCellTags['cellModel'] == 'NetStim':  # if NetStim
+                    params = {'popLabel': preCellTags['popLabel'],
+                    'rate': preCellTags['rate'],
+                    'noise': preCellTags['noise'],
+                    'source': preCellTags['source'], 
+                    'start': preCellTags['start'],
+                    'number': preCellTags['number'],
+                    'sec': connParam['sec'], 
+                    'synMech': connParam['synMech'], 
+                    'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else weight,
+                    'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else delay,
+                    'threshold': connParam['threshold']}
+                    postCell.addNetStim(params)  # call cell method to add connections              
+                elif preCellGid != postCellGid:
+                    # if not self-connection
+                    params = {'preGid': preCellGid, 
+                    'sec': connParam['sec'], 
+                    'synMech': connParam['synMech'], 
+                    'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else weight,
+                    'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else delay,
+                    'threshold': connParam['threshold'],
+                    'plasticity': connParam.get('plasticity')}
+                    postCell.addConn(params)  # call cell method to add connections
+
+
 

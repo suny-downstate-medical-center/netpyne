@@ -21,6 +21,7 @@ def createAndSimulate(netParams, simConfig):
     f.net.createPops()                  # instantiate network populations
     f.net.createCells()                 # instantiate network cells based on defined populations
     f.net.connectCells()                # create connections between cells based on params
+    f.net.addStims()                    # add external stimulation to cells (IClamps etc)
     f.sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     f.sim.runSim()                      # run parallel Neuron simulation  
     f.sim.gatherData()                  # gather spiking data and cell info from each node
@@ -41,6 +42,7 @@ def createAndExport(netParams, simConfig, reference, connections=True,stimulatio
     f.net.createPops()                  # instantiate network populations
     f.net.createCells()                 # instantiate network cells based on defined populations
     f.net.connectCells()                # create connections between cells based on params
+    f.net.addStims()                    # add external stimulation to cells (IClamps etc) 
     f.sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     f.sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
 

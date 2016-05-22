@@ -30,8 +30,9 @@ def initialize(netParams = {}, simConfig = {}, net = None):
     
     setSimCfg(simConfig)  # set simulation configuration
     
-    timing('start', 'initialTime')
-    timing('start', 'totalTime')
+    if f.rank==0: 
+        timing('start', 'initialTime')
+        timing('start', 'totalTime')
 
     if net:
         setNet(f.net)  # set existing external network
@@ -288,8 +289,9 @@ def runSim():
     # reset all netstims so runs are always equivalent
     for cell in f.net.cells:
         for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid,cell.gid*2)
-            stim['hRandom'].negexp(1)
+            if 'hRandom' in stim:
+                stim['hRandom'].Random123(cell.gid,cell.gid*2)
+                stim['hRandom'].negexp(1)
 
     init()
     f.pc.psolve(f.cfg['duration'])
@@ -461,13 +463,11 @@ def saveData():
 
         # Save to dpk file
         if f.cfg['saveDpk']:
-            import os,gzip
+            import gzip
             print('Saving output as %s ... ' % (f.cfg['filename']+'.dpk'))
-            fn=f.params['filename'].split('.')
-            #fn='{}{:d}.{}'.format(fn[0],int(round(h.t)),fn[1]) # insert integer time into the middle of file name
-            gzip.open(fn, 'wb').write(pk.dumps(f.alls.simData)) # write compressed string
+            fn=f.cfg['filename'] #.split('.')
+            gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
             print('Finished saving!')
-            #print 'Wrote file {}/{} of size {:.3f} MB'.format(os.getcwd(),fn,os.path.getsize(file)/1e6)
 
         # Save to json file
         if f.cfg['saveJson']:

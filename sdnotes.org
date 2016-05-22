@@ -1456,8 +1456,26 @@ EMstim == EM !!
 - maybe iclamp for paper?
 - can implement via pointp in cell properties? - no, so can assign to multiple
 - create new struct stimParams
-- netParams['stimParams']
-- netParams['stimParams']['
+
+netParams['stimParams'] = []
+netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 0.1, 'dur': 0.5, 'amp': 0.5})
+netParams['stimParams']['stimList'].append({
+	'source': 'Input_1', 
+	'sec':'soma', 
+	'loc': 0.5, 
+	'conditions': {'popLabel':'PYR', 'cellList': [0,5]}})
+
+
+
+
+in NeuroML:
+
+   <pulseGenerator id="Input_1" delay="0.1s" duration="0.5s" amplitude="6.0E-10A"/>
+    <pulseGenerator id="Input_0" delay="0.1s" duration="0.5s" amplitude="1.0E-10A"/>
+
+        <inputList id="Input_1" component="Input_1" population="pyramidals">
+            <input id="0" target="../pyramidals/0/pyr_4_sym" destination="synapses"/>
+        </inputList>
 
 
 ** Upload examples to netpyne repo (paper)

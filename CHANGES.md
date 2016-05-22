@@ -1,3 +1,4 @@
+## Version 0.4.6
 ## Version 0.4.5
 
 - Fixed bug saving to JSON on single node

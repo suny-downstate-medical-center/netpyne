@@ -12,7 +12,7 @@ NEURON {
 
 INITIAL {
   V=-65
-  u=0.2*V
+  u=0.0
   gsyn=0
   net_send(0,1)
 }

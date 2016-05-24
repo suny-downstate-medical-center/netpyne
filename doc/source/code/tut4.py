@@ -24,9 +24,9 @@ netParams['cellParams'].append(cellRule)  												# add dict to list of cell
 
 cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 	# cell rule dict
 soma = {'geom': {}, 'pointps': {}, 'synMechs': {}}  										# soma params dict
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+soma['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
 soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 
-	'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
+	'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
 cellRule['sections'] = {'soma': soma}  									# add soma section to dict
 netParams['cellParams'].append(cellRule)  	
 
@@ -38,14 +38,14 @@ netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 1.0
 ## Cell connectivity rules
 netParams['connParams'] = []  
 netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
-	'probability': 0.5, 		# probability of connection
-	'weight': 0.01, 			# synaptic weight 
+	'probability': 0.1, 		# probability of connection
+	'weight': 0.005, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
 	'synMech': 'exc'})   	# target synapse 
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-	'weight': 0.0001, 				# synaptic weight 
+	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'exc'})  	# target synapse 
 

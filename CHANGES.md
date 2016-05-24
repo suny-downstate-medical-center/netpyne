@@ -1,3 +1,22 @@
+## Version 0.4.6
+
+- Preliminary version of exporter to NeuroML2
+
+- Added fromList connectivity function
+
+- Added new dict 'stimParams' with support for IClamps
+
+- Added 'start' param to NetStim populations
+
+- Modified izhi2007 'u' starting value to be 0 instead of 0.2
+
+- Modified izhi2007 'C' value and the section properties so that synaptic weights match HH
+
+- Renamed NMDA synapses to AMPA
+
+- Fixed bugs in tuts
+
+
 ## Version 0.4.5
 
 - Fixed bug saving to JSON on single node

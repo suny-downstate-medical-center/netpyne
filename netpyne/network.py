@@ -67,50 +67,51 @@ class Network(object):
     ###############################################################################
     def addStims(self):
         f.sim.timing('start', 'stimsTime')
-        if f.rank==0: 
-            print('Adding stims...')
-            
-        if f.nhosts > 1: # Gather tags from all cells 
-            allCellTags = f.sim.gatherAllCellTags()  
-        else:
-            allCellTags = {cell.gid: cell.tags for cell in self.cells}
-        # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
-
-        sources = self.params['stimParams']['sourceList']
-
-        for stim in self.params['stimParams']['stimList']:  # for each conn rule or parameter set
-            if 'sec' not in stim: stim['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            
-            source = next((source for source in sources if source['label'] == stim['source']), None)
-
-            postCellsTags = allCellTags
-            for condKey,condValue in stim['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
-                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-                elif condKey == 'cellList':
-                    pass
-                elif isinstance(condValue, list): 
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
-                else:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+        if 'stimParams' in self.params:
+            if f.rank==0: 
+                print('Adding stims...')
                 
-            if 'cellList' in stim['conditions']:
-                orderedPostGids = sorted(postCellsTags.keys())
-                gidList = [orderedPostGids[i] for i in stim['conditions']['cellList']]
-                postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
+            if f.nhosts > 1: # Gather tags from all cells 
+                allCellTags = f.sim.gatherAllCellTags()  
+            else:
+                allCellTags = {cell.gid: cell.tags for cell in self.cells}
+            # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
-            for postCellGid in postCellsTags:  # for each postsyn cell
-                if postCellGid in f.net.lid2gid:  # check if postsyn is in this node's list of gids
-                    postCell = f.net.cells[f.net.gid2lid[postCellGid]]  # get Cell object 
-                    params = {'sec': stim['sec'], 
-                            'loc': stim['loc'],
-                            'delay': source['delay'],
-                            'dur': source['dur'],
-                            'amp': source['amp']}
-                    if source['type'] == 'IClamp':
-                        postCell.addIClamp(params)  # call cell method to add connections
+            sources = self.params['stimParams']['sourceList']
 
-        f.sim.timing('stop', 'stimsTime')
+            for stim in self.params['stimParams']['stimList']:  # for each conn rule or parameter set
+                if 'sec' not in stim: stim['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+                
+                source = next((source for source in sources if source['label'] == stim['source']), None)
+
+                postCellsTags = allCellTags
+                for condKey,condValue in stim['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
+                    if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    elif condKey == 'cellList':
+                        pass
+                    elif isinstance(condValue, list): 
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                    else:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+                    
+                if 'cellList' in stim['conditions']:
+                    orderedPostGids = sorted(postCellsTags.keys())
+                    gidList = [orderedPostGids[i] for i in stim['conditions']['cellList']]
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
+
+                for postCellGid in postCellsTags:  # for each postsyn cell
+                    if postCellGid in f.net.lid2gid:  # check if postsyn is in this node's list of gids
+                        postCell = f.net.cells[f.net.gid2lid[postCellGid]]  # get Cell object 
+                        params = {'sec': stim['sec'], 
+                                'loc': stim['loc'],
+                                'delay': source['delay'],
+                                'dur': source['dur'],
+                                'amp': source['amp']}
+                        if source['type'] == 'IClamp':
+                            postCell.addIClamp(params)  # call cell method to add connections
+
+            f.sim.timing('stop', 'stimsTime')
 
 
     ###############################################################################

@@ -25,6 +25,9 @@ class Cell(object):
         self.secs = {}  # dict of sections
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
+        
+        self.stimtimevecs = None # Create array for storing time vectors
+        self.stimweightvecs = None # Create array for holding weight vectors
 
         self.create()  # create cell 
         self.associateGid() # register cell for this node
@@ -405,7 +408,7 @@ class Cell(object):
                 pulse = pulse/max(pulse)
             elif stimshape=='square': 
                 pulse = zeros(shape(x))
-                pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
+#                pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
             else:
                 raise Exception('Stimulus shape "%s" not recognized' % stimshape)
             
@@ -422,11 +425,9 @@ class Cell(object):
             return stimvecs        
         
         # Time-dependently shaping connection weights of NetStim...
-        stimtimevecs = [] # Create array for storing time vectors
-        stimweightvecs = [] # Create array for holding weight vectors
         stimvecs = shapeStim(finish=1, stimshape='square')
-        stimtimevecs.append(h.Vector().from_python(stimvecs[0]))
-        stimweightvecs.append(h.Vector().from_python(stimvecs[1]))
+        self.stimtimevecs = h.Vector().from_python(stimvecs[0])
+        self.stimweightvecs = h.Vector().from_python(stimvecs[1])
 #        stimweightvecs[-1].play(netcon._ref_weight[weightIndex], stimtimevecs[-1]) # Play most-recently-added vectors into weight
 #        print stimvecs[0]
 #        print stimvecs[1]
@@ -438,13 +439,15 @@ class Cell(object):
 #        print 'Blah1'
 #        blah2.printf()
 #        print 'Blah2'
-#        stimtimevecs[-1].printf()
-#        print 'Yo'
-#        stimweightvecs[-1].printf()
-#        print 'Ho'
+        self.stimweightvecs.printf()
+        print 'Yo'
+        self.stimtimevecs.printf()
+        print 'Ho'
 #        netcon._ref_weight[0].printf()
-        stimweightvecs[-1].play(netcon.weight[weightIndex], stimtimevecs[-1]) # Play most-recently-added vectors into weight   
+        self.stimweightvecs.play(netcon.weight[weightIndex], self.stimtimevecs) # Play most-recently-added vectors into weight   
 #        netcon.weight[weightIndex].printf()
+        
+#        netcon.weight[weightIndex] = 0
         
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay

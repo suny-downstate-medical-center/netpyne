@@ -426,30 +426,22 @@ class Cell(object):
             
             return stimvecs        
         
-        # Time-dependently shaping connection weights of NetStim...
-        stimvecs = shapeStim(finish=1, stimshape='square')
-        self.stimtimevecs = h.Vector().from_python(stimvecs[0])
-        self.stimweightvecs = h.Vector().from_python(stimvecs[1])
-#        stimweightvecs[-1].play(netcon._ref_weight[weightIndex], stimtimevecs[-1]) # Play most-recently-added vectors into weight
-#        print stimvecs[0]
-#        print stimvecs[1]
-#        blah1 = h.Vector()
-#        blah2 = h.Vector()
-#        blah1 = blah1.from_python(stimvecs[0])
-#        blah2 = blah2.from_python(stimvecs[1])
-#        blah1.printf()
-#        print 'Blah1'
-#        blah2.printf()
-#        print 'Blah2'
-        self.stimweightvecs.printf()
-        print 'Yo'
-        self.stimtimevecs.printf()
-        print 'Ho'
-#        netcon._ref_weight[0].printf()
-        self.stimweightvecs.play(netcon.weight[weightIndex], self.stimtimevecs) # Play most-recently-added vectors into weight   
-#        netcon.weight[weightIndex].printf()
-        
-#        netcon.weight[weightIndex] = 0
+#        # Time-dependently shaping connection weights of NetStim...
+#        stimvecs = shapeStim(start=1, finish=2, stimshape='square')
+#        self.stimtimevecs = h.Vector().from_python(stimvecs[0])
+#        self.stimweightvecs = h.Vector().from_python(stimvecs[1])
+#        
+#        self.stimtimevecs = h.Vector().from_python([0, 1000, 1001, 2000])
+#        self.stimweightvecs = h.Vector().from_python([100, 100, 0, 0])
+#        
+#        self.stimweightvecs.printf()
+#        print 'Yo'
+#        self.stimtimevecs.printf()
+#        print 'Ho'
+#
+#        self.stimweightvecs.play(netcon._ref_weight[weightIndex], self.stimtimevecs) # Play most-recently-added vectors into weight   
+
+
         
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay

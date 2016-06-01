@@ -407,17 +407,21 @@ class Cell(object):
             x = (r_[0:npts]-npts/2+1)*timeres
             if stimshape=='gaussian': 
                 pulse = exp(-(x/width*2-2)**2) # Offset by 2 standard deviations from start
+                pulse = exp(-2*(x/width-1)**2) # Offset by 2 standard deviations from start
                 pulse = pulse/max(pulse)
             elif stimshape=='square': 
                 pulse = zeros(shape(x))
-#                pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
+                pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
             else:
                 raise Exception('Stimulus shape "%s" not recognized' % stimshape)
             
             # Create full stimulus
             events = zeros((allpts))
             events[array(array(output)/timeres,dtype=int)] = 1
+            print events
+            print pulse
             fulloutput = convolve(events,pulse,mode='same')*weight # Calculate the convolved input signal, scaled by rate
+            print fulloutput
             fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
             fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
             fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
@@ -425,21 +429,23 @@ class Cell(object):
             stimvecs = [fulltime, fulloutput, events] # Combine vectors into a matrix           
             
             return stimvecs        
-        
-#        # Time-dependently shaping connection weights of NetStim...
-#        stimvecs = shapeStim(start=1, finish=2, stimshape='square')
-#        self.stimtimevecs = h.Vector().from_python(stimvecs[0])
-#        self.stimweightvecs = h.Vector().from_python(stimvecs[1])
-#        
-#        self.stimtimevecs = h.Vector().from_python([0, 1000, 1001, 2000])
-#        self.stimweightvecs = h.Vector().from_python([100, 100, 0, 0])
-#        
-#        self.stimweightvecs.printf()
-#        print 'Yo'
-#        self.stimtimevecs.printf()
-#        print 'Ho'
-#
-#        self.stimweightvecs.play(netcon._ref_weight[weightIndex], self.stimtimevecs) # Play most-recently-added vectors into weight   
+
+
+        # Time-dependently shaping connection weights of NetStim...
+        if 'shape' in params and params['shape']:
+            stimvecs = shapeStim(width=0.1, isi=0.25, weight=100, finish=2, stimshape='gaussian')
+            self.stimtimevecs = h.Vector().from_python(stimvecs[0])
+            self.stimweightvecs = h.Vector().from_python(stimvecs[1])
+            
+#            self.stimtimevecs = h.Vector().from_python([0, 1000, 1001, 2000])
+#            self.stimweightvecs = h.Vector().from_python([100, 100, 0, 0])
+            
+#            self.stimweightvecs.printf()
+#            print 'Yo'
+#            self.stimtimevecs.printf()
+#            print 'Ho'
+    
+            self.stimweightvecs.play(netcon._ref_weight[weightIndex], self.stimtimevecs) # Play most-recently-added vectors into weight   
 
 
         

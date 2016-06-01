@@ -14,7 +14,8 @@ from numbers import Number
 from copy import copy
 from neuron import h  # import NEURON
 import framework as f
-
+    
+    
 
 class Network(object):
 
@@ -292,7 +293,8 @@ class Network(object):
                         'synMech': connParam['synMech'], 
                         'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else connParam['weight'],
                         'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else connParam['delay'],
-                        'threshold': connParam['threshold']}
+                        'threshold': connParam['threshold'],
+                        'shape': connParam['shape'] if 'shape' in connParam else None}
                         postCell.addNetStim(params)  # call cell method to add connections              
                     elif preCellGid != postCellGid:
                         # if not self-connection
@@ -339,7 +341,8 @@ class Network(object):
                                     'synMech': connParam['synMech'], 
                                     'weight': connParam['weightFunc'](**weightVars) if 'weightFunc' in connParam else connParam['weight'],
                                     'delay': connParam['delayFunc'](**delayVars) if 'delayFunc' in connParam else connParam['delay'], 
-                                    'threshold': connParam['threshold']}
+                                    'threshold': connParam['threshold'],
+                                    'shape': connParam['shape'] if 'shape' in connParam else None}
                             postCell.addNetStim(params)  # call cell method to add connections              
                         elif preCellGid != postCellGid:
                             # if not self-connection
@@ -457,7 +460,8 @@ class Network(object):
                     'synMech': connParam['synMech'], 
                     'weight': connParam['weightFunc'][preCellGid,postCellGid] if 'weightFunc' in connParam else weight,
                     'delay': connParam['delayFunc'][preCellGid,postCellGid] if 'delayFunc' in connParam else delay,
-                    'threshold': connParam['threshold']}
+                    'threshold': connParam['threshold'],
+                    'shape': connParam['shape'] if 'shape' in connParam else None}
                     postCell.addNetStim(params)  # call cell method to add connections              
                 elif preCellGid != postCellGid:
                     # if not self-connection

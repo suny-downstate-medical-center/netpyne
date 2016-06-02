@@ -55,8 +55,7 @@ notifications:
         on_success: never
         on_fail: never
     slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
-        on_success: never
-        on_fail: always
+
 
 # # Framework for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation
 

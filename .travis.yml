@@ -33,7 +33,7 @@ install:
     - cd ../../..
     - ls -alt
     - export NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
-    - export PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
+    - export PYTHONPATH=$TRAVIS_BUILD_DIR:/usr/local/lib/python2.7/dist-packages/:$PYTHONPATH
     - $NEURON_HOME/nrnivmodl doc/source/code/mod
     - cp examples/HHTut/HHTut.py doc/source/code/
 

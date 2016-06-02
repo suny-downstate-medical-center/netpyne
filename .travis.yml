@@ -18,10 +18,14 @@ language: python
 python: 2.7
 
 env:
-    - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+    system_site_packages: true  
+#    - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
 #   - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
 
 install:
+    - pip install numpy                                                                                                                                                                                                               
+    - pip install matplotlib
+    - pip install scipy
     - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
     - tar xzvf nrn-7.3.tar.gz
     - cd nrn-7.3

@@ -288,7 +288,7 @@ def runSim():
     for cell in f.net.cells:
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid,cell.gid*2)
+                stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(f.cfg['seeds']['stim'])))
                 stim['hRandom'].negexp(1)
 
     init()
@@ -317,7 +317,7 @@ def runSimWithIntervalFunc(interval, func):
     # reset all netstims so runs are always equivalent
     for cell in f.net.cells:
         for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid,cell.gid*2)
+            stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(f.cfg['seeds']['stim'])))
             stim['hRandom'].negexp(1)
 
     init()
@@ -375,7 +375,7 @@ def gatherData():
             f.allSimData = {} 
             for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                 f.allSimData[k] = {}
-            #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND UPDATE ALLSIMDATA ACCORDINGLY ####
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
             for node in gather:  # concatenate data from each node
                 allCells.extend(node['netCells'])  # extend allCells list
                 for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 

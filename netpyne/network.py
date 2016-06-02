@@ -237,7 +237,7 @@ class Network(object):
             lambdaFunc = eval(lambdaStr)
        
             # initialize randomizer in case used in function
-            seed(f.sim.id32('%d'%(f.cfg['randseed'])))
+            seed(f.sim.id32('%d'%(f.cfg['seeds']['conn'])))
 
             if paramStrFunc in ['probability']:
                 # replace function with dict of values derived from function (one per pre+post cell)
@@ -274,7 +274,7 @@ class Network(object):
         paramsStrFunc = [param for param in ['weightFunc', 'delayFunc'] if param in connParam] 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
+            seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
             connParam[paramStrFunc] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
          
@@ -315,7 +315,7 @@ class Network(object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if f.cfg['verbose']: print 'Generating set of probabilistic connections...'
 
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))  
+        seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
@@ -328,7 +328,7 @@ class Network(object):
                     if 'delayFunc' in connParam: 
                         delayVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
                     if probability >= allRands[preCellGid,postCellGid]:
-                        seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
+                        seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                             params = {'popLabel': preCellTags['popLabel'],
                                     'rate': preCellTags['rate'],
@@ -367,7 +367,7 @@ class Network(object):
                 postCell = f.net.cells[f.net.gid2lid[postCellGid]]  # get Cell object
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
-                seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid)))  
+                seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+postCellGid)))  
                 preCellsSample = sample(preCellsTags.keys(), convergence)  # selected gids of presyn cells
                 preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
@@ -375,7 +375,7 @@ class Network(object):
                         weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                     if 'delayFunc' in connParam: 
                         delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
-                    seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
+                    seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                         print 'Error: Convergent connectivity for NetStims is not implemented'
                     elif preCellGid != postCellGid: # if not self-connection
@@ -399,7 +399,7 @@ class Network(object):
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
-            seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellGid)))  
+            seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+preCellGid)))  
             postCellsSample = sample(postCellsTags, divergence)  # selected gids of postsyn cells
             postCellsDiv = {postGid:postTags  for postGid,postTags in postCellsTags.iteritems() if postGid in postCellsSample and postGid in f.net.lid2gid}  # dict of selected postsyn cells tags
             for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
@@ -408,7 +408,7 @@ class Network(object):
                     weightVars = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam['weightFuncVars'].iteritems()}  # call lambda functions to get weight func args
                 if 'delayFunc' in connParam: 
                     delayVars = {k:v if isinstance(v, Number) else v(preCellTags, postCellTags) for k,v in connParam['delayFuncVars'].iteritems()}  # call lambda functions to get delay func args
-                seed(f.sim.id32('%d'%(f.cfg['randseed']+postCellGid+preCellGid)))  
+                seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                     print 'Error: Divergent connectivity for NetStims is not implemented'           
                 elif preCellGid != postCellGid: # if not self-connection
@@ -433,7 +433,7 @@ class Network(object):
         paramsStrFunc = [param for param in ['weightFunc', 'delayFunc'] if param in connParam] 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            seed(f.sim.id32('%d'%(f.cfg['randseed']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
+            seed(f.sim.id32('%d'%(f.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
             connParam[paramStrFunc] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
         

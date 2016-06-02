@@ -33,23 +33,22 @@ install:
     - cd ../../..
     - ls -alt
     - export NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
-    - echo $PYTHONPATH
-    - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR:/usr/local/lib/python2.7/dist-packages/
+    - export PYTHONPATH=$TRAVIS_BUILD_DIR:/usr/local/lib/python2.7/dist-packages/:/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages
     - echo $PYTHONPATH
     - $NEURON_HOME/nrnivmodl doc/source/code/mod
     - cp examples/HHTut/HHTut.py doc/source/code/
 
 script:
     - python doc/source/code/tut1.py
-    # - python doc/source/code/tut2.py
-    # - python doc/source/code/tut3.py
-    # - python doc/source/code/tut5.py
-    # - python doc/source/code/tut6.py
-    # - python doc/source/code/tut_import.py
-    # - python examples/HHTut/HHTut_run.py
-    # - python examples/HybridTut/HybridTut_run.py
-    # - python examples/M1/M1_run.py
-    # - python examples/RL_arm/main.py
+    - python doc/source/code/tut2.py
+    - python doc/source/code/tut3.py
+    - python doc/source/code/tut5.py
+    - python doc/source/code/tut6.py
+    - python doc/source/code/tut_import.py
+    - python examples/HHTut/HHTut_run.py
+    - python examples/HybridTut/HybridTut_run.py
+    - python examples/M1/M1_run.py
+    - python examples/RL_arm/main.py
 
 notifications: 
     email: false

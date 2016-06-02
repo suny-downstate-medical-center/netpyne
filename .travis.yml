@@ -25,8 +25,8 @@ addons:
 language: python
 python: 2.7
 
-# env:
-#   - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+env:
+    - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
 #   - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
 
 install:

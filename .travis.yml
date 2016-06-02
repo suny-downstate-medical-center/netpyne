@@ -1,4 +1,9 @@
 # Netpyne travis testing script
+notifications: 
+    email:
+        on_success: never
+        on_fail: always
+
 sudo: true
 
 addons:
@@ -20,6 +25,7 @@ python: 2.7
 env:
   matrix:
   - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+  - PYTHONPATH=.;$PYTHONPATH
 
 install:
     - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
@@ -33,9 +39,15 @@ install:
     - cd ../../..
     - ls -alt
     - $NEURON_HOME/nrnivmodl doc/source/code/mod
+    - cp examples/HHTut/HHTut.py doc/source/code/
 
 script:
+    - python doc/source/code/tut1.py
     - python doc/source/code/tut2.py
+    - python doc/source/code/tut3.py
+    - python doc/source/code/tut5.py
+    - python doc/source/code/tut6.py
+    - python doc/source/code/tut_import.py
 
 # # Framework for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation
 

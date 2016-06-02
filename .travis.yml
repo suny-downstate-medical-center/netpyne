@@ -1,11 +1,4 @@
 # Netpyne travis testing script
-notifications: 
-    email:
-        on_success: never
-        on_fail: never
-    slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
-        on_success: never
-        on_fail: always
 
 sudo: true
 
@@ -57,7 +50,13 @@ script:
     - python examples/M1/M1_run.py
     - python examples/RL_arm/main.py
 
-
+notifications: 
+    email:
+        on_success: never
+        on_fail: never
+    slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
+        on_success: never
+        on_fail: always
 
 # # Framework for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation
 

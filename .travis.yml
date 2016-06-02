@@ -25,7 +25,6 @@ env:
 install:
     - pip install numpy                                                                                                                                                                                                               
     - pip install matplotlib
-    - pip install scipy
     - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
     - tar xzvf nrn-7.3.tar.gz
     - cd nrn-7.3

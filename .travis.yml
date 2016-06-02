@@ -1,5 +1,5 @@
 # Netpyne travis testing script
-sudo: false
+sudo: true
 
 addons:
   apt:

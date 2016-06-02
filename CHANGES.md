@@ -1,3 +1,7 @@
+## Version 0.4.7
+
+- Added option for random seeds for connectivity, stimulation, and cell locations
+
 ## Version 0.4.6
 
 - Preliminary version of exporter to NeuroML2

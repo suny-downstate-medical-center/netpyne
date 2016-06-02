@@ -25,9 +25,9 @@ addons:
 language: python
 python: 2.7
 
-env:
-  - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
-  - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
+# env:
+#   - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+#   - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
 
 install:
     - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
@@ -40,6 +40,8 @@ install:
     - sudo python setup.py install
     - cd ../../..
     - ls -alt
+    - export NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+    - export PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
     - $NEURON_HOME/nrnivmodl doc/source/code/mod
     - cp examples/HHTut/HHTut.py doc/source/code/
 

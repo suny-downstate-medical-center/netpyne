@@ -7,7 +7,7 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, seed, rand, array
+from matplotlib.pylab import arange, seed, rand, array
 from neuron import h # Import NEURON
 import framework as f
 

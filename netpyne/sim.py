@@ -7,10 +7,8 @@ Contributors: salvadordura@gmail.com
 """
 
 import sys
-from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
-import inspect
 import cPickle as pk
 import hashlib 
 from neuron import h, init # Import NEURON

@@ -11,9 +11,8 @@ addons:
     - automake
     - libtool
     - python-numpy 
-    - python-scipy 
+    - python-scipy
     - python-matplotlib 
-    - python-sympy
 
 language: python
 python: 2.7
@@ -51,9 +50,7 @@ script:
     - python examples/RL_arm/main.py
 
 notifications: 
-    email:
-        on_success: never
-        on_fail: never
+    email: false
     slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
 
 

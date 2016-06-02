@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time
 from numbers import Number

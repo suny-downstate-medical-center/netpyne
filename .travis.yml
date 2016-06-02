@@ -32,10 +32,10 @@ install:
     - sudo python setup.py install
     - cd ../../..
     - ls -alt
-    - $NEURON_HOME/nrnivmodl ../netpyne/doc/source/code/mod
+    - $NEURON_HOME/nrnivmodl doc/source/code/mod
 
 script:
-    - python netpyne/doc/source/code/tut2.py
+    - python doc/source/code/tut2.py
 
 # # Framework for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation
 

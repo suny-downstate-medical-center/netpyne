@@ -328,8 +328,7 @@ class Cell(object):
 
         weightIndex = 0  # set default weight matrix index
         if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
-        if not params['threshold']: params['threshold'] = 10.0  # default NetCon threshold      
-
+ 
         pointp = None
         if 'pointps' in sec:  # check if point processes (artificial cell)
             for pointpName, pointpParams in sec['pointps'].iteritems():

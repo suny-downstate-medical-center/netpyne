@@ -288,7 +288,7 @@ def runSim():
     for cell in f.net.cells:
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(f.cfg['seeds']['stim'])))
+                stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
 
     init()

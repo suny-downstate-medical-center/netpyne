@@ -30,7 +30,8 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 netParams['scaleConnWeight'] = 1 # Connection weight scale factor
 netParams['defaultWeight'] = 1  # default connection weight
 netParams['defaultDelay'] = 1  # default connection delay (ms)
-netParams['propVelocity'] = 500.0 # propagation velocity (um/ms)
+netParams['defaultThreshold'] = 10  # default Netcon threshold (mV)
+netParams['propVelocity'] = 500.0  # propagation velocity (um/ms)
  
 # Cell properties list
 netParams['cellParams'] = []

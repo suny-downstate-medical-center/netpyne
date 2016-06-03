@@ -25,7 +25,7 @@ netParams['cellParams'].append(cellRule)  												# add dict to list of cell
 cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 	# cell rule dict
 soma = {'geom': {}, 'pointps': {}, 'synMechs': {}}  										# soma params dict
 soma['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
-soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 
+soma['pointps']['Izhi'] = {'mod':'Izhi2007b', 
 	'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
 cellRule['sections'] = {'soma': soma}  									# add soma section to dict
 netParams['cellParams'].append(cellRule)  	

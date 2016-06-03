@@ -182,8 +182,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 				#if 'synMech' in pptype.lower(): # if syn in name of point process then assume synapse
 					synName = pptype + '_' + str(len(syns))
 					syns[synName] = {}
-					syns[synName]['_type'] = pptype
-					syns[synName]['_loc'] = seg.x
+					syns[synName]['mod'] = pptype
+					syns[synName]['loc'] = seg.x
 					for varName in varNames:
 						try:
 							syns[synName][varName] = point.__getattribute__(varName)
@@ -193,8 +193,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 				else: # assume its a non-synapse point process
 					pointpName = pptype + '_'+ str(len(pointps))
 					pointps[pointpName] = {}
-					pointps[pointpName]['_type'] = pptype
-					pointps[pointpName]['_loc'] = seg.x
+					pointps[pointpName]['mod'] = pptype
+					pointps[pointpName]['loc'] = seg.x
 					for varName in varNames:
 						try:
 							pointps[pointpName][varName] = point.__getattribute__(varName)

@@ -1,6 +1,8 @@
 ## Version 0.4.7
 
-- Added option for random seeds for connectivity, stimulation, and cell locations
+- Added option for random seeds for connectivity, stimulation, and cell locations (issue #49)
+
+- Renamed point process param labels: '_type' -> 'mod', '_loc' -> 'loc' (issue #24)
 
 ## Version 0.4.6
 

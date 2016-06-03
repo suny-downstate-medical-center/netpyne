@@ -4,6 +4,8 @@
 
 - Renamed point process param labels: '_type' -> 'mod', '_loc' -> 'loc' (issue #24)
 
+- Fixed importCell() so synapses stored in synMechParams (issue #25)
+
 ## Version 0.4.6
 
 - Preliminary version of exporter to NeuroML2

@@ -1,3 +1,18 @@
+## Version 0.4.7
+
+- Added option for random seeds for connectivity, stimulation, and cell locations (issue #49)
+
+- Renamed point process param labels: '_type' -> 'mod', '_loc' -> 'loc' (issue #24)
+
+- Added option to set h global variables (eg. celsius) (issue #31)
+
+- Fixed importCell() so h global variables reset after importing (issue #31)
+
+- Fixed importCell() so synapses stored in synMechParams (issue #25)
+
+- Fixed bug when pop names contained same subset of characters (issue #40)
+
+
 ## Version 0.4.6
 
 - Preliminary version of exporter to NeuroML2

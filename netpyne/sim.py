@@ -7,10 +7,8 @@ Contributors: salvadordura@gmail.com
 """
 
 import sys
-from pylab import mean, zeros, concatenate, vstack, array
 from time import time
 from datetime import datetime
-import inspect
 import cPickle as pk
 import hashlib 
 from neuron import h, init # Import NEURON
@@ -271,6 +269,8 @@ def setupRecording():
                     if cell.gid == entry: cell.recordTraces()
     timing('stop', 'setrecordTime')
 
+    return f.simData
+
 
 ###############################################################################
 ### Run Simulation
@@ -281,7 +281,8 @@ def runSim():
     if f.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
-    h.dt = f.cfg['dt']
+    h.dt = f.cfg['dt']  # set time step
+    for key,val in f.cfg['hParams'].iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
@@ -290,7 +291,7 @@ def runSim():
     for cell in f.net.cells:
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid,cell.gid*2)
+                stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
 
     init()
@@ -319,7 +320,7 @@ def runSimWithIntervalFunc(interval, func):
     # reset all netstims so runs are always equivalent
     for cell in f.net.cells:
         for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid,cell.gid*2)
+            stim['hRandom'].Random123(cell.gid, f.sim.id32('%d'%(f.cfg['seeds']['stim'])))
             stim['hRandom'].negexp(1)
 
     init()
@@ -377,7 +378,7 @@ def gatherData():
             f.allSimData = {} 
             for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                 f.allSimData[k] = {}
-            #### REPLACE CODE BELOW TO MAKE GENERIC - CHECK FOR DICT VS H.VECTOR AND UPDATE ALLSIMDATA ACCORDINGLY ####
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
             for node in gather:  # concatenate data from each node
                 allCells.extend(node['netCells'])  # extend allCells list
                 for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
@@ -433,6 +434,8 @@ def gatherData():
         print('  Simulated time: %i-s; %i cells; %i workers' % (f.cfg['duration']/1e3, f.numCells, f.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (f.totalSpikes, f.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (f.totalConnections, f.connsPerCell))
+
+        return f.allSimData
 
  
 

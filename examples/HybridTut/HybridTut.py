@@ -54,7 +54,7 @@ cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 
 
 soma = {'geom': {}, 'pointps':{}}  # soma properties
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-soma['pointps']['Izhi'] = {'_type':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+soma['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
@@ -104,7 +104,7 @@ simConfig = {}  # dictionary to store simConfig
 # Simulation parameters
 simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.025 # Internal integration timestep to use
-simConfig['randseed'] = 1 # Random seed to use
+simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
 simConfig['timing'] = True  # show timing  and save to file

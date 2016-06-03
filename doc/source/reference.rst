@@ -117,6 +117,8 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **source** - Source of noise (optional; currently set to ``random`` by default, which is the only option implemented)
 
+* **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
+
 Example of NetStim population::
 	
 	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
@@ -156,7 +158,7 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 	
 	* **syns**: Dictionary of synaptic mechanisms (point processes). 
 		The key contains an arbitrary label for the synaptic mechanism (e.g. 'AMPA').
-		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
+		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore:
 
@@ -165,7 +167,7 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
-		The value contains a dictionary with the point process properties (e.g. ``{'_type':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
+		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
 		
 		Note that properties that are not internal variables of the point process are denoted with an underscore: 
 
@@ -190,13 +192,13 @@ Example of two cell property rules::
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['synMechs']['AMPA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['synMechs']['AMPA'] = {'_type': 'Exp2Syn', '_loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
+	dend['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
@@ -207,8 +209,8 @@ Example of two cell property rules::
 
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	soma['pointps']['Izhi'] = {'_type':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['synMechs']['AMPA'] = {'_type': 'ExpSyn', '_loc': 0.5, 'tau': 0.1, 'e': 0}
+	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
@@ -283,7 +285,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 
 	Sets ``connFunc`` to ``probConn`` (internal probabilistic connectivity function).
 
-	Overrides the ``convergence`` and ``divergence`` parameters.
+	Overrides the ``convergence``, ``divergence`` and ``fromList`` parameters.
 
 * **convergence** (optional) - Number of pre-synaptic cells connected to each post-synaptic cell.
 
@@ -291,7 +293,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 
 	Sets ``connFunc`` to ``convConn`` (internal convergence connectivity function).
 
-	Overrides the ``divergence`` parameter; has no effect if the ``probability`` parameters is included.
+	Overrides the ``divergence`` and ``fromList`` parameters; has no effect if the ``probability`` parameters is included.
 
 * **divergence** (optional) - Number of post-synaptic cells connected to each pre-synaptic cell.
 
@@ -299,10 +301,18 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 	
 	Sets ``connFunc`` to ``divConn`` (internal divergence connectivity function).
 
-	Has no effect if the ``probability`` or ``convergence`` parameters are included.
+	Overrides the ``fromList`` parameter; has no effect if the ``probability`` or ``convergence`` parameters are included.
+
+* **connList** (optional) - Explicit list of connections between individual pre- and post-synaptic cells.
+
+	Each connection is indicated with relative ids of cell in pre and post populations, e.g. ``[[0,1],[3,1]]`` creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1.
+
+	Sets ``connFunc`` to ``fromList`` (explicit list connectivity function).
+
+	Has no effect if the ``probability``, ``convergence`` or ``divergence`` parameters are included.
 
 * **connFunc** (optional) - Internal connectivity function to use. 
-	Its automatically set to ``probConn``, ``convConn`` or ``divConn``, when the ``probability``, ``convergence`` and ``divergence`` parameters are included, respectively. Otherwise defaults to ``fullConn``, ie. all-to-all connectivity.
+	Its automatically set to ``probConn``, ``convConn``, ``divConn`` or ``fromList``, when the ``probability``, ``convergence``, ``divergence`` or ``connList`` parameters are included, respectively. Otherwise defaults to ``fullConn``, ie. all-to-all connectivity.
 
 	User-defined connectivity functions can be added.
 
@@ -450,7 +460,7 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **randseed** - Random seed to use (default: 1)
+* **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **verbose** - Show detailed messages (default: False)

@@ -7,7 +7,7 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, seed, rand, array
+from matplotlib.pylab import arange, seed, rand, array
 from neuron import h # Import NEURON
 import framework as f
 
@@ -58,12 +58,11 @@ class Pop(object):
         ''' Create population cells based on fixed number of cells'''
         cellModelClass = f.Cell
         cells = []
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells']+f.net.lastGid)))
+        seed(f.sim.id32('%d'%(f.cfg['seeds']['loc']+self.tags['numCells']+f.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
                 self.tags[coord+'normRange'] = [float(point) / f.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
-                print self.tags[coord+'normRange'] 
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
@@ -116,7 +115,7 @@ class Pop(object):
             maxDensity = max(map(densityFunc, (arange(minRange, maxRange, interval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
-            seed(f.sim.id32('%d' % f.cfg['randseed']))  # reset random number generator
+            seed(f.sim.id32('%d' % f.cfg['seeds']['loc']))  # reset random number generator
             locsAll = minRange + ((maxRange-minRange)) * rand(int(maxCells), 1)  # random location values 
             locsProb = array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)
             allrands = rand(len(locsProb))  # create an array of random numbers for checking each location pos 
@@ -130,7 +129,7 @@ class Pop(object):
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
 
         # calculate locations of cells 
-        seed(f.sim.id32('%d'%(f.cfg['randseed']+self.tags['numCells'])))
+        seed(f.sim.id32('%d'%(f.cfg['seeds']['loc']+self.tags['numCells'])))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations

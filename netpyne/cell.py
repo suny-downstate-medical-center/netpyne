@@ -8,6 +8,7 @@ Contributors: salvadordura@gmail.com
 
 from neuron import h # Import NEURON
 import framework as f
+from copy import deepcopy as dcp
 
 
 ###############################################################################
@@ -405,9 +406,11 @@ class Cell(object):
             # Create single pulse
             npts = min(pulselength*width/timeres,allpts) # Calculate the number of points to use
             x = (r_[0:npts]-npts/2+1)*timeres
+            print pulselength*width/timeres
+            print allpts
             if stimshape=='gaussian': 
-                pulse = exp(-(x/width*2-2)**2) # Offset by 2 standard deviations from start
-                pulse = exp(-2*(x/width-1)**2) # Offset by 2 standard deviations from start
+#                pulse = exp(-(x/width*2-2)**2) # Offset by 2 standard deviations from start
+                pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
                 pulse = pulse/max(pulse)
             elif stimshape=='square': 
                 pulse = zeros(shape(x))
@@ -418,24 +421,48 @@ class Cell(object):
             # Create full stimulus
             events = zeros((allpts))
             events[array(array(output)/timeres,dtype=int)] = 1
-            print events
-            print pulse
+#            print events
+#            print pulse
             fulloutput = convolve(events,pulse,mode='same')*weight # Calculate the convolved input signal, scaled by rate
-            print fulloutput
+#            print fulloutput
             fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
             fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
             fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
             events = hstack((0,events,0)) # Ditto
-            stimvecs = [fulltime, fulloutput, events] # Combine vectors into a matrix           
+            stimvecs = dcp([fulltime, fulloutput, events]) # Combine vectors into a matrix           
             
             return stimvecs        
 
 
         # Time-dependently shaping connection weights of NetStim...
         if 'shape' in params and params['shape']:
-            stimvecs = shapeStim(width=0.1, isi=0.25, weight=100, finish=2, stimshape='gaussian')
-            self.stimtimevecs = h.Vector().from_python(stimvecs[0])
-            self.stimweightvecs = h.Vector().from_python(stimvecs[1])
+            
+            temptimevecs = []
+            tempweightvecs = []
+            
+            pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
+            
+            # Determine on-off switching time pairs for stimulus, where default is always on
+            if 'switchOnOff' not in params['shape']:
+                switchtimes = [0, f.cfg['duration']]
+            else:
+                if not params['shape']['switchOnOff'] == sorted(params['shape']['switchOnOff']):
+                    raise Exception('On-off switching times for a particular stimulus are not monotonic')   
+                switchtimes = dcp(params['shape']['switchOnOff'])
+                switchtimes.append(f.cfg['duration'])
+            
+            switchiter=iter(switchtimes)
+            switchpairs = zip(switchiter,switchiter)
+            for pair in switchpairs:
+                stimvecs = shapeStim(width=0.2, isi=0.2, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
+                temptimevecs.extend(stimvecs[0])
+                tempweightvecs.extend(stimvecs[1])
+            
+#            print temptimevecs
+#            print tempweightvecs
+            
+            self.stimtimevecs = h.Vector().from_python(temptimevecs)
+            self.stimweightvecs = h.Vector().from_python(tempweightvecs)
             
 #            self.stimtimevecs = h.Vector().from_python([0, 1000, 1001, 2000])
 #            self.stimweightvecs = h.Vector().from_python([100, 100, 0, 0])

@@ -450,7 +450,7 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **randseed** - Random seed to use (default: 1)
+* **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **verbose** - Show detailed messages (default: False)

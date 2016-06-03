@@ -282,7 +282,7 @@ def runSim():
         print('\nRunning...')
         runstart = time() # See how long the run takes
     h.dt = f.cfg['dt']  # set time step
-    for key,val in h.cfg['hParams']: setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+    for key,val in f.cfg['hParams'].iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     f.pc.set_maxstep(10)
     mindelay = f.pc.allreduce(f.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if f.rank==0 and f.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay

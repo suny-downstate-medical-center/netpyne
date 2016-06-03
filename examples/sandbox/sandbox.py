@@ -8,6 +8,8 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
+from netpyne import utils
+
 netParams = {}  # dictionary to store sets of network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
@@ -27,6 +29,11 @@ netParams['popParams'] = []  # create list of populations - each item will conta
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5, 'start':100, 'source': 'random'})  # background inputs
 
+# Synaptic mechanism parameters
+netParams['synMechParams'] = []
+netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+ 
+
 # Cell parameters
 netParams['cellParams'] = []
 
@@ -35,14 +42,19 @@ cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-
 cellRule['sections'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
-# Synaptic mechanism parameters
-netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
- 
+
+### HH
+cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
+synMechParams = []
+utils.importCell(cellRule=cellRule, synMechParams=netParams['synMechParams'], fileName='HHCellFile.py', cellName='HHCellClass')
+netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
+
+print netParams
+
+
 # Stimulation parameters
 # netParams['stimParams'] = {'sourceList': [], 'stimList': []}
 # netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 100, 'dur': 100, 'amp': 5})

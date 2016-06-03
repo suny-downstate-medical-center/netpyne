@@ -66,7 +66,17 @@ def mechVarList():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
-def importCell(cellRule, fileName, cellName, cellArgs = []):
+def _equal_dicts(d1, d2, ignore_keys):
+    ignored = set(ignore_keys)
+    for k1, v1 in d1.iteritems():
+        if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
+            return False
+    for k2, v2 in d2.iteritems():
+        if k2 not in ignored and k2 not in d1:
+            return False
+    return True
+
+def importCell(cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
 	''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
 	if fileName.endswith('.hoc'):
 		h.load_file(fileName)
@@ -118,13 +128,14 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 		dirCellSecNames.update({hname: name for hname,name in dirCellHnames.iteritems() if hname == sec.hname()})
 
 	secDic = {}
+	synMechs = []
 	for sec in secs: 
 		# create new section dict with name of section
 		secName = getSecName(sec, dirCellSecNames)
 
 		if len(secs) == 1:
 			secName = 'soma' # if just one section rename to 'soma'
-		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # create dictionary to store sec info
+		secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}}  # create dictionary to store sec info
 
 		# store geometry properties
 		standardGeomParams = ['L', 'nseg', 'diam', 'Ra', 'cm']
@@ -172,28 +183,31 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 
 		# add synapses and point neurons
 		# for now read fixed params, but need to find way to read only synapse params
-		syns = {}
+		
 		pointps = {}
 		for seg in sec:
 			for ipoint,point in enumerate(seg.point_processes()):
-				pptype = point.hname().split('[')[0]
-				varNames = varList['pointps'][pptype]
-				if any([s in pptype.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
+				pointpMod = point.hname().split('[')[0]
+				varNames = varList['pointps'][pointpMod]
+				if any([s in pointpMod.lower() for s in ['syn', 'ampa', 'gaba', 'nmda', 'glu']]):
 				#if 'synMech' in pptype.lower(): # if syn in name of point process then assume synapse
-					synName = pptype + '_' + str(len(syns))
-					syns[synName] = {}
-					syns[synName]['mod'] = pptype
-					syns[synName]['loc'] = seg.x
+					synMech = {}
+					synMech['label'] = pointpMod + '_' + str(len(synMechs))
+					synMech['mod'] = pointpMod
+					#synMech['loc'] = seg.x
 					for varName in varNames:
 						try:
-							syns[synName][varName] = point.__getattribute__(varName)
+							synMech[varName] = point.__getattribute__(varName)
 						except:
-							print 'Could not read variable %s from synapse %s'%(varName,synName)
+							print 'Could not read variable %s from synapse %s'%(varName,synMech['label'])
+
+					if not [_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]:
+						synMechs.append(synMech)
 				
 				else: # assume its a non-synapse point process
-					pointpName = pptype + '_'+ str(len(pointps))
+					pointpName = pointpMod + '_'+ str(len(pointps))
 					pointps[pointpName] = {}
-					pointps[pointpName]['mod'] = pptype
+					pointps[pointpName]['mod'] = pointpMod
 					pointps[pointpName]['loc'] = seg.x
 					for varName in varNames:
 						try:
@@ -201,9 +215,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 							# special condition for Izhi model, to set vinit=vr
 							# if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName) 
 						except:
-							print 'Could not read %s variable from point process %s'%(varName,synName)
+							print 'Could not read %s variable from point process %s'%(varName,pointpName)
 
-		if syns: secDic[secName]['synMechs'] = syns
 		if pointps: secDic[secName]['pointps'] = pointps
 
 		# store topology (keep at the end since h.SectionRef messes remaining loop)
@@ -212,6 +225,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = []):
 			secDic[secName]['topol']['parentSec'] = getSecName(secRef.parent().sec, dirCellSecNames)
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
+
+	if synMechs: synMechParams.extend(synMechs)
 
 	# store section lists
 	secLists = h.List('SectionList')

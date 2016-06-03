@@ -63,7 +63,6 @@ class Pop(object):
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
                 self.tags[coord+'normRange'] = [float(point) / f.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
-                print self.tags[coord+'normRange'] 
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 

@@ -145,12 +145,11 @@ class Cell(object):
                     #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
                     if pointpName not in sec['pointps']:
                         sec['pointps'][pointpName] = {} 
-                    print pointpParams
                     pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSection'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
-                        if pointpParamName not in ['mod', 'loc']:
+                        if pointpParamName not in ['mod', 'loc'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
             # set geometry params 

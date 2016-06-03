@@ -61,7 +61,6 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2003b (section voltage)
 cellRule = {'label': 'PYR_Izhi03b_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
-cellRule['sections']['soma']['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  	# soma NMDA synapse
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007a (independent voltage)

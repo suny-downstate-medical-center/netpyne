@@ -269,6 +269,8 @@ def setupRecording():
                     if cell.gid == entry: cell.recordTraces()
     timing('stop', 'setrecordTime')
 
+    return f.simData
+
 
 ###############################################################################
 ### Run Simulation
@@ -431,6 +433,8 @@ def gatherData():
         print('  Simulated time: %i-s; %i cells; %i workers' % (f.cfg['duration']/1e3, f.numCells, f.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (f.totalSpikes, f.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (f.totalConnections, f.connsPerCell))
+
+        return f.allSimData
 
  
 

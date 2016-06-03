@@ -38,6 +38,8 @@ class Network(object):
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(f.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
+        return self.pops
+
 
     ###############################################################################
     # Create Cells
@@ -61,6 +63,8 @@ class Network(object):
         f.pc.barrier()
         f.sim.timing('stop', 'createTime')
         if f.rank == 0 and f.cfg['timing']: print('  Done; cell creation time = %0.2f s.' % f.timing['createTime'])
+
+        return f.net.cells
     
     ###############################################################################
     #  Add stims
@@ -112,6 +116,8 @@ class Network(object):
                             postCell.addIClamp(params)  # call cell method to add connections
 
             f.sim.timing('stop', 'stimsTime')
+
+            return [cell.stims for cell in f.net.cells]
 
 
     ###############################################################################
@@ -191,6 +197,8 @@ class Network(object):
         f.pc.barrier()
         f.sim.timing('stop', 'connectTime')
         if f.rank == 0 and f.cfg['timing']: print('  Done; cell connection time = %0.2f s.' % f.timing['connectTime'])
+
+        return [cell.conns for cell in f.net.cells]
 
     ###############################################################################
     # Convert string to function

@@ -658,7 +658,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True):
     nml_net = neuroml.Network(id='%s'%reference)
     nml_doc.networks.append(nml_net)
 
-    nml_doc.notes = 'NeuroML 2 file exported from NetPyNE'
+    import netpyne
+    nml_doc.notes = 'NeuroML 2 file exported from NetPyNE v%s'%(netpyne.__version__)
 
     gids_vs_pop_indices ={}
     populations_vs_components = {}

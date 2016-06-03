@@ -226,6 +226,8 @@ def importCell(cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
 			secDic[secName]['topol']['parentX'] = h.parent_connection()
 			secDic[secName]['topol']['childX'] = h.section_orientation()
 
+		h.pop_section()  # to prevent section stack overflow
+
 	if synMechs: synMechParams.extend(synMechs)
 
 	# store section lists

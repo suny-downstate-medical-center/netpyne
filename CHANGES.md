@@ -6,7 +6,9 @@
 
 - Fixed importCell() so synapses stored in synMechParams (issue #25)
 
-- FIxed bug when pop names contained same subset of characters (issue #40)
+- Fixed bug when pop names contained same subset of characters (issue #40)
+
+- Added Travis CI so tested automatically during development (issue #37)
 
 ## Version 0.4.6
 

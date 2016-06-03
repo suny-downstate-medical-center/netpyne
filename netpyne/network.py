@@ -154,7 +154,6 @@ class Network(object):
                     prePops = {}
                 else:
                     if isinstance(condValue, list): 
-                        print condValue
                         preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
                         prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
                     else:

@@ -1725,6 +1725,10 @@ script:
     
     
     
+** useful repos
+https://github.com/openworm/org.geppetto.simulator.external/blob/master/.travis.yml
+https://github.com/NeuralEnsemble/PyNN/blob/master/ci/install_neuron.sh
+https://github.com/OpenSourceBrain/SmithEtAl2013-L23DendriticSpikes/blob/master/.travis.yml
 
 * Netpyne Models/Users
 ** Github examples folder

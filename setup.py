@@ -12,10 +12,13 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
     
+import netpyne
+version = netpyne.__version__
+    
 setup(
     name = 'netpyne',
     
-    version = '0.4.6',
+    version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
     description = 'A Python package to facilitate the development and simulation of biological networks in NEURON.',
     long_description = long_description,
     

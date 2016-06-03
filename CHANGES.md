@@ -2,6 +2,8 @@
 
 - Added option for random seeds for connectivity, stimulation, and cell locations (issue #49)
 
+- Added return pointers when create cells, pops, conns, stims, and recording (issue #48)
+
 - Renamed point process param labels: '_type' -> 'mod', '_loc' -> 'loc' (issue #24)
 
 - Added option to set h global variables (eg. celsius) (issue #31)

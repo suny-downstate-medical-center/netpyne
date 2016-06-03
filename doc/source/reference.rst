@@ -117,6 +117,8 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **source** - Source of noise (optional; currently set to ``random`` by default, which is the only option implemented)
 
+* **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
+
 Example of NetStim population::
 	
 	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs

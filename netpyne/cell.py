@@ -404,7 +404,8 @@ class Cell(object):
                 currenttime = currenttime+isi+variation*(rand()-0.5)
             
             # Create single pulse
-            npts = min(pulselength*width/timeres,allpts) # Calculate the number of points to use
+            npts = pulselength*width/timeres
+#            npts = min(pulselength*width/timeres,allpts) # Calculate the number of points to use
             x = (r_[0:npts]-npts/2+1)*timeres
             print pulselength*width/timeres
             print allpts
@@ -418,12 +419,23 @@ class Cell(object):
             else:
                 raise Exception('Stimulus shape "%s" not recognized' % stimshape)
             
+#            from pylab import plot, figure
+#            figure(10)
+#            plot(x,pulse)
+            
             # Create full stimulus
             events = zeros((allpts))
             events[array(array(output)/timeres,dtype=int)] = 1
+#            figure(11)
+#            plot(events)
 #            print events
 #            print pulse
-            fulloutput = convolve(events,pulse,mode='same')*weight # Calculate the convolved input signal, scaled by rate
+            fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
+            fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
+#            print len(fulloutput)
+#            print(fulloutput[0])
+#            figure(12)            
+#            plot(fulloutput)
 #            print fulloutput
             fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
             fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
@@ -454,7 +466,7 @@ class Cell(object):
             switchiter=iter(switchtimes)
             switchpairs = zip(switchiter,switchiter)
             for pair in switchpairs:
-                stimvecs = shapeStim(width=0.2, isi=0.2, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
+                stimvecs = shapeStim(width=0.2, isi=0.25, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
                 temptimevecs.extend(stimvecs[0])
                 tempweightvecs.extend(stimvecs[1])
             

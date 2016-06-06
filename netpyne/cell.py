@@ -281,12 +281,17 @@ class Cell(object):
         else:
             postTarget = synMech['hSyn'] # local synaptic mechanism
         netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-        netcon.weight[weightIndex] = f.net.params['scaleConnWeight']*params['weight']  # set Netcon weight
+        if f.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
+            scaleFactor = f.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
+        else:
+            scaleFactor = f.net.params['scaleConnWeight'] # use global scale factor
+        params['weight'] = scaleFactor*params['weight']
+        netcon.weight[weightIndex] = params['weight']  # set Netcon weight
         netcon.delay = params['delay']  # set Netcon delay
         netcon.threshold = params['threshold']  # set Netcon delay
         self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synMech'], f.net.params['scaleConnWeight']*params['weight'], params['delay']))
+            (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
         plasticity = params.get('plasticity')
         if plasticity:  # add plasticity

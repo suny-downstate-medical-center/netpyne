@@ -24,6 +24,8 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
+netParams['scaleConnWeightModels'] = {'HH': 0.0}
+
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20}) # add dict with params for this pop 
@@ -69,12 +71,12 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 # Connectivity parameters
 netParams['connParams'] = []  
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},

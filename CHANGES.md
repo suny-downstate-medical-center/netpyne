@@ -1,3 +1,9 @@
+## Version 0.4.8?
+
+- Added option to specify weight scale factor separately for each cell model (issue #69)
+
+- Fixed bug so can create Python and NEURON objects for connections independently 
+
 ## Version 0.4.7
 
 - Added option for random seeds for connectivity, stimulation, and cell locations (issue #49)

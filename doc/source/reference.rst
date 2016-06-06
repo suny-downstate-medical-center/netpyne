@@ -65,6 +65,8 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 * **scaleConnWeight**: Connection weight scale factor (default: 1)
 
+* **scaleConnWeightModels**: Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})
+
 * **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['popLabel', 'cellModel', 'cellType'])
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 

@@ -233,18 +233,20 @@ class Cell(object):
             return synMech
 
     def addConn(self, params):
+        # Avoid self connections
         if params['preGid'] == self.gid:
             print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
             return  # if self-connection return
 
+        # Set section
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():   # replace with first section that includes synaptic mechanism
-                    if 'synMechs' in secParams:
-                        if secParams['synMechs']:
+                for secName, secParams in self.secs.iteritems():   # replace with first section that includes synaptic mechanisms
+                    if 'synMech' in secParams:
+                        if secParams['synMech']:
                             params['sec'] = secName
                             break
             else:  
@@ -252,9 +254,18 @@ class Cell(object):
                 return  # if no Sections available print error and exit
         sec = self.secs[params['sec']]
 
+        # Weight 
+        if f.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
+            scaleFactor = f.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
+        else:
+            scaleFactor = f.net.params['scaleConnWeight'] # use global scale factor
+        params['weight'] = scaleFactor*params['weight']
         weightIndex = 0  # set default weight matrix index
+
+        # Syn location
         if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
 
+        # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
             for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
@@ -262,8 +273,12 @@ class Cell(object):
                     pointp = pointpName
                     if '_synList' in pointpParams:
                         if params['synMech'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
+                            if isinstance(params['synMech'], list):
+                                weightIndex = [pointpParams['_synList'].index(synMech) for synMech in params['synMech']]
+                            else:
+                                weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
+        # Add synaptic mechanisms
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
                 synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
@@ -275,26 +290,26 @@ class Cell(object):
                 print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
-        self.conns.append(params)
-        if pointp:
-            postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
-        else:
-            postTarget = synMech['hSyn'] # local synaptic mechanism
-        netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-        if f.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
-            scaleFactor = f.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
-        else:
-            scaleFactor = f.net.params['scaleConnWeight'] # use global scale factor
-        params['weight'] = scaleFactor*params['weight']
-        netcon.weight[weightIndex] = params['weight']  # set Netcon weight
-        netcon.delay = params['delay']  # set Netcon delay
-        netcon.threshold = params['threshold']  # set Netcon delay
-        self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        # Create connection (Python and NEURON objects)
+        self.conns.append(params if f.cfg['createPyStruct'] else {})
+
+        if f.cfg['createNEURONObj']:
+            if pointp:
+                postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
+            else:
+                postTarget = synMech['hSyn'] # local synaptic mechanism
+            netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+           
+            netcon.weight[weightIndex] = params['weight']  # set Netcon weight
+            netcon.delay = params['delay']  # set Netcon delay
+            netcon.threshold = params['threshold']  # set Netcon delay
+            self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
             (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
+        # Add plasticity 
         plasticity = params.get('plasticity')
-        if plasticity:  # add plasticity
+        if plasticity and f.cfg['createNEURONObj']:
             try:
                 plastSection = h.Section()
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)

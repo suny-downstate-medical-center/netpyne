@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
-def getSecName(sec, dirCellSecNames = {}):
+def getSecName (sec, dirCellSecNames = {}):
     if '>.' in sec.name():
         fullSecName = sec.name().split('>.')[1] 
     elif '.' in sec.name():
@@ -26,7 +26,7 @@ def getSecName(sec, dirCellSecNames = {}):
         secName = dirCellSecNames[secName]
     return secName
 
-def importCellParams(fileName, labels, values, key = None):
+def importCellParams (fileName, labels, values, key = None):
     params = {}
     if fileName.endswith('.py'):
         try:
@@ -49,7 +49,7 @@ def importCellParams(fileName, labels, values, key = None):
     return params
 
 
-def mechVarList():
+def mechVarList ():
     msname = h.ref('')
     varList = {}
     for i, mechtype in enumerate(['mechs','pointps']):
@@ -66,7 +66,7 @@ def mechVarList():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
-def _equal_dicts(d1, d2, ignore_keys):
+def _equal_dicts (d1, d2, ignore_keys):
     ignored = set(ignore_keys)
     for k1, v1 in d1.iteritems():
         if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
@@ -76,7 +76,7 @@ def _equal_dicts(d1, d2, ignore_keys):
             return False
     return True
 
-def importCell(cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
+def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
     h.initnrn()
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
@@ -262,7 +262,7 @@ def importCell(cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
 
 
 
-def importConnFromExcel(fileName, sheetName):
+def importConnFromExcel (fileName, sheetName):
     ''' Import connectivity rules from Excel sheet'''
     import openpyxl as xl
 

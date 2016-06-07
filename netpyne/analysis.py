@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 from matplotlib.pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy import size, array, linspace, ceil
 
-import framework as f
+import sim
 
 ###############################################################################
 ### Simulation-related graph plotting functions
@@ -24,44 +24,44 @@ def showFig():
 # sequence of generic plots (raster, connectivity,psd,...)
 def plotData():
     ## Plotting
-    if f.rank == 0:
-        f.sim.timing('start', 'plotTime')
-        if f.cfg['plotRaster']: # Whether or not to plot
-            if (f.totalSpikes>f.cfg['maxspikestoplot']): 
-                print('  Too many spikes (%i vs. %i)' % (f.totalSpikes, f.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
+    if sim.rank == 0:
+        sim.timing('start', 'plotTime')
+        if sim.cfg['plotRaster']: # Whether or not to plot
+            if (sim.totalSpikes>sim.cfg['maxspikestoplot']): 
+                print('  Too many spikes (%i vs. %i)' % (sim.totalSpikes, sim.cfg['maxspikestoplot'])) # Plot raster, but only if not too many spikes
             else: 
                 print('Plotting raster...')
-                f.analysis.plotRaster() 
+                sim.analysis.plotRaster() 
                 showFig()
-        if f.cfg['plotCells']:
+        if sim.cfg['plotCells']:
             print('Plotting recorded traces ...')
-            f.analysis.plotTraces() 
+            sim.analysis.plotTraces() 
             showFig()
-        if f.cfg['plotConn']:
+        if sim.cfg['plotConn']:
             print('Plotting connectivity matrix...')
-            f.analysis.plotConn()
+            sim.analysis.plotConn()
             showFig()
-        if f.cfg['plotLFPSpectrum']:
+        if sim.cfg['plotLFPSpectrum']:
             print('Plotting LFP power spectral density...')
-            f.analysis.plotLFPSpectrum()
+            sim.analysis.plotLFPSpectrum()
             showFig()
-        if f.cfg['plot2Dnet']:
+        if sim.cfg['plot2Dnet']:
             print('Plotting 2D visualization of network...')
-            f.analysis.plot2Dnet()   
+            sim.analysis.plot2Dnet()   
             showFig() 
-        if f.cfg['plotWeightChanges']:
+        if sim.cfg['plotWeightChanges']:
             print('Plotting weight changes...')
-            f.analysis.plotWeightChanges()
+            sim.analysis.plotWeightChanges()
             showFig()
-        if f.cfg['plot3dArch']:
+        if sim.cfg['plot3dArch']:
             print('Plotting 3d architecture...')
-            f.analysis.plot3dArch()
+            sim.analysis.plot3dArch()
             showFig()
-        if f.cfg['timing']:
-            f.sim.timing('stop', 'plotTime')
-            print('  Done; plotting time = %0.2f s' % f.timing['plotTime'])
-            f.sim.timing('stop', 'totalTime')
-            print('\nTotal time = %0.2f s' % f.timing['totalTime'])
+        if sim.cfg['timing']:
+            sim.timing('stop', 'plotTime')
+            print('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
+            sim.timing('stop', 'totalTime')
+            print('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
 
 
 ## Sync measure
@@ -69,11 +69,11 @@ def syncMeasure():
     t0=-1 
     width=1 
     cnt=0
-    for spkt in f.allSimData['spkt']:
+    for spkt in sim.allSimData['spkt']:
         if (spkt>=t0+width): 
             t0=spkt 
             cnt+=1
-    return 1-cnt/(f.cfg['duration']/width)
+    return 1-cnt/(sim.cfg['duration']/width)
 
 
 ## Raster plot 
@@ -82,16 +82,16 @@ def plotRaster():
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-    popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in f.net.allCells}  # dict with color for each gid
-    spkids = f.allSimData['spkid']
+    gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in sim.net.allCells}  # dict with color for each gid
+    spkids = sim.allSimData['spkid']
     ylabelText = 'Cell id'
     spkidColors = [gidColors[spkid] for spkid in spkids]
     try:
-        if f.cfg['orderRasterYnorm']:
-            gids = [cell['gid'] for cell in f.net.allCells]
-            ynorms = [cell['tags']['ynorm'] for cell in f.net.allCells]
+        if sim.cfg['orderRasterYnorm']:
+            gids = [cell['gid'] for cell in sim.net.allCells]
+            ynorms = [cell['tags']['ynorm'] for cell in sim.net.allCells]
             #ynorms.reverse()
             sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(ynorms,gids)))}
             spkids = [sortedGids[gid] for gid in spkids]
@@ -100,17 +100,17 @@ def plotRaster():
         pass     
     figure(figsize=(10,8)) # Open a new figure
     fontsiz = 12
-    scatter(f.allSimData['spkt'], spkids, 10, linewidths=2, marker='|', color = spkidColors) # Create raster  
+    scatter(sim.allSimData['spkt'], spkids, 10, linewidths=2, marker='|', color = spkidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
     ylabel(ylabelText, fontsize=fontsiz)
-    if f.cfg['plotSync']:
-        for spkt in f.allSimData['spkt']:
-            plot((spkt, spkt), (0, f.numCells), 'r-', linewidth=0.1)
-        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (f.numCells,f.connsPerCell,f.firingRate,syncMeasure()), fontsize=fontsiz)
+    if sim.cfg['plotSync']:
+        for spkt in sim.allSimData['spkt']:
+            plot((spkt, spkt), (0, sim.numCells), 'r-', linewidth=0.1)
+        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (sim.numCells,sim.connsPerCell,sim.firingRate,syncMeasure()), fontsize=fontsiz)
     else:
-        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (f.numCells,f.connsPerCell,f.firingRate), fontsize=fontsiz)
-    xlim(0,f.cfg['duration'])
-    ylim(0,f.numCells)
+        title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (sim.numCells,sim.connsPerCell,sim.firingRate), fontsize=fontsiz)
+    xlim(0,sim.cfg['duration'])
+    ylim(0,sim.numCells)
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
@@ -123,28 +123,28 @@ def plotRaster():
 
 ## Traces (v,i,g etc) plot
 def plotTraces(): 
-    tracesList = f.cfg['recordTraces'].keys()
+    tracesList = sim.cfg['recordTraces'].keys()
     tracesList.sort()
-    gidList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, int)]
-    popList = [trace for trace in f.cfg['plotCells'] if isinstance(trace, str)]
+    gidList = [trace for trace in sim.cfg['plotCells'] if isinstance(trace, int)]
+    popList = [trace for trace in sim.cfg['plotCells'] if isinstance(trace, str)]
     if 'all' in popList:
-        gidList = [cell['gid'] for cell in f.net.allCells]
+        gidList = [cell['gid'] for cell in sim.net.allCells]
         popList = []
-    duration = f.cfg['duration']
-    recordStep = f.cfg['recordStep']
+    duration = sim.cfg['duration']
+    recordStep = sim.cfg['recordStep']
 
     for gid in gidList:
         figure() # Open a new figure
         fontsiz = 12
         for itrace, trace in enumerate(tracesList):
             try:
-                data = f.allSimData[trace]['cell_'+str(gid)]
+                data = sim.allSimData[trace]['cell_'+str(gid)]
                 t = arange(0, duration+recordStep, recordStep)
                 subplot(len(tracesList),1,itrace+1)
                 plot(t[:len(data)], data, linewidth=1.5)
                 xlabel('Time (ms)', fontsize=fontsiz)
                 ylabel(trace, fontsize=fontsiz)
-                xlim(0,f.cfg['duration'])
+                xlim(0,sim.cfg['duration'])
             except:
                 pass
         if tracesList: subplot(len(tracesList),1,1)
@@ -152,19 +152,19 @@ def plotTraces():
 
     for popLabel in popList:
         fontsiz = 12
-        for pop in f.net.pops:
+        for pop in sim.net.pops:
             if pop.tags['popLabel'] == popLabel and pop.cellGids:
                 figure() # Open a new figure
                 gid = pop.cellGids[0] 
                 for itrace, trace in enumerate(tracesList):
                     try:
-                        data = f.allSimData[trace]['cell_'+str(gid)]
+                        data = sim.allSimData[trace]['cell_'+str(gid)]
                         t = arange(0, len(data)*recordStep, recordStep)
                         subplot(len(tracesList),1,itrace+1)
                         plot(t, data, linewidth=1.5)
                         xlabel('Time (ms)', fontsize=fontsiz)
                         ylabel(trace, fontsize=fontsiz)
-                        xlim(0,f.cfg['duration'])
+                        xlim(0,sim.cfg['duration'])
                     except:
                         pass
         subplot(len(tracesList),1,1)
@@ -176,17 +176,17 @@ def plotTraces():
 def plotLFPSpectrum():
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
 
-    lfpv=[[] for c in range(len(f.lfppops))]    
+    lfpv=[[] for c in range(len(sim.lfppops))]    
     # Get last modified .mat file if no input and plot
-    for c in range(len(f.lfppops)):
-        lfpv[c] = f.lfps[:,c]    
+    for c in range(len(sim.lfppops)):
+        lfpv[c] = sim.lfps[:,c]    
     lfptot = sum(lfpv)
         
     # plot pops separately
     plotPops = 0
     if plotPops:    
         figure() # Open a new figure
-        for p in range(len(f.lfppops)):
+        for p in range(len(sim.lfppops)):
             psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
             xlabel('Frequency (Hz)')
             ylabel('Power')
@@ -216,42 +216,42 @@ def plotConn():
     figh.subplots_adjust(wspace=0) # More space between
     figh.subplots_adjust(hspace=0) # More space between
     h = axes()
-    totalconns = zeros(shape(f.connprobs))
-    for c1 in range(size(f.connprobs,0)):
-        for c2 in range(size(f.connprobs,1)):
-            for w in range(f.nreceptors):
-                totalconns[c1,c2] += f.connprobs[c1,c2]*f.connweights[c1,c2,w]*(-1 if w>=2 else 1)
+    totalconns = zeros(shape(sim.connprobs))
+    for c1 in range(size(sim.connprobs,0)):
+        for c2 in range(size(sim.connprobs,1)):
+            for w in range(sim.nreceptors):
+                totalconns[c1,c2] += sim.connprobs[c1,c2]*sim.connweights[c1,c2,w]*(-1 if w>=2 else 1)
     imshow(totalconns,interpolation='nearest',cmap=bicolormap(gap=0))
 
     # Plot grid lines
     hold(True)
-    for pop in range(f.npops):
-        plot(array([0,f.npops])-0.5,array([pop,pop])-0.5,'-',c=(0.7,0.7,0.7))
-        plot(array([pop,pop])-0.5,array([0,f.npops])-0.5,'-',c=(0.7,0.7,0.7))
+    for pop in range(sim.npops):
+        plot(array([0,sim.npops])-0.5,array([pop,pop])-0.5,'-',c=(0.7,0.7,0.7))
+        plot(array([pop,pop])-0.5,array([0,sim.npops])-0.5,'-',c=(0.7,0.7,0.7))
 
     # Make pretty
-    h.set_xticks(range(f.npops))
-    h.set_yticks(range(f.npops))
-    h.set_xticklabels(f.popnames)
-    h.set_yticklabels(f.popnames)
+    h.set_xticks(range(sim.npops))
+    h.set_yticks(range(sim.npops))
+    h.set_xticklabels(sim.popnames)
+    h.set_yticklabels(sim.popnames)
     h.xaxis.set_ticks_position('top')
-    xlim(-0.5,f.npops-0.5)
-    ylim(f.npops-0.5,-0.5)
+    xlim(-0.5,sim.npops-0.5)
+    ylim(sim.npops-0.5,-0.5)
     clim(-abs(totalconns).max(),abs(totalconns).max())
     colorbar()
     #show()
 
 # Plot 2D visualization of network cell positions and connections
 def plot2Dnet():
-    allCells = f.net.allCells
+    allCells = sim.net.allCells
     figure(figsize=(12,12))
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-    popLabels = [pop.tags['popLabel'] for pop in f.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    cellColors = [popColors[cell.tags['popLabel']] for cell in f.net.cells]
+    cellColors = [popColors[cell.tags['popLabel']] for cell in sim.net.cells]
     posX = [cell['tags']['x'] for cell in allCells]  # get all x positions
     posY = [cell['tags']['y'] for cell in allCells]  # get all y positions
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
@@ -277,7 +277,7 @@ def plot2Dnet():
 
 ## Plot weight changes
 def plotWeightChanges():
-    if f.usestdp:
+    if sim.usestdp:
         # create plot
         figh = figure(figsize=(1.2*8,1.2*6))
         figh.subplots_adjust(left=0.02) # Less space on left
@@ -289,9 +289,9 @@ def plotWeightChanges():
         h = axes()
 
         # create data matrix
-        wcs = [x[-1][-1] for x in f.allweightchanges] # absolute final weight
-        wcs = [x[-1][-1]-x[0][-1] for x in f.allweightchanges] # absolute weight change
-        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in f.allstdpconndata])
+        wcs = [x[-1][-1] for x in sim.allweightchanges] # absolute final weight
+        wcs = [x[-1][-1]-x[0][-1] for x in sim.allweightchanges] # absolute weight change
+        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in sim.allstdpconndata])
         ncells = int(max(max(pre),max(post))+1)
         wcmat = zeros([ncells, ncells])
 
@@ -302,10 +302,10 @@ def plotWeightChanges():
         imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
         xlabel('post-synaptic cell id')
         ylabel('pre-synaptic cell id')
-        h.set_xticks(f.popGidStart)
-        h.set_yticks(f.popGidStart)
-        h.set_xticklabels(f.popnames)
-        h.set_yticklabels(f.popnames)
+        h.set_xticks(sim.popGidStart)
+        h.set_yticks(sim.popGidStart)
+        h.set_xticklabels(sim.popnames)
+        h.set_yticklabels(sim.popnames)
         h.xaxif.set_ticks_position('top')
         xlim(-0.5,ncells-0.5)
         ylim(ncells-0.5,-0.5)
@@ -325,7 +325,7 @@ def plot3dArch():
     ax = figh.add_subplot(1,1,1, projection='3d')
     h = axes()
 
-    #print len(f.xlocs),len(f.ylocs),len(f.zlocs)
+    #print len(sim.xlocs),len(sim.ylocs),len(sim.zlocs)
     xlocs =[1,2,3]
     ylocs=[3,2,1]
     zlocs=[0.1,0.5,1.2]
@@ -333,9 +333,9 @@ def plot3dArch():
     azim = 40  
     elev = 60
     ax.view_init(elev, azim) 
-    #xlim(min(f.xlocs),max(f.xlocs))
-    #ylim(min(f.ylocs),max(f.ylocs))
-    #ax.set_zlim(min(f.zlocs),max(f.zlocs))
+    #xlim(min(sim.xlocs),max(sim.xlocs))
+    #ylim(min(sim.ylocs),max(sim.ylocs))
+    #ax.set_zlim(min(sim.zlocs),max(sim.zlocs))
     xlabel('lateral distance (mm)')
     ylabel('lateral distance (mm)')
     ylabel('cortical depth (mm)')

@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from neuron import h # Import NEURON
-import framework as f
+import sim
 
 
 ###############################################################################
@@ -30,7 +30,7 @@ class Cell(object):
         self.associateGid() # register cell for this node
 
     def create(self):
-        for prop in f.net.params['cellParams']:  # for each set of cell properties
+        for prop in sim.net.params['cellParams']:  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
                 if self.tags[condKey] != condVal: 
@@ -41,9 +41,9 @@ class Cell(object):
                     self.tags['propList'] = [prop['label']] # create list of property sets
                 else:
                     self.tags['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
-                if f.cfg['createPyStruct']:
+                if sim.cfg['createPyStruct']:
                     self.createPyStruct(prop)
-                if f.cfg['createNEURONObj']:
+                if sim.cfg['createNEURONObj']:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
@@ -162,8 +162,8 @@ class Cell(object):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                if 'ynorm' in self.tags and 'sizeY' in f.net.params:
-                    y = self.tags['ynorm'] * f.net.params['sizeY']/1e3  # y as a func of ynorm and cortical thickness
+                if 'ynorm' in self.tags and 'sizeY' in sim.net.params:
+                    y = self.tags['ynorm'] * sim.net.params['sizeY']/1e3  # y as a func of ynorm and cortical thickness
                 else:
                     y = self.tags['y']
                 z = self.tags['z']
@@ -181,7 +181,7 @@ class Cell(object):
 
     def associateGid (self, threshold = 10.0):
         if self.secs:
-            f.pc.set_gid2node(self.gid, f.rank) # this is the key call that assigns cell gid to a particular node
+            sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
             if sec:
                 loc = sec['spikeGenLoc']  # get location of spike generator within section
@@ -197,16 +197,16 @@ class Cell(object):
             if not nc:  # if still haven't created netcon  
                 nc = h.NetCon(sec['hSection'](loc)._ref_v, None, sec=sec['hSection'])
             nc.threshold = threshold
-            f.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
-            f.net.gid2lid[self.gid] = len(f.net.lid2gid)
-            f.net.lid2gid.append(self.gid) # index = local id; value = global id
+            sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+            sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
+            sim.net.lid2gid.append(self.gid) # index = local id; value = global id
             del nc # discard netcon
 
     def addSynMech (self, label, secName, loc):
-        synMechParams = next((params for params in f.net.params['synMechParams'] if params['label'] == label), None)  # get params for this synMech
+        synMechParams = next((params for params in sim.net.params['synMechParams'] if params['label'] == label), None)  # get params for this synMech
         sec = self.secs.get(secName, None)
         if synMechParams and sec:  # if both the synMech and the section exist
-            if f.cfg['createPyStruct']:
+            if sim.cfg['createPyStruct']:
                 # add synaptic mechanism to python struct
                 if 'synMechs' not in sec:
                     sec['synMechs'] = []
@@ -215,7 +215,7 @@ class Cell(object):
                     synMech = {'label': label, 'loc': loc}
                     sec['synMechs'].append(synMech)
 
-            if f.cfg['createNEURONObj']:
+            if sim.cfg['createNEURONObj']:
                 # add synaptic mechanism NEURON objectes 
                 if 'synMechs' not in sec:
                     sec['synMechs'] = []
@@ -255,10 +255,10 @@ class Cell(object):
         sec = self.secs[params['sec']]
 
         # Weight 
-        if f.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
-            scaleFactor = f.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
+        if sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
+            scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
-            scaleFactor = f.net.params['scaleConnWeight'] # use global scale factor
+            scaleFactor = sim.net.params['scaleConnWeight'] # use global scale factor
         params['weight'] = scaleFactor*params['weight']
         weightIndex = 0  # set default weight matrix index
 
@@ -282,8 +282,8 @@ class Cell(object):
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
                 synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
-            elif f.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
-                synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+            elif sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
+                synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
             else: # if no synaptic mechanism specified and no synMech params available 
@@ -291,40 +291,40 @@ class Cell(object):
                 return  # if no Synapse available print error and exit
 
         # Create connection (Python and NEURON objects)
-        self.conns.append(params if f.cfg['createPyStruct'] else {})
+        self.conns.append(params if sim.cfg['createPyStruct'] else {})
 
-        if f.cfg['createNEURONObj']:
+        if sim.cfg['createNEURONObj']:
             if pointp:
                 postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
             else:
                 postTarget = synMech['hSyn'] # local synaptic mechanism
-            netcon = f.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+            netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
            
             netcon.weight[weightIndex] = params['weight']  # set Netcon weight
             netcon.delay = params['delay']  # set Netcon delay
             netcon.threshold = params['threshold']  # set Netcon delay
             self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if f.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
+        if sim.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
             (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
         # Add plasticity 
         plasticity = params.get('plasticity')
-        if plasticity and f.cfg['createNEURONObj']:
+        if plasticity and sim.cfg['createNEURONObj']:
             try:
                 plastSection = h.Section()
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
                 if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
-                    precon = f.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
-                    pstcon = f.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                    precon = sim.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                    pstcon = sim.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
                     h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
                     self.conns[-1]['hPlastSection'] = plastSection
                     self.conns[-1]['hSTDP']         = plastMech
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
                     self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if f.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
+                    if sim.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
@@ -360,8 +360,8 @@ class Cell(object):
         if not pointp: # not a point process
             if params['synMech']: # if desired synaptic mechanism specified in conn params
                 synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (won't be added if exists)
-            elif f.net.params['synMechParams']:  # if some synMech params defined
-                synLabel = f.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+            elif sim.net.params['synMechParams']:  # if some synMech params defined
+                synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synapse
             else: # if no synaptic mechanism specified and no synMech params available 
@@ -404,7 +404,7 @@ class Cell(object):
         netcon.threshold = params['threshold']  # set Netcon delay
         self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         self.stims[-1]['weightIndex'] = weightIndex
-        if f.cfg['verbose']: print('Created NetStim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
+        if sim.cfg['verbose']: print('Created NetStim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
 
@@ -433,13 +433,13 @@ class Cell(object):
 
         self.stims.append(params)
         self.stims[-1]['hIClamp'] = iclamp  # add netcon object to dict in conns list
-        if f.cfg['verbose']: print('Created IClamp postGid=%d, sec=%s, loc=%.4g, amp=%.4g, delay=%.4g, dur=%.4g'%
+        if sim.cfg['verbose']: print('Created IClamp postGid=%d, sec=%s, loc=%.4g, amp=%.4g, delay=%.4g, dur=%.4g'%
             (self.gid, params['sec'], params['loc'], params['amp'], params['delay'], params['dur']))
 
 
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
-        for key, params in f.cfg['recordTraces'].iteritems():
+        for key, params in sim.cfg['recordTraces'].iteritems():
             ptr = None
             try: 
                 if 'loc' in params:
@@ -458,26 +458,26 @@ class Cell(object):
                             ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
 
                 if ptr:  # if pointer has been created, then setup recording
-                    f.simData[key]['cell_'+str(self.gid)] = h.Vector(f.cfg['duration']/f.cfg['recordStep']+1).resize(0)
-                    f.simData[key]['cell_'+str(self.gid)].record(ptr, f.cfg['recordStep'])
-                    if f.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+                    sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg['duration']/sim.cfg['recordStep']+1).resize(0)
+                    sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg['recordStep'])
+                    if sim.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
             except:
-                if f.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
+                if sim.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):
-        f.simData['stims'].update({'cell_'+str(self.gid): {}})
+        sim.simData['stims'].update({'cell_'+str(self.gid): {}})
         for stim in self.stims:
             if 'hNetcon' in stim:
                 stimSpikeVecs = h.Vector() # initialize vector to store 
                 stim['hNetcon'].record(stimSpikeVecs)
-                f.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+                sim.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
 
     def __getstate__(self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = f.sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         return odict
 
 

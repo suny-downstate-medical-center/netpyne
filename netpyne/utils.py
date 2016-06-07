@@ -285,7 +285,7 @@ def importConnFromExcel(fileName, sheetName):
     numRows = sheet.get_highest_row()
 
     with open(outFileName, 'w') as f:
-        f.write(connText)  # write starting text
+        sim.write(connText)  # write starting text
         for row in range(1,numRows+1):
             if sheet.cell(row=row, column=colProb).value:  # if not empty row
                 print 'Creating conn rule for row ' + str(row)
@@ -318,5 +318,5 @@ def importConnFromExcel(fileName, sheetName):
                 line = line + ",\n'weight': " + str(weight)  # write prob
                 line = line + "})"  # add closing brackets
                 line = line + '\n\n' # new line after each conn rule
-                f.write(line)  # write to file
+                sim.write(line)  # write to file
                 

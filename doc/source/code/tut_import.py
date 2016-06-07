@@ -1,4 +1,4 @@
-from netpyne import init, utils
+from netpyne import sim, utils
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
@@ -129,6 +129,6 @@ simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation
-init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

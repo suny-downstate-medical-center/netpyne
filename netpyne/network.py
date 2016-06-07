@@ -440,7 +440,7 @@ class Network(object):
 
         # generate dict with final params
         for i, synMech in enumerate(connParam['synMech']):
-            if 'synWeightFraction' in connParam: # adapt weight for each synMech
+            if 'synMechWeightFactor' in connParam: # adapt weight for each synMech
                 weight = weight * connParam['synMechWeightFactor'][i]
 
             params = {'popLabel': preCellTags['popLabel'],
@@ -488,7 +488,7 @@ class Network(object):
 
         # generate dict with final params
         for i, synMech in enumerate(connParam['synMech']):
-            if 'synWeightFraction' in connParam: # adapt weight for each synMech
+            if 'synMechWeightFactor' in connParam: # adapt weight for each synMech
                 weight = weight * connParam['synMechWeightFactor'][i]
 
             params = {'preGid': preCellGid, 

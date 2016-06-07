@@ -378,7 +378,7 @@ def runSimWithIntervalFunc(interval, func):
 ### Gather tags from cells
 ###############################################################################
 def gatherAllCellTags():
-    data = [{cell.gid: cell.tags for cell in sim.net.cells}]*f.nhosts  # send cells data to other nodes
+    data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()
     allCellTags = {}

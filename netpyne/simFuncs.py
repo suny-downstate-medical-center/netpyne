@@ -19,7 +19,7 @@ import sim
 # initialize variables and MPI
 ###############################################################################
 
-def initialize(netParams = {}, simConfig = {}, net = None):
+def initialize (netParams = {}, simConfig = {}, net = None):
 
     sim.simData = {}  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
@@ -51,13 +51,13 @@ def initialize(netParams = {}, simConfig = {}, net = None):
 ###############################################################################
 # Set network object to use in simulation
 ###############################################################################
-def setNet(net):
+def setNet (net):
     sim.net = net
 
 ###############################################################################
 # Set network params to use in simulation
 ###############################################################################
-def setNetParams(params):
+def setNetParams (params):
     for paramName, paramValue in sim.default.netParams.iteritems():  # set default values
         if paramName not in params:
             params[paramName] = paramValue
@@ -66,7 +66,7 @@ def setNetParams(params):
 ###############################################################################
 # Set simulation config
 ###############################################################################
-def setSimCfg(cfg):
+def setSimCfg (cfg):
     for paramName, paramValue in sim.default.simConfig.iteritems():  # set default values
         if paramName not in cfg:
             cfg[paramName] = paramValue
@@ -77,16 +77,16 @@ def setSimCfg(cfg):
 
     sim.cfg = cfg
 
-def loadSimCfg(paramFile):
+def loadSimCfg (paramFile):
     pass
 
-def loadSimParams(paramFile):
+def loadSimParams (paramFile):
     pass
 
 ###############################################################################
 # Create parallel context
 ###############################################################################
-def createParallelContext():
+def createParallelContext ():
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     sim.pc.done()
     sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
@@ -98,7 +98,7 @@ def createParallelContext():
 ###############################################################################
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
-def createAndSimulate(netParams, simConfig):
+def createAndSimulate (netParams, simConfig):
     ''' Sequence of commands to run full model '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     sim.net.createPops()                  # instantiate network populations
@@ -115,7 +115,7 @@ def createAndSimulate(netParams, simConfig):
 ###############################################################################
 # Wrapper to create and export network to NeuroML
 ###############################################################################
-def createAndExportNeuroML2(netParams, simConfig, reference, connections=True,stimulations=True):
+def createAndExportNeuroML2 (netParams, simConfig, reference, connections=True,stimulations=True):
     ''' Sequence of commands to run full model '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     sim.net.createPops()                  # instantiate network populations
@@ -129,14 +129,14 @@ def createAndExportNeuroML2(netParams, simConfig, reference, connections=True,st
 ###############################################################################
 # Hash function to obtain random value
 ###############################################################################
-def id32(obj): 
+def id32 (obj): 
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
-def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT'):
+def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
     if type(obj) == list:
         if objCopy=='ROOT': 
             objCopy = []
@@ -170,7 +170,7 @@ def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT'):
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
-def _replaceItemObj(obj, keystart, newval):
+def _replaceItemObj (obj, keystart, newval):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -188,7 +188,7 @@ def _replaceItemObj(obj, keystart, newval):
 ###############################################################################
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
-def _replaceFuncObj(obj):
+def _replaceFuncObj (obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -210,7 +210,7 @@ def _replaceFuncObj(obj):
 ###############################################################################
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
-def _replaceNoneObj(self, obj):
+def _replaceNoneObj (self, obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -229,7 +229,7 @@ def _replaceNoneObj(self, obj):
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
-def _dict2utf8(self, obj):
+def _dict2utf8 (self, obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     import collections
     if isinstance(obj, basestring):
@@ -244,7 +244,7 @@ def _dict2utf8(self, obj):
 ###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and sim.net sim.params
 ###############################################################################
-def readArgs():
+def readArgs ():
     for argv in sys.argv[1:]: # Skip first argument, which is file name
         arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
         harg = arg[0].split('.')+[''] # Separate out variable name; '' since if split fails need to still have an harg[1]
@@ -268,7 +268,7 @@ def readArgs():
 ###############################################################################
 ### Setup Recording
 ###############################################################################
-def setupRecording():
+def setupRecording ():
     timing('start', 'setrecordTime')
     # set initial v of cells
     sim.fih = []
@@ -309,7 +309,7 @@ def setupRecording():
 ###############################################################################
 ### Run Simulation
 ###############################################################################
-def runSim():
+def runSim ():
     sim.pc.barrier()
     timing('start', 'runTime')
     if sim.rank == 0:
@@ -340,7 +340,7 @@ def runSim():
 ###############################################################################
 ### Run Simulation
 ###############################################################################
-def runSimWithIntervalFunc(interval, func):
+def runSimWithIntervalFunc (interval, func):
     sim.pc.barrier()
     timing('start', 'runTime')
     if sim.rank == 0:
@@ -377,7 +377,7 @@ def runSimWithIntervalFunc(interval, func):
 ###############################################################################
 ### Gather tags from cells
 ###############################################################################
-def gatherAllCellTags():
+def gatherAllCellTags ():
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()
@@ -392,7 +392,7 @@ def gatherAllCellTags():
 ###############################################################################
 ### Gather data from nodes
 ###############################################################################
-def gatherData():
+def gatherData ():
     timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0: 
@@ -476,7 +476,7 @@ def gatherData():
 ###############################################################################
 ### Save data
 ###############################################################################
-def saveData():
+def saveData ():
     if sim.rank == 0:
         timing('start', 'saveTime')
         dataSave = {'netParams': _replaceFuncObj(sim.net.params), 'simConfig': sim.cfg, 'simData': sim.allSimData, 'netCells': sim.net.allCells}
@@ -563,7 +563,7 @@ def saveData():
 ###############################################################################
 ### Timing - Stop Watch
 ###############################################################################
-def timing(mode, processName):
+def timing (mode, processName):
     if sim.rank == 0 and sim.cfg['timing']:
         if mode == 'start':
             sim.timingData[processName] = time() 
@@ -574,7 +574,7 @@ def timing(mode, processName):
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
-def _convertNetworkRepresentation(net, gids_vs_pop_indices):
+def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
     nn = {}
 
@@ -608,7 +608,7 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
 ###############################################################################
 ### Get stimulations in representation as used in NeuroML2
 ###############################################################################  
-def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
+def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
     stims = {}
 
@@ -649,7 +649,7 @@ def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
 ###############################################################################
 ### Export synapses to NeuroML2
 ############################################################################### 
-def _export_synapses(net, nml_doc):
+def _export_synapses (net, nml_doc):
 
     import neuroml
 
@@ -679,7 +679,7 @@ def _export_synapses(net, nml_doc):
 ###############################################################################
 ### Export generated structure of network to NeuroML 2 
 ###############################################################################         
-def exportNeuroML2(reference, connections=True, stimulations=True):
+def exportNeuroML2 (reference, connections=True, stimulations=True):
 
     net = sim.net
     

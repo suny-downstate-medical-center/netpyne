@@ -18,7 +18,7 @@ import sim
 #
 ###############################################################################
 
-class Pop(object):
+class Pop (object):
     ''' Python class used to instantiate the network population '''
     def __init__(self,  tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
@@ -54,7 +54,7 @@ class Pop(object):
 
 
     # population based on numCells
-    def createCellsFixedNum(self):
+    def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
         cellModelClass = sim.Cell
         cells = []
@@ -85,7 +85,7 @@ class Pop(object):
         return cells
 
                 
-    def createCellsDensity(self):
+    def createCellsDensity (self):
         ''' Create population cells based on density'''
         cellModelClass = sim.Cell
         cells = []
@@ -160,7 +160,7 @@ class Pop(object):
         return cells
 
 
-    def createCellsList(self):
+    def createCellsList (self):
         ''' Create population cells based on list of individual cells'''
         cellModelClass = sim.Cell
         cells = []
@@ -186,7 +186,7 @@ class Pop(object):
         return cells
 
 
-    def __getstate__(self): 
+    def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim._replaceFuncObj(odict)  # replace h objects with None so can be pickled

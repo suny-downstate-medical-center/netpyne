@@ -16,10 +16,10 @@ import sim
 #
 ###############################################################################
 
-class Cell(object):
+class Cell (object):
     ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
     
-    def __init__(self, gid, tags):
+    def __init__ (self, gid, tags):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
@@ -29,7 +29,7 @@ class Cell(object):
         self.create()  # create cell 
         self.associateGid() # register cell for this node
 
-    def create(self):
+    def create (self):
         for prop in sim.net.params['cellParams']:  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
@@ -47,7 +47,7 @@ class Cell(object):
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
-    def createPyStruct(self, prop):
+    def createPyStruct (self, prop):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
@@ -112,12 +112,12 @@ class Cell(object):
 
 
 
-    def initV(self): 
+    def initV (self): 
         for sec in self.secs.values():
             if 'vinit' in sec:
                 sec['hSection'](0.5).v = sec['vinit']
 
-    def createNEURONObj(self, prop):
+    def createNEURONObj (self, prop):
         # set params for all sections
         for sectName,sectParams in prop['sections'].iteritems(): 
             # create section
@@ -232,7 +232,7 @@ class Cell(object):
                             setattr(synMech['hSyn'], synParamName, synParamValue)
             return synMech
 
-    def addConn(self, params):
+    def addConn (self, params):
         # Avoid self connections
         if params['preGid'] == self.gid:
             print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
@@ -474,7 +474,7 @@ class Cell(object):
                 sim.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
 
 
-    def __getstate__(self): 
+    def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
@@ -488,7 +488,7 @@ class Cell(object):
 #
 ###############################################################################
 
-class PointNeuron(Cell):
+class PointNeuron (Cell):
     '''
     Point Neuron that doesn't use v from Section - TO DO
     '''

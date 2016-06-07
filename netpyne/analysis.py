@@ -22,7 +22,7 @@ def showFig():
         show()
 
 # sequence of generic plots (raster, connectivity,psd,...)
-def plotData():
+def plotData ():
     ## Plotting
     if sim.rank == 0:
         sim.timing('start', 'plotTime')
@@ -65,7 +65,7 @@ def plotData():
 
 
 ## Sync measure
-def syncMeasure():
+def syncMeasure ():
     t0=-1 
     width=1 
     cnt=0
@@ -77,7 +77,7 @@ def syncMeasure():
 
 
 ## Raster plot 
-def plotRaster(): 
+def plotRaster (): 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
@@ -122,7 +122,7 @@ def plotRaster():
     #savefig('raster.png')
 
 ## Traces (v,i,g etc) plot
-def plotTraces(): 
+def plotTraces (): 
     tracesList = sim.cfg['recordTraces'].keys()
     tracesList.sort()
     gidList = [trace for trace in sim.cfg['plotCells'] if isinstance(trace, int)]
@@ -173,7 +173,7 @@ def plotTraces():
 
 
 ## Plot power spectra density
-def plotLFPSpectrum():
+def plotLFPSpectrum ():
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
 
     lfpv=[[] for c in range(len(sim.lfppops))]    

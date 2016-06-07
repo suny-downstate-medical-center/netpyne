@@ -16,24 +16,24 @@ from neuron import h  # import NEURON
 import sim
 
 
-class Network(object):
+class Network (object):
 
     ###############################################################################
     # initialize variables
     ###############################################################################
-    def __init__(self, params = None):
+    def __init__ (self, params = None):
         self.params = params
 
     ###############################################################################
     # Set network params
     ###############################################################################
-    def setParams(self, params):
+    def setParams (self, params):
         self.params = params
 
     ###############################################################################
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
-    def createPops(self):
+    def createPops (self):
         self.pops = []  # list to store populations ('Pop' objects)
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
@@ -44,7 +44,7 @@ class Network(object):
     ###############################################################################
     # Create Cells
     ###############################################################################
-    def createCells(self):
+    def createCells (self):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
@@ -69,7 +69,7 @@ class Network(object):
     ###############################################################################
     #  Add stims
     ###############################################################################
-    def addStims(self):
+    def addStims (self):
         sim.timing('start', 'stimsTime')
         if 'stimParams' in self.params:
             if sim.rank==0: 
@@ -123,7 +123,7 @@ class Network(object):
     ###############################################################################
     # Connect Cells
     ###############################################################################
-    def connectCells(self):
+    def connectCells (self):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'connectTime')
         if sim.rank==0: 
@@ -202,7 +202,7 @@ class Network(object):
     ###############################################################################
     # Convert string to function
     ###############################################################################
-    def _strToFunc(self, preCellsTags, postCellsTags, connParam):
+    def _strToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
         paramsStrFunc = [param for param in ['weight', 'delay', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
@@ -279,7 +279,7 @@ class Network(object):
     ###############################################################################
     ### Full connectivity
     ###############################################################################
-    def fullConn(self, preCellsTags, postCellsTags, connParam):
+    def fullConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells '''
         if sim.cfg['verbose']: print 'Generating set of all-to-all connections...'
 
@@ -303,7 +303,7 @@ class Network(object):
     ###############################################################################
     ### Probabilistic connectivity 
     ###############################################################################
-    def probConn(self, preCellsTags, postCellsTags, connParam):
+    def probConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg['verbose']: print 'Generating set of probabilistic connections...'
 
@@ -329,7 +329,7 @@ class Network(object):
     ###############################################################################
     ### Convergent connectivity 
     ###############################################################################
-    def convConn(self, preCellsTags, postCellsTags, connParam):
+    def convConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg['verbose']: print 'Generating set of convergent connections...'
                
@@ -355,7 +355,7 @@ class Network(object):
     ###############################################################################
     ### Divergent connectivity 
     ###############################################################################
-    def divConn(self, preCellsTags, postCellsTags, connParam):
+    def divConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg['verbose']: print 'Generating set of divergent connections...'
          
@@ -380,7 +380,7 @@ class Network(object):
     ###############################################################################
     ### From list connectivity 
     ###############################################################################
-    def fromListConn(self, preCellsTags, postCellsTags, connParam):
+    def fromListConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
         if sim.cfg['verbose']: print 'Generating set of connections from list...'
 
@@ -414,7 +414,7 @@ class Network(object):
     ###############################################################################
     ### Set parameters and create NetStim and connection
     ###############################################################################
-    def _addCellNetStim(self, connParam, preCellTags, preCellGid, postCellGid):
+    def _addCellNetStim (self, connParam, preCellTags, preCellGid, postCellGid):
         # set weight
         if 'weightList' in connParam:
             weight = connParam['weightList'][preCellGid,postCellGid]
@@ -462,7 +462,7 @@ class Network(object):
     ###############################################################################
     ### Set parameters and create connection
     ###############################################################################
-    def _addCellConn(self, connParam, preCellGid, postCellGid):
+    def _addCellConn (self, connParam, preCellGid, postCellGid):
         # set weight
         if 'weightList' in connParam:
             weight = connParam['weightList'][preCellGid,postCellGid]

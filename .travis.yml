@@ -1,62 +1,125 @@
+# Netpyne travis testing script
+
 #Netpyne travis testing script
 
-sudo: true
+sudo: false
 
 addons:
   apt:
     packages:
-       # Requirements for Neuron/NetPyne
-    - build-essential
-    - autoconf
-    - automake
-    - libtool
+       # Requirements for Neuron/NetPyne/OMV
     - python-numpy 
-    - python-scipy
+    - python-scipy 
     - python-matplotlib 
+    - python-sympy
+    - python-tables 
 
 language: python
 python: 2.7
 
 env:
     system_site_packages: true  
-#    - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
-#   - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
+    
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 
 install:
-    #- pip install scipy
-    - pip install numpy                                                                                                                                                                                                               
-    - pip install matplotlib
-    - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
-    - tar xzvf nrn-7.3.tar.gz
-    - cd nrn-7.3
-    - ./configure --prefix `pwd` --without-iv --with-nrnpython
-    - make
-    - make install
-    - cd src/nrnpython
-    - sudo python setup.py install
-    - cd ../../..
-    - ls -alt
-    - export NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
-    - export PYTHONPATH=$TRAVIS_BUILD_DIR:/usr/local/lib/python2.7/dist-packages/:/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages
-    - echo $PYTHONPATH
-    - $NEURON_HOME/nrnivmodl doc/source/code/mod
-    - cp examples/HHTut/HHTut.py doc/source/code/
+    - pip install git+https://github.com/OpenSourceBrain/osb-model-validation
+    
+    # Need to pre install NEURON so nrnivmodl can be run targeting mod files in a different directory
+    - omv install NEURON
+    - pwd
+    - python setup.py install
+    - export NEURON_HOME=/home/travis/neuron/nrn/x86_64/
+  
 
 script:
-    - python doc/source/code/tut1.py
-    - python doc/source/code/tut2.py
-    - python doc/source/code/tut3.py
-    - python doc/source/code/tut5.py
-    - python doc/source/code/tut6.py
-    - python doc/source/code/tut_import.py
-    - python examples/HHTut/HHTut_run.py
-    - python examples/HybridTut/HybridTut_run.py
-    - python examples/M1/M1_run.py
-    - python examples/RL_arm/main.py
+    - cd doc/source/code/
+    - $NEURON_HOME/bin/nrnivmodl mod
+    - python tut1.py
+    - python tut2.py
+    - python tut3.py
+    - python tut5.py
+    - python tut6.py
+    - python tut_import.py
+    - cd ../../../examples
+    - python HHTut/HHTut_run.py
+    - python HybridTut/HybridTut_run.py
+    - cd M1
+    - $NEURON_HOME/bin/nrnivmodl
+    - python M1/M1_run.py
+    - cd ../RL_arm
+    - $NEURON_HOME/bin/nrnivmodl
+    - python RL_arm/main.py
+
 
 notifications: 
     email: false
     slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
+
+
+
+
+
+# sudo: true
+
+# addons:
+#   apt:
+#     packages:
+#        # Requirements for Neuron/NetPyne
+#     - build-essential
+#     - autoconf
+#     - automake
+#     - libtool
+#     - python-numpy 
+#     - python-scipy
+#     - python-matplotlib 
+
+# language: python
+# python: 2.7
+
+# env:
+#     system_site_packages: true  
+# #    - NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+# #   - PYTHONPATH=$TRAVIS_BUILD_DIR:$PYTHONPATH
+
+# install:
+#     #- pip install scipy
+#     - pip install numpy                                                                                                                                                                                                               
+#     - pip install matplotlib
+#     - wget http://www.neuron.yale.edu/ftp/neuron/versions/v7.3/nrn-7.3.tar.gz
+#     - tar xzvf nrn-7.3.tar.gz
+#     - cd nrn-7.3
+#     - ./configure --prefix `pwd` --without-iv --with-nrnpython
+#     - make
+#     - make install
+#     - cd src/nrnpython
+#     - sudo python setup.py install
+#     - cd ../../..
+#     - ls -alt
+#     - export NEURON_HOME=$TRAVIS_BUILD_DIR/nrn-7.3/x86_64/bin/
+#     - export PYTHONPATH=$TRAVIS_BUILD_DIR:/usr/local/lib/python2.7/dist-packages/:/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages
+#     - echo $PYTHONPATH
+#     - $NEURON_HOME/nrnivmodl doc/source/code/mod
+#     - cp examples/HHTut/HHTut.py doc/source/code/
+
+# script:
+#     - python doc/source/code/tut1.py
+#     - python doc/source/code/tut2.py
+#     - python doc/source/code/tut3.py
+#     - python doc/source/code/tut5.py
+#     - python doc/source/code/tut6.py
+#     - python doc/source/code/tut_import.py
+#     - python examples/HHTut/HHTut_run.py
+#     - python examples/HybridTut/HybridTut_run.py
+#     - python examples/M1/M1_run.py
+#     - python examples/RL_arm/main.py
+
+# notifications: 
+#     email: false
+#     slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
 
 
 # Framework for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation

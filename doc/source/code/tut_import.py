@@ -19,10 +19,10 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
 
-
+netParams['synMechParams'] = []
 ### HH
 cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
+utils.importCell(cellRule=cellRule, synMechParams = netParams['synMechParams'], fileName='HHCellFile.py', cellName='HHCellClass')
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
 
 ### HH3D
@@ -77,7 +77,7 @@ netParams['cellParams'].append(cellRule)
 
 
 ## Synaptic mechanism parameters
-netParams['synMechParams'] = []
+
 netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
  
 

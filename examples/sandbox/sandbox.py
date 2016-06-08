@@ -76,6 +76,7 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
     'weight': 0.0005,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'synsPerConn': 'int(gauss(5,1))',
     'threshold': 10})                    # threshold
 
 netParams['connParams'].append(

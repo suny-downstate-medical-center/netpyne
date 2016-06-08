@@ -2,7 +2,12 @@
 
 - Added option to specify weight scale factor separately for each cell model (issue #69)
 
-- Fixed bug so can create Python and NEURON objects for connections independently 
+- Conn rules can now have list of synMechs (eg. [AMPA, NMDA]) and synMechWeightFactor (eg. [1.0, 0.1]) (issue #69)
+
+- Conn rules allow synsPerConn to be described functionally (eg. 'uniform(5,2)') (issue #69)
+
+- Fixed bug so can create Python and NEURON objects for connections independently (issue #69)
+
 
 ## Version 0.4.7
 

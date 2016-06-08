@@ -204,7 +204,7 @@ class Network (object):
     ###############################################################################
     def _strToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
-        paramsStrFunc = [param for param in ['weight', 'delay', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+        paramsStrFunc = [param for param in ['weight', 'delay', 'synsPerConn', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  
@@ -271,7 +271,7 @@ class Network (object):
                     for preGid, preCellTags in preCellsTags.iteritems()}
 
             else:
-                # store lambda function and func vars in connParam (for weight and delay, since only calculated for certain conns)
+                # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
                 connParam[paramStrFunc+'Func'] = lambdaFunc
                 connParam[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
  
@@ -497,6 +497,7 @@ class Network (object):
             'weight': weight,
             'delay': delay,
             'threshold': connParam['threshold'],
+            'synsPerConn': connParam['synsPerCon'],
             'plasticity': connParam.get('plasticity')}
             
             postCell.addConn(params)

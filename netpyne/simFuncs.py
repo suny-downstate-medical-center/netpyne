@@ -100,7 +100,7 @@ def createParallelContext ():
 # Wrapper to create network
 ###############################################################################
 def create (netParams, simConfig):
-    ''' Sequence of commands to run full model '''
+    ''' Sequence of commands to create network '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
@@ -114,7 +114,7 @@ def create (netParams, simConfig):
 # Wrapper to simulate network
 ###############################################################################
 def simulate ():
-    ''' Sequence of commands to run full model '''
+    ''' Sequence of commands to simulate network '''
     sim.runSim()                      # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     
@@ -123,7 +123,7 @@ def simulate ():
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createAndSimulate (netParams, simConfig):
-    ''' Sequence of commands to run full model '''
+    ''' Sequence of commands create, simulate and analyse network '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
@@ -139,10 +139,10 @@ def createAndSimulate (netParams, simConfig):
     
 
 ###############################################################################
-# Wrapper to create and export network to NeuroML
+# Wrapper to create and export network to NeuroML2
 ###############################################################################
 def createAndExportNeuroML2 (netParams, simConfig, reference, connections=True,stimulations=True):
-    ''' Sequence of commands to run full model '''
+    ''' Sequence of commands to create and export network to NeuroML2 '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations

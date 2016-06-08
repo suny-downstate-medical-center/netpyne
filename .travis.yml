@@ -33,6 +33,7 @@ install:
   
 
 script:
+    - cp examples/HHTut/HHTut.py doc/source/code/
     - cd doc/source/code/
     - $NEURON_HOME/bin/nrnivmodl mod
     - python tut1.py

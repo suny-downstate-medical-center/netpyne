@@ -5,7 +5,7 @@ Functions to plot and analyse results
 
 Contributors: salvadordura@gmail.com
 """
-
+import matplotlib
 from matplotlib.pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy import size, array, linspace, ceil
 

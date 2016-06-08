@@ -95,21 +95,47 @@ def createParallelContext ():
     if sim.rank==0: 
         sim.pc.gid_clear()
 
+
+###############################################################################
+# Wrapper to create network
+###############################################################################
+def create (netParams, simConfig):
+    ''' Sequence of commands to run full model '''
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+    pops = sim.net.createPops()                  # instantiate network populations
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
+    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+
+    return (pops, cells, conns, stims, simData)
+    
+###############################################################################
+# Wrapper to simulate network
+###############################################################################
+def simulate ():
+    ''' Sequence of commands to run full model '''
+    sim.runSim()                      # run parallel Neuron simulation  
+    sim.gatherData()                  # gather spiking data and cell info from each node
+    
+
 ###############################################################################
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createAndSimulate (netParams, simConfig):
     ''' Sequence of commands to run full model '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    sim.net.createPops()                  # instantiate network populations
-    sim.net.createCells()                 # instantiate network cells based on defined populations
-    sim.net.connectCells()                # create connections between cells based on params
-    sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    pops = sim.net.createPops()                  # instantiate network populations
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
+    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     sim.runSim()                      # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
     sim.analysis.plotData()               # plot spike raster
+
+    return (pops, cells, conns, stims, simData)
     
 
 ###############################################################################
@@ -118,13 +144,15 @@ def createAndSimulate (netParams, simConfig):
 def createAndExportNeuroML2 (netParams, simConfig, reference, connections=True,stimulations=True):
     ''' Sequence of commands to run full model '''
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    sim.net.createPops()                  # instantiate network populations
-    sim.net.createCells()                 # instantiate network cells based on defined populations
-    sim.net.connectCells()                # create connections between cells based on params
-    sim.net.addStims()                    # add external stimulation to cells (IClamps etc) 
-    sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    pops = sim.net.createPops()                  # instantiate network populations
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
+    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
-    
+
+    return (pops, cells, conns, stims, simData)
+        
 
 ###############################################################################
 # Hash function to obtain random value

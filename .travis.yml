@@ -1,7 +1,5 @@
 # Netpyne travis testing script
 
-#Netpyne travis testing script
-
 sudo: false
 
 addons:
@@ -30,7 +28,6 @@ install:
     
     # Need to pre install NEURON so nrnivmodl can be run targeting mod files in a different directory
     - omv install NEURON
-    - pwd
     - python setup.py install
     - export NEURON_HOME=/home/travis/neuron/nrn/x86_64/
   

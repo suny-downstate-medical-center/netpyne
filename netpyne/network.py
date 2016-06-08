@@ -144,6 +144,7 @@ class Network (object):
 
             if 'weight' not in connParam: connParam['weight'] = self.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = self.params['defaultDelay'] # if no delay, set default
+            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no delay, set default
 
             preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
             prePops = allPopTags  # initialize with all presyn pops
@@ -440,8 +441,20 @@ class Network (object):
 
         # generate dict with final params
         for i, synMech in enumerate(connParam['synMech']):
-            if 'synMechWeightFactor' in connParam: # adapt weight for each synMech
-                weight = weight * connParam['synMechWeightFactor'][i]
+
+            if isinstance (weight, list):  # get weight from list for each synMech
+                weightSynMech = weight[i]
+            elif 'synMechWeightFactor' in connParam: # adapt weight for each synMech
+                weightSynMech = weight * connParam['synMechWeightFactor'][i]
+            else:
+                weightSynMech = weight
+
+            if isinstance (delay, list):  # get delay from list for each synMech
+                delaySynMech = delay[i]
+            elif 'synMechDelayFactor' in connParam: # adapt list for each synMech
+                delaySynMech = delay * connParam['synMechDelayFactor'][i]
+            else:
+                delaySynMech = delay
 
             params = {'popLabel': preCellTags['popLabel'],
             'rate': preCellTags['rate'],
@@ -451,8 +464,8 @@ class Network (object):
             'start': preCellTags['start'],
             'sec': connParam['sec'], 
             'synMech': synMech,
-            'weight': weight,
-            'delay': delay,
+            'weight': weightSynMech,
+            'delay': delaySynMech,
             'threshold': connParam['threshold'],
             'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg['seeds']['stim']}
 
@@ -488,16 +501,28 @@ class Network (object):
 
         # generate dict with final params
         for i, synMech in enumerate(connParam['synMech']):
-            if 'synMechWeightFactor' in connParam: # adapt weight for each synMech
-                weight = weight * connParam['synMechWeightFactor'][i]
+
+            if isinstance (weight, list): # get weight from list for each synMech
+                weightSynMech = weight[i]
+            elif 'synMechWeightFactor' in connParam: # adapt weight for each synMech
+                weightSynMech = weight * connParam['synMechWeightFactor'][i]
+            else:
+                weightSynMech = weight
+
+            if isinstance (delay, list): # get delay from list for each synMech
+                delaySynMech = delay[i]
+            elif 'synMechDelayFactor' in connParam: # adapt delay for each synMech
+                delaySynMech = delay * connParam['synMechDelayFactor'][i]
+            else:
+                delaySynMech = delay
 
             params = {'preGid': preCellGid, 
             'sec': connParam['sec'], 
             'synMech': synMech, 
-            'weight': weight,
-            'delay': delay,
+            'weight': weightSynMech,
+            'delay': delaySynMech,
             'threshold': connParam['threshold'],
-            'synsPerConn': connParam['synsPerCon'],
+            'synsPerConn': connParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             
             postCell.addConn(params)

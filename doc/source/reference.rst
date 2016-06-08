@@ -14,6 +14,8 @@ Creating a network model requires:
 
 * A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createAndSimulate(netParams, simConfig)``.
 
+.. Describe multiple wrappers and individual sim calls
+
 These components can be included in a single or multiple python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
 
 

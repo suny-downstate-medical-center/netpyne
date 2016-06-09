@@ -1,6 +1,6 @@
 """A setuptools based setup module"""
 
-#Always prefer setuptools over distutils
+ #Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 #To use a consistent encoding
 from codecs import open

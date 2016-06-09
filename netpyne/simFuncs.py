@@ -99,8 +99,12 @@ def createParallelContext ():
 ###############################################################################
 # Wrapper to create network
 ###############################################################################
-def create (netParams, simConfig):
+def create (netParams=None, simConfig=None):
     ''' Sequence of commands to create network '''
+    import __main__ as top
+    if not netParams: netParams=top.netParams
+    if not simConfig: simConfig=top.simConfig
+
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations

@@ -19,7 +19,7 @@ setup(
     name = 'netpyne',
     
     version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
-    description = 'A Python package to facilitate the development and simulation of biological networks in NEURON.',
+    description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
     long_description = long_description,
     
     # The project's main homepage.

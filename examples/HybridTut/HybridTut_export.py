@@ -1,6 +1,6 @@
 import HybridTut  # import parameters file
-from netpyne import init  # import netpyne init module
+from netpyne import sim  # import netpyne sim module
 
-init.createAndExport(netParams = HybridTut.netParams, 
+sim.createAndExport(netParams = HybridTut.netParams, 
                        simConfig = HybridTut.simConfig,
                        reference = 'HybridTut')  # create and export network to NeuroML 2

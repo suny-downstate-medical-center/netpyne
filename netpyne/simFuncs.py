@@ -103,7 +103,7 @@ def createParallelContext ():
 ###############################################################################
 # Wrapper to create network
 ###############################################################################
-def create (netParams=None, simConfig=None):
+def create (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands to create network '''
     import __main__ as top
     if not netParams: netParams = top.netParams
@@ -114,9 +114,9 @@ def create (netParams=None, simConfig=None):
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
     conns = sim.net.connectCells()                # create connections between cells based on params
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
-    return (pops, cells, conns, stims, simData)
+    if output: return (pops, cells, conns, stims, simData)
     
 ###############################################################################
 # Wrapper to simulate network
@@ -130,8 +130,12 @@ def simulate ():
 ###############################################################################
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
-def createAndSimulate (netParams, simConfig):
+def createAndSimulate (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands create, simulate and analyse network '''
+    import __main__ as top
+    if not netParams: netParams = top.netParams
+    if not simConfig: simConfig = top.simConfig
+
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
@@ -143,14 +147,18 @@ def createAndSimulate (netParams, simConfig):
     sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
     sim.analysis.plotData()               # plot spike raster
 
-    return (pops, cells, conns, stims, simData)
+    if output: return (pops, cells, conns, stims, simData)
     
 
 ###############################################################################
 # Wrapper to create and export network to NeuroML2
 ###############################################################################
-def createAndExportNeuroML2 (netParams, simConfig, reference, connections=True,stimulations=True):
+def createAndExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
     ''' Sequence of commands to create and export network to NeuroML2 '''
+    import __main__ as top
+    if not netParams: netParams = top.netParams
+    if not simConfig: simConfig = top.simConfig
+
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
@@ -159,7 +167,7 @@ def createAndExportNeuroML2 (netParams, simConfig, reference, connections=True,s
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
 
-    return (pops, cells, conns, stims, simData)
+    if output: return (pops, cells, conns, stims, simData)
         
 
 ###############################################################################

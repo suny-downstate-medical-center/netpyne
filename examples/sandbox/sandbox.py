@@ -122,7 +122,8 @@ netParams['connParams'].append(
     'weight': [0.02, 0.002],                    # fixed weight of 0.08
     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
     'synMechWeightFactor': [1, 0.1],
-    'delay': [1,0.1]})           # uniformly distributed delays between 1-5ms
+    'delay': [1,0.1],
+    'synsPerConn': 'int(uniform(5,2))'})           # uniformly distributed delays between 1-5ms
 
 
 # netParams['connParams'].append(

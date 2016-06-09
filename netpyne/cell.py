@@ -235,11 +235,12 @@ class Cell (object):
     def addConn (self, params):
         # Avoid self connections
         if params['preGid'] == self.gid:
-            print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
             return  # if self-connection return
 
         # Set section
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
+            if sim.cfg['verbose']: print 'Warning: no sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
@@ -250,7 +251,7 @@ class Cell (object):
                             params['sec'] = secName
                             break
             else:  
-                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 return  # if no Sections available print error and exit
         sec = self.secs[params['sec']]
 
@@ -286,8 +287,9 @@ class Cell (object):
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
+                if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified add conn on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
             else: # if no synaptic mechanism specified and no synMech params available 
-                print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
+                if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit
 
         # Create connection (Python and NEURON objects)
@@ -331,6 +333,7 @@ class Cell (object):
 
     def addNetStim (self, params):
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
+            print 'Warning: no sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
@@ -364,6 +367,7 @@ class Cell (object):
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synapse
+                print 'Warning: no synaptic mechanisms specified add stim on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
             else: # if no synaptic mechanism specified and no synMech params available 
                 print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
                 return  # if no Synapse available print error and exit

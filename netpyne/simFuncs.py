@@ -1,10 +1,14 @@
 """
-sim.py 
+simFunc.py 
 
 Contains functions related to the simulation (eg. setupRecording, runSim) 
 
 Contributors: salvadordura@gmail.com
 """
+
+__all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
+'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \
+'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
 
 import sys
 from time import time
@@ -80,7 +84,7 @@ def setSimCfg (cfg):
 def loadSimCfg (paramFile):
     pass
 
-def loadSimParams (paramFile):
+def loadNetParams (paramFile):
     pass
 
 ###############################################################################
@@ -102,8 +106,8 @@ def createParallelContext ():
 def create (netParams=None, simConfig=None):
     ''' Sequence of commands to create network '''
     import __main__ as top
-    if not netParams: netParams=top.netParams
-    if not simConfig: simConfig=top.simConfig
+    if not netParams: netParams = top.netParams
+    if not simConfig: simConfig = top.simConfig
 
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()                  # instantiate network populations

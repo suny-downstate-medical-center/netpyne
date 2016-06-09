@@ -455,9 +455,9 @@ class Network (object):
                 if isinstance (finalParam[param], list):  # get weight from list for each synMech
                     finalParam[param+'SynMech'] = finalParam[param][i]
                 elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                    finalParam[param+'SynMech'] = finalParam['weight'] * connParam['synMechWeightFactor'][i]
+                    finalParam[param+'SynMech'] = finalParam[param] * connParam['synMechWeightFactor'][i]
                 else:
-                    finalParam[param+'SynMech'] = finalParam['weight']
+                    finalParam[param+'SynMech'] = finalParam[param]
 
             params = {'popLabel': preCellTags['popLabel'],
             'rate': preCellTags['rate'],
@@ -506,9 +506,9 @@ class Network (object):
                 if isinstance (finalParam[param], list):  # get weight from list for each synMech
                     finalParam[param+'SynMech'] = finalParam[param][i]
                 elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                    finalParam[param+'SynMech'] = finalParam['weight'] * connParam['synMechWeightFactor'][i]
+                    finalParam[param+'SynMech'] = finalParam[param] * connParam['synMechWeightFactor'][i]
                 else:
-                    finalParam[param+'SynMech'] = finalParam['weight']
+                    finalParam[param+'SynMech'] = finalParam[param]
 
             params = {'preGid': preCellGid, 
             'sec': connParam['sec'], 

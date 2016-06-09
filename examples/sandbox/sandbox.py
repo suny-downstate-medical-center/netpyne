@@ -24,6 +24,8 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
+netParams['scaleConnWeightModels'] = {'HH': 1.0}
+
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20}) # add dict with params for this pop 
@@ -35,6 +37,7 @@ netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim'
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
  
 
 # Cell parameters
@@ -69,26 +72,58 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 # Connectivity parameters
 netParams['connParams'] = []  
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.0005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'synsPerConn': 'int(gauss(5,1))',
+    'threshold': 10})                    # threshold
 
-# # netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'connList': [[0,1],[3,1]],			# list of connections
-#     'weight': [0.005, 0.001],           # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10})                   # threshold
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'probability': 'uniform(0,0.5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'connList': [[0,1],[3,1]],			# list of connections
+    'weight': [0.005, 0.001],           # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10})                   # threshold
 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+    'weight': 0.02,                    # fixed weight of 0.08
+    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
+    'synMechWeightFactor': [1, 0.1],
+    'delay': 4,
+    'synMechDelayFactor': [1, 0.1],})           # uniformly distributed delays between 1-5ms
+
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+    'weight': [0.02, 0.002],                    # fixed weight of 0.08
+    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
+    'delay': 1,
+    'synsPerConn': 'int(uniform(5,2))'})           # uniformly distributed delays between 1-5ms
+
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR

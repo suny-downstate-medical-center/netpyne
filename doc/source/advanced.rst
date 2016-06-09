@@ -12,6 +12,8 @@ NetPyNE provides support for internally defining cell properties of for example 
 
 The ``importCell(cellRule, fileName, cellName, cellArgs={})`` function takes as arguments the cell rule where to store the imported cell properties, the name of the file where the cell is defined (either .py or .hoc files), and the name of the cell template (hoc) or class (python). Optionally, a set of arguments can be passed to the cell template/class (eg. ``{'type': 'RS'}``).
 
+.. can also specify synMechParams to import synMechs
+
 NetPyNE contains no built-in information about any of the cell models being imported. Importing is based on temporarily instantiating the external cell model and reading all the required information (geometry, topology, distributed mechanisms, point processes, etc.).
 
 Below we show example of importing 9 different cell models from external files. For each one we provide the required files as well as the NetPyNE code. Make sure you run ``nrnivmodl`` to compile the mod files for each example. The list of example cell models is:

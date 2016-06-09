@@ -297,7 +297,7 @@ simConfig = {}  # dictionary to store simConfig
 # Simulation parameters
 simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.1 # Internal integration timestep to use
-simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)ç
+simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
 simConfig['timing'] = True  # show timing  and save to file

@@ -1,4 +1,4 @@
-from netpyne import init
+from netpyne import sim
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
@@ -54,6 +54,6 @@ simConfig['plot2Dnet'] = True           # plot 2D visualization of cell position
 
 
 # Create network and run simulation
-init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

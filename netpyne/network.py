@@ -140,8 +140,7 @@ class Network (object):
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
             if 'threshold' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, make None (will be assigned default value)
-            if 'seed' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, make None (will be assigned default value)
-
+           
             if 'weight' not in connParam: connParam['weight'] = self.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = self.params['defaultDelay'] # if no delay, set default
             if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no delay, set default

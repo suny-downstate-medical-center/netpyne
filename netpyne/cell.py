@@ -359,48 +359,26 @@ class Cell (object):
         self._addConnPlasticity(params, netcon, weightIndex)
 
 
-
-
     def addNetStim (self, params):
-        if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
-            print 'Warning: no sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
-            if 'soma' in self.secs:  
-                params['sec'] = 'soma'  # use 'soma' if exists
-            elif self.secs:  
-                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
-                    if 'synMechs' in secParams:
-                        if secParams['synMechs']:
-                            params['sec'] = secName
-                            break
-            else:  
-                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
-                return  # if no Sections available print error and exit
-        sec = self.secs[params['sec']]
+        # Section
+        sec = self._setConnSection(params)
+        if sec == -1: return  # if no section available exit func 
 
-        weightIndex = 0  # set default weight matrix index
-        if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
- 
-        pointp = None
-        if 'pointps' in sec:  # check if point processes (artificial cell)
-            for pointpName, pointpParams in sec['pointps'].iteritems():
-                  if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
-                    pointp = pointpName
-                    if '_synList' in pointpParams:
-                        if params['synMech'] in pointpParams['_synList']: 
-                            weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
+        # Weight
+        self._setConnWeight(params)
+        weightIndex = 0  # set default weight matrix index 
 
+        # Syn location
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
+
+        # Check if target artificial cell with V not in section
+        pointp = self._setConnPointP(params, weightIndex)
+
+        # Add synaptic mechanisms
         if not pointp: # not a point process
-            if params['synMech']: # if desired synaptic mechanism specified in conn params
-                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (won't be added if exists)
-            elif sim.net.params['synMechParams']:  # if some synMech params defined
-                synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
-                params['synMech'] = synLabel
-                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synapse
-                print 'Warning: no synaptic mechanisms specified add stim on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
-            else: # if no synaptic mechanism specified and no synMech params available 
-                print 'Error: no synaptic mechanisms available to add stim on cell gid=%d, section=%s '%(self.gid, params['sec'])
-                return  # if no Synapse available print error and exit
+            synMech = self._setConnSynMechs(params)
+            if synMech == -1: return
+
 
         self.stims.append(params)  # add new stim to Cell object
 
@@ -440,6 +418,9 @@ class Cell (object):
         self.stims[-1]['weightIndex'] = weightIndex
         if sim.cfg['verbose']: print('Created NetStim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
             (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
+
+        # Add plasticity 
+        self._addConnPlasticity(params, netcon, weightIndex)
 
 
     def addIClamp (self, params):

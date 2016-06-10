@@ -407,8 +407,10 @@ class Cell(object):
             npts = pulselength*width/timeres
 #            npts = min(pulselength*width/timeres,allpts) # Calculate the number of points to use
             x = (r_[0:npts]-npts/2+1)*timeres
-            print pulselength*width/timeres
-            print allpts
+#            print pulselength
+#            print width
+#            print pulselength*width/timeres
+#            print allpts
             if stimshape=='gaussian': 
 #                pulse = exp(-(x/width*2-2)**2) # Offset by 2 standard deviations from start
                 pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
@@ -453,6 +455,8 @@ class Cell(object):
             tempweightvecs = []
             
             pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
+            pulsewidth = params['shape']['pulseWidth'] if 'pulseWidth' in params['shape'] else 100.0
+            pulseperiod = params['shape']['pulsePeriod'] if 'pulsePeriod' in params['shape'] else 100.0
             
             # Determine on-off switching time pairs for stimulus, where default is always on
             if 'switchOnOff' not in params['shape']:
@@ -463,10 +467,11 @@ class Cell(object):
                 switchtimes = dcp(params['shape']['switchOnOff'])
                 switchtimes.append(f.cfg['duration'])
             
-            switchiter=iter(switchtimes)
+            switchiter = iter(switchtimes)
             switchpairs = zip(switchiter,switchiter)
             for pair in switchpairs:
-                stimvecs = shapeStim(width=0.2, isi=0.25, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
+                # Note: Cliff's makestim code is in seconds, so conversions from ms to s occurs in the args.
+                stimvecs = shapeStim(width=float(pulsewidth)/1000.0, isi=float(pulseperiod)/1000.0, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
                 temptimevecs.extend(stimvecs[0])
                 tempweightvecs.extend(stimvecs[1])
             

@@ -6,15 +6,8 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from pylab import arange, scatter, figure, hold, subplot, subplots, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
-from scipy.io import loadmat
-from scipy import loadtxt, size, array, linspace, ceil
-from datetime import datetime
-from time import time
-from collections import OrderedDict
-import csv
-import pickle
-from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+from scipy import size, array, linspace, ceil
 
 import framework as f
 

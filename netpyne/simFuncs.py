@@ -445,7 +445,7 @@ def gatherData ():
     simDataVecs = ['spkt','spkid','stims']+sim.cfg['recordTraces'].keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'simData': sim.simData} 
-        data = [None]*f.nhosts
+        data = [None]*sim.nhosts
         data[0] = {}
         for k,v in nodeData.iteritems():
             data[0][k] = v 

@@ -202,6 +202,7 @@ class Cell (object):
             sim.net.lid2gid.append(self.gid) # index = local id; value = global id
             del nc # discard netcon
 
+
     def addSynMech (self, label, secName, loc):
         synMechParams = next((params for params in sim.net.params['synMechParams'] if params['label'] == label), None)  # get params for this synMech
         sec = self.secs.get(secName, None)
@@ -232,12 +233,8 @@ class Cell (object):
                             setattr(synMech['hSyn'], synParamName, synParamValue)
             return synMech
 
-    def addConn (self, params):
-        # Avoid self connections
-        if params['preGid'] == self.gid:
-            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
-            return  # if self-connection return
 
+    def _setConnSection(self, params):
         # Set section
         if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
             if sim.cfg['verbose']: print 'Warning: no sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
@@ -252,20 +249,20 @@ class Cell (object):
                             break
             else:  
                 if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
-                return  # if no Sections available print error and exit
+                sec = -1  # if no Sections available print error and exit
         sec = self.secs[params['sec']]
+        
+        return sec
 
-        # Weight 
+    def _setConnWeight(self, params):
         if sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params['scaleConnWeight'] # use global scale factor
         params['weight'] = scaleFactor*params['weight']
-        weightIndex = 0  # set default weight matrix index
+        
 
-        # Syn location
-        if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
-
+    def _setConnPointP(self, params):
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
@@ -279,37 +276,24 @@ class Cell (object):
                             else:
                                 weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
-        # Add synaptic mechanisms
-        if not pointp: # not a point process
-            if params['synMech']: # if desired synaptic mechanism specified in conn params
-                synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
-            elif sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
-                synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
-                params['synMech'] = synLabel
-                synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
-                if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified add conn on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
-            else: # if no synaptic mechanism specified and no synMech params available 
-                if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d, section=%s '%(self.gid, params['sec'])
-                return  # if no Synapse available print error and exit
+        return pointp, weightIndex
 
-        # Create connection (Python and NEURON objects)
-        self.conns.append(params if sim.cfg['createPyStruct'] else {})
+    def _setConnSynMechs(self, params):
+        if params['synMech']: # if desired synaptic mechanism specified in conn params
+            synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
+        elif sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
+            synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+            params['synMech'] = synLabel
+            synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
+            if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified add conn on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
+        else: # if no synaptic mechanism specified and no synMech params available 
+            if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            return -1  # if no Synapse available print error and exit
 
-        if sim.cfg['createNEURONObj']:
-            if pointp:
-                postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
-            else:
-                postTarget = synMech['hSyn'] # local synaptic mechanism
-            netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-           
-            netcon.weight[weightIndex] = params['weight']  # set Netcon weight
-            netcon.delay = params['delay']  # set Netcon delay
-            netcon.threshold = params['threshold']  # set Netcon delay
-            self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        if sim.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
-            (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
+        return synMech
 
-        # Add plasticity 
+
+    def _addConnPlasticity(self, params):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
@@ -329,6 +313,50 @@ class Cell (object):
                     if sim.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
+
+    def addConn (self, params):
+        # Avoid self connections
+        if params['preGid'] == self.gid:
+            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            return  # if self-connection return
+
+        # Section
+        sec = self._setConnSection(params)
+        if sec == -1: return  # if no section available exit func 
+
+        # Weight
+        self._setConnWeight(self, params)
+        weightIndex = 0  # set default weight matrix index 
+
+        # Syn location
+        if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
+
+        # Check if target artificial cell with V not in section
+        pointp, weightIndex = self._setConnPointP(self, params)
+
+        # Add synaptic mechanisms
+        if not pointp: # not a point process
+            synMech = self._setConnSynMechs(params)
+            if synMech == -1: return
+
+        # Create connection (Python and NEURON objects)
+        self.conns.append(params if sim.cfg['createPyStruct'] else {})
+
+        if sim.cfg['createNEURONObj']:
+            if pointp:
+                postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
+            else:
+                postTarget = synMech['hSyn'] # local synaptic mechanism
+            netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+            netcon.weight[weightIndex] = params['weight']  # set Netcon weight
+            netcon.delay = params['delay']  # set Netcon delay
+            netcon.threshold = params['threshold']  # set Netcon delay
+            self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+        if sim.cfg['verbose']: print('Created connection preGid=%d, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.1f'%
+            (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
+
+        # Add plasticity 
+        self._addConnPlasticity(params)
 
 
     def addNetStim (self, params):

@@ -17,7 +17,7 @@ import sim
 ###############################################################################
 
 class Cell (object):
-    ''' Generic 'Cell' class used to instantiate individual neurons based on (Harrison & Sheperd, 2105) '''
+    ''' Generic class for section-based neuron models '''
     
     def __init__ (self, gid, tags):
         self.gid = gid  # global cell id 
@@ -262,7 +262,7 @@ class Cell (object):
         params['weight'] = scaleFactor*params['weight']
         
 
-    def _setConnPointP(self, params):
+    def _setConnPointP(self, params, weightIndex):
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
@@ -276,7 +276,7 @@ class Cell (object):
                             else:
                                 weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
 
-        return pointp, weightIndex
+        return pointp
 
     def _setConnSynMechs(self, params):
         if params['synMech']: # if desired synaptic mechanism specified in conn params
@@ -293,7 +293,7 @@ class Cell (object):
         return synMech
 
 
-    def _addConnPlasticity(self, params):
+    def _addConnPlasticity(self, params, netcon, weightIndex):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
@@ -325,14 +325,14 @@ class Cell (object):
         if sec == -1: return  # if no section available exit func 
 
         # Weight
-        self._setConnWeight(self, params)
+        self._setConnWeight(params)
         weightIndex = 0  # set default weight matrix index 
 
         # Syn location
         if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
 
         # Check if target artificial cell with V not in section
-        pointp, weightIndex = self._setConnPointP(self, params)
+        pointp = self._setConnPointP(params, weightIndex)
 
         # Add synaptic mechanisms
         if not pointp: # not a point process
@@ -356,7 +356,9 @@ class Cell (object):
             (params['preGid'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
 
         # Add plasticity 
-        self._addConnPlasticity(params)
+        self._addConnPlasticity(params, netcon, weightIndex)
+
+
 
 
     def addNetStim (self, params):

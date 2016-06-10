@@ -401,7 +401,8 @@ class Cell(object):
             allpts = int(timewindow/timeres)
             output = []
             while currenttime<timewindow:
-                if currenttime>=0 and currenttime<timewindow: output.append(currenttime)
+                # Note: The timeres/2 subtraction acts as an eps to avoid later int rounding errors.
+                if currenttime>=0 and currenttime<timewindow-timeres/2: output.append(currenttime)
                 currenttime = currenttime+isi+variation*(rand()-0.5)
             
             # Create single pulse

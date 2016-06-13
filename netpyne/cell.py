@@ -396,6 +396,7 @@ class Cell(object):
             # Create event times
             timeres = 0.001 # Time resolution = 1 ms = 500 Hz (DJK to CK: 500...?)
             pulselength = 10 # Length of pulse in units of width
+#            lowthreshold = 1e-6 # Below this level, weights may as well be zero
             currenttime = 0
             timewindow = finish-start
             allpts = int(timewindow/timeres)
@@ -423,6 +424,17 @@ class Cell(object):
             fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
             fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
             fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
+            
+#            # Slim down weight/time/event vectors by cutting repeated weights
+#            fulloutput = [j if j > lowthreshold else 0.0 for j in fulloutput]
+#            fo = dcp(fulloutput)
+#            events = [events[k[0]] for k in zip(xrange(len(fo)),fo,[None]+fo) if k[1] != k[2]]
+#            fulltime = [fulltime[k[0]] for k in zip(xrange(len(fo)),fo,[None]+fo) if k[1] != k[2]]
+#            fulloutput = [fulloutput[k[0]] for k in zip(xrange(len(fo)),fo,[None]+fo) if k[1] != k[2]]
+#            print fulloutput
+#            print fulltime
+#            print events
+            
             fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
             fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
             events = hstack((0,events,0)) # Ditto

@@ -191,7 +191,7 @@ class Network (object):
                 if preCellsTags and postCellsTags:
                     self._strToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                     connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
-        
+
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
         sim.pc.barrier()
         sim.timing('stop', 'connectTime')

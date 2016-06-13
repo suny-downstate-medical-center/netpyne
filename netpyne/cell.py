@@ -23,6 +23,7 @@ class Cell (object):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
+        self.secLists = {}  # dict of sectionLists
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
@@ -234,39 +235,53 @@ class Cell (object):
             return synMech
 
 
-    def _setConnSection(self, params):
-        # Set section
-        if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
-            if sim.cfg['verbose']: print 'Warning: no sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
+    def _setConnSection (self, params):
+        # if no section specified or single section specified does not exist
+        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+            if sim.cfg['verbose']: print 'Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():   # replace with first section that includes synaptic mechanisms
-                    if 'synMech' in secParams:
-                        if secParams['synMech']:
-                            params['sec'] = secName
-                            break
             else:  
                 if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 sec = -1  # if no Sections available print error and exit
-        sec = self.secs[params['sec']]
+                return sec
+
+            sec = self.secs[params['sec']]
+
+        # if sectionList or list of sections
+        elif isinstance(params['sec'], list) or params['sec'] in self.secLists:
+            secList = list(params['sec']) if isinstance(params['sec'], list) else list(self.secLists[params['sec']])
+            sec = []
+            for i,section in enumerate(secList): 
+                if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
+                    if sim.cfg['verbose']: print 'Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    secList.remove(section)
+                    if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
+                    if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])
+
+                else:
+                    sec.append(self.secs[section]) 
         
         return sec
 
-    def _setConnWeight(self, params):
+    def _setConnWeight (self, params):
         if sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params['scaleConnWeight'] # use global scale factor
-        params['weight'] = scaleFactor*params['weight']
+        if isinstance(params['weight'],list):
+            params['weight'] = [scaleFactor * w for w in params['weight']]
+        else:
+            params['weight'] = scaleFactor * params['weight']
         
 
-    def _setConnPointP(self, params, weightIndex):
+    def _setConnPointP(self, params, sec, weightIndex):
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
-        if 'pointps' in self.secs[params['sec']]:  #  check if point processes with '_vref' (artificial cell)
-            for pointpName, pointpParams in self.secs[params['sec']]['pointps'].iteritems():
+        if isinstance(sec, str) and 'pointps' in self.secs[sec]:  #  check if point processes with '_vref' (artificial cell)
+            for pointpName, pointpParams in self.secs[sec]['pointps'].iteritems():
                 if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if '_synList' in pointpParams:
@@ -278,22 +293,44 @@ class Cell (object):
 
         return pointp
 
-    def _setConnSynMechs(self, params):
-        if params['synMech']: # if desired synaptic mechanism specified in conn params
-            synMech = self.addSynMech (params['synMech'], params['sec'], params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
-        elif sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
-            synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
-            params['synMech'] = synLabel
-            synMech = self.addSynMech(params['synMech'], params['sec'], params['loc'])  # add synapse
-            if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified add conn on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
+    def _distributeSynsUniformly (secList, secLengths, numSyns):
+        from numpy import cumsum
+        totLength = sum(secLengths)
+        cumLengths = cumsum(secLengths)
+        absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
+        inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
+        secs = [secList[i] for ind in inds]
+        locs = [(absLoc - cumLengths[ind]) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        print secs,locs
+        return secs, locs
+
+    def _setConnSynMechs (self, params, sec):
+        if 'synMech' not in params:
+            if sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
+                synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
+                params['synMech'] = synLabel
+                if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified add conn on cell gid=%d, section=%s, so using %s '%(self.gid, params['sec'], synLabel)
         else: # if no synaptic mechanism specified and no synMech params available 
             if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d, section=%s '%(self.gid, params['sec'])
             return -1  # if no Synapse available print error and exit
 
+         # if desired synaptic mechanism specified in conn params
+        if params.get('synsPerConn') > 1:  # if more than 1 synapse
+            synsPerConn = params['synePerConn']
+            if isinstance(sec, str):  # if single section, create all syns there
+                synMech = [self.addSynMech(params['synMech'], sec=sec, loc=i*(1.0/synsPerConn)+1.0/synsPerConn/2) for i in range(synsPerConn)]
+            else:  # if multiple sections, distribute syns
+                secLengths = [self.secs[sec]['hSection'].L for s in sec]
+                secsDist, locsDist = self._distributeSynsUniformly(secList=sec, secLengths=secLengths, numSyns=synsPerConn)
+                for secDist, locDist in zip(secsDist, locsDist):
+                    synMech = [self.addSynMech(params['synMech'], sec=secDist, loc=locDist) for i in range(synsPerConn)]
+        else:
+            synMech = self.addSynMech(params['synMech'], sec, params['loc'])  # add synaptic mechanism to section (if already exists won't be added)
+
         return synMech
 
 
-    def _addConnPlasticity(self, params, netcon, weightIndex):
+    def _addConnPlasticity (self, params, netcon, weightIndex):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
@@ -324,19 +361,25 @@ class Cell (object):
         sec = self._setConnSection(params)
         if sec == -1: return  # if no section available exit func 
 
+        print sec
+
         # Weight
         self._setConnWeight(params)
         weightIndex = 0  # set default weight matrix index 
+
+        print params['weight']
 
         # Syn location
         if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
 
         # Check if target artificial cell with V not in section
-        pointp = self._setConnPointP(params, weightIndex)
+        pointp = self._setConnPointP(params, sec, weightIndex)
+
+        print pointp
 
         # Add synaptic mechanisms
         if not pointp: # not a point process
-            synMech = self._setConnSynMechs(params)
+            synMech = self._setConnSynMechs(params, sec)
             if synMech == -1: return
 
         # Create connection (Python and NEURON objects)

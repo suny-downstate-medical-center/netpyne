@@ -22,7 +22,7 @@
 
 - Sim functions use simConfig and netParams from __main__ as default (if not specified) 
 
-- Connections between NetStims and cell are included in conn list (issue #69)
+- Connections between NetStims and cells are included in conn list (issue #69)
 
 - Fixed bug so can create Python and NEURON objects for connections independently (issue #69)
 

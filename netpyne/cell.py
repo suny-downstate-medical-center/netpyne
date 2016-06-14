@@ -235,7 +235,7 @@ class Cell (object):
             return synMech
 
 
-    def addConn (self, params):
+    def addConn (self, params, netStimParams = None):
         # Avoid self connections
         if params['preGid'] == self.gid:
             if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
@@ -266,6 +266,7 @@ class Cell (object):
 
         # Create connections
         for i in range(params['synsPerConn']):
+
             # Python Structure
             if sim.cfg['createPyStruct']:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -274,6 +275,8 @@ class Cell (object):
                 if not pointp:
                     connParams['sec'] = synMechSecs[i]
                     connParams['loc'] = synMechLocs[i]
+                if netStimParams:
+                    connParams['preLabel'] = netStimParams['label']
                 self.conns.append(connParams)
                     
             else:  # do not fill in python structure (just empty dict for NEURON obj)
@@ -287,7 +290,12 @@ class Cell (object):
                 else:
                     postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
 
-                netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+                if netStimParams:
+                    netstim = self.addNetStim(netStimParams)
+                    netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
+                else:
+                    netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+                
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
                 netcon.threshold = params['threshold']  # set Netcon delay
@@ -299,39 +307,17 @@ class Cell (object):
             if sim.cfg['verbose']: 
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
-                print('Created connection preGid=%d, postGid=%d, sec=%s, loc=%s, synMech=%s, weight=%.4g, delay=%.1f'%
-                    (params['preGid'], self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
-                
-
-    #def addNetStim (self, params):
-
+                preGid = netStimParams['label']+' NetStim' if netStimParams else params['preGid']
+                print('Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
+                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+   
 
     def addNetStim (self, params):
-        # Section
-        sec = self._setConnSection(params)
-        if sec == -1: return  # if no section available exit func 
-
-        # Weight
-        self._setConnWeight(params)
-        weightIndex = 0  # set default weight matrix index 
-
-        # Syn location
-        if not 'loc' in params: params['loc'] = 0.5  # default synMech location    
-
-        # Check if target artificial cell with V not in section
-        pointp = self._setConnPointP(params, weightIndex)
-
-        # Add synaptic mechanisms
-        if not pointp: # not a point process
-            synMech = self._setConnSynMechs(params)
-            if synMech == -1: return
-
-
         self.stims.append(params)  # add new stim to Cell object
 
         if params['source'] == 'random':
             rand = h.Random()
-            #rand.Random123(self.gid,self.gid*2)
+            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
             #rand.negexp(1)
             self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
@@ -354,20 +340,7 @@ class Cell (object):
             netstim.number = params['number']   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if pointp:
-            netcon = h.NetCon(netstim, sec['pointps'][pointp]['hPointp'])  # create Netcon between global gid and local point neuron
-        else:
-            netcon = h.NetCon(netstim, synMech['hSyn']) # create Netcon between global gid and local synaptic mechanism
-        netcon.weight[weightIndex] = params['weight']  # set Netcon weight
-        netcon.delay = params['delay']  # set Netcon delay
-        netcon.threshold = params['threshold']  # set Netcon delay
-        self.stims[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        self.stims[-1]['weightIndex'] = weightIndex
-        if sim.cfg['verbose']: print('Created NetStim prePop=%s, postGid=%d, sec=%s, syn=%s, weight=%.4g, delay=%.4g'%
-            (params['popLabel'], self.gid, params['sec'], params['synMech'], params['weight'], params['delay']))
-
-        # Add plasticity 
-        self._addConnPlasticity(params, netcon, weightIndex)
+        if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
 
     def _setConnSections (self, params):

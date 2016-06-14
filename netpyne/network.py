@@ -106,8 +106,10 @@ class Network (object):
 
                 for postCellGid in postCellsTags:  # for each postsyn cell
                     if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
-                        postCell = self.cells[f.net.gid2lid[postCellGid]]  # get Cell object 
-                        params = {'sec': stim['sec'], 
+                        postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
+                        params = {'type': source['type'],
+                                'label': source['label'],
+                                'sec': stim['sec'], 
                                 'loc': stim['loc'],
                                 'delay': source['delay'],
                                 'dur': source['dur'],
@@ -296,8 +298,8 @@ class Network (object):
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        self._addCellNetStim(connParam, preCellTags, preCellGid, postCellGid) # cell method to add connection               
-                    elif preCellGid != postCellGid: # if not self-connection
+                        self._addNetStimParams(connParam, preCellTags) # cell method to add connection               
+                    if preCellGid != postCellGid: # if not self-connection
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -325,8 +327,8 @@ class Network (object):
                     if probability >= allRands[preCellGid,postCellGid]:
                         seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                            self._addCellNetStim(connParam, preCellTags, preCellGid, postCellGid) # cell method to add connection               
-                        elif preCellGid != postCellGid: # if not self-connection
+                            self._addNetStimParams(connParam, preCellTags) # cell method to add connection               
+                        if preCellGid != postCellGid: # if not self-connection
                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -355,7 +357,7 @@ class Network (object):
                     seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                         print 'Error: Convergent connectivity for NetStims is not implemented'
-                    elif preCellGid != postCellGid: # if not self-connection   
+                    if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -383,7 +385,7 @@ class Network (object):
                 seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                     print 'Error: Divergent connectivity for NetStims is not implemented'           
-                elif preCellGid != postCellGid: # if not self-connection
+                if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
                     
@@ -416,65 +418,28 @@ class Network (object):
                 
                 if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn] 
                 if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
-                
+
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    self._addCellNetStim(connParam, preCellTags, preCellGid, postCellGid) # cell method to add connection               
-                elif preCellGid != postCellGid: # if not self-connection
+                    print 'Error: fromList connectivity for NetStims is not implemented'           
+                if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
     ### Set parameters and create NetStim and connection
     ###############################################################################
-    def _addCellNetStim (self, connParam, preCellTags, preCellGid, postCellGid):
-        
-        # set final param values
-        paramStrFunc = ['weight', 'delay', 'synsPerConn']
-        finalParam = {}
-        for param in paramStrFunc:
-            if param+'List' in connParam:
-                finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
-            elif param+'Func' in connParam:
-                finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
-            else:
-                finalParam[param] = connParam[param]
-        
-        # get Cell object 
-        postCell = self.cells[self.gid2lid[postCellGid]] 
+    def _addNetStimParams (self, connParam, preCellTags):
 
-        # convert synMech param to list (if not already)
-        if not isinstance(connParam['synMech'], list):
-            connParam['synMech'] = [connParam['synMech']]
+        netStimParams = {'label': preCellTags['popLabel'],
+        'type': preCellTags['cellModel'],
+        'rate': preCellTags['rate'],
+        'noise': preCellTags['noise'],
+        'source': preCellTags['source'], 
+        'number': preCellTags['number'],
+        'start': preCellTags['start'],
+        'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg['seeds']['stim']}
 
-        # generate dict with final params for each synMech
-        paramPerSynMech = ['weight', 'delay']
-        for i, synMech in enumerate(connParam['synMech']):
-
-            for param in paramPerSynMech:
-                if isinstance (finalParam[param], list):  # get weight from list for each synMech
-                    finalParam[param+'SynMech'] = finalParam[param][i]
-                elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                    finalParam[param+'SynMech'] = finalParam[param] * connParam['synMechWeightFactor'][i]
-                else:
-                    finalParam[param+'SynMech'] = finalParam[param]
-
-            params = {'popLabel': preCellTags['popLabel'],
-            'rate': preCellTags['rate'],
-            'noise': preCellTags['noise'],
-            'source': preCellTags['source'], 
-            'number': preCellTags['number'],
-            'start': preCellTags['start'],
-            'sec': connParam['sec'], 
-            'loc': connParam['loc'], 
-            'synMech': synMech,
-            'weight': finalParam['weightSynMech'],
-            'delay': finalParam['delaySynMech'],
-            'synsPerConn': finalParam['synsPerConn'],
-            'threshold': connParam['threshold'],
-            'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg['seeds']['stim']}
-
-            postCell.addNetStim(params)  # call cell method to add connections 
-
+        connParam['netStimParams'] = netStimParams
 
     ###############################################################################
     ### Set parameters and create connection
@@ -520,4 +485,4 @@ class Network (object):
             'synsPerConn': finalParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             
-            postCell.addConn(params)
+            postCell.addConn(params = params, netStimParams = connParam.get('netStimParams'))

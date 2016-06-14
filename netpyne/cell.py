@@ -266,7 +266,7 @@ class Cell (object):
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+
             # Python Structure
             if sim.cfg['createPyStruct']:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -505,8 +505,8 @@ class Cell (object):
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg['recordTraces'].iteritems():
-            ptr = None
-            try: 
+            try:
+                ptr = None
                 if 'loc' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                         ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
@@ -518,7 +518,6 @@ class Cell (object):
                         ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__('_ref_'+params['var'])
                 else:
                     if 'pointp' in params: # eg. soma.izh._ref_u
-                        #print self.secs[params['sec']]
                         if params['pointp'] in self.secs[params['sec']]['pointps']:
                             ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
 

@@ -246,7 +246,7 @@ class Cell (object):
         if secLabels == -1: return  # if no section available exit func 
 
         # Weight
-        weights = self._setConnWeights(params)
+        weights = self._setConnWeights(params, netStimParams)
         weightIndex = 0  # set default weight matrix index   
 
         # Delays
@@ -379,11 +379,14 @@ class Cell (object):
         
         return secLabels
 
-    def _setConnWeights (self, params):
-        if sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
+    def _setConnWeights (self, params, netStimParams):
+        if netStimParams:
+            scaleFactor = sim.net.params['scaleConnWeightNetStim']
+        elif sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params['scaleConnWeight'] # use global scale factor
+
         if isinstance(params['weight'],list):
             weights = [scaleFactor * w for w in params['weight']]
         else:

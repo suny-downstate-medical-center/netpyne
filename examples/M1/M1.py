@@ -78,6 +78,7 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
 netParams['scaleConnWeight'] = 0.1 # Connection weight scale factor
+netParams['scaleConnWeightNetStim'] = 1.5 # Connection weight scale factor for NetStims
 netParams['defaultDelay'] = 2.0 # default conn delay (ms)
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
 netParams['probLambda'] = 100.0  # length constant (lambda) for connection probability decay (um)
@@ -154,7 +155,7 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label':'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0})  # AMPA
-netParams['synMechParams'].append({'label':'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 1.50, 'e': 0})  # NMDA
+netParams['synMechParams'].append({'label':'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0})  # NMDA
 netParams['synMechParams'].append({'label':'GABAA', 'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAA
 netParams['synMechParams'].append({'label':'GABAB', 'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAB
 

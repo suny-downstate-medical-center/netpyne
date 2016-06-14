@@ -2,7 +2,7 @@
 
 - Removed framework and init modules, and consolidated in sim module (so just need: 'from netpyne import sim')
 
-- Added option to specify weight scale factor separately for each cell model (issue #69)
+- Added option to specify weight scale factor separately for each cell model, and for NetStims (issue #69)
 
 - Conn rules can now have list of synMechs (eg. [AMPA, NMDA]) and synMechWeightFactor (eg. [1.0, 0.1]) (issue #69)
 

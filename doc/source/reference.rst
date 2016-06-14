@@ -65,7 +65,9 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 * **propVelocity**: Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)
 
-* **scaleConnWeight**: Connection weight scale factor (default: 1)
+* **scaleConnWeight**: Connection weight scale factor (excludes NetStims) (default: 1)
+
+* **scaleConnWeightNetStims**: Connection weight scale factor for NetStims (default: 1)
 
 * **scaleConnWeightModels**: Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})
 

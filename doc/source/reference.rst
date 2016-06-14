@@ -14,8 +14,6 @@ Creating a network model requires:
 
 * A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createAndSimulate(netParams, simConfig)``.
 
-.. Describe multiple wrappers and individual sim calls -- interact with the network
-
 These components can be included in a single or multiple python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
 
 
@@ -26,7 +24,7 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``popParams`` - list of populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (e.g. cell geometry)
 
 * ``synMechParams`` - list of synaptic mechanisms and their parameters
 
@@ -65,7 +63,9 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 * **propVelocity**: Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)
 
-* **scaleConnWeight**: Connection weight scale factor (default: 1)
+* **scaleConnWeight**: Connection weight scale factor (excludes NetStims) (default: 1)
+
+* **scaleConnWeightNetStims**: Connection weight scale factor for NetStims (default: 1)
 
 * **scaleConnWeightModels**: Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})
 
@@ -234,14 +234,13 @@ To define the parameteres of a synaptic mechanism, add items to the ``synMechPar
 
 * ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
 
-* ``mod`` - the NMODL mechanism (eg. 'ExpSyn')
+* ``mod`` - the NMODL mechanism (e.g. 'ExpSyn')
 
-* mechanism parameters (eg. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
+* mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
 Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
 
 Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
-:
 
 .. code-block:: python
 
@@ -265,11 +264,41 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **postTags** - Set of conditions for the postynaptic cells. 
 	Same format as ``preTags`` (above).
 
-* **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ''`soma'``). 
-	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. 
+* **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
+	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.
 
-* **synReceptor** (optional) - Label of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'``). 
+	If ``synsPerConn`` > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+
+* **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
+	If omitted, defaults to 0.5.
+
+	If have list of ``synMechs``, can have single loc for all, or list of locs (one per synMech, e.g. for 2 synMechs: ``[0.4, 0.7]``).
+
+	If have ``synsPerConn`` > 1, can have single loc for all, or list of locs (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.4, 0.5, 0.7]``)
+
+	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
+
+	The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+
+
+* **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
+
 	If omitted employs first synaptic mechanism in the cell synaptic mechanisms list.
+
+	If have list, a separate connection is created to each synMech; and a list of weights, delays and/or locs can be provided.  
+
+* **synsPerConn** (optional) - Number of individual synaptic connections (*synapses*) per cell-to-cell connection (*connection*).
+
+	Can be defined as a function (see :ref:`function_string`).
+
+	If omitted, defaults to 1.
+
+	The weights, delays and/or locs for each synapse can be specified as a list, or a single value can be used for all.
+
+	When > 1 and a single section is specified, the locations of synapses can be specified as a list in ``loc``.
+
+	When > 1, if ``loc`` is a single value or omitted, or if a list of target sections is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+
 	
 * **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``). 
 	Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. 
@@ -278,10 +307,22 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 
 	If omitted, defaults to ``netParams['defaultWeight'] = 1``.
 
+	If have list of ``synMechs``, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: ``[0.1, 0.01]``).
+
+	If have ``synsPerConn`` > 1, can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.2, 0.3, 0.4]``)
+
+	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]]``)
+
 * **delay** (optional) - Time (in ms) for the presynaptic spike to reach the postsynaptic neuron.
 	Can be defined as a function (see :ref:`function_string`).
 
 	If omitted, defaults to ``netParams['defaultDelay'] = 1``
+
+	If have list of ``synMechs``, can have single delay for all, or list of delays (one per synMech, e.g. for 2 synMechs: ``[5, 7]``).
+
+	If have ``synsPerConn`` > 1, can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[4, 5, 6]``)
+
+	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``)
 
 * **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
 
@@ -310,6 +351,8 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **connList** (optional) - Explicit list of connections between individual pre- and post-synaptic cells.
 
 	Each connection is indicated with relative ids of cell in pre and post populations, e.g. ``[[0,1],[3,1]]`` creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1.
+
+	Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList).
 
 	Sets ``connFunc`` to ``fromList`` (explicit list connectivity function).
 
@@ -343,6 +386,14 @@ Example of connectivity rules:
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
+	netParams['connParams'].append(
+	    {'preTags': {'y': [100, 600]}, 
+	    'postTags': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
+	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
+	    'synsPerConn': 3, 		# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
+	    'weight': 0.02,			# single weight for all synapses
+	    'delay': [5, 10],		# different delays for each of 3 synapses per synMech 
+	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # different locations for each of the 6 synapses
 
 .. note:: NetStim populations can only serve as presynaptic source of a connection. Additionally, only the ``fullConn`` (default) and ``probConn`` (using ``probability`` parameter) connectivity functions can be used to connect NetStims. NetStims are created *on the fly* during the implementation of the connectivity rules, instantiating one NetStim per postsynaptic cell.
 
@@ -471,7 +522,7 @@ Related to the simulation and netpyne framework:
 
 Related to recording:
 
-* **recordCells** - List of cells from which to record traces. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [])
+* **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordStep** - Step size in ms for data recording (e.g. 1)
@@ -494,7 +545,7 @@ Related to plotting and analysis:
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
 * **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
-* **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (eg. 5), population labels (eg. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
+* **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
 * **plot2Dnet - plot 2D visualization of cell positions and connections (default: False)
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
 * **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)
@@ -502,22 +553,45 @@ Related to plotting and analysis:
 * **plot3dArch** - plot 3d architecture of network (default: False) (not yet implemented)
 
 
-Structure of data and code
----------------------------
+Package functions
+------------------
 
-* Sim module
-* Network, Population and Cell classes
-* simFunc and analysis modules
+Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package methods to instantiate, simulate and analyse the network. A list of available functions is shown below:
 
-A representation of the instantiated network structure generated by NetPyNE is shown below:
+Simulation-related functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+__all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
+'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
 
-.. image:: figs/netstruct.png
-	:width: 100%
-	:align: center
-	
+* sim.createAndSimulate(simConfig, netParams) - wrapper to create, simulate and analyse the network.
+* sim.create(simConfig, netParams) - wrapper to create the network.
+* sim.simulate() - wrapper to simulate the network.
+* sim.createAndExportNeuroML2(simConfig, netParams) - wrapper to create and export network to NeuroML2.
+* sim.initialize()
+* sim.setNet()
+* sim.setNetParams()
+* sim.setSimCfg()
+* sim.loadSimCfg()
+* sim.loadSimParams()
+* sim.createParallelContext()
+* sim.setupRecording()
+* sim.runSim()
+* sim.runSimWithIntervalFunc()
+* sim.gatherData()
+* sim.saveData()
+* sim.exportNeuroML2()
 
-Network, Population and Cell classes
--------------------------------------
+
+Analysis-related methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* analysis.plotRaster()
+* analysis.plotTraces()
+* analysis.plot2DNet()
+
+
+Network, Population and Cell class methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Network
 	* net.setParams()
@@ -546,34 +620,21 @@ Network, Population and Cell classes
 	* cell.recordStimSpikes()
 
 
-Package methods
-----------------
+Structure of data and code
+---------------------------
 
-Simulation-related methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Sim module
+* Network, Population and Cell classes
+* simFunc and analysis modules
 
-* sim.createAndSimulate()
-* sim.setNet()
-* sim.setNetParams()
-* sim.setSimCfg()
-* sim.loadSimCfg()
-* sim.loadSimParams()
-* sim.createParallelContext()
-* sim.setupRecording()
-* sim.runSim()
-* sim.gatherData()
-* sim.saveData()
+A representation of the instantiated network structure generated by NetPyNE is shown below:
 
-
-Analysis-related methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* analysis.plotRaster()
-* analysis.plotTraces()
-
-
+.. image:: figs/netstruct.png
+	:width: 100%
+	:align: center
+	
 Structure of saved data
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 * simConfig
 * netParams

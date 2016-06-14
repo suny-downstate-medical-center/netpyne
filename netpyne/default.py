@@ -27,7 +27,8 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 
 ## General connectivity parameters
-netParams['scaleConnWeight'] = 1 # Connection weight scale factor
+netParams['scaleConnWeight'] = 1 # Connection weight scale factor (NetStims not included)
+netParams['scaleConnWeightNetStims'] = 1 # Connection weight scale factor for NetStims
 netParams['scaleConnWeightModels'] = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
 netParams['defaultWeight'] = 1  # default connection weight
 netParams['defaultDelay'] = 1  # default connection delay (ms)

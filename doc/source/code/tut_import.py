@@ -18,12 +18,15 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-
 netParams['synMechParams'] = []
+
 ### HH
 cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, synMechParams = netParams['synMechParams'], fileName='HHCellFile.py', cellName='HHCellClass')
+synMechsImport = []
+utils.importCell(cellRule=cellRule, synMechParams=synMechsImport, fileName='HHCellFile.py', cellName='HHCellClass')
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
+netParams['synMechParams'].extend(synMechsImport)  		
+
 
 ### HH3D
 cellRule = {'label': 'PYR_HH3D_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict

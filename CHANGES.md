@@ -6,15 +6,17 @@
 
 - Conn rules can now have list of synMechs (eg. [AMPA, NMDA]) and synMechWeightFactor (eg. [1.0, 0.1]) (issue #69)
 
-- Conn rules allow list of weights and/or delays for each synMech in list (issue #69)
+- Conn rules allow list of weights, delays and/or locs for each synMech in list (issue #69)
 
-- Conn rules allow synsPerConn to be described functionally (eg. 'uniform(5,2)') (issue #69)
+- Conn rules allow synsPerConn and loc to be described functionally (eg. 'uniform(5,2)') (issue #69)
 
-- Conn rules allow list of weights/delays when synsPerConn > 1 (issue #69)
+- Conn rules allow list of weights, delays, and/or locs when synsPerConn > 1 (issue #69)
 
-- Conn rules allow 2D list of weights/delays when have lsit of synMechs and synsPerConn > 1 (issue #69)
+- Conn rules allow 2D list of weights, delays, and/or locs when have list of synMechs and synsPerConn > 1 (issue #69)
 
-- Conn rules allow list of sections or sectionList when synsPerConn > 1; and distributes synMechs uniformly (issue #69)
+- Conn rules allow list of sections or sectionList when synsPerConn > 1; synMechs distributed uniformly (loc list not allowed) (issue #69)
+
+- Extended fromList connectivity function so can also provide synapse locs (issue #69)
 
 - Added separate wrapper sim functions to create and simulate the network  
 

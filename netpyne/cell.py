@@ -416,17 +416,6 @@ class Cell (object):
 
         return pointp
 
-    def _distributeSynsUniformly (self, secList, numSyns):
-        from numpy import cumsum
-        secLengths = [self.secs[s]['hSection'].L for s in secList]
-        totLength = sum(secLengths)
-        cumLengths = list(cumsum(secLengths))
-        absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
-        inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
-        secs = [secList[ind] for ind in inds]
-        locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
-        return secs, locs
-
     def _setConnSynMechs (self, params, secLabels):
         synsPerConn = params['synsPerConn']
         if not params['synMech']:
@@ -442,7 +431,10 @@ class Cell (object):
         if synsPerConn > 1:  # if more than 1 synapse
             if len(secLabels) == 1:  # if single section, create all syns there
                 synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
-                synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
+                if len(params['loc']) == synsPerConn:
+                    synMechLocs = params['loc']
+                else:
+                    synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
         else:
@@ -453,6 +445,18 @@ class Cell (object):
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
 
         return synMechs, synMechSecs, synMechLocs
+
+
+    def _distributeSynsUniformly (self, secList, numSyns):
+        from numpy import cumsum
+        secLengths = [self.secs[s]['hSection'].L for s in secList]
+        totLength = sum(secLengths)
+        cumLengths = list(cumsum(secLengths))
+        absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
+        inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
+        secs = [secList[ind] for ind in inds]
+        locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        return secs, locs
 
 
     def _addConnPlasticity (self, params, netcon, weightIndex):

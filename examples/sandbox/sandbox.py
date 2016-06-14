@@ -33,7 +33,6 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
 
 
-
 # Synaptic mechanism parameters
 netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
@@ -136,7 +135,8 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
     'weight': [0.02, 0.002],                    # fixed weight of 0.08
     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
-    'synsPerConn': 5,
+    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],
+    'synsPerConn': 3,
     'delay': 1})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(

@@ -105,7 +105,7 @@ class Arm:
         self.motorCmd = [0,0,0,0] # motor commands to muscles
         self.error = 0 # error signal (eg. difference between )
         self.critic = 0 # critic signal (1=reward; -1=punishment)
-        self.initArmMovement = self.initArmMovement + f.testTime
+        self.initArmMovement = self.initArmMovement + f.trialTime
         
     #%% plot motor commands
     def RLcritic(self, t):
@@ -294,7 +294,7 @@ class Arm:
 
 
         # Reset arm and set target after every trial -start from center etc
-        if f.trialReset and t-f.timeoflastreset >= f.testTime: 
+        if f.trialReset and t-f.timeoflastreset >= f.trialTime: 
             self.resetArm(f, t)
             f.targetid = f.trialTargets[self.trial] # set target based on trial number
             self.targetPos = self.setTargetByID(f.targetid, self.startAng, self.targetDist, self.armLen) 
@@ -304,6 +304,8 @@ class Arm:
                     if stim['popLabel'] == 'stimEM':
                         stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                         break
+            if f.oneLastReset:
+                f.timeoflastreset = f.cfg['duration']
             f.timeoflastexplor = t
 
 

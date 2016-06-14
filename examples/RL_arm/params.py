@@ -24,16 +24,19 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 
 netParams['scaleConnWeight'] = 0.001 # Connection weight scale factor
 
+cscale = 2
+mscale = 2
+
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'Psh','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'Pel','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'ES', 'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'ISL', 'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'IS', 'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'EM', 'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'IML', 'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'IM', 'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'Psh','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(40)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'Pel','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(40)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'ES', 'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(80*cscale)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'ISL', 'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': int(10*cscale)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'IS', 'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': int(10*cscale)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'EM', 'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(80*mscale)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'IML', 'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': int(10*mscale)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'IM', 'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': int(10*mscale)}) # add dict with params for this pop 
 
 netParams['popParams'].append({'popLabel': 'backgroundE', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5})  # background inputs
 netParams['popParams'].append({'popLabel': 'backgroundI', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5})  # background inputs

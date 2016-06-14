@@ -55,7 +55,7 @@ f.useRL = 1
 f.timeoflastRL = -1
 f.RLinterval = 50
 f.minRLerror = 0.002 # minimum error change for RL (m)
-f.targetid = 1 # initial target 
+#f.targetid = 1 # initial target 
 f.allWeights = [] # list to store weights
 f.weightsfilename = 'weights.txt'  # file to store weights
 f.plotWeights = 1  # plot weights
@@ -69,15 +69,17 @@ f.randseed = 5  # random seed
 
 # reset arm every trial
 f.trialReset = True # whether to reset the arm after every trial time
+f.oneLastReset = False
 f.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
-f.trainTime = 3 * 1e3
-f.testTime = 1 * 1e3
+f.trainTime = 20 * 1e3
+f.testTime = 10 * 1e3
+f.trialTime = 1e3
 f.cfg['duration'] = f.trainTime + f.testTime
 f.numTrials = ceil(f.cfg['duration']/1e3)
 f.numTargets = 1
-f.targetid = 1  # target to train+test
+f.targetid = 2  # target to train+test
 f.trialTargets = [f.targetid]*f.numTrials #[i%f.numTargets for i in range(int(f.numTrials+1))] # set target for each trial
 
 # create Arm class and setup
@@ -92,6 +94,7 @@ def runArm(t):
     if t >= f.trainTime:
         f.useRL = False
         f.explorMovs = False
+        f.oneLastReset = True
 
     if f.useArm:
     	f.arm.run(t, f) # run virtual arm apparatus (calculate command, move arm, feedback)

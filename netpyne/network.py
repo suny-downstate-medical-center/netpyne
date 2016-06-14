@@ -508,6 +508,8 @@ class Network (object):
                         finalParam[param+'SynMech'] = finalParam[param][i]
                     elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
                         finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
+                    else:
+                        finalParam[param+'SynMech'] = finalParam[param]
                 else:
                     finalParam[param+'SynMech'] = finalParam[param]
 

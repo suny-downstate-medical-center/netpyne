@@ -455,7 +455,7 @@ class Network (object):
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
             else:
                 finalParam[param] = connParam[param]
-        
+
         # get Cell object 
         postCell = self.cells[self.gid2lid[postCellGid]] 
 

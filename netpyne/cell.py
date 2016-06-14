@@ -266,7 +266,7 @@ class Cell (object):
 
         # Create connections
         for i in range(params['synsPerConn']):
-
+            
             # Python Structure
             if sim.cfg['createPyStruct']:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -314,7 +314,7 @@ class Cell (object):
    
 
     def addNetStim (self, params):
-        self.stims.append(params)  # add new stim to Cell object
+        self.stims.append(params.copy())  # add new stim to Cell object
 
         if params['source'] == 'random':
             rand = h.Random()
@@ -340,10 +340,9 @@ class Cell (object):
             netstim.noiseFromRandom(rand)  # use random number generator
             netstim.number = params['number']   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
-
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
-        
-        return netstim
+
+        return self.stims[-1]['hNetStim']
 
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist

@@ -125,19 +125,27 @@ netParams['connParams'] = []
 #     'threshold': 10})                   # threshold
 
 
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'weight': 1.0,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'delay': 4,
+#     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
+
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': 1.0,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 4,
-    'sec': 'soma'})           # uniformly distributed delays between 1-5ms
+    'weight': [0.02, 0.002],                    # fixed weight of 0.08
+    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
+    'synsPerConn': 5,
+    'delay': 1})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-#     'weight': [0.02, 0.002],                    # fixed weight of 0.08
-#     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
-#     'delay': 1,
-#     'synsPerConn': 'int(uniform(5,2))'})           # uniformly distributed delays between 1-5ms
+#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'weight': 0.02,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'synsPerConn': 2,
+#     'delay': 1})           # uniformly distributed delays between 1-5ms
+
 
 
 # netParams['connParams'].append(

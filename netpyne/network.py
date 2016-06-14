@@ -503,15 +503,12 @@ class Network (object):
         for i, synMech in enumerate(connParam['synMech']):
 
             for param in paramPerSynMech:
+                finalParam[param+'SynMech'] = finalParam[param]
                 if len(connParam['synMech']) > 1:
                     if isinstance (finalParam[param], list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
                     elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
                         finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
-                    else:
-                        finalParam[param+'SynMech'] = finalParam[param]
-                else:
-                    finalParam[param+'SynMech'] = finalParam[param]
 
             params = {'preGid': preCellGid, 
             'sec': connParam['sec'], 

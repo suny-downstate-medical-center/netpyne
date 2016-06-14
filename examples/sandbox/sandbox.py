@@ -30,7 +30,7 @@ netParams['scaleConnWeightModels'] = {'HH': 1.0}
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'numCells': 20}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
-netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':500, 'source': 'random', 'seed':2})  # background inputs
+netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
 
 
 
@@ -55,14 +55,12 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 ## Cell property rules
 cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'secLists': {}}     # cell rule dict
 soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                            # soma params dict
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+soma['geom'] = {'diam': 10.8, 'L': 10.8}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanisms
-soma['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 0.5, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}     # soma NMDA synapse
 dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
 dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
-dend['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}     # dend NMDA synapse
 cellRule['sections'] = {'soma': soma, 'dend': dend}                                     # add soma and dend sections to dict
 
 cellRule['secLists']['all'] = ['soma', 'dend']
@@ -133,6 +131,7 @@ netParams['connParams'].append(
     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
     'synMechWeightFactor': [1, 0.1],
     'delay': 4,
+    'sec': 'soma',
     'synMechDelayFactor': [1, 0.1]})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(

@@ -230,8 +230,10 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
 
         h.pop_section()  # to prevent section stack overflow
 
-    if synMechs: synMechParams.extend(synMechs)
-
+    # store synMechs in input argument
+    if synMechs: 
+        for synMech in synMechs: synMechParams.append(synMech)
+        
     # store section lists
     secLists = h.List('SectionList')
     if int(secLists.count()): 

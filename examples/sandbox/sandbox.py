@@ -53,7 +53,7 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 ## Cell property rules
-cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'sectionLists': {}}     # cell rule dict
+cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'secLists': {}}     # cell rule dict
 soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                            # soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanisms
@@ -65,7 +65,7 @@ dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                               
 dend['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 1.0, 'tau2': 5.0, 'e': 0}     # dend NMDA synapse
 cellRule['sections'] = {'soma': soma, 'dend': dend}                                     # add soma and dend sections to dict
 
-cellRule['sectionLists']['all'] = ['soma', 'dend']
+cellRule['secLists']['all'] = ['soma', 'dend']
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ### HH
@@ -90,10 +90,11 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': 0.0005,                    # weight of each connection
+    'weight': [0.005, 0.02, 0.05, 0.04, 0.1],                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'synsPerConn': 5,
     'sec': 'all',
+    'synMech': 'AMPA',
     'threshold': 10})                    # threshold
 
 # netParams['connParams'].append(
@@ -128,18 +129,18 @@ netParams['connParams'].append(
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'weight': 0.02,                    # fixed weight of 0.08
+    'weight': 0.2,                    # fixed weight of 0.08
     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
     'synMechWeightFactor': [1, 0.1],
     'delay': 4,
-    'synMechDelayFactor': [1, 0.1],})           # uniformly distributed delays between 1-5ms
+    'synMechDelayFactor': [1, 0.1]})           # uniformly distributed delays between 1-5ms
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-    'weight': [0.02, 0.002],                    # fixed weight of 0.08
-    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
-    'delay': 1,
-    'synsPerConn': 'int(uniform(5,2))'})           # uniformly distributed delays between 1-5ms
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+#     'weight': [0.02, 0.002],                    # fixed weight of 0.08
+#     'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
+#     'delay': 1,
+#     'synsPerConn': 'int(uniform(5,2))'})           # uniformly distributed delays between 1-5ms
 
 
 # netParams['connParams'].append(

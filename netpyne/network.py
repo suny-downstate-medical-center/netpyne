@@ -139,11 +139,11 @@ class Network (object):
             connParam = connParamTemp.copy()
             if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
-            if 'threshold' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, make None (will be assigned default value)
-           
+            if 'threshold' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, set default
             if 'weight' not in connParam: connParam['weight'] = self.params['defaultWeight'] # if no weight, set default
             if 'delay' not in connParam: connParam['delay'] = self.params['defaultDelay'] # if no delay, set default
-            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no delay, set default
+            if 'loc' not in connParam: connParam['loc'] = 0.5 # if no loc, set default
+            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no synsPerConn, set default
 
             preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
             prePops = allPopTags  # initialize with all presyn pops
@@ -407,6 +407,7 @@ class Network (object):
         
         orderedPreGids = sorted(preCellsTags.keys())
         orderedPostGids = sorted(postCellsTags.keys())
+
         for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
             preCellGid = orderedPreGids[relativePreId]
             preCellTags = preCellsTags[preCellGid]  # get pre cell based on relative id        
@@ -417,10 +418,9 @@ class Network (object):
                 if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
                 
                 if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        self._addCellNetStim(connParam, preCellTags, preCellGid, postCellGid) # cell method to add connection               
-                    elif preCellGid != postCellGid: # if not self-connection
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                    self._addCellNetStim(connParam, preCellTags, preCellGid, postCellGid) # cell method to add connection               
+                elif preCellGid != postCellGid: # if not self-connection
+                    self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
@@ -465,6 +465,7 @@ class Network (object):
             'number': preCellTags['number'],
             'start': preCellTags['start'],
             'sec': connParam['sec'], 
+            'loc': connParam['loc'], 
             'synMech': synMech,
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],
@@ -502,15 +503,17 @@ class Network (object):
         for i, synMech in enumerate(connParam['synMech']):
 
             for param in paramPerSynMech:
-                if isinstance (finalParam[param], list):  # get weight from list for each synMech
-                    finalParam[param+'SynMech'] = finalParam[param][i]
-                elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                    finalParam[param+'SynMech'] = finalParam[param] * connParam['synMechWeightFactor'][i]
+                if len(connParam['synMech']) > 1:
+                    if isinstance (finalParam[param], list):  # get weight from list for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param][i]
+                    elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
                 else:
                     finalParam[param+'SynMech'] = finalParam[param]
 
             params = {'preGid': preCellGid, 
             'sec': connParam['sec'], 
+            'loc': connParam['loc'], 
             'synMech': synMech, 
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],

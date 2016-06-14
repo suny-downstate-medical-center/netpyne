@@ -90,11 +90,11 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': [0.005, 0.02, 0.05, 0.04, 0.1],                    # weight of each connection
+    'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]]                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'synsPerConn': 5,
     'sec': 'all',
-    'synMech': 'AMPA',
+    'synMech': ['AMPA', 'NMDA'],
     'threshold': 10})                    # threshold
 
 # netParams['connParams'].append(

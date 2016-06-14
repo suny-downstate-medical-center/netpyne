@@ -11,7 +11,7 @@ NEURON/Python-based modularized framework for network simulations with MPI. Usin
 
 The data file is available in Pickle, JSON and Matlab formats.
 
-Three example model parameters are provided: 
+Several example model parameters are provided, including: 
 
 1. **[HHTut.py](examples/HHTut/HHTut.py)** - simple tutorial model with a single Hodgkin-Huxley population and random connectivity
 2. **[HybridTut.py](examples/HybridTut/HybridTut.py)** - simple tutorial model with a Hodgkin-Huxley and an Izhikevich populations, with random connectivity
@@ -34,8 +34,8 @@ Requires NEURON with Python and MPI support.
 
 	```
 	import HHTut
-	from netpyne import init
-	init.createAndSimulate(
+	from netpyne import sim
+	sim.createAndSimulate(
 		simConfig = HHTut.simConfig,     
 		netParams = HHTut.netParams)
 	```
@@ -60,11 +60,9 @@ Requires NEURON with Python and MPI support.
 
 * **netpyne/**: Folder with netpyne package files.
 
-* **netpyne/init.py**: Main executable; calls functions from other modules. Sets what parameter file to use.
+* **netpyne/sim.py**: Contains all the model shared variables and modules. It is imported as "sim" from all other file, so that any variable or module can be referenced from any file using sim.varName 
 
-* **netpyne/framework.py**: Contains all the model shared variables and modules. It is imported as "s" from all other file, so that any variable or module can be referenced from any file using s.varName
-
-* **netpyne/sim.py**: Simulation control functions (eg. runSim).
+* **netpyne/simFunc.py**: Simulation control functions (eg. runSim). 
 
 * **netpyne/network.py**: Network related functions (eg. createCells)
 

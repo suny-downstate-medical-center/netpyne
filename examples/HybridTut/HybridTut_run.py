@@ -1,4 +1,4 @@
 import HybridTut  # import parameters file
-from netpyne import init  # import netpyne init module
+from netpyne import sim  # import netpyne init module
 
-init.createAndSimulate(netParams = HybridTut.netParams, simConfig = HybridTut.simConfig)  # create and simulate network
+sim.createAndSimulate(netParams = HybridTut.netParams, simConfig = HybridTut.simConfig)  # create and simulate network

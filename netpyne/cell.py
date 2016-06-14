@@ -381,7 +381,7 @@ class Cell (object):
 
     def _setConnWeights (self, params, netStimParams):
         if netStimParams:
-            scaleFactor = sim.net.params['scaleConnWeightNetStim']
+            scaleFactor = sim.net.params['scaleConnWeightNetStims']
         elif sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
         else:

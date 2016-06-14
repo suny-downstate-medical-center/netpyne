@@ -78,7 +78,7 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
 netParams['scaleConnWeight'] = 0.1 # Connection weight scale factor
-netParams['scaleConnWeightNetStim'] = 1.5 # Connection weight scale factor for NetStims
+netParams['scaleConnWeightNetStims'] = 1.0 # Connection weight scale factor for NetStims
 netParams['defaultDelay'] = 2.0 # default conn delay (ms)
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
 netParams['probLambda'] = 100.0  # length constant (lambda) for connection probability decay (um)

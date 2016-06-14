@@ -431,8 +431,8 @@ class Cell (object):
         if synsPerConn > 1:  # if more than 1 synapse
             if len(secLabels) == 1:  # if single section, create all syns there
                 synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
-                if len(params['loc']) == synsPerConn:
-                    synMechLocs = params['loc']
+                if isinstance(params['loc'], list):
+                    if len(params['loc']) == synsPerConn: synMechLocs = params['loc']
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns

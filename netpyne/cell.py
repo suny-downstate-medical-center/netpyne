@@ -228,6 +228,7 @@ class Cell (object):
                     sec['synMechs'].append(synMech)
                 if not 'hSyn' in synMech:  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
+                    loc=1.0
                     synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
                         if synParamName not in ['label', 'mod']:

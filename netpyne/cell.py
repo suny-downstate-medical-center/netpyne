@@ -276,6 +276,7 @@ class Cell (object):
                     connParams['sec'] = synMechSecs[i]
                     connParams['loc'] = synMechLocs[i]
                 if netStimParams:
+                    connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['label']
                 self.conns.append(connParams)
                     
@@ -341,7 +342,8 @@ class Cell (object):
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
-
+        
+        return netstim
 
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
@@ -371,6 +373,10 @@ class Cell (object):
 
                 else:
                     secLabels.append(section)
+
+        # if section is string
+        else:
+            secLabels = [params['sec']]
         
         return secLabels
 
@@ -527,11 +533,11 @@ class Cell (object):
 
     def recordStimSpikes (self):
         sim.simData['stims'].update({'cell_'+str(self.gid): {}})
-        for stim in self.stims:
-            if 'hNetcon' in stim:
+        for conn in self.conns:
+            if conn['preGid'] == 'NetStim':
                 stimSpikeVecs = h.Vector() # initialize vector to store 
-                stim['hNetcon'].record(stimSpikeVecs)
-                sim.simData['stims']['cell_'+str(self.gid)].update({stim['popLabel']: stimSpikeVecs})
+                conn['hNetcon'].record(stimSpikeVecs)
+                sim.simData['stims']['cell_'+str(self.gid)].update({conn['preLabel']: stimSpikeVecs})
 
 
     def __getstate__ (self): 

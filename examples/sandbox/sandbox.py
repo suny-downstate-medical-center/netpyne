@@ -54,16 +54,16 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## Cell property rules
 cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'secLists': {}}     # cell rule dict
-soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}                                            # soma params dict
+soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 soma['geom'] = {'diam': 10.8, 'L': 10.8}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanisms
-dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
-dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
-dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
-dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
-cellRule['sections'] = {'soma': soma, 'dend': dend}                                     # add soma and dend sections to dict
+# dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
+# dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
+# dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
+# dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
+cellRule['sections'] = {'soma': soma} #, 'dend': dend}                                     # add soma and dend sections to dict
 
-cellRule['secLists']['all'] = ['soma', 'dend']
+# cellRule['secLists']['all'] = ['soma', 'dend']
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ### HH
@@ -127,12 +127,10 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': 0.2,                    # fixed weight of 0.08
-    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
-    'synMechWeightFactor': [1, 0.1],
+    'weight': 1.0,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 4,
-    'sec': 'soma',
-    'synMechDelayFactor': [1, 0.1]})           # uniformly distributed delays between 1-5ms
+    'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
@@ -167,14 +165,15 @@ simConfig['verbose'] = 1 #False  # show detailed messages
 
 # Recording 
 simConfig['recordCells'] = []  # which cells to record from
-simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
+'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 simConfig['filename'] = 'mpiHHTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig['savePickle'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveJson'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveMat'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveDpk'] = 0 # save to a .dpk pickled file

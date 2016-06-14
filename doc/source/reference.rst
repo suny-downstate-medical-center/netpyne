@@ -559,27 +559,25 @@ Package functions
 Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package methods to instantiate, simulate and analyse the network. A list of available functions is shown below:
 
 Simulation-related functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-__all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
-'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* sim.createAndSimulate(simConfig, netParams) - wrapper to create, simulate and analyse the network.
-* sim.create(simConfig, netParams) - wrapper to create the network.
-* sim.simulate() - wrapper to simulate the network.
-* sim.createAndExportNeuroML2(simConfig, netParams) - wrapper to create and export network to NeuroML2.
-* sim.initialize()
-* sim.setNet()
-* sim.setNetParams()
-* sim.setSimCfg()
-* sim.loadSimCfg()
-* sim.loadSimParams()
-* sim.createParallelContext()
-* sim.setupRecording()
-* sim.runSim()
-* sim.runSimWithIntervalFunc()
-* sim.gatherData()
-* sim.saveData()
-* sim.exportNeuroML2()
+* **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.create(simConfig, netParams)** - wrapper to create the network.
+* **sim.simulate()** - wrapper to simulate the network.
+* **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+* **sim.initialize()**
+* **sim.setNet()**
+* **sim.setNetParams()**
+* **sim.setSimCfg()**
+* **sim.loadSimCfg()**
+* **sim.loadSimParams()**
+* **sim.createParallelContext()**
+* **sim.setupRecording()**
+* **sim.runSim()**
+* **sim.runSimWithIntervalFunc()**
+* **sim.gatherData()**
+* **sim.saveData()**
+* **sim.exportNeuroML2()**
 
 
 Analysis-related methods

@@ -116,12 +116,13 @@ netParams['connParams'] = []
 #     'probability': 'uniform(0,0.5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'connList': [[0,1],[3,1]],			# list of connections
-#     'weight': [0.005, 0.001],           # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10})                   # threshold
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'connList': [[0,1],[3,1]],			# list of connections
+    'weight': [0.005, 0.001],           # weight of each connection
+	'delay': 5,
+    'loc': '0.5+gauss(0.2, 0.01)',
+    'threshold': 10})                   # threshold
 
 
 # netParams['connParams'].append(
@@ -133,11 +134,11 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': [0.02, 0.002],                    # fixed weight of 0.08
-    'synMech': ['AMPA', 'NMDA'],                     # target NMDA synapse
-    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],
+    'synMech': ['AMPA', 'NMDA'], 
     'synsPerConn': 3,
-    'delay': 1})           # uniformly distributed delays between 1-5ms
+    'weight': 0.02,                  
+    'delay': [5, 10],                
+    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR

@@ -8,7 +8,7 @@
 
 - Conn rules allow list of weights, delays and/or locs for each synMech in list (issue #69)
 
-- Conn rules allow synsPerConn and loc to be described functionally (eg. 'uniform(5,2)') (issue #69)
+- Conn rules allow synsPerConn and loc to be described functionally (at the cell connection level) (eg. 'uniform(5,2)') (issue #69)
 
 - Conn rules allow list of weights, delays, and/or locs when synsPerConn > 1 (issue #69)
 

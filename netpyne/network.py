@@ -23,7 +23,7 @@ class Network (object):
     ###############################################################################
     def __init__ (self, params = None):
         self.params = params
-        
+
         # params that can be expressed using string-based functions
         self.stringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
 
@@ -209,7 +209,7 @@ class Network (object):
     ###############################################################################
     def _strToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
-        paramsStrFunc = [param for param in ['weight', 'delay', 'synsPerConn', 'probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+        paramsStrFunc = [param for param in self.stringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  

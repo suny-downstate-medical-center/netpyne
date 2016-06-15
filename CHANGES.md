@@ -1,16 +1,28 @@
 ## Version 0.4.8
 
-- Removed framework and init modules, and consolidated in sim module (so just need: from netpyne import sim)
+- Removed framework and init modules, and consolidated in sim module (so just need: 'from netpyne import sim')
 
-- Added option to specify weight scale factor separately for each cell model (issue #69)
+- Added option to specify weight scale factor separately for each cell model, and for NetStims (issue #69)
 
 - Conn rules can now have list of synMechs (eg. [AMPA, NMDA]) and synMechWeightFactor (eg. [1.0, 0.1]) (issue #69)
 
-- Conn rules can provide list of weights and/or delays for each synMech in list (issue #69)
+- Conn rules allow list of weights, delays and/or locs for each synMech in list (issue #69)
 
-- Conn rules allow synsPerConn to be described functionally (eg. 'uniform(5,2)') (issue #69)
+- Conn rules allow synsPerConn and loc to be described functionally (at the cell connection level) (eg. 'uniform(5,2)') (issue #69)
+
+- Conn rules allow list of weights, delays, and/or locs when synsPerConn > 1 (issue #69)
+
+- Conn rules allow 2D list of weights, delays, and/or locs when have list of synMechs and synsPerConn > 1 (issue #69)
+
+- Conn rules allow list of sections or sectionList when synsPerConn > 1; synMechs distributed uniformly (loc list not allowed) (issue #69)
+
+- Extended fromList connectivity function so can also provide synapse locs (issue #69)
 
 - Added separate wrapper sim functions to create and simulate the network  
+
+- Sim functions use simConfig and netParams from __main__ as default (if not specified) 
+
+- Connections between NetStims and cells are included in conn list (issue #69)
 
 - Fixed bug so can create Python and NEURON objects for connections independently (issue #69)
 

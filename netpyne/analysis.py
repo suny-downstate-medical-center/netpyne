@@ -257,13 +257,14 @@ def plot2Dnet():
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
     for postCell in allCells:
         for con in postCell['conns']:  # plot connections between cells
-            posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
-            posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
-            color='red'
-            if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
-                color = 'blue'
-            width = 0.1 #50*con['weight']
-            plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+            if not isinstance(con['preGid'], str):
+                posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
+                posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
+                color='red'
+                if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                    color = 'blue'
+                width = 0.1 #50*con['weight']
+                plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
     xlabel('x (um)')
     ylabel('y (um)') 
     xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 

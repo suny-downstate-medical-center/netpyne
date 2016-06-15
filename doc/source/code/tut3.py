@@ -35,7 +35,7 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
-	'loc': '1.0',				# location of synapse
+	'loc': 1.0,				# location of synapse
 	'synMech': 'exc'})   		# target synaptic mechanism
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 

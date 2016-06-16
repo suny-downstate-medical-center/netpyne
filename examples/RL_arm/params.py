@@ -132,11 +132,12 @@ netParams['connParams'].append(
 # Sensory
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['P_sh', 'P_el']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
+    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES 

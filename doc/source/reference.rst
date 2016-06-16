@@ -546,7 +546,7 @@ Related to plotting and analysis:
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
 * **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
 * **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
-* **plot2Dnet - plot 2D visualization of cell positions and connections (default: False)
+* **plot2Dnet** - plot 2D visualization of cell positions and connections (default: False)
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
 * **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)
 * **plotWeightChanges** - Plot weight changes (default: False) (not yet implemented)
@@ -559,27 +559,25 @@ Package functions
 Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package methods to instantiate, simulate and analyse the network. A list of available functions is shown below:
 
 Simulation-related functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-__all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
-'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* sim.createAndSimulate(simConfig, netParams) - wrapper to create, simulate and analyse the network.
-* sim.create(simConfig, netParams) - wrapper to create the network.
-* sim.simulate() - wrapper to simulate the network.
-* sim.createAndExportNeuroML2(simConfig, netParams) - wrapper to create and export network to NeuroML2.
-* sim.initialize()
-* sim.setNet()
-* sim.setNetParams()
-* sim.setSimCfg()
-* sim.loadSimCfg()
-* sim.loadSimParams()
-* sim.createParallelContext()
-* sim.setupRecording()
-* sim.runSim()
-* sim.runSimWithIntervalFunc()
-* sim.gatherData()
-* sim.saveData()
-* sim.exportNeuroML2()
+* **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.create(simConfig, netParams)** - wrapper to create the network.
+* **sim.simulate()** - wrapper to simulate the network.
+* **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+* **sim.initialize()**
+* **sim.setNet()**
+* **sim.setNetParams()**
+* **sim.setSimCfg()**
+* **sim.loadSimCfg()**
+* **sim.loadSimParams()**
+* **sim.createParallelContext()**
+* **sim.setupRecording()**
+* **sim.runSim()**
+* **sim.runSimWithIntervalFunc()**
+* **sim.gatherData()**
+* **sim.saveData()**
+* **sim.exportNeuroML2()**
 
 
 Analysis-related methods

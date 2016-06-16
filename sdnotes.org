@@ -1730,6 +1730,13 @@ https://github.com/openworm/org.geppetto.simulator.external/blob/master/.travis.
 https://github.com/NeuralEnsemble/PyNN/blob/master/ci/install_neuron.sh
 https://github.com/OpenSourceBrain/SmithEtAl2013-L23DendriticSpikes/blob/master/.travis.yml
 
+* 16jun15 New format for figures
+** Possible formats
+figs=[]
+simConfig['figures'] = figs
+
+figs.append({'type': 'raster', 'args': {}, 'saveName': 'fig1.png' })
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

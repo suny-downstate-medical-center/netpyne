@@ -72,19 +72,19 @@ sim.trialReset = True # whether to reset the arm after every trial time
 sim.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
-sim.trainTime = 3 * 1e3
+sim.trainTime = 1 * 1e3
 sim.testTime = 1 * 1e3
 sim.cfg['duration'] = sim.trainTime + sim.testTime
 sim.numTrials = ceil(sim.cfg['duration']/1e3)
 sim.numTargets = 1
-sim.targetid = 1  # target to train+test
+sim.targetid = 3 # target to train+test
 sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
 
 # create Arm class and setup
 if sim.useArm:
-	sim.arm = Arm(sim.animArm, sim.graphsArm)
-	sim.arm.targetid = 0
-	sim.arm.setup(sim)  # pass framework as argument
+    sim.arm = Arm(sim.animArm, sim.graphsArm)
+    sim.arm.targetid = 0
+    sim.arm.setup(sim)  # pass framework as argument
 
 # Function to run at intervals during simulation
 def runArm(t):
@@ -94,7 +94,7 @@ def runArm(t):
         sim.explorMovs = False
 
     if sim.useArm:
-    	sim.arm.run(t, sim) # run virtual arm apparatus (calculate command, move arm, feedback)
+        sim.arm.run(t, sim) # run virtual arm apparatus (calculate command, move arm, feedback)
     if sim.useRL and (t - sim.timeoflastRL >= sim.RLinterval): # if time for next RL
         sim.timeoflastRL = h.t
         vec = h.Vector()
@@ -106,12 +106,12 @@ def runArm(t):
             sim.pc.broadcast(vec, 0)
             critic = vec.to_python()[0]
         if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
-        	print 't=',t,'- adjusting weights based on RL critic value:', critic
-        	for cell in sim.net.cells:
-        		for conn in cell.conns:
-        			STDPmech = conn.get('hSTDP')  # check if has STDP mechanism
-        			if STDPmech:   # run stdp.mod method to update syn weights based on RL
-        				STDPmech.reward_punish(float(critic))
+            print 't=',t,'- adjusting weights based on RL critic value:', critic
+            for cell in sim.net.cells:
+                for conn in cell.conns:
+                    STDPmech = conn.get('hSTDP')  # check if has STDP mechanism
+                    if STDPmech:   # run stdp.mod method to update syn weights based on RLprint cell.gid
+                        STDPmech.reward_punish(float(critic))
 
         # store weight changes
         sim.allWeights.append([]) # Save this time

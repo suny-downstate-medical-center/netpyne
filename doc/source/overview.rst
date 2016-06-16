@@ -28,25 +28,47 @@ NetPyNE has been used to develop a variety of multiscale models: primary motor c
 Main Features
 --------------
 
-* Clear separation (modularization) of parameter specifications, network instantiation and NEURON simulation code. 
-* Easy-to-use, standardized, flexible, extensible and NEURON-independent format to specify parameters:
-	* Populations
-	* Cell property rules 
-	* Connectivity rules
-	* Simulation configuration
-* Support for normalized cortical depth dependence of cell density and connectivity.
-* Easy specification, importing and swapping of cell models (eg. point neuron vs multicompartment)
-* Support for hybrid networks eg. combining point and multicompartment neurons. 
-* Multiple connectivity functions (eg. full, random, probabilistic) with optional parameters (eg. delay range)
-* Support for position and distance dependence of connectivity parameters (eg. probability decaying with distance)
-* Support for STDP plasticity 
-* Populations, cell properties and connectivity rules can include reference to annotations (eg. for provenance).
-* NEURON-independent instantiation of network (all cells, connections, ...) using Python objects and containers.
-* NEURON-specific instantiation of network ready for simulation.
-* Enables sharing of Python-based network objects, which can then be instantiated and simulated in NEURON.
-* Easy MPI parallel simulation of network, including cell distribution across nodes and gathering of data from all nodes.
-* Analysis and visualization of network (eg. connectivity matrix, 2D cell map) and simulation output (eg. voltage traces, raster plot)
-* Data saving to several formats (pickle, Matlab, JSON, HDF5) and exporting/importing to/from NeuroML of the following:
-	* Parameters/specifications
-	* Instantiated networks
-	* Simulation results
+* Converts a set of high-level specifications into a NEURON network model. 
+
+* Specifications are provided in a simple, standardized, declarative Python-based format (lists and dictionaries).
+
+* Can easily define:
+
+	* *Populations*: cell type and model, number of neurons or density, spatial extent, ...
+	* *Cell properties*: Morphology, biophysics, implementation, ...
+	* *Synaptic mechanisms*: Time constants, reversal potential, implementation, ...
+	* *Stimulation*: Spike generators, current clamps, spatiotemporal properties, ...
+	* *Connectivity rules*: conditions of pre- an post-synaptic cells, different functions, ...
+	* *Simulation configuration*: 
+
+* Cell properties highlights:
+
+	* Can easily import existing HOC and Python defined cell models into NetPyNE format.
+	* Can easily change the model implementation eg. from Hodgkin-Huxley multicompartment to Izhikevich point neuron
+	* Can combine multiple cell models to achieve efficient large-scale networks.
+
+* Connectivity rules highlights:
+
+	* Flexible connectivity rules based on pre- and post-synaptic cell properties (eg. cell type or location). 
+	* Connectivity functions available: all-to-all, probabilistic, convergent, divergent, and explicit list.  
+	* Can specify parameters (eg. weight, probability or delay) as a function of pre/post-synaptic spatial properties, eg. delays or probability that depend on distance between cells or cortical depth.
+	* Can specify subcellular distribution of synapses along the dendrites, and will be automatically adapted to the morphology of each model neuron. 
+	* Can easily add learning mechanisms to synapses, including STDP and reinforcement learning.
+
+* Generates NEURON network instance ready for MPI parallel simulation -- takes care of cell distribution and gathering of data.
+
+* Can analyse and plot network and simulation output data:
+	* Raster plot
+	* Spike histogram of all cells, populations or single cells
+	* Intrinsic cell variables (voltages, currents, conductances) plots
+	* Local field potential (LFP) calculation and plots (time-resolved and power spectra)
+	* Connectivity matrix at cell or population level (weights, num connections, efficiency, probability, ...)
+	* 2D representation of network cell locations and connections
+
+* Faciliates data sharing: 
+	* Can save/load high-level specs, network instance, simulation configuration and simulation results.
+	* Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
+	* Can export/import to/from NeuroML, the standard format for neural models.
+
+* Open source, easily to install, comprehensive online documentation, and step-by-step tutorial and example networks.
+

@@ -49,7 +49,6 @@ def initialize (netParams = {}, simConfig = {}, net = None):
     sim.readArgs()  # read arguments from commandline
 
     sim.timing('stop', 'initialTime')
-    
 
 
 ###############################################################################

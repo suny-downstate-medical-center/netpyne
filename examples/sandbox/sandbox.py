@@ -28,7 +28,10 @@ netParams['scaleConnWeightModels'] = {'HH': 1.0}
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.3], 'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR2', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.6,1.0],'numCells': 20}) # add dict with params for this pop 
+
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
 netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
 
@@ -138,7 +141,7 @@ netParams['connParams'].append(
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
     'synMech': ['AMPA', 'NMDA'], 
     'synsPerConn': 3,
-    'weight': 0.02,                  
+    'weight': 0.2,                  
     'delay': [5, 10],                
     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
@@ -190,16 +193,16 @@ simConfig['saveMat'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveDpk'] = 0 # save to a .dpk pickled file
 simConfig['saveHDF5'] = 0
 simConfig['saveCSV'] = 0
-
-# Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [0] # plot recorded traces for this list of cells
-simConfig['plotLFPSpectrum'] = False # plot power spectral density
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3dArch'] = False # plot 3d architecture
-simConfig['plot2Dnet'] = False          # Plot recorded traces for this list of cells
-
+simConfig['analysis'] = {}
+# # Analysis and plotting 
+# simConfig['analysis']['plotRaster']={ 
+#  'maxSpikes':3e8, 
+#  'overlaySpikeHist': True,
+#  'syncLines': True, 
+#  'orderBy':'ynorm'|'y'|'popLabel'|'cellType',
+#  'figId': 1,  # figs with same figId will be converted to subplots
+#  'saveData': 'data2.pkl',
+#  'saveName': 'fig1.png'}
+# (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
 
 

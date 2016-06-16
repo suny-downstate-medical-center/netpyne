@@ -1732,9 +1732,11 @@ https://github.com/OpenSourceBrain/SmithEtAl2013-L23DendriticSpikes/blob/master/
 
 * 16jun15 New format for figures
 ** Possible formats
+*** list of dict
 figs=[] 
 
 simConfig['analysis'].append({'func': 'plotRaster', 
+ 'include': ['all', 120, 'E1', ('L2', 56), ('L5', [4,5,6]), ('L6', range(5,20))], # all, gid, pop, pop rel index
  'maxSpikes':3e8, 
  'overlaySpikeHist': True,
  'syncLines': True, 
@@ -1763,12 +1765,22 @@ simConfig['analysis'].append({'func': 'plotTraces',
  'saveData': 'data1.pkl,
  'saveFig': 'fig1.png'})
 
+*** just dict
+simConfig['analysis']['plotRaster']={
+ 'include': ['all', 120, 'E1', ('L2', 56), ('L5', [4,5,6]), ('L6', range(5,20))], # all, gid, pop, pop rel index 
+ 'maxSpikes':3e8, 
+ 'overlaySpikeHist': True,
+ 'syncLines': True, 
+ 'orderBy':'ynorm'|'y'|'popLabel'|'cellType',
+ 'figId': 1,  # figs with same figId will be converted to subplots
+ 'saveData': 'data2.pkl',
+ 'saveName': 'fig1.png'})
 
-simConfig['analysis'].append({'func': 'plotConnMatrix',
- 'values': 'weight'| 'numConns'| ' |'probability'| 'convergence', 'divergence', 
+simConfig['analysis']['plotConnMatrix']= True OR {'values': 'weight'| 'numConns'| ' |'probability'| 'convergence', 'divergence', 
  'groupBy': 'cell'|'pop',
  'saveData': 'data1.pkl,
  'saveFig': 'fig1.png'})
+
 
 
 

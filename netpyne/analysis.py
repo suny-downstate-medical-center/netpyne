@@ -6,8 +6,9 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 import matplotlib
-from matplotlib.pylab import arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+from matplotlib.pylab import floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
 from scipy import size, array, linspace, ceil
+from numbers import Number
 
 import sim
 
@@ -59,19 +60,28 @@ def getCellsInclude(include):
     allCells = sim.net.allCells
     allNetStimPops = [p.tags['popLabel'] for p in sim.net.pops if p.tags['cellModel']=='NetStim']
     cellGids = []
+    cells = []
     netStimPops = []
     for condition in include:
-        if condition == 'all':  # all cells 
+        if condition == 'all':  # all cells + Netstims 
             cellGids = [c['gid'] for c in allCells]
             cells = list(allCells)
+            netStimPops = list(allNetStimPops)
             return cells, cellGids, netStimPops
+
+        elif condition == 'allCells':  # all cells 
+            cellGids = [c['gid'] for c in allCells]
+            cells = list(allCells)
+
+        elif condition == 'allNetStims':  # all cells + Netstims 
+            netStimPops = list(allNetStimPops)
 
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
         elif isinstance(condition, str):  # entire pop
             if condition in allNetStimPops:
-                netStimPops.extend(condition)
+                netStimPops.append(condition)
             else:
                 cellGids.extend([c['gid'] for c in allCells if c['tags']['popLabel']==condition])
         
@@ -87,10 +97,10 @@ def getCellsInclude(include):
 
 
 ## Raster plot 
-def plotRaster (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
+def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
     ''' 
     Raster plot of network cells
-        - include (['all'|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
@@ -112,46 +122,79 @@ def plotRaster (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 
     cells, cellGids, netStimPops = getCellsInclude(include)
     popLabels = list(set(([cell['tags']['popLabel'] for cell in cells])))+netStimPops
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
-    spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkid in cellGids])
-    print cellGids
-    print spkids
-    print spkts
-    spkidColors = [gidColors[spkid] for spkid in spkids]
-    
+    if len(cellGids) > 0:
+        gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
+        spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+        spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
 
     # Order by
-    if orderBy == 'gid':  # default by gid
-        ylabelText = 'Cells (arranged by gid)'
+    if len(cellGids) > 0:
+        if orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+            orderBy = 'gid'
+        elif not isinstance(cells[0]['tags'][orderBy], Number): 
+            orderBy = 'gid'
+        ylabelText = 'Cells (ordered by %s)'%(orderBy)   
+    
+        if orderBy == 'gid': 
+            yorder = [cell[orderBy] for cell in cells]
+        else:
+            yorder = [cell['tags'][orderBy] for cell in cells]
+        if orderInverse: yorder.reverse()
+        sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+        spkinds = [sortedGids[gid]  for gid in spkgids]
+    else:
+        spkts = []
+        spkinds = []
+        spkgidColors = []
+        ylabelText = ''
+
+    # Add NetStim spikes
+    spkts,spkgidColors = list(spkts), list(spkgidColors)
+    numNetStims = 0
+    for netStimPop in netStimPops:
+        cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+        if len(cellStims) > 0:
+            lastInd = max(spkinds) if len(spkinds)>0 else 0
+            spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+            spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+            spkts.extend(spktsNew)
+            spkinds.extend(spkindsNew)
+            for i in range(len(spktsNew)): 
+                spkgidColors.append(popColors[netStimPop])
+            numNetStims += len(cellStims)
+    if len(cellGids)>0 and numNetStims: 
+        ylabelText = ylabelText + ' and NetStims (at the end)'
+    elif numNetStims:
+        ylabelText = ylabelText + 'NetStims'
+    
+
+    # Time Range
+    if timeRange == [0,sim.cfg['duration']]:
         pass
-    # elif orderBy in cells[0]['tags'] and type(cells[0]['tags'][orderBy]) in [int, float]:  # if orderBy is property that exists
-    #     gids = [cell['gid'] for cell in cells]
-    #     yorder = [cell['tags'][orderBy] for cell in cells]
-    #     if orderInverse: yorder.reverse()
-    #     sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,gids)))}
-    #     spkids = [sortedGids[gid] for gid in spkids]
-    #     ylabelText = 'Cells (arranged by %s)'%(orderBy)   
+    elif timeRange is None:
+        timeRange = [0,sim.cfg['duration']]
+    else:
+        spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors) 
+        if timeRange[0] <= spkt <= timeRange[1]])
 
-    # # Time Range
-    # if timeRange is None:  timeRange = [0,sim.cfg['duration']]
+    # Limit to maxSpikes
+    if (len(spkts)>maxSpikes):
+        print('  Showing only the first %i out of %i spikes' % (maxSpikes, len(spkts))) # Limit num of spikes
+        if numNetStims: # sort first if have netStims
+            spkts, spkinds, spkgidColors = zip(*sorted(zip(spkts, spkinds, spkgidColors)))
+        spkts = spkts[:maxSpikes]
+        spkinds = spkinds[:maxSpikes]
+        spkgidColors = spkgidColors[:maxSpikes]
+        timeRange[1] =  max(spkts)
 
 
-    # # Add NetStim pops
+    # Calculate spike histogram 
 
-
-    # # Calculate spike histogram 
-
-
-    # # Limit to maxSpikes
-    # if (len(spkts)>maxSpikes):
-    #     spkts = spkts[:maxSpikes]
-    #     spkids = spkid[:maxSpikes]
-    #     print('  Showing only the first %i out of %i spikes' % (len(spkts), maxSpikes)) # Limit num of spikes
 
     # plotting
     figure(figsize=(10,8)) # Open a new figure
     fontsiz = 12
-    scatter(spkts, spkids, 10, linewidths=2, marker='|', color = spkidColors) # Create raster  
+    scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
     xlabel('Time (ms)', fontsize=fontsiz)
     ylabel(ylabelText, fontsize=fontsiz)
     if syncLines: # plot synchrony lines 
@@ -161,7 +204,27 @@ def plotRaster (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 
     else:
         title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (sim.numCells,sim.connsPerCell,sim.firingRate), fontsize=fontsiz)
     xlim(timeRange)
-    ylim(-1, len(cells)+1)
+    ylim(-1, len(cells)+numNetStims+1)
+    
+    # code to make y-axis show actual values instead of ids (difficult to make work in a generic way for all cases)
+    '''maxY = max(y2ind.values())
+    minY = min(y2ind.values())
+    # if  maxy >= 20: base = 5
+    # elif maxy >= 10: base = 2
+    # elif maxy > 1: base = 1
+    # elif maxy >= 0.1: base = 0.1
+    # else: base = 0.001
+    base=10
+    upperY = base * ceil(float(maxY)/base)
+    lowerY = base * floor(float(minY)/base)
+    yAddUpper = int(upperY - maxY)
+    yAddLower = int (minY-lowerY)
+    for i in range(yAddUpper): y2ind.update({yAddUpper: len(y2ind)+1})
+    for i in range(yAddLower): y2ind.update({yAddLower: min(y2ind.values())-1})
+    ystep = base #int(len(y2ind)/base)
+    #ystep = base * round(float(ystep)/base)
+    yticks(y2ind.values()[::ystep], y2ind.keys()[::ystep])'''
+
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
     legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)

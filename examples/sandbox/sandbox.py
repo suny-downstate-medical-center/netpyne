@@ -28,9 +28,9 @@ netParams['scaleConnWeightModels'] = {'HH': 1.0}
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.3], 'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.5], 'numCells': 20}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'PYR2', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.6,1.0],'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
 netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
 netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
@@ -137,13 +137,13 @@ netParams['connParams'].append(
 #     'delay': 4,
 #     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-    'synMech': ['AMPA', 'NMDA'], 
-    'synsPerConn': 3,
-    'weight': 0.2,                  
-    'delay': [5, 10],                
-    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'synMech': ['AMPA', 'NMDA'], 
+#     'synsPerConn': 3,
+#     'weight': 0.2,                  
+#     'delay': [5, 10],                
+#     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
@@ -154,11 +154,11 @@ netParams['connParams'].append(
 
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
-#     'weight': 0.1,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    'weight': 0.1,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
 

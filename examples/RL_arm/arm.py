@@ -24,6 +24,8 @@ class Arm:
     def __init__(self, anim, graphs): # initialize variables
         self.anim = anim # whether to show arm animation or not
         self.graphs = graphs # whether to show graphs at the end
+        self.angs_sh = []
+        self.angs_el = []
 
 
     ################################
@@ -101,6 +103,16 @@ class Arm:
         self.trial = self.trial + 1
         f.timeoflastreset = t
         self.ang = list(self.startAng) # keeps track of shoulder and elbow angles
+        
+        if f.gridTrain and not f.oneLastReset:
+            gridsquare = len(f.resetids)
+            lensh = len(self.angs_sh)-1
+            lenel = len(self.angs_el)-1
+            
+            c1 = (gridsquare % (lensh*lenel))/lensh     # Note the integer division!
+            c2 = gridsquare % lenel
+            self.ang = [(self.angs_sh[c1]+self.angs_sh[c1+1])/2,(self.angs_el[c2]+self.angs_el[c2+1])/2]        
+        
         self.angVel = [0,0] # keeps track of joint angular velocities
         self.motorCmd = [0,0,0,0] # motor commands to muscles
         self.error = 0 # error signal (eg. difference between )
@@ -128,12 +140,41 @@ class Arm:
         return self.critic
 
     #%% plot joint angles
-    def plotTraj(self):
+    def plotTraj(self,f):
         fig = figure() 
         l = 1.1*sum(self.armLen)
         ax = fig.add_subplot(111, autoscale_on=False, xlim=(-l/2, +l), ylim=(-l/2, +l)) # create subplot
-        posX, posY = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll])
-        ax.plot(posX, posY, 'r')
+        
+        prev_ang_sh = None        
+        for ang_sh in self.angs_sh:
+            prev_ang_el = None
+            for ang_el in self.angs_el:
+                posX, posY = self.angles2pos([ang_sh,ang_el], self.armLen)
+                if prev_ang_el:
+                    posXpe, posYpe = self.angles2pos([ang_sh,prev_ang_el], self.armLen)
+                    ax.plot([posXpe,posX], [posYpe,posY], 'b:')
+                if prev_ang_sh:
+                    posXps, posYps = self.angles2pos([prev_ang_sh,ang_el], self.armLen)
+                    ax.plot([posXps,posX], [posYps,posY], 'b:')
+#                ax.plot(posX, posY, 'kx')
+                prev_ang_el = ang_el
+            prev_ang_sh = ang_sh        
+        
+#        from pylab import ceil        
+#        lentest = int(len(f.arm.angAll)*f.testTime/f.cfg['duration'])
+#        lentrial = int(len(f.arm.angAll)*f.trialTime/f.cfg['duration'])
+#        numTrains = int(ceil(f.trainTime/f.trialTime))
+#        for train in xrange(numTrains):
+        prevresetid = 0
+        for resetid in f.resetids:
+            posXtrain, posYtrain = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll[prevresetid:resetid]])
+            ax.plot(posXtrain, posYtrain, 'r')
+            print 'train'
+            prevresetid = resetid
+        posXtest, posYtest = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll[prevresetid:]])
+        ax.plot(posXtest, posYtest, 'k')
+        print 'test'
+#        for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: print cell.prange[0]
         targ = Circle((self.targetPos),0.04, color='g', fill=False) # target
         ax.add_artist(targ)
         ax.grid()
@@ -230,7 +271,7 @@ class Arm:
         self.minPval = f.minPval
         self.maxPrate = f.maxPrate
         self.minPrate = f.minPrate
-        angInterval = (self.maxPval - self.minPval) / (self.numPcells - 1) # angle interval (times 2 because shoulder+elbow)
+        angInterval = (self.maxPval - self.minPval) / (self.numPcells) # angle interval (times 2 because shoulder+elbow)
 
         cellPranges = {}
         currentPval = f.minPval  
@@ -249,7 +290,15 @@ class Arm:
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]: # set angle range of each cell tuned to shoulder 
             cell.prange = cellPranges[cell.gid]
-
+            
+        cells_sh = [c for c in f.net.cells if c.gid in f.pop_sh]
+        cells_el = [c for c in f.net.cells if c.gid in f.pop_el]
+        self.angs_sh = [cell.prange[0] for cell in cells_sh] + [cells_sh[-1].prange[-1]]
+        self.angs_el = [cell.prange[0] for cell in cells_el] + [cells_el[-1].prange[-1]]
+        
+        if f.gridTrain:
+            self.ang = [(self.angs_sh[0]+self.angs_sh[1])/2,(self.angs_el[0]+self.angs_el[1])/2]         
+        
         # initialize dummy or musculoskeletal arm 
         if f.rank == 0: 
             self.setupDummyArm() # setup dummyArm (eg. graph animation)
@@ -295,6 +344,7 @@ class Arm:
 
         # Reset arm and set target after every trial -start from center etc
         if f.trialReset and t-f.timeoflastreset >= f.trialTime: 
+            f.resetids.append(len(self.angAll))
             self.resetArm(f, t)
             f.targetid = f.trialTargets[self.trial] # set target based on trial number
             self.targetPos = self.setTargetByID(f.targetid, self.startAng, self.targetDist, self.armLen) 
@@ -395,7 +445,7 @@ class Arm:
                 ioff() # turn interactive mode off
                 close(self.fig) # close arm animation graph 
             if self.graphs: # plot graphs
-                self.plotTraj()
+                self.plotTraj(f)
                 self.plotAngs()
                 self.plotMotorCmds()
                 self.plotRL()

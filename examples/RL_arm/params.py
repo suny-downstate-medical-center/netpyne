@@ -24,13 +24,14 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 
 netParams['scaleConnWeight'] = 0.001 # Connection weight scale factor
 
-cscale = 2
-mscale = 2
+pnum = 5
+cscale = 1
+mscale = 1
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'Psh','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(40)}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'Pel','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(40)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'Psh','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(pnum)}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'Pel','cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(pnum)}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'ES', 'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': int(80*cscale)}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'ISL', 'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': int(10*cscale)}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'IS', 'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': int(10*cscale)}) # add dict with params for this pop 
@@ -90,7 +91,7 @@ netParams['synMechParams'].append({'label': 'GABA', 'mod': 'Exp2Syn', 'tau1': 0.
 # STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.000013, 'wmax': 50, 'RLon': 1 , 'RLhebbwt': 0.001, 'RLantiwt': -0.001, \
 #     'tauhebb': 10, 'RLwindhebb': 50, 'useRLexp': 1, 'softthresh': 0, 'verbose':0}
 
-STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.00001, 'wmax': 50, 'RLon': 1 , 'RLhebbwt': 0.001, 'RLantiwt': -0.000, \
+STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.00001, 'wmax': 50, 'RLon': 1 , 'RLhebbwt': 0.001, 'RLantiwt': -0.001, \
     'tauhebb': 10, 'RLwindhebb': 50, 'useRLexp': 0, 'softthresh': 0, 'verbose':0}
 
 netParams['connParams'] = []  
@@ -135,11 +136,12 @@ netParams['connParams'].append(
 # Sensory
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['P_sh', 'P_el']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
+    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES (plastic?)
     'weight': 4,      
-    'probability': 0.1125,              
+    'probability': 0.1125*4,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA'})#,
+#    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES 

@@ -73,14 +73,16 @@ f.oneLastReset = False
 f.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
-f.trainTime = 20 * 1e3
-f.testTime = 10 * 1e3
+f.gridTrain = True
 f.trialTime = 1e3
+f.trainTime = 25 * f.trialTime
+f.testTime = 5 * f.trialTime
 f.cfg['duration'] = f.trainTime + f.testTime
-f.numTrials = ceil(f.cfg['duration']/1e3)
+f.numTrials = ceil(f.cfg['duration']/f.trialTime)
 f.numTargets = 1
 f.targetid = 2  # target to train+test
 f.trialTargets = [f.targetid]*f.numTrials #[i%f.numTargets for i in range(int(f.numTrials+1))] # set target for each trial
+f.resetids = []
 
 # create Arm class and setup
 if f.useArm:

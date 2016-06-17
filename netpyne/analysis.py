@@ -5,24 +5,18 @@ Functions to plot and analyse results
 
 Contributors: salvadordura@gmail.com
 """
-import matplotlib
-from matplotlib.pylab import floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust
+
+from matplotlib.pylab import histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots
 from scipy import size, array, linspace, ceil
 from numbers import Number
 
 import sim
 
-###############################################################################
-### Simulation-related graph plotting functions
-###############################################################################
 
-def showFig():
-    try:
-        show(block=False)
-    except:
-        show()
-
-# sequence of generic plots (raster, connectivity,psd,...)
+######################################################################################################################################################
+## Wrapper to run analysis functions in simConfig
+######################################################################################################################################################
 def plotData ():
     ## Plotting
     if sim.rank == 0:
@@ -45,7 +39,19 @@ def plotData ():
                 print('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
 
 
-## Sync measure
+######################################################################################################################################################
+## show figure
+######################################################################################################################################################
+def showFig():
+    try:
+        show(block=False)
+    except:
+        show()
+
+
+######################################################################################################################################################
+## Synchrony measure
+######################################################################################################################################################
 def syncMeasure ():
     t0=-1 
     width=1 
@@ -56,6 +62,10 @@ def syncMeasure ():
             cnt+=1
     return 1-cnt/(sim.cfg['duration']/width)
 
+
+######################################################################################################################################################
+## Get subset of cells and netstims indicated by include list
+######################################################################################################################################################
 def getCellsInclude(include):
     allCells = sim.net.allCells
     allNetStimPops = [p.tags['popLabel'] for p in sim.net.pops if p.tags['cellModel']=='NetStim']
@@ -95,9 +105,10 @@ def getCellsInclude(include):
     return cells, cellGids, netStimPops
 
 
-
+######################################################################################################################################################
 ## Raster plot 
-def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
+######################################################################################################################################################
+def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, saveData = None, saveFig = None): 
     ''' 
     Raster plot of network cells
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
@@ -106,9 +117,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
         - orderInverse (True|False): Invert the y-axis order (default: False)
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
+        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 10)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure
-        - saveFig (None|'fileName'): File name where to save the figure
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
     '''
 
     print('Plotting raster...')
@@ -139,7 +151,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell[orderBy] for cell in cells]
         else:
             yorder = [cell['tags'][orderBy] for cell in cells]
-        if orderInverse: yorder.reverse()
+        
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
     else:
@@ -166,7 +178,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
-    
 
     # Time Range
     if timeRange == [0,sim.cfg['duration']]:
@@ -187,56 +198,117 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkgidColors = spkgidColors[:maxSpikes]
         timeRange[1] =  max(spkts)
 
-
     # Calculate spike histogram 
+    if spikeHist:
+        histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], spikeHistBin))
+        histoT = histo[1][:-1]+spikeHistBin/2
+        histoCount = histo[0]
 
-
-    # plotting
-    figure(figsize=(10,8)) # Open a new figure
+    # Plot spikes
+    fig,ax1 = subplots(figsize=(10,8))
+    
+    if spikeHist == 'subplot':
+        subplot(2,1,1)
     fontsiz = 12
-    scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
-    xlabel('Time (ms)', fontsize=fontsiz)
-    ylabel(ylabelText, fontsize=fontsiz)
-    if syncLines: # plot synchrony lines 
+    ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
+    
+    # Plot synchrony lines 
+    if syncLines: 
         for spkt in spkts:
-            plot((spkt, spkt), (0, sim.numCells), 'r-', linewidth=0.1)
+            ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
         title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (sim.numCells,sim.connsPerCell,sim.firingRate,syncMeasure()), fontsize=fontsiz)
     else:
         title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (sim.numCells,sim.connsPerCell,sim.firingRate), fontsize=fontsiz)
-    xlim(timeRange)
-    ylim(-1, len(cells)+numNetStims+1)
-    
-    # code to make y-axis show actual values instead of ids (difficult to make work in a generic way for all cases)
-    '''maxY = max(y2ind.values())
-    minY = min(y2ind.values())
-    # if  maxy >= 20: base = 5
-    # elif maxy >= 10: base = 2
-    # elif maxy > 1: base = 1
-    # elif maxy >= 0.1: base = 0.1
-    # else: base = 0.001
-    base=10
-    upperY = base * ceil(float(maxY)/base)
-    lowerY = base * floor(float(minY)/base)
-    yAddUpper = int(upperY - maxY)
-    yAddLower = int (minY-lowerY)
-    for i in range(yAddUpper): y2ind.update({yAddUpper: len(y2ind)+1})
-    for i in range(yAddLower): y2ind.update({yAddLower: min(y2ind.values())-1})
-    ystep = base #int(len(y2ind)/base)
-    #ystep = base * round(float(ystep)/base)
-    yticks(y2ind.values()[::ystep], y2ind.keys()[::ystep])'''
 
+    # Plot spike hist
+    if spikeHist == 'overlay':
+        ax2 = ax1.twinx()
+        ax2.plot (histoT, histoCount, linewidth=0.2)
+        ax2.set_ylabel('Spike count') # add yaxis in opposite side
+    elif spikeHist == 'subplot':
+        subplot(2,1,2)
+        plot (histoT, histoCount, linewidth=0.2)
+        # add axis labels
+
+    # Axis
+    ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
+    ax1.set_ylabel(ylabelText, fontsize=fontsiz)
+    ax1.set_xlim(timeRange)
+    ax1.set_ylim(-1, len(cells)+numNetStims+1)    
+
+    # Add legend
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+    legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
-    subplots_adjust(right=(0.9-0.01*maxLabelLen))
-    ax = gca()
-    ax.invert_yaxis()
+    subplots_adjust(right=(0.9-0.012*maxLabelLen))
+    
+    # Invert 
+    if orderInverse: 
+        ax = gca()
+        ax.invert_yaxis()
+
+    # save figure data
+    if saveData:
+        figData = {'spkTimes': spkts, 'spkInds': spkinds, 'spkColors': spkgidColors, 'cellGids': cellGids, 'sortedGids': sortedGids, 'numNetStims': numNetStims, 
+        'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
+        'syncLines': syncLines, 'saveData': saveData, 'saveFig': saveFig}
+
+        fileName = saveData.split('.')
+        ext = fileName[1] if len(fileName) > 1 else 'pkl'
+
+        if ext == 'pkl': # save to pickle
+            import pickle
+            print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
+            with open(fileName[0]+'.pkl', 'wb') as fileObj:
+                pickle.dump(figData, fileObj)
+
+        elif ext == 'json':  # save to json
+            import json
+            print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
+            with open(fileName[0]+'.json', 'w') as fileObj:
+                json.dump(figData, fileObj)
+
+        # elif ext == 'mat': # Save to mat file
+        #     from scipy.io import savemat 
+        #     print('Saving figure data as %s ... ' % (fileName[0]+'.mat'))
+        #     savemat(fileName[0]+'.mat', sim.replaceNoneObj(figData))  # replace None and {} with [] so can save in .mat format
+
+        else: 
+            print 'File extension to save figure data not recognized: %s'%(ext)
+ 
+    # save figure
+    if saveFig:
+        savefig(saveFig)
 
     showFig()
 
+    return fig
 
-## Traces (v,i,g etc) plot
+
+######################################################################################################################################################
+## Plot spike histogram
+######################################################################################################################################################
+def plotSpikeHist (include = ['allCells'], timeRange = None, binSize = 10, overlay=True, type='line', yaxis = 'rate', saveData = None, saveFig = None): 
+    ''' 
+    Plot spike histogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of each bin (default: 10)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - type ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+    '''
+
+    for subset in include:
+        cells, cellGids, netStimPops = getCellsInclude([subset])
+
+
+######################################################################################################################################################
+## Plot recorded cell traces (V, i, g, etc.)
+######################################################################################################################################################
 def plotTraces (): 
     print('Plotting recorded cell traces ...')
 
@@ -290,7 +362,9 @@ def plotTraces ():
 
 
 
-## Plot power spectra density
+######################################################################################################################################################
+## Plot LFP (time-resolved or power spectra)
+######################################################################################################################################################
 def plotLFP ():
     print('Plotting LFP power spectral density...')
 
@@ -324,8 +398,9 @@ def plotLFP ():
 
     show()
 
-
-## Plot connectivityFor diagnostic purposes . Based on conndiagram.py.
+######################################################################################################################################################
+## Plot connectivity
+######################################################################################################################################################
 def plotConn():
     print('Plotting connectivity matrix...')
     # Create plot
@@ -342,7 +417,7 @@ def plotConn():
         for c2 in range(size(sim.connprobs,1)):
             for w in range(sim.nreceptors):
                 totalconns[c1,c2] += sim.connprobs[c1,c2]*sim.connweights[c1,c2,w]*(-1 if w>=2 else 1)
-    imshow(totalconns,interpolation='nearest',cmap=bicolormap(gap=0))
+    imshow(totalconns,interpolation='nearest',cmap=_bicolormap(gap=0))
 
     # Plot grid lines
     hold(True)
@@ -363,7 +438,10 @@ def plotConn():
 
     showFig()
 
-# Plot 2D visualization of network cell positions and connections
+
+######################################################################################################################################################
+## Plot 2D visualization of network cell positions and connections
+######################################################################################################################################################
 def plot2Dnet():
     print('Plotting 2D representation of network cell locations and connections...')
 
@@ -402,7 +480,10 @@ def plot2Dnet():
 
     showFig()
 
+
+######################################################################################################################################################
 ## Plot weight changes
+######################################################################################################################################################
 def plotWeightChanges():
     print('Plotting weight changes...')
 
@@ -428,7 +509,7 @@ def plotWeightChanges():
             wcmat[int(ipre),int(ipost)] = iwc *(-1 if irecep>=2 else 1)
 
         # plot
-        imshow(wcmat,interpolation='nearest',cmap=bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
+        imshow(wcmat,interpolation='nearest',cmap=_bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
         xlabel('post-synaptic cell id')
         ylabel('pre-synaptic cell id')
         h.set_xticks(sim.popGidStart)
@@ -444,8 +525,10 @@ def plotWeightChanges():
 
 
 
+######################################################################################################################################################
 ## Create colormap
-def bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
+######################################################################################################################################################
+def _bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
    from matplotlib.colors import LinearSegmentedColormap as makecolormap
    
    mng=mingreen; # Minimum amount of green to add into the colors

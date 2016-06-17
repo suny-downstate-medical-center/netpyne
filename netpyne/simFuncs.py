@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
-'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \
+'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'readArgs', 'setupRecording', \
 'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
 
 import sys
@@ -253,16 +253,16 @@ def _replaceFuncObj (obj):
 ###############################################################################
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
-def _replaceNoneObj (self, obj):
+def replaceNoneObj (obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                _replaceNoneObj(item)
+                replaceNoneObj(item)
 
     elif type(obj) == dict:
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
-                _replaceNoneObj(val)
+                replaceNoneObj(val)
             if val == None:
                 obj[key] = []
             elif val == {}:
@@ -272,7 +272,7 @@ def _replaceNoneObj (self, obj):
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
-def _dict2utf8 (self, obj):
+def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     import collections
     if isinstance(obj, basestring):
@@ -545,7 +545,7 @@ def saveData ():
         if sim.cfg['saveDpk']:
             import gzip
             print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
-            fn=f.cfg['filename'] #.split('.')
+            fn=sim.cfg['filename'] #.split('.')
             gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
             print('Finished saving!')
 
@@ -561,12 +561,12 @@ def saveData ():
         if sim.cfg['saveMat']:
             from scipy.io import savemat 
             print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
-            savemat(sim.cfg['filename']+'.mat', _replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+            savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
         # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
         if sim.cfg['saveHDF5']:
-            dataSaveUTF8 = _dict2utf8(_replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+            dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
             hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')

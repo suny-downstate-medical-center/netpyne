@@ -138,7 +138,7 @@ netParams['connParams'].append(
 netParams['connParams'].append(
     {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES (plastic?)
     'weight': 4,      
-    'probability': 0.1125*4,              
+    'probability': 0.1125,              
     'delay': 5,     
     'synMech': 'AMPA'})#,
 #    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 

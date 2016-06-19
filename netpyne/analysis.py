@@ -6,8 +6,9 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+from matplotlib.pylab import  histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
     colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots
+from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
 from numbers import Number
 
@@ -42,7 +43,7 @@ def plotData ():
 ######################################################################################################################################################
 ## show figure
 ######################################################################################################################################################
-def showFig():
+def showFigure():
     try:
         show(block=False)
     except:
@@ -108,10 +109,11 @@ def getCellsInclude(include):
 ######################################################################################################################################################
 ## Raster plot 
 ######################################################################################################################################################
-def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, saveData = None, saveFig = None): 
+def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, 
+        spikeHistBin = 10, syncLines = False, saveData = None, saveFig = None, showFig = True): 
     ''' 
-    Raster plot of network cells
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
+    Raster plot of network cells 
+        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
@@ -121,6 +123,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFigure (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
     '''
 
     print('Plotting raster...')
@@ -208,7 +213,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     fig,ax1 = subplots(figsize=(10,8))
     
     if spikeHist == 'subplot':
-        subplot(2,1,1)
+        gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
+        #ax1=subplot(2,1,1, gridspec_kw = {'height_ratios':[2, 1]})
+        ax1=subplot(gs[0])
     fontsiz = 12
     ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
     
@@ -223,11 +230,14 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Plot spike hist
     if spikeHist == 'overlay':
         ax2 = ax1.twinx()
-        ax2.plot (histoT, histoCount, linewidth=0.2)
-        ax2.set_ylabel('Spike count') # add yaxis in opposite side
+        ax2.plot (histoT, histoCount, linewidth=0.5)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis in opposite side
     elif spikeHist == 'subplot':
-        subplot(2,1,2)
-        plot (histoT, histoCount, linewidth=0.2)
+        #ax2=subplot(2,1,2)
+        ax2=subplot(gs[1])
+        plot (histoT, histoCount, linewidth=1.0)
+        ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis in opposite side
         # add axis labels
 
     # Axis
@@ -278,10 +288,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             print 'File extension to save figure data not recognized: %s'%(ext)
  
     # save figure
-    if saveFig:
-        savefig(saveFig)
+    if saveFig: savefig(saveFig)
 
-    showFig()
+    # show fig 
+    if showFig: showFigure()
 
     return fig
 
@@ -358,7 +368,7 @@ def plotTraces ():
                         pass
         subplot(len(tracesList),1,1)
         title('Pop %s, Cell %d'%(popLabel, int(gid)))
-    showFig()
+    showFigure()
 
 
 
@@ -436,7 +446,7 @@ def plotConn():
     clim(-abs(totalconns).max(),abs(totalconns).max())
     colorbar()
 
-    showFig()
+    showFigure()
 
 
 ######################################################################################################################################################
@@ -478,7 +488,7 @@ def plot2Dnet():
     ax = gca()
     ax.invert_yaxis()
 
-    showFig()
+    showFigure()
 
 
 ######################################################################################################################################################
@@ -521,7 +531,7 @@ def plotWeightChanges():
         ylim(ncells-0.5,-0.5)
         clim(-abs(wcmat).max(),abs(wcmat).max())
         colorbar()
-        showFig()
+        showFigure()
 
 
 

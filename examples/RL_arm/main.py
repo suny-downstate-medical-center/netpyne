@@ -73,10 +73,10 @@ f.oneLastReset = False
 f.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
-f.gridTrain = True
+f.gridTrain = False
 f.trialTime = 1e3
-f.trainTime = 25 * f.trialTime
-f.testTime = 5 * f.trialTime
+f.trainTime = 30 * f.trialTime
+f.testTime = 10 * f.trialTime
 f.cfg['duration'] = f.trainTime + f.testTime
 f.numTrials = ceil(f.cfg['duration']/f.trialTime)
 f.numTargets = 1

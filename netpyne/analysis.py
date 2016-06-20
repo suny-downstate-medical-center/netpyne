@@ -146,7 +146,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
-        - showFigure (True|False): Whether to show the figure or not (default: True)
+        - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
     '''
@@ -312,7 +312,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
-        - showFigure (True|False): Whether to show the figure or not (default: True)
+        - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
     '''
@@ -433,15 +433,18 @@ def plotTraces (include = [], timeRange = None, overlay = True, oneFigPer = 'cel
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells  (default: [])
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
+            the recorded traces (default: [])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
+            or per trace (showing multiple cells) (default: 'cell')
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
-        - showFigure (True|False): Whether to show the figure or not (default: True)
+        - showFig (True|False): Whether to show the figure or not (default: True)
 
-        - Returns figure handle
+        - Returns figure handles
     '''
 
     print('Plotting recorded cell traces ...')
@@ -453,51 +456,78 @@ def plotTraces (include = [], timeRange = None, overlay = True, oneFigPer = 'cel
 
     tracesList = sim.cfg['recordTraces'].keys()
     tracesList.sort()
-    gidList = [trace for trace in sim.cfg['plotCells'] if isinstance(trace, int)]
-    popList = [trace for trace in sim.cfg['plotCells'] if isinstance(trace, str)]
-    if 'all' in popList:
-        gidList = [cell['gid'] for cell in sim.net.allCells]
-        popList = []
-    duration = sim.cfg['duration']
+    cells, cellGids, _ = getCellsInclude(include)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg['duration']]
+
     recordStep = sim.cfg['recordStep']
 
-    for gid in gidList:
-        figure() # Open a new figure
-        fontsiz = 12
-        for itrace, trace in enumerate(tracesList):
-            try:
-                data = sim.allSimData[trace]['cell_'+str(gid)]
-                t = arange(0, duration+recordStep, recordStep)
-                subplot(len(tracesList),1,itrace+1)
-                plot(t[:len(data)], data, linewidth=1.5)
-                xlabel('Time (ms)', fontsize=fontsiz)
-                ylabel(trace, fontsize=fontsiz)
-                xlim(0,sim.cfg['duration'])
-            except:
-                pass
-        if tracesList: subplot(len(tracesList),1,1)
-        title('Cell %d'%(int(gid)))
-
-    for popLabel in popList:
-        fontsiz = 12
-        for pop in sim.net.pops:
-            if pop.tags['popLabel'] == popLabel and pop.cellGids:
-                figure() # Open a new figure
-                gid = pop.cellGids[0] 
-                for itrace, trace in enumerate(tracesList):
-                    try:
-                        data = sim.allSimData[trace]['cell_'+str(gid)]
-                        t = arange(0, len(data)*recordStep, recordStep)
+    figs = []
+    tracesData = []
+    # Plot one fig per cell
+    if oneFigPer == 'cell':
+        for gid in cellGids:
+            figs.append(figure()) # Open a new figure
+            fontsiz = 12
+            for itrace, trace in enumerate(tracesList):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList[itrace]
+                    if not overlay:
                         subplot(len(tracesList),1,itrace+1)
-                        plot(t, data, linewidth=1.5)
-                        xlabel('Time (ms)', fontsize=fontsiz)
-                        ylabel(trace, fontsize=fontsiz)
-                        xlim(0,sim.cfg['duration'])
-                    except:
-                        pass
-        subplot(len(tracesList),1,1)
-        title('Pop %s, Cell %d'%(popLabel, int(gid)))
-    showFigure()
+                        color = 'blue'
+                    plot(t[:len(data)], data, linewidth=1.5, color=color, label=trace)
+                    xlabel('Time (ms)', fontsize=fontsiz)
+                    ylabel(trace, fontsize=fontsiz)
+                    xlim(timeRange)
+                    if itrace==0: title('Cell %d'%(int(gid)))
+                    if overlay: legend()
+
+
+    # Plot one fig per cell
+    elif oneFigPer == 'trace':
+        for itrace, trace in enumerate(tracesList):
+            figs.append(figure()) # Open a new figure
+            fontsiz = 12
+            for igid, gid in enumerate(cellGids):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList[igid]
+                    if not overlay:
+                        subplot(len(cellGids),1,igid+1)
+                        color = 'blue'
+                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell '+str(gid))
+                    xlabel('Time (ms)', fontsize=fontsiz)
+                    ylabel(trace, fontsize=fontsiz)
+                    xlim(timeRange)
+                    title('Cell %d'%(int(gid)))
+                    if overlay: legend()
+
+    try:
+        tight_layout()
+    except:
+        pass
+
+    #save figure data
+    if saveData:
+        figData = {'tracesData': tracesData, 'include': include, 'timeRange': timeRange, 'oneFigPer': oneFigPer,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData)
+ 
+    # save figure
+    if saveFig: savefig(saveFig)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return figs
 
 
 

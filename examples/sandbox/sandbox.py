@@ -205,6 +205,7 @@ simConfig['analysis'] = {}
 #  'saveName': 'fig1.png'}
 # (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
 
-simConfig['analysis']['plotSpikeHist']={'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
-    'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
+# simConfig['analysis']['plotSpikeHist']={'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
+#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
 
+simConfig['analysis']['plotTraces'] = {'include': [1,2]}

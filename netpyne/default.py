@@ -83,6 +83,9 @@ simConfig['saveDat'] = False # save traces to .dat file(s)
 
 
 # Analysis and plotting 
+simConfig['analysis'] = {}
+
+# Deprecated (keep for backward-compatibility?)
 simConfig['plotCells'] = [] # plot recorded traces for this list of cells
 simConfig['plotRaster'] = True # Whether or not to plot a raster
 simConfig['plotSync'] = False  # add vertical lines for all spikes as an indication of synchrony

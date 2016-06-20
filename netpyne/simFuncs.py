@@ -24,7 +24,6 @@ import sim
 ###############################################################################
 
 def initialize (netParams = {}, simConfig = {}, net = None):
-
     sim.simData = {}  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
@@ -328,25 +327,54 @@ def setupRecording ():
             cell.recordStimSpikes()
 
     # intrinsic cell variables recording
-    if sim.cfg['recordCells']:
+    if sim.cfg['recordTraces']:
+        # get list of cells from argument of plotTraces function
+        if 'plotTraces' in sim.cfg['analysis'] and 'include' in sim.cfg['analysis']['plotTraces']:
+            cellsPlot = _getCellsList(sim.cfg['analysis']['plotTraces']['include'])
+        else:
+            cellsPlot = [] 
+
+        # get actual cell objects to record from, both from recordCell and plotCell lists
+        cellsRecord = _getCellsList(sim.cfg['recordCells'])+cellsPlot
+
         for key in sim.cfg['recordTraces'].keys(): sim.simData[key] = {}  # create dict to store traces
-        for entry in sim.cfg['recordCells']:  # for each entry in recordCells
-            if entry == 'all':  # record all cells
-                for cell in sim.net.cells: cell.recordTraces()
-                break
-            elif isinstance(entry, str):  # if str, record 1st cell of this population
-                if sim.rank == 0:  # only record on node 0
-                    for pop in sim.net.pops:
-                        if pop.tags['popLabel'] == entry and pop.cellGids:
-                            gid = pop.cellGids[0]
-                            for cell in sim.net.cells: 
-                                if cell.gid == gid: cell.recordTraces()
-            elif isinstance(entry, int):  # if int, record from cell with this gid
-                for cell in sim.net.cells: 
-                    if cell.gid == entry: cell.recordTraces()
+        for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+    
     timing('stop', 'setrecordTime')
 
     return sim.simData
+
+###############################################################################
+### Setup Recording
+###############################################################################
+def _getCellsList(include):
+    allCells = sim.net.cells
+    cellGids = []
+    cells = []
+    for condition in include:
+        if condition == 'all':  # all cells + Netstims 
+            cellGids = [c.gid for c in allCells]
+            cells = list(allCells)
+            return cells
+
+        elif condition == 'allCells':  # all cells 
+            cellGids = [c.gid for c in allCells]
+            cells = list(allCells)
+
+        elif isinstance(condition, int):  # cell gid 
+            cellGids.append(condition)
+        
+        elif isinstance(condition, str):  # entire pop
+            cellGids.extend([c.gid for c in allCells if c.tags['popLabel']==condition])
+        
+        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+            cellsPop = [c.gid for c in allCells if c.tags['popLabel']==condition[0]]
+            cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+
+    cellGids = list(set(cellGids))  # unique values
+    cells = [cell for cell in allCells if cell.gid in cellGids]
+    return cells
+
 
 
 ###############################################################################

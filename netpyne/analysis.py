@@ -570,42 +570,84 @@ def plotLFP ():
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
-def plotConn():
+def plotConn (include = ['all'], feature = 'strength', figSize = (12,12), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot network connectivity
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - feature ('weight'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
+            all except 'weight' features are only applicable to populations; 'strength' = weight * probability (default: 'strength')
+        - figSize ((width, height)): Size of figure (default: (12,12))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
     print('Plotting connectivity matrix...')
+
+    cells, cellGids, netStimPops = getCellsInclude(include)    
+
     # Create plot
-    figh = figure(figsize=(8,6))
-    figh.subplots_adjust(left=0.02) # Less space on left
-    figh.subplots_adjust(right=0.98) # Less space on right
-    figh.subplots_adjust(top=0.96) # Less space on bottom
-    figh.subplots_adjust(bottom=0.02) # Less space on bottom
-    figh.subplots_adjust(wspace=0) # More space between
-    figh.subplots_adjust(hspace=0) # More space between
+    fig = figure(figsize=(8,6))
+    fig.subplots_adjust(left=0.02) # Less space on left
+    fig.subplots_adjust(right=0.98) # Less space on right
+    fig.subplots_adjust(top=0.96) # Less space on bottom
+    fig.subplots_adjust(bottom=0.02) # Less space on bottom
+    fig.subplots_adjust(wspace=0) # More space between
+    fig.subplots_adjust(hspace=0) # More space between
+
     h = axes()
-    totalconns = zeros(shape(sim.connprobs))
-    for c1 in range(size(sim.connprobs,0)):
-        for c2 in range(size(sim.connprobs,1)):
-            for w in range(sim.nreceptors):
-                totalconns[c1,c2] += sim.connprobs[c1,c2]*sim.connweights[c1,c2,w]*(-1 if w>=2 else 1)
-    imshow(totalconns,interpolation='nearest',cmap=_bicolormap(gap=0))
+    # totalconns = zeros(shape(sim.connprobs))
+    # for c1 in range(size(sim.connprobs,0)):
+    #     for c2 in range(size(sim.connprobs,1)):
+    #         for w in range(sim.nreceptors):
+    #             totalconns[c1,c2] += sim.connprobs[c1,c2]*sim.connweights[c1,c2,w]*(-1 if w>=2 else 1)
 
-    # Plot grid lines
-    hold(True)
-    for pop in range(sim.npops):
-        plot(array([0,sim.npops])-0.5,array([pop,pop])-0.5,'-',c=(0.7,0.7,0.7))
-        plot(array([pop,pop])-0.5,array([0,sim.npops])-0.5,'-',c=(0.7,0.7,0.7))
+    # conns = [cell['conns'] for cell in cells]
+    # popsTemp = list(set([cell['tags']['popLabel'] for cell in cells]))
+    # pops = [pop['popLabel'] for pop in sim.net.pops if pop['popLabel'] in popsTemp]
 
-    # Make pretty
-    h.set_xticks(range(sim.npops))
-    h.set_yticks(range(sim.npops))
-    h.set_xticklabels(sim.popnames)
-    h.set_yticklabels(sim.popnames)
-    h.xaxis.set_ticks_position('top')
-    xlim(-0.5,sim.npops-0.5)
-    ylim(sim.npops-0.5,-0.5)
-    clim(-abs(totalconns).max(),abs(totalconns).max())
-    colorbar()
+    if feature == 'weight':
+        connWeights = zeros((len(cellGids), len(cellGids)))
+        for cell in cells:  # for each postsyn cell
+            for conn in cell['conns']:
+                if conn['preGid'] is not 'NetStim':
+                    connWeights[conn['preGid'], cell['gid']] = conn['weight']
 
-    showFigure()
+    imshow(connWeights, interpolation='nearest',cmap=_bicolormap(gap=0))
+
+    # # Plot grid lines
+    # hold(True)
+    # for pop in range(sim.npops):
+    #     plot(array([0,sim.npops])-0.5,array([pop,pop])-0.5,'-',c=(0.7,0.7,0.7))
+    #     plot(array([pop,pop])-0.5,array([0,sim.npops])-0.5,'-',c=(0.7,0.7,0.7))
+
+    # # Make pretty
+    # h.set_xticks(range(sim.npops))
+    # h.set_yticks(range(sim.npops))
+    # h.set_xticklabels(sim.popnames)
+    # h.set_yticklabels(sim.popnames)
+    # h.xaxis.set_ticks_position('top')
+    # xlim(-0.5,sim.npops-0.5)
+    # ylim(sim.npops-0.5,-0.5)
+    # #clim(-abs(totalconns).max(),abs(totalconns).max())
+    # colorbar()
+
+    # #save figure data
+    # if saveData:
+    #     figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+    #      'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+    #     _saveFigData(figData, saveData)
+ 
+    # save figure
+    if saveFig: savefig(saveFig)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig
 
 
 ######################################################################################################################################################
@@ -660,7 +702,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), saveData = None, saveF
     ax = gca()
     ax.invert_yaxis()
 
-    #save figure data
+    # save figure data
     if saveData:
         figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
          'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
@@ -674,8 +716,6 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), saveData = None, saveF
     if showFig: _showFigure()
 
     return fig
-
-    showFigure()
 
 
 ######################################################################################################################################################

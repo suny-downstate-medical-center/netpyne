@@ -314,12 +314,13 @@ class Network (object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg['verbose']: print 'Generating set of probabilistic connections...'
 
-        seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))  
+        seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[-1]+postCellsTags.keys()[-1])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
 
+        print connParam['probabilityFunc']
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
@@ -328,7 +329,7 @@ class Network (object):
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
                   
-                    if probability >= allRands[preCellGid,postCellGid]:
+                    if probability >= allRands[preCellGid,postCellGid]:      
                         seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                             self._addNetStimParams(connParam, preCellTags) # cell method to add connection       

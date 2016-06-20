@@ -111,23 +111,23 @@ netParams['connParams'] = []
 #     'threshold': 10,                    # threshold
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'cellModel': 'HH'},
+    'weight': 0.05,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'probability': 'uniform(0.001,0.5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'probability': 'uniform(0,0.5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
-
-
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'connList': [[0,1],[3,1]],			# list of connections
-    'synMech': ['AMPA', 'NMDA'], 
-    'synsPerConn': 3,
-    'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
-	'delay': 5,
-    'loc': 0.2,
-    'threshold': 10})                   # threshold
+#     'connList': [[0,1],[3,1]],			# list of connections
+#     'synMech': ['AMPA', 'NMDA'], 
+#     'synsPerConn': 3,
+#     'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
+# 	'delay': 5,
+#     'loc': 0.2,
+#     'threshold': 10})                   # threshold
 
 
 # netParams['connParams'].append(
@@ -208,4 +208,4 @@ simConfig['analysis'] = {}
 # simConfig['analysis']['plotSpikeHist']={'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
 
-simConfig['analysis']['plot2Dnet'] = {'include': ['allCells']}
+#simConfig['analysis']['plot2Dnet'] = {'include': ['allCells']}

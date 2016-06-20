@@ -24,9 +24,9 @@ def plotData ():
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user
-        for funcName, args in sim.cfg['analysis']:
+        for funcName, kwargs in sim.cfg['analysis'].iteritems():
             func = getattr(sim.analysis, funcName)  # get pointer to function
-            func(args)  # call function with user arguments
+            func(**kwargs)  # call function with user arguments
 
         # Print timings
         if sim.cfg['timing']:
@@ -316,6 +316,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         - Returns figure handle
     '''
+
+    print('Plotting spike histogram...')
 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],

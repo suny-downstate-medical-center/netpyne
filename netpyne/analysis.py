@@ -302,7 +302,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
-        -  (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - binSize (int): Size in ms of each bin (default: 5)
@@ -379,14 +379,17 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if yaxis=='rate': histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
+        color = colorList[iplot%len(colorList)]
+
         if not overlay: 
             subplot(len(include),1,iplot+1)  # if subplot, create new subplot
             title (str(subset))
+            color = 'blue'
    
         if graphType == 'line':
-            plot (histoT, histoCount, linewidth=1.0, color = colorList[iplot%len(colorList)])
+            plot (histoT, histoCount, linewidth=1.0, color = color)
         elif graphType == 'bar':
-            bar(histoT, histoCount, width = binSize, color = colorList[iplot%len(colorList)])
+            bar(histoT, histoCount, width = binSize, color = color)
 
         xlabel('Time (ms)', fontsize=fontsiz)
         ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
@@ -426,8 +429,27 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (): 
+def plotTraces (include = [], timeRange = None, overlay = True, oneFigPer = 'cell', 
+    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot recorded traces
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells  (default: [])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFigure (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
     print('Plotting recorded cell traces ...')
+
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
     tracesList = sim.cfg['recordTraces'].keys()
     tracesList.sort()

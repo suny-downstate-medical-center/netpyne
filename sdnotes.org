@@ -1761,7 +1761,6 @@ simConfig['analysis'].append({'func': 'plotTraces',
  (automatically added to recordCells)
  'overlay': True,  # else separate subplots
  'oneFigPer': 'cell'|'trace',
- 'figId': 1,  # figs with same figId will be converted to subplots
  'saveData': 'data1.pkl,
  'saveFig': 'fig1.png'})
 

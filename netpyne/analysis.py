@@ -6,8 +6,8 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import  histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots
+from matplotlib.pylab import bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
 from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
 from numbers import Number
@@ -43,11 +43,33 @@ def plotData ():
 ######################################################################################################################################################
 ## show figure
 ######################################################################################################################################################
-def showFigure():
+def _showFigure():
     try:
         show(block=False)
     except:
         show()
+
+
+######################################################################################################################################################
+## Save figure data
+######################################################################################################################################################
+def _saveFigData(figData, fileName):
+    fileName = fileName.split('.')
+    ext = fileName[1] if len(fileName) > 1 else 'pkl'
+
+    if ext == 'pkl': # save to pickle
+        import pickle
+        print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
+        with open(fileName[0]+'.pkl', 'wb') as fileObj:
+            pickle.dump(figData, fileObj)
+
+    elif ext == 'json':  # save to json
+        import json
+        print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
+        with open(fileName[0]+'.json', 'w') as fileObj:
+            json.dump(figData, fileObj)
+    else: 
+        print 'File extension to save figure data not recognized: %s'%(ext)
 
 
 ######################################################################################################################################################
@@ -110,10 +132,10 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, 
-        spikeHistBin = 10, syncLines = False, saveData = None, saveFig = None, showFig = True): 
+        spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Raster plot of network cells 
-        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
+        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
@@ -121,6 +143,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 10)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
+        - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
         - showFigure (True|False): Whether to show the figure or not (default: True)
@@ -210,13 +233,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         histoCount = histo[0]
 
     # Plot spikes
-    fig,ax1 = subplots(figsize=(10,8))
+    fig,ax1 = subplots(figsize=figSize)
+    fontsiz = 12
     
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
-        #ax1=subplot(2,1,1, gridspec_kw = {'height_ratios':[2, 1]})
         ax1=subplot(gs[0])
-    fontsiz = 12
     ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
     
     # Plot synchrony lines 
@@ -231,14 +253,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if spikeHist == 'overlay':
         ax2 = ax1.twinx()
         ax2.plot (histoT, histoCount, linewidth=0.5)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis in opposite side
+        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
     elif spikeHist == 'subplot':
-        #ax2=subplot(2,1,2)
         ax2=subplot(gs[1])
         plot (histoT, histoCount, linewidth=1.0)
         ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis in opposite side
-        # add axis labels
+        ax2.set_ylabel('Spike count', fontsize=fontsiz)
 
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
@@ -262,36 +282,15 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if saveData:
         figData = {'spkTimes': spkts, 'spkInds': spkinds, 'spkColors': spkgidColors, 'cellGids': cellGids, 'sortedGids': sortedGids, 'numNetStims': numNetStims, 
         'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
-        'syncLines': syncLines, 'saveData': saveData, 'saveFig': saveFig}
+        'syncLines': syncLines}
 
-        fileName = saveData.split('.')
-        ext = fileName[1] if len(fileName) > 1 else 'pkl'
-
-        if ext == 'pkl': # save to pickle
-            import pickle
-            print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
-            with open(fileName[0]+'.pkl', 'wb') as fileObj:
-                pickle.dump(figData, fileObj)
-
-        elif ext == 'json':  # save to json
-            import json
-            print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
-            with open(fileName[0]+'.json', 'w') as fileObj:
-                json.dump(figData, fileObj)
-
-        # elif ext == 'mat': # Save to mat file
-        #     from scipy.io import savemat 
-        #     print('Saving figure data as %s ... ' % (fileName[0]+'.mat'))
-        #     savemat(fileName[0]+'.mat', sim.replaceNoneObj(figData))  # replace None and {} with [] so can save in .mat format
-
-        else: 
-            print 'File extension to save figure data not recognized: %s'%(ext)
+        _saveFigData(figData, saveData)
  
     # save figure
     if saveFig: savefig(saveFig)
 
     # show fig 
-    if showFig: showFigure()
+    if showFig: _showFigure()
 
     return fig
 
@@ -299,22 +298,128 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-def plotSpikeHist (include = ['allCells'], timeRange = None, binSize = 10, overlay=True, type='line', yaxis = 'rate', saveData = None, saveFig = None): 
+def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
+    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells to include (default: 'all')
+        -  (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - binSize (int): Size in ms of each bin (default: 10)
+        - binSize (int): Size in ms of each bin (default: 5)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - type ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
+        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFigure (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
     '''
 
-    for subset in include:
-        cells, cellGids, netStimPops = getCellsInclude([subset])
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
+    
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.pops: include.append(pop.tags['popLabel'])
+
+    # Y-axis label
+    if yaxis == 'rate': yaxisLabel = 'Avg cell firing rate (Hz)'
+    elif yaxis == 'count': yaxisLabel = 'Spike count'
+    else:
+        print 'Invalid yaxis value %s', (yaxis)
+        return
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg['duration']]
+
+    histData = []
+
+    # create fig
+    fig,ax1 = subplots(figsize=figSize)
+    fontsiz = 12
+    
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimPops = getCellsInclude([subset])
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+        else: 
+            spkinds,spkts = [],[]
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+            if len(cellStims) > 0:
+                lastInd = max(spkinds) if len(spkinds)>0 else 0
+                spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                spkts.extend(spktsNew)
+                spkinds.extend(spkindsNew)
+                numNetStims += len(cellStims)
+
+        histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1]+binSize/2
+        histoCount = histo[0] 
+
+        histData.append(histoCount)
+
+        if yaxis=='rate': histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
+
+        if not overlay: 
+            subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+            title (str(subset))
+   
+        if graphType == 'line':
+            plot (histoT, histoCount, linewidth=1.0, color = colorList[iplot%len(colorList)])
+        elif graphType == 'bar':
+            bar(histoT, histoCount, width = binSize, color = colorList[iplot%len(colorList)])
+
+        xlabel('Time (ms)', fontsize=fontsiz)
+        ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
+        ax1.set_xlim(timeRange)
+
+    try:
+        tight_layout()
+    except:
+        pass
+
+    # Add legend
+    if overlay:
+        for i,subset in enumerate(include):
+            plot(0,0,color=colorList[i],label=str(subset))
+        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        maxLabelLen = max([len(l) for l in include])
+        subplots_adjust(right=(0.9-0.012*maxLabelLen))
+
+
+    # save figure data
+    if saveData:
+        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData)
+ 
+    # save figure
+    if saveFig: savefig(saveFig)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig
+
+        
 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)

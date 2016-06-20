@@ -1,3 +1,7 @@
+## Version 0.4.9
+
+- Added option to save figure, save figure data, specify figure size, and show figure to all analysis/plotting functions (issue #39)
+
 ## Version 0.4.8
 
 - Removed framework and init modules, and consolidated in sim module (so just need: 'from netpyne import sim')

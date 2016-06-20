@@ -178,7 +178,7 @@ simConfig['verbose'] = 1 #False  # show detailed messages
 
 
 # Recording 
-simConfig['recordCells'] = []  # which cells to record from
+simConfig['recordCells'] = [1,2]  # which cells to record from
 simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
 'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
@@ -208,4 +208,4 @@ simConfig['analysis'] = {}
 # simConfig['analysis']['plotSpikeHist']={'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
 
-simConfig['analysis']['plotTraces'] = {'include': [1,2]}
+simConfig['analysis']['plot2Dnet'] = {'include': ['allCells']}

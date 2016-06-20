@@ -609,27 +609,39 @@ def plotConn():
 
 
 ######################################################################################################################################################
-## Plot 2D visualization of network cell positions and connections
+## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
-def plot2Dnet():
+def plot2Dnet (include = ['allCells'], figSize = (12,12), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot 2D representation of network cell positions and connections
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - figSize ((width, height)): Size of figure (default: (12,12))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
     print('Plotting 2D representation of network cell locations and connections...')
 
-    allCells = sim.net.allCells
-    figure(figsize=(12,12))
+    fig = figure(figsize=figSize)
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+
+    cells, cellGids, _ = getCellsInclude(include)           
     popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel'] not in ['NetStim']]
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    cellColors = [popColors[cell.tags['popLabel']] for cell in sim.net.cells]
-    posX = [cell['tags']['x'] for cell in allCells]  # get all x positions
-    posY = [cell['tags']['y'] for cell in allCells]  # get all y positions
+    cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
+    posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+    posY = [cell['tags']['y'] for cell in cells]  # get all y positions
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
-    for postCell in allCells:
+    for postCell in cells:
         for con in postCell['conns']:  # plot connections between cells
             if not isinstance(con['preGid'], str):
-                posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in allCells if cell['gid']==con['preGid']), None)  
+                posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
                 posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
                 color='red'
                 if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
@@ -641,11 +653,27 @@ def plot2Dnet():
     xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
     ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
     fontsiz = 12
+
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz, bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+    legend(fontsize=fontsiz, bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
     ax = gca()
     ax.invert_yaxis()
+
+    #save figure data
+    if saveData:
+        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData)
+ 
+    # save figure
+    if saveFig: savefig(saveFig)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig
 
     showFigure()
 

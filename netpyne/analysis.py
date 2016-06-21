@@ -608,6 +608,9 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
             print 'Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"'
             return fig
         cellInds = {cell['gid']: ind for ind,cell in enumerate(cells)}
+
+        print cells 
+        print cellInds
         for cell in cells:  # for each postsyn cell
             for conn in cell['conns']:
                 if conn['preGid'] != 'NetStim':

@@ -112,11 +112,11 @@ netParams['connParams'] = []
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'cellModel': 'HH'},
-    'weight': 0.05,                    # weight of each connection
+    {'preTags': {'popLabel': ['PYR','PYR2', 'PYR3']}, 'postTags': {'cellModel': 'HH'},
+    'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 'uniform(0.001,0.5)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+    'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
 # netParams['connParams'].append(

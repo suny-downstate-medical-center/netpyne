@@ -2137,6 +2137,24 @@ if pc.gid_exists(gid):
 h.prcellgid(gid)
 
 
+* Paper
+** Title
+NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models
+** Journal
+- PLOS Comp Biol (similar to X-J Wang paper)
+** Figures
+- overview of netpyne stages
+- structure of netParams
+- how netParams specs translate to network: a) pops with yfrac, b) cell Model HH (import) vs Izhi, b) conn rules (eg. cell
+  type, yfrac, pop)
+- yfrac-based connectivity illustration - with real data
+- sCRACM-based subcellular example - with real data
+- simulation process - distribution of cells and gathering (cite Neural Comp)
+- RL+STDP ... for behavioral task: arm (intervalUpdateFunc)
+- Analysis: raster, hist, LFP, 2dnet, conn matrix
+- Conversion to NeuroML: example of neuroml code? Gepetto/OSB visualization?
+
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

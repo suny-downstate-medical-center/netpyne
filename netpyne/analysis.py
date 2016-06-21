@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+from matplotlib.pylab import nanmax, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
     colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
 from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
@@ -570,13 +570,14 @@ def plotLFP ():
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
-def plotConn (include = ['all'], feature = 'strength', figSize = (12,12), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
+def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - feature ('weight'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
-            all except 'weight' features are only applicable to populations; 'strength' = weight * probability (default: 'strength')
-        - figSize ((width, height)): Size of figure (default: (12,12))
+        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
+            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
+        - groupBy ('pop'|'cell'): Show matrix for individual cells or populations (default: 'pop')
+        - figSize ((width, height)): Size of figure (default: (10,10))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
@@ -589,57 +590,131 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (12,12), groupB
     cells, cellGids, netStimPops = getCellsInclude(include)    
 
     # Create plot
-    fig = figure(figsize=(8,6))
-    fig.subplots_adjust(left=0.02) # Less space on left
+    fig = figure(figsize=figSize)
     fig.subplots_adjust(right=0.98) # Less space on right
-    fig.subplots_adjust(top=0.96) # Less space on bottom
+    fig.subplots_adjust(top=0.96) # Less space on top
     fig.subplots_adjust(bottom=0.02) # Less space on bottom
-    fig.subplots_adjust(wspace=0) # More space between
-    fig.subplots_adjust(hspace=0) # More space between
 
     h = axes()
-    # totalconns = zeros(shape(sim.connprobs))
-    # for c1 in range(size(sim.connprobs,0)):
-    #     for c2 in range(size(sim.connprobs,1)):
-    #         for w in range(sim.nreceptors):
-    #             totalconns[c1,c2] += sim.connprobs[c1,c2]*sim.connweights[c1,c2,w]*(-1 if w>=2 else 1)
+    popsTemp = list(set([cell['tags']['popLabel'] for cell in cells]))
+    pops = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['popLabel'] in popsTemp]+netStimPops
 
-    # conns = [cell['conns'] for cell in cells]
-    # popsTemp = list(set([cell['tags']['popLabel'] for cell in cells]))
-    # pops = [pop['popLabel'] for pop in sim.net.pops if pop['popLabel'] in popsTemp]
-
-    if feature == 'weight':
-        connWeights = zeros((len(cellGids), len(cellGids)))
+    # Calculate matrix if grouped by cell
+    if groupBy == 'cell': 
+        if feature in ['weight', 'delay', 'numConns']: 
+            connMatrix = zeros((len(cellGids), len(cellGids)))
+            countMatrix = zeros((len(cellGids), len(cellGids)))
+        else: 
+            print 'Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"'
+            return fig
+        cellInds = {cell['gid']: ind for ind,cell in enumerate(cells)}
         for cell in cells:  # for each postsyn cell
             for conn in cell['conns']:
-                if conn['preGid'] is not 'NetStim':
-                    connWeights[conn['preGid'], cell['gid']] = conn['weight']
+                if conn['preGid'] != 'NetStim':
+                    if feature in ['weight', 'delay']: 
+                        connMatrix[cellInds[conn['preGid']], cellInds[cell['gid']]] += conn[feature]
+                    countMatrix[cellInds[conn['preGid']], cellInds[cell['gid']]] += 1
 
-    imshow(connWeights, interpolation='nearest',cmap=_bicolormap(gap=0))
+        if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
+        elif feature in ['numConns']: connMatrix = countMatrix 
 
-    # # Plot grid lines
-    # hold(True)
-    # for pop in range(sim.npops):
-    #     plot(array([0,sim.npops])-0.5,array([pop,pop])-0.5,'-',c=(0.7,0.7,0.7))
-    #     plot(array([pop,pop])-0.5,array([0,sim.npops])-0.5,'-',c=(0.7,0.7,0.7))
+    # Calculate matrix if grouped by pop
+    if groupBy == 'pop': 
+        if feature in ['weight', 'strength']: 
+            weightMatrix = zeros((len(pops), len(pops)))
+        elif feature == 'delay': 
+            delayMatrix = zeros((len(pops), len(pops)))
+        #if feature in ['numConns', 'probability', 'strength', 'convergence', 'divergence']:
+        countMatrix = zeros((len(pops), len(pops)))
+        popInds = {pop: ind for ind,pop in enumerate(pops)}
 
-    # # Make pretty
-    # h.set_xticks(range(sim.npops))
-    # h.set_yticks(range(sim.npops))
-    # h.set_xticklabels(sim.popnames)
-    # h.set_yticklabels(sim.popnames)
-    # h.xaxis.set_ticks_position('top')
-    # xlim(-0.5,sim.npops-0.5)
-    # ylim(sim.npops-0.5,-0.5)
-    # #clim(-abs(totalconns).max(),abs(totalconns).max())
-    # colorbar()
+        # calculate max num conns per pre and post pair of pops
+        numCellsPop = {}
+        for pop in pops:
+            if pop in netStimPops:
+                numCellsPop[pop] = -1
+            else:
+                numCellsPop[pop] = len([cell for cell in cells if cell['tags']['popLabel']==pop])
 
-    # #save figure data
-    # if saveData:
-    #     figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
-    #      'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        maxConnMatrix = zeros((len(pops), len(pops)))
+        for prePop in pops:
+            for postPop in pops: 
+                if numCellsPop[prePop] == -1: numCellsPop[prePop] = numCellsPop[postPop]
+                maxConnMatrix[popInds[prePop], popInds[postPop]] = numCellsPop[prePop]*numCellsPop[postPop]
+        
+        for cell in cells:  # for each postsyn cell
+            for conn in cell['conns']:
+                if conn['preGid'] == 'NetStim':
+                    prePopLabel = conn['preLabel']
+                else:
+                    preCell = next((cell for cell in cells if cell['gid']==conn['preGid']), None)
+                    prePopLabel = preCell['tags']['popLabel'] if preCell else None
+                
+                if feature in ['weight', 'strength']: 
+                    weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight'] 
+                elif feature == 'delay': 
+                    delayMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['delay'] 
+                #if feature in ['weight', 'delay', 'numConns', 'probability', 'strength', 'convergence', 'divergence']:
+                countMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += 1    
+             
+        if feature == 'weight': 
+            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning) 
+        elif feature == 'delay': 
+            connMatrix = delayMatrix / countMatrix
+        elif feature == 'numConns':
+            connMatrix = countMatrix
+        elif feature in ['probability', 'strength']:
+            connMatrix = countMatrix / maxConnMatrix
+            if feature == 'strength':
+                connMatrix = connMatrix * weightMatrix
+        elif feature == 'convergence':
+            print 'Convergence conn matrix not yet implemented'
+            return
+        elif feature == 'divergence':
+            print 'Convergence conn matrix not yet implemented'
+            return
+
+    imshow(connMatrix, interpolation='nearest',cmap=_bicolormap(gap=0))
+
+    # Plot grid lines
+    hold(True)
+    if groupBy == 'pop':
+        for ipop, pop in enumerate(pops):
+            plot(array([0,len(pops)])-0.5,array([ipop,ipop])-0.5,'-',c=(0.7,0.7,0.7))
+            plot(array([ipop,ipop])-0.5,array([0,len(pops)])-0.5,'-',c=(0.7,0.7,0.7))
+
+        # Make pretty
+        h.set_xticks(range(len(pops)))
+        h.set_yticks(range(len(pops)))
+        h.set_xticklabels(pops)
+        h.set_yticklabels(pops)
+        h.xaxis.set_ticks_position('top')
+        xlim(-0.5,len(pops)-0.5)
+        ylim(len(pops)-0.5,-0.5)
+        clim(-abs(connMatrix).max(),abs(connMatrix).max())
+
+    elif groupBy == 'cell':
+        # Make pretty
+        step=5
+        h.set_xticks(arange(0,len(cells),step))
+        h.set_yticks(arange(0,len(cells),step))
+        h.set_xticklabels(arange(0,len(cells),step))
+        h.set_yticklabels(arange(0,len(cells),step))
+        h.xaxis.set_ticks_position('top')
+        xlim(-0.5,len(cells)-0.5)
+        ylim(len(cells)-0.5,-0.5)
+        clim(-nanmax(abs(connMatrix)),nanmax(abs(connMatrix)))
+
+
+    colorbar(label=feature, shrink=0.8) #.set_label(label='Fitness',size=20,weight='bold')
+    title ('Connection '+feature+' matrix', y=1.04)
+
+    #save figure data
+    if saveData:
+        figData = {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-    #     _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData)
  
     # save figure
     if saveFig: savefig(saveFig)

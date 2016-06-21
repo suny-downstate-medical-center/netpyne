@@ -609,13 +609,12 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
             return fig
         cellInds = {cell['gid']: ind for ind,cell in enumerate(cells)}
 
-        print cells 
-        print cellInds
         for cell in cells:  # for each postsyn cell
             for conn in cell['conns']:
-                if conn['preGid'] != 'NetStim':
+                if conn['preGid'] != 'NetStim' and conn['preGid'] in cellInds:
                     if feature in ['weight', 'delay']: 
-                        connMatrix[cellInds[conn['preGid']], cellInds[cell['gid']]] += conn[feature]
+                        if conn['preGid'] in cellInds:
+                            connMatrix[cellInds[conn['preGid']], cellInds[cell['gid']]] += conn[feature]
                     countMatrix[cellInds[conn['preGid']], cellInds[cell['gid']]] += 1
 
         if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
@@ -653,12 +652,14 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
                     preCell = next((cell for cell in cells if cell['gid']==conn['preGid']), None)
                     prePopLabel = preCell['tags']['popLabel'] if preCell else None
                 
-                if feature in ['weight', 'strength']: 
-                    weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight'] 
-                elif feature == 'delay': 
-                    delayMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['delay'] 
-                #if feature in ['weight', 'delay', 'numConns', 'probability', 'strength', 'convergence', 'divergence']:
-                countMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += 1    
+
+                if prePopLabel in popInds:
+                    if feature in ['weight', 'strength']: 
+                        weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight'] 
+                    elif feature == 'delay': 
+                        delayMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['delay'] 
+                    #if feature in ['weight', 'delay', 'numConns', 'probability', 'strength', 'convergence', 'divergence']:
+                    countMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += 1    
              
         if feature == 'weight': 
             connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning) 

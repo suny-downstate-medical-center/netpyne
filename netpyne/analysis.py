@@ -609,6 +609,7 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
             return fig
         cellInds = {cell['gid']: ind for ind,cell in enumerate(cells)}
 
+        # Calculate conn matrix
         for cell in cells:  # for each postsyn cell
             for conn in cell['conns']:
                 if conn['preGid'] != 'NetStim' and conn['preGid'] in cellInds:
@@ -639,11 +640,16 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
                 numCellsPop[pop] = len([cell for cell in cells if cell['tags']['popLabel']==pop])
 
         maxConnMatrix = zeros((len(pops), len(pops)))
+        if feature == 'convergence': maxPostConnMatrix = zeros((len(pops), len(pops)))
+        if feature == 'divergence': maxPreConnMatrix = zeros((len(pops), len(pops)))
         for prePop in pops:
             for postPop in pops: 
                 if numCellsPop[prePop] == -1: numCellsPop[prePop] = numCellsPop[postPop]
                 maxConnMatrix[popInds[prePop], popInds[postPop]] = numCellsPop[prePop]*numCellsPop[postPop]
+                if feature == 'convergence': maxPostConnMatrix[popInds[prePop], popInds[postPop]] = numCellsPop[postPop]
+                if feature == 'divergence': maxPreConnMatrix[popInds[prePop], popInds[postPop]] = numCellsPop[prePop]
         
+        # Calculate conn matrix
         for cell in cells:  # for each postsyn cell
             for conn in cell['conns']:
                 if conn['preGid'] == 'NetStim':
@@ -652,7 +658,6 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
                     preCell = next((cell for cell in cells if cell['gid']==conn['preGid']), None)
                     prePopLabel = preCell['tags']['popLabel'] if preCell else None
                 
-
                 if prePopLabel in popInds:
                     if feature in ['weight', 'strength']: 
                         weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight'] 
@@ -672,11 +677,9 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
             if feature == 'strength':
                 connMatrix = connMatrix * weightMatrix
         elif feature == 'convergence':
-            print 'Convergence conn matrix not yet implemented'
-            return
+            connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
-            print 'Convergence conn matrix not yet implemented'
-            return
+            connMatrix = countMatrix / maxPreConnMatrix
 
     imshow(connMatrix, interpolation='nearest',cmap=_bicolormap(gap=0))
 

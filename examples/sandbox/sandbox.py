@@ -28,7 +28,7 @@ netParams['scaleConnWeightModels'] = {'HH': 1.0}
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.5], 'numCells': 20}) # add dict with params for this pop 
+netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.5], 'numCells': 10}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'PYR2', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
@@ -112,11 +112,12 @@ netParams['connParams'] = []
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['PYR','PYR2', 'PYR3']}, 'postTags': {'cellModel': 'HH'},
+    {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
     'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+    'convergence': 10})
+    #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
 # netParams['connParams'].append(

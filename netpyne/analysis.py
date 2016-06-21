@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import nanmax, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+from matplotlib.pylab import nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
     colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
 from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
@@ -25,6 +25,8 @@ def plotData ():
 
         # Call analysis functions specified by user
         for funcName, kwargs in sim.cfg['analysis'].iteritems():
+            if kwargs == True: kwargs = {}
+            elif kwargs == False: break
             func = getattr(sim.analysis, funcName)  # get pointer to function
             func(**kwargs)  # call function with user arguments
 
@@ -570,13 +572,14 @@ def plotLFP ():
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
-def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
+def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
         - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
             the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
         - groupBy ('pop'|'cell'): Show matrix for individual cells or populations (default: 'pop')
+        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
         - figSize ((width, height)): Size of figure (default: (10,10))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
@@ -587,6 +590,9 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
 
     print('Plotting connectivity matrix...')
 
+    import warnings
+    warnings.filterwarnings("ignore")
+    
     cells, cellGids, netStimPops = getCellsInclude(include)    
 
     # Create plot
@@ -608,6 +614,23 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
             print 'Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"'
             return fig
         cellInds = {cell['gid']: ind for ind,cell in enumerate(cells)}
+
+
+        # Order by
+        if len(cells) > 0:
+            if orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+                orderBy = 'gid'
+            elif not isinstance(cells[0]['tags'][orderBy], Number): 
+                orderBy = 'gid' 
+        
+            if orderBy == 'gid': 
+                yorder = [cell[orderBy] for cell in cells]
+            else:
+                yorder = [cell['tags'][orderBy] for cell in cells]
+            
+            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+            cellInds = sortedGids
+
 
         # Calculate conn matrix
         for cell in cells:  # for each postsyn cell
@@ -660,7 +683,7 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
                 
                 if prePopLabel in popInds:
                     if feature in ['weight', 'strength']: 
-                        weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight'] 
+                        weightMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['weight']
                     elif feature == 'delay': 
                         delayMatrix[popInds[prePopLabel], popInds[cell['tags']['popLabel']]] += conn['delay'] 
                     #if feature in ['weight', 'delay', 'numConns', 'probability', 'strength', 'convergence', 'divergence']:
@@ -673,15 +696,16 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
         elif feature == 'numConns':
             connMatrix = countMatrix
         elif feature in ['probability', 'strength']:
-            connMatrix = countMatrix / maxConnMatrix
+            connMatrix = countMatrix / maxConnMatrix  # probability
             if feature == 'strength':
-                connMatrix = connMatrix * weightMatrix
+                connMatrix = connMatrix * weightMatrix  # strength
         elif feature == 'convergence':
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
             connMatrix = countMatrix / maxPreConnMatrix
 
-    imshow(connMatrix, interpolation='nearest',cmap=_bicolormap(gap=0))
+    imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=nanmin(connMatrix), vmax=nanmax(connMatrix))  #_bicolormap(gap=0)
+
 
     # Plot grid lines
     hold(True)
@@ -698,11 +722,13 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
         h.xaxis.set_ticks_position('top')
         xlim(-0.5,len(pops)-0.5)
         ylim(len(pops)-0.5,-0.5)
-        clim(-abs(connMatrix).max(),abs(connMatrix).max())
+        clim(nanmin(connMatrix),nanmax(connMatrix))
 
     elif groupBy == 'cell':
         # Make pretty
-        step=5
+        step = int(len(cells)/10.0)
+        base = 100 if step>100 else 10
+        step = int(base * floor(float(step)/base))
         h.set_xticks(arange(0,len(cells),step))
         h.set_yticks(arange(0,len(cells),step))
         h.set_xticklabels(arange(0,len(cells),step))
@@ -710,11 +736,14 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
         h.xaxis.set_ticks_position('top')
         xlim(-0.5,len(cells)-0.5)
         ylim(len(cells)-0.5,-0.5)
-        clim(-nanmax(abs(connMatrix)),nanmax(abs(connMatrix)))
+        clim(nanmin(connMatrix),nanmax(connMatrix))
 
 
     colorbar(label=feature, shrink=0.8) #.set_label(label='Fitness',size=20,weight='bold')
-    title ('Connection '+feature+' matrix', y=1.04)
+    xlabel('post')
+    h.xaxis.set_label_coords(0.5, 1.06)
+    ylabel('pre')
+    title ('Connection '+feature+' matrix', y=1.08)
 
     #save figure data
     if saveData:
@@ -735,10 +764,11 @@ def plotConn (include = ['all'], feature = 'strength', figSize = (10,10), groupB
 ######################################################################################################################################################
 ## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
-def plot2Dnet (include = ['allCells'], figSize = (12,12), saveData = None, saveFig = None, showFig = True): 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - showConns (True|False): Whether to show connections or not (default: True)
         - figSize ((width, height)): Size of figure (default: (12,12))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
@@ -762,16 +792,17 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), saveData = None, saveF
     posX = [cell['tags']['x'] for cell in cells]  # get all x positions
     posY = [cell['tags']['y'] for cell in cells]  # get all y positions
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
-    for postCell in cells:
-        for con in postCell['conns']:  # plot connections between cells
-            if not isinstance(con['preGid'], str):
-                posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
-                posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
-                color='red'
-                if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
-                    color = 'blue'
-                width = 0.1 #50*con['weight']
-                plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+    if showConns:
+        for postCell in cells:
+            for con in postCell['conns']:  # plot connections between cells
+                if not isinstance(con['preGid'], str):
+                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
+                    posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
+                    color='red'
+                    if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                        color = 'blue'
+                    width = 0.1 #50*con['weight']
+                    plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
     xlabel('x (um)')
     ylabel('y (um)') 
     xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 

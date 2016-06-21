@@ -538,13 +538,26 @@ Related to file saving:
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
 
+.. _sim_config_analysis:
 
 Related to plotting and analysis:
+
+* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (eg. ``sim.createAndSimulate()``).
+
+	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig['analysis'][funcName] = kwargs``
+
+	E.g. ``simConfig['analysis']['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
+
+	E.g. ``simConfig['analysis']['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include = ['PYR'], timeRange = [200,600], saveFig = 'PYR_raster.png')``
+
+	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`
+
 
 * **plotRaster** - Whether or not to plot a raster (default: True)
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
 * **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
+
 * **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
 * **plot2Dnet** - plot 2D visualization of cell positions and connections (default: False)
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
@@ -580,10 +593,32 @@ Simulation-related functions
 * **sim.exportNeuroML2()**
 
 
-Analysis-related methods
+.. _analysis_functions:
+
+Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analysis.plotRaster()
+* analysis.plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True):  
+    
+    Raster plot of network cells. Includes the following optional arguments:
+
+    - include: Cells to include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - timeRange: Time range of spikes shown; if None shows all ([start:stop])
+    - maxSpikes: maximum number of spikes that will be plotted (int)
+    - orderBy: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
+    - orderInverse: Invert the y-axis order (True|False)
+    - spikeHist : overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
+    - spikeHistBin (int): Size of bin in ms to use for histogram (default: 10)
+    - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
+    - figSize ((width, height)): Size of figure (default: (10,8))
+    - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+    - saveFig (None|'fileName'): File name where to save the figure (default: None)
+    - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
+
 * analysis.plotTraces()
 * analysis.plot2DNet()
 

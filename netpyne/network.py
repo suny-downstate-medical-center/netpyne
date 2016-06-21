@@ -320,7 +320,6 @@ class Network (object):
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
 
-        print connParam['probabilityFunc']
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell

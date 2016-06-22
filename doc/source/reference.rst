@@ -695,8 +695,6 @@ The figure show usage examples for the different analysis functions:
 	:width: 100%
 	:align: center
 
-* ADD FIG SUMMARIZING FIGURES -- FUNC TO GENERATE IT BELOW AND 1 EXAMPLE OF EACH
-
 
 Network, Population and Cell class methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

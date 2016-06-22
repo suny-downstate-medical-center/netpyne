@@ -75,18 +75,10 @@ simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
 
 simConfig['analysis'] = {}
-# simConfig['analysis']['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig['analysis']['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
 simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-# simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-# simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
-simConfig['analysis']['plotSpikeHist']=True
-
-# * **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
-# * **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
-# * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)    
-# * **plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
-# * **analysis.plot2DNet(include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)**
-
+simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
 
 # Create network and run simulation
 sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    

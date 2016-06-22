@@ -603,15 +603,6 @@ Analysis-related functions
     Plot raster (spikes over time) of network cells. Optional arguments:
 
     - *include*: List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    	- 'all': all cells and netstims
-    	- 'allCells': only all cells
-    	- 'allNetStims': only all NetStims
-    	- 120: cell with gid 120
-    	- 'L4': all cells or NetStims in population 'L4'
-    	- ('L2', 56): cell with relative index 56 from population 'L2'
-    	- ('L5', [4,5,6]): cells with relative indices 4,5 and 6 from population 'L5'
-
-
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *maxSpikes*: maximum number of spikes that will be plotted (int)
     - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
@@ -647,7 +638,7 @@ Analysis-related functions
 
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
-    Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
+    Plot recorded traces (specified in ``simConfig['recordTraces'])``. Optional arguments: 
 
     - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
@@ -689,6 +680,17 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handles
+
+
+.. note:: The *include* argument can have the following value:
+	- 'all': all cells and netstims
+	- 'allCells': only all cells
+	- 'allNetStims': only all NetStims
+	- 120: cell with gid 120
+	- 'L4': all cells or NetStims in population 'L4'
+	- ('L2', 56): cell with relative index 56 from population 'L2'
+	- ('L5', [4,5,6]): cells with relative indices 4,5 and 6 from population 'L5'
+
 
 The figure show usage examples for the different analysis functions:
 

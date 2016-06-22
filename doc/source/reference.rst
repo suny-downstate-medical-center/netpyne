@@ -598,29 +598,91 @@ Simulation-related functions
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analysis.plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True):  
+* **analysis.plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)** 
     
-    Raster plot of network cells. Includes the following optional arguments:
+    Plot raster (spikes over time) of network cells. Includes the following optional arguments:
 
-    - include: Cells to include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *include*: Cells to include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *maxSpikes*: maximum number of spikes that will be plotted (int)
+    - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
+    - *orderInverse*: Invert the y-axis order (True|False)
+    - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
+    - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
+    - *syncLines*: calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle
+    
+
+* **analysis.plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)** 
+     
+    Plot spike histogram. Includes the following optional arguments:
+
+    - include: List of data series to include. Note: one line per item, not grouped (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
     - timeRange: Time range of spikes shown; if None shows all ([start:stop])
-    - maxSpikes: maximum number of spikes that will be plotted (int)
-    - orderBy: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
-    - orderInverse: Invert the y-axis order (True|False)
-    - spikeHist : overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
-    - spikeHistBin (int): Size of bin in ms to use for histogram (default: 10)
-    - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
-    - figSize ((width, height)): Size of figure (default: (10,8))
-    - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-    - saveFig (None|'fileName'): File name where to save the figure (default: None)
-    - showFig (True|False): Whether to show the figure or not (default: True)
+    - binSize: Size in ms of each bin (int)
+    - overlay: Whether to overlay the data lines or plot in separate subplots  (True|False)
+    - graphType: Type of graph to use (line graph or bar plot)  ('line'|'bar')
+    - yaxis: Units of y axis (firing rate in Hz, or spike count) ('rate'|'count')
+    - figSize: Size of figure ((width, height))
+    - saveData: File name where to save the final data used to generate the figure (None|'fileName')
+    - saveFig: File name where to save the figure (None|'fileName')
+    - showFig: Whether to show the figure or not (True|False)
 
-        - Returns figure handle
+    - Returns figure handle
+    
+
+* **analysis.plotTraces(include = [], timeRange = None, overlay = True, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)**
+    
+    Plot recorded traces
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
+            the recorded traces (default: [])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
+            or per trace (showing multiple cells) (default: 'cell')
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
     '''
 
 
-* analysis.plotTraces()
-* analysis.plot2DNet()
+def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot network connectivity
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
+            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
+        - groupBy ('pop'|'cell'): Show matrix for individual cells or populations (default: 'pop')
+        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
+        - figSize ((width, height)): Size of figure (default: (10,10))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
+
+* analysis.plot2DNet(include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot 2D representation of network cell positions and connections
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - showConns (True|False): Whether to show connections or not (default: True)
+        - figSize ((width, height)): Size of figure (default: (12,12))
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
 
 
 Network, Population and Cell class methods
@@ -631,10 +693,6 @@ Network, Population and Cell class methods
 	* net.createPops()
 	* net.createCells()
 	* net.connectCells()
-	* net.fullConn()
-	* net.probConn()
-	* net.convConn()
-	* net.divConn()
 
 * Population
 	* pop.createCells()
@@ -648,7 +706,8 @@ Network, Population and Cell class methods
 	* cell.createNEURONObj()
 	* cell.associateGid()
 	* cell.addConn()
-	* cell.addStim()
+	* cell.addNetStim()
+	* cell.addIClamp()	
 	* cell.recordTraces()
 	* cell.recordStimSpikes()
 

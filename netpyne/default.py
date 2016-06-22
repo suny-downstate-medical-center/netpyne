@@ -84,15 +84,3 @@ simConfig['saveDat'] = False # save traces to .dat file(s)
 
 # Analysis and plotting 
 simConfig['analysis'] = {}
-
-# Deprecated (keep for backward-compatibility?)
-simConfig['plotCells'] = [] # plot recorded traces for this list of cells
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotSync'] = False  # add vertical lines for all spikes as an indication of synchrony
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['orderRasterYnorm'] = False # Order cells in raster by yfrac (default is by pop and cell id)
-simConfig['plotLFPSpectrum'] = False # plot power spectral density (not yet implemented)
-simConfig['plot2Dnet'] = False # plot 2D visualization of cell positions and connections
-simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (not yet implemented)
-simConfig['plot3dArch'] = False # plot 3d architecture (not yet implemented)

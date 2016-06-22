@@ -137,7 +137,7 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, 
-        spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+        spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Raster plot of network cells 
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -146,7 +146,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
         - orderInverse (True|False): Invert the y-axis order (default: False)
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
-        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 10)
+        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
@@ -189,6 +189,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell[orderBy] for cell in cells]
         else:
             yorder = [cell['tags'][orderBy] for cell in cells]
+        
+        if orderInverse:yorder.reverse()
         
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
@@ -282,11 +284,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
     maxLabelLen = max([len(l) for l in popLabels])
     subplots_adjust(right=(0.9-0.012*maxLabelLen))
-    
-    # Invert 
-    if orderInverse: 
-        ax = gca()
-        ax.invert_yaxis()
 
     # save figure data
     if saveData:
@@ -413,9 +410,9 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            plot(0,0,color=colorList[i],label=str(subset))
+            plot(0,0,color=colorList[i%len(colorList)],label=str(subset))
         legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-        maxLabelLen = max([len(l) for l in include])
+        maxLabelLen = min(10,max([len(str(l)) for l in include]))
         subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
 
@@ -496,7 +493,10 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                     ylabel(trace, fontsize=fontsiz)
                     xlim(timeRange)
                     if itrace==0: title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    if overlay: legend()
+                    if overlay: 
+                        maxLabelLen = 10
+                        subplots_adjust(right=(0.9-0.012*maxLabelLen))
+                        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
 
     # Plot one fig per cell
@@ -514,16 +514,19 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                         subplot(len(cellGids),1,igid+1)
                         color = 'blue'
                         ylabel(trace, fontsize=fontsiz)
-                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell '+str(gid))
+                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     xlabel('Time (ms)', fontsize=fontsiz)
                     xlim(timeRange)
-                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    if overlay: legend()
+                    title(trace)
+            if overlay:
+                maxLabelLen = 10
+                subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-    try:
-        tight_layout()
-    except:
-        pass
+    # try:
+    #     tight_layout()
+    # except:
+    #     pass
 
     #save figure data
     if saveData:
@@ -805,7 +808,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     if showConns:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], str):
+                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
                     color='red'

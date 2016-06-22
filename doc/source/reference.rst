@@ -598,7 +598,7 @@ Simulation-related functions
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
+* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
     
     Plot raster (spikes over time) of network cells. Optional arguments:
 
@@ -660,7 +660,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
+* **analysis.plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
 
     Plot network connectivity. Optional arguments:
 
@@ -688,6 +688,12 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handles
+
+The figure show usage examples for the different analysis functions:
+
+.. image:: figs/analysis.png
+	:width: 100%
+	:align: center
 
 * ADD FIG SUMMARIZING FIGURES -- FUNC TO GENERATE IT BELOW AND 1 EXAMPLE OF EACH
 

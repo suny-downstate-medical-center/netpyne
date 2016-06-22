@@ -692,7 +692,7 @@ Analysis-related functions
 The figure show usage examples for the different analysis functions:
 
 .. image:: figs/analysis_figs.png
-	:width: 100%
+	:width: 90%
 	:align: center
 
 

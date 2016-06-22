@@ -115,7 +115,7 @@ class Pop (object):
             maxDensity = max(map(densityFunc, (arange(minRange, maxRange, interval))))  # max cell density 
             maxCells = volume * maxDensity  # max number of cells based on max value of density func 
             
-            seed(sim.id32('%d' % sim.cfg['seeds']['loc']))  # reset random number generator
+            seed(sim.id32('%d' % sim.cfg['seeds']['loc']+sim.net.lastGid))  # reset random number generator
             locsAll = minRange + ((maxRange-minRange)) * rand(int(maxCells), 1)  # random location values 
             locsProb = array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)
             allrands = rand(len(locsProb))  # create an array of random numbers for checking each location pos 
@@ -129,7 +129,7 @@ class Pop (object):
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
 
         # calculate locations of cells 
-        seed(sim.id32('%d'%(sim.cfg['seeds']['loc']+self.tags['numCells'])))
+        seed(sim.id32('%d'%(sim.cfg['seeds']['loc']+self.tags['numCells']+sim.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
@@ -141,16 +141,15 @@ class Pop (object):
 
         if sim.cfg['verbose'] and not funcLocs: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
-
         for i in xrange(int(sim.rank), self.tags['numCells'], sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
-            cellTags['ynorm'] = randLocs[i,1]  # calculate x location (um)
+            cellTags['ynorm'] = randLocs[i,1]  # calculate y location (um)
             cellTags['znorm'] = randLocs[i,2]  # calculate z location (um)
             cellTags['x'] = sim.net.params['sizeX'] * randLocs[i,0]  # calculate x location (um)
-            cellTags['y'] = sim.net.params['sizeY'] * randLocs[i,1]  # calculate x location (um)
+            cellTags['y'] = sim.net.params['sizeY'] * randLocs[i,1]  # calculate y location (um)
             cellTags['z'] = sim.net.params['sizeZ'] * randLocs[i,2]  # calculate z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object

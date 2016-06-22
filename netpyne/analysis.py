@@ -122,7 +122,10 @@ def getCellsInclude(include):
         
         elif isinstance(condition, tuple):  # subset of a pop with relative indices
             cellsPop = [c['gid'] for c in allCells if c['tags']['popLabel']==condition[0]]
-            cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            if isinstance(condition[1], list):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            elif isinstance(condition[1], int):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
@@ -431,14 +434,14 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = [], timeRange = None, overlay = True, oneFigPer = 'cell', 
+def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', 
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
             the recorded traces (default: [])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: False)
         - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
             or per trace (showing multiple cells) (default: 'cell')
         - figSize ((width, height)): Size of figure (default: (10,8))
@@ -504,9 +507,9 @@ def plotTraces (include = [], timeRange = None, overlay = True, oneFigPer = 'cel
                     if not overlay:
                         subplot(len(cellGids),1,igid+1)
                         color = 'blue'
+                        ylabel(trace, fontsize=fontsiz)
                     plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell '+str(gid))
                     xlabel('Time (ms)', fontsize=fontsiz)
-                    ylabel(trace, fontsize=fontsiz)
                     xlim(timeRange)
                     title('Cell %d'%(int(gid)))
                     if overlay: legend()

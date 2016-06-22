@@ -195,6 +195,7 @@ simConfig['saveDpk'] = 0 # save to a .dpk pickled file
 simConfig['saveHDF5'] = 0
 simConfig['saveCSV'] = 0
 simConfig['analysis'] = {}
+
 # # Analysis and plotting 
 # simConfig['analysis']['plotRaster']={ 
 #  'maxSpikes':3e8, 

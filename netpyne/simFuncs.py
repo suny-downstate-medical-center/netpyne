@@ -73,10 +73,6 @@ def setSimCfg (cfg):
         if paramName not in cfg:
             cfg[paramName] = paramValue
 
-    for cell in cfg['plotCells']:  # add all cells of plotCell to recordCells
-        if cell not in cfg['recordCells']:
-            cfg['recordCells'].append(cell)
-
     sim.cfg = cfg
 
 def loadSimCfg (paramFile):
@@ -369,7 +365,10 @@ def _getCellsList(include):
         
         elif isinstance(condition, tuple):  # subset of a pop with relative indices
             cellsPop = [c.gid for c in allCells if c.tags['popLabel']==condition[0]]
-            cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            if isinstance(condition[1], list):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            elif isinstance(condition[1], int):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
     cells = [cell for cell in allCells if cell.gid in cellGids]

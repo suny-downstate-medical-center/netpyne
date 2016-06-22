@@ -1,4 +1,4 @@
-from netpyne import init
+from netpyne import sim
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
@@ -76,10 +76,9 @@ simConfig['savePickle'] = False         # Save params, network and sim output to
 simConfig['plotRaster'] = True          # Plot a raster
 simConfig['orderRasterYnorm'] = 1       # Order cells in raster by yfrac (default is by pop and cell id)
 simConfig['plotCells'] = ['E2','E4','E5']    # Plot recorded traces for this list of cells
-simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-
+simConfig['plot2Dnet'] = False           # plot 2D visualization of cell positions and connections
 
 # Create network and run simulation
-init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

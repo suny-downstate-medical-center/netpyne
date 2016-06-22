@@ -132,11 +132,12 @@ netParams['connParams'].append(
 # Sensory
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['P_sh', 'P_el']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
+    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES 
@@ -297,7 +298,7 @@ simConfig = {}  # dictionary to store simConfig
 # Simulation parameters
 simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.1 # Internal integration timestep to use
-simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)ç
+simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
 simConfig['timing'] = True  # show timing  and save to file

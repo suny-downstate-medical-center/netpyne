@@ -1,4 +1,4 @@
-from netpyne import init, utils
+from netpyne import sim, utils
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
@@ -18,12 +18,15 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-
+netParams['synMechParams'] = []
 
 ### HH
 cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
+synMechsImport = []
+utils.importCell(cellRule=cellRule, synMechParams=synMechsImport, fileName='HHCellFile.py', cellName='HHCellClass')
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
+netParams['synMechParams'].extend(synMechsImport)  		
+
 
 ### HH3D
 cellRule = {'label': 'PYR_HH3D_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
@@ -77,7 +80,7 @@ netParams['cellParams'].append(cellRule)
 
 
 ## Synaptic mechanism parameters
-netParams['synMechParams'] = []
+
 netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
  
 
@@ -129,6 +132,6 @@ simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation
-init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

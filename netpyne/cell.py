@@ -316,7 +316,6 @@ class Cell (object):
 
     def addNetStim (self, params):
         self.stims.append(params.copy())  # add new stim to Cell object
-
         if params['source'] == 'random':
             rand = h.Random()
             #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
@@ -341,6 +340,7 @@ class Cell (object):
             netstim.noiseFromRandom(rand)  # use random number generator
             netstim.number = params['number']   
             self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
         return self.stims[-1]['hNetStim']

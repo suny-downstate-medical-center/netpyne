@@ -138,7 +138,7 @@ class Network (object):
             allCellTags = sim.gatherAllCellTags()  
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
-        allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
+        allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
         for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
@@ -296,13 +296,14 @@ class Network (object):
             seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
             connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
-         
+        
         for postCellGid in postCellsTags:  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                     if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        self._addNetStimParams(connParam, preCellTags) # cell method to add connection               
-                    if preCellGid != postCellGid: # if not self-connection
+                        self._addNetStimParams(connParam, preCellTags) # cell method to add connection  
+                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection             
+                    elif preCellGid != postCellGid: # if not self-connection
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -313,7 +314,7 @@ class Network (object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg['verbose']: print 'Generating set of probabilistic connections...'
 
-        seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))  
+        seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[-1]+postCellsTags.keys()[-1])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         # get list of params that have a lambda function
@@ -327,10 +328,11 @@ class Network (object):
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
                   
-                    if probability >= allRands[preCellGid,postCellGid]:
+                    if probability >= allRands[preCellGid,postCellGid]:      
                         seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellGid+preCellGid)))  
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                            self._addNetStimParams(connParam, preCellTags) # cell method to add connection               
+                            self._addNetStimParams(connParam, preCellTags) # cell method to add connection       
+                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection        
                         if preCellGid != postCellGid: # if not self-connection
                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 

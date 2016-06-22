@@ -611,6 +611,7 @@ Analysis-related functions
     	- ('L2', 56): cell with relative index 56 from population 'L2'
     	- ('L5', [4,5,6]): cells with relative indices 4,5 and 6 from population 'L5'
 
+
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *maxSpikes*: maximum number of spikes that will be plotted (int)
     - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)

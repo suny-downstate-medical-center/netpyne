@@ -165,11 +165,16 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Select cells to include
     cells, cellGids, netStimPops = getCellsInclude(include)
-    popLabels = list(set(([cell['tags']['popLabel'] for cell in cells])))+netStimPops
+    selectedPops = [cell['tags']['popLabel'] for cell in cells]+netStimPops
+    popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
-        spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+        try:
+            spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+        except:
+            print 'No spikes available to plot raster'
+            return None
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
 
     # Order by
@@ -462,6 +467,7 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
     tracesList = sim.cfg['recordTraces'].keys()
     tracesList.sort()
     cells, cellGids, _ = getCellsInclude(include)
+    gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
 
     # time range
     if timeRange is None:
@@ -489,7 +495,7 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                     xlabel('Time (ms)', fontsize=fontsiz)
                     ylabel(trace, fontsize=fontsiz)
                     xlim(timeRange)
-                    if itrace==0: title('Cell %d'%(int(gid)))
+                    if itrace==0: title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if overlay: legend()
 
 
@@ -511,7 +517,7 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                     plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell '+str(gid))
                     xlabel('Time (ms)', fontsize=fontsiz)
                     xlim(timeRange)
-                    title('Cell %d'%(int(gid)))
+                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if overlay: legend()
 
     try:
@@ -789,7 +795,8 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
     cells, cellGids, _ = getCellsInclude(include)           
-    popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel'] not in ['NetStim']]
+    selectedPops = [cell['tags']['popLabel'] for cell in cells]
+    popLabels = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
     posX = [cell['tags']['x'] for cell in cells]  # get all x positions

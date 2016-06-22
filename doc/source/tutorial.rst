@@ -424,7 +424,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	  'synMech': 'exc'})                  # synaptic mechanism 
 
 
-We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True``)::
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}```), plot the raster ordered based on cell cortical depth (``simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'} ``), show a 2D visualization of cell positions and connections (``simConfig['analysis']['plot2Dnet']``), and the connectivity matrix (`simConfig['analysis']['plotConn'] = True``) ::
 
 	# Simulation options
 	simConfig = {}
@@ -440,6 +440,7 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'}          # Plot a raster
 	simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}    # Plot recorded traces for this list of cells
 	simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
 
 	# Create network and run simulation
 	sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
@@ -588,7 +589,7 @@ Finally, we add the code to create the network and run the simulation, but for i
 	sim.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.37 (vertical red lines illustrate poor synchrony):
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
 
 .. image:: figs/tut6_1.png
 	:width: 100%
@@ -627,7 +628,7 @@ Given the information above, we can now create a simple function ``changeWeights
 	sim.analysis.plotData()                   # plot spike raster
 
 
-The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.72:
+The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.67:
 
 .. image:: figs/tut6_2.png
 	:width: 70%

@@ -16,6 +16,7 @@
 
 - Fixed bug when generating function-based random probability values -- made random stream independent 
 
+- Fixed bug when generating density-based random cell locations -- made random stream independent (issue #93)
 
 
 ## Version 0.4.8

@@ -58,7 +58,7 @@ simConfig['saveHDF5'] = False # save to HDF5 file
 
 # Analysis and plotting 
 simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = {'orderBy':'y'} # Whether or not to plot a raster
+simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
 simConfig['analysis']['plotTraces'] = {'include': [('IT_L23',1) ,('PT_L5B',1), ('PV_L23',1), ('SOM_L5',1)]} # plot recorded traces for this list of cells
 simConfig['analysis']['plot2Dnet'] = {'showConns': False}
 

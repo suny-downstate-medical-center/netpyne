@@ -638,7 +638,7 @@ Analysis-related functions
 
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
-    Plot recorded traces (specified in ``simConfig['recordTraces'])``. Optional arguments: 
+    Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
 
     - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
@@ -682,7 +682,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-.. note:: The *include* argument can have the following value:
+NOTE: The *include* argument can have the following value:
 	- 'all': all cells and netstims
 	- 'allCells': only all cells
 	- 'allNetStims': only all NetStims

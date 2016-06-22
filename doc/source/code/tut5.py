@@ -73,10 +73,20 @@ simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dic
 simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
-simConfig['plotRaster'] = True          # Plot a raster
-simConfig['orderRasterYnorm'] = 1       # Order cells in raster by yfrac (default is by pop and cell id)
-simConfig['plotCells'] = ['E2','E4','E5']    # Plot recorded traces for this list of cells
-simConfig['plot2Dnet'] = False           # plot 2D visualization of cell positions and connections
+
+simConfig['analysis'] = {}
+# simConfig['analysis']['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
+# simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+# simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
+simConfig['analysis']['plotSpikeHist']=True
+
+# * **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 10, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
+# * **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+# * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)    
+# * **plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
+# * **analysis.plot2DNet(include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)**
+
 
 # Create network and run simulation
 sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    

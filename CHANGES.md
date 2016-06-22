@@ -1,3 +1,24 @@
+## Version 0.4.9
+
+- Modified format of simConfig analysis options to make it equivalent to calling analysis functions (issue #69)
+
+- Improved plotRaster() function to add customizable options (select cells, time range, order, overlay histogram, and others) (issue #39)
+
+- Improved plotTraces() function to add customizable options (select cells, time range, arrage by cell or trace, and others) (issue #39)
+
+- Improved plot2Dnet() function to add customizable options (select cells, show connections, and others) (issue #39)
+
+- Added spikeHist() function to plot spike histogram with customizable options (select cells, time range, bin size, and others) (issue #63)
+
+- Added plotConn() function to plot spike histogram with multiple customizable options (select cells, feature, order, and others) (issue #39)
+
+- Added option to save figure, save figure data, specify figure size, and show figure to all analysis/plotting functions (issue #39)
+
+- Fixed bug when generating function-based random probability values -- made random stream independent 
+
+- Fixed bug when generating density-based random cell locations -- made random stream independent (issue #93)
+
+
 ## Version 0.4.8
 
 - Removed framework and init modules, and consolidated in sim module (so just need: 'from netpyne import sim')

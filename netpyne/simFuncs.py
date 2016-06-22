@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
-'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'readArgs', 'setupRecording', \
+'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'readArgs', 'setupRecording', \
 'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
 
 import sys
@@ -24,7 +24,6 @@ import sim
 ###############################################################################
 
 def initialize (netParams = {}, simConfig = {}, net = None):
-
     sim.simData = {}  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
@@ -49,7 +48,6 @@ def initialize (netParams = {}, simConfig = {}, net = None):
     sim.readArgs()  # read arguments from commandline
 
     sim.timing('stop', 'initialTime')
-    
 
 
 ###############################################################################
@@ -74,10 +72,6 @@ def setSimCfg (cfg):
     for paramName, paramValue in sim.default.simConfig.iteritems():  # set default values
         if paramName not in cfg:
             cfg[paramName] = paramValue
-
-    for cell in cfg['plotCells']:  # add all cells of plotCell to recordCells
-        if cell not in cfg['recordCells']:
-            cfg['recordCells'].append(cell)
 
     sim.cfg = cfg
 
@@ -254,16 +248,16 @@ def _replaceFuncObj (obj):
 ###############################################################################
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
-def _replaceNoneObj (self, obj):
+def replaceNoneObj (obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                _replaceNoneObj(item)
+                replaceNoneObj(item)
 
     elif type(obj) == dict:
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
-                _replaceNoneObj(val)
+                replaceNoneObj(val)
             if val == None:
                 obj[key] = []
             elif val == {}:
@@ -273,7 +267,7 @@ def _replaceNoneObj (self, obj):
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
-def _dict2utf8 (self, obj):
+def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     import collections
     if isinstance(obj, basestring):
@@ -323,31 +317,82 @@ def setupRecording ():
     sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording
+    if 'plotRaster' in sim.cfg['analysis']:
+        if isinstance(sim.cfg['analysis']['plotRaster'],dict) and 'include' in sim.cfg['analysis']['plotRaster']:
+            netStimPops = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel']=='NetStim']+['allNetStims']
+            for item in sim.cfg['analysis']['plotRaster']['include']:
+                if item in netStimPops: 
+                    sim.cfg['recordStim'] = True
+                    break
+
+    if 'plotSpikeHist' in sim.cfg['analysis']:
+        if sim.cfg['analysis']['plotSpikeHist']==True:
+            sim.cfg['recordStim'] = True
+
+        elif (isinstance(sim.cfg['analysis']['plotSpikeHist'],dict) and 'include' in sim.cfg['analysis']['spikeSpikeHist']) :
+            netStimPops = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel']=='NetStim']+['allNetStims', 'eachPop']
+            for item in sim.cfg['analysis']['plotSpikeHist']['include']:
+                if item in netStimPops: 
+                    sim.cfg['recordStim'] = True
+                    break
+                  
     if sim.cfg['recordStim']:
         sim.simData['stims'] = {}
         for cell in sim.net.cells: 
             cell.recordStimSpikes()
 
     # intrinsic cell variables recording
-    if sim.cfg['recordCells']:
+    if sim.cfg['recordTraces']:
+        # get list of cells from argument of plotTraces function
+        if 'plotTraces' in sim.cfg['analysis'] and 'include' in sim.cfg['analysis']['plotTraces']:
+            cellsPlot = _getCellsList(sim.cfg['analysis']['plotTraces']['include'])
+        else:
+            cellsPlot = [] 
+
+        # get actual cell objects to record from, both from recordCell and plotCell lists
+        cellsRecord = _getCellsList(sim.cfg['recordCells'])+cellsPlot
+
         for key in sim.cfg['recordTraces'].keys(): sim.simData[key] = {}  # create dict to store traces
-        for entry in sim.cfg['recordCells']:  # for each entry in recordCells
-            if entry == 'all':  # record all cells
-                for cell in sim.net.cells: cell.recordTraces()
-                break
-            elif isinstance(entry, str):  # if str, record 1st cell of this population
-                if sim.rank == 0:  # only record on node 0
-                    for pop in sim.net.pops:
-                        if pop.tags['popLabel'] == entry and pop.cellGids:
-                            gid = pop.cellGids[0]
-                            for cell in sim.net.cells: 
-                                if cell.gid == gid: cell.recordTraces()
-            elif isinstance(entry, int):  # if int, record from cell with this gid
-                for cell in sim.net.cells: 
-                    if cell.gid == entry: cell.recordTraces()
+        for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+    
     timing('stop', 'setrecordTime')
 
     return sim.simData
+
+###############################################################################
+### Setup Recording
+###############################################################################
+def _getCellsList(include):
+    allCells = sim.net.cells
+    cellGids = []
+    cells = []
+    for condition in include:
+        if condition == 'all':  # all cells + Netstims 
+            cellGids = [c.gid for c in allCells]
+            cells = list(allCells)
+            return cells
+
+        elif condition == 'allCells':  # all cells 
+            cellGids = [c.gid for c in allCells]
+            cells = list(allCells)
+
+        elif isinstance(condition, int):  # cell gid 
+            cellGids.append(condition)
+        
+        elif isinstance(condition, str):  # entire pop
+            cellGids.extend([c.gid for c in allCells if c.tags['popLabel']==condition])
+        
+        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+            cellsPop = [c.gid for c in allCells if c.tags['popLabel']==condition[0]]
+            if isinstance(condition[1], list):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            elif isinstance(condition[1], int):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+
+    cellGids = list(set(cellGids))  # unique values
+    cells = [cell for cell in allCells if cell.gid in cellGids]
+    return cells
+
 
 
 ###############################################################################
@@ -546,7 +591,7 @@ def saveData ():
         if sim.cfg['saveDpk']:
             import gzip
             print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
-            fn=f.cfg['filename'] #.split('.')
+            fn=sim.cfg['filename'] #.split('.')
             gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
             print('Finished saving!')
 
@@ -562,12 +607,12 @@ def saveData ():
         if sim.cfg['saveMat']:
             from scipy.io import savemat 
             print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
-            savemat(sim.cfg['filename']+'.mat', _replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+            savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
             print('Finished saving!')
 
         # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
         if sim.cfg['saveHDF5']:
-            dataSaveUTF8 = _dict2utf8(_replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+            dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
             import hdf5storage
             print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
             hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')

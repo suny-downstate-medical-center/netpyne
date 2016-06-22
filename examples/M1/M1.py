@@ -57,13 +57,10 @@ simConfig['saveHDF5'] = False # save to HDF5 file
 
 
 # Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['orderRasterYnorm'] = 0 # Order cells in raster by yfrac (default is by pop and cell id)
-simConfig['plotCells'] = ['IT_L23','PT_L5B','PV_L23', 'SOM_L5'] # plot recorded traces for this list of cells
-simConfig['plotLFPSpectrum'] = False # plot power spectral density (not yet implemented)
-simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
-
-
+simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
+simConfig['analysis']['plotTraces'] = {'include': [('IT_L23',1) ,('PT_L5B',1), ('PV_L23',1), ('SOM_L5',1)]} # plot recorded traces for this list of cells
+simConfig['analysis']['plot2Dnet'] = {'showConns': False}
 
 ###############################################################################
 # NETWORK PARAMETERS
@@ -72,12 +69,12 @@ simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented
 
 # General network parameters
 netParams['scale'] = 1 # Scale factor for number of cells
-netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
+netParams['sizeX'] = 50 # x-dimension (horizontal length) size in um
 netParams['sizeY'] = 1350 # y-dimension (vertical height or cortical depth) size in um
-netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
+netParams['sizeZ'] = 50 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
-netParams['scaleConnWeight'] = 0.1 # Connection weight scale factor
+netParams['scaleConnWeight'] = 0.05 # Connection weight scale factor
 netParams['scaleConnWeightNetStims'] = 1.0 # Connection weight scale factor for NetStims
 netParams['defaultDelay'] = 2.0 # default conn delay (ms)
 netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
@@ -181,7 +178,7 @@ netParams['connParams'].append({'preTags': {'popLabel': 'background_E'}, # backg
 netParams['connParams'].append({'preTags': {'popLabel': 'background_I'}, # background -> I PV
 'postTags': {'cellType': ['PV']}, 
 'synMech': 'NMDA',
-'weight': 0.1,
+'weight': 0.05,
 'delay': 'gauss(5,3)'}) 
 
 netParams['connParams'].append({'preTags': {'popLabel': 'background_I'}, # background -> I SOM

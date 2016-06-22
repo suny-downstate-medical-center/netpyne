@@ -646,7 +646,7 @@ Analysis-related functions
 
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
-    Plot recorded traces (specified in `simConfig['recordTraces']). Optional arguments: 
+    Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
 
     - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
@@ -676,7 +676,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **analysis.plot2DNet(include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)**
+* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 
@@ -691,7 +691,7 @@ Analysis-related functions
 
 The figure show usage examples for the different analysis functions:
 
-.. image:: figs/analysis.png
+.. image:: figs/analysis_figs.png
 	:width: 100%
 	:align: center
 

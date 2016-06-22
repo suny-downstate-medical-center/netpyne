@@ -682,7 +682,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-NOTE: The *include* argument can have the following value:
+NOTE: The *include* argument can have the following values:
 	- 'all': all cells and netstims
 	- 'allCells': only all cells
 	- 'allNetStims': only all NetStims

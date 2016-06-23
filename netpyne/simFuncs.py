@@ -25,6 +25,10 @@ import sim
 
 def initialize (netParams = {}, simConfig = {}, net = None):
 
+    if 'popParams' in simConfig or 'duration' in netParams:
+        print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
+        sys.exit()
+
     sim.simData = {}  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank

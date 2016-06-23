@@ -24,6 +24,7 @@ import sim
 ###############################################################################
 
 def initialize (netParams = {}, simConfig = {}, net = None):
+
     sim.simData = {}  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
@@ -551,8 +552,14 @@ def gatherData ():
         sim.totalConnections = sum([len(cell['conns']) for cell in sim.net.allCells])   
         sim.numCells = len(sim.net.allCells)
 
-        sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg['duration']*1e3 # Calculate firing rate 
-        sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
+        if sim.totalSpikes > 0:
+            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg['duration']*1e3 # Calculate firing rate 
+        else: 
+            sim.firingRate = 0
+        if sim.numCells > 0:
+            sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
+        else:
+            sim.connsPerCell = 0
         if sim.cfg['timing']: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
         print('  Simulated time: %i-s; %i cells; %i workers' % (sim.cfg['duration']/1e3, sim.numCells, sim.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))

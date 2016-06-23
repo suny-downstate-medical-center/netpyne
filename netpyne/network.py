@@ -38,6 +38,7 @@ class Network (object):
     ###############################################################################
     def createPops (self):
         self.pops = []  # list to store populations ('Pop' objects)
+        
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 

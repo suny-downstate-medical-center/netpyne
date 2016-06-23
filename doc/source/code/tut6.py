@@ -41,7 +41,7 @@ netParams['connParams'] = []
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
+    'weight': 0.1,                    # fixed weight of 0.1
     'synMech': 'exc',                 # target exc synapse
     'delay': 1})                      # uniformly distributed delays between 1-5ms
 

@@ -20,6 +20,7 @@ Table of Contents
    tutorial
    reference
    advanced
+   publications
 
 
 

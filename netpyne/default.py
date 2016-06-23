@@ -68,7 +68,7 @@ simConfig['verbose'] = False  # show detailed messages
 simConfig['recordCells'] = []  # what cells to record from (eg. 'all', 5, or 'PYR')
 simConfig['recordTraces'] = {}  # Dict of traces to record 
 simConfig['recordStim'] = False  # record spikes of cell stims
-simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 simConfig['filename'] = 'model_output'  # Name of file to save model output

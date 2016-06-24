@@ -24,7 +24,7 @@ f.sim.setupRecording()              # setup variables to record for each cell (s
 
 # Arm parameters
 f.useArm = 1  # include arm in simulation
-f.animArm = 1  # show arm animation
+f.animArm = 0  # show arm animation
 f.graphsArm = 1  #  plot arm graphs
 f.updateInterval = 20  # delay between arm updated (ms)
 f.initArmMovement = 50  # time at which to start moving arm (ms)
@@ -165,5 +165,8 @@ f.analysis.plotData()               # plot spike raster
 f.arm.close(f)
 
 if f.plotWeights:
-    saveWeights(f) 
-    plotWeights() 
+    try:
+        saveWeights(f)
+        plotWeights()
+    except :
+        pass

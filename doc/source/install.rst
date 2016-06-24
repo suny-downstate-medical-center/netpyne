@@ -26,3 +26,4 @@ To install the the package run ``pip install netpyne``
 If you need to install ``pip`` go to `this link <https://pip.pypa.io/en/stable/installing/>`_
 
 The NetPyNE package source files, as well as example models, are available via github at: https://github.com/Neurosim-lab/netpyne
+

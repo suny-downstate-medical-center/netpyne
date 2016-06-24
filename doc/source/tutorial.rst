@@ -637,4 +637,6 @@ The resulting plots show that the increased mutual inhibitions synchronizes the 
 
 The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
+An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
+
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

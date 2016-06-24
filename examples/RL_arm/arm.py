@@ -275,26 +275,32 @@ class Arm:
 
         cellPranges = {}
         currentPval = f.minPval  
+        self.angs_sh = []
         for cellGid in f.pop_sh: # set angle range of each cell tuned to shoulder 
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
+            self.angs_sh.append(currentPval)
             currentPval += angInterval
+        self.angs_sh.append(currentPval)
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: # set angle range of each cell tuned to shoulder 
             cell.prange = cellPranges[cell.gid]
 
         cellPranges = {}
         currentPval = f.minPval
+        self.angs_el = []
         for cellGid in f.pop_el: # set angle range of each cell tuned to elbow
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
+            self.angs_el.append(currentPval)
             currentPval += angInterval
+        self.angs_el.append(currentPval)
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]: # set angle range of each cell tuned to shoulder 
             cell.prange = cellPranges[cell.gid]
             
-        cells_sh = [c for c in f.net.cells if c.gid in f.pop_sh]
-        cells_el = [c for c in f.net.cells if c.gid in f.pop_el]
-        self.angs_sh = [cell.prange[0] for cell in cells_sh] + [cells_sh[-1].prange[-1]]
-        self.angs_el = [cell.prange[0] for cell in cells_el] + [cells_el[-1].prange[-1]]
+#        cells_sh = [c for c in f.net.cells if c.gid in f.pop_sh]
+#        cells_el = [c for c in f.net.cells if c.gid in f.pop_el]
+#        self.angs_sh = [cell.prange[0] for cell in cells_sh] + [cells_sh[-1].prange[-1]]
+#        self.angs_el = [cell.prange[0] for cell in cells_el] + [cells_el[-1].prange[-1]]
         
         if f.gridTrain:
             self.ang = [(self.angs_sh[0]+self.angs_sh[1])/2,(self.angs_el[0]+self.angs_el[1])/2]         

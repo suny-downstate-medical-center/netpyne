@@ -1,3 +1,9 @@
+## Version 0.5.0
+
+- Connectivity matrix can now be grouped by numeric tags in intervals (eg. cortical depth y in 50 um intervals) (issue #92)
+
+- 
+
 ## Version 0.4.9
 
 - Modified format of simConfig analysis options to make it equivalent to calling analysis functions (issue #69)

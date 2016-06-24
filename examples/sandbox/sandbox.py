@@ -76,13 +76,17 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 # Stimulation parameters
-# netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-# netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 100, 'dur': 100, 'amp': 5})
-# netParams['stimParams']['stimList'].append({
-# 	'source': 'Input_1', 
-# 	'sec':'soma', 
-# 	'loc': 0.5, 
-# 	'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
+netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 100, 'dur': 100, 'amp': 5})
+netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 100, 'tau': 100, 'gmax': 5, 'e': 0, 'i': 5})
+#netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 100, 'number': 100, 'start': 5, 'noise': 0.5})
+
+netParams['stimParams']['stimList'].append({
+	'source': 'Input_2', 
+	'sec':'soma', 
+	'loc': 0.5, 
+	'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
 
 
 # Connectivity parameters

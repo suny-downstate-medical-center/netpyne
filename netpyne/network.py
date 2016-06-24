@@ -111,15 +111,11 @@ class Network (object):
                 for postCellGid in postCellsTags:  # for each postsyn cell
                     if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                         postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
-                        params = {'type': source['type'],
-                                'label': source['label'],
-                                'sec': stim['sec'], 
-                                'loc': stim['loc'],
-                                'delay': source['delay'],
-                                'dur': source['dur'],
-                                'amp': source['amp']}
-                        if source['type'] == 'IClamp':
-                            postCell.addIClamp(params)  # call cell method to add connections
+                        params = {'sec': stim['sec'], 'loc': stim['loc']} # copy stim params
+                        for sourceParam in source: # copy source params
+                            params[sourceParam] = source[sourceParam]
+
+                        postCell.addStim(params)  # call cell method to add connections
 
             sim.timing('stop', 'stimsTime')
 

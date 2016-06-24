@@ -160,25 +160,16 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 	
-	* **syns**: Dictionary of synaptic mechanisms (point processes). 
-		The key contains an arbitrary label for the synaptic mechanism (e.g. 'AMPA').
-		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
-		
-		Note that properties that are not internal variables of the point process are denoted with an underscore:
-
-		* ``_type``, the name of the NEURON mechanism, e.g. ``'Exp2Syn'``.
-		* ``_loc``, section location where to place synaptic mechanism, e.g. 1.0, default=0.5.
-	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
 		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
 		
-		Note that properties that are not internal variables of the point process are denoted with an underscore: 
+		Apart from internal point process variables, the following properties can be specified for each point process:
 
-		* ``_type``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``_loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
-		* ``_vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
-		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
+		* ``mod``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
+		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
+		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
+		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
@@ -213,7 +204,7 @@ Example of two cell property rules::
 
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict

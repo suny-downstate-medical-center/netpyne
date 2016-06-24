@@ -511,7 +511,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	# Population parameters
 	netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 	netParams['popParams'].append({'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
-	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5, 'source': 'random'})  # background inputs
+	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5})  # background inputs
 
 	# Cell parameters
 	netParams['cellParams'] = []

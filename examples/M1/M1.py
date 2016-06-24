@@ -96,8 +96,8 @@ netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', '
 netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': 10e3}) #  L5 SOM (LTS)
 netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 PV (FS)
 netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 SOM (LTS)
-netParams['popParams'].append({'popLabel': 'background_E', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'source': 'random'})  # background inputs to Exc
-netParams['popParams'].append({'popLabel': 'background_I', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'source': 'random'})  # background inputs to Inh
+netParams['popParams'].append({'popLabel': 'background_E', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Exc
+netParams['popParams'].append({'popLabel': 'background_I', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Inh
 
 
 ## Izhi cell params (used in cell properties)

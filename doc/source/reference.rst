@@ -119,8 +119,6 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **source** - Source of noise (optional; currently set to ``random`` by default, which is the only option implemented)
-
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
 
 Example of NetStim population::

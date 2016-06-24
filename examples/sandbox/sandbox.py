@@ -32,8 +32,8 @@ netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType':
 netParams['popParams'].append({'popLabel': 'PYR2', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
 netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
-netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'source': 'random', 'seed':2})  # background inputs
+netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'seed':2})  # background inputs
+netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'seed':2})  # background inputs
 
 
 # Synaptic mechanism parameters

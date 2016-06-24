@@ -112,6 +112,11 @@ class Network (object):
                     if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                         postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
                         params = {'sec': stim['sec'], 'loc': stim['loc']} # copy stim params
+
+                        if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
+                            params['weight'] = stim['weight'] if 'weight' in stim else 1.0  # default weight
+                            params['delay'] = stim['delay'] if 'delay' in stim else 1.0  # default delay
+                        
                         for sourceParam in source: # copy source params
                             params[sourceParam] = source[sourceParam]
 
@@ -168,7 +173,6 @@ class Network (object):
                     for prePop in prePops.values():
                         if not 'start' in prePop: prePop['start'] = 5  # add default start time
                         if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
-                        if not 'source' in prePop: prePop['source'] = 'random'  # add default source
                     preCellsTags = prePops
             
             if preCellsTags:  # only check post if there are pre
@@ -438,7 +442,6 @@ class Network (object):
         'type': preCellTags['cellModel'],
         'rate': preCellTags['rate'],
         'noise': preCellTags['noise'],
-        'source': preCellTags['source'], 
         'number': preCellTags['number'],
         'start': preCellTags['start'],
         'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg['seeds']['stim']}

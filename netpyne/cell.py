@@ -316,30 +316,29 @@ class Cell (object):
 
     def addNetStim (self, params):
         self.stims.append(params.copy())  # add new stim to Cell object
-        if params['source'] == 'random':
-            rand = h.Random()
-            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
-            #rand.negexp(1)
-            self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
+        rand = h.Random()
+        #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
+        #rand.negexp(1)
+        self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
-            if isinstance(params['rate'], str):
-                if params['rate'] == 'variable':
-                    try:
-                        netstim = h.NSLOC()
-                        netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                        netstim.noise = params['noise']
-                    except:
-                        print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
-                else:
-                    print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
+        if isinstance(params['rate'], str):
+            if params['rate'] == 'variable':
+                try:
+                    netstim = h.NSLOC()
+                    netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
+                    netstim.noise = params['noise']
+                except:
+                    print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
             else:
-                netstim = h.NetStim()
-                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-                netstim.noise = params['noise']
-                netstim.start = params['start']
-            netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
-            netstim.number = params['number']   
-            self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+                print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
+        else:
+            netstim = h.NetStim()
+            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+            netstim.noise = params['noise']
+            netstim.start = params['start']
+        netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
+        netstim.number = params['number']   
+        self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
@@ -362,21 +361,42 @@ class Cell (object):
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
         if params['type'] == 'NetStim':
-            pass # addNetStim with appropriate params
+            print params
+            connParams = {'preGid': params['type'], 
+                'sec': params.get('sec'), 
+                'loc': params.get('loc'), 
+                'synMech': params.get('synMech'), 
+                'weight': params.get('weight'),
+                'delay': params.get('delay'),
+                'threshold': params.get('threshold'),
+                'synsPerConn': params.get('synsPerConn'),
+                'plasticity': params.get('plasticity')}
+            netStimParams = {'label': params['label'],
+                'type': params['type'],
+                'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
+                'noise': params['noise'],
+                'number': params['number'],
+                'start': params['start'],
+                'seed': params['seed'] if 'seed' in params else sim.cfg['seeds']['stim']}
+        
+            self.addConn(connParams, netStimParams)
+       
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+            stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
-                print stim, stimParamName, stimParamValue
                 if isinstance(stimParamValue, list):
-                    setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                    pass
+                    #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
+                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
-            if sim.cfg['verbose']: print('Created IClamp postGid=%d, sec=%s, loc=%.4g, amp=%.4g, delay=%.4g, dur=%.4g'%
-                (self.gid, params['sec'], params['loc'], params['amp'], params['delay'], params['dur']))
+            if sim.cfg['verbose']: print('Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+                (params['label'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
 
 

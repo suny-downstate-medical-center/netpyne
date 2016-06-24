@@ -25,7 +25,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 netParams['scaleConnWeight'] = 0.001 # Connection weight scale factor
 
 pnum = 5
-cscale = 1
+cscale = 4
 mscale = 1
 
 # Population parameters

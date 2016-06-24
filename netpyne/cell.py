@@ -237,9 +237,16 @@ class Cell (object):
 
 
     def addConn (self, params, netStimParams = None):
+
+        if params.get('threshold') is None: params['threshold'] = sim.net.params['defaultThreshold']  # if no threshold specified, set default
+        if params.get('weight') is None: params['weight'] = sim.net.params['defaultWeight'] # if no weight, set default
+        if params.get('delay') is None: params['delay'] = sim.net.params['defaultDelay'] # if no delay, set default
+        if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
+        if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
+
         # Avoid self connections
         if params['preGid'] == self.gid:
-            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
             return  # if self-connection return
 
         # Get list of section labels
@@ -388,6 +395,7 @@ class Cell (object):
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):
+                    print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 else: 
@@ -402,7 +410,7 @@ class Cell (object):
 
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
-        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+        if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg['verbose']: print 'Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -416,7 +424,7 @@ class Cell (object):
             secLabels = [params['sec']]
 
         # if sectionList or list of sections
-        elif isinstance(params['sec'], list) or params['sec'] in self.secLists:
+        elif isinstance(params.get('sec'), list) or params.get('sec') in self.secLists:
             secList = list(params['sec']) if isinstance(params['sec'], list) else list(self.secLists[params['sec']])
             secLabels = []
             for i,section in enumerate(secList): 
@@ -459,11 +467,11 @@ class Cell (object):
                 if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if 'synList' in pointpParams:
-                        if params['synMech'] in pointpParams['synList']: 
-                            if isinstance(params['synMech'], list):
-                                weightIndex = [pointpParams['synList'].index(synMech) for synMech in params['synMech']]
+                        if params.get('synMech') in pointpParams['synList']: 
+                            if isinstance(params.get('synMech'), list):
+                                weightIndex = [pointpParams['synList'].index(synMech) for synMech in params.get('synMech')]
                             else:
-                                weightIndex = pointpParams['synList'].index(params['synMech'])  # udpate weight index based pointp synList
+                                weightIndex = pointpParams['synList'].index(params.get('synMech'))  # udpate weight index based pointp synList
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
             if sim.cfg['verbose']: print 'Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
@@ -473,7 +481,7 @@ class Cell (object):
 
     def _setConnSynMechs (self, params, secLabels):
         synsPerConn = params['synsPerConn']
-        if not params['synMech']:
+        if not params.get('synMech'):
             if sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel

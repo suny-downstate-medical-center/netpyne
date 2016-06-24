@@ -144,14 +144,7 @@ class Network (object):
 
         for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
-            if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
-            if 'threshold' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, set default
-            if 'weight' not in connParam: connParam['weight'] = self.params['defaultWeight'] # if no weight, set default
-            if 'delay' not in connParam: connParam['delay'] = self.params['defaultDelay'] # if no delay, set default
-            if 'loc' not in connParam: connParam['loc'] = 0.5 # if no loc, set default
-            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no synsPerConn, set default
-
+            
             preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
             prePops = allPopTags  # initialize with all presyn pops
 
@@ -171,8 +164,8 @@ class Network (object):
             if not preCellsTags: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     for prePop in prePops.values():
-                        if not 'start' in prePop: prePop['start'] = 5  # add default start time
-                        if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
+                        if not 'start' in prePop: prePop['start'] = 1  # add default start time
+                        if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
                     preCellsTags = prePops
             
             if preCellsTags:  # only check post if there are pre
@@ -461,34 +454,34 @@ class Network (object):
             elif param+'Func' in connParam:
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
             else:
-                finalParam[param] = connParam[param]
+                finalParam[param] = connParam.get(param)
 
         # get Cell object 
         postCell = self.cells[self.gid2lid[postCellGid]] 
 
         # convert synMech param to list (if not already)
-        if not isinstance(connParam['synMech'], list):
-            connParam['synMech'] = [connParam['synMech']]
+        if not isinstance(connParam.get('synMech'), list):
+            connParam['synMech'] = [connParam.get('synMech')]
 
         # generate dict with final params for each synMech
         paramPerSynMech = ['weight', 'delay', 'loc']
-        for i, synMech in enumerate(connParam['synMech']):
+        for i, synMech in enumerate(connParam.get('synMech')):
 
             for param in paramPerSynMech:
-                finalParam[param+'SynMech'] = finalParam[param]
+                finalParam[param+'SynMech'] = finalParam.get(param)
                 if len(connParam['synMech']) > 1:
-                    if isinstance (finalParam[param], list):  # get weight from list for each synMech
+                    if isinstance (finalParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
                     elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
                         finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
 
             params = {'preGid': preCellGid, 
-            'sec': connParam['sec'], 
+            'sec': connParam.get('sec'), 
             'loc': finalParam['locSynMech'], 
             'synMech': synMech, 
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],
-            'threshold': connParam['threshold'],
+            'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             

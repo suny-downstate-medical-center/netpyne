@@ -306,7 +306,7 @@ simConfig['seeds'] = {'conn': 2, 'stim': 2, 'loc': 2} # Seeds for randomizers (c
 simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
 simConfig['timing'] = True  # show timing  and save to file
-simConfig['verbose'] = True # show detailed messages 
+simConfig['verbose'] = False # show detailed messages 
 
 # Recording 
 simConfig['recordCells'] = ['all']  # list of cells to record from 

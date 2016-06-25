@@ -82,11 +82,11 @@ netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClam
 netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 100, 'tau': 100, 'gmax': 5, 'e': 0, 'i': 5})
 netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 100, 'number': 100, 'start': 5, 'noise': 0.5})
 
-# netParams['stimParams']['stimList'].append({
-#     'source': 'Input_3', 
-#     'sec':'soma', 
-#     'loc': 0.5, 
-#     'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
+netParams['stimParams']['stimList'].append({
+    'source': 'Input_3', 
+    'sec':'soma', 
+    'loc': 0.5, 
+    'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
 
 netParams['stimParams']['stimList'].append({
 	'source': 'Input_4', 

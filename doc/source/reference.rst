@@ -506,42 +506,77 @@ Stimulation
 
 The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (eg. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
 
-The ``sourceList`` containing the following fields:
+Each item of the ``sourceList`` list contains the following fields:
 
-* **preTags** - Set of conditions for the presynaptic cells. 
-	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
+	* **label** - Arbitrary label to reference this stimulation source when mapping to cells (e.g. 'electrode_current')
 
-	Values can be lists
+	* **type** - Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'.
 
+		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
 
+	* **stim params** (optional)- These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
 
-# Stimulation parameters
-netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
-netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
-netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
-
-netParams['stimParams']['stimList'].append({
-    'source': 'Input_1', 
-    'sec':'soma', 
-    'loc': 0.5, 
-    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
 
-netParams['stimParams']['stimList'].append({
-    'source': 'Input_3', 
-    'sec':'soma', 
-    'loc': 0.5, 
-    'conditions': {'popLabel':'PYR2'}})
+Each item of the ``stimList`` list contains the following fields:
 
-netParams['stimParams']['stimList'].append({
-	'source': 'Input_4', 
-	'sec':'soma', 
-	'loc': 0.5, 
-    'weight': '0.1+gauss(0.2,0.05)',
-    'delay': 1,
-	'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+	* **source** - Label of the stimulation source (e.g. 'electrode_current')
+
+	* **conditions** - Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+
+	* **sec** (optional) - Target section (default: 'soma')
+
+	* **loc** (optional) - Target location (default: 0.5)
+
+	* **weight** (optional; only for NetStims) - (default: 1)
+
+	* **delay** (optional; only for NetStims) - (default: 1)
+
+	* **synsPerConn** (optional; only for NetStims) - (default: 1)
+
+
+
+The code below shows an example of how to create different types of stimulation and map them to different subsets of cells:
+
+.. code-block:: python
+
+	# Stimulation parameters
+	netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+
+	## Stimulation sources parameters
+	netParams['stimParams']['sourceList'].append({'label': 'Input_1', 
+		'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_2',
+		 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_3', 
+		'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_4', 
+		'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+
+	## Stimulation mapping parameters
+	netParams['stimParams']['stimList'].append({
+	    'source': 'Input_1', 
+	    'sec':'soma', 
+	    'loc': 0.5, 
+	    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+
+	netParams['stimParams']['stimList'].append({
+	    'source': 'Input_3', 
+	    'sec':'soma', 
+	    'loc': 0.5, 
+	    'conditions': {'cellType':'Basket'}})
+
+	netParams['stimParams']['stimList'].append({
+		'source': 'Input_4', 
+		'sec':'soma', 
+		'loc': 0.5, 
+	    'weight': '0.1+gauss(0.2,0.05)',
+	    'delay': 1,
+		'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
 
 
 

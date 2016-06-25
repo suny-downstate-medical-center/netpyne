@@ -93,7 +93,7 @@ netParams['stimParams']['stimList'].append({
     'source': 'Input_3', 
     'sec':'soma', 
     'loc': 0.5, 
-    'conditions': {'popLabel':'PYR2'}})
+    'conditions': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
 
 netParams['stimParams']['stimList'].append({
 	'source': 'Input_4', 

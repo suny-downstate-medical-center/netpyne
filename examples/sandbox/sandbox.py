@@ -57,8 +57,8 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 ## Cell property rules
 cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'secLists': {}}     # cell rule dict
 soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
-soma['geom'] = {'diam': 10.8, 'L': 10.8}                                   # soma geometry
-soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanisms
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'cm':1}                                   # soma geometry
+soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54}          # soma hh mechanisms
 # dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
 # dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
 # dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
@@ -77,24 +77,31 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Stimulation parameters
 netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 100, 'dur': 100, 'amp': 5})
+netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
 netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
-netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 100, 'tau': 100, 'gmax': 5, 'e': 0, 'i': 5})
-netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 100, 'number': 100, 'start': 5, 'noise': 0.5})
+netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+
+netParams['stimParams']['stimList'].append({
+    'source': 'Input_1', 
+    'sec':'soma', 
+    'loc': 0.5, 
+    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+
 
 netParams['stimParams']['stimList'].append({
     'source': 'Input_3', 
     'sec':'soma', 
     'loc': 0.5, 
-    'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
+    'conditions': {'popLabel':'PYR2'}})
 
 netParams['stimParams']['stimList'].append({
 	'source': 'Input_4', 
 	'sec':'soma', 
 	'loc': 0.5, 
-    'weight': 0.2,
+    'weight': '0.1+gauss(0.2,0.05)',
     'delay': 1,
-	'conditions': {'popLabel':'PYR', 'cellList': [0,1]}})
+	'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
 
 
 # Connectivity parameters
@@ -123,13 +130,13 @@ netParams['connParams'] = []
 #     'threshold': 10,                    # threshold
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
-    'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'threshold': 10,                    # threshold
-    'convergence': 10})
-    #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
+#     'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'threshold': 10,                    # threshold
+#     'convergence': 10})
+#     #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
 # netParams['connParams'].append(
@@ -167,11 +174,11 @@ netParams['connParams'].append(
 
 
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+# netParams['connParams'].append(
+#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'weight': 0.1,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
 
@@ -192,8 +199,8 @@ simConfig['verbose'] = 1 #False  # show detailed messages
 
 # Recording 
 simConfig['recordCells'] = [1,2]  # which cells to record from
-simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
-'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
+simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+#'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -207,6 +214,8 @@ simConfig['saveDpk'] = 0 # save to a .dpk pickled file
 simConfig['saveHDF5'] = 0
 simConfig['saveCSV'] = 0
 simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True
+simConfig['analysis']['plotTraces'] = {'include': [1,('PYR2',1)], 'oneFigPer':'trace'}
 
 # # Analysis and plotting 
 # simConfig['analysis']['plotRaster']={ 

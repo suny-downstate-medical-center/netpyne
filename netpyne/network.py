@@ -132,7 +132,7 @@ class Network (object):
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else stim.get('delay', 1.0)
                         
                         for sourceParam in source: # copy source params
-                            params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else stim.get(sourceParam)
+                            params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
 
                         postCell.addStim(params)  # call cell method to add connections
 
@@ -168,7 +168,7 @@ class Network (object):
                 dictVars[k] = v
 
         # for each parameter containing a function, calculate lambda function and arguments
-        strParams = []
+        strParams = {}
         for paramStrFunc in paramsStrFunc:
             strFunc = params[paramStrFunc]  # string containing function
             strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
@@ -183,7 +183,7 @@ class Network (object):
             seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellsTags.keys()[0])))
 
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            strParams[paramStrFunc+'List'] = {(postGid): params[paramStrFunc](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].iteritems()})  
+            strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].iteritems()})  
                     for postGid,postCellTags in postCellsTags.iteritems()}
 
         return strParams

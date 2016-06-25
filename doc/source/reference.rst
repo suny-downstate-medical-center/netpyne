@@ -521,31 +521,31 @@ Each item of the ``sourceList`` list contains the following fields:
 
 Each item of the ``stimList`` list contains the following fields:
 
-	* **source** - Label of the stimulation source (e.g. 'electrode_current')
+	* **source** - Label of the stimulation source (e.g. 'electrode_current').
 
 	* **conditions** - Dictionary with conditions of cells where the stim will be applied. 
 
-	Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
 
 	* **sec** (optional) - Target section (default: 'soma')
 
-	Can be defined as a function (see :ref:`function_string`)
+		Can be defined as a function (see :ref:`function_string`)
 
 	* **loc** (optional) - Target location (default: 0.5)
 
-	Can be defined as a function (see :ref:`function_string`)
+		Can be defined as a function (see :ref:`function_string`)
 
 	* **weight** (optional; only for NetStims) - (default: 1)
 
-	Can be defined as a function (see :ref:`function_string`)
+		Can be defined as a function (see :ref:`function_string`)
 
 	* **delay** (optional; only for NetStims) - (default: 1)
 
-	Can be defined as a function (see :ref:`function_string`)
+		Can be defined as a function (see :ref:`function_string`)
 
 	* **synsPerConn** (optional; only for NetStims) - (default: 1)
 
-	Can be defined as a function (see :ref:`function_string`)
+		Can be defined as a function (see :ref:`function_string`)
 
 
 

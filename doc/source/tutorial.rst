@@ -81,6 +81,8 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
+* ``stimParams`` - dict with stimulation parameters. 
+
 .. image:: figs/netparams.png
 	:width: 40%
 	:align: center
@@ -90,9 +92,12 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
+* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
 * creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
+* add stimulation to the cells based on ``stimParams``.
+
 
 The image below illustrates this process:
 

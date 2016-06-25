@@ -24,20 +24,28 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``popParams`` - list of populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules and their associated parameters (e.g. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
 
 * ``synMechParams`` - list of synaptic mechanisms and their parameters
 
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
+* ``stimParams`` - dict with stimulation parameters. 
+
+.. image:: figs/netparams.png
+	:width: 40%
+	:align: center
+
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
 
-* creates a ``Network`` object and adding inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
+* creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
+* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
 * creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
+* add stimulation to the cells based on ``stimParams``.
 
 
 The image below illustrates this process:
@@ -491,6 +499,53 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 
 .. _sim_config: 
+
+
+Stimulation
+^^^^^^^^^^^^^^^^^^^
+
+The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (eg. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
+
+The ``sourceList`` containing the following fields:
+
+* **preTags** - Set of conditions for the presynaptic cells. 
+	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
+
+	Values can be lists
+
+
+
+# Stimulation parameters
+netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+
+netParams['stimParams']['stimList'].append({
+    'source': 'Input_1', 
+    'sec':'soma', 
+    'loc': 0.5, 
+    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+
+
+netParams['stimParams']['stimList'].append({
+    'source': 'Input_3', 
+    'sec':'soma', 
+    'loc': 0.5, 
+    'conditions': {'popLabel':'PYR2'}})
+
+netParams['stimParams']['stimList'].append({
+	'source': 'Input_4', 
+	'sec':'soma', 
+	'loc': 0.5, 
+    'weight': '0.1+gauss(0.2,0.05)',
+    'delay': 1,
+	'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+
+
+
+
 
 Simulation configuration
 --------------------------

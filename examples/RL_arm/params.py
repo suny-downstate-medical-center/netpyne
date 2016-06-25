@@ -136,34 +136,36 @@ netParams['connParams'].append(
 # Sensory
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES (plastic?)
+    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
-    'synMech': 'AMPA'})#,
-#    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
+    'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES 
+    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES  (plastic)
     'weight': 1.98,      
     'probability': 0.05625,              
     'delay': 5,     
-    'synMech': 'AMPA'})
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'IS'},  # ES -> IS
+    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'IS'},  # ES -> IS (plastic)
     'weight': 0.48375,      
     'probability': 1.150,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ISL'},  # ES -> ISL
+    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ISL'},  # ES -> ISL (plastic)
     'weight': 0.57375,      
     'probability': 0.575,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'EM'},  # ES -> EM (plastic)
@@ -219,36 +221,39 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'ES'},  # EM -> ES 
+    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'ES'},  # EM -> ES (plastic)
     'weight': 0.72,      
     'probability': 0.01125,              
     'delay': 5,     
-    'synMech': 'AMPA'})#,
-#    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
 
 
 # Motor
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'EM'},  # EM -> EM 
+    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'EM'},  # EM -> EM (plastic)
     'weight': 1.782,      
     'probability': 0.05625,              
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IM'},  # EM -> IM 
+    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IM'},  # EM -> IM (plastic)
     'weight': 1.15,      
     'probability': 0.48375,          
     'delay': 5,     
-    'synMech': 'AMPA'}) 
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IML'},  # EM -> IML
+    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IML'},  # EM -> IML (plastic)
     'weight': 0.575,      
     'probability': 0.57375,              
     'delay': 5,     
-    'synMech': 'AMPA'})  
+    'synMech': 'AMPA',
+    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
     {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'EM'},  # IM -> EM

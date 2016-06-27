@@ -108,7 +108,7 @@ simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (c
 simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
 simConfig['timing'] = True  # show timing  and save to file
-simConfig['verbose'] = False # show detailed messages 
+simConfig['verbose'] = 1# False # show detailed messages 
 
 
 # Recording 
@@ -116,8 +116,8 @@ simConfig['recordCells'] = []  # list of cells to record from
 simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
-    'AMPA_g': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'g'},
-    'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'}}
+    'AMPA_g': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'g'},
+    'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
 simConfig['recordStim'] = True  # record spikes of cell stims
 simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -132,11 +132,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [1,51] # plot recorded traces for this list of cells
-simConfig['plotLFPSpectrum'] = False # plot power spectral density
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3dArch'] = False # plot 3d architecture
+simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
+simConfig['analysis']['plotTraces'] = {'include': [1,51]} # plot recorded traces for this list of cells
 

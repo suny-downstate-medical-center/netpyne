@@ -1,4 +1,4 @@
-from netpyne import init
+from netpyne import sim
 
 # Network parameters
 netParams = {}  # dictionary to store sets of network parameters
@@ -35,7 +35,7 @@ netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popL
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
-	'loc': '1.0',				# location of synapse
+	'loc': 1.0,				# location of synapse
 	'synMech': 'exc'})   		# target synaptic mechanism
 netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
@@ -52,12 +52,14 @@ simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dic
 simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig['filename'] = 'model_output'  # Set file output name
 simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
-simConfig['plotRaster'] = True 			# Plot a raster
-simConfig['plotCells'] = [1]	 		# Plot recorded traces for this list of cells
-simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+
+simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True 			# Plot a raster
+simConfig['analysis']['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
+simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation
-init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

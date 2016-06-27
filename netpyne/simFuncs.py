@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
 'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'setupRecording', \
-'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
+'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2', 'version', 'gitversion']
 
 import sys
 from time import time
@@ -814,6 +814,21 @@ def timing (mode, processName):
         elif mode == 'stop':
             sim.timingData[processName] = time() - sim.timingData[processName]
             
+
+###############################################################################
+### Print netpyne version
+###############################################################################
+def version():
+    import netpyne 
+    print netpyne.__version__
+
+###############################################################################
+### Print github version
+###############################################################################
+def gitversion():
+    import os
+    os.system('git log -1') 
+
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2

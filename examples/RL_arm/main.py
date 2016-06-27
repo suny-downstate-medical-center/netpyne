@@ -74,8 +74,8 @@ sim.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
 sim.gridTrain = False
-sim.trialTime = 1.5*1e3
-sim.trainTime = 3 * sim.trialTime
+sim.trialTime = 0.5*1e3
+sim.trainTime = 2 * sim.trialTime
 sim.testTime = 1 * sim.trialTime
 sim.cfg['duration'] = sim.trainTime + sim.testTime
 sim.numTrials = ceil(sim.cfg['duration']/sim.trialTime)

@@ -144,69 +144,69 @@ def _loadFile (filename):
 
     ext = filename.split('.')[1]
 
-    # Save to pickle file
-    if ext == 'pkl':
-        import pickle
-        print('Saving output as %s ... ' % (sim.cfg['filename']+'.pkl'))
-        with open(sim.cfg['filename']+'.pkl', 'wb') as fileObj:
-            pickle.dump(dataSave, fileObj)
-        print('Finished saving!')
+    # # Save to pickle file
+    # if ext == 'pkl':
+    #     import pickle
+    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.pkl'))
+    #     with open(sim.cfg['filename']+'.pkl', 'wb') as fileObj:
+    #         pickle.dump(dataSave, fileObj)
+    #     print('Finished saving!')
 
-    # Save to dpk file
-    elif ext == 'dpk':
-        import gzip
-        print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
-        fn=sim.cfg['filename'] #.split('.')
-        gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
-        print('Finished saving!')
+    # # Save to dpk file
+    # elif ext == 'dpk':
+    #     import gzip
+    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
+    #     fn=sim.cfg['filename'] #.split('.')
+    #     gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
+    #     print('Finished saving!')
 
-    # Save to json file
-    elif ext == 'json':
-        import json
-        print('Saving output as %s ... ' % (sim.cfg['filename']+'.json '))
-        with open(sim.cfg['filename']+'.json', 'w') as fileObj:
-            json.dump(dataSave, fileObj)
-        print('Finished saving!')
+    # # Save to json file
+    # elif ext == 'json':
+    #     import json
+    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.json '))
+    #     with open(sim.cfg['filename']+'.json', 'w') as fileObj:
+    #         json.dump(dataSave, fileObj)
+    #     print('Finished saving!')
 
-    # Save to mat file
-    elif ext == 'mat':
-        from scipy.io import savemat 
-        print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
-        savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-        print('Finished saving!')
+    # # Save to mat file
+    # elif ext == 'mat':
+    #     from scipy.io import savemat 
+    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
+    #     savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+    #     print('Finished saving!')
 
-    # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-    elif ext == 'saveHDF5':
-        dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
-        import hdf5storage
-        print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
-        hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
-        print('Finished saving!')
+    # # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
+    # elif ext == 'saveHDF5':
+    #     dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+    #     import hdf5storage
+    #     print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
+    #     hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
+    #     print('Finished saving!')
 
-    # Save to CSV file (currently only saves spikes)
-    elif ext == 'csv':
-        import csv
-        print('Saving output as %s ... ' % (sim.cfg['filename']+'.csv'))
-        writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
-        for dic in dataSave['simData']:
-            for values in dic:
-                writer.writerow(values)
-        print('Finished saving!')
+    # # Save to CSV file (currently only saves spikes)
+    # elif ext == 'csv':
+    #     import csv
+    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.csv'))
+    #     writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
+    #     for dic in dataSave['simData']:
+    #         for values in dic:
+    #             writer.writerow(values)
+    #     print('Finished saving!')
 
-    # Save to Dat file(s) 
-    elif ext == 'dat': 
-        traces = sim.cfg['recordTraces']
-        for ref in traces.keys():
-            for cellid in sim.allSimData[ref].keys():
-                dat_file_name = '%s_%s.dat'%(ref,cellid)
-                dat_file = open(dat_file_name, 'w')
-                trace = sim.allSimData[ref][cellid]
-                print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
-                for i in range(len(trace)):
-                    dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
+    # # Save to Dat file(s) 
+    # elif ext == 'dat': 
+    #     traces = sim.cfg['recordTraces']
+    #     for ref in traces.keys():
+    #         for cellid in sim.allSimData[ref].keys():
+    #             dat_file_name = '%s_%s.dat'%(ref,cellid)
+    #             dat_file = open(dat_file_name, 'w')
+    #             trace = sim.allSimData[ref][cellid]
+    #             print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+    #             for i in range(len(trace)):
+    #                 dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
 
-    else:
-        print 'Format not recognized for file %s'%(filename)
+    # else:
+    #     print 'Format not recognized for file %s'%(filename)
 
 
 ###############################################################################
@@ -714,7 +714,7 @@ def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
         
-        if not include: include = sim.cfg['dataSaveInclude']
+        if not include: include = sim.cfg['saveDataInclude']
         dataSave = {}
         net = {}
 

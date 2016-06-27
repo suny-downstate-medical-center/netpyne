@@ -164,5 +164,8 @@ sim.analysis.plotData()               # plot spike raster
 sim.arm.close(sim)
 
 if sim.plotWeights:
-    saveWeights(sim) 
-    plotWeights() 
+    try:
+        saveWeights(sim) 
+        plotWeights()
+    except:
+        print('Plotting/saving weights failed')

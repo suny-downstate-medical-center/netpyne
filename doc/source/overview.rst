@@ -68,6 +68,20 @@ Major Features
 	* Can export/import to/from NeuroML, the standard format for neural models.
 
 
+Questions, suggestions and contributions
+-----------------------------------------
+
+NetPyNE is currently being developed and supported by the Neurosim lab (http://neurosimlab.org) .
+
+NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
+
+For questions or suggestions please add an Issue to github. 
+
+For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes.
+
+For further information please contact salvadordura@gmail.com.
+
+
 Publications
 -------------
 

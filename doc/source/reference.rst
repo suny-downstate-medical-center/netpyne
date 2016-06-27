@@ -498,8 +498,6 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
-.. _sim_config: 
-
 
 Stimulation
 ^^^^^^^^^^^^^^^^^^^
@@ -586,7 +584,7 @@ The code below shows an example of how to create different types of stimulation 
 
 
 
-
+.. _sim_config: 
 
 Simulation configuration
 --------------------------
@@ -614,6 +612,7 @@ Related to recording:
 
 Related to file saving:
 
+* **saveDataInclude** = Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
 * **filename** - Name of file to save model output (default: 'model_output')
 * **timestampFilename**  - Add timestamp to filename to avoid overwriting (default: False)
 * **savePickle** - Save data to pickle file (default: False)

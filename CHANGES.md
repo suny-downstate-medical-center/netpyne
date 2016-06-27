@@ -1,3 +1,11 @@
+## Version 0.5.1
+
+- Added option 'dataSaveInclude' to select what data to save to file (issue #30)
+
+- Added sim.net.allPops which contains all cellGids of each when running on >1 nodes (issue #30)
+
+- Fixed bug so plotRaster() is indetical when running on >1 nodes 
+
 ## Version 0.5.0
 
 - Connectivity matrix can now be grouped by numeric tags in intervals (eg. cortical depth y in 50 um intervals) (issue #92)

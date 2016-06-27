@@ -129,7 +129,7 @@ def getCellsInclude(include):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = [cell for cell in allCells if cell['gid'] in cellGids]
+    cells = sorted([cell for cell in allCells if cell['gid'] in cellGids])
 
     return cells, cellGids, netStimPops
 
@@ -190,11 +190,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell[orderBy] for cell in cells]
         else:
             yorder = [cell['tags'][orderBy] for cell in cells]
-        
-        if orderInverse:yorder.reverse()
+
+        if orderInverse: yorder.reverse()
         
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
+        
     else:
         spkts = []
         spkinds = []

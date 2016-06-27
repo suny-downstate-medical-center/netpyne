@@ -24,8 +24,13 @@ class Network (object):
     def __init__ (self, params = None):
         self.params = params
 
-        # params that can be expressed using string-based functions
-        self.stringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
+        # params that can be expressed using string-based functions in connections
+        self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
+
+        # params that can be expressed using string-based functions in stims
+        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
+        'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
+
 
     ###############################################################################
     # Set network params
@@ -38,6 +43,7 @@ class Network (object):
     ###############################################################################
     def createPops (self):
         self.pops = []  # list to store populations ('Pop' objects)
+        
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
@@ -101,28 +107,87 @@ class Network (object):
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
                     else:
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
-                    
+                
+                # subset of cells from selected pops (by relative indices)                     
                 if 'cellList' in stim['conditions']:
                     orderedPostGids = sorted(postCellsTags.keys())
                     gidList = [orderedPostGids[i] for i in stim['conditions']['cellList']]
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
 
+                # calculate params if string-based funcs
+                strParams = self._stimStrToFunc(postCellsTags, source, stim)
+
+                # loop over postCells and add stim
                 for postCellGid in postCellsTags:  # for each postsyn cell
                     if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                         postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
-                        params = {'type': source['type'],
-                                'label': source['label'],
-                                'sec': stim['sec'], 
-                                'loc': stim['loc'],
-                                'delay': source['delay'],
-                                'dur': source['dur'],
-                                'amp': source['amp']}
-                        if source['type'] == 'IClamp':
-                            postCell.addIClamp(params)  # call cell method to add connections
+
+                        # stim params
+                        params = {}
+                        params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else stim['sec']
+                        params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else stim['loc']
+                         
+                        if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
+                            params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else stim.get('weight', 1.0)
+                            params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else stim.get('delay', 1.0)
+                        
+                        for sourceParam in source: # copy source params
+                            params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
+
+                        postCell.addStim(params)  # call cell method to add connections
 
             sim.timing('stop', 'stimsTime')
 
             return [cell.stims for cell in self.cells]
+
+
+
+    ###############################################################################
+    # Convert stim param string to function
+    ###############################################################################
+    def _stimStrToFunc (self, postCellsTags, sourceParams, stimParams):
+        # list of params that have a function passed in as a string
+        #params = sourceParams+stimParams
+        params = sourceParams.copy()
+        params.update(stimParams)
+
+        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams if param in params and isinstance(params[param], str)]  
+
+        # dict to store correspondence between string and actual variable
+        dictVars = {}   
+        dictVars['post_x']      = lambda postTags: postTags['x'] 
+        dictVars['post_y']      = lambda postTags: postTags['y'] 
+        dictVars['post_z']      = lambda postTags: postTags['z'] 
+        dictVars['post_xnorm']  = lambda postTags: postTags['xnorm'] 
+        dictVars['post_ynorm']  = lambda postTags: postTags['ynorm'] 
+        dictVars['post_znorm']  = lambda postTags: postTags['znorm'] 
+         
+        # add netParams variables
+        for k,v in self.params.iteritems():
+            if isinstance(v, Number):
+                dictVars[k] = v
+
+        # for each parameter containing a function, calculate lambda function and arguments
+        strParams = {}
+        for paramStrFunc in paramsStrFunc:
+            strFunc = params[paramStrFunc]  # string containing function
+            strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
+            lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
+            lambdaFunc = eval(lambdaStr)
+
+            # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
+            params[paramStrFunc+'Func'] = lambdaFunc
+            params[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
+ 
+            # initialize randomizer in case used in function
+            seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+postCellsTags.keys()[0])))
+
+            # replace lambda function (with args as dict of lambda funcs) with list of values
+            strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].iteritems()})  
+                    for postGid,postCellTags in postCellsTags.iteritems()}
+
+        return strParams
+
 
 
     ###############################################################################
@@ -142,14 +207,7 @@ class Network (object):
 
         for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
-            if 'sec' not in connParam: connParam['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'synMech' not in connParam: connParam['synMech'] = None  # if synaptic mechanism not specified, make None (will be assigned to first synaptic mechanism in cell)  
-            if 'threshold' not in connParam: connParam['threshold'] = self.params['defaultThreshold']  # if no threshold specified, set default
-            if 'weight' not in connParam: connParam['weight'] = self.params['defaultWeight'] # if no weight, set default
-            if 'delay' not in connParam: connParam['delay'] = self.params['defaultDelay'] # if no delay, set default
-            if 'loc' not in connParam: connParam['loc'] = 0.5 # if no loc, set default
-            if 'synsPerConn' not in connParam: connParam['synsPerConn'] = 1 # if no synsPerConn, set default
-
+            
             preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
             prePops = allPopTags  # initialize with all presyn pops
 
@@ -169,9 +227,8 @@ class Network (object):
             if not preCellsTags: # if no presyn cells, check if netstim
                 if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
                     for prePop in prePops.values():
-                        if not 'start' in prePop: prePop['start'] = 5  # add default start time
-                        if not 'number' in prePop: prePop['number'] = 1e12  # add default number 
-                        if not 'source' in prePop: prePop['source'] = 'random'  # add default source
+                        if not 'start' in prePop: prePop['start'] = 1  # add default start time
+                        if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
                     preCellsTags = prePops
             
             if preCellsTags:  # only check post if there are pre
@@ -194,7 +251,7 @@ class Network (object):
 
                 connFunc = getattr(self, connParam['connFunc'])  # get function name from params
                 if preCellsTags and postCellsTags:
-                    self._strToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
+                    self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                     connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
@@ -205,11 +262,11 @@ class Network (object):
         return [cell.conns for cell in self.cells]
 
     ###############################################################################
-    # Convert string to function
+    # Convert connection param string to function
     ###############################################################################
-    def _strToFunc (self, preCellsTags, postCellsTags, connParam):
+    def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
-        paramsStrFunc = [param for param in self.stringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+        paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  
@@ -289,7 +346,7 @@ class Network (object):
         if sim.cfg['verbose']: print 'Generating set of all-to-all connections...'
 
         # get list of params that have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
@@ -318,7 +375,7 @@ class Network (object):
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         # get list of params that have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
@@ -345,7 +402,7 @@ class Network (object):
         if sim.cfg['verbose']: print 'Generating set of convergent connections...'
                
         # get list of params that have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
@@ -374,7 +431,7 @@ class Network (object):
         if sim.cfg['verbose']: print 'Generating set of divergent connections...'
          
         # get list of params that have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
@@ -402,7 +459,7 @@ class Network (object):
         if sim.cfg['verbose']: print 'Generating set of connections from list...'
 
         # list of params that can have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.stringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
             seed(sim.id32('%d'%(sim.cfg['seeds']['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
@@ -441,7 +498,6 @@ class Network (object):
         'type': preCellTags['cellModel'],
         'rate': preCellTags['rate'],
         'noise': preCellTags['noise'],
-        'source': preCellTags['source'], 
         'number': preCellTags['number'],
         'start': preCellTags['start'],
         'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg['seeds']['stim']}
@@ -453,7 +509,7 @@ class Network (object):
     ###############################################################################
     def _addCellConn (self, connParam, preCellGid, postCellGid):
         # set final param values
-        paramStrFunc = self.stringFuncParams
+        paramStrFunc = self.connStringFuncParams
         finalParam = {}
         for param in paramStrFunc:
             if param+'List' in connParam:
@@ -461,34 +517,34 @@ class Network (object):
             elif param+'Func' in connParam:
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
             else:
-                finalParam[param] = connParam[param]
+                finalParam[param] = connParam.get(param)
 
         # get Cell object 
         postCell = self.cells[self.gid2lid[postCellGid]] 
 
         # convert synMech param to list (if not already)
-        if not isinstance(connParam['synMech'], list):
-            connParam['synMech'] = [connParam['synMech']]
+        if not isinstance(connParam.get('synMech'), list):
+            connParam['synMech'] = [connParam.get('synMech')]
 
         # generate dict with final params for each synMech
         paramPerSynMech = ['weight', 'delay', 'loc']
-        for i, synMech in enumerate(connParam['synMech']):
+        for i, synMech in enumerate(connParam.get('synMech')):
 
             for param in paramPerSynMech:
-                finalParam[param+'SynMech'] = finalParam[param]
+                finalParam[param+'SynMech'] = finalParam.get(param)
                 if len(connParam['synMech']) > 1:
-                    if isinstance (finalParam[param], list):  # get weight from list for each synMech
+                    if isinstance (finalParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
                     elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
                         finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
 
             params = {'preGid': preCellGid, 
-            'sec': connParam['sec'], 
+            'sec': connParam.get('sec'), 
             'loc': finalParam['locSynMech'], 
             'synMech': synMech, 
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],
-            'threshold': connParam['threshold'],
+            'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             

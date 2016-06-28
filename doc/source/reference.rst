@@ -538,13 +538,26 @@ Related to file saving:
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
 
+.. _sim_config_analysis:
 
 Related to plotting and analysis:
+
+* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (eg. ``sim.createAndSimulate()``).
+
+	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig['analysis'][funcName] = kwargs``
+
+	E.g. ``simConfig['analysis']['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
+
+	E.g. ``simConfig['analysis']['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include = ['PYR'], timeRange = [200,600], saveFig = 'PYR_raster.png')``
+
+	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`
+
 
 * **plotRaster** - Whether or not to plot a raster (default: True)
 * **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
 * **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
 * **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
+
 * **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
 * **plot2Dnet** - plot 2D visualization of cell positions and connections (default: False)
 * **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
@@ -580,12 +593,110 @@ Simulation-related functions
 * **sim.exportNeuroML2()**
 
 
-Analysis-related methods
+.. _analysis_functions:
+
+Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* analysis.plotRaster()
-* analysis.plotTraces()
-* analysis.plot2DNet()
+* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
+    
+    Plot raster (spikes over time) of network cells. Optional arguments:
+
+    - *include*: List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *maxSpikes*: maximum number of spikes that will be plotted (int)
+    - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
+    - *orderInverse*: Invert the y-axis order (True|False)
+    - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
+    - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
+    - *syncLines*: calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle
+    
+
+* **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+     
+    Plot spike histogram. Optional arguments:
+
+    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *binSize*: Size in ms of each bin (int)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
+    - *graphType*: Type of graph to use (line graph or bar plot)  ('line'|'bar')
+    - *yaxis*: Units of y axis (firing rate in Hz, or spike count) ('rate'|'count')
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle
+    
+
+* **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+    
+    Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
+
+    - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots (True|False)
+    - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace')
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+
+
+* **analysis.plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
+
+    Plot network connectivity. Optional arguments:
+
+    - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *feature*: Feature to show in connectivity matrix; the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns'; 'strength' = weight * probability ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence')
+    - *groupBy*: Show matrix for individual cells or populations ('pop'|'cell')
+    - *orderBy*: Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') ('gid'|'y'|'ynorm'|...)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+
+
+* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)
+
+    Plot 2D representation of network cell positions and connections. Optional arguments:
+
+    - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *showConns*: Whether to show connections or not (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+
+
+NOTE: The *include* argument can have the following values:
+	- 'all': all cells and netstims
+	- 'allCells': only all cells
+	- 'allNetStims': only all NetStims
+	- 120: cell with gid 120
+	- 'L4': all cells or NetStims in population 'L4'
+	- ('L2', 56): cell with relative index 56 from population 'L2'
+	- ('L5', [4,5,6]): cells with relative indices 4,5 and 6 from population 'L5'
+
+
+The figure show usage examples for the different analysis functions:
+
+.. image:: figs/analysis_figs.png
+	:width: 90%
+	:align: center
 
 
 Network, Population and Cell class methods
@@ -596,10 +707,6 @@ Network, Population and Cell class methods
 	* net.createPops()
 	* net.createCells()
 	* net.connectCells()
-	* net.fullConn()
-	* net.probConn()
-	* net.convConn()
-	* net.divConn()
 
 * Population
 	* pop.createCells()
@@ -613,7 +720,8 @@ Network, Population and Cell class methods
 	* cell.createNEURONObj()
 	* cell.associateGid()
 	* cell.addConn()
-	* cell.addStim()
+	* cell.addNetStim()
+	* cell.addIClamp()	
 	* cell.recordTraces()
 	* cell.recordStimSpikes()
 

@@ -88,11 +88,10 @@ simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat 
 
 
 # Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [0] # plot recorded traces for this list of cells
-simConfig['plotLFPSpectrum'] = False # plot power spectral density
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plot2Dnet'] = True           # Plot recorded traces for this list of cells
+simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True # Plot raster
+simConfig['analysis']['plotTraces'] = {'include': [2]} # Plot raster
+simConfig['analysis']['plot2Dnet'] = True # Plot 2D net cells and connections
 
 
 

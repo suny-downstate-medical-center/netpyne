@@ -424,7 +424,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	  'synMech': 'exc'})                  # synaptic mechanism 
 
 
-We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True``)::
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}```), plot the raster ordered based on cell cortical depth (``simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'} ``), show a 2D visualization of cell positions and connections (``simConfig['analysis']['plot2Dnet']``), and the connectivity matrix (`simConfig['analysis']['plotConn'] = True``) ::
 
 	# Simulation options
 	simConfig = {}
@@ -435,10 +435,12 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
-	simConfig['plotRaster'] = True          # Plot a raster
-	simConfig['orderRasterYnorm'] = 1       # Order cells in raster by yfrac (default is by pop and cell id)
-	simConfig['plotCells'] = ['E2','E4','E5']    # Plot recorded traces for this list of cells
-	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	
+	simConfig['analysis'] = {}				# Initialize dict for analysis options
+	simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'}          # Plot a raster
+	simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}    # Plot recorded traces for this list of cells
+	simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
 
 	# Create network and run simulation
 	sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
@@ -543,7 +545,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	    'delay': 5})       				    # delay 
 
 
-We now add the standard simulation configuration options, and include the ``plotSync`` so that raster plots shown vertical lines at for each spike as an indication of synchrony::
+We now add the standard simulation configuration options, and include the ``syncLines`` option so that raster plots shown vertical lines at for each spike as an indication of synchrony::
 
 	###############################################################################
 	# SIMULATION PARAMETERS
@@ -559,10 +561,11 @@ We now add the standard simulation configuration options, and include the ``plot
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
-	simConfig['plotRaster'] = True 			# Plot a raster
-	simConfig['plotSync'] = True  # add vertical lines for all spikes as an indication of synchrony
-	simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
-	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+
+	simConfig['analysis'] = {}									# Initialize dict for analysis options
+	simConfig['analysis']['plotRaster'] = {'syncLines': True} 	# Plot a raster with vertical synchrony lines
+	simConfig['analysis']['plotCells'] = {'include': [1]} 		# Plot recorded traces for this list of cells
+	simConfig['analysis']['plot2Dnet'] = True           		# plot 2D visualization of cell positions and connections
 
 
 Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``sim.createAndSimulate()`` function used before)::
@@ -586,7 +589,7 @@ Finally, we add the code to create the network and run the simulation, but for i
 	sim.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.37 (vertical red lines illustrate poor synchrony):
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
 
 .. image:: figs/tut6_1.png
 	:width: 100%
@@ -625,7 +628,7 @@ Given the information above, we can now create a simple function ``changeWeights
 	sim.analysis.plotData()                   # plot spike raster
 
 
-The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.72:
+The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.67:
 
 .. image:: figs/tut6_2.png
 	:width: 70%

@@ -132,11 +132,7 @@ simConfig['saveDpk'] = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotCells'] = [1,51] # plot recorded traces for this list of cells
-simConfig['plotLFPSpectrum'] = False # plot power spectral density
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['plotConn'] = False # whether to plot conn matrix
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (shown in conn matrix)
-simConfig['plot3dArch'] = False # plot 3d architecture
+simConfig['analysis'] = {}
+simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
+simConfig['analysis']['plotTraces'] = {'include': [1,51]} # plot recorded traces for this list of cells
 

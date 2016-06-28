@@ -1,1 +1,5 @@
-mpiexec -n 8 python main.py
+for i in `seq 1 10`;
+do
+    echo "Training step: $i"
+    mpiexec -n 2 python main.py
+done

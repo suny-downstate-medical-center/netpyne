@@ -190,10 +190,10 @@ class Cell (object):
                 sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
                 loc = 0.5
             nc = None
-            if 'pointps' in sec:  # if no syns, check if point processes with '_vref' (artificial cell)
+            if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                 for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if '_vref' in pointpParams:
-                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['_vref']), None, sec=sec['hSection'])
+                    if 'vref' in pointpParams:
+                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSection'])
                         break
             if not nc:  # if still haven't created netcon  
                 nc = h.NetCon(sec['hSection'](loc)._ref_v, None, sec=sec['hSection'])
@@ -237,9 +237,16 @@ class Cell (object):
 
 
     def addConn (self, params, netStimParams = None):
+
+        if params.get('threshold') is None: params['threshold'] = sim.net.params['defaultThreshold']  # if no threshold specified, set default
+        if params.get('weight') is None: params['weight'] = sim.net.params['defaultWeight'] # if no weight, set default
+        if params.get('delay') is None: params['delay'] = sim.net.params['defaultDelay'] # if no delay, set default
+        if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
+        if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
+
         # Avoid self connections
         if params['preGid'] == self.gid:
-            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params['sec'])
+            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
             return  # if self-connection return
 
         # Get list of section labels
@@ -316,38 +323,93 @@ class Cell (object):
 
     def addNetStim (self, params):
         self.stims.append(params.copy())  # add new stim to Cell object
-        if params['source'] == 'random':
-            rand = h.Random()
-            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
-            #rand.negexp(1)
-            self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
+        rand = h.Random()
+        #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
+        #rand.negexp(1)
+        self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
 
-            if isinstance(params['rate'], str):
-                if params['rate'] == 'variable':
-                    try:
-                        netstim = h.NSLOC()
-                        netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                        netstim.noise = params['noise']
-                    except:
-                        print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
-                else:
-                    print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
+        if isinstance(params['rate'], str):
+            if params['rate'] == 'variable':
+                try:
+                    netstim = h.NSLOC()
+                    netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
+                    netstim.noise = params['noise']
+                except:
+                    print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
             else:
-                netstim = h.NetStim()
-                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-                netstim.noise = params['noise']
-                netstim.start = params['start']
-            netstim.noiseFromRandom(rand)  # use random number generator
-            netstim.number = params['number']   
-            self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+                print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
+        else:
+            netstim = h.NetStim()
+            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+            netstim.noise = params['noise']
+            netstim.start = params['start']
+        netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
+        netstim.number = params['number']   
+        self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
         return self.stims[-1]['hNetStim']
 
+
+    def addStim (self, params):
+        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+            if sim.cfg['verbose']: print 'Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available'%(self.gid)
+            if 'soma' in self.secs:  
+                params['sec'] = 'soma'  # use 'soma' if exists
+            elif self.secs:  
+                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
+            else:  
+                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add stim'%(self.gid)
+                return 
+
+        sec = self.secs[params['sec']]
+        
+        if not 'loc' in params: params['loc'] = 0.5  # default stim location 
+
+        if params['type'] == 'NetStim':
+            connParams = {'preGid': params['type'], 
+                'sec': params.get('sec'), 
+                'loc': params.get('loc'), 
+                'synMech': params.get('synMech'), 
+                'weight': params.get('weight'),
+                'delay': params.get('delay'),
+                'threshold': params.get('threshold'),
+                'synsPerConn': params.get('synsPerConn'),
+                'plasticity': params.get('plasticity')}
+            netStimParams = {'label': params['label'],
+                'type': params['type'],
+                'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
+                'noise': params['noise'],
+                'number': params['number'],
+                'start': params['start'],
+                'seed': params['seed'] if 'seed' in params else sim.cfg['seeds']['stim']}
+        
+            self.addConn(connParams, netStimParams)
+       
+
+        elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+            stringParams = ''
+            for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
+                if isinstance(stimParamValue, list):
+                    print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
+                    pass
+                    #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                else: 
+                    setattr(stim, stimParamName, stimParamValue)
+                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+            self.stims.append(params) # add to python structure
+            self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
+            if sim.cfg['verbose']: print('Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+                (params['label'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
+
+
+
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
-        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+        if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg['verbose']: print 'Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -361,7 +423,7 @@ class Cell (object):
             secLabels = [params['sec']]
 
         # if sectionList or list of sections
-        elif isinstance(params['sec'], list) or params['sec'] in self.secLists:
+        elif isinstance(params.get('sec'), list) or params.get('sec') in self.secLists:
             secList = list(params['sec']) if isinstance(params['sec'], list) else list(self.secLists[params['sec']])
             secLabels = []
             for i,section in enumerate(secList): 
@@ -399,16 +461,16 @@ class Cell (object):
     def _setConnPointP(self, params, secLabels, weightIndex):
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
-        if len(secLabels)==1 and 'pointps' in self.secs[secLabels[0]]:  #  check if point processes with '_vref' (artificial cell)
+        if len(secLabels)==1 and 'pointps' in self.secs[secLabels[0]]:  #  check if point processes with 'vref' (artificial cell)
             for pointpName, pointpParams in self.secs[secLabels[0]]['pointps'].iteritems():
-                if '_vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
+                if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
-                    if '_synList' in pointpParams:
-                        if params['synMech'] in pointpParams['_synList']: 
-                            if isinstance(params['synMech'], list):
-                                weightIndex = [pointpParams['_synList'].index(synMech) for synMech in params['synMech']]
+                    if 'synList' in pointpParams:
+                        if params.get('synMech') in pointpParams['synList']: 
+                            if isinstance(params.get('synMech'), list):
+                                weightIndex = [pointpParams['synList'].index(synMech) for synMech in params.get('synMech')]
                             else:
-                                weightIndex = pointpParams['_synList'].index(params['synMech'])  # udpate weight index based pointp synList
+                                weightIndex = pointpParams['synList'].index(params.get('synMech'))  # udpate weight index based pointp synList
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
             if sim.cfg['verbose']: print 'Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
@@ -418,7 +480,7 @@ class Cell (object):
 
     def _setConnSynMechs (self, params, secLabels):
         synsPerConn = params['synsPerConn']
-        if not params['synMech']:
+        if not params.get('synMech'):
             if sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
@@ -479,35 +541,6 @@ class Cell (object):
                     if sim.cfg['verbose']: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
-
-
-    def addIClamp (self, params):
-        if not params['sec'] or not params['sec'] in self.secs:  # if no section specified or section specified doesnt exist
-            if 'soma' in self.secs:  
-                params['sec'] = 'soma'  # use 'soma' if exists
-            elif self.secs:  
-                params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-                for secName, secParams in self.secs.iteritems():              # replace with first section that includes synaptic mechanism
-                    if 'synMechs' in secParams:
-                        if secParams['synMechs']:
-                            params['sec'] = secName
-                            break
-            else:  
-                print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
-                return  # if no Sections available print error and exit
-        sec = self.secs[params['sec']]
-        
-        if not 'loc' in params: params['loc'] = 0.5  # default synMech location 
-
-        iclamp = h.IClamp(sec['hSection'](params['loc']))  # create Netcon between global gid and local point neuron
-        iclamp.amp = params['amp']
-        iclamp.delay = params['delay']
-        iclamp.dur = params['dur']
-
-        self.stims.append(params)
-        self.stims[-1]['hIClamp'] = iclamp  # add netcon object to dict in conns list
-        if sim.cfg['verbose']: print('Created IClamp postGid=%d, sec=%s, loc=%.4g, amp=%.4g, delay=%.4g, dur=%.4g'%
-            (self.gid, params['sec'], params['loc'], params['amp'], params['delay'], params['dur']))
 
 
     def recordTraces (self):

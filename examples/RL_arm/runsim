@@ -1,1 +1,10 @@
-mpiexec -n 8 python main.py
+#!/bin/bash
+
+r=5
+p=2
+mpiexec -n $p nrniv -python -mpi main.py
+for i in `seq 1 $r`;
+do
+    echo "Training step: $i"
+    mpiexec -n $p nrniv -python -mpi main.py
+done

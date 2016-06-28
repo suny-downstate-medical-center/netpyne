@@ -58,7 +58,7 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2003a (independent voltage)
 cellRule = {'label': 'PYR_Izhi03a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
-cellRule['sections']['soma']['pointps']['Izhi2003a_0']['_vref'] = 'V' # specify that uses its own voltage V
+cellRule['sections']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2003b (section voltage)
@@ -69,8 +69,8 @@ netParams['cellParams'].append(cellRule)
 ### Izhi2007a (independent voltage)
 cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
 utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
-cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
-cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
+cellRule['sections']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
+cellRule['sections']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007b (section voltage)

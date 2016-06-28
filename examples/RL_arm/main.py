@@ -55,7 +55,7 @@ sim.useRL = 1
 sim.timeoflastRL = -1
 sim.RLinterval = 50
 sim.minRLerror = 0.002 # minimum error change for RL (m)
-#sim.targetid = 1 # initial target 
+sim.targetid = 1 # initial target 
 sim.allWeights = [] # list to store weights
 sim.weightsfilename = 'weights.txt'  # file to store weights
 sim.plotWeights = 1  # plot weights
@@ -74,13 +74,13 @@ sim.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
 sim.gridTrain = False
-sim.trialTime = 15*1e3
-sim.trainTime = 10 * sim.trialTime
+sim.trialTime = 1*1e3
+sim.trainTime = 1 * sim.trialTime
 sim.testTime = 1 * sim.trialTime
 sim.cfg['duration'] = sim.trainTime + sim.testTime
 sim.numTrials = ceil(sim.cfg['duration']/sim.trialTime)
 sim.numTargets = 1
-sim.targetid = 2 # target to train+test
+sim.targetid = 3 # target to train+test
 sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
 sim.resetids = []
 

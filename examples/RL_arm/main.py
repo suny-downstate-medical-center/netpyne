@@ -24,7 +24,7 @@ sim.setupRecording()              # setup variables to record for each cell (spi
 
 # Arm parameters
 sim.useArm = 1  # include arm in simulation
-sim.animArm = 1  # show arm animation
+sim.animArm = 0  # show arm animation
 sim.graphsArm = 1  #  plot arm graphs
 sim.updateInterval = 20  # delay between arm updated (ms)
 sim.initArmMovement = 50  # time at which to start moving arm (ms)
@@ -69,16 +69,20 @@ sim.randseed = 5  # random seed
 
 # reset arm every trial
 sim.trialReset = True # whether to reset the arm after every trial time
+sim.oneLastReset = False
 sim.timeoflastreset = 0 # time when arm was last reseted
 
 # train/test params
-sim.trainTime = 1 * 1e3
-sim.testTime = 1 * 1e3
+sim.gridTrain = False
+sim.trialTime = 1*1e3
+sim.trainTime = 1 * sim.trialTime
+sim.testTime = 1 * sim.trialTime
 sim.cfg['duration'] = sim.trainTime + sim.testTime
-sim.numTrials = ceil(sim.cfg['duration']/1e3)
+sim.numTrials = ceil(sim.cfg['duration']/sim.trialTime)
 sim.numTargets = 1
 sim.targetid = 3 # target to train+test
 sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
+sim.resetids = []
 
 # create Arm class and setup
 if sim.useArm:
@@ -160,5 +164,8 @@ sim.analysis.plotData()               # plot spike raster
 sim.arm.close(sim)
 
 if sim.plotWeights:
-    saveWeights(sim) 
-    plotWeights() 
+    try:
+        saveWeights(sim) 
+        plotWeights()
+    except:
+        print('Plotting/saving weights failed')

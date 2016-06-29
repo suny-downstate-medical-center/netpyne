@@ -10,6 +10,8 @@
 
 - Fixed bugs so plotRaster() is identical when running on >1 nodes, and is ordered by gid correctly 
 
+- Fixed bug so can have multiple plot function calls even when one of them is False 
+
 ## Version 0.4.9
 
 - Modified format of simConfig analysis options to make it equivalent to calling analysis functions (issue #69)

@@ -27,7 +27,8 @@ def plotData ():
         # Call analysis functions specified by user
         for funcName, kwargs in sim.cfg['analysis'].iteritems():
             if kwargs == True: kwargs = {}
-            elif kwargs == False: break
+            elif kwargs == False: continue
+            print funcName, kwargs
             func = getattr(sim.analysis, funcName)  # get pointer to function
             func(**kwargs)  # call function with user arguments
 

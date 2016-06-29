@@ -4,11 +4,11 @@
 
 - Added sim.net.allPops which contains all cellGids of each when running on >1 nodes (issue #30)
 
-- Fixed bug so plotRaster() is indetical when running on >1 nodes 
-
 - Connectivity matrix can now be grouped by numeric tags in intervals (eg. cortical depth y in 50 um intervals) (issue #92)
 
 - Added support for all stims (VClamp, SEClamp, AlphaSynapse, etc) and can specify any of the stim params (amp, dur, delay,etc) as a function (eg. 'uniform(a,b)' or '2*post_ynorm') (issue #32)
+
+- Fixed bugs so plotRaster() is identical when running on >1 nodes, and is ordered by gid correctly 
 
 ## Version 0.4.9
 

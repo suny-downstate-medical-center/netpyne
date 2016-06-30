@@ -31,6 +31,14 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
+        self.pops = []  # list to store populations ('Pop' objects)
+        self.cells = [] # list to store cells ('Cell' objects)
+
+        self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
+        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
+        self.lastGid = 0  # keep track of last cell gid 
+
+
 
     ###############################################################################
     # Set network params
@@ -42,8 +50,6 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops (self):
-        self.pops = []  # list to store populations ('Pop' objects)
-        
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
@@ -58,10 +64,7 @@ class Network (object):
         sim.timing('start', 'createTime')
         if sim.rank==0: 
             print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), sim.cfg['duration']/1000.,sim.nhosts)) 
-        self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
-        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
-        self.lastGid = 0  # keep track of last cell gid 
-        self.cells = []
+        
         for ipop in self.pops: # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells

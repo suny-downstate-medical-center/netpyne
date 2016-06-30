@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'creaate', 'setupRecording']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'create', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData'])  # run and gather
 __all__.extend(['simulate', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
@@ -92,8 +92,8 @@ def setSimCfg (cfg):
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadNetParams (filename):
-    data = _loadFile(filename)
+def loadNetParams (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'net' in data and 'params' in data['net']:
         setNetParams(data['net']['params'])
     else:
@@ -104,17 +104,29 @@ def loadNetParams (filename):
 ###############################################################################
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
-def loadNet (filename):
-    data = _loadFile(filename)
+def loadNet (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         sim.net.pops = data['net']['pops']
-        sim.net.cells = data['net']['cells']
-        if sim.cfg['createNEURONObj']:
-            for cell in sim.net.cells:
-                secProps = cell.secs
-                cell.createNEURONobjs(secProps)
-                # conns
-                # stims
+        if sim.cfg['createPyStruct']:
+            for cellLoad in data['net']['cells']:
+                # create new Cell object and add attributes
+                cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'])  
+                cell.secs = cellLoad['secs']
+                cell.conns = cellLoad['conns']
+                cell.stims = cellLoad['stims']
+                sim.net.cells.append(cell)
+
+            # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
+            if sim.cfg['createNEURONObj']:  
+                for cell in sim.net.cells:
+                    prop = {'sections': cell.secs}
+                    cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
+                    cell.addSynMechsNEURONOBJ()
+                    cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                    cell.addConnsNEURONObj()
+
+                    # stims
     else:
         print 'netCells and/or netPops not found in file %s'%(filename)
 
@@ -123,8 +135,8 @@ def loadNet (filename):
 ###############################################################################
 # Load simulation config from file
 ###############################################################################
-def loadSimCfg (filename):
-    data = _loadFile(filename)
+def loadSimCfg (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'simConfig' in data:
         setSimCfg(data['simConfig'])
     else:
@@ -135,8 +147,8 @@ def loadSimCfg (filename):
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadSimData (filename):
-    data = _loadFile(filename)
+def loadSimData (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
@@ -147,11 +159,12 @@ def loadSimData (filename):
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename):
-    loadSimCfg(filename)
-    loadNetParams(filename)
-    loadNet(filename)
-    loadSimData(filename)
+def loadAll (filename, data=None):
+    if not data: data = _loadFile(filename)
+    loadSimCfg(filename, data=data)
+    loadNetParams(filename, data=data)
+    loadNet(filename, data=data)
+    loadSimData(filename, data=data)
     
 
 ###############################################################################

@@ -140,6 +140,12 @@ class Cell (object):
                                 mechParamValueFinal = mechParamValue[iseg]
                             seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
 
+            # add synMechs (only used when loading)
+            if 'synMechs' in sectParams:
+                for synMech in sectParams['synMechs']:
+                    if 'label' in synMech and 'loc' in synMech:
+                        addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
@@ -177,6 +183,59 @@ class Cell (object):
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+
+
+    # Create NEURON objs for conns and syns if included in prop (used when loading)
+    def addStimsNEURONObj(self):
+        # assumes python structure exists
+        for stimParams in self.stims:
+            if stimParams['type'] == 'NetStim':
+                self.addNetStim (stimParams, stimContainer=stimParams)
+       
+            elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSection'](stimParams['loc']))
+                stimParams = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+                for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal stimParams
+                    if isinstance(stimParamValue, list):
+                        print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
+                        pass
+                        #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                    else: 
+                        setattr(stim, stimParamName, stimParamValue)
+                self.stims.append(stimParams) # add to python structure
+                stimParams['h'+stimParams['type']] = stim  # add stim object to dict in stims list
+           
+
+    # Create NEURON objs for conns and syns if included in prop (used when loading)
+    def addConnsNEURONObj(self):
+        # Note: loading connections to point process (eg. Izhi2007a) not yet supported
+        # Note: assumes weight is in index 0 (netcon.weight[0])
+        # assumes python structure exists
+        for conn in self.conns:
+            # set postsyn target
+            synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+            if not synMech: continue  # go to next conn
+            postTarget = synMech['hSyn']
+
+            # create NetCon
+            if conn['preGid'] == 'NetStim':
+                netstim = next((stim for stim in self.stims if stim['label']==conn['preLabel']), None)
+                if netstim:
+                    netcon = h.NetCon(netstim, postTarget)
+                else: continue
+            else:
+                netcon = sim.pc.gid_connect(conn['preGid'], postTarget)
+
+            netcon.weight[0] = conn['weight']
+            netcon.delay = conn['delay']
+            netcon.threshold = conn['threshold']
+            conn['hNetcon'] = netcon
+
+            # Add plasticity 
+            if conn.get('plasticity'):
+                self._addConnPlasticity(conn['plasticity'], netcon, 0)
+
+
 
 
 
@@ -307,7 +366,7 @@ class Cell (object):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = params['threshold']  # set Netcon delay
+                netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
             # Add plasticity 
@@ -321,7 +380,7 @@ class Cell (object):
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
    
 
-    def addNetStim (self, params):
+    def addNetStim (self, params, stimContainer=None):
         self.stims.append(params.copy())  # add new stim to Cell object
         rand = h.Random()
         #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
@@ -345,11 +404,13 @@ class Cell (object):
             netstim.start = params['start']
         netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
         netstim.number = params['number']   
-        self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+        if not stimContainer:
+            stimContainer = self.stims[-1]
+        stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
-        return self.stims[-1]['hNetStim']
+        return stimContainer['hNetStim']
 
 
     def addStim (self, params):

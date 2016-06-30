@@ -525,7 +525,7 @@ class Cell (object):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
-                plastSection = h.Section()
+                plastSection = self.secs['soma']['hSection']
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)

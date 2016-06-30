@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
 'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'setupRecording', \
-'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2']
+'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2', 'version', 'gitversion']
 
 import sys
 from time import time
@@ -816,6 +816,21 @@ def timing (mode, processName):
             
 
 ###############################################################################
+### Print netpyne version
+###############################################################################
+def version():
+    import netpyne 
+    print netpyne.__version__
+
+###############################################################################
+### Print github version
+###############################################################################
+def gitversion():
+    import os
+    os.system('git log -1') 
+
+
+###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
 def _convertNetworkRepresentation (net, gids_vs_pop_indices):
@@ -831,21 +846,25 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
                     print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
                     for conn in cell.conns:
                         preGid = conn['preGid']
-                        popPre, indexPre = gids_vs_pop_indices[preGid]
-                        loc = conn['loc']
-                        weight = conn['weight']
-                        delay = conn['delay']
-                        sec = conn['sec']
-                        synMech = conn['synMech']
-                        threshold = conn['threshold']
+                        if not preGid == 'NetStim':
+                            popPre, indexPre = gids_vs_pop_indices[preGid]
+                            loc = conn['loc']
+                            weight = conn['weight']
+                            delay = conn['delay']
+                            sec = conn['sec']
+                            synMech = conn['synMech']
+                            threshold = conn['threshold']
 
-                        print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
 
-                        projection_info = (popPre,popPost,synMech)
-                        if not projection_info in nn.keys():
-                            nn[projection_info] = []
+                            projection_info = (popPre,popPost,synMech)
+                            if not projection_info in nn.keys():
+                                nn[projection_info] = []
 
-                        nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
+                            nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
+                        else:
+                            print("      Conn NetStim->%s[%s] with %s"%(popPost, indexPost, '??'))
+                                
     return nn                 
 
 
@@ -862,21 +881,23 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     pop, index = gids_vs_pop_indices[cell.gid]
-                    print("    Cell %s: %s\n    %s[%i]\n    %s\n"%(cell.gid,cell.tags,pop, index,cell.stims))
+                    print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
                     for stim in cell.stims:
-                        '''
-                        [{'noise': 0, 'weight': 0.1, 'popLabel': 'background', 'number': 1000000000000.0, 'rate': 10, 
-                        'sec': 'soma', 'synMech': 'NMDA', 'threshold': 10.0, 'weightIndex': 0, 'loc': 0.5, 
-                        'hRandom': <hoc.HocObject object at 0x7fda27f1fd20>, 'hNetcon': <hoc.HocObject object at 0x7fda27f1fdb0>, 
-                        'hNetStim': <hoc.HocObject object at 0x7fda27f1fd68>, 'delay': 0, 'source': 'random'}]'''
-                        ref = stim['popLabel']
+                        ref = stim['label']
                         rate = stim['rate']
-                        synMech = stim['synMech']
-                        threshold = stim['threshold']
-                        delay = stim['delay']
-                        weight = stim['weight']
                         noise = stim['noise']
-
+                        
+                        netstim_found = False
+                        for conn in cell.conns:
+                            if conn['preGid'] == 'NetStim' and conn['preLabel'] == ref:
+                                assert(not netstim_found)
+                                netstim_found = True
+                                synMech = conn['synMech']
+                                threshold = conn['threshold']
+                                delay = conn['delay']
+                                weight = conn['weight']
+                                
+                        assert(netstim_found)
                         name_stim = 'NetStim_%s_%s_%s_%s_%s'%(ref,pop,rate,noise,synMech)
 
                         stim_info = (name_stim, pop, rate, noise,synMech)
@@ -960,7 +981,9 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                     index+=1
                     pop.instances.append(inst)
                     inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
-
+            
+            pop.size = index
+            
     _export_synapses(net, nml_doc)
 
     if connections:
@@ -1027,7 +1050,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                 print("  Adding stim: %s"%stim)
 
                 connection = neuroml.ConnectionWD(id=count, \
-                        pre_cell_id="../%s[%i]"%(stim_pop.id, stim['index']), \
+                        pre_cell_id="../%s[%i]"%(stim_pop.id, count), \
                         pre_segment_id=0, \
                         pre_fraction_along=0.5,
                         post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \

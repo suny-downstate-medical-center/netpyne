@@ -27,7 +27,7 @@ def plotData ():
         # Call analysis functions specified by user
         for funcName, kwargs in sim.cfg['analysis'].iteritems():
             if kwargs == True: kwargs = {}
-            elif kwargs == False: break
+            elif kwargs == False: continue
             func = getattr(sim.analysis, funcName)  # get pointer to function
             func(**kwargs)  # call function with user arguments
 
@@ -129,7 +129,8 @@ def getCellsInclude(include):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = sorted([cell for cell in allCells if cell['gid'] in cellGids])
+    cells = [cell for cell in allCells if cell['gid'] in cellGids]
+    cells = sorted(cells, key=lambda k: k['gid'])
 
     return cells, cellGids, netStimPops
 
@@ -192,10 +193,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell['tags'][orderBy] for cell in cells]
 
         if orderInverse: yorder.reverse()
-        
+
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
-        
+
     else:
         spkts = []
         spkinds = []

@@ -24,20 +24,28 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``popParams`` - list of populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules and their associated parameters (e.g. cell geometry)
+* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
 
 * ``synMechParams`` - list of synaptic mechanisms and their parameters
 
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
+* ``stimParams`` - dict with stimulation parameters. 
+
+.. image:: figs/netparams.png
+	:width: 40%
+	:align: center
+
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
 
-* creates a ``Network`` object and adding inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
+* creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
+* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
 * creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
+* add stimulation to the cells based on ``stimParams``.
 
 
 The image below illustrates this process:
@@ -119,8 +127,6 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **source** - Source of noise (optional; currently set to ``random`` by default, which is the only option implemented)
-
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
 
 Example of NetStim population::
@@ -160,25 +166,16 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 	
-	* **syns**: Dictionary of synaptic mechanisms (point processes). 
-		The key contains an arbitrary label for the synaptic mechanism (e.g. 'AMPA').
-		The value contains a dictionary with the synaptic mechanism properties (e.g. ``{'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}``). 
-		
-		Note that properties that are not internal variables of the point process are denoted with an underscore:
-
-		* ``_type``, the name of the NEURON mechanism, e.g. ``'Exp2Syn'``.
-		* ``_loc``, section location where to place synaptic mechanism, e.g. 1.0, default=0.5.
-	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
 		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
 		
-		Note that properties that are not internal variables of the point process are denoted with an underscore: 
+		Apart from internal point process variables, the following properties can be specified for each point process:
 
-		* ``_type``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``_loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
-		* ``_vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
-		* ``_synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
+		* ``mod``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
+		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
+		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
+		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
@@ -213,7 +210,7 @@ Example of two cell property rules::
 
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', '_vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
@@ -501,6 +498,92 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+
+Stimulation
+^^^^^^^^^^^^^^^^^^^
+
+The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (eg. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
+
+Each item of the ``sourceList`` list contains the following fields:
+
+	* **label** - Arbitrary label to reference this stimulation source when mapping to cells (e.g. 'electrode_current')
+
+	* **type** - Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'.
+
+		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
+
+	* **stim params** (optional)- These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
+
+		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
+
+
+Each item of the ``stimList`` list contains the following fields:
+
+	* **source** - Label of the stimulation source (e.g. 'electrode_current').
+
+	* **conditions** - Dictionary with conditions of cells where the stim will be applied. 
+		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+
+	* **sec** (optional) - Target section (default: 'soma')
+		Can be defined as a function (see :ref:`function_string`)
+
+	* **loc** (optional) - Target location (default: 0.5)
+		Can be defined as a function (see :ref:`function_string`)
+
+	* **weight** (optional; only for NetStims) - (default: 1)
+		Can be defined as a function (see :ref:`function_string`)
+
+	* **delay** (optional; only for NetStims) - (default: 1)
+		Can be defined as a function (see :ref:`function_string`)
+
+	* **synsPerConn** (optional; only for NetStims) - (default: 1)
+		Can be defined as a function (see :ref:`function_string`)
+
+
+
+The code below shows an example of how to create different types of stimulation and map them to different subsets of cells:
+
+.. code-block:: python
+
+	# Stimulation parameters
+	netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+
+	## Stimulation sources parameters
+	netParams['stimParams']['sourceList'].append({'label': 'Input_1', 
+		'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_2',
+		 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_3', 
+		'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+
+	netParams['stimParams']['sourceList'].append({'label': 'Input_4', 
+		'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+
+	## Stimulation mapping parameters
+	netParams['stimParams']['stimList'].append({
+	    'source': 'Input_1', 
+	    'sec':'soma', 
+	    'loc': 0.5, 
+	    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+
+	netParams['stimParams']['stimList'].append({
+	    'source': 'Input_3', 
+	    'sec':'soma', 
+	    'loc': 0.5, 
+	    'conditions': {'cellType':'Basket'}})
+
+	netParams['stimParams']['stimList'].append({
+		'source': 'Input_4', 
+		'sec':'soma', 
+		'loc': 0.5, 
+	    'weight': '0.1+gauss(0.2,0.05)',
+	    'delay': 1,
+		'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
+
+
+
 .. _sim_config: 
 
 Simulation configuration
@@ -525,10 +608,11 @@ Related to recording:
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
-* **recordStep** - Step size in ms for data recording (e.g. 1)
+* **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
 
+* **saveDataInclude** = Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
 * **filename** - Name of file to save model output (default: 'model_output')
 * **timestampFilename**  - Add timestamp to filename to avoid overwriting (default: False)
 * **savePickle** - Save data to pickle file (default: False)
@@ -553,23 +637,10 @@ Related to plotting and analysis:
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`
 
 
-* **plotRaster** - Whether or not to plot a raster (default: True)
-* **maxspikestoplot** - Maximum number of spikes to plot (default: 3e8)
-* **orderRasterYfrac** - Order cells in raster by yfrac (default is by pop and cell id) (default: False)
-* **plotSync** -Add vertical lines for all spikes as an indication of synchrony (default: False)
-
-* **plotCells** - Plot recorded traces for this list of cells. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All items in ``plotCells`` are automatically included in ``recordCells``. (default: [] ; example: [5,10,'PYR'])
-* **plot2Dnet** - plot 2D visualization of cell positions and connections (default: False)
-* **plotLFPSpectrum** - Plot power spectral density (PSD) of LFP (default: False) (not yet implemented)
-* **plotConn** - Plot connectivity matrix (default: False) (not yet implemented)
-* **plotWeightChanges** - Plot weight changes (default: False) (not yet implemented)
-* **plot3dArch** - plot 3d architecture of network (default: False) (not yet implemented)
-
-
 Package functions
 ------------------
 
-Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package methods to instantiate, simulate and analyse the network. A list of available functions is shown below:
+Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
 
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

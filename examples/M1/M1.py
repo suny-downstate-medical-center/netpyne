@@ -58,9 +58,9 @@ simConfig['saveHDF5'] = False # save to HDF5 file
 
 # Analysis and plotting 
 simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
-simConfig['analysis']['plotTraces'] = {'include': [('IT_L23',1) ,('PT_L5B',1), ('PV_L23',1), ('SOM_L5',1)]} # plot recorded traces for this list of cells
-simConfig['analysis']['plot2Dnet'] = {'showConns': False}
+# simConfig['analysis']['plotRaster'] = True # Whether or not to plot a raster
+# simConfig['analysis']['plotTraces'] = {'include': [('IT_L23',1) ,('PT_L5B',1), ('PV_L23',1), ('SOM_L5',1)]} # plot recorded traces for this list of cells
+# simConfig['analysis']['plot2Dnet'] = {'showConns': False}
 
 ###############################################################################
 # NETWORK PARAMETERS
@@ -96,8 +96,8 @@ netParams['popParams'].append({'popLabel': 'PV_L5',  'cellModel': 'Izhi2007b', '
 netParams['popParams'].append({'popLabel': 'SOM_L5', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.31, 0.77], 'density': 10e3}) #  L5 SOM (LTS)
 netParams['popParams'].append({'popLabel': 'PV_L6',  'cellModel': 'Izhi2007b', 'cellType': 'PV',  'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 PV (FS)
 netParams['popParams'].append({'popLabel': 'SOM_L6', 'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'projTarget': '', 'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 SOM (LTS)
-netParams['popParams'].append({'popLabel': 'background_E', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'source': 'random'})  # background inputs to Exc
-netParams['popParams'].append({'popLabel': 'background_I', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'source': 'random'})  # background inputs to Inh
+netParams['popParams'].append({'popLabel': 'background_E', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Exc
+netParams['popParams'].append({'popLabel': 'background_I', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Inh
 
 
 ## Izhi cell params (used in cell properties)

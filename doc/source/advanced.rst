@@ -174,7 +174,7 @@ Friesen model
 Izhikevich 2003a model (independent voltage variable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``).
+*Description:* Izhikevich, 2003 cell model defined as python class. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``).
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -186,7 +186,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 	cellRule = {'label': 'PYR_Izhi03a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
-	cellRule['sections']['soma']['pointps']['Izhi2003a_0']['_vref'] = 'V' # specify that uses its own voltage V
+	cellRule['sections']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
 	netParams['cellParams'].append(cellRule)  
 
 
@@ -215,7 +215,7 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 Izhikevich 2007a model (independent voltage variable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*Description:* Izhikevich, 2007 cell model defined as python clas. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``_vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``). The cell model includes several internal synaptic mechanisms, which can be specified as a list in NetPyNE by adding the ``_synList`` item to the point process entry.
+*Description:* Izhikevich, 2007 cell model defined as python clas. Requires point process defined in mod file. This version is added to a section but does not employ the section voltage or synaptic mechanisms. Instead it uses its own internal voltage variable and synaptic mechanism. This is indicated in NetPyNE adding the ``vref`` item to the point process entry, and specifying the name of the internal voltage variable (``V``). The cell model includes several internal synaptic mechanisms, which can be specified as a list in NetPyNE by adding the ``synList`` item to the point process entry.
 
 Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
@@ -227,8 +227,8 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 	cellRule = {'label': 'PYR_Izhi07a_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
 	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
-	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_vref'] = 'V' # specify that uses its own voltage V
-	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['_synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
+	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
+	cellRule['sections']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
 	netParams['cellParams'].append(cellRule) 
 
 

@@ -193,13 +193,11 @@ Example of two cell property rules::
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
@@ -211,7 +209,6 @@ Example of two cell property rules::
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	cellRule['sections'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules

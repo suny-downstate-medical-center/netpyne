@@ -110,23 +110,29 @@ def loadNet (filename, data=None):
         sim.net.pops = data['net']['pops']
         if sim.cfg['createPyStruct']:
             for cellLoad in data['net']['cells']:
-                # create new Cell object and add attributes
-                cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'])  
+                # create new Cell object and add attributes, but don't create sections or associate gid yet
+                cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
                 cell.secs = cellLoad['secs']
                 cell.conns = cellLoad['conns']
                 cell.stims = cellLoad['stims']
                 sim.net.cells.append(cell)
+            print ' Created %d cells' % (len(data['net']['cells']))
 
             # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
             if sim.cfg['createNEURONObj']:  
+                if sim.cfg['verbose']: print " Adding NEURON objects..."
+                # create NEURON sections, mechs, syns, etc; and associate gid
                 for cell in sim.net.cells:
                     prop = {'sections': cell.secs}
                     cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
-                    cell.addSynMechsNEURONOBJ()
+                    cell.associateGid()  # can only associate once the hSection obj has been created
+                # create all NEURON Netcons, NetStims, etc
+                for cell in sim.net.cells:
                     cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
                     cell.addConnsNEURONObj()
 
-                    # stims
+                print ' Added NEURON objects to %d cells' % (len(sim.net.cells))
+
     else:
         print 'netCells and/or netPops not found in file %s'%(filename)
 
@@ -475,6 +481,7 @@ def setupRecording ():
         sim.fih.append(h.FInitializeHandler(cell.initV))
 
     # spike recording
+    sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})  # initialize
     sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording

@@ -19,7 +19,7 @@ import sim
 class Cell (object):
     ''' Generic class for section-based neuron models '''
     
-    def __init__ (self, gid, tags):
+    def __init__ (self, gid, tags, create=True, associateGid=True):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
@@ -27,8 +27,8 @@ class Cell (object):
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
-        self.create()  # create cell 
-        self.associateGid() # register cell for this node
+        if create: self.create()  # create cell 
+        if associateGid and sim.cfg['createNEURONObj']: self.associateGid() # register cell for this node
 
     def create (self):
         for prop in sim.net.params['cellParams']:  # for each set of cell properties
@@ -144,7 +144,7 @@ class Cell (object):
             if 'synMechs' in sectParams:
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
-                        addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
 
             # add point processes
             if 'pointps' in sectParams:
@@ -194,15 +194,14 @@ class Cell (object):
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSection'](stimParams['loc']))
-                stimParams = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
-                for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal stimParams
-                    if isinstance(stimParamValue, list):
+                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'label', 'loc', 'sec', 'h'+stimParams['type']]}
+                for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
+                    if isinstance(stimPropValue, list):
                         print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
                         pass
                         #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                     else: 
-                        setattr(stim, stimParamName, stimParamValue)
-                self.stims.append(stimParams) # add to python structure
+                        setattr(stim, stimPropName, stimPropValue)
                 stimParams['h'+stimParams['type']] = stim  # add stim object to dict in stims list
            
 
@@ -219,11 +218,12 @@ class Cell (object):
 
             # create NetCon
             if conn['preGid'] == 'NetStim':
-                netstim = next((stim for stim in self.stims if stim['label']==conn['preLabel']), None)
+                netstim = next((stim['hNetStim'] for stim in self.stims if stim['label']==conn['preLabel']), None)
                 if netstim:
                     netcon = h.NetCon(netstim, postTarget)
                 else: continue
             else:
+                #cell = next((c for c in sim.net.cells if c.gid == conn['preGid']), None)
                 netcon = sim.pc.gid_connect(conn['preGid'], postTarget)
 
             netcon.weight[0] = conn['weight']
@@ -234,8 +234,6 @@ class Cell (object):
             # Add plasticity 
             if conn.get('plasticity'):
                 self._addConnPlasticity(conn['plasticity'], netcon, 0)
-
-
 
 
 
@@ -285,7 +283,7 @@ class Cell (object):
                 if not synMech:  # if still doesnt exist, then create
                     synMech = {}
                     sec['synMechs'].append(synMech)
-                if not 'hSyn' in synMech:  # if synMech doesn't have NEURON obj, then create
+                if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
                     loc=1.0
                     synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
@@ -381,11 +379,14 @@ class Cell (object):
    
 
     def addNetStim (self, params, stimContainer=None):
-        self.stims.append(params.copy())  # add new stim to Cell object
+        if not stimContainer:
+            self.stims.append(params.copy())  # add new stim to Cell object
+            stimContainer = self.stims[-1]
+        
         rand = h.Random()
         #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
         #rand.negexp(1)
-        self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
+        stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
         if isinstance(params['rate'], str):
             if params['rate'] == 'variable':
@@ -404,8 +405,7 @@ class Cell (object):
             netstim.start = params['start']
         netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
         netstim.number = params['number']   
-        if not stimContainer:
-            stimContainer = self.stims[-1]
+            
         stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
         if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))

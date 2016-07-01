@@ -70,7 +70,6 @@ class Network (object):
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
             if sim.rank==0 and sim.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
-        sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
         print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')

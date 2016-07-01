@@ -7,9 +7,9 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'create', 'setupRecording']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData'])  # run and gather
-__all__.extend(['simulate', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
+__all__.extend(['simulate', 'create', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
 __all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', \

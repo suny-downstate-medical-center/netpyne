@@ -645,23 +645,49 @@ Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use th
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Wrappers:
+
 * **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
 * **sim.create(simConfig, netParams)** - wrapper to create the network.
 * **sim.simulate()** - wrapper to simulate the network.
 * **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
-* **sim.initialize()**
-* **sim.setNet()**
-* **sim.setNetParams()**
-* **sim.setSimCfg()**
-* **sim.loadSimCfg()**
-* **sim.loadSimParams()**
+
+
+Initialize and set up:
+
+* **sim.initialize(simConfig, netParams)**
+* **sim.setNet(net)**
+* **sim.setNetParams(params)**
+* **sim.setSimCfg(cfg)**
 * **sim.createParallelContext()**
 * **sim.setupRecording()**
+
+
+Run and gather:
+
 * **sim.runSim()**
-* **sim.runSimWithIntervalFunc()**
+* **sim.runSimWithIntervalFunc(interval, func)**
 * **sim.gatherData()**
-* **sim.saveData()**
+* **sim.gatherAllCellTags()**
+
+
+Saving and loading:
+
+* **sim.saveData(filename)**
+* **sim.loadSimCfg(filename)**
+* **sim.loadNetParams(filename)**
+* **sim.loadNet(filename)**
+* **sim.loadSimData(filename)**
+* **sim.loadAll(filename)**
+
+
+Export and import:
 * **sim.exportNeuroML2()**
+
+
+Misc/utilities:
+* **sim.version()**
+* **sim.gitversion()**
 
 
 .. _analysis_functions:

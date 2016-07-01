@@ -1,3 +1,9 @@
+## Version 0.5.1
+
+- Selectively save data to file: netParams, net, simConfig and/or simData (issue #30)
+
+- Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
+
 ## Version 0.5.0
 
 - Added option 'dataSaveInclude' to select what data to save to file (issue #30)

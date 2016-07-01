@@ -303,7 +303,7 @@ class Cell (object):
 
         # Avoid self connections
         if params['preGid'] == self.gid:
-            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
+            if sim.cfg['verbose']: print '  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
             return  # if self-connection return
 
         # Get list of section labels
@@ -374,7 +374,7 @@ class Cell (object):
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['label']+' NetStim' if netStimParams else params['preGid']
-                print('Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
+                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
    
 
@@ -408,20 +408,20 @@ class Cell (object):
             
         stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
+        if sim.cfg['verbose']: print('  Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
         return stimContainer['hNetStim']
 
 
     def addStim (self, params):
         if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
-            if sim.cfg['verbose']: print 'Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available'%(self.gid)
+            if sim.cfg['verbose']: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
             else:  
-                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add stim'%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
 
         sec = self.secs[params['sec']]
@@ -463,7 +463,7 @@ class Cell (object):
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
-            if sim.cfg['verbose']: print('Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+            if sim.cfg['verbose']: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['label'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
 
@@ -471,13 +471,13 @@ class Cell (object):
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
-            if sim.cfg['verbose']: print 'Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
+            if sim.cfg['verbose']: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
             else:  
-                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 sec = -1  # if no Sections available print error and exit
                 return sec
 
@@ -489,7 +489,7 @@ class Cell (object):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg['verbose']: print 'Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    if sim.cfg['verbose']: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])
@@ -534,7 +534,7 @@ class Cell (object):
                                 weightIndex = pointpParams['synList'].index(params.get('synMech'))  # udpate weight index based pointp synList
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
-            if sim.cfg['verbose']: print 'Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
+            if sim.cfg['verbose']: print '  Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
             return -1
 
         return pointp
@@ -545,9 +545,9 @@ class Cell (object):
             if sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
-                if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
+                if sim.cfg['verbose']: print '  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
             else: # if no synaptic mechanism specified and no synMech params available 
-                if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid)
                 return -1  # if no Synapse available print error and exit
 
         # if desired synaptic mechanism specified in conn params
@@ -626,9 +626,9 @@ class Cell (object):
                 if ptr:  # if pointer has been created, then setup recording
                     sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg['duration']/sim.cfg['recordStep']+1).resize(0)
                     sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg['recordStep'])
-                    if sim.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+                    if sim.cfg['verbose']: print '  Recording ', key, 'from cell ', self.gid
             except:
-                if sim.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
+                if sim.cfg['verbose']: print '  Cannot record ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):

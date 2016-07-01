@@ -104,37 +104,43 @@ def loadNetParams (filename, data=None):
 ###############################################################################
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
-def loadNet (filename, data=None):
+def loadNet (filename, data=None, instantiate=True):
+
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
-        sim.net.pops = data['net']['pops']
-        if sim.cfg['createPyStruct']:
-            for cellLoad in data['net']['cells']:
-                # create new Cell object and add attributes, but don't create sections or associate gid yet
-                cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
-                cell.secs = cellLoad['secs']
-                cell.conns = cellLoad['conns']
-                cell.stims = cellLoad['stims']
-                sim.net.cells.append(cell)
-            print ' Created %d cells' % (len(data['net']['cells']))
+        sim.timing('start', 'loadNetTime')
+        sim.net.allPops = data['net']['pops']
+        sim.net.allCells = data['net']['cells']
+        if instantiate:
+            if sim.cfg['createPyStruct']:
+                for cellLoad in data['net']['cells']:
+                    # create new Cell object and add attributes, but don't create sections or associate gid yet
+                    cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
+                    cell.secs = cellLoad['secs']
+                    cell.conns = cellLoad['conns']
+                    cell.stims = cellLoad['stims']
+                    sim.net.cells.append(cell)
+                print ' Created %d cells' % (len(data['net']['cells']))
 
-            # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
-            if sim.cfg['createNEURONObj']:  
-                if sim.cfg['verbose']: print " Adding NEURON objects..."
-                # create NEURON sections, mechs, syns, etc; and associate gid
-                for cell in sim.net.cells:
-                    prop = {'sections': cell.secs}
-                    cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
-                    cell.associateGid()  # can only associate once the hSection obj has been created
-                # create all NEURON Netcons, NetStims, etc
-                for cell in sim.net.cells:
-                    cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
-                    cell.addConnsNEURONObj()
+                # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
+                if sim.cfg['createNEURONObj']:  
+                    if sim.cfg['verbose']: print "  Adding NEURON objects..."
+                    # create NEURON sections, mechs, syns, etc; and associate gid
+                    for cell in sim.net.cells:
+                        prop = {'sections': cell.secs}
+                        cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
+                        cell.associateGid()  # can only associate once the hSection obj has been created
+                    # create all NEURON Netcons, NetStims, etc
+                    for cell in sim.net.cells:
+                        cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                        cell.addConnsNEURONObj()
 
-                print ' Added NEURON objects to %d cells' % (len(sim.net.cells))
+                    print '  Added NEURON objects to %d cells' % (len(sim.net.cells))
 
+            if sim.cfg['timing']: sim.timing('stop', 'loadNetTime')
+            print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
-        print 'netCells and/or netPops not found in file %s'%(filename)
+        print '  netCells and/or netPops not found in file %s'%(filename)
 
     pass
 
@@ -146,7 +152,7 @@ def loadSimCfg (filename, data=None):
     if 'simConfig' in data:
         setSimCfg(data['simConfig'])
     else:
-        print 'simConfig not found in file %s'%(filename)
+        print '  simConfig not found in file %s'%(filename)
 
     pass
 
@@ -158,7 +164,7 @@ def loadSimData (filename, data=None):
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
-        print 'simData not found in file %s'%(filename)
+        print '  simData not found in file %s'%(filename)
 
     pass
 
@@ -177,7 +183,8 @@ def loadAll (filename, data=None):
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
-
+    
+    if sim.cfg['timing']: sim.timing('start', 'loadFileTime')
     ext = filename.split('.')[1]
 
     # Save to pickle file
@@ -244,6 +251,10 @@ def _loadFile (filename):
     else:
         print 'Format not recognized for file %s'%(filename)
         return 
+
+    if sim.cfg['timing']: sim.timing('stop', 'loadFileTime')
+    print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
+   
 
     return data
 

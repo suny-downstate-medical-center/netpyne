@@ -256,6 +256,26 @@ class Network (object):
                     self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                     connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
+
+        # subcellular distribution
+        if self.params.get('subConnParams'):
+            pass
+            # find list of preSyn gids
+            # find postsyn cells
+            # for each postsyn cell:
+                # find syns from presyn cells
+                # calculate new syn locations based on sec, yNormRange and density
+                # move synapses
+
+        # netParams['subConnParams'].append(
+        # {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+        # 'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+        # 'sec': 'all',
+        # 'ynormRange': [0, 1.0],
+        # 'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+
+
+
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
         sim.pc.barrier()
         sim.timing('stop', 'connectTime')

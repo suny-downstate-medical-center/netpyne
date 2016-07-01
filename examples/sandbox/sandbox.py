@@ -180,6 +180,13 @@ netParams['connParams'].append(
 #     'synMech': 'AMPA',                     # target NMDA synapse
 #     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
+netParams['subConnParams'].append(
+    {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+    'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+    'sec': 'all',
+    'ynormRange': [0, 1.0],
+    'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+
 
 
 ###############################################################################

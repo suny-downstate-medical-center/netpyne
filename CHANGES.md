@@ -4,6 +4,8 @@
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
 
+- Fixed bug that was slowing down STDP by creating new h.Section() -- now uses existing.
+
 ## Version 0.5.0
 
 - Added option 'dataSaveInclude' to select what data to save to file (issue #30)

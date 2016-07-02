@@ -233,7 +233,7 @@ class Cell (object):
 
             # Add plasticity 
             if conn.get('plasticity'):
-                self._addConnPlasticity(conn['plasticity'], netcon, 0)
+                self._addConnPlasticity(conn['plasticity'], self.secs[conn['sec']], netcon, 0)
 
 
 
@@ -368,7 +368,7 @@ class Cell (object):
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
             # Add plasticity 
-            self._addConnPlasticity(params, netcon, weightIndex)
+            self._addConnPlasticity(params, self.secs[synMechSecs[i]], netcon, weightIndex)
 
             if sim.cfg['verbose']: 
                 sec = params['sec'] if pointp else synMechSecs[i]
@@ -582,19 +582,18 @@ class Cell (object):
         return secs, locs
 
 
-    def _addConnPlasticity (self, params, netcon, weightIndex):
+    def _addConnPlasticity (self, params, sec, netcon, weightIndex):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
-                plastSection = h.Section()
-                plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec)  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
                 if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
                     precon = sim.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
                     pstcon = sim.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
                     h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
-                    self.conns[-1]['hPlastSection'] = plastSection
+                    #self.conns[-1]['hPlastSection'] = plastSection
                     self.conns[-1]['hSTDP']         = plastMech
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon

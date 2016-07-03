@@ -542,6 +542,7 @@ def setupRecording ():
 ### Setup Recording
 ###############################################################################
 def getCellsList(include):
+
     allCells = sim.net.cells
     cellGids = []
     cells = []
@@ -877,8 +878,10 @@ def version():
 ### Print github version
 ###############################################################################
 def gitversion():
-    import os
-    os.system('git log -1') 
+    import netpyne,os
+    currentPath = os.getcwd()
+    netpynePath = os.path.dirname(netpyne.__file__)
+    os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath) 
 
 
 ###############################################################################

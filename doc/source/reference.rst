@@ -730,7 +730,7 @@ Analysis-related functions
     - Returns figure handle
     
 
-* **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+* **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
     Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
 
@@ -738,6 +738,7 @@ Analysis-related functions
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *overlay*: Whether to overlay the data lines or plot in separate subplots (True|False)
     - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace')
+    - *rerun*: rerun simulation so new set of cells gets recorded (True|False)
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
     - *saveFig*: File name where to save the figure (None|'fileName')

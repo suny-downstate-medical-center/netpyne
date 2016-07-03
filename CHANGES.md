@@ -4,7 +4,11 @@
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
 
+- Added 'rerun' option to plotTraces()  
+
 - Fixed bug that was slowing down STDP by creating new h.Section() -- now uses existing.
+
+- Fixed bug so vinit gets set for all segments in a section.
 
 ## Version 0.5.0
 

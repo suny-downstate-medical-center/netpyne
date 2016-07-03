@@ -116,7 +116,7 @@ class Cell (object):
     def initV (self): 
         for sec in self.secs.values():
             if 'vinit' in sec:
-                sec['hSection'](0.5).v = sec['vinit']
+                sec['hSection'].v = sec['vinit']
 
     def createNEURONObj (self, prop):
         # set params for all sections

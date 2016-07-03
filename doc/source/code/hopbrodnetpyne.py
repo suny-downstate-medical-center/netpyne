@@ -68,7 +68,8 @@ netParams['cellParams'].append(
   {'label': 'hh_PYR', 
    'conditions': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
    'sections': {'soma': {'geom' :  {'diam': 18.8, 'L': 18.8},
-                         'mechs':  {'hh' : {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
+                         'mechs':  {'hh' : {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}},
+                         'vinit': -70}}}) 
 netParams['synMechParams'].extend([{'label': 'exc', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0},
                                    {'label': 'inh', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80}])
 netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conditions': {'popLabel':'PYR'}})

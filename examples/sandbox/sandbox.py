@@ -107,21 +107,21 @@ netParams['stimParams']['stimList'].append({
 # Connectivity parameters
 netParams['connParams'] = []  
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'synsPerConn': 5,
-#     'sec': 'all',
-#     'synMech': ['AMPA', 'NMDA'],
-#     'threshold': 10})                    # threshold
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'synsPerConn': 5,
+    'sec': 'all',
+    'synMech': ['AMPA', 'NMDA'],
+    'threshold': 10})                    # threshold
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
@@ -180,6 +180,13 @@ netParams['connParams'] = []
 #     'synMech': 'AMPA',                     # target NMDA synapse
 #     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
+netParams['subConnParams'].append(
+    {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+    'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+    'sec': 'all',
+    'ynormRange': [0, 1.0],
+    'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+
 
 
 ###############################################################################
@@ -194,7 +201,7 @@ simConfig['dt'] = 0.025 # Internal integration timestep to use
 simConfig['seeds'] = {'conn': 2, 'stim': 2, 'loc': 2} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
 simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 1 #False  # show detailed messages 
+simConfig['verbose'] = 0 #False  # show detailed messages 
 
 
 # Recording 
@@ -207,7 +214,7 @@ simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP,
 # Saving
 simConfig['filename'] = 'mpiHHTut'  # Set file output name
 simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = 0 # Whether or not to write spikes etc. to a .mat file
+simConfig['savePickle'] = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveJson'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveMat'] = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig['saveDpk'] = 0 # save to a .dpk pickled file

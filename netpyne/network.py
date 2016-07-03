@@ -31,6 +31,14 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
+        self.pops = []  # list to store populations ('Pop' objects)
+        self.cells = [] # list to store cells ('Cell' objects)
+
+        self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
+        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
+        self.lastGid = 0  # keep track of last cell gid 
+
+
 
     ###############################################################################
     # Set network params
@@ -42,8 +50,6 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops (self):
-        self.pops = []  # list to store populations ('Pop' objects)
-        
         for popParam in self.params['popParams']: # for each set of population paramseters 
             self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
 
@@ -58,16 +64,12 @@ class Network (object):
         sim.timing('start', 'createTime')
         if sim.rank==0: 
             print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), sim.cfg['duration']/1000.,sim.nhosts)) 
-        self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
-        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
-        self.lastGid = 0  # keep track of last cell gid 
-        self.cells = []
+        
         for ipop in self.pops: # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
             if sim.rank==0 and sim.cfg['verbose']: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
-        sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})
         print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
@@ -188,6 +190,31 @@ class Network (object):
 
         return strParams
 
+    ###############################################################################
+    # Subcellular connectivity (distribution of synapses)
+    ###############################################################################
+    def subcellularConn(self):
+        pass
+        # subcellular distribution
+
+        
+            # find list of preSyn gids
+
+            # find postsyn cells
+            # for each postsyn cell:
+                # find syns from presyn cells
+                # calculate new syn locations based on sec, yNormRange and density
+                # get y location of synapse -- check Ben's code
+                # move synapses
+
+        # netParams['subConnParams'].append(
+        # {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+        # 'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+        # 'sec': 'all',
+        # 'ynormRange': [0, 1.0],
+        # 'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+
+
 
 
     ###############################################################################
@@ -253,6 +280,11 @@ class Network (object):
                 if preCellsTags and postCellsTags:
                     self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                     connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
+
+        # apply subcellular connectivity params (distribution of synaspes)
+        if self.params.get('subConnParams'):
+            self.subcellularConn()
+
 
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
         sim.pc.barrier()

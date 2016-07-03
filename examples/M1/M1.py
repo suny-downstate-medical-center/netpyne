@@ -26,7 +26,7 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = 1.0*1e3 # Duration of the simulation, in ms
+simConfig['duration'] = 10.0*1e3 # Duration of the simulation, in ms
 simConfig['dt'] = 0.1 # Internal integration timestep to use
 simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network

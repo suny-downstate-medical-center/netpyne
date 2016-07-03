@@ -19,7 +19,7 @@ import sim
 class Cell (object):
     ''' Generic class for section-based neuron models '''
     
-    def __init__ (self, gid, tags):
+    def __init__ (self, gid, tags, create=True, associateGid=True):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.secs = {}  # dict of sections
@@ -27,8 +27,8 @@ class Cell (object):
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
-        self.create()  # create cell 
-        self.associateGid() # register cell for this node
+        if create: self.create()  # create cell 
+        if associateGid and sim.cfg['createNEURONObj']: self.associateGid() # register cell for this node
 
     def create (self):
         for prop in sim.net.params['cellParams']:  # for each set of cell properties
@@ -140,6 +140,12 @@ class Cell (object):
                                 mechParamValueFinal = mechParamValue[iseg]
                             seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
 
+            # add synMechs (only used when loading)
+            if 'synMechs' in sectParams:
+                for synMech in sectParams['synMechs']:
+                    if 'label' in synMech and 'loc' in synMech:
+                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
@@ -177,6 +183,57 @@ class Cell (object):
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+
+
+    # Create NEURON objs for conns and syns if included in prop (used when loading)
+    def addStimsNEURONObj(self):
+        # assumes python structure exists
+        for stimParams in self.stims:
+            if stimParams['type'] == 'NetStim':
+                self.addNetStim (stimParams, stimContainer=stimParams)
+       
+            elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSection'](stimParams['loc']))
+                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'label', 'loc', 'sec', 'h'+stimParams['type']]}
+                for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
+                    if isinstance(stimPropValue, list):
+                        print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
+                        pass
+                        #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                    else: 
+                        setattr(stim, stimPropName, stimPropValue)
+                stimParams['h'+stimParams['type']] = stim  # add stim object to dict in stims list
+           
+
+    # Create NEURON objs for conns and syns if included in prop (used when loading)
+    def addConnsNEURONObj(self):
+        # Note: loading connections to point process (eg. Izhi2007a) not yet supported
+        # Note: assumes weight is in index 0 (netcon.weight[0])
+        # assumes python structure exists
+        for conn in self.conns:
+            # set postsyn target
+            synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+            if not synMech: continue  # go to next conn
+            postTarget = synMech['hSyn']
+
+            # create NetCon
+            if conn['preGid'] == 'NetStim':
+                netstim = next((stim['hNetStim'] for stim in self.stims if stim['label']==conn['preLabel']), None)
+                if netstim:
+                    netcon = h.NetCon(netstim, postTarget)
+                else: continue
+            else:
+                #cell = next((c for c in sim.net.cells if c.gid == conn['preGid']), None)
+                netcon = sim.pc.gid_connect(conn['preGid'], postTarget)
+
+            netcon.weight[0] = conn['weight']
+            netcon.delay = conn['delay']
+            netcon.threshold = conn['threshold']
+            conn['hNetcon'] = netcon
+
+            # Add plasticity 
+            if conn.get('plasticity'):
+                self._addConnPlasticity(conn['plasticity'], self.secs[conn['sec']], netcon, 0)
 
 
 
@@ -226,7 +283,7 @@ class Cell (object):
                 if not synMech:  # if still doesnt exist, then create
                     synMech = {}
                     sec['synMechs'].append(synMech)
-                if not 'hSyn' in synMech:  # if synMech doesn't have NEURON obj, then create
+                if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
                     loc=1.0
                     synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
@@ -246,7 +303,7 @@ class Cell (object):
 
         # Avoid self connections
         if params['preGid'] == self.gid:
-            if sim.cfg['verbose']: print 'Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
+            if sim.cfg['verbose']: print '  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec'))
             return  # if self-connection return
 
         # Get list of section labels
@@ -307,26 +364,29 @@ class Cell (object):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = params['threshold']  # set Netcon delay
+                netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
             # Add plasticity 
-            self._addConnPlasticity(params, netcon, weightIndex)
+            self._addConnPlasticity(params, self.secs[synMechSecs[i]], netcon, weightIndex)
 
             if sim.cfg['verbose']: 
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['label']+' NetStim' if netStimParams else params['preGid']
-                print('Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
+                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
    
 
-    def addNetStim (self, params):
-        self.stims.append(params.copy())  # add new stim to Cell object
+    def addNetStim (self, params, stimContainer=None):
+        if not stimContainer:
+            self.stims.append(params.copy())  # add new stim to Cell object
+            stimContainer = self.stims[-1]
+        
         rand = h.Random()
         #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
         #rand.negexp(1)
-        self.stims[-1]['hRandom'] = rand  # add netcon object to dict in conns list
+        stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
         if isinstance(params['rate'], str):
             if params['rate'] == 'variable':
@@ -345,22 +405,23 @@ class Cell (object):
             netstim.start = params['start']
         netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
         netstim.number = params['number']   
-        self.stims[-1]['hNetStim'] = netstim  # add netstim object to dict in stim list
+            
+        stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if sim.cfg['verbose']: print('Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
+        if sim.cfg['verbose']: print('  Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
 
-        return self.stims[-1]['hNetStim']
+        return stimContainer['hNetStim']
 
 
     def addStim (self, params):
         if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
-            if sim.cfg['verbose']: print 'Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available'%(self.gid)
+            if sim.cfg['verbose']: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
             else:  
-                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add stim'%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
 
         sec = self.secs[params['sec']]
@@ -402,7 +463,7 @@ class Cell (object):
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
-            if sim.cfg['verbose']: print('Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+            if sim.cfg['verbose']: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['label'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
 
@@ -410,13 +471,13 @@ class Cell (object):
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
-            if sim.cfg['verbose']: print 'Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
+            if sim.cfg['verbose']: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:  
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
             else:  
-                if sim.cfg['verbose']: print 'Error: no Section available on cell gid=%d to add connection'%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 sec = -1  # if no Sections available print error and exit
                 return sec
 
@@ -428,7 +489,7 @@ class Cell (object):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg['verbose']: print 'Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    if sim.cfg['verbose']: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])
@@ -473,7 +534,7 @@ class Cell (object):
                                 weightIndex = pointpParams['synList'].index(params.get('synMech'))  # udpate weight index based pointp synList
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
-            if sim.cfg['verbose']: print 'Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
+            if sim.cfg['verbose']: print '  Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
             return -1
 
         return pointp
@@ -484,9 +545,9 @@ class Cell (object):
             if sim.net.params['synMechParams']:  # if no synMech specified, but some synMech params defined
                 synLabel = sim.net.params['synMechParams'][0]['label']  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
-                if sim.cfg['verbose']: print 'Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
+                if sim.cfg['verbose']: print '  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
             else: # if no synaptic mechanism specified and no synMech params available 
-                if sim.cfg['verbose']: print 'Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid)
+                if sim.cfg['verbose']: print '  Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid)
                 return -1  # if no Synapse available print error and exit
 
         # if desired synaptic mechanism specified in conn params
@@ -521,19 +582,18 @@ class Cell (object):
         return secs, locs
 
 
-    def _addConnPlasticity (self, params, netcon, weightIndex):
+    def _addConnPlasticity (self, params, sec, netcon, weightIndex):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg['createNEURONObj']:
             try:
-                plastSection = h.Section()
-                plastMech = getattr(h, plasticity['mech'], None)(0, sec=plastSection)  # create plasticity mechanism (eg. h.STDP)
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec)  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
                 if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
                     precon = sim.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
                     pstcon = sim.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
                     h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
-                    self.conns[-1]['hPlastSection'] = plastSection
+                    #self.conns[-1]['hPlastSection'] = plastSection
                     self.conns[-1]['hSTDP']         = plastMech
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
@@ -565,9 +625,9 @@ class Cell (object):
                 if ptr:  # if pointer has been created, then setup recording
                     sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg['duration']/sim.cfg['recordStep']+1).resize(0)
                     sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg['recordStep'])
-                    if sim.cfg['verbose']: print 'Recording ', key, 'from cell ', self.gid
+                    if sim.cfg['verbose']: print '  Recording ', key, 'from cell ', self.gid
             except:
-                if sim.cfg['verbose']: print 'Cannot record ', key, 'from cell ', self.gid
+                if sim.cfg['verbose']: print '  Cannot record ', key, 'from cell ', self.gid
 
 
     def recordStimSpikes (self):

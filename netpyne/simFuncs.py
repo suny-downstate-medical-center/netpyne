@@ -6,9 +6,14 @@ Contains functions related to the simulation (eg. setupRecording, runSim)
 Contributors: salvadordura@gmail.com
 """
 
-__all__ = ['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'loadSimCfg', 'loadNetParams', 'createParallelContext', \
-'create', 'simulate', 'createAndSimulate','createAndExportNeuroML2', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'setupRecording', \
-'runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData', 'saveData', 'timing', 'exportNeuroML2', 'version', 'gitversion']
+__all__ = []
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
+__all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData'])  # run and gather
+__all__.extend(['simulate', 'create', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
+__all__.extend(['exportNeuroML2'])  # export/import
+__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList',\
+'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
 from time import time
@@ -19,6 +24,8 @@ from copy import copy
 from neuron import h, init # Import NEURON
 
 import sim
+
+
 
 ###############################################################################
 # initialize variables and MPI
@@ -85,10 +92,10 @@ def setSimCfg (cfg):
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadNetParams (filename):
-    data = _loadFile(filename)
-    if 'netParams' in data:
-        setNetParams(data['netParams'])
+def loadNetParams (filename, data=None):
+    if not data: data = _loadFile(filename)
+    if 'net' in data and 'params' in data['net']:
+        setNetParams(data['net']['params'])
     else:
         print 'netParams not found in file %s'%(filename)
 
@@ -97,116 +104,159 @@ def loadNetParams (filename):
 ###############################################################################
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
-def loadNet (filename):
-    data = _loadFile(filename)
-    if 'netCells' and 'netPops' in data:
-        #setNetParams(data['netParams'])
-        pass
+def loadNet (filename, data=None, instantiate=True):
+
+    if not data: data = _loadFile(filename)
+    if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
+        sim.timing('start', 'loadNetTime')
+        sim.net.allPops = data['net']['pops']
+        sim.net.allCells = data['net']['cells']
+        if instantiate:
+            if sim.cfg['createPyStruct']:
+                for cellLoad in data['net']['cells']:
+                    # create new Cell object and add attributes, but don't create sections or associate gid yet
+                    cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
+                    cell.secs = cellLoad['secs']
+                    cell.conns = cellLoad['conns']
+                    cell.stims = cellLoad['stims']
+                    sim.net.cells.append(cell)
+                print ' Created %d cells' % (len(data['net']['cells']))
+
+                # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
+                if sim.cfg['createNEURONObj']:  
+                    if sim.cfg['verbose']: print "  Adding NEURON objects..."
+                    # create NEURON sections, mechs, syns, etc; and associate gid
+                    for cell in sim.net.cells:
+                        prop = {'sections': cell.secs}
+                        cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
+                        cell.associateGid()  # can only associate once the hSection obj has been created
+                    # create all NEURON Netcons, NetStims, etc
+                    for cell in sim.net.cells:
+                        cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                        cell.addConnsNEURONObj()
+
+                    print '  Added NEURON objects to %d cells' % (len(sim.net.cells))
+
+            if sim.cfg['timing']: sim.timing('stop', 'loadNetTime')
+            print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
-        print 'netCells and/or netPops not found in file %s'%(filename)
+        print '  netCells and/or netPops not found in file %s'%(filename)
 
     pass
 
 ###############################################################################
 # Load simulation config from file
 ###############################################################################
-def loadSimCfg (filename):
-    data = _loadFile(filename)
+def loadSimCfg (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'simConfig' in data:
         setSimCfg(data['simConfig'])
     else:
-        print 'simConfig not found in file %s'%(filename)
+        print '  simConfig not found in file %s'%(filename)
 
     pass
 
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadSimData (filename):
-    data = _loadFile(filename)
+def loadSimData (filename, data=None):
+    if not data: data = _loadFile(filename)
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
-        print 'simData not found in file %s'%(filename)
+        print '  simData not found in file %s'%(filename)
 
     pass
 
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename):
-    pass
+def loadAll (filename, data=None):
+    if not data: data = _loadFile(filename)
+    loadSimCfg(filename, data=data)
+    loadNetParams(filename, data=data)
+    loadNet(filename, data=data)
+    loadSimData(filename, data=data)
+    
 
 ###############################################################################
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
-
+    
+    if sim.cfg['timing']: sim.timing('start', 'loadFileTime')
     ext = filename.split('.')[1]
 
-    # # Save to pickle file
-    # if ext == 'pkl':
-    #     import pickle
-    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.pkl'))
-    #     with open(sim.cfg['filename']+'.pkl', 'wb') as fileObj:
-    #         pickle.dump(dataSave, fileObj)
-    #     print('Finished saving!')
+    # Save to pickle file
+    if ext == 'pkl':
+        import pickle
+        print('Loading file %s ... ' % (filename))
+        with open(filename, 'r') as fileObj:
+            data = pickle.load(fileObj)
 
-    # # Save to dpk file
-    # elif ext == 'dpk':
-    #     import gzip
-    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
-    #     fn=sim.cfg['filename'] #.split('.')
-    #     gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
-    #     print('Finished saving!')
+    # Save to dpk file
+    elif ext == 'dpk':
+        import gzip
+        print('Loading file %s ... ' % (filename))
+        #fn=sim.cfg['filename'] #.split('.')
+        #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
+        print('Finished saving!')
 
-    # # Save to json file
-    # elif ext == 'json':
-    #     import json
-    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.json '))
-    #     with open(sim.cfg['filename']+'.json', 'w') as fileObj:
-    #         json.dump(dataSave, fileObj)
-    #     print('Finished saving!')
+    # Save to json file
+    elif ext == 'json':
+        import json
+        print('Loading file %s ... ' % (filename))
+        #with open(sim.cfg['filename']+'.json', 'w') as fileObj:
+        #    json.dump(dataSave, fileObj)
+        print('Finished saving!')
 
-    # # Save to mat file
-    # elif ext == 'mat':
-    #     from scipy.io import savemat 
-    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
-    #     savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-    #     print('Finished saving!')
+    # Save to mat file
+    elif ext == 'mat':
+        from scipy.io import savemat 
+        print('Loading file %s ... ' % (filename))
+        #savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+        print('Finished saving!')
 
-    # # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-    # elif ext == 'saveHDF5':
-    #     dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
-    #     import hdf5storage
-    #     print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
-    #     hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
-    #     print('Finished saving!')
+    # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
+    elif ext == 'saveHDF5':
+        #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+        import hdf5storage
+        print('Loading file %s ... ' % (filename))
+        #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
+        print('Finished saving!')
 
-    # # Save to CSV file (currently only saves spikes)
-    # elif ext == 'csv':
-    #     import csv
-    #     print('Saving output as %s ... ' % (sim.cfg['filename']+'.csv'))
-    #     writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
-    #     for dic in dataSave['simData']:
-    #         for values in dic:
-    #             writer.writerow(values)
-    #     print('Finished saving!')
+    # Save to CSV file (currently only saves spikes)
+    elif ext == 'csv':
+        import csv
+        print('Loading file %s ... ' % (filename))
+        writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
+        #for dic in dataSave['simData']:
+        #    for values in dic:
+        #        writer.writerow(values)
+        print('Finished saving!')
 
-    # # Save to Dat file(s) 
-    # elif ext == 'dat': 
-    #     traces = sim.cfg['recordTraces']
-    #     for ref in traces.keys():
-    #         for cellid in sim.allSimData[ref].keys():
-    #             dat_file_name = '%s_%s.dat'%(ref,cellid)
-    #             dat_file = open(dat_file_name, 'w')
-    #             trace = sim.allSimData[ref][cellid]
-    #             print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
-    #             for i in range(len(trace)):
-    #                 dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
+    # Save to Dat file(s) 
+    elif ext == 'dat': 
+        print('Loading file %s ... ' % (filename))
+        traces = sim.cfg['recordTraces']
+        for ref in traces.keys():
+            for cellid in sim.allSimData[ref].keys():
+                dat_file_name = '%s_%s.dat'%(ref,cellid)
+                dat_file = open(dat_file_name, 'w')
+                trace = sim.allSimData[ref][cellid]
+                print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+                for i in range(len(trace)):
+                    dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
 
-    # else:
-    #     print 'Format not recognized for file %s'%(filename)
+    else:
+        print 'Format not recognized for file %s'%(filename)
+        return 
+
+    if sim.cfg['timing']: sim.timing('stop', 'loadFileTime')
+    print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
+   
+
+    return data
 
 
 ###############################################################################
@@ -442,6 +492,7 @@ def setupRecording ():
         sim.fih.append(h.FInitializeHandler(cell.initV))
 
     # spike recording
+    sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})  # initialize
     sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording
@@ -473,12 +524,12 @@ def setupRecording ():
     if sim.cfg['recordTraces']:
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg['analysis'] and 'include' in sim.cfg['analysis']['plotTraces']:
-            cellsPlot = _getCellsList(sim.cfg['analysis']['plotTraces']['include'])
+            cellsPlot = getCellsList(sim.cfg['analysis']['plotTraces']['include'])
         else:
             cellsPlot = [] 
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
-        cellsRecord = _getCellsList(sim.cfg['recordCells'])+cellsPlot
+        cellsRecord = getCellsList(sim.cfg['recordCells'])+cellsPlot
 
         for key in sim.cfg['recordTraces'].keys(): sim.simData[key] = {}  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
@@ -490,7 +541,7 @@ def setupRecording ():
 ###############################################################################
 ### Setup Recording
 ###############################################################################
-def _getCellsList(include):
+def getCellsList(include):
     allCells = sim.net.cells
     cellGids = []
     cells = []

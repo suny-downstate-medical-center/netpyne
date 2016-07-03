@@ -544,7 +544,7 @@ class Cell (object):
 
 
     def recordTraces (self):
-        # set up voltagse recording; recdict will be taken from global context
+        # set up voltage recording; recdict will be taken from global context
         for key, params in sim.cfg['recordTraces'].iteritems():
             try:
                 ptr = None

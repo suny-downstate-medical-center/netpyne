@@ -445,7 +445,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', 
+def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -455,6 +455,7 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: False)
         - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
             or per trace (showing multiple cells) (default: 'cell')
+        - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure (default: None)
@@ -464,6 +465,17 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
     '''
 
     print('Plotting recorded cell traces ...')
+
+    # rerun simulation so new include cells get recorded from
+    if rerun: 
+        cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
+        for cellRecord in cellsRecord:
+            if cellRecord not in sim.cfg['recordCells']:
+                sim.cfg['recordCells'].append(cellRecord)
+        sim.setupRecording()
+        sim.simulate()
+
+
 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],

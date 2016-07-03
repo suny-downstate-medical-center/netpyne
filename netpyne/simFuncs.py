@@ -12,7 +12,7 @@ __all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gather
 __all__.extend(['simulate', 'create', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
-__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', \
+__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -524,12 +524,12 @@ def setupRecording ():
     if sim.cfg['recordTraces']:
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg['analysis'] and 'include' in sim.cfg['analysis']['plotTraces']:
-            cellsPlot = _getCellsList(sim.cfg['analysis']['plotTraces']['include'])
+            cellsPlot = getCellsList(sim.cfg['analysis']['plotTraces']['include'])
         else:
             cellsPlot = [] 
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
-        cellsRecord = _getCellsList(sim.cfg['recordCells'])+cellsPlot
+        cellsRecord = getCellsList(sim.cfg['recordCells'])+cellsPlot
 
         for key in sim.cfg['recordTraces'].keys(): sim.simData[key] = {}  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
@@ -541,7 +541,7 @@ def setupRecording ():
 ###############################################################################
 ### Setup Recording
 ###############################################################################
-def _getCellsList(include):
+def getCellsList(include):
     allCells = sim.net.cells
     cellGids = []
     cells = []

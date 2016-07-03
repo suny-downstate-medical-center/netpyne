@@ -190,14 +190,16 @@ class Network (object):
 
         return strParams
 
-        ###############################################################################
-        # Connect Cells
-        ###############################################################################
+    ###############################################################################
+    # Subcellular connectivity (distribution of synapses)
+    ###############################################################################
     def subcellularConn(self):
+        pass
         # subcellular distribution
-        if self.params.get('subConnParams'):
-            pass
+
+        
             # find list of preSyn gids
+
             # find postsyn cells
             # for each postsyn cell:
                 # find syns from presyn cells
@@ -279,7 +281,9 @@ class Network (object):
                     self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                     connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-
+        # apply subcellular connectivity params (distribution of synaspes)
+        if self.params.get('subConnParams'):
+            self.subcellularConn()
 
 
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))

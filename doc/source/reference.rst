@@ -683,6 +683,7 @@ Export and import:
 
 
 Misc/utilities:
+* **sim.cellByGid()**
 * **sim.version()**
 * **sim.gitversion()**
 

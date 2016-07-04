@@ -12,7 +12,7 @@ __all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gather
 __all__.extend(['simulate', 'create', 'createAndSimulate','createAndExportNeuroML2'])  # wrappers
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
-__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList',\
+__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -458,6 +458,13 @@ def _dict2utf8 (obj):
         return obj
 
 ###############################################################################
+### Convert dict strings to utf8 so can be saved in HDF5 format
+###############################################################################
+def cellByGid(gid):
+    cell = next((c for c in sim.net.cells if c.gid==gid), None)
+    return cell
+
+###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and sim.net sim.params
 ###############################################################################
 def readArgs ():
@@ -539,10 +546,9 @@ def setupRecording ():
     return sim.simData
 
 ###############################################################################
-### Setup Recording
+### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList(include):
-
     allCells = sim.net.cells
     cellGids = []
     cells = []

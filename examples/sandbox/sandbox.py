@@ -59,10 +59,10 @@ cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'section
 soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'cm':1}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54}          # soma hh mechanisms
-# dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
-# dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
-# dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
-# dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
+dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
+dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
+dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
+dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
 cellRule['sections'] = {'soma': soma} #, 'dend': dend}                                     # add soma and dend sections to dict
 
 # cellRule['secLists']['all'] = ['soma', 'dend']
@@ -157,13 +157,13 @@ netParams['connParams'].append(
 #     'delay': 4,
 #     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'synMech': ['AMPA', 'NMDA'], 
-#     'synsPerConn': 3,
-#     'weight': 0.2,                  
-#     'delay': [5, 10],                
-#     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
+netParams['connParams'].append(
+    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    'synMech': ['AMPA', 'NMDA'], 
+    'synsPerConn': 3,
+    'weight': 0.2,                  
+    'delay': [5, 10],                
+    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
 # netParams['connParams'].append(
 #     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
@@ -180,9 +180,11 @@ netParams['connParams'].append(
 #     'synMech': 'AMPA',                     # target NMDA synapse
 #     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
+
+netParams['subConnParams'] = []
 netParams['subConnParams'].append(
-    {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
-    'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+    {'preTags': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
+    'postTags': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
     'sec': 'all',
     'ynormRange': [0, 1.0],
     'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution

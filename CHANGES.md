@@ -4,7 +4,9 @@
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
 
-- Added 'rerun' option to plotTraces()  
+- Added 'rerun' option to plotTraces() 
+
+- Added function to get cell object by gid, sim.cellByGid(gid)  
 
 - Fixed bug that was slowing down STDP by creating new h.Section() -- now uses existing.
 

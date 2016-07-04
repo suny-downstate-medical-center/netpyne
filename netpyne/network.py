@@ -193,19 +193,29 @@ class Network (object):
     ###############################################################################
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
-    def subcellularConn(self):
-        pass
-        # subcellular distribution
+    def subcellularConn(self, allCellTags, allPopTags):
 
-        
-            # find list of preSyn gids
+        for subConnParamTemp in self.params['subConnParams']:  # for each conn rule or parameter set
+            subConnParam = subConnParamTemp.copy()
 
-            # find postsyn cells
-            # for each postsyn cell:
-                # find syns from presyn cells
-                # calculate new syn locations based on sec, yNormRange and density
-                # get y location of synapse -- check Ben's code
-                # move synapses
+            # find list of pre and post cell
+            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, subConnParam['preTags'], subConnParam['postTags'])
+
+            if preCellsTags and postCellsTags:
+                # iterate over postsyn cells to redistribute synapses
+                for postCellGid in postCellsTags:  # for each postsyn cell
+                    if postCellGid in self.lid2gid:
+                        postCell = self.cells[self.gid2lid[postCellGid]] 
+                        conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+                        print [(conn['sec'],conn['loc']) for conn in conns]
+                        # different case if has vs doesn't have 3d points
+
+        # find postsyn cells
+        # for each postsyn cell:
+            # find syns from presyn cells
+            # calculate new syn locations based on sec, yNormRange and density
+            # get y location of synapse -- check Ben's code
+            # move synapses
 
         # netParams['subConnParams'].append(
         # {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
@@ -226,49 +236,19 @@ class Network (object):
         if sim.rank==0: 
             print('Making connections...')
 
-        if sim.nhosts > 1: # Gather tags from all cells 
-            allCellTags = sim.gatherAllCellTags()  
-        else:
-            allCellTags = {cell.gid: cell.tags for cell in self.cells}
-        allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
+            if sim.nhosts > 1: # Gather tags from all cells 
+                allCellTags = sim.gatherAllCellTags()  
+            else:
+                allCellTags = {cell.gid: cell.tags for cell in self.cells}
+            allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
-        for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
-            connParam = connParamTemp.copy()
-            
-            preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
-            prePops = allPopTags  # initialize with all presyn pops
+            for connParamTemp in self.params['connParams']:  # for each conn rule or parameter set
+                connParam = connParamTemp.copy()
 
-            for condKey,condValue in connParam['preTags'].iteritems():  # Find subset of cells that match presyn criteria
-                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
-                    prePops = {}
-                else:
-                    if isinstance(condValue, list): 
-                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
-                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
-                    else:
-                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
-                    
+                # find pre and post cells that match conditions
+                preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preTags'], connParam['postTags'])
 
-            if not preCellsTags: # if no presyn cells, check if netstim
-                if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
-                    for prePop in prePops.values():
-                        if not 'start' in prePop: prePop['start'] = 1  # add default start time
-                        if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
-                    preCellsTags = prePops
-            
-            if preCellsTags:  # only check post if there are pre
-                postCellsTags = allCellTags
-                for condKey,condValue in connParam['postTags'].iteritems():  # Find subset of cells that match postsyn criteria
-                    if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-                    elif isinstance(condValue, list): 
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
-                    else:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
-
-
+                # call appropriate conn function
                 if 'connFunc' not in connParam:  # if conn function not specified, select based on params
                     if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
                     elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
@@ -283,7 +263,7 @@ class Network (object):
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.get('subConnParams'):
-            self.subcellularConn()
+            self.subcellularConn(allCellTags, allPopTags)
 
 
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
@@ -292,6 +272,46 @@ class Network (object):
         if sim.rank == 0 and sim.cfg['timing']: print('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
 
         return [cell.conns for cell in self.cells]
+
+    ###############################################################################
+    # Find cells matching conditions
+    ###############################################################################
+    def _findCellsCondition(self, allCellTags, allPopTags, preTags, postTags):
+        preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
+        prePops = allPopTags  # initialize with all presyn pops
+        postCellsTags = None
+
+        for condKey,condValue in preTags.iteritems():  # Find subset of cells that match presyn criteria
+            if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
+                prePops = {}
+            else:
+                if isinstance(condValue, list): 
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+                else:
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
+                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+                
+
+        if not preCellsTags: # if no presyn cells, check if netstim
+            if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
+                for prePop in prePops.values():
+                    if not 'start' in prePop: prePop['start'] = 1  # add default start time
+                    if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
+                preCellsTags = prePops
+        
+        if preCellsTags:  # only check post if there are pre
+            postCellsTags = allCellTags
+            for condKey,condValue in postTags.iteritems():  # Find subset of cells that match postsyn criteria
+                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                elif isinstance(condValue, list): 
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                else:
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+
+        return preCellsTags, postCellsTags
 
     ###############################################################################
     # Convert connection param string to function

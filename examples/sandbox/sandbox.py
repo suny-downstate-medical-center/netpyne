@@ -8,10 +8,10 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
-from netpyne import utils
+from netpyne import specs
 
-netParams = {}  # dictionary to store sets of network parameters
-simConfig = {}  # dictionary to store sets of simulation configurations
+netParams = specs.NetParams()  # dictionary to store sets of network parameters
+simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
 
 
 ###############################################################################
@@ -24,49 +24,43 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParams['scaleConnWeightModels'] = {'HH': 1.0}
+netParams.scaleConnWeightModels = {'HH': 1.0}
 
 # Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0,0.5], 'numCells': 10}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'PYR2', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'PYR3', 'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange':[0.2,1.0],'numCells': 20}) # add dict with params for this pop 
+netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0,0.5], 'numCells': 10}) # add dict with params for this pop 
+netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
+netParams.addPopParams('PYR3', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start':1, 'seed':2})  # background inputs
-netParams['popParams'].append({'popLabel': 'background2', 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start':1, 'seed':2})  # background inputs
+netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
+netParams.addPopParams('background2', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
 
 
 # Synaptic mechanism parameters
-netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams['synMechParams'].append({'label': 'NMDA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
+netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
  
 
 # Cell parameters
-netParams['cellParams'] = []
-
 ## PYR cell properties
-cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+soma = {'geom': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+cellParams = {'conditions': {'cellType': 'PYR'},  'sections': {'soma': soma}}
+netParams.addCellParams('PYR', cellParams)  # add dict to list of cell properties
 
 
-## Cell property rules
-cellRule = {'label': 'PYR2sec', 'conditions': {'cellType': 'PYR2sec'},  'sections': {}, 'secLists': {}}     # cell rule dict
-soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
+## PYR2sec cell properties
+soma = {'geom': {}, 'mechs': {}}                                                    # soma params dict
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'cm':1}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54}          # soma hh mechanisms
 dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
 dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
-cellRule['sections'] = {'soma': soma} #, 'dend': dend}                                     # add soma and dend sections to dict
-
-# cellRule['secLists']['all'] = ['soma', 'dend']
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+cellParams = {'conditions': {'cellType': 'PYR2sec'},  
+            'sections': {'soma': soma, 'dend': dend}, 
+            'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
+netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
 
 ### HH
 # cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
@@ -76,27 +70,26 @@ netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
 # Stimulation parameters
-netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-netParams['stimParams']['sourceList'].append({'label': 'Input_1', 'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
-netParams['stimParams']['sourceList'].append({'label': 'Input_2', 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
-netParams['stimParams']['sourceList'].append({'label': 'Input_3', 'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams['stimParams']['sourceList'].append({'label': 'Input_4', 'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
+netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
 
-netParams['stimParams']['stimList'].append({
-    'source': 'Input_1', 
+netParams.addStimTargetParams('Input_1_PYR', 
+    {'source': 'Input_1', 
     'sec':'soma', 
     'loc': 0.5, 
     'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
 
 
-netParams['stimParams']['stimList'].append({
-    'source': 'Input_3', 
+netParams.addStimTargetParams('Input_3_PYR2', 
+    {'source': 'Input_3', 
     'sec':'soma', 
     'loc': 0.5, 
     'conditions': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
 
-netParams['stimParams']['stimList'].append({
-	'source': 'Input_4', 
+netParams.addStimTargetParams('Input_4_PYR3', 
+	{'source': 'Input_4', 
 	'sec':'soma', 
 	'loc': 0.5, 
     'weight': '0.1+gauss(0.2,0.05)',

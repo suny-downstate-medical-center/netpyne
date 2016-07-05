@@ -12,6 +12,8 @@
 
 - Fixed bug so vinit gets set for all segments in a section.
 
+- Fixed bug related to readArgs() when running from IPYnotebook.
+
 ## Version 0.5.0
 
 - Added option 'dataSaveInclude' to select what data to save to file (issue #30)

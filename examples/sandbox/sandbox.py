@@ -1,24 +1,24 @@
 """
-params.py 
+sandbox.py 
 
-netParams is a dict containing a set of network parameters using a standardized structure
+netParams is a class containing a set of network parameters using a standardized structure
 
-simConfig is a dict containing a set of simulation configurations using a standardized structure
+simConfig is a class containing a set of simulation configurations using a standardized structure
 
 Contributors: salvadordura@gmail.com
 """
-
-from netpyne import specs
-
-netParams = specs.NetParams()  # dictionary to store sets of network parameters
-simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
-
 
 ###############################################################################
 #
 # SANDBOX PARAMS
 #
 ###############################################################################
+
+from netpyne import specs
+
+netParams = specs.NetParams()  # dictionary to store sets of network parameters
+simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
+
 
 ###############################################################################
 # NETWORK PARAMETERS
@@ -98,9 +98,7 @@ netParams.addStimTargetParams('Input_4_PYR3',
 
 
 # Connectivity parameters
-netParams['connParams'] = []  
-
-netParams['connParams'].append(
+netParams.addConnParams('PYRconn1',
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
@@ -109,7 +107,7 @@ netParams['connParams'].append(
     'synMech': ['AMPA', 'NMDA'],
     'threshold': 10})                    # threshold
 
-netParams['connParams'].append(
+netParams.addConnParams('PYRconn2',
     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
     'weight': 0.005,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
@@ -150,7 +148,7 @@ netParams['connParams'].append(
 #     'delay': 4,
 #     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
-netParams['connParams'].append(
+netParams.addConnParams('PYRconn3',
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
     'synMech': ['AMPA', 'NMDA'], 
     'synsPerConn': 3,
@@ -174,8 +172,7 @@ netParams['connParams'].append(
 #     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
 
 
-netParams['subConnParams'] = []
-netParams['subConnParams'].append(
+netParams.addConnParams('PYRsub1',
     {'preTags': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
     'postTags': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
     'sec': 'all',
@@ -188,39 +185,36 @@ netParams['subConnParams'].append(
 # SIMULATION PARAMETERS
 ###############################################################################
 
-simConfig = {}  # dictionary to store simConfig
-
 # Simulation parameters
-simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
-simConfig['dt'] = 0.025 # Internal integration timestep to use
-simConfig['seeds'] = {'conn': 2, 'stim': 2, 'loc': 2} # Seeds for randomizers (connectivity, input stimulation and cell locations)
-simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = 0 #False  # show detailed messages 
+simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.seeds = {'conn': 2, 'stim': 2, 'loc': 2} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = 0 #False  # show detailed messages 
 
 
 # Recording 
-simConfig['recordCells'] = [1,2]  # which cells to record from
-simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordCells = [1,2]  # which cells to record from
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
 #'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
-simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = 'mpiHHTut'  # Set file output name
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = 1 # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig['saveDpk'] = 0 # save to a .dpk pickled file
-simConfig['saveHDF5'] = 0
-simConfig['saveCSV'] = 0
-simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = True
-simConfig['analysis']['plotTraces'] = {'include': [1,('PYR2',1)], 'oneFigPer':'trace'}
+simConfig.filename = 'mpiHHTut'  # Set file output name
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveJson = 0 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = 0 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveDpk = 0 # save to a .dpk pickled file
+simConfig.saveHDF5 = 0
+simConfig.saveCSV = 0
+simConfig.addAnalysis('plotRaster', True)
+simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
 
 # # Analysis and plotting 
-# simConfig['analysis']['plotRaster']={ 
+# simConfig.addAnalysis('plotRaster',{ 
 #  'maxSpikes':3e8, 
 #  'overlaySpikeHist': True,
 #  'syncLines': True, 
@@ -230,7 +224,7 @@ simConfig['analysis']['plotTraces'] = {'include': [1,('PYR2',1)], 'oneFigPer':'t
 #  'saveName': 'fig1.png'}
 # (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
 
-# simConfig['analysis']['plotSpikeHist']={'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
+# simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
 
-#simConfig['analysis']['plot2Dnet'] = {'include': ['allCells']}
+#simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']}

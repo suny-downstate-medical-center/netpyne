@@ -58,7 +58,7 @@ def initialize (netParams = {}, simConfig = {}, net = None):
     if netParams: 
         sim.setNetParams(netParams)  # set network parameters
 
-    sim.readArgs()  # read arguments from commandline
+    #sim.readArgs()  # read arguments from commandline
 
     sim.timing('stop', 'initialTime')
 
@@ -472,7 +472,7 @@ def readArgs ():
         arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
         harg = arg[0].split('.')+[''] # Separate out variable name; '' since if split fails need to still have an harg[1]
         if len(arg)==2:
-            if hasattr(sim.s.params,arg[0]) or hasattr(sim.s.params,harg[1]): # Check that variable exists
+            if hasattr(sim.net.params,arg[0]) or hasattr(sim.s.params,harg[1]): # Check that variable exists
                 if arg[0] == 'outfilestem':
                     exec('s.'+arg[0]+'="'+arg[1]+'"') # Actually set variable 
                     if sim.rank==0: # messages only come from Master  

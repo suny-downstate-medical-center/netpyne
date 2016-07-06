@@ -262,7 +262,7 @@ class Cell (object):
 
 
     def addSynMech (self, synLabel, secLabel, loc):
-        synMechParams = next((params for params in sim.net.params.synMechParams if params['label'] == synLabel), None)  # get params for this synMech
+        synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct:
@@ -505,8 +505,8 @@ class Cell (object):
     def _setConnWeights (self, params, netStimParams):
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif sim.net.params['scaleConnWeightModels'].get(self.tags['cellModel'], None) is not None:
-            scaleFactor = sim.net.params['scaleConnWeightModels'][self.tags['cellModel']]  # use scale factor specific for this cell model
+        elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
+            scaleFactor = sim.net.params.scaleConnWeightModels[self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params.scaleConnWeight # use global scale factor
 
@@ -542,7 +542,7 @@ class Cell (object):
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
-                synLabel = sim.net.params.synMechParams[0]['label']  # select first synMech from net params and add syn
+                synLabel = sim.net.params.synMechParams.keys()[0]  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 if sim.cfg.verbose: print '  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
             else: # if no synaptic mechanism specified and no synMech params available 

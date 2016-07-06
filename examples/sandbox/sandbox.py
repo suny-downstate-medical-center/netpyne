@@ -193,7 +193,6 @@ simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = 0 #False  # show detailed messages 
 
-
 # Recording 
 simConfig.recordCells = [1,2]  # which cells to record from
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}

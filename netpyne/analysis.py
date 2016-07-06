@@ -25,14 +25,14 @@ def plotData ():
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user
-        for funcName, kwargs in sim.cfg['analysis'].iteritems():
+        for funcName, kwargs in sim.cfg.analysis.iteritems():
             if kwargs == True: kwargs = {}
             elif kwargs == False: continue
             func = getattr(sim.analysis, funcName)  # get pointer to function
             func(**kwargs)  # call function with user arguments
 
         # Print timings
-        if sim.cfg['timing']:
+        if sim.cfg.timing:
             
             sim.timing('stop', 'plotTime')
             print('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
@@ -86,7 +86,7 @@ def syncMeasure ():
         if (spkt>=t0+width): 
             t0=spkt 
             cnt+=1
-    return 1-cnt/(sim.cfg['duration']/width)
+    return 1-cnt/(sim.cfg.duration/width)
 
 
 ######################################################################################################################################################
@@ -223,10 +223,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ylabelText = ylabelText + 'NetStims'
 
     # Time Range
-    if timeRange == [0,sim.cfg['duration']]:
+    if timeRange == [0,sim.cfg.duration]:
         pass
     elif timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
     else:
         spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors) 
         if timeRange[0] <= spkt <= timeRange[1]])
@@ -355,7 +355,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
 
     histData = []
 
@@ -470,8 +470,8 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
     if rerun: 
         cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
         for cellRecord in cellsRecord:
-            if cellRecord not in sim.cfg['recordCells']:
-                sim.cfg['recordCells'].append(cellRecord)
+            if cellRecord not in sim.cfg.recordCells:
+                sim.cfg.recordCells.append(cellRecord)
         sim.setupRecording()
         sim.simulate()
 
@@ -482,16 +482,16 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
-    tracesList = sim.cfg['recordTraces'].keys()
+    tracesList = sim.cfg.recordTraces.keys()
     tracesList.sort()
     cells, cellGids, _ = getCellsInclude(include)
     gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
 
-    recordStep = sim.cfg['recordStep']
+    recordStep = sim.cfg.recordStep
 
     figs = []
     tracesData = []

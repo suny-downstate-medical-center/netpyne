@@ -190,7 +190,7 @@ class Arm:
     ### SETUP
     ################################
     def setup(self, f):#, nduration, loopstep, RLinterval, pc, scale, popnumbers, p): 
-        self.duration = f.cfg['duration']#/1000.0 # duration in msec
+        self.duration = f.cfg.duration#/1000.0 # duration in msec
         self.interval = f.updateInterval #/1000.0 # interval between arm updates in ,sec       
         self.RLinterval = f.RLinterval # interval between RL updates in msec
         self.minRLerror = f.minRLerror # minimum error change for RL (m)
@@ -217,7 +217,7 @@ class Arm:
         self.initArmMovement = int(f.initArmMovement) # start arm movement after x msec
         self.trial = 0 # trial number
         self.origMotorBackgroundRate = 1
-        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params['connParams'] if connParam['preTags']['popLabel'] == 'stimEM'][0]
+        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params.connParams if connParam['preTags']['popLabel'] == 'stimEM'][0]
 
         # motor command encoding
         self.vec = h.Vector()
@@ -289,7 +289,7 @@ class Arm:
                             stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                             break
             f.timeoflastexplor = t
-            if f.rank==0 and f.cfg['verbose']: 
+            if f.rank==0 and f.cfg.verbose: 
                 print 'Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur   
 
 

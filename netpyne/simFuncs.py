@@ -23,7 +23,7 @@ import hashlib
 from copy import copy
 from neuron import h, init # Import NEURON
 
-import sim
+import sim, specs
 
 
 
@@ -33,7 +33,7 @@ import sim
 
 def initialize (netParams = {}, simConfig = {}, net = None):
 
-    if 'popParams' in simConfig or 'duration' in netParams:
+    if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
         sys.exit()
 
@@ -73,19 +73,12 @@ def setNet (net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams (params):
-    for paramName, paramValue in sim.default.netParams.iteritems():  # set default values
-        if paramName not in params:
-            params[paramName] = paramValue
     sim.net.params = params
 
 ###############################################################################
 # Set simulation config
 ###############################################################################
 def setSimCfg (cfg):
-    for paramName, paramValue in sim.default.simConfig.iteritems():  # set default values
-        if paramName not in cfg:
-            cfg[paramName] = paramValue
-
     sim.cfg = cfg
 
 
@@ -112,7 +105,7 @@ def loadNet (filename, data=None, instantiate=True):
         sim.net.allPops = data['net']['pops']
         sim.net.allCells = data['net']['cells']
         if instantiate:
-            if sim.cfg['createPyStruct']:
+            if sim.cfg.createPyStruct:
                 for cellLoad in data['net']['cells']:
                     # create new Cell object and add attributes, but don't create sections or associate gid yet
                     cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
@@ -123,8 +116,8 @@ def loadNet (filename, data=None, instantiate=True):
                 print ' Created %d cells' % (len(data['net']['cells']))
 
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
-                if sim.cfg['createNEURONObj']:  
-                    if sim.cfg['verbose']: print "  Adding NEURON objects..."
+                if sim.cfg.createNEURONObj:  
+                    if sim.cfg.verbose: print "  Adding NEURON objects..."
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
                         prop = {'sections': cell.secs}
@@ -137,7 +130,7 @@ def loadNet (filename, data=None, instantiate=True):
 
                     print '  Added NEURON objects to %d cells' % (len(sim.net.cells))
 
-            if sim.cfg['timing']: sim.timing('stop', 'loadNetTime')
+            if sim.cfg.timing: sim.timing('stop', 'loadNetTime')
             print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
         print '  netCells and/or netPops not found in file %s'%(filename)
@@ -184,7 +177,7 @@ def loadAll (filename, data=None):
 ###############################################################################
 def _loadFile (filename):
     
-    if sim.cfg['timing']: sim.timing('start', 'loadFileTime')
+    if sim.cfg.timing: sim.timing('start', 'loadFileTime')
     ext = filename.split('.')[1]
 
     # Save to pickle file
@@ -198,7 +191,7 @@ def _loadFile (filename):
     elif ext == 'dpk':
         import gzip
         print('Loading file %s ... ' % (filename))
-        #fn=sim.cfg['filename'] #.split('.')
+        #fn=sim.cfg.filename #.split('.')
         #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
         print('Finished saving!')
 
@@ -206,7 +199,7 @@ def _loadFile (filename):
     elif ext == 'json':
         import json
         print('Loading file %s ... ' % (filename))
-        #with open(sim.cfg['filename']+'.json', 'w') as fileObj:
+        #with open(sim.cfg.filename+'.json', 'w') as fileObj:
         #    json.dump(dataSave, fileObj)
         print('Finished saving!')
 
@@ -214,7 +207,7 @@ def _loadFile (filename):
     elif ext == 'mat':
         from scipy.io import savemat 
         print('Loading file %s ... ' % (filename))
-        #savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+        #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
         print('Finished saving!')
 
     # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
@@ -222,14 +215,14 @@ def _loadFile (filename):
         #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
         import hdf5storage
         print('Loading file %s ... ' % (filename))
-        #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
+        #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
         print('Finished saving!')
 
     # Save to CSV file (currently only saves spikes)
     elif ext == 'csv':
         import csv
         print('Loading file %s ... ' % (filename))
-        writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
+        writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
         #for dic in dataSave['simData']:
         #    for values in dic:
         #        writer.writerow(values)
@@ -238,7 +231,7 @@ def _loadFile (filename):
     # Save to Dat file(s) 
     elif ext == 'dat': 
         print('Loading file %s ... ' % (filename))
-        traces = sim.cfg['recordTraces']
+        traces = sim.cfg.recordTraces
         for ref in traces.keys():
             for cellid in sim.allSimData[ref].keys():
                 dat_file_name = '%s_%s.dat'%(ref,cellid)
@@ -246,13 +239,13 @@ def _loadFile (filename):
                 trace = sim.allSimData[ref][cellid]
                 print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
                 for i in range(len(trace)):
-                    dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
+                    dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
     else:
         print 'Format not recognized for file %s'%(filename)
         return 
 
-    if sim.cfg['timing']: sim.timing('stop', 'loadFileTime')
+    if sim.cfg.timing: sim.timing('stop', 'loadFileTime')
     print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
    
 
@@ -405,7 +398,10 @@ def _replaceItemObj (obj, keystart, newval):
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
 def replaceFuncObj (obj):
-    if type(obj) == list:
+    if type(obj) == specs.NetParams:
+        replaceFuncObj(obj.__dict__)
+
+    elif type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 replaceFuncObj(item)
@@ -503,42 +499,42 @@ def setupRecording ():
     sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording
-    if 'plotRaster' in sim.cfg['analysis']:
-        if isinstance(sim.cfg['analysis']['plotRaster'],dict) and 'include' in sim.cfg['analysis']['plotRaster']:
+    if 'plotRaster' in sim.cfg.analysis:
+        if isinstance(sim.cfg.analysis['plotRaster'],dict) and 'include' in sim.cfg.analysis['plotRaster']:
             netStimPops = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel']=='NetStim']+['allNetStims']
-            for item in sim.cfg['analysis']['plotRaster']['include']:
+            for item in sim.cfg.analysis['plotRaster']['include']:
                 if item in netStimPops: 
-                    sim.cfg['recordStim'] = True
+                    sim.cfg.recordStim = True
                     break
 
-    if 'plotSpikeHist' in sim.cfg['analysis']:
-        if sim.cfg['analysis']['plotSpikeHist']==True:
-            sim.cfg['recordStim'] = True
+    if 'plotSpikeHist' in sim.cfg.analysis:
+        if sim.cfg.analysis['plotSpikeHist']==True:
+            sim.cfg.recordStim = True
 
-        elif (isinstance(sim.cfg['analysis']['plotSpikeHist'],dict) and 'include' in sim.cfg['analysis']['spikeSpikeHist']) :
+        elif (isinstance(sim.cfg.analysis['plotSpikeHist'],dict) and 'include' in sim.cfg.analysis['spikeSpikeHist']) :
             netStimPops = [pop.tags['popLabel'] for pop in sim.net.pops if pop.tags['cellModel']=='NetStim']+['allNetStims', 'eachPop']
-            for item in sim.cfg['analysis']['plotSpikeHist']['include']:
+            for item in sim.cfg.analysis['plotSpikeHist']['include']:
                 if item in netStimPops: 
-                    sim.cfg['recordStim'] = True
+                    sim.cfg.recordStim = True
                     break
                   
-    if sim.cfg['recordStim']:
+    if sim.cfg.recordStim:
         sim.simData['stims'] = {}
         for cell in sim.net.cells: 
             cell.recordStimSpikes()
 
     # intrinsic cell variables recording
-    if sim.cfg['recordTraces']:
+    if sim.cfg.recordTraces:
         # get list of cells from argument of plotTraces function
-        if 'plotTraces' in sim.cfg['analysis'] and 'include' in sim.cfg['analysis']['plotTraces']:
-            cellsPlot = getCellsList(sim.cfg['analysis']['plotTraces']['include'])
+        if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
+            cellsPlot = getCellsList(sim.cfg.analysis['plotTraces']['include'])
         else:
             cellsPlot = [] 
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
-        cellsRecord = getCellsList(sim.cfg['recordCells'])+cellsPlot
+        cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
 
-        for key in sim.cfg['recordTraces'].keys(): sim.simData[key] = {}  # create dict to store traces
+        for key in sim.cfg.recordTraces.keys(): sim.simData[key] = {}  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
     
     timing('stop', 'setrecordTime')
@@ -590,11 +586,11 @@ def runSim ():
     if sim.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
-    h.dt = sim.cfg['dt']  # set time step
-    for key,val in sim.cfg['hParams'].iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+    h.dt = sim.cfg.dt  # set time step
+    for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
@@ -604,10 +600,10 @@ def runSim ():
                 stim['hRandom'].negexp(1)
 
     init()
-    sim.pc.psolve(sim.cfg['duration'])
+    sim.pc.psolve(sim.cfg.duration)
     if sim.rank==0: 
         runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg['duration']/1000/runtime))
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
 
@@ -621,29 +617,29 @@ def runSimWithIntervalFunc (interval, func):
     if sim.rank == 0:
         print('\nRunning...')
         runstart = time() # See how long the run takes
-    h.dt = sim.cfg['dt']
+    h.dt = sim.cfg.dt
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg['verbose']: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(sim.cfg['seeds']['stim'])))
+            stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(sim.cfg.seeds['stim'])))
             stim['hRandom'].negexp(1)
 
     init()
 
     #progUpdate = 1000  # update every second
-    while round(h.t) < sim.cfg['duration']:
-        sim.pc.psolve(min(sim.cfg['duration'], h.t+interval))
-        #if sim.cfg['verbose'] and (round(h.t) % progUpdate):
-            #print(' Sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg['duration']*100)))
+    while round(h.t) < sim.cfg.duration:
+        sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
+        #if sim.cfg.verbose and (round(h.t) % progUpdate):
+            #print(' Sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg.duration*100)))
         func(h.t) # function to be called at intervals
 
     if sim.rank==0: 
         runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg['duration']/1000/runtime))
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
                 
@@ -673,7 +669,7 @@ def gatherData ():
     if sim.rank==0: 
         print('\nGathering spikes...')
 
-    simDataVecs = ['spkt','spkid','stims']+sim.cfg['recordTraces'].keys()
+    simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': [list(pop.cellGids) for pop in sim.net.pops], 'simData': sim.simData} 
         data = [None]*sim.nhosts
@@ -741,7 +737,7 @@ def gatherData ():
     ## Print statistics
     if sim.rank == 0:
         timing('stop', 'gatherTime')
-        if sim.cfg['timing']: print('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
+        if sim.cfg.timing: print('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])   
@@ -749,15 +745,15 @@ def gatherData ():
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
-            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg['duration']*1e3 # Calculate firing rate 
+            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg.duration*1e3 # Calculate firing rate 
         else: 
             sim.firingRate = 0
         if sim.numCells > 0:
             sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
         else:
             sim.connsPerCell = 0
-        if sim.cfg['timing']: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
-        print('  Simulated time: %i-s; %i cells; %i workers' % (sim.cfg['duration']/1e3, sim.numCells, sim.nhosts))
+        if sim.cfg.timing: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
+        print('  Simulated time: %i-s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
 
@@ -772,7 +768,7 @@ def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
         
-        if not include: include = sim.cfg['saveDataInclude']
+        if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}
 
@@ -785,63 +781,63 @@ def saveData (include = None):
 
         if dataSave:
             if 'timestampFilename' in sim.cfg:  # add timestamp to filename
-                if sim.cfg['timestampFilename']: 
+                if sim.cfg.timestampFilename: 
                     timestamp = time()
                     timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
-                    sim.cfg['filename'] = sim.cfg['filename']+'-'+timestampStr
+                    sim.cfg.filename = sim.cfg.filename+'-'+timestampStr
 
             # Save to pickle file
-            if sim.cfg['savePickle']:
+            if sim.cfg.savePickle:
                 import pickle
-                print('Saving output as %s ... ' % (sim.cfg['filename']+'.pkl'))
-                with open(sim.cfg['filename']+'.pkl', 'wb') as fileObj:
+                print('Saving output as %s ... ' % (sim.cfg.filename+'.pkl'))
+                with open(sim.cfg.filename+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to dpk file
-            if sim.cfg['saveDpk']:
+            if sim.cfg.saveDpk:
                 import gzip
-                print('Saving output as %s ... ' % (sim.cfg['filename']+'.dpk'))
-                fn=sim.cfg['filename'] #.split('.')
+                print('Saving output as %s ... ' % (sim.cfg.filename+'.dpk'))
+                fn=sim.cfg.filename #.split('.')
                 gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
                 print('Finished saving!')
 
             # Save to json file
-            if sim.cfg['saveJson']:
+            if sim.cfg.saveJson:
                 import json
-                print('Saving output as %s ... ' % (sim.cfg['filename']+'.json '))
-                with open(sim.cfg['filename']+'.json', 'w') as fileObj:
+                print('Saving output as %s ... ' % (sim.cfg.filename+'.json '))
+                with open(sim.cfg.filename+'.json', 'w') as fileObj:
                     json.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to mat file
-            if sim.cfg['saveMat']:
+            if sim.cfg.saveMat:
                 from scipy.io import savemat 
-                print('Saving output as %s ... ' % (sim.cfg['filename']+'.mat'))
-                savemat(sim.cfg['filename']+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+                print('Saving output as %s ... ' % (sim.cfg.filename+'.mat'))
+                savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-            if sim.cfg['saveHDF5']:
+            if sim.cfg.saveHDF5:
                 dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
                 import hdf5storage
-                print('Saving output as %s... ' % (sim.cfg['filename']+'.hdf5'))
-                hdf5storage.writes(dataSaveUTF8, filename=sim.cfg['filename']+'.hdf5')
+                print('Saving output as %s... ' % (sim.cfg.filename+'.hdf5'))
+                hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
                 print('Finished saving!')
 
             # Save to CSV file (currently only saves spikes)
-            if sim.cfg['saveCSV']:
+            if sim.cfg.saveCSV:
                 import csv
-                print('Saving output as %s ... ' % (sim.cfg['filename']+'.csv'))
-                writer = csv.writer(open(sim.cfg['filename']+'.csv', 'wb'))
+                print('Saving output as %s ... ' % (sim.cfg.filename+'.csv'))
+                writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
                 for dic in dataSave['simData']:
                     for values in dic:
                         writer.writerow(values)
                 print('Finished saving!')
 
             # Save to Dat file(s) 
-            if sim.cfg['saveDat']:
-                traces = sim.cfg['recordTraces']
+            if sim.cfg.saveDat:
+                traces = sim.cfg.recordTraces
                 for ref in traces.keys():
                     for cellid in sim.allSimData[ref].keys():
                         dat_file_name = '%s_%s.dat'%(ref,cellid)
@@ -849,7 +845,7 @@ def saveData (include = None):
                         trace = sim.allSimData[ref][cellid]
                         print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
                         for i in range(len(trace)):
-                            dat_file.write('%s\t%s\n'%((i*sim.cfg['dt']/1000),trace[i]/1000))
+                            dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
                 print('Finished saving!')
         else: 
@@ -858,7 +854,7 @@ def saveData (include = None):
 
         # Save timing
         timing('stop', 'saveTime')
-        if sim.cfg['timing'] and sim.cfg['saveTiming']: 
+        if sim.cfg.timing and sim.cfg.saveTiming: 
             import pickle
             with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
@@ -866,7 +862,7 @@ def saveData (include = None):
 ### Timing - Stop Watch
 ###############################################################################
 def timing (mode, processName):
-    if sim.rank == 0 and sim.cfg['timing']:
+    if sim.rank == 0 and sim.cfg.timing:
         if mode == 'start':
             sim.timingData[processName] = time() 
         elif mode == 'stop':
@@ -978,7 +974,7 @@ def _export_synapses (net, nml_doc):
 
     import neuroml
 
-    for syn in net.params['synMechParams']:
+    for syn in net.params.synMechParams:
 
         print('Exporting details of syn: %s'%syn)
         if syn['mod'] == 'Exp2Syn':
@@ -1130,7 +1126,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
     '''
     from pyneuroml.lems import LEMSSimulation
 
-    ls = LEMSSimulation('Sim_%s'%reference, sim.cfg['dt'],sim.cfg['duration'],reference)
+    ls = LEMSSimulation('Sim_%s'%reference, sim.cfg.dt,sim.cfg.duration,reference)
 
     ls.include_neuroml2_file(nml_file_name)'''
 
@@ -1139,8 +1135,8 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
     pyneuroml.lems.generate_lems_file_for_neuroml("Sim_%s"%reference, 
                                nml_file_name, 
                                reference, 
-                               sim.cfg['duration'], 
-                               sim.cfg['dt'], 
+                               sim.cfg.duration, 
+                               sim.cfg.dt, 
                                'LEMS_%s.xml'%reference,
                                '.',
                                copy_neuroml = False,

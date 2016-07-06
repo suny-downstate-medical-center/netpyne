@@ -370,7 +370,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         # Select cells to include
         if len(cellGids) > 0:
-            spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            try:
+                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            except:
+                spkinds,spkts = [],[]
         else: 
             spkinds,spkts = [],[]
 

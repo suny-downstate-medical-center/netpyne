@@ -98,55 +98,55 @@ netParams.addStimTargetParams('Input_4_PYR3',
 
 
 # Connectivity parameters
-netParams.addConnParams('PYRconn1',
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'synsPerConn': 5,
-    'sec': 'all',
-    'synMech': ['AMPA', 'NMDA'],
-    'threshold': 10})                    # threshold
+# netParams.addConnParams('PYRconn1',
+#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+#     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'synsPerConn': 5,
+#     'sec': 'all',
+#     'synMech': ['AMPA', 'NMDA'],
+#     'threshold': 10})                    # threshold
 
-netParams.addConnParams('PYRconn2',
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-    'weight': 0.005,                    # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'threshold': 10,                    # threshold
-    'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+# netParams.addConnParams('PYRconn2',
+#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+#     'weight': 0.005,                    # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'threshold': 10,                    # threshold
+#     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
-# netParams['connParams'].append(
+# netParams.addConnParams(1,
 #     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
 #     'weight': 0.005,                    # weight of each connection
 #     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
 #     'threshold': 10,                    # threshold
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
-#     'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 10})
-#     #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams.addConnParams(2,
+    {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
+    'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 10})
+    #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
-#     'connList': [[0,1],[3,1]],			# list of connections
-#     'synMech': ['AMPA', 'NMDA'], 
-#     'synsPerConn': 3,
-#     'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
-# 	'delay': 5,
-#     'loc': 0.2,
-#     'threshold': 10})                   # threshold
+netParams.addConnParams(3,
+    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    'connList': [[0,1],[3,1]],			# list of connections
+    'synMech': ['AMPA', 'NMDA'], 
+    'synsPerConn': 3,
+    'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
+	'delay': 5,
+    'loc': 0.2,
+    'threshold': 10})                   # threshold
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'weight': 1.0,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 4,
-#     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
+netParams.addConnParams(4,
+    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    'weight': 1.0,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 4,
+    'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
 netParams.addConnParams('PYRconn3',
     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
@@ -156,20 +156,19 @@ netParams.addConnParams('PYRconn3',
     'delay': [5, 10],                
     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'weight': 0.02,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'synsPerConn': 2,
-#     'delay': 1})           # uniformly distributed delays between 1-5ms
+netParams.addConnParams('PYRconn4',
+    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    'weight': 0.02,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'synsPerConn': 2,
+    'delay': 1})           # uniformly distributed delays between 1-5ms
 
 
 
-# netParams['connParams'].append(
-#     {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'weight': 0.1,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
+netParams.connParams['PYRconn5']= {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    'weight': 0.1,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 
 netParams.addConnParams('PYRsub1',
@@ -204,26 +203,16 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'mpiHHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = 1 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveJson = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveMat = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveDpk = 0 # save to a .dpk pickled file
-simConfig.saveHDF5 = 0
-simConfig.saveCSV = 0
+simConfig.saveJson = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveDpk = 1 # save to a .dpk pickled file
+simConfig.saveHDF5 = 1
+simConfig.saveCSV = 1
 simConfig.addAnalysis('plotRaster', True)
 simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
 
 # # Analysis and plotting 
-# simConfig.addAnalysis('plotRaster',{ 
-#  'maxSpikes':3e8, 
-#  'overlaySpikeHist': True,
-#  'syncLines': True, 
-#  'orderBy':'ynorm'|'y'|'popLabel'|'cellType',
-#  'figId': 1,  # figs with same figId will be converted to subplots
-#  'saveData': 'data2.pkl',
-#  'saveName': 'fig1.png'}
-# (include = ['all'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, syncLines = False, saveData = None, saveFig = None): 
+simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
+    'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
 
-# simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
-#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True}
-
-#simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']}
+simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

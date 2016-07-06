@@ -780,11 +780,10 @@ def saveData (include = None):
         if 'simData' in include: dataSave['simData'] = sim.allSimData
 
         if dataSave:
-            if 'timestampFilename' in sim.cfg:  # add timestamp to filename
-                if sim.cfg.timestampFilename: 
-                    timestamp = time()
-                    timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
-                    sim.cfg.filename = sim.cfg.filename+'-'+timestampStr
+            if sim.cfg.timestampFilename: 
+                timestamp = time()
+                timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+                sim.cfg.filename = sim.cfg.filename+'-'+timestampStr
 
             # Save to pickle file
             if sim.cfg.savePickle:

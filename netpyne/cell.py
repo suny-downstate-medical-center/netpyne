@@ -293,7 +293,6 @@ class Cell (object):
 
 
     def addConn (self, params, netStimParams = None):
-
         if params.get('threshold') is None: params['threshold'] = sim.net.params.defaultThreshold  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
@@ -341,7 +340,7 @@ class Cell (object):
                     connParams['loc'] = synMechLocs[i]
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
-                    connParams['preLabel'] = netStimParams['label']
+                    connParams['preLabel'] = netStimParams['source']
                 self.conns.append(connParams)
                     
             else:  # do not fill in python structure (just empty dict for NEURON obj)
@@ -372,7 +371,7 @@ class Cell (object):
             if sim.cfg.verbose: 
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
-                preGid = netStimParams['label']+' NetStim' if netStimParams else params['preGid']
+                preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
    
@@ -437,7 +436,8 @@ class Cell (object):
                 'threshold': params.get('threshold'),
                 'synsPerConn': params.get('synsPerConn'),
                 'plasticity': params.get('plasticity')}
-            netStimParams = {'label': params['label'],
+                
+            netStimParams = {'source': params['source'],
                 'type': params['type'],
                 'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
                 'noise': params['noise'],
@@ -450,7 +450,7 @@ class Cell (object):
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
-            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):

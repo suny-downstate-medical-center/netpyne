@@ -94,13 +94,13 @@ class Network (object):
 
             sources = self.params.stimSourceParams
 
-            for stim in self.params.stimTargetParams:  # for each stim parameter set
-                if 'sec' not in stim: stim['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+            for target in self.params.stimTargetParams.values():  # for each target parameter set
+                if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
                 
-                source = next((source for source in sources if source['label'] == stim['source']), None)
+                source = sources.get(target['source'])
 
                 postCellsTags = allCellTags
-                for condKey,condValue in stim['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
+                for condKey,condValue in target['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
                     if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                     elif condKey == 'cellList':
@@ -111,27 +111,28 @@ class Network (object):
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
                 
                 # subset of cells from selected pops (by relative indices)                     
-                if 'cellList' in stim['conditions']:
+                if 'cellList' in target['conditions']:
                     orderedPostGids = sorted(postCellsTags.keys())
-                    gidList = [orderedPostGids[i] for i in stim['conditions']['cellList']]
+                    gidList = [orderedPostGids[i] for i in target['conditions']['cellList']]
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
 
                 # calculate params if string-based funcs
-                strParams = self._stimStrToFunc(postCellsTags, source, stim)
+                strParams = self._stimStrToFunc(postCellsTags, source, target)
 
-                # loop over postCells and add stim
+                # loop over postCells and add stim target
                 for postCellGid in postCellsTags:  # for each postsyn cell
                     if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                         postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
 
-                        # stim params
+                        # stim target params
                         params = {}
-                        params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else stim['sec']
-                        params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else stim['loc']
+                        params['source'] = target['source']
+                        params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else target['sec']
+                        params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else target['loc']
                          
                         if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
-                            params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else stim.get('weight', 1.0)
-                            params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else stim.get('delay', 1.0)
+                            params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else target.get('weight', 1.0)
+                            params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
                         
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
@@ -147,11 +148,11 @@ class Network (object):
     ###############################################################################
     # Convert stim param string to function
     ###############################################################################
-    def _stimStrToFunc (self, postCellsTags, sourceParams, stimParams):
+    def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
         # list of params that have a function passed in as a string
-        #params = sourceParams+stimParams
+        #params = sourceParams+targetParams
         params = sourceParams.copy()
-        params.update(stimParams)
+        params.update(targetParams)
 
         paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams if param in params and isinstance(params[param], str)]  
 
@@ -546,7 +547,7 @@ class Network (object):
     ###############################################################################
     def _addNetStimParams (self, connParam, preCellTags):
 
-        netStimParams = {'label': preCellTags['popLabel'],
+        netStimParams = {'source': preCellTags['popLabel'],
         'type': preCellTags['cellModel'],
         'rate': preCellTags['rate'],
         'noise': preCellTags['noise'],

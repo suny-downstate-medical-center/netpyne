@@ -94,7 +94,7 @@ def syncMeasure ():
 ######################################################################################################################################################
 def getCellsInclude(include):
     allCells = sim.net.allCells
-    allNetStimPops = [p.tags['popLabel'] for p in sim.net.allPops if p.tags['cellModel']=='NetStim']
+    allNetStimPops = [popLabel for popLabel,pop in sim.net.allPops.iteritems() if pop.tags['cellModel']=='NetStim']
     cellGids = []
     cells = []
     netStimPops = []
@@ -168,7 +168,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Select cells to include
     cells, cellGids, netStimPops = getCellsInclude(include)
     selectedPops = [cell['tags']['popLabel'] for cell in cells]+netStimPops
-    popLabels = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
@@ -344,7 +344,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
         include.remove('eachPop')
-        for pop in sim.net.allPops: include.append(pop.tags['popLabel'])
+        for pop in sim.net.allPops: include.append(pop)
 
     # Y-axis label
     if yaxis == 'rate': yaxisLabel = 'Avg cell firing rate (Hz)'
@@ -538,16 +538,16 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                     plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     xlabel('Time (ms)', fontsize=fontsiz)
                     xlim(timeRange)
-                    title(trace)
+                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
             if overlay:
                 maxLabelLen = 10
                 subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
                 legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-    # try:
-    #     tight_layout()
-    # except:
-    #     pass
+    try:
+        tight_layout()
+    except:
+        pass
 
     #save figure data
     if saveData:
@@ -683,7 +683,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
         
         # get list of pops
         popsTemp = list(set([cell['tags']['popLabel'] for cell in cells]))
-        pops = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in popsTemp]+netStimPops
+        pops = [pop for pop in sim.net.allPops if pop in popsTemp]+netStimPops
         popInds = {pop: ind for ind,pop in enumerate(pops)}
         
         # initialize matrices
@@ -909,7 +909,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
 
     cells, cellGids, _ = getCellsInclude(include)           
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
-    popLabels = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
     posX = [cell['tags']['x'] for cell in cells]  # get all x positions

@@ -12,6 +12,7 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
+from collections import orderedDict
 from neuron import h  # import NEURON
 import sim
 
@@ -31,7 +32,7 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
-        self.pops = []  # list to store populations ('Pop' objects)
+        self.pops = orderedDict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
@@ -50,9 +51,8 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops (self):
-        for popParam in self.params.popParams: # for each set of population paramseters 
-            self.pops.append(sim.Pop(popParam))  # instantiate a new object of class Pop and add to list pop
-
+        for popLabel, popParam in self.params.popParams.iteritems(): # for each set of population paramseters 
+            self.pops[popLabel] = sim.Pop(popLabel, popParam)  # instantiate a new object of class Pop and add to list pop
         return self.pops
 
 
@@ -65,7 +65,7 @@ class Network (object):
         if sim.rank==0: 
             print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), sim.cfg.duration/1000.,sim.nhosts)) 
         
-        for ipop in self.pops: # For each pop instantiate the network cells (objects of class 'Cell')
+        for ipop in self.pops.values(): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()

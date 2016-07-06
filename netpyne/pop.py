@@ -20,8 +20,9 @@ import sim
 
 class Pop (object):
     ''' Python class used to instantiate the network population '''
-    def __init__(self,  tags):
+    def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
+        self.tags['popLabel'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
 
     # Function to instantiate Cell objects based on the characteristics of this population
@@ -62,7 +63,7 @@ class Pop (object):
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [float(point) / sim.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
+                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
             if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
@@ -71,7 +72,7 @@ class Pop (object):
         for i in xrange(int(sim.rank), sim.net.params.scale * self.tags['numCells'], sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['xnorm'] = randLocs[i,0] # set x location (um)
             cellTags['ynorm'] = randLocs[i,1] # set y location (um)
             cellTags['znorm'] = randLocs[i,2] # set z location (um)
@@ -144,7 +145,7 @@ class Pop (object):
         for i in xrange(int(sim.rank), self.tags['numCells'], sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
             cellTags['ynorm'] = randLocs[i,1]  # calculate y location (um)
             cellTags['znorm'] = randLocs[i,2]  # calculate z location (um)
@@ -169,7 +170,7 @@ class Pop (object):
             #    cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params['popTagsCopiedToCells']}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             for coord in ['x','y','z']:
                 if coord in cellTags:  # if absolute coord exists

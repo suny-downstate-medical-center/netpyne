@@ -12,7 +12,7 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
-from collections import orderedDict
+from collections import OrderedDict
 from neuron import h  # import NEURON
 import sim
 
@@ -32,7 +32,7 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
-        self.pops = orderedDict()  # list to store populations ('Pop' objects)
+        self.pops = OrderedDict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
@@ -240,9 +240,9 @@ class Network (object):
                 allCellTags = sim.gatherAllCellTags()  
             else:
                 allCellTags = {cell.gid: cell.tags for cell in self.cells}
-            allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
+            allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
 
-            for connParamTemp in self.params.connParams:  # for each conn rule or parameter set
+            for connParamTemp in self.params.connParams.values():  # for each conn rule or parameter set
                 connParam = connParamTemp.copy()
 
                 # find pre and post cells that match conditions
@@ -352,7 +352,7 @@ class Network (object):
                                 sqrt(preTags['znorm'] - postTags['znorm']))
         
         # add netParams variables
-        for k,v in self.params.iteritems():
+        for k,v in self.params.__dict__.iteritems():
             if isinstance(v, Number):
                 dictVars[k] = v
 

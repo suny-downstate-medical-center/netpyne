@@ -31,7 +31,7 @@ class Cell (object):
         if associateGid and sim.cfg.createNEURONObj: self.associateGid() # register cell for this node
 
     def create (self):
-        for prop in sim.net.params.cellParams:  # for each set of cell properties
+        for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
                 if self.tags[condKey] != condVal: 
@@ -39,9 +39,9 @@ class Cell (object):
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if 'propList' not in self.tags:
-                    self.tags['propList'] = [prop['label']] # create list of property sets
+                    self.tags['propList'] = [propLabel] # create list of property sets
                 else:
-                    self.tags['propList'].append(prop['label'])  # add label of cell property set to list of property sets for this cell
+                    self.tags['propList'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
                 if sim.cfg.createNEURONObj:

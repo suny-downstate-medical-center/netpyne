@@ -5,7 +5,7 @@ SimConfig is a class containing a set of simulation configurations using a stand
 Contributors: salvadordura@gmail.com
 """
 
-from collections import orderedDict
+from collections import OrderedDict
 
 
 ###############################################################################
@@ -32,24 +32,24 @@ class NetParams (object):
 		self.propVelocity = 500.0  # propagation velocity (um/ms)
 		 
 		# Cell params dict
-		self.cellParams = orderedDict()
+		self.cellParams = OrderedDict()
 
 		# Population params dict
-		self.popParams = orderedDict()  # create list of populations - each item will contain dict with pop params
+		self.popParams = OrderedDict()  # create list of populations - each item will contain dict with pop params
 		self.popTagsCopiedToCells = ['popLabel', 'cellModel', 'cellType']
 
 		# Synaptic mechanism params dict
-		self.synMechParams = orderedDict()		
+		self.synMechParams = OrderedDict()		
 
 		# Connectivity params dict
-		self.connParams = orderedDict()  
+		self.connParams = OrderedDict()  
 
 		# Subcellular connectivity params dict
-		self.subConnParams = orderedDict()  
+		self.subConnParams = OrderedDict()  
 
 		# Stimulation source and target params dicts
-		self.stimSourceParams = orderedDict()  
-		self.stimTargetParams = orderedDict() 
+		self.stimSourceParams = OrderedDict()  
+		self.stimTargetParams = OrderedDict() 
 
 	def addCellParams(self, label, params):
 		self.cellParams[label] =  params
@@ -109,7 +109,7 @@ class SimConfig (object):
 		self.saveDat = False # save traces to .dat file(s)
 
 		# Analysis and plotting 
-		self.analysis = orderedDict()
+		self.analysis = OrderedDict()
 
-	def addAnalysisParams(self, func, params):
+	def addAnalysis(self, func, params):
 		self.analysis[func] =  params

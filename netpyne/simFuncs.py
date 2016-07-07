@@ -398,10 +398,7 @@ def _replaceItemObj (obj, keystart, newval):
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
 def replaceFuncObj (obj):
-    if type(obj) == specs.NetParams:
-        replaceFuncObj(obj.__dict__)
-
-    elif type(obj) == list:
+    if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 replaceFuncObj(item)
@@ -423,20 +420,40 @@ def replaceFuncObj (obj):
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
 def replaceNoneObj (obj):
-    if type(obj) == list:
+    if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
-            if type(item) in [list, dict]:
+            if type(item) in [list, dict]:#, tuple]:
                 replaceNoneObj(item)
 
-    elif type(obj) == dict:
+    elif type(obj) == dict or type(obj) == specs.OrderedDict:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict]:
+            if type(val) in [list, dict, specs.OrderedDict]:
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
             elif val == {}:
                 obj[key] = [] # also replace empty dicts with empty list
     return obj
+
+###############################################################################
+### Replace None from dict or list with [](so can be saved to .mat)
+###############################################################################
+def tupleToStr (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict]:
+                tupleToStr(item)
+            elif type(item) == tuple:
+                obj[obj.index(item)] = str(item)
+
+    elif type(obj) == dict or type(obj) == specs.OrderedDict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict, specs.OrderedDict]:
+                tupleToStr(val)
+            elif type(val) == tuple:
+                obj[key] = str(val) # also replace empty dicts with empty list
+    return obj
+
 
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
@@ -765,7 +782,7 @@ def gatherData ():
 ###############################################################################
 ### Save data
 ###############################################################################
-def saveData (include = None):
+def saveData (include = ['simConfig']):# None):
     if sim.rank == 0:
         timing('start', 'saveTime')
         
@@ -773,11 +790,11 @@ def saveData (include = None):
         dataSave = {}
         net = {}
 
-        if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params)
+        if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'netCells' in include: net['cells'] = sim.net.allCells
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
-        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg 
+        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: dataSave['simData'] = sim.allSimData
 
         if dataSave:
@@ -814,7 +831,7 @@ def saveData (include = None):
             if sim.cfg.saveMat:
                 from scipy.io import savemat 
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.mat'))
-                savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+                savemat(sim.cfg.filename+'.mat', tupleToStr(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)

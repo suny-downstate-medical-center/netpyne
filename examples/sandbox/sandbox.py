@@ -208,11 +208,11 @@ simConfig.saveMat = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveDpk = 1 # save to a .dpk pickled file
 simConfig.saveHDF5 = 1
 simConfig.saveCSV = 1
-simConfig.addAnalysis('plotRaster', True)
+#simConfig.addAnalysis('plotRaster', True)
 simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
 
-# # Analysis and plotting 
-simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
-    'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
+# # # Analysis and plotting 
+# simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
+#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
 
-simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})
+# simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

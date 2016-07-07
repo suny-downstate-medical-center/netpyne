@@ -8,6 +8,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from simFuncs import *
+from wrappers import *
 import analysis
 from network import Network
 from cell import Cell, PointNeuron

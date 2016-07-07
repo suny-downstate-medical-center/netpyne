@@ -9,8 +9,6 @@ Contributors: salvadordura@gmail.com
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData'])  # run and gather
-__all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
-'createAndExportNeuroML2'])  # wrappers
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
 __all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
@@ -26,7 +24,6 @@ from copy import copy
 from neuron import h, init # Import NEURON
 
 import sim, specs
-
 
 
 ###############################################################################
@@ -93,6 +90,19 @@ def setSimCfg (cfg):
 
 
 ###############################################################################
+# Create parallel context
+###############################################################################
+def createParallelContext ():
+    sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    sim.pc.done()
+    sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
+    sim.rank = int(sim.pc.id())     # rank or node number (0 will be the master)
+
+    if sim.rank==0: 
+        sim.pc.gid_clear()
+
+
+###############################################################################
 # Load netParams from cell
 ###############################################################################
 def loadNetParams (filename, data=None):
@@ -104,6 +114,7 @@ def loadNetParams (filename, data=None):
         print 'netParams not found in file %s'%(filename)
 
     pass
+
 
 ###############################################################################
 # Load cells and pops from file and create NEURON objs
@@ -151,7 +162,6 @@ def loadNet (filename, data=None, instantiate=True):
         print '  netCells and/or netPops not found in file %s'%(filename)
 
 
-
 ###############################################################################
 # Load simulation config from file
 ###############################################################################
@@ -165,6 +175,7 @@ def loadSimCfg (filename, data=None):
 
     pass
 
+
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
@@ -177,6 +188,7 @@ def loadSimData (filename, data=None):
         print '  simData not found in file %s'%(filename)
 
     pass
+
 
 ###############################################################################
 # Load all data in file
@@ -268,140 +280,6 @@ def _loadFile (filename):
 
     return data
 
-
-###############################################################################
-# Create parallel context
-###############################################################################
-def createParallelContext ():
-    sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
-    sim.pc.done()
-    sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
-    sim.rank = int(sim.pc.id())     # rank or node number (0 will be the master)
-
-    if sim.rank==0: 
-        sim.pc.gid_clear()
-
-
-###############################################################################
-# Wrapper to create network
-###############################################################################
-def create (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands to create network '''
-    import __main__ as top
-    if not netParams: netParams = top.netParams
-    if not simConfig: simConfig = top.simConfig
-
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    pops = sim.net.createPops()                  # instantiate network populations
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
-    conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
-
-    if output: return (pops, cells, conns, stims, simData)
-    
-
-###############################################################################
-# Wrapper to simulate network
-###############################################################################
-def simulate ():
-    ''' Sequence of commands to simulate network '''
-    sim.runSim()                      # run parallel Neuron simulation  
-    sim.gatherData()                  # gather spiking data and cell info from each node
-    
-
-###############################################################################
-# Wrapper to simulate network
-###############################################################################
-def analyze ():
-    ''' Sequence of commands to simulate network '''
-    sim.saveData()                      # run parallel Neuron simulation  
-    sim.analysis.plotData()                  # gather spiking data and cell info from each node
-
-
-###############################################################################
-# Wrapper to create, simulate, and analyse network
-###############################################################################
-def createSimulate (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands create, simulate and analyse network '''
-    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
-
-    if output: return (pops, cells, conns, stims, simData)    
-
-
-###############################################################################
-# Wrapper to create, simulate, and analyse network
-###############################################################################
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands create, simulate and analyse network '''
-    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
-    sim.analyze()
-
-    if output: return (pops, cells, conns, stims, simData)
-
-
-###############################################################################
-# Wrapper to load all, ready for simulation
-###############################################################################
-def load (filename, output=False):
-    ''' Sequence of commands load, simulate and analyse network '''
-    sim.initialize()  # create network object and set cfg and net params
-    sim.loadAll(filename)
-    if len(sim.net.cells) == 0:
-        pops = sim.net.createPops()                  # instantiate network populations
-        cells = sim.net.createCells()                 # instantiate network cells based on defined populations
-        conns = sim.net.connectCells()                # create connections between cells based on params
-        stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-
-    if output: 
-        try:
-            return (pops, cells, conns, stims, simData)
-        except:
-            pass
-
-###############################################################################
-# Wrapper to load net and simulate
-###############################################################################
-def loadSimulate (filename, output=False):
-    sim.load(filename)
-    sim.simulate()
-
-    #if output: return (pops, cells, conns, stims, simData)
-
-
-###############################################################################
-# Wrapper to load net and simulate
-###############################################################################
-def loadSimulateAnalyze (filename, output=False):
-    sim.load(filename)
-    sim.simulate()
-    sim.analyze()
-
-    #if output: return (pops, cells, conns, stims, simData)
-        
-
-###############################################################################
-# Wrapper to create and export network to NeuroML2
-###############################################################################
-def createAndExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
-    ''' Sequence of commands to create and export network to NeuroML2 '''
-    import __main__ as top
-    if not netParams: netParams = top.netParams
-    if not simConfig: simConfig = top.simConfig
-
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    pops = sim.net.createPops()                  # instantiate network populations
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
-    conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
-
-    if output: return (pops, cells, conns, stims, simData)
-        
 
 ###############################################################################
 # Hash function to obtain random value
@@ -503,6 +381,7 @@ def replaceNoneObj (obj):
                 obj[key] = [] # also replace empty dicts with empty list
     return obj
 
+
 ###############################################################################
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
@@ -543,12 +422,14 @@ def _dict2utf8 (obj):
     else:
         return obj
 
+
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
 def cellByGid(gid):
     cell = next((c for c in sim.net.cells if c.gid==gid), None)
     return cell
+
 
 ###############################################################################
 ### Update model parameters from command-line arguments - UPDATE for sim and sim.net sim.params
@@ -631,6 +512,7 @@ def setupRecording ():
 
     return sim.simData
 
+
 ###############################################################################
 ### Get cells list for recording based on set of conditions
 ###############################################################################
@@ -664,7 +546,6 @@ def getCellsList(include):
     cellGids = list(set(cellGids))  # unique values
     cells = [cell for cell in allCells if cell.gid in cellGids]
     return cells
-
 
 
 ###############################################################################
@@ -734,7 +615,6 @@ def runSimWithIntervalFunc (interval, func):
     timing('stop', 'runTime')
                 
 
-
 ###############################################################################
 ### Gather tags from cells
 ###############################################################################
@@ -747,7 +627,6 @@ def gatherAllCellTags ():
         allCellTags.update(dataNode)
     del gather, data  # removed unnecesary variables
     return allCellTags
-
 
 
 ###############################################################################
@@ -850,7 +729,6 @@ def gatherData ():
 
         return sim.allSimData
 
- 
 
 ###############################################################################
 ### Save data

@@ -11,7 +11,6 @@ __all__ = []
 __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
 'createAndExportNeuroML2'])  # wrappers
 
-
 import sim
 
 ###############################################################################

@@ -15,6 +15,8 @@ import math
 
 import sim
 
+import warnings
+warnings.filterwarnings("ignore")
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -630,9 +632,6 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
     '''
 
     print('Plotting connectivity matrix...')
-
-    import warnings
-    warnings.filterwarnings("ignore")
     
     cells, cellGids, netStimPops = getCellsInclude(include)    
 

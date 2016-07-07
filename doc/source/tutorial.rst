@@ -169,6 +169,10 @@ Take a moment to examine the nested dictionary structure used to define the cell
 		{'soma': {'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
 			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}}}}]
 
+.. to get a better intuition of the data structure, notice that you can access the cell property rule just created by its label as netParams.cellParams['PYRrule']
+
+.. this means you could directly create or modify by accessing this way netParams.cellParams['PYRrule'] = {...} . The only reason for using the addCellParams() method is that it provides checks to make sure the syntax is valid
+
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

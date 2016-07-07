@@ -1,24 +1,20 @@
-from netpyne import sim, utils
+from netpyne import specs, sim, utils
 
 # Network parameters
-netParams = {}  # object of class NetParams to store the network parameters
+netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'HH_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'HH3D_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'}) 
-netParams['popParams'].append({'popLabel': 'Traub_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'})
-netParams['popParams'].append({'popLabel': 'Mainen_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'})
-netParams['popParams'].append({'popLabel': 'Friesen_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'})
-netParams['popParams'].append({'popLabel': 'Izhi03a_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}) 
-netParams['popParams'].append({'popLabel': 'Izhi03b_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'}) 
-netParams['popParams'].append({'popLabel': 'Izhi07a_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'}) 
-netParams['popParams'].append({'popLabel': 'Izhi07b_pop', 'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'}) 
-netParams['popParams'].append({'popLabel': 'background', 'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'})
+netParams.addPopParams('HH_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}) 
+netParams.addPopParams('HH3D_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'}) 
+netParams.addPopParams('Traub_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'})
+netParams.addPopParams('Mainen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'})
+netParams.addPopParams('Friesen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'})
+netParams.addPopParams('Izhi03a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}) 
+netParams.addPopParams('Izhi03b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'}) 
+netParams.addPopParams('Izhi07a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'}) 
+netParams.addPopParams('Izhi07b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'}) 
+netParams.addPopParams('background', {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'})
 
-## Cell property rules
-netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-netParams['synMechParams'] = []
 
 ### HH
 cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
@@ -27,6 +23,7 @@ utils.importCell(cellRule=cellRule, synMechParams=synMechsImport, fileName='HHCe
 netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
 netParams['synMechParams'].extend(synMechsImport)  		
 
+netParams.import...
 
 ### HH3D
 cellRule = {'label': 'PYR_HH3D_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
@@ -116,7 +113,7 @@ simConfig = {}						# object of class SimConfig to store simulation configuratio
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
 simConfig.verbose = False			# Show detailed messages 
-simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file

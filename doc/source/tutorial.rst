@@ -237,13 +237,13 @@ Below we include the options required to run a simulation of 1 second, with intg
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
-	simConfig['dt'] = 0.025 			# Internal integration timestep to use
-	simConfig['verbose'] = False 			# Show detailed messages 
+	simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
+	simConfig.dt = 0.025 			# Internal integration timestep to use
+	simConfig.verbose = False 			# Show detailed messages 
 	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  	# Set file output name
-	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  	# Set file output name
+	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 	simConfig['plotRaster'] = True 			# Plot a raster
 	simConfig['plotCells'] = [1] 		# Plot recorded traces for this list of cells
 
@@ -372,11 +372,11 @@ Since we want to distribute the cells spatially, the first thing we need to do i
 	# Network parameters
 	netParams = {}  # dictionary to store sets of network parameters
 
-	netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
-	netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
-	netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
+	netParams.sizeX = 100 # x-dimension (horizontal length) size in um
+	netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
+	netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
 	
-	netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
+	netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 	netParams['probLengthConst'] = 150.0 # length constant for conn probability (um)
 
 Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
@@ -437,13 +437,13 @@ We can now add the standard simulation configuration options and the code to cre
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
-	simConfig['dt'] = 0.1                 # Internal integration timestep to use
-	simConfig['verbose'] = False            # Show detailed messages 
+	simConfig.duration = 1*1e3           # Duration of the simulation, in ms
+	simConfig.dt = 0.1                 # Internal integration timestep to use
+	simConfig.verbose = False            # Show detailed messages 
 	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  # Set file output name
-	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
+	simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  # Set file output name
+	simConfig.savePickle = False         # Save params, network and sim output to pickle file
 	
 	simConfig['analysis'] = {}				# Initialize dict for analysis options
 	simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'}          # Plot a raster
@@ -563,13 +563,13 @@ We now add the standard simulation configuration options, and include the ``sync
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
-	simConfig['dt'] = 0.025 				# Internal integration timestep to use
-	simConfig['verbose'] = False  			# Show detailed messages 
+	simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
+	simConfig.dt = 0.025 				# Internal integration timestep to use
+	simConfig.verbose = False  			# Show detailed messages 
 	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  # Set file output name
-	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  # Set file output name
+	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
 	simConfig['analysis'] = {}									# Initialize dict for analysis options
 	simConfig['analysis']['plotRaster'] = {'syncLines': True} 	# Plot a raster with vertical synchrony lines

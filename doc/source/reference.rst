@@ -127,7 +127,7 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
+* **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
 Example of NetStim population::
 	
@@ -299,7 +299,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 
 	Can be defined as a function (see :ref:`function_string`).
 
-	If omitted, defaults to ``netParams['defaultWeight'] = 1``.
+	If omitted, defaults to ``netParams.defaultWeight = 1``.
 
 	If have list of ``synMechs``, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: ``[0.1, 0.01]``).
 
@@ -310,7 +310,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **delay** (optional) - Time (in ms) for the presynaptic spike to reach the postsynaptic neuron.
 	Can be defined as a function (see :ref:`function_string`).
 
-	If omitted, defaults to ``netParams['defaultDelay'] = 1``
+	If omitted, defaults to ``netParams.defaultDelay = 1``
 
 	If have list of ``synMechs``, can have single delay for all, or list of delays (one per synMech, e.g. for 2 synMechs: ``[5, 7]``).
 

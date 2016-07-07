@@ -21,7 +21,7 @@ netParams['synMechParams'].extend([{'label': 'exc', 'mod': 'Exp2Syn', 'tau2': 1.
 netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'hop'}})
 
 # Simulation parameters
-simConfig['duration'] = 500     # Duration of the simulation, in ms
+simConfig.duration = 500     # Duration of the simulation, in ms
 simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
                           #'ik_soma':{'sec':'soma','loc':0.5,'var':'ik'}}
                           #'exc_soma':{'sec':'soma','synMech':'exc', 'loc':0.5,'var':'i'}}  # Dict with traces to record

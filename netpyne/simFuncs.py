@@ -20,6 +20,7 @@ from time import time
 from datetime import datetime
 import cPickle as pk
 import hashlib 
+from numbers import Number
 from copy import copy
 from neuron import h, init # Import NEURON
 
@@ -30,7 +31,6 @@ import sim, specs
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
-
 def initialize (netParams = {}, simConfig = {}, net = None):
 
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
@@ -98,7 +98,6 @@ def loadNetParams (filename, data=None):
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
 def loadNet (filename, data=None, instantiate=True):
-
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         sim.timing('start', 'loadNetTime')
@@ -180,14 +179,14 @@ def _loadFile (filename):
     if sim.cfg.timing: sim.timing('start', 'loadFileTime')
     ext = filename.split('.')[1]
 
-    # Save to pickle file
+    # load pickle file
     if ext == 'pkl':
         import pickle
         print('Loading file %s ... ' % (filename))
         with open(filename, 'r') as fileObj:
             data = pickle.load(fileObj)
 
-    # Save to dpk file
+    # load dpk file
     elif ext == 'dpk':
         import gzip
         print('Loading file %s ... ' % (filename))
@@ -195,7 +194,7 @@ def _loadFile (filename):
         #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
         print('Finished saving!')
 
-    # Save to json file
+    # load json file
     elif ext == 'json':
         import json
         print('Loading file %s ... ' % (filename))
@@ -203,14 +202,14 @@ def _loadFile (filename):
         #    json.dump(dataSave, fileObj)
         print('Finished saving!')
 
-    # Save to mat file
+    # load mat file
     elif ext == 'mat':
         from scipy.io import savemat 
         print('Loading file %s ... ' % (filename))
         #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
         print('Finished saving!')
 
-    # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
+    # load HDF5 file (uses very inefficient hdf5storage module which supports dicts)
     elif ext == 'saveHDF5':
         #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
         import hdf5storage
@@ -218,7 +217,7 @@ def _loadFile (filename):
         #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
         print('Finished saving!')
 
-    # Save to CSV file (currently only saves spikes)
+    # load CSV file (currently only saves spikes)
     elif ext == 'csv':
         import csv
         print('Loading file %s ... ' % (filename))
@@ -228,7 +227,7 @@ def _loadFile (filename):
         #        writer.writerow(values)
         print('Finished saving!')
 
-    # Save to Dat file(s) 
+    # load Dat file(s) 
     elif ext == 'dat': 
         print('Loading file %s ... ' % (filename))
         traces = sim.cfg.recordTraces
@@ -460,10 +459,15 @@ def tupleToStr (obj):
 ###############################################################################
 def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
+    #print obj
     import collections
     if isinstance(obj, basestring):
         return obj.decode('utf8')
     elif isinstance(obj, collections.Mapping):
+        for key in obj.keys():
+            if isinstance(key, Number):
+                obj[str(key).decode('utf8')] = obj[key]
+                obj.pop(key)
         return dict(map(_dict2utf8, obj.iteritems()))
     elif isinstance(obj, collections.Iterable):
         return type(obj)(map(_dict2utf8, obj))
@@ -782,7 +786,7 @@ def gatherData ():
 ###############################################################################
 ### Save data
 ###############################################################################
-def saveData (include = ['simConfig']):# None):
+def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
         
@@ -844,13 +848,14 @@ def saveData (include = ['simConfig']):# None):
 
             # Save to CSV file (currently only saves spikes)
             if sim.cfg.saveCSV:
-                import csv
-                print('Saving output as %s ... ' % (sim.cfg.filename+'.csv'))
-                writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
-                for dic in dataSave['simData']:
-                    for values in dic:
-                        writer.writerow(values)
-                print('Finished saving!')
+                if 'simData' in dataSave:
+                    import csv
+                    print('Saving output as %s ... ' % (sim.cfg.filename+'.csv'))
+                    writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
+                    for dic in dataSave['simData']:
+                        for values in dic:
+                            writer.writerow(values)
+                    print('Finished saving!')
 
             # Save to Dat file(s) 
             if sim.cfg.saveDat:

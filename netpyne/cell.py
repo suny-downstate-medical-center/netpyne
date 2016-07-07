@@ -194,7 +194,7 @@ class Cell (object):
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSection'](stimParams['loc']))
-                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'label', 'loc', 'sec', 'h'+stimParams['type']]}
+                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
                         print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
@@ -218,7 +218,7 @@ class Cell (object):
 
             # create NetCon
             if conn['preGid'] == 'NetStim':
-                netstim = next((stim['hNetStim'] for stim in self.stims if stim['label']==conn['preLabel']), None)
+                netstim = next((stim['hNetStim'] for stim in self.stims if stim['source']==conn['preLabel']), None)
                 if netstim:
                     netcon = h.NetCon(netstim, postTarget)
                 else: continue

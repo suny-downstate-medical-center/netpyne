@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 class NetParams (object):
 
-	def __init__(self):
+	def __init__(self, netParamsDict=None):
 		# General network parameters
 		self.scale = 1 	 # scale factor for number of cells 
 		self.sizeX = 100 # x-dimension (horizontal length) size in um
@@ -51,6 +51,11 @@ class NetParams (object):
 		self.stimSourceParams = OrderedDict()  
 		self.stimTargetParams = OrderedDict() 
 
+		# fill in params from dict passed as argument
+		if netParamsDict:
+			for k,v in netParamsDict.iteritems(): 
+				setattr(self, k, v)
+
 	def addCellParams(self, label, params):
 		self.cellParams[label] =  params
 
@@ -78,7 +83,7 @@ class NetParams (object):
 
 class SimConfig (object):
 
-	def __init__(self):
+	def __init__(self, simConfigDict = None):
 		# Simulation parameters
 		self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
 		self.dt = 0.025 # Internal integration timestep to use
@@ -111,5 +116,11 @@ class SimConfig (object):
 		# Analysis and plotting 
 		self.analysis = OrderedDict()
 
+		# fill in params from dict passed as argument
+		if simConfigDict:
+			for k,v in simConfigDict.iteritems(): 
+				setattr(self, k, v)
+
 	def addAnalysis(self, func, params):
 		self.analysis[func] =  params
+

@@ -217,7 +217,7 @@ class Arm:
         self.initArmMovement = int(f.initArmMovement) # start arm movement after x msec
         self.trial = 0 # trial number
         self.origMotorBackgroundRate = 1
-        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params.connParams if connParam['preTags']['popLabel'] == 'stimEM'][0]
+        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params.connParams if connParam['preConds']['popLabel'] == 'stimEM'][0]
 
         # motor command encoding
         self.vec = h.Vector()

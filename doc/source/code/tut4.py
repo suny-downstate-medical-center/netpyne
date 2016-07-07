@@ -34,14 +34,14 @@ netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 1.0
 
 ## Cell connectivity rules
 netParams['connParams'] = []  
-netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.1, 		# probability of connection
 	'weight': 0.005, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
 	'synMech': 'exc'})   	# target synapse 
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'exc'})  	# target synapse 

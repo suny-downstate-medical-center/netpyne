@@ -365,8 +365,8 @@ Example of connectivity rules:
 	netParams['connParams'] = [] 
 
 	netParams['connParams'].append({
-		'preTags': {'popLabel': 'S'}, 
-		'postTags': {'popLabel': 'M'},  #  S -> M
+		'preConds': {'popLabel': 'S'}, 
+		'postConds': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
 		'synMech': 'AMPA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
@@ -374,15 +374,15 @@ Example of connectivity rules:
 		'probability': 0.5})				# probability of connection		
 
 	netParams['connParams'].append(
-		{'preTags': {'popLabel': 'background'}, 
-		'postTags': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
+		{'preConds': {'popLabel': 'background'}, 
+		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
 	netParams['connParams'].append(
-	    {'preTags': {'y': [100, 600]}, 
-	    'postTags': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
+	    {'preConds': {'y': [100, 600]}, 
+	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
 	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
 	    'synsPerConn': 3, 		# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
 	    'weight': 0.02,			# single weight for all synapses

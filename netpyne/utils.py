@@ -300,7 +300,7 @@ def importConnFromExcel (fileName, sheetName):
                 weight = sheet.cell(row=row, column=colWeight).value
 
                 # write preTags
-                line = "netParams['connParams'].append({'preTags': {"
+                line = "netParams['connParams'].append({'preConds': {"
                 for i,cond in enumerate(pre.split(';')):  # split into different conditions
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value
@@ -308,7 +308,7 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + "}" # end of preTags      
 
                 # write postTags
-                line = line + ",\n'postTags': {"
+                line = line + ",\n'postConds': {"
                 for i,cond in enumerate(post.split(';')):  # split into different conditions
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value

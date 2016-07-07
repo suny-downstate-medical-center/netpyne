@@ -7,7 +7,7 @@ netParams['stimParams'] = {'sourceList': [], 'stimList': []}
 
 # Network and connections
 netParams['popParams'].extend([{'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 1}])
-netParams['connParams'].extend([{'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5}])
+netParams['connParams'].extend([{'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5}])
 netParams['stimParams']['sourceList'].append({'label': 'bg', 'type': 'IClamp', 'delay': 10, 'dur': int(1000), 'amp': 0.5})
 
 # cells

@@ -38,8 +38,8 @@ netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, '
 
 ## Cell connectivity rules
 netParams.addConnParams('S->M',
-	{'preTags': {'popLabel': 'S'}, 
-	'postTags': {'popLabel': 'M'},  #  S -> M
+	{'preConds': {'popLabel': 'S'}, 
+	'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
@@ -48,8 +48,8 @@ netParams.addConnParams('S->M',
 	'synMech': 'exc'})   		# target synaptic mechanism
 
 netParams.addConnParams('bg->PYR',
-	{'preTags': {'popLabel': 'background'}, 
-	'postTags': {'cellType': 'PYR'}, # background -> PYR
+	{'preConds': {'popLabel': 'background'}, 
+	'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'exc'})  	# target synapse 

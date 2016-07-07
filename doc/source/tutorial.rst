@@ -212,7 +212,7 @@ We will first add a rule to randomly connect the sensory to the motor population
 
 	## Cell connectivity rules
 	netParams['connParams'] = []  
-	netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+	netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5,			# transmission delay (ms) 
@@ -220,7 +220,7 @@ We will first add a rule to randomly connect the sensory to the motor population
 
 Next we will connect background inputs (NetStims) to all cells of both populations::
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+	netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5, 			# transmission delay (ms) 
 		'synMech': 'exc'})  	# synaptic mechanism 
@@ -308,7 +308,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+	netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 		'connFunc': 'randConn',     # connectivity function (random)
 		'maxConns': 10,             # max number of incoming conns to cell
 		'weight': 0.01,             # synaptic weight 
@@ -427,7 +427,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	## Cell connectivity rules
 	netParams['connParams'] = [] 
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['E', 'I']}, # background -> all
+	netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
 	  'weight': 0.01,                     # synaptic weight 
 	  'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
 	  'synMech': 'exc'})                  # synaptic mechanism 
@@ -462,13 +462,13 @@ If we run the model at this point we will see the cells are distributed into thr
 	:align: center
 
 
-Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First,lets  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postTags': {'y': [100,1000]}``. 
+Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First,lets  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 
 
 Second, lets make the the connection weight be proportional to the cortical depth of the cell, ie. postsynaptic cells in deeper layers will receive stronger connections than those in superficial layers. To do this we make use of the distance-related variables that NetPyNE makes available to use in string-based functions; in this case ``post_ynorm``, which represents the normalized y location of the postsynaptic cell. For a complete list of available variables see: :ref:`function_string`.
 
 Finally, we can specify the delay based on the distance between the cells (``dist_3D``) and the propagation velocity (given as a parameter at the beginning of the code), as follows: ``'delay': 'dist_3D/propVelocity'``. The full code for this connectivity rules is::
 
-	netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+	netParams['connParams'].append({'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
 	  'probability': 0.1,    # probability of connection
 	  'weight': '0.005*post_ynorm',         # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
@@ -482,12 +482,12 @@ Running the model now shows excitatory connections in red, and how cells in the 
 	:align: center
 
 
-Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postTags': {'cellType': 'E'}``). 
+Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
 To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 
-	netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+	netParams['connParams'].append({'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
 	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
 	  'weight': 0.001,                                     # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
@@ -542,13 +542,13 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams['connParams'] = []  
 
 	netParams['connParams'].append(
-	    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
+	    {'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
 	    'weight': 0.1,                    # fixed weight of 0.08
 	    'synMech': 'exc',                 # target exc synapse
 	    'delay': 1})                      # fixed delay of 1-5ms
 
 	netParams['connParams'].append(
-	    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
+	    {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
 	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5})       				    # delay 

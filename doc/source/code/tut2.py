@@ -36,16 +36,16 @@ netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, '
 
 ## Cell connectivity rules
 netParams.addConnParams('S->M', #  S -> M label
-	{'preTags': {'popLabel': 'S'}, # conditions of presyn cells
-	'postTags': {'popLabel': 'M'}, # conditions of postsyn cells
+	{'preConds': {'popLabel': 'S'}, # conditions of presyn cells
+	'postConds': {'popLabel': 'M'}, # conditions of postsyn cells
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'synMech': 'exc'})   		# synaptic mechanism 
 
 netParams.addConnParams('bg->PYR', # background -> PYR label
-	{'preTags': {'popLabel': 'background'}, 
-	'postTags': {'cellType': 'PYR'}, 
+	{'preConds': {'popLabel': 'background'}, 
+	'postConds': {'cellType': 'PYR'}, 
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'exc'})  		# synaptic mechanism 

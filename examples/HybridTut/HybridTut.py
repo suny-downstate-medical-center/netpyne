@@ -68,7 +68,7 @@ netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'ExpSyn', 'tau': 0.1,
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
-    {'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},
+    {'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},
     'weight': 0.2,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -77,7 +77,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 1, 
     'delay': 'uniform(1,5)',
@@ -85,7 +85,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 1, 
     'synMech': 'AMPA',

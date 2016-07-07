@@ -96,33 +96,33 @@ netParams['connParams'] = []
 # Background and stims
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'backgroundE'}, 'postTags': {'popLabel': ['ES', 'EM']}, # background -> Exc
+    {'preConds': {'popLabel': 'backgroundE'}, 'postConds': {'popLabel': ['ES', 'EM']}, # background -> Exc
     'connFunc': 'fullConn',
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
     'synMech': 'NMDA'})  
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'backgroundI'}, 'postTags': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
+    {'preConds': {'popLabel': 'backgroundI'}, 'postConds': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
     'connFunc': 'fullConn',
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
     'synMech': 'NMDA'})   
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'stimPsh'}, 'postTags': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
+    {'preConds': {'popLabel': 'stimPsh'}, 'postConds': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
     'weight': 0.1,                   
     'delay': 1,     
     'synMech': 'NMDA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'stimPel'}, 'postTags': {'popLabel': 'Pel'},  # Pstim_el -> P_el
+    {'preConds': {'popLabel': 'stimPel'}, 'postConds': {'popLabel': 'Pel'},  # Pstim_el -> P_el
     'weight': 0.1,                  
     'delay': 1,     
     'synMech': 'NMDA'})
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'stimEM'}, 'postTags': {'popLabel': 'EM'}, # EMstim-> Exc
+    {'preConds': {'popLabel': 'stimEM'}, 'postConds': {'popLabel': 'EM'}, # EMstim-> Exc
     'connFunc': 'fullConn',
     'weight': 0.4, 
     'delay': 'uniform(1,5)',
@@ -132,7 +132,7 @@ netParams['connParams'].append(
 # Sensory
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': ['Psh', 'Pel']}, 'postTags': {'popLabel': 'ES'},  # P_sh,P_el -> ES
+    {'preConds': {'popLabel': ['Psh', 'Pel']}, 'postConds': {'popLabel': 'ES'},  # P_sh,P_el -> ES
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
@@ -140,7 +140,7 @@ netParams['connParams'].append(
     'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ES'},  # ES -> ES 
+    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'ES'},  # ES -> ES 
     'weight': 1.98,      
     'probability': 0.05625,              
     'delay': 5,     
@@ -148,21 +148,21 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'IS'},  # ES -> IS
+    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'IS'},  # ES -> IS
     'weight': 0.48375,      
     'probability': 1.150,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'ISL'},  # ES -> ISL
+    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'ISL'},  # ES -> ISL
     'weight': 0.57375,      
     'probability': 0.575,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ES'}, 'postTags': {'popLabel': 'EM'},  # ES -> EM (plastic)
+    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'EM'},  # ES -> EM (plastic)
     'weight': 2.640,      
     'probability': 0.33750,              
     'delay': 5,     
@@ -171,7 +171,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ES'},  # IS -> ES
+    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'ES'},  # IS -> ES
     'weight': 4.5,      
     'probability': 0.495,              
     'delay': 5,     
@@ -179,35 +179,35 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'IS'},  # IS -> IS
+    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'IS'},  # IS -> IS
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IS'}, 'postTags': {'popLabel': 'ISL'},  # IS -> ISL
+    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'ISL'},  # IS -> ISL
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'IS'},  # ISL -> ES
+    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'IS'},  # ISL -> ES
     'weight': 2.25,      
     'probability': 0.39375,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'IS'},  # ISL -> IS
+    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'IS'},  # ISL -> IS
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'ISL'}, 'postTags': {'popLabel': 'ISL'},  # ISL -> ISL
+    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'ISL'},  # ISL -> ISL
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     
@@ -215,7 +215,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'ES'},  # EM -> ES 
+    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'ES'},  # EM -> ES 
     'weight': 0.72,      
     'probability': 0.01125,              
     'delay': 5,     
@@ -226,63 +226,63 @@ netParams['connParams'].append(
 # Motor
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'EM'},  # EM -> EM 
+    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'EM'},  # EM -> EM 
     'weight': 1.782,      
     'probability': 0.05625,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IM'},  # EM -> IM 
+    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'IM'},  # EM -> IM 
     'weight': 1.15,      
     'probability': 0.48375,          
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'EM'}, 'postTags': {'popLabel': 'IML'},  # EM -> IML
+    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'IML'},  # EM -> IML
     'weight': 0.575,      
     'probability': 0.57375,              
     'delay': 5,     
     'synMech': 'AMPA'})  
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'EM'},  # IM -> EM
+    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'EM'},  # IM -> EM
     'weight': 9,      
     'probability': 0.495,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'IM'},  # IM -> IM
+    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'IM'},  # IM -> IM
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IM'}, 'postTags': {'popLabel': 'IML'},  # IM -> IML 
+    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'IML'},  # IM -> IML 
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'EM'},  # IML -> EM 
+    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'EM'},  # IML -> EM 
     'weight': 2.49,      
     'probability': 0.39375,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'IM'},  # IML -> IM 
+    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'IM'},  # IML -> IM 
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'IML'}, 'postTags': {'popLabel': 'IML'},  # IML -> IML
+    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'IML'},  # IML -> IML
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     

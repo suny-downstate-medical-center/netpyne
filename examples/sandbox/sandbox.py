@@ -99,7 +99,7 @@ netParams.addStimTargetParams('Input_4_PYR3',
 
 # Connectivity parameters
 # netParams.addConnParams('PYRconn1',
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
 #     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
 #     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
 #     'synsPerConn': 5,
@@ -108,21 +108,21 @@ netParams.addStimTargetParams('Input_4_PYR3',
 #     'threshold': 10})                    # threshold
 
 # netParams.addConnParams('PYRconn2',
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
 #     'weight': 0.005,                    # weight of each connection
 #     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
 #     'threshold': 10,                    # threshold
 #     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams.addConnParams(1,
-#     {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
 #     'weight': 0.005,                    # weight of each connection
 #     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
 #     'threshold': 10,                    # threshold
 #     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams.addConnParams(2,
-    {'preTags': {'popLabel': ['PYR']}, 'postTags': {'cellModel': 'HH', 'popLabel': 'PYR2'},
+    {'preConds': {'popLabel': ['PYR']}, 'postConds': {'cellModel': 'HH', 'popLabel': 'PYR2'},
     'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -131,7 +131,7 @@ netParams.addConnParams(2,
 
 
 netParams.addConnParams(3,
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
     'connList': [[0,1],[3,1]],			# list of connections
     'synMech': ['AMPA', 'NMDA'], 
     'synsPerConn': 3,
@@ -142,14 +142,14 @@ netParams.addConnParams(3,
 
 
 netParams.addConnParams(4,
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
     'weight': 1.0,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 4,
     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
 netParams.addConnParams('PYRconn3',
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
     'synMech': ['AMPA', 'NMDA'], 
     'synsPerConn': 3,
     'weight': 0.2,                  
@@ -157,7 +157,7 @@ netParams.addConnParams('PYRconn3',
     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
 netParams.addConnParams('PYRconn4',
-    {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
     'weight': 0.02,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
     'synsPerConn': 2,
@@ -165,15 +165,15 @@ netParams.addConnParams('PYRconn4',
 
 
 
-netParams.connParams['PYRconn5']= {'preTags': {'popLabel': 'background2'}, 'postTags': {'cellType': 'PYR2sec'}, # background -> PYR
+netParams.connParams['PYRconn5']= {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 
 netParams.addConnParams('PYRsub1',
-    {'preTags': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
-    'postTags': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
+    {'preConds': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
+    'postConds': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
     'sec': 'all',
     'ynormRange': [0, 1.0],
     'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution

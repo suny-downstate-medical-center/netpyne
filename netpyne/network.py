@@ -200,7 +200,7 @@ class Network (object):
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
-            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, subConnParam['preTags'], subConnParam['postTags'])
+            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
 
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
@@ -219,8 +219,8 @@ class Network (object):
             # move synapses
 
         # netParams['subConnParams'].append(
-        # {'preTags': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
-        # 'postTags': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+        # {'preConds': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+        # 'postConds': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
         # 'sec': 'all',
         # 'ynormRange': [0, 1.0],
         # 'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
@@ -247,7 +247,7 @@ class Network (object):
             connParam = connParamTemp.copy()
 
             # find pre and post cells that match conditions
-            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preTags'], connParam['postTags'])
+            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preConds'], connParam['postConds'])
 
             # call appropriate conn function
             if 'connFunc' not in connParam:  # if conn function not specified, select based on params

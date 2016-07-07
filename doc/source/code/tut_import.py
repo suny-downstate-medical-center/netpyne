@@ -88,14 +88,14 @@ netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.
 netParams['connParams'] = []  
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
+	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})		
 
 netParams['connParams'].append({
-	'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': ['HH3D','Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
+	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['HH3D','Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
@@ -103,7 +103,7 @@ netParams['connParams'].append({
 	'sec': 'soma'})				
 
 netParams['connParams'].append({
-	'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},  #  PYR -> PYR random
+	'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
 	'connFunc': 'convConn', 	# connectivity function (random)
 	'convergence': 'uniform(0,10)', 			# max number of incoming conns to cell
 	'weight': 0.001, 			# synaptic weight 

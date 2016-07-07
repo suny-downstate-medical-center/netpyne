@@ -46,18 +46,18 @@ netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.6
 ## Cell connectivity rules
 netParams['connParams'] = [] 
 
-netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['E', 'I']}, # background -> all
+netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
   'weight': 0.01,                     # synaptic weight 
   'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
   'synMech': 'exc'})                  # synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+netParams['connParams'].append({'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
   'probability': 0.1,#'uniform(0.05,0.2)',    # probability of connection
   'weight': '0.005*post_ynorm',         # synaptic weight 
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'})                    # synaptic mechanism 
 
-netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+netParams['connParams'].append({'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
   'weight': 0.001,                                     # synaptic weight 
   'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 

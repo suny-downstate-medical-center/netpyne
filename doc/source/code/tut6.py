@@ -40,13 +40,13 @@ netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.1
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.1
     'synMech': 'exc',                 # target exc synapse
     'delay': 1})                      # uniformly distributed delays between 1-5ms
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
+    {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
     'delay': 5})       				    # delay 

@@ -21,6 +21,7 @@ import cPickle as pk
 import hashlib 
 from numbers import Number
 from copy import copy
+from collections import OrderedDict
 from neuron import h, init # Import NEURON
 
 import sim, specs
@@ -650,7 +651,8 @@ def gatherData ():
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
-            allPops = {popLabel: pop.__getstate__() for popLabel,pop in sim.net.pops.iteritems()} 
+            allPops = OrderedDict()
+            for popLabel,pop in sim.net.pops.iteritems(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
             allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
             sim.allSimData = {} 
 
@@ -685,7 +687,8 @@ def gatherData ():
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
-        sim.net.allPops = {popLabel: pop.__getstate__() for popLabel,pop in sim.net.pops.iteritems()} 
+        sim.net.allPops = OrderedDict()
+        for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         sim.allSimData = {} 
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = {}

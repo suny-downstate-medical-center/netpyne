@@ -1,11 +1,11 @@
-from netpyne import sim
+from netpyne import specs, sim
 
 # Network parameters
-netParams = {}  # dictionary to store sets of network parameters
+netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
 netParams.addPopParams('S', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
-netParams.addPopParams('PYR', {'numCells': 20, 'cellModel': 'HH'}) 
+netParams.addPopParams('M', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
 netParams.addPopParams('background', {'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
@@ -19,7 +19,7 @@ cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'child
 cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
 netParams.addCellParams('PYR_HH_rule', cellRule)  												# add dict to list of cell parameters
 
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 	# cell rule dict
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}} 	# cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
 cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
@@ -40,6 +40,7 @@ netParams.addConnParams('S->M',
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
 	'synMech': 'exc'})   	# target synapse 
+
 netParams.addConnParams('bg->PYR', 
 	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
@@ -48,22 +49,21 @@ netParams.addConnParams('bg->PYR',
 
 
 # Simulation options
-simConfig = {}
+simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
 simConfig.verbose = False 			# Show detailed messages 
-simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = True 			# Plot a raster
-simConfig['analysis']['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+simConfig.addAnalysis('plotRaster', True) 			# Plot a raster
+simConfig.addAnalysis('plotTraces', {'include': [1]}) 			# Plot recorded traces for this list of cells
+simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation
-sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

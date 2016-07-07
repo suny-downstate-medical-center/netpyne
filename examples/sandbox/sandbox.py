@@ -16,7 +16,7 @@ Contributors: salvadordura@gmail.com
 
 from netpyne import specs
 
-netParams = specs.NetParams()  # dictionary to store sets of network parameters
+netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
 
 

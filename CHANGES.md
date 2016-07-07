@@ -12,6 +12,8 @@
 
 	- Simplified/clarified keys: 'conditions' -> 'conds', 'sections' -> 'secs', 'preTags' -> 'preConds', 'postTags' -> 'postConds' 
 
+- Added wrappers and modified names of existing ones to make consistent
+
 - Selectively save data to file: netParams, net, simConfig and/or simData (issue #30)
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)

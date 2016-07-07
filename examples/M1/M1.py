@@ -10,7 +10,7 @@ Contributors: salvadordura@gmail.com
 
 from netpyne.utils import importCell
 
-netParams = {}  # dictionary to store sets of network parameters
+netParams = {}  # object of class NetParams to store the network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 ###############################################################################

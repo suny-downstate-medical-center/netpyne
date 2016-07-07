@@ -1,7 +1,7 @@
 from netpyne import sim, utils
 
 # Network parameters
-netParams = {}  # dictionary to store sets of network parameters
+netParams = {}  # object of class NetParams to store the network parameters
 
 ## Population parameters
 netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
@@ -112,7 +112,7 @@ netParams['connParams'].append({
 
 
 # Simulation options
-simConfig = {}
+simConfig = {}						# object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
 simConfig.verbose = False			# Show detailed messages 

@@ -8,7 +8,7 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
-netParams = {}  # dictionary to store sets of network parameters
+netParams = {}  # object of class NetParams to store the network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 

@@ -12,7 +12,7 @@ Contributors: salvadordura@gmail.com
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParams = {}  # dictionary to store sets of network parameters
+netParams = {}  # object of class NetParams to store the network parameters
 
 # Population parameters
 netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
@@ -55,7 +55,7 @@ netParams['connParams'].append(
 ###############################################################################
 # SIMULATION PARAMETERS
 ###############################################################################
-simConfig = {}  # dictionary to store simConfig
+simConfig = {}  # object of class SimConfig to store simulation configuration
 
 # Simulation options
 simConfig = {}

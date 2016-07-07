@@ -1,7 +1,7 @@
-from netpyne import sim, specs
+from netpyne import specs, sim
 
 # Network parameters
-netParams = specs.NetParams()  # dictionary to store sets of network parameters
+netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
 netParams.addPopParams('S', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
@@ -56,7 +56,7 @@ netParams.addConnParams('bg->PYR',
 
 
 # Simulation options
-simConfig = specs.SimConfig()
+simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
 
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use

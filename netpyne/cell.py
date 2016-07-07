@@ -406,7 +406,7 @@ class Cell (object):
             
         stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['label'], self.gid))
+        if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
 
         return stimContainer['hNetStim']
 
@@ -436,7 +436,7 @@ class Cell (object):
                 'threshold': params.get('threshold'),
                 'synsPerConn': params.get('synsPerConn'),
                 'plasticity': params.get('plasticity')}
-                
+
             netStimParams = {'source': params['source'],
                 'type': params['type'],
                 'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
@@ -463,7 +463,7 @@ class Cell (object):
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
-                (params['label'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
+                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
 
 

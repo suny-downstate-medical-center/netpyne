@@ -237,30 +237,30 @@ class Network (object):
         if sim.rank==0: 
             print('Making connections...')
 
-            if sim.nhosts > 1: # Gather tags from all cells 
-                allCellTags = sim.gatherAllCellTags()  
-            else:
-                allCellTags = {cell.gid: cell.tags for cell in self.cells}
-            allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
+        if sim.nhosts > 1: # Gather tags from all cells 
+            allCellTags = sim.gatherAllCellTags()  
+        else:
+            allCellTags = {cell.gid: cell.tags for cell in self.cells}
+        allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
 
-            for connParamTemp in self.params.connParams.values():  # for each conn rule or parameter set
-                connParam = connParamTemp.copy()
+        for connParamTemp in self.params.connParams.values():  # for each conn rule or parameter set
+            connParam = connParamTemp.copy()
 
-                # find pre and post cells that match conditions
-                preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preTags'], connParam['postTags'])
+            # find pre and post cells that match conditions
+            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preTags'], connParam['postTags'])
 
-                # call appropriate conn function
-                if 'connFunc' not in connParam:  # if conn function not specified, select based on params
-                    if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
-                    elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
-                    elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
-                    elif 'connList' in connParam: connParam['connFunc'] = 'fromListConn'  # from list function
-                    else: connParam['connFunc'] = 'fullConn'  # convergence function
+            # call appropriate conn function
+            if 'connFunc' not in connParam:  # if conn function not specified, select based on params
+                if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
+                elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
+                elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
+                elif 'connList' in connParam: connParam['connFunc'] = 'fromListConn'  # from list function
+                else: connParam['connFunc'] = 'fullConn'  # convergence function
 
-                connFunc = getattr(self, connParam['connFunc'])  # get function name from params
-                if preCellsTags and postCellsTags:
-                    self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
-                    connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
+            connFunc = getattr(self, connParam['connFunc'])  # get function name from params
+            if preCellsTags and postCellsTags:
+                self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
+                connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:

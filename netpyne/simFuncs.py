@@ -671,7 +671,8 @@ def gatherData ():
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
-        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': [list(pop.cellGids) for pop in sim.net.pops], 'simData': sim.simData} 
+        netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
+        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData} 
         data = [None]*sim.nhosts
         data[0] = {}
         for k,v in nodeData.iteritems():
@@ -680,8 +681,8 @@ def gatherData ():
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
-            allPops = [copy(pop) for pop in sim.net.pops] 
-            allPopsCellGids = [[] for i in range(len(sim.net.pops))]
+            allPops = {popLabel: pop.__getstate__() for popLabel,pop in sim.net.pops.iteritems()} 
+            allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
             sim.allSimData = {} 
 
             for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
@@ -690,8 +691,8 @@ def gatherData ():
             # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
             for node in gather:  # concatenate data from each node
                 allCells.extend(node['netCells'])  # extend allCells list
-                for i,popCellGids in enumerate(node['netPopsCellGids']):
-                    allPopsCellGids[i].extend(popCellGids)
+                for popLabel,popCellGids in node['netPopsCellGids'].iteritems():
+                    allPopsCellGids[popLabel].extend(popCellGids)
                     
                 for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
                     if key in simDataVecs:          # simData dicts that contain Vectors
@@ -709,13 +710,13 @@ def gatherData ():
                         sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
             sim.net.allCells = allCells
             
-            for i,pop in enumerate(allPops):
-                pop.cellGids = sorted(allPopsCellGids[i])
+            for popLabel,pop in allPops.iteritems():
+                pop['cellGids'] = sorted(allPopsCellGids[popLabel])
             sim.net.allPops = allPops
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
-        sim.net.allPops = sim.net.pops
+        sim.net.allPops = {popLabel: pop.__getstate__() for popLabel,pop in sim.net.pops.iteritems()} 
         sim.allSimData = {} 
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = {}

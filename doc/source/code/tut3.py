@@ -17,10 +17,10 @@ cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# den
 cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
 cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
 cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-netParams['cellParams'].append('PYRrule', cellRule)  												# add dict to list of cell parameters
+netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell parameters
 
 # Alternative method
-netParams.addCellParams('PYRrule',			# cell rule label
+# netParams.addCellParams('PYRrule',			# cell rule label
 # 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
 # 	'secs': 							# sections 
 # 		{'soma':							

@@ -4,44 +4,44 @@ from netpyne import sim
 netParams = {}  # dictionary to store sets of network parameters
 
 ## Population parameters
-netParams['popParams'].append({'popLabel': 'S', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
-netParams['popParams'].append({'popLabel': 'M', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
+netParams.addPopParams('S', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
+netParams.addPopParams('PYR', {'numCells': 20, 'cellModel': 'HH'}) 
+netParams.addPopParams('background', {'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
-netParams.addCellParams('PYR_HH_rule',			# cell rule label
-	{'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  	# properties will be applied to cells that match these conditions	
-	'secs': 																					# sections 
-		{'soma': 
-			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},									# soma geometry 
-			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}},		# soma mechanisms
-		'dend': 
-			{'geom': {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1},							# dend geometry
-			'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0},						# dend topology
-			'mechs': {'pas': {'g': 0.0000357, 'e': -70}}}}}) 									# dend mechanisms
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
+cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
+cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+netParams.addCellParams('PYR_HH_rule', cellRule)  												# add dict to list of cell parameters
 
-netParams.addCellParams('PYR_Izhi_rule',
-	{'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},
-	'secs': 
-		{'soma': 
-			{'geom': {'diam': 10.0, 'L': 10.0, 'cm': 31.831},
-			'pointps': {'Izhi':
-				{'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}}}}})
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
+cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
+	'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  		# soma hh mechanisms
+netParams.addCellParams('PYR_Izhi_rule', cellRule)  												# add dict to list of cell parameters
+
 
 ## Synaptic mechanism parameters
-netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synapse
+netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synapse
  
 
 ## Cell connectivity rules
-netParams['connParams'] = []  
-netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
+netParams.addConnParams('S->M', 
+	{'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.1, 		# probability of connection
 	'weight': 0.005, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
 	'synMech': 'exc'})   	# target synapse 
-netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
+netParams.addConnParams('bg->PYR', 
+	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
 	'synMech': 'exc'})  	# target synapse 

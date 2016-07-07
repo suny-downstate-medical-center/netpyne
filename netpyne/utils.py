@@ -335,6 +335,7 @@ from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
 class NetPyNEBuilder(DefaultNetworkHandler):
     
+    cellParams = []
     popParams = {}
     projections = {}
     
@@ -355,6 +356,14 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         popInfo['cellsList'] = []
         
         self.popParams[population_id] = popInfo
+        
+        cellRule = {'label': component, 'conditions': {'cellType': component, 'cellModel': component},  'sections': {}}
+
+        soma = {'geom': {}, 'pointps':{}}  # soma properties
+        soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+        soma['pointps'][component] = {'mod':component}
+        cellRule['sections'] = {'soma': soma}  # add sections to dict
+        self.cellParams.append(cellRule)
             
     
     #
@@ -420,6 +429,7 @@ def importNeuroML2Network(fileName, simConfig):
         currParser.parse(fileName)
         
         netParams['popParams'] = nmlHandler.popParams.values()
+        netParams['cellParams'] = nmlHandler.cellParams
         
         netParams['stimParams'] = {'sourceList': [], 'stimList': []}
         
@@ -427,14 +437,20 @@ def importNeuroML2Network(fileName, simConfig):
             netParams['stimParams']['sourceList'].append(nmlHandler.stimSources[stimName])
             netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
             
-        pp.pprint(netParams)
-        pp.pprint(simConfig)
         
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+    
+    pp.pprint(netParams)
+    pp.pprint(simConfig)
 
     sim.net.createPops()  
-        
-    sim.net.createCells()                 # instantiate network cells based on defined populations
-    
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    sim.runSim()                      # run parallel Neuron simulation  
+    sim.gatherData()                  # gather spiking data and cell info from each node
+    sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+    sim.analysis.plotData()               # plot spike raster
+    h('forall psection()')
     
     

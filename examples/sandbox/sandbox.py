@@ -45,7 +45,7 @@ netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 
 soma = {'geom': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-cellParams = {'conditions': {'cellType': 'PYR'},  'sections': {'soma': soma}}
+cellParams = {'conds': {'cellType': 'PYR'},  'secs': {'soma': soma}}
 netParams.addCellParams('PYR', cellParams)  # add dict to list of cell properties
 
 
@@ -57,13 +57,13 @@ dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                   
 dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
-cellParams = {'conditions': {'cellType': 'PYR2sec'},  
-            'sections': {'soma': soma, 'dend': dend}, 
+cellParams = {'conds': {'cellType': 'PYR2sec'},  
+            'secs': {'soma': soma, 'dend': dend}, 
             'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
 netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
 
 ### HH
-# cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
+# cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
 # synMechParams = []
 # utils.importCell(cellRule=cellRule, synMechParams=netParams['synMechParams'], fileName='HHCellFile.py', cellName='HHCellClass')
 # netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
@@ -79,14 +79,14 @@ netParams.addStimTargetParams('Input_1_PYR',
     {'source': 'Input_1', 
     'sec':'soma', 
     'loc': 0.5, 
-    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
 
 netParams.addStimTargetParams('Input_3_PYR2', 
     {'source': 'Input_3', 
     'sec':'soma', 
     'loc': 0.5, 
-    'conditions': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
+    'conds': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
 
 netParams.addStimTargetParams('Input_4_PYR3', 
 	{'source': 'Input_4', 
@@ -94,7 +94,7 @@ netParams.addStimTargetParams('Input_4_PYR3',
 	'loc': 0.5, 
     'weight': '0.1+gauss(0.2,0.05)',
     'delay': 1,
-	'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+	'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
 
 
 # Connectivity parameters

@@ -9,26 +9,25 @@ netParams.addPopParams('M', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH
 netParams.addPopParams('background', {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
-netParams.addCellParams('PYRrule',			# cell rule label
-	{'conditions': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-	'sections': {'soma':					# sections 
-		{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell params
 
 # Equivalent alternative method 1
-# netParams.cellParams['PYRrule'] = 
-# 	{'conditions': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-# 	'sections': {'soma': 					# sections 
+# netParams.addCellParams('PYRrule',			# cell rule label
+# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
+# 	'secs': {'soma':					# sections 
 # 		{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-# 		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}} 	# mechanisms
+# 		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
 
 # Equivalent alternative method 2
-# cellRule = {'conditions': {'cellType': 'PYR'},  'sections': {}} 	# cell rule dict
-# soma = {'geom': {}, 'mechs': {}}  														# soma params dict
-# soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-# soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
-# cellRule['sections'] = {'soma': soma}  													# add soma section to dict
-# netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell params
+# netParams.cellParams['PYRrule'] = 
+# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
+# 	'secs': {'soma': 					# sections 
+# 		{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
+# 		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}} 	# mechanisms
 
 
 ## Synaptic mechanism parameters

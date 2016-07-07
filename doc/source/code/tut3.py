@@ -9,28 +9,28 @@ netParams.addPopParams('M', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH
 netParams.addPopParams('background', {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
-netParams.addCellParams('PYRrule',			# cell rule label
-	{'conditions': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-	'sections': 							# sections 
-		{'soma':							
-			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},									# soma geometry 
-			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}},			# soma mechanisms
-		'dend': 
-			{'geom': {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1},							# dend geometry
-			'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0},						# dend topology
-			'mechs': {'pas': {'g': 0.0000357, 'e': -70}}}}}) 										# dend mechanisms
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
+cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
+cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+netParams['cellParams'].append('PYRrule', cellRule)  												# add dict to list of cell parameters
 
-# # Alternative method
-# cellRule = {'conditions': {'cellType': 'PYR'},  'sections': {}} 	# cell rule dict
-# soma = {'geom': {}, 'mechs': {}}  											# soma params dict
-# soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-# soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-# dend = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-# dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-# dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-# dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-# cellRule['sections'] = {'soma': soma, 'dend': dend}  									# add soma and dend sections to dict
-# netParams['cellParams'].append('PYRrule', cellRule)  												# add dict to list of cell parameters
+# Alternative method
+netParams.addCellParams('PYRrule',			# cell rule label
+# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
+# 	'secs': 							# sections 
+# 		{'soma':							
+# 			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},									# soma geometry 
+# 			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}},			# soma mechanisms
+# 		'dend': 
+# 			{'geom': {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1},							# dend geometry
+# 			'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0},						# dend topology
+# 			'mechs': {'pas': {'g': 0.0000357, 'e': -70}}}}}) 										# dend mechanisms
+
 
 ## Synaptic mechanism parameters
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism

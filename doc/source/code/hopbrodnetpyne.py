@@ -13,12 +13,12 @@ netParams['stimParams']['sourceList'].append({'label': 'bg', 'type': 'IClamp', '
 # cells
 netParams['cellParams'].append(
   {'label': 'hh_PYR', 
-   'conditions': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
-   'sections': {'soma': {'geom' :  {'diam': 5, 'L': 5}, 'vinit' : -70.6, 
+   'conds': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
+   'secs': {'soma': {'geom' :  {'diam': 5, 'L': 5}, 'vinit' : -70.6, 
                          'mechs':  {'hh' : {'gnabar': 0.10, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
 netParams['synMechParams'].extend([{'label': 'exc', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0},
                                    {'label': 'inh', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80}])
-netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conditions': {'popLabel':'hop'}})
+netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'hop'}})
 
 # Simulation parameters
 simConfig['duration'] = 500     # Duration of the simulation, in ms

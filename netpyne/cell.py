@@ -33,7 +33,7 @@ class Cell (object):
     def create (self):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in prop['conditions'].iteritems():  # check if all conditions are met
+            for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
                 if self.tags[condKey] != condVal: 
                     conditionsMet = 0
                     break
@@ -50,7 +50,7 @@ class Cell (object):
 
     def createPyStruct (self, prop):
         # set params for all sections
-        for sectName,sectParams in prop['sections'].iteritems(): 
+        for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create section dict
@@ -120,7 +120,7 @@ class Cell (object):
 
     def createNEURONObj (self, prop):
         # set params for all sections
-        for sectName,sectParams in prop['sections'].iteritems(): 
+        for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create sect dict if doesn't exist
@@ -178,7 +178,7 @@ class Cell (object):
                     h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
 
         # set topology 
-        for sectName,sectParams in prop['sections'].iteritems():  # iterate sects again for topology (ensures all exist)
+        for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:

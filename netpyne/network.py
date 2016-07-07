@@ -100,7 +100,7 @@ class Network (object):
                 source = sources.get(target['source'])
 
                 postCellsTags = allCellTags
-                for condKey,condValue in target['conditions'].iteritems():  # Find subset of cells that match postsyn criteria
+                for condKey,condValue in target['conds'].iteritems():  # Find subset of cells that match postsyn criteria
                     if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                     elif condKey == 'cellList':
@@ -111,9 +111,9 @@ class Network (object):
                         postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
                 
                 # subset of cells from selected pops (by relative indices)                     
-                if 'cellList' in target['conditions']:
+                if 'cellList' in target['conds']:
                     orderedPostGids = sorted(postCellsTags.keys())
-                    gidList = [orderedPostGids[i] for i in target['conditions']['cellList']]
+                    gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
 
                 # calculate params if string-based funcs

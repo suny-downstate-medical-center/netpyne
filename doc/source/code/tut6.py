@@ -23,11 +23,11 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['cellParams'] = []
 
 ## PYR cell properties
-cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+cellRule = {'label': 'PYR', 'conds': {'cellType': 'PYR'},  'secs': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters

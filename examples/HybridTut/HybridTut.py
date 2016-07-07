@@ -33,7 +33,7 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['cellParams'] = []
 
 ## PYR cell properties (HH)
-cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
+cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]}
@@ -46,16 +46,16 @@ dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 
-cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## PYR cell properties (Izhi)
-cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
+cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}}
 
 soma = {'geom': {}, 'pointps':{}}  # soma properties
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 soma['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 

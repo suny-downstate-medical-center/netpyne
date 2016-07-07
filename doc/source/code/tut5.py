@@ -22,18 +22,18 @@ netParams['popParams'].append({'popLabel': 'background', 'rate': 20, 'noise': 0.
 
 ## Cell property rules
 netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'E'},  'sections': {}}     # cell rule dict
+cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'E'},  'secs': {}}     # cell rule dict
 soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 soma['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                                   # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
-cellRule = {'label': 'BASrule', 'conditions': {'cellType': 'I'},  'sections': {}}     # cell rule dict
+cellRule = {'label': 'BASrule', 'conds': {'cellType': 'I'},  'secs': {}}     # cell rule dict
 soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 soma['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                                    # soma geometry
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
 

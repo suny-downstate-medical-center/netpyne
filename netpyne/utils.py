@@ -258,7 +258,7 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
     del(cell) # delete cell
     import gc; gc.collect()
 
-    cellRule['sections'] = secDic
+    cellRule['secs'] = secDic
     if secListDic:
         cellRule['sectionLists'] = secListDic
 

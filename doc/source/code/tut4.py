@@ -4,34 +4,31 @@ from netpyne import sim
 netParams = {}  # dictionary to store sets of network parameters
 
 ## Population parameters
-netParams['popParams'] = []  # list of populations - each item will contain dict with pop params
 netParams['popParams'].append({'popLabel': 'S', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
 netParams['popParams'].append({'popLabel': 'M', 'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
 netParams['popParams'].append({'popLabel': 'background', 'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
 
 ## Cell property rules
-netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}} 	# cell rule dict
-soma = {'geom': {}, 'mechs': {}, 'synMechs': {}}  											# soma params dict
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  								# dend params dict
-dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-cellRule['sections'] = {'soma': soma, 'dend': dend}  									# add soma section to dict
-netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
+netParams.addCellParams('PYR_HH_rule',			# cell rule label
+	{'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  	# properties will be applied to cells that match these conditions	
+	'secs': 																					# sections 
+		{'soma': 
+			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},									# soma geometry 
+			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}},		# soma mechanisms
+		'dend': 
+			{'geom': {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1},							# dend geometry
+			'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0},						# dend topology
+			'mechs': {'pas': {'g': 0.0000357, 'e': -70}}}}}) 									# dend mechanisms
 
-cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 	# cell rule dict
-soma = {'geom': {}, 'pointps': {}, 'synMechs': {}}  										# soma params dict
-soma['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
-soma['pointps']['Izhi'] = {'mod':'Izhi2007b', 
-	'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
-cellRule['sections'] = {'soma': soma}  									# add soma section to dict
-netParams['cellParams'].append(cellRule)  	
+netParams.addCellParams('PYR_Izhi_rule',
+	{'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},
+	'secs': 
+		{'soma': 
+			{'geom': {'diam': 10.0, 'L': 10.0, 'cm': 31.831},
+			'pointps': {'Izhi':
+				{'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}}}}})
 
 ## Synaptic mechanism parameters
-netParams['synMechParams'] = []
 netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synapse
  
 

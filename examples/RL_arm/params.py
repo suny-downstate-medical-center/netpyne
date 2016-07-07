@@ -52,27 +52,27 @@ izhiParams['FS'] = {'mod':'Izhi2007b', 'C':0.2, 'k':1.0, 'vr':-55, 'vt':-40, 'vp
 netParams['cellParams'] = []
 
 ## RS Izhi cell params
-cellRule = {'label': 'RS_Izhi', 'conditions': {'cellType': 'RS', 'cellModel': 'Izhi2007b'}, 'sections': {}}
+cellRule = {'label': 'RS_Izhi', 'conds': {'cellType': 'RS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 soma = {'geom': {}, 'pointps':{}}  #  soma
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 soma['pointps']['Izhi'] = izhiParams['RS'] 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## LTS Izhi cell params
-cellRule = {'label': 'LTS_Izhi', 'conditions': {'cellType': 'LTS', 'cellModel': 'Izhi2007b'}, 'sections': {}}
+cellRule = {'label': 'LTS_Izhi', 'conds': {'cellType': 'LTS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 soma = {'geom': {}, 'pointps':{}}  #  soma
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 soma['pointps']['Izhi'] = izhiParams['LTS'] 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## FS Izhi cell params
-cellRule = {'label': 'FS_Izhi', 'conditions': {'cellType': 'FS', 'cellModel': 'Izhi2007b'}, 'sections': {}}
+cellRule = {'label': 'FS_Izhi', 'conds': {'cellType': 'FS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 soma = {'geom': {}, 'pointps':{}}  #  soma
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 soma['pointps']['Izhi'] = izhiParams['FS'] 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 

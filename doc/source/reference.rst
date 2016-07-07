@@ -178,15 +178,15 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
-	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
+	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
 
 * **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
-	e.g. ``cellRule['sections']['axon']['spikeGenLoc'] = 1.0``
+	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
 
 Example of two cell property rules::
 
 	## PYR cell properties (HH)
-	cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
+	cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
 	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
@@ -199,18 +199,18 @@ Example of two cell property rules::
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 
-	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+	cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
 
 
 	## PYR cell properties (Izhi)
-	cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'sections': {}}
+	cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
 
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 
-	cellRule['sections'] = {'soma': soma}  # add sections to dict
+	cellRule['secs'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
 
 
@@ -519,7 +519,7 @@ Each item of the ``stimList`` list contains the following fields:
 	* **source** - Label of the stimulation source (e.g. 'electrode_current').
 
 	* **conditions** - Dictionary with conditions of cells where the stim will be applied. 
-		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
 
 	* **sec** (optional) - Target section (default: 'soma')
 		Can be defined as a function (see :ref:`function_string`)
@@ -563,13 +563,13 @@ The code below shows an example of how to create different types of stimulation 
 	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
 	netParams['stimParams']['stimList'].append({
 	    'source': 'Input_3', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conditions': {'cellType':'Basket'}})
+	    'conds': {'cellType':'Basket'}})
 
 	netParams['stimParams']['stimList'].append({
 		'source': 'Input_4', 
@@ -577,7 +577,7 @@ The code below shows an example of how to create different types of stimulation 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
 	    'delay': 1,
-		'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
+		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
 
 
 

@@ -155,17 +155,17 @@ In our example we create a cell property rule that applies to all cells where th
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}      # cell rule dict
+	cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'PYR'},  'secs': {}}      # cell rule dict
 	soma = {'geom': {}, 'mechs': {}} 			                                            # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}           # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                    # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                    # add soma section to dict
 	netParams['cellParams'].append(cellRule)  	
 
 Take a moment to examine the nested dictionary structure used to define the cell property rule. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (eg. ``soma``) to facilitate filling in the parameters. There are other ways to fill it in, all equally valid as long as the resulting structure looks like this (order of elements doesn't matter since its a dict)::
 
 	>>> netParams['cellParams']
-	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'sections': 
+	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'secs': 
 		{'soma': {'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
 			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}}}}]
 
@@ -295,7 +295,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}       # cell rule dict
+	cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'PYR'},  'secs': {}}       # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}        		                                      # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
@@ -303,7 +303,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms
-	cellRule['sections'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
+	cellRule['secs'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                  # add dict to list of cell parameters
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
@@ -338,15 +338,15 @@ Now we need to specify that we want to use the ``Izhi2007b`` ``cellModel`` for t
 
 And we need to create a new cell rule for the Izhikevich cell. But first we need to specify that the existing rule needs to apply only to 'HH' cell models::
 
-	cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}} 	# cell rule dict
+	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
 
 Finally we can create the new rule for the Izhikevich cell model::
 
-	cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 		# cell rule dict
+	cellRule = {'label': 'PYR_Izhi_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'secs': {}} 		# cell rule dict
 	soma = {'geom': {}, 'pointps': {}}  											# soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  										# soma geometry
 	soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
-	cellRule['sections'] = {'soma': soma}  											# add soma section to dict
+	cellRule['secs'] = {'soma': soma}  											# add soma section to dict
 	netParams['cellParams'].append(cellRule)  
 
 Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found here: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948 
@@ -398,18 +398,18 @@ Next we define the cell properties of each type of cell ('E' for excitatory and 
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'Erule', 'conditions': {'cellType': 'E'},  'sections': {}}     # cell rule dict
+	cellRule = {'label': 'Erule', 'conds': {'cellType': 'E'},  'secs': {}}     # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 	soma['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                                   # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
-	cellRule = {'label': 'Irule', 'conditions': {'cellType': 'I'},  'sections': {}}     # cell rule dict
+	cellRule = {'label': 'Irule', 'conds': {'cellType': 'I'},  'secs': {}}     # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 	soma['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
 
@@ -526,11 +526,11 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams['cellParams'] = []
 
 	## PYR cell properties
-	cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+	cellRule = {'label': 'PYR', 'conds': {'cellType': 'PYR'},  'secs': {}}
 	soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8}
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	cellRule['sections'] = {'soma': soma}  # add sections to dict
+	cellRule['secs'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 	# Synaptic mechanism parameters

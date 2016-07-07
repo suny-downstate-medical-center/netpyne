@@ -146,7 +146,7 @@ def loadNet (filename, data=None, instantiate=True):
                     if sim.cfg.verbose: print "  Adding NEURON objects..."
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
-                        prop = {'sections': cell.secs}
+                        prop = {'secs': cell.secs}
                         cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
                         cell.associateGid()  # can only associate once the hSection obj has been created
                     # create all NEURON Netcons, NetStims, etc
@@ -827,6 +827,7 @@ def saveData (include = None):
             import pickle
             with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
+
 ###############################################################################
 ### Timing - Stop Watch
 ###############################################################################
@@ -844,6 +845,7 @@ def timing (mode, processName):
 def version():
     import netpyne 
     print netpyne.__version__
+
 
 ###############################################################################
 ### Print github version

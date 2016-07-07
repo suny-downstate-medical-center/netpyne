@@ -8,6 +8,8 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
+import sim
+
 def getSecName (sec, dirCellSecNames = {}):
     if '>.' in sec.name():
         fullSecName = sec.name().split('>.')[1] 
@@ -322,3 +324,117 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + '\n\n' # new line after each conn rule
                 sim.write(line)  # write to file
                 
+                
+###############################################################################
+### Class for handling NeuroML2 constructs and generating the equivalent in 
+### NetPyNE's internal representation
+############################################################################### 
+
+from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
+
+
+class NetPyNEBuilder(DefaultNetworkHandler):
+    
+    popParams = {}
+    projections = {}
+    
+    stimSources = {}
+    stimLists = {}
+    
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handlePopulation(self, population_id, component, size):
+        
+        self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
+        
+        popInfo={}
+        popInfo['popLabel'] = population_id
+        popInfo['cellModel'] = component
+        popInfo['cellType'] = component
+        popInfo['cellsList'] = []
+        
+        self.popParams[population_id] = popInfo
+            
+    
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handleLocation(self, id, population_id, component, x, y, z):
+        DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
+    
+        cellsList = self.popParams[population_id]['cellsList']
+        cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
+   
+   
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handleInputList(self, inputListId, population_id, component, size):
+        DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+        
+        self.stimSources[inputListId] = {'label': inputListId, 'type': component}
+        self.stimLists[inputListId] = {
+                    'source': inputListId, 
+                    'sec':'soma', 
+                    'loc': 0.5, 
+                    'conditions': {'popLabel':population_id, 'cellList': []}}
+        
+   
+    #
+    #  Overridden from DefaultNetworkHandler
+    #   
+    def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
+        
+        print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
+        if segId!=0:
+            raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
+        if fract!=0.5:
+            raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
+        
+        self.stimLists[inputListId]['conditions']['cellList'].append(cellId)
+        
+        
+
+def importNeuroML2Network(fileName, simConfig):
+    
+    netParams = {}
+
+    import pprint
+
+    pp = pprint.PrettyPrinter(indent=4)
+    
+    print("Importing NeuroML 2 network from: %s"%fileName)
+
+    if fileName.endswith(".nml"):
+        
+        import logging
+        logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+
+        nmlHandler = NetPyNEBuilder()     
+
+        currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+        currParser.parse(fileName)
+        
+        netParams['popParams'] = nmlHandler.popParams.values()
+        
+        netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+        
+        for stimName in nmlHandler.stimSources.keys():
+            netParams['stimParams']['sourceList'].append(nmlHandler.stimSources[stimName])
+            netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
+            
+        pp.pprint(netParams)
+        pp.pprint(simConfig)
+        
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+
+    sim.net.createPops()  
+        
+    sim.net.createCells()                 # instantiate network cells based on defined populations
+    
+    
+    

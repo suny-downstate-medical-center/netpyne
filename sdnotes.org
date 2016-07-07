@@ -2153,7 +2153,7 @@ NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal
 - RL+STDP ... for behavioral task: arm (intervalUpdateFunc)
 - Analysis: raster, hist, LFP, 2dnet, conn matrix
 - Conversion to NeuroML: example of neuroml code? Gepetto/OSB visualization?
-
+- Example nets: M1, claustrum, RL
 
 * Netpyne Models/Users
 ** Github examples folder

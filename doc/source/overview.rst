@@ -7,6 +7,9 @@ What is NetPyNE?
 NetPyNE (Network development Python package for NEURON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
 Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for experimentalists.  NetPyNe is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
+See our recent `poster at the Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ for a nice overview!
+
+
 .. image:: figs/overview.png
 	:width: 80%	
 	:align: center
@@ -66,3 +69,40 @@ Major Features
 	* Can save/load high-level specs, network instance, simulation configuration and simulation results.
 	* Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
 	* Can export/import to/from NeuroML, the standard format for neural models.
+
+
+Questions, suggestions and contributions
+-----------------------------------------
+
+NetPyNE is currently being developed and supported by the Neurosim lab (http://neurosimlab.org) .
+
+NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
+
+For questions or suggestions please add an Issue to github. 
+
+For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes.
+
+For further information please contact salvadordura@gmail.com.
+
+
+Publications
+-------------
+
+About NetPyNE 
+^^^^^^^^^^^^^^^^
+
+- Dura-Bernal S, Suter BA, Neymotin SA, Shepherd GMG, Lytton WW. **Modeling the subcellular distribution of synaptic connections in cortical microcircuits.** *Society for Neurosciecne (SFN), 2016*.
+
+- Dura-Bernal S, Suter BA, Neymotin SA, Kerr CC, Quintana A, Gleeson P, Shepherd GMG, Lytton WW. **NetPyNE: a Python package for NEURON to facilitate development and parallel simulation of biological neuronal networks.** *Computational Neuroscience (CNS), 2016.*
+
+- Gleeson P, Marin B, Sadeh S, Quintana A, Cantarelli M, Dura-Bernal S, Lytton WW, Davison A, Silver RA. **A set of curated cortical models at multiple scales on Open Source Brain.** *Computational Neuroscience (CNS), 2016*.
+
+- Dura-Bernal S, Suter BA, Neymotin SA, Quintana AJ, Gleeson P, Shepherd GMG, Lytton WW. **Normalized cortical depth (NCD) as a primary coordinate system for cell connectivity in cortex: experiment and model.** *Society for Neuroscience (SFN), 2015.*
+
+
+Using NetPyNE
+^^^^^^^^^^^^^^^^^^
+
+- Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
+
+- Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*

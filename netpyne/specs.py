@@ -57,49 +57,49 @@ class NetParams (object):
 			for k,v in netParamsDict.iteritems(): 
 				setattr(self, k, v)
 
-	def addCellParams(self, label=None, params):
+	def addCellParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.cellParams[label] =  params
 
-	def addPopParams(self, label=None, params):
+	def addPopParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.popParams[label] =  params
 
-	def addSynMechParams(self, label=None, params):
+	def addSynMechParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.synMechParams[label] =  params
 
-	def addConnParams(self, label=None, params):
+	def addConnParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.connParams[label] =  params
 
-	def addSubConnParams(self, label=None, params):
+	def addSubConnParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.subConnParams[label] =  params
 
-	def addStimSourceParams(self, label=None, params):
+	def addStimSourceParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.stimSourceParams[label] =  params
 
-	def addStimTargetParams(self, label=None, params):
+	def addStimTargetParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.stimTargetParams[label] =  params
 
-	def importCellParams(self, label=None, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
+	def importCellParams(self, label, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
@@ -108,7 +108,7 @@ class NetParams (object):
 		self.addCellParams(label, cellRule)
 
 		if importSynMechs:
-			for synMech in synMechs: self.addCellParams(synMech.pop('label'), synMech)
+			for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
 
 		return self.cellParams[label]
 

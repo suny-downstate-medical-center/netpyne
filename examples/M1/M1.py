@@ -36,7 +36,7 @@ simConfig.verbose = 0 # Whether to write diagnostic information on events
 
 # Recording 
 simConfig.recordCells = []  # list of cells to record from 
-simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}} # 'V':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'}} # 'V':{'sec':'soma','loc':0.5,'var':'v'}}
     #'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     #'u':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'u'}, 
     #'I':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'i'}, 

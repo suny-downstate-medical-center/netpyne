@@ -17,33 +17,25 @@ netParams.addPopParams('background', {'rate': 50, 'noise': 0.5, 'cellModel': 'Ne
 
 
 ### HH
-cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-synMechsImport = []
-utils.importCell(cellRule=cellRule, synMechParams=synMechsImport, fileName='HHCellFile.py', cellName='HHCellClass')
-netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
-netParams['synMechParams'].extend(synMechsImport)  		
-
-netParams.import...
+netParams.importCellParams(label='PYR_HH_rule', conds={'cellType': 'PYR', 'cellModel': 'HH'},
+	fileName='HHCellFile.py', cellName='HHCellClass', importSynMechs=True)
 
 ### HH3D
-cellRule = {'label': 'PYR_HH3D_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='geom.hoc', cellName='E21')
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+cellRule = netParams.importCellParams(label='PYR_HH3D_rule', conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, 
+	fileName='geom.hoc', cellName='E21', importSynMechs=True)
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
 for secName in cellRule['secs']:
  	cellRule['secs'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
  	cellRule['secs'][secName]['geom']['cm'] = 1
-netParams['cellParams'].append(cellRule)  
 
 ### Traub
-cellRule = {'label': 'PYR_Traub_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
-somaSec = cellRule['sectionLists']['Soma'][0] 
+cellRule = netParams.importCellParams(label='PYR_Traub_rule', conds= {'cellType': 'PYR', 'cellModel': 'Traub'}, 
+	fileName='pyr3_traub.hoc', cellName='pyr3')
+somaSec = cellRule['secLists']['Soma'][0] 
 cellRule['secs'][somaSec]['spikeGenLoc'] = 0.5
-netParams['cellParams'].append(cellRule)  
 
 ### Mainen
-cellRule = {'label': 'PYR_Mainen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='mainen.py', cellName='PYR2')
+netParams.importCell(label='PYR_Mainen_rule', conds =  {'cellType': 'PYR', 'cellModel': 'Mainen'}, cellRule=cellRule, fileName='mainen.py', cellName='PYR2')
 netParams['cellParams'].append(cellRule)  
 
 ### Friesen

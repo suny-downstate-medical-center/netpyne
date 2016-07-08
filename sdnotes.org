@@ -969,9 +969,9 @@ for i in xrange(int(section_lists.count())):
 
 *** Netpyne implementation
 - Option 3
-cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'secs': {}, 'sectionLists': {}} 
+cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'secs': {}, 'secLists': {}} 
 ...
-cellRule['sectionLists']['all'] = ['soma', 'dend']
+cellRule['secLists']['all'] = ['soma', 'dend']
 
 - Can't define properties of section lists in netpyne
 - Neuron section list object not created - just python version
@@ -979,7 +979,7 @@ cellRule['sectionLists']['all'] = ['soma', 'dend']
 - Can use sectionlists in connectivity
 
 - Modified importCell so it reads sectionLists with original variable names; and modified input arguments so now pass
-  cellRule as 1st arg -- so can add 'secs' and 'sectionLists' to cellRule dict
+  cellRule as 1st arg -- so can add 'secs' and 'secLists' to cellRule dict
 
 TODO:
 - update tut_import.py - DONE

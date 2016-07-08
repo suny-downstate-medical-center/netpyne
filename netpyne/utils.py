@@ -76,7 +76,7 @@ def _equal_dicts (d1, d2, ignore_keys):
             return False
     return True
 
-def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
+def importCell (fileName, cellName, cellArgs = []):
     h.initnrn()
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
@@ -230,9 +230,9 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
 
         h.pop_section()  # to prevent section stack overflow
 
-    # store synMechs in input argument
-    if synMechs: 
-        for synMech in synMechs: synMechParams.append(synMech)
+    # # store synMechs in input argument
+    # if synMechs: 
+    #     for synMech in synMechs: synMechParams.append(synMech)
         
     # store section lists
     secLists = h.List('SectionList')
@@ -258,9 +258,11 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
     del(cell) # delete cell
     import gc; gc.collect()
 
-    cellRule['secs'] = secDic
-    if secListDic:
-        cellRule['sectionLists'] = secListDic
+    return secDic, secListDic, synMechs
+
+    # cellRule['secs'] = secDic
+    # if secListDic:
+    #     cellRule['secLists'] = secListDic
 
 
 

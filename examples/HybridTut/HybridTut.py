@@ -113,7 +113,7 @@ simConfig.verbose = 1# False # show detailed messages
 
 # Recording 
 simConfig.recordCells = []  # list of cells to record from 
-simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
+simConfig.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
     'AMPA_g': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'g'},

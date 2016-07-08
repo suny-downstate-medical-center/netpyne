@@ -6,7 +6,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from collections import OrderedDict
-
+from netpyne import utils
 
 ###############################################################################
 # NETWORK PARAMETERS CLASS
@@ -76,6 +76,17 @@ class NetParams (object):
 
 	def addStimTargetParams(self, label, params):
 		self.stimTargetParams[label] =  params
+
+	def importCellParams(self, label, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
+		secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
+		cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+		self.addCellParams(label, cellRule)
+
+		if importSynMechs:
+			for synMech in synMechs: self.addCellParams(synMech.pop('label'), synMech)
+
+		return self.cellParams[label]
+
 
 ###############################################################################
 # SIMULATION CONFIGURATION CLASS

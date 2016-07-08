@@ -22,7 +22,7 @@ netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc
 
 # Simulation parameters
 simConfig.duration = 500     # Duration of the simulation, in ms
-simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
                           #'ik_soma':{'sec':'soma','loc':0.5,'var':'ik'}}
                           #'exc_soma':{'sec':'soma','synMech':'exc', 'loc':0.5,'var':'i'}}  # Dict with traces to record
 simConfig['analysis']['plotTraces']={'include': [0]}

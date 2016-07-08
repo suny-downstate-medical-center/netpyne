@@ -35,8 +35,8 @@ somaSec = cellRule['secLists']['Soma'][0]
 cellRule['secs'][somaSec]['spikeGenLoc'] = 0.5
 
 ### Mainen
-netParams.importCell(label='PYR_Mainen_rule', conds =  {'cellType': 'PYR', 'cellModel': 'Mainen'}, cellRule=cellRule, fileName='mainen.py', cellName='PYR2')
-netParams['cellParams'].append(cellRule)  
+netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'cellModel': 'Mainen'}, 
+	fileName='mainen.py', cellName='PYR2')
 
 ### Friesen
 cellRule = {'label': 'PYR_Friesen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict

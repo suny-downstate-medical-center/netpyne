@@ -61,43 +61,43 @@ class NetParams (object):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.cellParams[label] =  params
+		self.cellParams[label] = params
 
 	def addPopParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.popParams[label] =  params
+		self.popParams[label] = params
 
 	def addSynMechParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.synMechParams[label] =  params
+		self.synMechParams[label] = params
 
 	def addConnParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.connParams[label] =  params
+		self.connParams[label] = params
 
 	def addSubConnParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.subConnParams[label] =  params
+		self.subConnParams[label] = params
 
 	def addStimSourceParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.stimSourceParams[label] =  params
+		self.stimSourceParams[label] = params
 
 	def addStimTargetParams(self, label=None, params={}):
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
-		self.stimTargetParams[label] =  params
+		self.stimTargetParams[label] = params
 
 	def importCellParams(self, label, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
 		if not label: 

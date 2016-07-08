@@ -2,6 +2,8 @@
 
 - Easier and more consistent format for high-level specifications (issue #103):
 
+	- replaced default.py with specs.py which defines classes NetParams and SimConfig
+
 	- netParams and simConfig are now objects of class NetParams and SimConfig, respectively
 
 	- Can use object methods to add params, eg. netParams.addPopParams(label, params)

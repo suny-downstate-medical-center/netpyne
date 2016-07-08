@@ -246,7 +246,7 @@ def importCell (fileName, cellName, cellArgs = []):
                 secListName = hname
             secListDic[secListName] = [getSecName(sec, dirCellSecNames) for sec in secLists.o(i)]
     else:
-        secListDic = None
+        secListDic = {}
 
     # celsius warning
     if hasattr(h, 'celsius'):

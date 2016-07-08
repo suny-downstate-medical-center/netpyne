@@ -1,4 +1,4 @@
-from netpyne import specs, sim, utils
+from netpyne import specs, sim
 
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters

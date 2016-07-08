@@ -69,14 +69,14 @@ netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 
 
 ## Connectivity params
 netParams.addConnParams('bg1',
-	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
+	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})		
 
 netParams.addConnParams('bg2',
-	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['HH3D','Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
+	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 

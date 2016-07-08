@@ -32,6 +32,8 @@
 
 - Fixed bug related to readArgs() when running from IPYnotebook.
 
+- Fixed bug related to plasticity in cells with V not in section (eg. Izhi2007a)
+
 ## Version 0.5.0
 
 - Added option 'dataSaveInclude' to select what data to save to file (issue #30)

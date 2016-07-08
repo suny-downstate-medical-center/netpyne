@@ -23,19 +23,20 @@ The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
 	import HHTut
 	from netpyne import sim
-	sim.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
+	sim.createSimulateAnalyze(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
+
 
 The first line imports the ``HHTut`` module with the network and simulation parameters. 
 
 The second line imports the ``sim`` module from the ``netpyne`` package. The `sim`` module provides functions to easily create and simulate networks based on these parameters.
 
-The third line calls the ``createAndSimulate`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
+The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create, simulate and the network, and save and plot data. It requires the following 2 arguments:
 
-* ``netParams`` - a dictionary to store network parameters (eg. cell properties, populations, connectivtiy)
+* ``netParams`` - an object of class NetParams to store network parameters (eg. cell properties, populations, connectivtiy)
 
-* ``simConfig`` - a dictionary to store simulation options (eg. duration, dt, recording and plotting options, etc)
+* ``simConfig`` - an object of class SimConfig to store simulation options (eg. duration, dt, recording and plotting options, etc)
 
-In this case we are using a set of predefined parameters defined in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required dictionaries: ``netParams`` and ``simConfig``. 
+In this case we are using a set of predefined parameters specified in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required objects: ``netParams`` and ``simConfig``. 
 
 To run the model just execute the `tut1.py` script. One way to do this is to run this shell command::
 
@@ -66,7 +67,7 @@ Congratulations! You have created and simulated a biological neuronal network in
 
 In the remaining of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, in the rest of the tutorial, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
 
-We begin with an overview of the Python dictionary structure where you will define all your network parameters.
+We begin with an overview of the Python objects where you will define all your network parameters.
 
 Network parameters
 ----------------------

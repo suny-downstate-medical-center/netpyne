@@ -17,7 +17,7 @@ See our recent `poster at the Computational Neuroscience conference CNS16 <http:
 What can I do with NetPyNE?
 ---------------------------
 
-NetPyNE converts a set of high-level specifications into a NEURON model. Specifications are provided in a simple, standardized, declarative format, based solely on Python’s lists and dictionaries. The user can define network populations and their properties, including cell type, number or density. For each cell type, the user can define morphology, biophysics and implementation, or choose to import these from existing files (HOC templates or Python classes). Cell models for each population can be easily changed, and several models can be combined to generate efficient hybrid networks, *e.g.,* composed of Hodgkin-Huxley multicompartment cells and Izhikevich point neurons. 
+NetPyNE converts a set of high-level specifications into a NEURON model. Specifications are provided in a simple, standardized, declarative Python-based format. The user can define network populations and their properties, including cell type, number or density. For each cell type, the user can define morphology, biophysics and implementation, or choose to import these from existing files (HOC templates or Python classes). Cell models for each population can be easily changed, and several models can be combined to generate efficient hybrid networks, *e.g.,* composed of Hodgkin-Huxley multicompartment cells and Izhikevich point neurons. 
 
 NetPyNE provides a flexible format to specify connectivity, with rules based on pre- and post-synaptic cell properties, such as cell type or location. Multiple connectivity functions are available, including all-to-all, probabilistic, convergent or divergent. Additionally, connectivity parameters (*e.g.,* weight, probability or delay) can be specified as a function of pre/post-synaptic spatial properties. This enables implementation of complex biological patterns, such as delays or connection probabilities that depend on distance between cells, or weights that depend on the post-synaptic neuron’s cortical depth. The subcellular distribution of synapses along the dendrites can be specified, and is automatically adapted to the morphology of each model neuron. Learning mechanisms, including spike-timing dependent plasticity and reinforcement learning, can be readily incorporated.
 
@@ -30,7 +30,7 @@ Major Features
 
 * Converts a set of high-level specifications into a NEURON network model. 
 
-* Specifications are provided in a simple, standardized, declarative Python-based format (lists and dictionaries).
+* Specifications are provided in a simple, standardized, declarative Python-based format.
 
 * Can easily define:
 

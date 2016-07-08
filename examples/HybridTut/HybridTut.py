@@ -33,7 +33,7 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['cellParams'] = []
 
 ## PYR cell properties (HH)
-cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
+cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]}
@@ -46,16 +46,16 @@ dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []}
 dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 
-cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 ## PYR cell properties (Izhi)
-cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'sections': {}}
+cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}}
 
 soma = {'geom': {}, 'pointps':{}}  # soma properties
 soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 soma['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 
@@ -68,7 +68,7 @@ netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'ExpSyn', 'tau': 0.1,
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
-    {'preTags': {'cellType': 'PYR'}, 'postTags': {'cellType': 'PYR'},
+    {'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},
     'weight': 0.2,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -77,7 +77,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
     'connFunc': 'fullConn',
     'weight': 1, 
     'delay': 'uniform(1,5)',
@@ -85,7 +85,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
     'connFunc': 'fullConn',
     'weight': 1, 
     'synMech': 'AMPA',
@@ -102,33 +102,33 @@ netParams['connParams'].append(
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
-simConfig['dt'] = 0.025 # Internal integration timestep to use
-simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
-simConfig['createNEURONObj'] = True  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = True  # create Python structure (simulator-independent) when instantiating network
-simConfig['timing'] = True  # show timing  and save to file
-simConfig['verbose'] = 1# False # show detailed messages 
+simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = True  # create HOC objects when instantiating network
+simConfig.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
+simConfig.timing = True  # show timing  and save to file
+simConfig.verbose = 1# False # show detailed messages 
 
 
 # Recording 
-simConfig['recordCells'] = []  # list of cells to record from 
-simConfig['recordTraces'] = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
+simConfig.recordCells = []  # list of cells to record from 
+simConfig.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
     'AMPA_g': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'g'},
     'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
-simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStep = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = 'mpiHybridTut'  # Set file output name
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveJson'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveMat'] = False # Whether or not to write spikes etc. to a .mat file
-simConfig['saveTxt'] = False # save spikes and conn to txt file
-simConfig['saveDpk'] = False # save to a .dpk pickled file
+simConfig.filename = 'mpiHybridTut'  # Set file output name
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveJson = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveTxt = False # save spikes and conn to txt file
+simConfig.saveDpk = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 

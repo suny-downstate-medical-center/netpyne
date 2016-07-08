@@ -155,19 +155,23 @@ In our example we create a cell property rule that applies to all cells where th
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}      # cell rule dict
+	cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'PYR'},  'secs': {}}      # cell rule dict
 	soma = {'geom': {}, 'mechs': {}} 			                                            # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}           # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                    # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                    # add soma section to dict
 	netParams['cellParams'].append(cellRule)  	
 
 Take a moment to examine the nested dictionary structure used to define the cell property rule. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (eg. ``soma``) to facilitate filling in the parameters. There are other ways to fill it in, all equally valid as long as the resulting structure looks like this (order of elements doesn't matter since its a dict)::
 
 	>>> netParams['cellParams']
-	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'sections': 
+	['label': 'PYRrule', conditions': {'cellType': 'PYR'}, {'secs': 
 		{'soma': {'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
 			  'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003,  'el': -70}}}}}]
+
+.. to get a better intuition of the data structure, notice that you can access the cell property rule just created by its label as netParams.cellParams['PYRrule']
+
+.. this means you could directly create or modify by accessing this way netParams.cellParams['PYRrule'] = {...} . The only reason for using the addCellParams() method is that it provides checks to make sure the syntax is valid
 
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -208,7 +212,7 @@ We will first add a rule to randomly connect the sensory to the motor population
 
 	## Cell connectivity rules
 	netParams['connParams'] = []  
-	netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+	netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5,			# transmission delay (ms) 
@@ -216,7 +220,7 @@ We will first add a rule to randomly connect the sensory to the motor population
 
 Next we will connect background inputs (NetStims) to all cells of both populations::
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+	netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 		'weight': 0.01, 		# synaptic weight 
 		'delay': 5, 			# transmission delay (ms) 
 		'synMech': 'exc'})  	# synaptic mechanism 
@@ -233,13 +237,13 @@ Below we include the options required to run a simulation of 1 second, with intg
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 1*1e3 			# Duration of the simulation, in ms
-	simConfig['dt'] = 0.025 			# Internal integration timestep to use
-	simConfig['verbose'] = False 			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  	# Set file output name
-	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+	simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
+	simConfig.dt = 0.025 			# Internal integration timestep to use
+	simConfig.verbose = False 			# Show detailed messages 
+	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  	# Set file output name
+	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 	simConfig['plotRaster'] = True 			# Plot a raster
 	simConfig['plotCells'] = [1] 		# Plot recorded traces for this list of cells
 
@@ -291,7 +295,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}}       # cell rule dict
+	cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'PYR'},  'secs': {}}       # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}        		                                      # soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
@@ -299,12 +303,12 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms
-	cellRule['sections'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
+	cellRule['secs'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                  # add dict to list of cell parameters
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'S'}, 'postTags': {'popLabel': 'M'},  #  S -> M
+	netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 		'connFunc': 'randConn',     # connectivity function (random)
 		'maxConns': 10,             # max number of incoming conns to cell
 		'weight': 0.01,             # synaptic weight 
@@ -334,15 +338,15 @@ Now we need to specify that we want to use the ``Izhi2007b`` ``cellModel`` for t
 
 And we need to create a new cell rule for the Izhikevich cell. But first we need to specify that the existing rule needs to apply only to 'HH' cell models::
 
-	cellRule = {'label': 'PYR_HH_rule', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}} 	# cell rule dict
+	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
 
 Finally we can create the new rule for the Izhikevich cell model::
 
-	cellRule = {'label': 'PYR_Izhi_rule', 'conditions': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'sections': {}} 		# cell rule dict
+	cellRule = {'label': 'PYR_Izhi_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'},  'secs': {}} 		# cell rule dict
 	soma = {'geom': {}, 'pointps': {}}  											# soma params dict
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  										# soma geometry
 	soma['pointps']['Izhi2007b'] = {'C':100, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}	# soma poinpt process
-	cellRule['sections'] = {'soma': soma}  											# add soma section to dict
+	cellRule['secs'] = {'soma': soma}  											# add soma section to dict
 	netParams['cellParams'].append(cellRule)  
 
 Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found here: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948 
@@ -368,12 +372,12 @@ Since we want to distribute the cells spatially, the first thing we need to do i
 	# Network parameters
 	netParams = {}  # dictionary to store sets of network parameters
 
-	netParams['sizeX'] = 100 # x-dimension (horizontal length) size in um
-	netParams['sizeY'] = 1000 # y-dimension (vertical height or cortical depth) size in um
-	netParams['sizeZ'] = 100 # z-dimension (horizontal length) size in um
+	netParams.sizeX = 100 # x-dimension (horizontal length) size in um
+	netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
+	netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
 	
-	netParams['propVelocity'] = 100.0 # propagation velocity (um/ms)
-	netParams['probLengthConst'] = 150.0 # length constant for conn probability (um)
+	netParams.propVelocity = 100.0 # propagation velocity (um/ms)
+	netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
 
@@ -394,18 +398,18 @@ Next we define the cell properties of each type of cell ('E' for excitatory and 
 
 	## Cell property rules
 	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'Erule', 'conditions': {'cellType': 'E'},  'sections': {}}     # cell rule dict
+	cellRule = {'label': 'Erule', 'conds': {'cellType': 'E'},  'secs': {}}     # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 	soma['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                                   # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
-	cellRule = {'label': 'Irule', 'conditions': {'cellType': 'I'},  'sections': {}}     # cell rule dict
+	cellRule = {'label': 'Irule', 'conds': {'cellType': 'I'},  'secs': {}}     # cell rule dict
 	soma = {'geom': {}, 'mechs': {}}                                            # soma params dict
 	soma['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                                    # soma geometry
 	soma['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-	cellRule['sections'] = {'soma': soma}                                                   # add soma section to dict
+	cellRule['secs'] = {'soma': soma}                                                   # add soma section to dict
 	netParams['cellParams'].append(cellRule)                                                # add dict to list of cell par
 
 
@@ -423,7 +427,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	## Cell connectivity rules
 	netParams['connParams'] = [] 
 
-	netParams['connParams'].append({'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': ['E', 'I']}, # background -> all
+	netParams['connParams'].append({'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
 	  'weight': 0.01,                     # synaptic weight 
 	  'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
 	  'synMech': 'exc'})                  # synaptic mechanism 
@@ -433,13 +437,13 @@ We can now add the standard simulation configuration options and the code to cre
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 1*1e3           # Duration of the simulation, in ms
-	simConfig['dt'] = 0.1                 # Internal integration timestep to use
-	simConfig['verbose'] = False            # Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  # Set file output name
-	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
+	simConfig.duration = 1*1e3           # Duration of the simulation, in ms
+	simConfig.dt = 0.1                 # Internal integration timestep to use
+	simConfig.verbose = False            # Show detailed messages 
+	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  # Set file output name
+	simConfig.savePickle = False         # Save params, network and sim output to pickle file
 	
 	simConfig['analysis'] = {}				# Initialize dict for analysis options
 	simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'}          # Plot a raster
@@ -458,13 +462,13 @@ If we run the model at this point we will see the cells are distributed into thr
 	:align: center
 
 
-Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First,lets  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postTags': {'y': [100,1000]}``. 
+Lets now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First,lets  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 
 
 Second, lets make the the connection weight be proportional to the cortical depth of the cell, ie. postsynaptic cells in deeper layers will receive stronger connections than those in superficial layers. To do this we make use of the distance-related variables that NetPyNE makes available to use in string-based functions; in this case ``post_ynorm``, which represents the normalized y location of the postsynaptic cell. For a complete list of available variables see: :ref:`function_string`.
 
 Finally, we can specify the delay based on the distance between the cells (``dist_3D``) and the propagation velocity (given as a parameter at the beginning of the code), as follows: ``'delay': 'dist_3D/propVelocity'``. The full code for this connectivity rules is::
 
-	netParams['connParams'].append({'preTags': {'cellType': 'E'}, 'postTags': {'y': [100,1000]},  #  E -> all (100-1000 um)
+	netParams['connParams'].append({'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
 	  'probability': 0.1,    # probability of connection
 	  'weight': '0.005*post_ynorm',         # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
@@ -478,12 +482,12 @@ Running the model now shows excitatory connections in red, and how cells in the 
 	:align: center
 
 
-Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postTags': {'cellType': 'E'}``). 
+Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
 To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 
-	netParams['connParams'].append({'preTags': {'cellType': 'I'}, 'postTags': {'popLabel': ['E2','E4','E5']},       #  I -> E
+	netParams['connParams'].append({'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
 	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
 	  'weight': 0.001,                                     # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
@@ -522,11 +526,11 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams['cellParams'] = []
 
 	## PYR cell properties
-	cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+	cellRule = {'label': 'PYR', 'conds': {'cellType': 'PYR'},  'secs': {}}
 	soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8}
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	cellRule['sections'] = {'soma': soma}  # add sections to dict
+	cellRule['secs'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 	# Synaptic mechanism parameters
@@ -538,13 +542,13 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams['connParams'] = []  
 
 	netParams['connParams'].append(
-	    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
+	    {'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
 	    'weight': 0.1,                    # fixed weight of 0.08
 	    'synMech': 'exc',                 # target exc synapse
 	    'delay': 1})                      # fixed delay of 1-5ms
 
 	netParams['connParams'].append(
-	    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
+	    {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
 	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5})       				    # delay 
@@ -559,13 +563,13 @@ We now add the standard simulation configuration options, and include the ``sync
 
 	# Simulation options
 	simConfig = {}
-	simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
-	simConfig['dt'] = 0.025 				# Internal integration timestep to use
-	simConfig['verbose'] = False  			# Show detailed messages 
-	simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig['filename'] = 'model_output'  # Set file output name
-	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+	simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
+	simConfig.dt = 0.025 				# Internal integration timestep to use
+	simConfig.verbose = False  			# Show detailed messages 
+	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+	simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  # Set file output name
+	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
 	simConfig['analysis'] = {}									# Initialize dict for analysis options
 	simConfig['analysis']['plotRaster'] = {'syncLines': True} 	# Plot a raster with vertical synchrony lines

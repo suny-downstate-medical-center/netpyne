@@ -8,7 +8,7 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
-netParams = {}  # dictionary to store sets of network parameters
+netParams = {}  # object of class NetParams to store the network parameters
 simConfig = {}  # dictionary to store sets of simulation configurations
 
 
@@ -31,12 +31,13 @@ netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim',
 netParams['cellParams'] = []
 
 ## PYR cell properties
-cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
+cellRule = {'label': 'PYR', 'conds': {'cellType': 'PYR'},  'secs': {}}
 soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+soma['vinit']=71
 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
+cellRule['secs'] = {'soma': soma}  # add sections to dict
 netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
@@ -47,7 +48,7 @@ netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.
 netParams['connParams'] = []  
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'PYR'}, 'postTags': {'popLabel': 'PYR'},
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
     'weight': 0.005,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -55,7 +56,7 @@ netParams['connParams'].append(
 
 
 netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'cellType': 'PYR'}, # background -> PYR
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'})           # uniformly distributed delays between 1-5ms
@@ -68,23 +69,23 @@ netParams['connParams'].append(
 simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig['duration'] = 1*1e3 # Duration of the simulation, in ms
-simConfig['dt'] = 0.025 # Internal integration timestep to use
-simConfig['seeds'] = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
-simConfig['createNEURONObj'] = 1  # create HOC objects when instantiating network
-simConfig['createPyStruct'] = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig['verbose'] = False  # show detailed messages 
+simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = False  # show detailed messages 
 
 # Recording 
-simConfig['recordCells'] = []  # which cells to record from
-simConfig['recordTraces'] = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
-simConfig['recordStim'] = True  # record spikes of cell stims
-simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordCells = []  # which cells to record from
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig['filename'] = 'HHTut'  # Set file output name
-simConfig['saveFileStep'] = 1000 # step size in ms to save data to disk
-simConfig['savePickle'] = False # Whether or not to write spikes etc. to a .mat file
+simConfig.filename = 'HHTut'  # Set file output name
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
 
 # Analysis and plotting 

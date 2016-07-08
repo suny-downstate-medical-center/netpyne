@@ -16,7 +16,7 @@ Other useful links:
 * https://www.neuron.yale.edu/neuron/download/compilestd_osx 
 * [Neurosim lab wiki]
 
-Note: It is possible to use the NetPyNE package without NEURON, to convert model specifications into Python-based instantiated networks (hierarchical data structure of objects, dicts and lists), and export into different formats. More details provided here (coming soon).
+Note: It is possible to use the NetPyNE package without NEURON, to convert model specifications into Python-based instantiated networks (hierarchical data structure of objects, dicts and lists), and export into different formats. 
 
 Install via pip
 ----------------

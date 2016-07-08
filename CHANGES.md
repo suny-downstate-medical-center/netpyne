@@ -1,10 +1,32 @@
 ## Version 0.5.1
 
+- Easier and more consistent format for high-level specifications (issue #103):
+
+	- netParams and simConfig are now objects of class NetParams and SimConfig, respectively
+
+	- Can use object methods to add params, eg. netParams.addPopParams(label, params)
+
+	- All structures within netParams and simConfig are now OrderedDicts so can be referenced by label/key
+
+	- Split netParams.stimParams into netParams.stimSourceParams and netParams.stimTargetParams (both OrderedDicts)
+
+	- Simplified/clarified keys: 'conditions' -> 'conds', 'sections' -> 'secs', 'preTags' -> 'preConds', 'postTags' -> 'postConds' 
+
+- Added wrappers and modified names of existing ones to make consistent
+
 - Selectively save data to file: netParams, net, simConfig and/or simData (issue #30)
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
 
+- Added 'rerun' option to plotTraces() 
+
+- Added function to get cell object by gid, sim.cellByGid(gid)  
+
 - Fixed bug that was slowing down STDP by creating new h.Section() -- now uses existing.
+
+- Fixed bug so vinit gets set for all segments in a section.
+
+- Fixed bug related to readArgs() when running from IPYnotebook.
 
 ## Version 0.5.0
 
@@ -222,7 +244,7 @@
 
 - Added option to show and/or save to file the timing of initialization, cell creation, connection creation, setup recording, simulation run, data gathering, plotting, and saving. 
 
-- Fixed bug: h.dt now set to value of simConfig['dt']
+- Fixed bug: h.dt now set to value of simConfig.dt
 
 ## Version 0.3
 

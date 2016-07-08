@@ -15,6 +15,8 @@ import math
 
 import sim
 
+import warnings
+warnings.filterwarnings("ignore")
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -25,14 +27,14 @@ def plotData ():
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user
-        for funcName, kwargs in sim.cfg['analysis'].iteritems():
+        for funcName, kwargs in sim.cfg.analysis.iteritems():
             if kwargs == True: kwargs = {}
             elif kwargs == False: continue
             func = getattr(sim.analysis, funcName)  # get pointer to function
             func(**kwargs)  # call function with user arguments
 
         # Print timings
-        if sim.cfg['timing']:
+        if sim.cfg.timing:
             
             sim.timing('stop', 'plotTime')
             print('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
@@ -86,7 +88,7 @@ def syncMeasure ():
         if (spkt>=t0+width): 
             t0=spkt 
             cnt+=1
-    return 1-cnt/(sim.cfg['duration']/width)
+    return 1-cnt/(sim.cfg.duration/width)
 
 
 ######################################################################################################################################################
@@ -94,7 +96,7 @@ def syncMeasure ():
 ######################################################################################################################################################
 def getCellsInclude(include):
     allCells = sim.net.allCells
-    allNetStimPops = [p.tags['popLabel'] for p in sim.net.allPops if p.tags['cellModel']=='NetStim']
+    allNetStimPops = [popLabel for popLabel,pop in sim.net.allPops.iteritems() if pop['tags']['cellModel']=='NetStim']
     cellGids = []
     cells = []
     netStimPops = []
@@ -168,7 +170,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Select cells to include
     cells, cellGids, netStimPops = getCellsInclude(include)
     selectedPops = [cell['tags']['popLabel'] for cell in cells]+netStimPops
-    popLabels = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
@@ -223,10 +225,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ylabelText = ylabelText + 'NetStims'
 
     # Time Range
-    if timeRange == [0,sim.cfg['duration']]:
+    if timeRange == [0,sim.cfg.duration]:
         pass
     elif timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
     else:
         spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors) 
         if timeRange[0] <= spkt <= timeRange[1]])
@@ -344,7 +346,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
         include.remove('eachPop')
-        for pop in sim.net.allPops: include.append(pop.tags['popLabel'])
+        for pop in sim.net.allPops: include.append(pop)
 
     # Y-axis label
     if yaxis == 'rate': yaxisLabel = 'Avg cell firing rate (Hz)'
@@ -355,7 +357,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
 
     histData = []
 
@@ -370,7 +372,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         # Select cells to include
         if len(cellGids) > 0:
-            spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            try:
+                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            except:
+                spkinds,spkts = [],[]
         else: 
             spkinds,spkts = [],[]
 
@@ -470,8 +475,8 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
     if rerun: 
         cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
         for cellRecord in cellsRecord:
-            if cellRecord not in sim.cfg['recordCells']:
-                sim.cfg['recordCells'].append(cellRecord)
+            if cellRecord not in sim.cfg.recordCells:
+                sim.cfg.recordCells.append(cellRecord)
         sim.setupRecording()
         sim.simulate()
 
@@ -482,16 +487,16 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                 [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
                 [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
-    tracesList = sim.cfg['recordTraces'].keys()
+    tracesList = sim.cfg.recordTraces.keys()
     tracesList.sort()
     cells, cellGids, _ = getCellsInclude(include)
     gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg['duration']]
+        timeRange = [0,sim.cfg.duration]
 
-    recordStep = sim.cfg['recordStep']
+    recordStep = sim.cfg.recordStep
 
     figs = []
     tracesData = []
@@ -538,16 +543,16 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                     plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     xlabel('Time (ms)', fontsize=fontsiz)
                     xlim(timeRange)
-                    title(trace)
+                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
             if overlay:
                 maxLabelLen = 10
                 subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
                 legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-    # try:
-    #     tight_layout()
-    # except:
-    #     pass
+    try:
+        tight_layout()
+    except:
+        pass
 
     #save figure data
     if saveData:
@@ -627,9 +632,6 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
     '''
 
     print('Plotting connectivity matrix...')
-
-    import warnings
-    warnings.filterwarnings("ignore")
     
     cells, cellGids, netStimPops = getCellsInclude(include)    
 
@@ -683,7 +685,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
         
         # get list of pops
         popsTemp = list(set([cell['tags']['popLabel'] for cell in cells]))
-        pops = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in popsTemp]+netStimPops
+        pops = [pop for pop in sim.net.allPops if pop in popsTemp]+netStimPops
         popInds = {pop: ind for ind,pop in enumerate(pops)}
         
         # initialize matrices
@@ -909,7 +911,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
 
     cells, cellGids, _ = getCellsInclude(include)           
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
-    popLabels = [pop.tags['popLabel'] for pop in sim.net.allPops if pop.tags['popLabel'] in selectedPops] # preserves original ordering
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
     posX = [cell['tags']['x'] for cell in cells]  # get all x positions

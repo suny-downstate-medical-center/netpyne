@@ -15,6 +15,7 @@ from netpyne import utils
 class NetParams (object):
 
 	def __init__(self, netParamsDict=None):
+		self._labelid = 0
 		# General network parameters
 		self.scale = 1 	 # scale factor for number of cells 
 		self.sizeX = 100 # x-dimension (horizontal length) size in um
@@ -56,28 +57,52 @@ class NetParams (object):
 			for k,v in netParamsDict.iteritems(): 
 				setattr(self, k, v)
 
-	def addCellParams(self, label, params):
+	def addCellParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.cellParams[label] =  params
 
-	def addPopParams(self, label, params):
+	def addPopParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.popParams[label] =  params
 
-	def addSynMechParams(self, label, params):
+	def addSynMechParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.synMechParams[label] =  params
 
-	def addConnParams(self, label, params):
+	def addConnParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.connParams[label] =  params
 
-	def addSubConnParams(self, label, params):
+	def addSubConnParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.subConnParams[label] =  params
 
-	def addStimSourceParams(self, label, params):
+	def addStimSourceParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.stimSourceParams[label] =  params
 
-	def addStimTargetParams(self, label, params):
+	def addStimTargetParams(self, label=None, params):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		self.stimTargetParams[label] =  params
 
-	def importCellParams(self, label, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
+	def importCellParams(self, label=None, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
+		if not label: 
+			label = int(self._labelid)
+			self._labelid += 1
 		secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
 		cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
 		self.addCellParams(label, cellRule)

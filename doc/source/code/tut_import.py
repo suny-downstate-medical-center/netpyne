@@ -39,14 +39,12 @@ netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'c
 	fileName='mainen.py', cellName='PYR2')
 
 ### Friesen
-cellRule = {'label': 'PYR_Friesen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
+netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
+	fileName='friesen.py', cellName='MakeRSFCELL')
 cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
-netParams['cellParams'].append(cellRule)  
 
 ### Izhi2003a (independent voltage)
-cellRule = {'label': 'PYR_Izhi03a_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+netParams.importCellParams(label='PYR_Izhi03a_rule', fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
 netParams['cellParams'].append(cellRule)  	
 

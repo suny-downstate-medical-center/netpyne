@@ -1,31 +1,31 @@
 # execfile('hopbrodnetpyne.py')
 # notebook: ~/nrniv/notebooks/nbnetpyne.dol
-from netpyne import sim
-netParams, simConfig, simConfig['analysis'] = {}, {}, {}
-for key in ['popParams', 'cellParams', 'synMechParams', 'connParams']: netParams[key] = []
-netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+from netpyne import specs, sim
+
+netParams = specs.NetParams()   # object of class NetParams to store the network parameters
+simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
+
 
 # Network and connections
-netParams['popParams'].extend([{'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 1}])
-netParams['connParams'].extend([{'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5}])
-netParams['stimParams']['sourceList'].append({'label': 'bg', 'type': 'IClamp', 'delay': 10, 'dur': int(1000), 'amp': 0.5})
+netParams.addPopParams('hop', {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 1})
+netParams.addConnParams('hop->hop', {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5})
+netParams.addStimSourceParams('bg', {'type': 'IClamp', 'delay': 10, 'dur': int(1000), 'amp': 0.5})
 
 # cells
-netParams['cellParams'].append(
-  {'label': 'hh_PYR', 
-   'conds': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
+netParams.addCellParams('hh_PYR',
+  {'conds': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
    'secs': {'soma': {'geom' :  {'diam': 5, 'L': 5}, 'vinit' : -70.6, 
                          'mechs':  {'hh' : {'gnabar': 0.10, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
-netParams['synMechParams'].extend([{'label': 'exc', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0},
-                                   {'label': 'inh', 'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80}])
-netParams['stimParams']['stimList'].append(  {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'hop'}})
+netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0})
+netParams.addSynMechParams('inh', {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80})
+netParams.addStimTargetParams('bg->hop', {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'hop'}})
 
 # Simulation parameters
 simConfig.duration = 500     # Duration of the simulation, in ms
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
                           #'ik_soma':{'sec':'soma','loc':0.5,'var':'ik'}}
                           #'exc_soma':{'sec':'soma','synMech':'exc', 'loc':0.5,'var':'i'}}  # Dict with traces to record
-simConfig['analysis']['plotTraces']={'include': [0]}
+simConfig.addAnalysis('plotTraces', {'include': [0]})
 
 # Create network and run simulation
 def create ():
@@ -49,8 +49,8 @@ def changeWeights(net, newWeight):
 
 create()
 run()
-# sim.analysis.plotRaster()
-# sim.analysis.plotRaster(syncLines=True)
+sim.analysis.plotRaster()
+sim.analysis.plotRaster(syncLines=True)
 sim.analysis.plotData()
 changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
 

@@ -15,25 +15,9 @@ cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  					
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
 netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell params
 
-# Equivalent alternative method 1
-# netParams.addCellParams('PYRrule',			# cell rule label
-# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-# 	'secs': {'soma':					# sections 
-# 		{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-# 		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
-
-# Equivalent alternative method 2
-# netParams.cellParams['PYRrule'] = 
-# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-# 	'secs': {'soma': 					# sections 
-# 		{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-# 		'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}} 	# mechanisms
-
-
 ## Synaptic mechanism parameters
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
-
 ## Cell connectivity rules
 netParams.addConnParams('S->M', #  S -> M label
 	{'preConds': {'popLabel': 'S'}, # conditions of presyn cells

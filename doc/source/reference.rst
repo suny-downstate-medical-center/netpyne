@@ -218,6 +218,8 @@ Example of two cell property rules::
 
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
 
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, eg. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
+
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
 

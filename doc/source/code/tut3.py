@@ -19,27 +19,13 @@ cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'child
 cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
 netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell parameters
 
-# Alternative method
-# netParams.addCellParams('PYRrule',			# cell rule label
-# 	{'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-# 	'secs': 							# sections 
-# 		{'soma':							
-# 			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},									# soma geometry 
-# 			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}},			# soma mechanisms
-# 		'dend': 
-# 			{'geom': {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1},							# dend geometry
-# 			'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0},						# dend topology
-# 			'mechs': {'pas': {'g': 0.0000357, 'e': -70}}}}}) 										# dend mechanisms
-
 
 ## Synaptic mechanism parameters
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
 
 ## Cell connectivity rules
-netParams.addConnParams('S->M',
-	{'preConds': {'popLabel': 'S'}, 
-	'postConds': {'popLabel': 'M'},  #  S -> M
+netParams.addConnParams('S->M', {'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.5, 		# probability of connection
 	'weight': 0.01, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
@@ -47,8 +33,7 @@ netParams.addConnParams('S->M',
 	'loc': 1.0,				# location of synapse
 	'synMech': 'exc'})   		# target synaptic mechanism
 
-netParams.addConnParams('bg->PYR',
-	{'preConds': {'popLabel': 'background'}, 
+netParams.addConnParams('bg->PYR', {'preConds': {'popLabel': 'background'}, 
 	'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 

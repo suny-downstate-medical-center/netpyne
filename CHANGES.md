@@ -1,3 +1,7 @@
+## Version 0.5.2
+
+- Fixed bug that gave error since trying to import removed module default.py
+
 ## Version 0.5.1
 
 - Easier and more consistent format for high-level specifications (issue #103):

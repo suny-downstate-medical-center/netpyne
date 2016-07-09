@@ -457,7 +457,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'convergence': 'uniform(1,15)',
 		# ... 
 
@@ -465,7 +465,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': '0.2 + gauss(13.0,1.4)',
 		# ...
 
@@ -479,7 +479,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 		# ...
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': 'delayMin + gauss(delayMean, delayVar)',
 		# ...
 
@@ -487,7 +487,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': 'defaultDelay + dist_3D/propVelocity',
 		# ...
 
@@ -495,19 +495,19 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'probability': '0.1+0.2*post_y', 
 		# ...
 
-* Probability of connection decaying exponentially as a function of 2D distance, with length constant (``lengthConst``) defined in network parameters:
+* Probability of connection decaying exponentially as a function of 2D distance, with length constant (``lengthConst``) defined as an attribute in netParams:
 
 	.. code-block:: python
 
-		netParams['lengthConst'] = 200
+		netParams.lengthConst = 200
 
 		# ...
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'probability': 'exp(-dist_2D/lengthConst)', 
 		# ...
 
@@ -516,11 +516,9 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 Stimulation
 ^^^^^^^^^^^^^^^^^^^
 
-The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (e.g. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
+Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
 
-Each item of the ``sourceList`` list contains the following fields:
-
-	* **label** - Arbitrary label to reference this stimulation source when mapping to cells (e.g. 'electrode_current')
+Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a value, where the key is an arbitrary label to reference this stimulation source (e.g. 'electrode_current'), and the value is a dictionary of the source parameters:
 
 	* **type** - Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'.
 
@@ -531,7 +529,7 @@ Each item of the ``sourceList`` list contains the following fields:
 		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
 
-Each item of the ``stimList`` list contains the following fields:
+Each item of the ``stimTargetParams`` specifies how to map a source of stimulation to a subset of cells in the network. The key is an arbitrary label for this mapping, and the value is a dictionary with the following parameters:
 
 	* **source** - Label of the stimulation source (e.g. 'electrode_current').
 
@@ -560,36 +558,35 @@ The code below shows an example of how to create different types of stimulation 
 .. code-block:: python
 
 	# Stimulation parameters
-	netParams['stimParams'] = {'sourceList': [], 'stimList': []}
 
 	## Stimulation sources parameters
-	netParams['stimParams']['sourceList'].append({'label': 'Input_1', 
-		'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+	netParams.addStimSourceParams('Input_1', 
+		{'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_2',
-		 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+	netParams.addStimSourceParams('Input_2',
+		{'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_3', 
-		'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+	netParams.addStimParams('Input_3', 
+		{'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_4', 
-		'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+	netParams.addStimParams('Input_4', 
+		{'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
 
 	## Stimulation mapping parameters
-	netParams['stimParams']['stimList'].append({
-	    'source': 'Input_1', 
+	netParams.addStimTargetParams('Input1->PYR',
+	    {'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
 	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
-	netParams['stimParams']['stimList'].append({
-	    'source': 'Input_3', 
+	netParams.addStimTargetParams('Input3->Basket',
+	    {'source': 'Input_3', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
 	    'conds': {'cellType':'Basket'}})
 
-	netParams['stimParams']['stimList'].append({
-		'source': 'Input_4', 
+	netParams.addStimTargetParams('Input4->PYR3',
+		{'source': 'Input_4', 
 		'sec':'soma', 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
@@ -606,7 +603,7 @@ Simulation configuration
 .. - Want to have more control, customize sequence -- sim module related to sim; net module related to net
 .. - Other structures are possible (flexibiliyty) - e.g. can read simCfg or netparams from disk file; can load existing net etc
 
-Below is a list of all simulation configuration options by categories:
+Below is a list of all simulation configuration options (i.e. attributes of a SimConfig object) arranged by categories:
 
 Related to the simulation and netpyne framework:
 
@@ -642,13 +639,17 @@ Related to plotting and analysis:
 
 * **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (e.g. ``sim.createSimulateAnalyze()``).
 
-	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig['analysis'][funcName] = kwargs``
+	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig.analysis[funcName] = kwargs``
 
-	E.g. ``simConfig['analysis']['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
+	E.g. ``simConfig.analysis['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
 
-	E.g. ``simConfig['analysis']['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include = ['PYR'], timeRange = [200,600], saveFig = 'PYR_raster.png')``
+	E.g. ``simConfig.analysis['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include=['PYR'], timeRange=[200,600], saveFig='PYR_raster.png')``
 
-	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`
+	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]}))
+
+	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
+
+
 
 
 Package functions

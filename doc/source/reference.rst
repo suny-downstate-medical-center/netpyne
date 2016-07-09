@@ -38,7 +38,7 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 
 
 .. image:: figs/netparams.png
-	:width: 40%
+	:width: 60%
 	:align: center
 
 Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are 2 equivalent ways of adding an item to the popParams ordered dictionary::

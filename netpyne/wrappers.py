@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
-'createAndExportNeuroML2'])  # wrappers
+'createExportNeuroML2'])  # wrappers
 
 import sim
 

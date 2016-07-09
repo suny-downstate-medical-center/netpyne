@@ -633,6 +633,7 @@ Related to file saving:
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
 
+
 .. _sim_config_analysis:
 
 Related to plotting and analysis:
@@ -650,22 +651,29 @@ Related to plotting and analysis:
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
 
 
-
+.. _package_functions:
 
 Package functions
 ------------------
 
-Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
+Once you have created your ``simConfig`` and ``netParams`` objects, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
 
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Wrappers:
 
-* **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
-* **sim.create(simConfig, netParams)** - wrapper to create the network.
-* **sim.simulate()** - wrapper to simulate the network.
-* **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+* **sim.create(simConfig, netParams)** - wrapper to initialize, create the network and setup recording.
+* **sim.simulate()** - wrapper to run the simulation and gather the data.
+* **sim.analyze()** - wrapper to save and plot the data. 
+* **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
+
+* **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+
+* **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
 
 
 Initialize and set up:

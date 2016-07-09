@@ -8,11 +8,11 @@ Model components and structure
 
 Creating a network model requires:
 
-* A dictionary ``netParams`` with the network parameters.
+* An object ``netParams`` of class ``specs.NetParams`` with the network parameters.
 
-* A dictionary ``simConfig`` with the simulation configuration options.
+* An object ``simConfig`` of class ``specs.SimConfig`` with the simulation configuration options.
 
-* A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createAndSimulate(netParams, simConfig)``.
+* A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createSimulateAnalyze(netParams, simConfig)``.
 
 These components can be included in a single or multiple python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
 
@@ -20,21 +20,37 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 4 lists:
+The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is compoased of the following ordered dictionaries:
 
-* ``popParams`` - list of populations in the network and their parameters
+* ``popParams`` - populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
+* ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
 
-* ``synMechParams`` - list of synaptic mechanisms and their parameters
+* ``synMechParams`` - synaptic mechanisms and their parameters
 
-* ``connParams`` - list of network connectivity rules and their associated parameters. 
+* ``connParams`` - network connectivity rules and their associated parameters. 
 
-* ``stimParams`` - dict with stimulation parameters. 
+* ``subConnParams`` - network subcellular connectivity rules and their associated parameters. 
+
+* ``stimSourceParams`` - stimulation sources parameters. 
+
+* ``stimTargetParams`` - mapping between stimulation sources and target cells. 
+
 
 .. image:: figs/netparams.png
-	:width: 40%
+	:width: 60%
 	:align: center
+
+Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are 2 equivalent ways of adding an item to the popParams ordered dictionary::
+
+	from netpyne import specs
+	netParams = specs.NetParams()
+
+	# Method 1: direct
+	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'cellModel': 'HH''numCells': 20}
+
+	# Method 2: using object method
+	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'cellModel': 'HH''numCells': 20})
 
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
@@ -43,9 +59,9 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+* creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
-* add stimulation to the cells based on ``stimParams``.
+* add stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``.
 
 
 The image below illustrates this process:
@@ -55,7 +71,7 @@ The image below illustrates this process:
 	:align: center
 
 
-Additionally, ``netParams`` may contain the following single-valued params:
+Additionally, ``netParams`` contains the following customizable single-valued attributes (e.g. ``netParams.sizeX = 100``):
 
 * **scale**: Scale factor multiplier for number of cells (default: 1)
 
@@ -81,14 +97,15 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
+
 .. _pop_params:
 
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each item of the ``popParams`` list consists of a dictionary that defines the properties of a network population. It includes the following fields:
+Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``popLabel``, and can be used as condition to apply specific connectivtiy rules.
 
-* **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules.
+The value consists in turn of a dictionary with the parameters of the population, an includes the following fields:
 
 * **cellType** - Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)
@@ -110,12 +127,15 @@ Each item of the ``popParams`` list consists of a dictionary that defines the pr
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
+
+The ``addPopParams(label, params)`` method of the class ``netParams`` can be used to add an item to ``popParams``. This has the advantage of checking the syntax of the parameters added.
+
 Examples of standard population::
 
-	netParams['popParams'].append({'popLabel': 'Sensory',  'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
+	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
-It is also possible to create a special type of population consisting of NetStims (NEURON's artificial spike generator), which can be used to provide background inputs or artificial stimulation to cells. The actual NetStim objects will only be created if the population is connected to some cells, in which case, one NetStim will be created per postsynaptic cell. is The NetStim population contains the following fields:
+It is also possible to create a special type of population consisting of NetStims (NEURON's artificial spike generator), which can be used to provide background inputs or artificial stimulation to cells. The actual NetStim objects will only be created if the population is connected to some cells, in which case, one NetStim will be created per postsynaptic cell. The NetStim population contains the following fields:
 
 * **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
@@ -129,16 +149,16 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
+
 Example of NetStim population::
 	
-	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
+	netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
-	cellsList = [] 
 	cellsList.append({'cellLabel':'gs15', 'x': 1, 'ynorm': 0.4 , 'z': 2})
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
-	netParams['popParams'].append({'popLabel': 'IT_cells', 'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
+	netParams.addPopParams('IT_cells', {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
 
 
 
@@ -147,14 +167,12 @@ Cell property rules
 
 The rationale for using cell property rules is that you can apply cell properties to subsets of neurons that match certain criteria, e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
 
-Each item of the ``cellParams`` list contains a dictionary that defines a cell property rule, containing the following fields:
+Each item of the ``cellParams`` ordered dict consists of a key and a value. The key is an arbitrary label to identify this cell rule. The value consists of a dictionary that defines a cell property rule, containing the following fields:
 
-* **label** - Arbitrary name which identifies this rule.
-
-* **conditions** - Set of conditions required to apply the properties to a cell. 
+* **conds** - Set of conditions required to apply the properties to a cell. 
 	Defined as a dictionary with the attributes/tags of the cell and the required values, e.g. {'cellType': 'PYR', 'cellModel': 'HH'}. 
 
-* **sections** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
+* **secs** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
 
 	* **geom**: Dictionary with geometry properties, such as ``diam``, ``L`` or ``Ra``. 
 		Can optionally include a field ``pt3d`` with a list of 3D points, each defined as a tuple of the form ``(x,y,z,diam)``
@@ -177,46 +195,50 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
 		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
-* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
+	* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
 
-* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
+	* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
 	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
 
-Example of two cell property rules::
+* **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
+
+
+Example of two cell property rules added using different valid approaches::
 
 	## PYR cell properties (HH)
-	cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
+	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
-	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
+	soma = {'geom': {}, 'mechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 
-	cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
-	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
+	cellRule['secs'] = {'soma': soma, 'dend': dend}
+	netParams.cellParams['PYR_HH'] = cellRule  # add rule dict to list of cell property rules
 
 
 	## PYR cell properties (Izhi)
-	cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
+	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
 
-	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
-	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+	cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
+	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 
-	cellRule['secs'] = {'soma': soma}  # add sections to dict
-	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
+	netParams.addCellParams('PYR_Izhi', cellRule)  # add rule to list of cell property rules
 
 
-.. note:: As in the example above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams['cellParams']``.
+.. note:: As in the examples above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams.cellParams``.
 
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
+
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
@@ -224,23 +246,20 @@ Example of two cell property rules::
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` list.  Each ``synMechParams`` item consists of a dictionary with the following fields:
+To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` ordered dict. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
 
-* ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
-
-* ``mod`` - the NMODL mechanism (e.g. 'ExpSyn')
+* ``mod`` - the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.
 
 * mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
 Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
 
-Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV::
+Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV:
 
 .. code-block:: python
 
 	## Synaptic mechanism parameters
-	netParams['synMechParams'] = []
-	netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+	netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -248,7 +267,7 @@ Connectivity rules
 
 The rationale for using connectivity rules is that you can create connections between subsets of neurons that match certain criteria, e.g. only presynaptic neurons of a given cell type, and postsynaptic neurons of a given population, and/or within a certain range of locations. 
 
-Each item of the ``connParams`` list contains a dictionary that defines a connectivity rule, containing the following fields:
+Each item of the ``connParams`` ordered dictionary consists of a key and value. The key is an arbitrary label used as reference for this connectivity rule. The value contains a dictionary that defines the connectivity rule parameters and includes the following fields:
 
 * **preTags** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
@@ -362,9 +381,7 @@ Example of connectivity rules:
 .. code-block:: python
 
 	## Cell connectivity rules
-	netParams['connParams'] = [] 
-
-	netParams['connParams'].append({
+	netParams.addConnParams('S->M',
 		'preConds': {'popLabel': 'S'}, 
 		'postConds': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
@@ -373,14 +390,14 @@ Example of connectivity rules:
 		'delay': 5,					# transmission delay (ms) 
 		'probability': 0.5})				# probability of connection		
 
-	netParams['connParams'].append(
+	netParams.addConnParams('bg->all',
 		{'preConds': {'popLabel': 'background'}, 
 		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
-	netParams['connParams'].append(
+	netParams.addConnParams('yrange->HH',
 	    {'preConds': {'y': [100, 600]}, 
 	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
 	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
@@ -440,7 +457,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'convergence': 'uniform(1,15)',
 		# ... 
 
@@ -448,7 +465,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': '0.2 + gauss(13.0,1.4)',
 		# ...
 
@@ -462,7 +479,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 		# ...
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': 'delayMin + gauss(delayMean, delayVar)',
 		# ...
 
@@ -470,7 +487,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'delay': 'defaultDelay + dist_3D/propVelocity',
 		# ...
 
@@ -478,19 +495,19 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'probability': '0.1+0.2*post_y', 
 		# ...
 
-* Probability of connection decaying exponentially as a function of 2D distance, with length constant (``lengthConst``) defined in network parameters:
+* Probability of connection decaying exponentially as a function of 2D distance, with length constant (``lengthConst``) defined as an attribute in netParams:
 
 	.. code-block:: python
 
-		netParams['lengthConst'] = 200
+		netParams.lengthConst = 200
 
 		# ...
 
-		netParams['connParams'].append(
+		netParams.addConnParams(...
 			'probability': 'exp(-dist_2D/lengthConst)', 
 		# ...
 
@@ -499,11 +516,9 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 Stimulation
 ^^^^^^^^^^^^^^^^^^^
 
-The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (eg. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
+Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
 
-Each item of the ``sourceList`` list contains the following fields:
-
-	* **label** - Arbitrary label to reference this stimulation source when mapping to cells (e.g. 'electrode_current')
+Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a value, where the key is an arbitrary label to reference this stimulation source (e.g. 'electrode_current'), and the value is a dictionary of the source parameters:
 
 	* **type** - Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'.
 
@@ -514,7 +529,7 @@ Each item of the ``sourceList`` list contains the following fields:
 		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
 
-Each item of the ``stimList`` list contains the following fields:
+Each item of the ``stimTargetParams`` specifies how to map a source of stimulation to a subset of cells in the network. The key is an arbitrary label for this mapping, and the value is a dictionary with the following parameters:
 
 	* **source** - Label of the stimulation source (e.g. 'electrode_current').
 
@@ -543,36 +558,35 @@ The code below shows an example of how to create different types of stimulation 
 .. code-block:: python
 
 	# Stimulation parameters
-	netParams['stimParams'] = {'sourceList': [], 'stimList': []}
 
 	## Stimulation sources parameters
-	netParams['stimParams']['sourceList'].append({'label': 'Input_1', 
-		'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+	netParams.addStimSourceParams('Input_1', 
+		{'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_2',
-		 'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+	netParams.addStimSourceParams('Input_2',
+		{'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_3', 
-		'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+	netParams.addStimParams('Input_3', 
+		{'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
 
-	netParams['stimParams']['sourceList'].append({'label': 'Input_4', 
-		'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+	netParams.addStimParams('Input_4', 
+		{'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
 
 	## Stimulation mapping parameters
-	netParams['stimParams']['stimList'].append({
-	    'source': 'Input_1', 
+	netParams.addStimTargetParams('Input1->PYR',
+	    {'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
 	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
-	netParams['stimParams']['stimList'].append({
-	    'source': 'Input_3', 
+	netParams.addStimTargetParams('Input3->Basket',
+	    {'source': 'Input_3', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
 	    'conds': {'cellType':'Basket'}})
 
-	netParams['stimParams']['stimList'].append({
-		'source': 'Input_4', 
+	netParams.addStimTargetParams('Input4->PYR3',
+		{'source': 'Input_4', 
 		'sec':'soma', 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
@@ -589,7 +603,7 @@ Simulation configuration
 .. - Want to have more control, customize sequence -- sim module related to sim; net module related to net
 .. - Other structures are possible (flexibiliyty) - e.g. can read simCfg or netparams from disk file; can load existing net etc
 
-Below is a list of all simulation configuration options by categories:
+Below is a list of all simulation configuration options (i.e. attributes of a SimConfig object) arranged by categories:
 
 Related to the simulation and netpyne framework:
 
@@ -619,35 +633,47 @@ Related to file saving:
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
 
+
 .. _sim_config_analysis:
 
 Related to plotting and analysis:
 
-* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (eg. ``sim.createAndSimulate()``).
+* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (e.g. ``sim.createSimulateAnalyze()``).
 
-	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig['analysis'][funcName] = kwargs``
+	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig.analysis[funcName] = kwargs``
 
-	E.g. ``simConfig['analysis']['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
+	E.g. ``simConfig.analysis['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
 
-	E.g. ``simConfig['analysis']['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include = ['PYR'], timeRange = [200,600], saveFig = 'PYR_raster.png')``
+	E.g. ``simConfig.analysis['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include=['PYR'], timeRange=[200,600], saveFig='PYR_raster.png')``
 
-	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`
+	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]}))
 
+	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
+
+
+.. _package_functions:
 
 Package functions
 ------------------
 
-Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
+Once you have created your ``simConfig`` and ``netParams`` objects, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
 
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Wrappers:
 
-* **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
-* **sim.create(simConfig, netParams)** - wrapper to create the network.
-* **sim.simulate()** - wrapper to simulate the network.
-* **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+* **sim.create(simConfig, netParams)** - wrapper to initialize, create the network and setup recording.
+* **sim.simulate()** - wrapper to run the simulation and gather the data.
+* **sim.analyze()** - wrapper to save and plot the data. 
+* **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
+
+* **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
+
+* **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
 
 
 Initialize and set up:

@@ -258,13 +258,14 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax1=subplot(gs[0])
     ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
     
-    # Plot synchrony lines 
+    # Plot stats
     totalSpikes = len(spkts)   
     totalConnections = sum([len(cell['conns']) for cell in cells])   
     numCells = len(cells)
-    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 # Calculate firing rate 
-    connsPerCell = totalConnections/float(numCells) # Calculate the number of connections per cell
+    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0# Calculate firing rate 
+    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
     
+    # Plot synchrony lines 
     if syncLines: 
         for spkt in spkts:
             ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)

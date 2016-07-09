@@ -8,8 +8,10 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
-netParams = {}  # object of class NetParams to store the network parameters
-simConfig = {}  # dictionary to store sets of simulation configurations
+from netpyne import specs
+
+netParams = specs.NetParams()   # object of class NetParams to store the network parameters
+simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
 
 
 ###############################################################################
@@ -23,39 +25,34 @@ simConfig = {}  # dictionary to store sets of simulation configurations
 ###############################################################################
 
 # Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'PYR', 'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1})  # background inputs
+netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200}) # add dict with params for this pop 
+netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1})  # background inputs
 
 # Cell parameters
-netParams['cellParams'] = []
 
 ## PYR cell properties
-cellRule = {'label': 'PYR', 'conds': {'cellType': 'PYR'},  'secs': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-soma['vinit']=71
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+cellRule['secs']['soma']['vinit'] = 71
+netParams.addCellParams('PYR', cellRule)  												# add dict to list of cell params
 
-cellRule['secs'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
-netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+
  
 # Connectivity parameters
-netParams['connParams'] = []  
-
-netParams['connParams'].append(
+netParams.addConnParams('PYR->PYR',
     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-    'weight': 0.005,                    # weight of each connection
+    'weight': 0.002,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
-netParams['connParams'].append(
+netParams.addConnParams('bg->PYR',
     {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
@@ -65,8 +62,6 @@ netParams['connParams'].append(
 ###############################################################################
 # SIMULATION PARAMETERS
 ###############################################################################
-
-simConfig = {}  # dictionary to store simConfig
 
 # Simulation parameters
 simConfig.duration = 1*1e3 # Duration of the simulation, in ms
@@ -89,10 +84,9 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 
 
 # Analysis and plotting 
-simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = True # Plot raster
-simConfig['analysis']['plotTraces'] = {'include': [2]} # Plot raster
-simConfig['analysis']['plot2Dnet'] = True # Plot 2D net cells and connections
+simConfig.addAnalysis('plotRaster', True) # Plot raster
+simConfig.addAnalysis('plotTraces', {'include': [2]}) # Plot raster
+simConfig.addAnalysis('plot2Dnet', True) # Plot 2D net cells and connections
 
 
 

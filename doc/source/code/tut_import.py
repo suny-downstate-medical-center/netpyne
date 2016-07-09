@@ -1,4 +1,4 @@
-from netpyne import specs, sim, utils
+from netpyne import specs, sim
 
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
@@ -39,60 +39,52 @@ netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'c
 	fileName='mainen.py', cellName='PYR2')
 
 ### Friesen
-cellRule = {'label': 'PYR_Friesen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
+cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
+	fileName='friesen.py', cellName='MakeRSFCELL')
 cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
-netParams['cellParams'].append(cellRule)  
 
 ### Izhi2003a (independent voltage)
-cellRule = {'label': 'PYR_Izhi03a_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
+	fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
-netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2003b (section voltage)
-cellRule = {'label': 'PYR_Izhi03b_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
-netParams['cellParams'].append(cellRule)  	
+netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003b'},
+		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
 
 ### Izhi2007a (independent voltage)
-cellRule = {'label': 'PYR_Izhi07a_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
+cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007a'}, 
+	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
-netParams['cellParams'].append(cellRule)  	
 
 ### Izhi2007b (section voltage)
-cellRule = {'label': 'PYR_Izhi07b_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
-utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
-netParams['cellParams'].append(cellRule)  	
+netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007b'},
+	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
 
 
 ## Synaptic mechanism parameters
-
-netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
  
 
 ## Connectivity params
-netParams['connParams'] = []  
-
-netParams['connParams'].append({
-	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
+netParams.addConnParams('bg1',
+	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'})		
 
-netParams['connParams'].append({
-	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['HH3D','Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
+netParams.addConnParams('bg2',
+	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'synMech':'AMPA',
 	'sec': 'soma'})				
 
-netParams['connParams'].append({
-	'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
+netParams.addConnParams('recurrent',
+	{'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
 	'connFunc': 'convConn', 	# connectivity function (random)
 	'convergence': 'uniform(0,10)', 			# max number of incoming conns to cell
 	'weight': 0.001, 			# synaptic weight 
@@ -101,7 +93,7 @@ netParams['connParams'].append({
 
 
 # Simulation options
-simConfig = {}						# object of class SimConfig to store simulation configuration
+simConfig = specs.SimConfig()					# object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
 simConfig.verbose = False			# Show detailed messages 
@@ -110,12 +102,11 @@ simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, e
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = {'orderInverse': True}			# Plot a raster
-simConfig['analysis']['plotTraces'] = {'include': [0]} 			# Plot recorded traces for this list of cells
+simConfig.addAnalysis('plotRaster', {'orderInverse': True})			# Plot a raster
+simConfig.addAnalysis('plotTraces', {'include': [0]}) 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation
-sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

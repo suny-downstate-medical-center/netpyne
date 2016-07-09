@@ -156,7 +156,7 @@ class Cell (object):
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSection'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
-                        if pointpParamName not in ['mod', 'loc'] and not pointpParamName.startswith('_'):
+                        if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
             # set geometry params 
@@ -169,7 +169,7 @@ class Cell (object):
             if 'pt3d' in sectParams['geom']:  
                 h.pt3dclear(sec=sec['hSection'])
                 x = self.tags['x']
-                if 'ynorm' in self.tags and 'sizeY' in sim.net.params:
+                if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
                     y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
                 else:
                     y = self.tags['y']
@@ -352,6 +352,7 @@ class Cell (object):
                     sec = self.secs[secLabels[0]]
                     postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
                 else:
+                    sec = self.secs[synMechSecs[i]]
                     postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
 
                 if netStimParams:
@@ -365,8 +366,8 @@ class Cell (object):
                 netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
-            # Add plasticity 
-            self._addConnPlasticity(params, self.secs[synMechSecs[i]], netcon, weightIndex)
+            # Add plasticity
+            self._addConnPlasticity(params, sec, netcon, weightIndex)
 
             if sim.cfg.verbose: 
                 sec = params['sec'] if pointp else synMechSecs[i]

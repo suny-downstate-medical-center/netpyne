@@ -1,6 +1,12 @@
+## Version 0.5.2
+
+- Fixed bug that gave error since trying to import removed module default.py
+
 ## Version 0.5.1
 
 - Easier and more consistent format for high-level specifications (issue #103):
+
+	- replaced default.py with specs.py which defines classes NetParams and SimConfig
 
 	- netParams and simConfig are now objects of class NetParams and SimConfig, respectively
 
@@ -8,11 +14,15 @@
 
 	- All structures within netParams and simConfig are now OrderedDicts so can be referenced by label/key
 
+	- If no label is assigned, then an increasing number is automatically used as label
+
 	- Split netParams.stimParams into netParams.stimSourceParams and netParams.stimTargetParams (both OrderedDicts)
 
 	- Simplified/clarified keys: 'conditions' -> 'conds', 'sections' -> 'secs', 'preTags' -> 'preConds', 'postTags' -> 'postConds' 
 
-- Added wrappers and modified names of existing ones to make consistent
+	- Added netParams.importCellParams() to simplify  
+
+- Added sim wrappers and modified names of existing ones to make consistent
 
 - Selectively save data to file: netParams, net, simConfig and/or simData (issue #30)
 
@@ -27,6 +37,8 @@
 - Fixed bug so vinit gets set for all segments in a section.
 
 - Fixed bug related to readArgs() when running from IPYnotebook.
+
+- Fixed bug related to plasticity in cells with V not in section (eg. Izhi2007a)
 
 ## Version 0.5.0
 

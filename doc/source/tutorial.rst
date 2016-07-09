@@ -235,21 +235,24 @@ Simulation configuration options
 
 Above we defined all the parameters related to the network model. Here we will specifiy the parameters or configuration of the simulation itself (e.g. duration), which is independent of the network.
 
-The ``simConfig`` dictionary can be used to customize options related to the simulation duration, timestep, recording of cell variables, saving data to disk, graph plotting, and others. All options have defaults values so it is not mandatory to specify any of them.
+The ``simConfig`` object can be used to customize options related to the simulation duration, timestep, recording of cell variables, saving data to disk, graph plotting, and others. All options have defaults values so it is not mandatory to specify any of them.
 
-Below we include the options required to run a simulation of 1 second, with intgration step of 0.025 ms, record the soma voltage at 1 ms intervals, save data (params, network and simulation output) to a pickle file called ``model_output``, plot a network raster, and plot the voltage trace of cell with gid ``1``::
+Below we include the options required to run a simulation of 1 second, with intgration step of 0.025 ms, record the soma voltage at 0.1 ms intervals, save data (params, network and simulation output) to a pickle file called ``model_output``, plot a network raster, plot the voltage trace of cell with gid ``1``, and plot a 2D representation of the network::
 
 	# Simulation options
-	simConfig = {}
+	simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
+
 	simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
-	simConfig.dt = 0.025 			# Internal integration timestep to use
-	simConfig.verbose = False 			# Show detailed messages 
+	simConfig.dt = 0.025 				# Internal integration timestep to use
+	simConfig.verbose = False  			# Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  	# Set file output name
+	simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output'  # Set file output name
 	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
-	simConfig['plotRaster'] = True 			# Plot a raster
-	simConfig['plotCells'] = [1] 		# Plot recorded traces for this list of cells
+
+	simConfig.addAnalysis('plotRaster', True) 			# Plot a raster
+	simConfig.addAnalysis('plotTraces', {'include': [1]}) 			# Plot recorded traces for this list of cells
+	simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
 
 The complete list of simulation configuration options is available here: :ref:`sim_config`.
 
@@ -257,13 +260,11 @@ The complete list of simulation configuration options is available here: :ref:`s
 Network creation and simulation
 -----------------------------------------------
 
-Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createAndSimulate`` function from the ``sim`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
+Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createSimulateAnalyze`` function from the ``sim`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
 
-	sim.createAndSimulate(netParams, simConfig)    
+	sim.createSimulateAnalyze(netParams, simConfig)    
 
-Note that as before we need to import the ``sim`` module from the ``netpyne`` package, but in this case we don't need to import the ``params`` subpackage, since we are defining our own. Thus, we can just add this line to the top of the file::
-
-	from netpyne import sim
+Note that as before we need to make sure we have imported the ``sim`` module from the ``netpyne`` package. 
 
 The full tutorial code for this example is available here: :download:`tut2.py <code/tut2.py>`
 

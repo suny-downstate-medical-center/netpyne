@@ -289,7 +289,6 @@ You should get the raster plot and voltage trace figures shown below. Notice how
 	:align: center
 
 
-
 Feel free to explore the effect of changing any of the model parameters, eg. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 
 
@@ -299,27 +298,26 @@ Adding a compartment (dendrite) to cells
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
 	## Cell property rules
-	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	cellRule = {'label': 'PYRrule', 'conds': {'cellType': 'PYR'},  'secs': {}}       # cell rule dict
-	soma = {'geom': {}, 'mechs': {}}        		                                      # soma params dict
-	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                     # soma geometry
-	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}            # soma hh mechanisms
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}}                   		              # dend params dict
-	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                            # dend geometry
-	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                        # dend topology 
-	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                         # dend mechanisms
-	cellRule['secs'] = {'soma': soma, 'dend': dend}                                       # add soma section to dict
-	netParams['cellParams'].append(cellRule)                                                  # add dict to list of cell parameters
+	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
+	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
+	cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+	cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+	cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
+	cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+	netParams.addCellParams('PYRrule', cellRule)  												# add dict to list of cell parameters
+
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams['connParams'].append({'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
-		'connFunc': 'randConn',     # connectivity function (random)
-		'maxConns': 10,             # max number of incoming conns to cell
-		'weight': 0.01,             # synaptic weight 
-		'delay': 5,                 # transmission delay (ms) 
-		'sec': 'dend',              # section to connect to
-		'synMech': 'exc'})     # target synaptic mechanism 
+	netParams.addConnParams('S->M', {'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
+		'probability': 0.5, 		# probability of connection
+		'weight': 0.01, 			# synaptic weight 
+		'delay': 5,					# transmission delay (ms) 
+		'sec': 'dend',				# section to connect to
+		'loc': 1.0,				# location of synapse
+		'synMech': 'exc'})   		# target synaptic mechanism
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.
 

@@ -24,7 +24,7 @@ The ``netParams`` objects of class ``NetParams`` includes all the information ne
 
 * ``popParams`` - populations in the network and their parameters
 
-* ``cellParams`` - cell property rules and their associated parameters (eg. cell geometry)
+* ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
 
 * ``synMechParams`` - synaptic mechanisms and their parameters
 
@@ -71,7 +71,7 @@ The image below illustrates this process:
 	:align: center
 
 
-Additionally, ``netParams`` contains the following customizable single-valued attributes (eg. ``netParams.sizeX = 100``):
+Additionally, ``netParams`` contains the following customizable single-valued attributes (e.g. ``netParams.sizeX = 100``):
 
 * **scale**: Scale factor multiplier for number of cells (default: 1)
 
@@ -105,9 +105,7 @@ Population parameters
 
 Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``popLabel``, and can be used as condition to apply specific connectivtiy rules.
 
-The value will in turn consist of a dictionary with the parameters of the population, an includes the following fields:
-
-* **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules.
+The value consists in turn of a dictionary with the parameters of the population, an includes the following fields:
 
 * **cellType** - Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)
@@ -169,14 +167,12 @@ Cell property rules
 
 The rationale for using cell property rules is that you can apply cell properties to subsets of neurons that match certain criteria, e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
 
-Each item of the ``cellParams`` list contains a dictionary that defines a cell property rule, containing the following fields:
+Each item of the ``cellParams`` ordered dict consists of a key and a value. The key is an arbitrary label to identify this cell rule. The value consists of a dictionary that defines a cell property rule, containing the following fields:
 
-* **label** - Arbitrary name which identifies this rule.
-
-* **conditions** - Set of conditions required to apply the properties to a cell. 
+* **conds** - Set of conditions required to apply the properties to a cell. 
 	Defined as a dictionary with the attributes/tags of the cell and the required values, e.g. {'cellType': 'PYR', 'cellModel': 'HH'}. 
 
-* **sections** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
+* **secs** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
 
 	* **geom**: Dictionary with geometry properties, such as ``diam``, ``L`` or ``Ra``. 
 		Can optionally include a field ``pt3d`` with a list of 3D points, each defined as a tuple of the form ``(x,y,z,diam)``
@@ -199,48 +195,50 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
 		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
-* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
+	* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
 	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
 
-* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
+	* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
 	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
 
-Example of two cell property rules::
+* **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
+
+
+Example of two cell property rules added using different valid approaches::
 
 	## PYR cell properties (HH)
-	cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
+	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
-	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
+	soma = {'geom': {}, 'mechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
 
-	cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
-	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
+	cellRule['secs'] = {'soma': soma, 'dend': dend}
+	netParams.cellParams['PYR_HH'] = cellRule  # add rule dict to list of cell property rules
 
 
 	## PYR cell properties (Izhi)
-	cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
+	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
 
-	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
-	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+	cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
+	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 
-	cellRule['secs'] = {'soma': soma}  # add sections to dict
-	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
+	netParams.addCellParams('PYR_Izhi', cellRule)  # add rule to list of cell property rules
 
 
-.. note:: As in the example above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams['cellParams']``.
+.. note:: As in the examples above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams.cellParams``.
 
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
 
-.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, eg. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
@@ -523,7 +521,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 Stimulation
 ^^^^^^^^^^^^^^^^^^^
 
-The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (eg. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
+The ``stimParams`` dictionary in turn contains 2 lists: 1) ``sourceList``, to specify the parameters of different sources of stimulation (e.g. IClamp or AlphaSynapse); and 2) ``stimList``, to map different sources of stimulation to subsets of cells in the network.
 
 Each item of the ``sourceList`` list contains the following fields:
 
@@ -647,7 +645,7 @@ Related to file saving:
 
 Related to plotting and analysis:
 
-* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (eg. ``sim.createAndSimulate()``).
+* **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (e.g. ``sim.createSimulateAnalyze()``).
 
 	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig['analysis'][funcName] = kwargs``
 

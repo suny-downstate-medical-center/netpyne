@@ -8,11 +8,11 @@ Model components and structure
 
 Creating a network model requires:
 
-* A dictionary ``netParams`` with the network parameters.
+* An object ``netParams`` of class ``specs.NetParams`` with the network parameters.
 
-* A dictionary ``simConfig`` with the simulation configuration options.
+* An object ``simConfig`` of class ``specs.SimConfig`` with the simulation configuration options.
 
-* A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createAndSimulate(netParams, simConfig)``.
+* A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createSimulateAnalyze(netParams, simConfig)``.
 
 These components can be included in a single or multiple python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
 
@@ -20,21 +20,37 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` dictionary includes all the information necessary to define your network. It is compoased of the following 4 lists:
+The ``netParams`` objects of class ``NetParams`` includes all the information necessary to define your network. It is compoased of the following ordered dictionaries:
 
-* ``popParams`` - list of populations in the network and their parameters
+* ``popParams`` - populations in the network and their parameters
 
-* ``cellParams`` - list of cell property rules and their associated parameters (eg. cell geometry)
+* ``cellParams`` - cell property rules and their associated parameters (eg. cell geometry)
 
-* ``synMechParams`` - list of synaptic mechanisms and their parameters
+* ``synMechParams`` - synaptic mechanisms and their parameters
 
-* ``connParams`` - list of network connectivity rules and their associated parameters. 
+* ``connParams`` - network connectivity rules and their associated parameters. 
 
-* ``stimParams`` - dict with stimulation parameters. 
+* ``subConnParams`` - network subcellular connectivity rules and their associated parameters. 
+
+* ``stimSourceParams`` - stimulation sources parameters. 
+
+* ``stimTargetParams`` - mapping between stimulation sources and target cells. 
+
 
 .. image:: figs/netparams.png
 	:width: 40%
 	:align: center
+
+Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are 2 equivalent ways of adding an item to the popParams ordered dictionary::
+
+	from netpyne import specs
+	netParams = specs.NetParams()
+
+	# Method 1: direct
+	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'cellModel': 'HH''numCells': 20}
+
+	# Method 2: using object method
+	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'cellModel': 'HH''numCells': 20})
 
 
 The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
@@ -43,9 +59,9 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
-* creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+* creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
-* add stimulation to the cells based on ``stimParams``.
+* add stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``.
 
 
 The image below illustrates this process:
@@ -55,7 +71,7 @@ The image below illustrates this process:
 	:align: center
 
 
-Additionally, ``netParams`` may contain the following single-valued params:
+Additionally, ``netParams`` contains the following customizable single-valued attributes (eg. ``netParams.sizeX = 100``):
 
 * **scale**: Scale factor multiplier for number of cells (default: 1)
 
@@ -81,12 +97,15 @@ Additionally, ``netParams`` may contain the following single-valued params:
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
+
 .. _pop_params:
 
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each item of the ``popParams`` list consists of a dictionary that defines the properties of a network population. It includes the following fields:
+Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``popLabel``, and can be used as condition to apply specific connectivtiy rules.
+
+The value will in turn consist of a dictionary with the parameters of the population, an includes the following fields:
 
 * **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules.
 
@@ -110,12 +129,15 @@ Each item of the ``popParams`` list consists of a dictionary that defines the pr
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
+
+The ``addPopParams(label, params)`` method of the class ``netParams`` can be used to add an item to ``popParams``. This has the advantage of checking the syntax of the parameters added.
+
 Examples of standard population::
 
-	netParams['popParams'].append({'popLabel': 'Sensory',  'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
+	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
-It is also possible to create a special type of population consisting of NetStims (NEURON's artificial spike generator), which can be used to provide background inputs or artificial stimulation to cells. The actual NetStim objects will only be created if the population is connected to some cells, in which case, one NetStim will be created per postsynaptic cell. is The NetStim population contains the following fields:
+It is also possible to create a special type of population consisting of NetStims (NEURON's artificial spike generator), which can be used to provide background inputs or artificial stimulation to cells. The actual NetStim objects will only be created if the population is connected to some cells, in which case, one NetStim will be created per postsynaptic cell. The NetStim population contains the following fields:
 
 * **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
@@ -129,16 +151,16 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
+
 Example of NetStim population::
 	
-	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
+	netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
-	cellsList = [] 
 	cellsList.append({'cellLabel':'gs15', 'x': 1, 'ynorm': 0.4 , 'z': 2})
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
-	netParams['popParams'].append({'popLabel': 'IT_cells', 'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
+	netParams.addPopParams('IT_cells', {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
 
 
 

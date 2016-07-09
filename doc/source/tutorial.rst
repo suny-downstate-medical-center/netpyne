@@ -74,17 +74,20 @@ Network parameters
 
 The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 6 ordered dictionaries:
 
-* ``popParams`` - dictionary of populations in the network and their parameters
+* ``popParams`` - populations in the network and their parameters
 
-* ``cellParams`` - dictionary of cell property rules and their associated parameters (eg. cell geometry)
+* ``cellParams`` - cell property rules and their associated parameters (eg. cell geometry)
 
-* ``synMechParams`` - dictionary of synaptic mechanisms and their parameters
+* ``synMechParams`` - synaptic mechanisms and their parameters
 
-* ``connParams`` - dictionary of network connectivity rules and their associated parameters. 
+* ``connParams`` - network connectivity rules and their associated parameters. 
 
-* ``subConnParams`` - dictionary of network subcellular connectivity rules and their associated parameters. 
+* ``subConnParams`` - network subcellular connectivity rules and their associated parameters. 
 
-* ``stimParams`` - dictionary with stimulation parameters. 
+* ``stimSourceParams`` - stimulation sources parameters. 
+
+* ``stimTargetParams`` - mapping between stimulation sources and target cells . 
+
 
 .. image:: figs/netparams.png
 	:width: 40%
@@ -97,10 +100,9 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
-* creates a set of connections based on ``connParams`` and ``subConnParams` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+* creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
-* add stimulation to the cells based on ``stimParams``.
-
+* add stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``.
 
 The image below illustrates this process:
 

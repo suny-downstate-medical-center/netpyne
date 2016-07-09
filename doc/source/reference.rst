@@ -246,11 +246,9 @@ Example of two cell property rules added using different valid approaches::
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` list.  Each ``synMechParams`` item consists of a dictionary with the following fields:
+To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` ordered dict. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
 
-* ``label`` - an arbitrary label for this mechanism, which will be used to reference in in the connectivity rules
-
-* ``mod`` - the NMODL mechanism (e.g. 'ExpSyn')
+* ``mod`` - the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.
 
 * mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
@@ -261,8 +259,7 @@ Example of synaptic mechanism parameters for a simple excitatory synaptic mechan
 .. code-block:: python
 
 	## Synaptic mechanism parameters
-	netParams['synMechParams'] = []
-	netParams['synMechParams'].append({'label': 'AMPA', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+	netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -270,7 +267,7 @@ Connectivity rules
 
 The rationale for using connectivity rules is that you can create connections between subsets of neurons that match certain criteria, e.g. only presynaptic neurons of a given cell type, and postsynaptic neurons of a given population, and/or within a certain range of locations. 
 
-Each item of the ``connParams`` list contains a dictionary that defines a connectivity rule, containing the following fields:
+Each item of the ``connParams`` ordered dictionary consists of a key and value. The key is an arbitrary label used as reference for this connectivity rule. The value contains a dictionary that defines the connectivity rule parameters and includes the following fields:
 
 * **preTags** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
@@ -384,9 +381,7 @@ Example of connectivity rules:
 .. code-block:: python
 
 	## Cell connectivity rules
-	netParams['connParams'] = [] 
-
-	netParams['connParams'].append({
+	netParams.addConnParams('S->M',
 		'preConds': {'popLabel': 'S'}, 
 		'postConds': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
@@ -395,14 +390,14 @@ Example of connectivity rules:
 		'delay': 5,					# transmission delay (ms) 
 		'probability': 0.5})				# probability of connection		
 
-	netParams['connParams'].append(
+	netParams.addConnParams('bg->all',
 		{'preConds': {'popLabel': 'background'}, 
 		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
-	netParams['connParams'].append(
+	netParams.addConnParams('yrange->HH',
 	    {'preConds': {'y': [100, 600]}, 
 	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
 	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms

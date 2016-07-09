@@ -604,13 +604,8 @@ class Cell (object):
 
 
     def recordTraces (self):
-<<<<<<< HEAD
-        # set up voltage recording; recdict will be taken from global context
-        for key, params in sim.cfg['recordTraces'].iteritems():
-=======
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.iteritems():
->>>>>>> upstream/development
             try:
                 ptr = None
                 if 'loc' in params:

@@ -69,7 +69,7 @@ class Network (object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
+            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['label']))    
         print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
@@ -94,7 +94,7 @@ class Network (object):
 
             sources = self.params.stimSourceParams
 
-            for target in self.params.stimTargetParams.values():  # for each target parameter set
+            for targetLabel, target in self.params.stimTargetParams.iteritems():  # for each target parameter set
                 if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
                 
                 source = sources.get(target['source'])
@@ -126,6 +126,7 @@ class Network (object):
 
                         # stim target params
                         params = {}
+                        params['label'] = targetLabel
                         params['source'] = target['source']
                         params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else target['sec']
                         params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else target['loc']
@@ -243,8 +244,9 @@ class Network (object):
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
 
-        for connParamTemp in self.params.connParams.values():  # for each conn rule or parameter set
+        for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
+            connParam['label'] = connParamLabel
 
             # find pre and post cells that match conditions
             preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preConds'], connParam['postConds'])
@@ -601,4 +603,6 @@ class Network (object):
             'synsPerConn': finalParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             
+            if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
+
             postCell.addConn(params = params, netStimParams = connParam.get('netStimParams'))

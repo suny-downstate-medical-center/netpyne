@@ -38,10 +38,11 @@ class Cell (object):
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
-                if 'propList' not in self.tags:
-                    self.tags['propList'] = [propLabel] # create list of property sets
-                else:
-                    self.tags['propList'].append(propLabel)  # add label of cell property set to list of property sets for this cell
+                if sim.cfg.includeParamsLabel:
+                    if 'label' not in self.tags:
+                        self.tags['label'] = [propLabel] # create list of property sets
+                    else:
+                        self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
                 if sim.cfg.createNEURONObj:
@@ -451,7 +452,7 @@ class Cell (object):
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
-            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec']}
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):

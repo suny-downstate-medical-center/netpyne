@@ -27,7 +27,7 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 netParams.scaleConnWeightModels = {'HH': 1.0}
 
 # Population parameters
-netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0,0.5], 'numCells': 10}) # add dict with params for this pop 
+netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR', 'ynormRange': [0,0.5], 'numCells': 10}) # add dict with params for this pop 
 netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
 netParams.addPopParams('PYR3', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
@@ -98,28 +98,30 @@ netParams.addStimTargetParams('Input_4_PYR3',
 
 
 # Connectivity parameters
-# netParams.addConnParams('PYRconn1',
-#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-#     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'synsPerConn': 5,
-#     'sec': 'all',
-#     'synMech': ['AMPA', 'NMDA'],
-#     'threshold': 10})                    # threshold
+netParams.addConnParams('PYRconn1',
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'synsPerConn': 5,
+    'sec': 'all',
+    'synMech': ['AMPA', 'NMDA'],
+    'threshold': 10})                    # threshold
 
-# netParams.addConnParams('PYRconn2',
-#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams.addConnParams('PYRconn2',
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)',
+    'synMech': 'AMPA',
+    'synsPerConn': 3})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams.addConnParams(1,
-#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+    # {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    # 'weight': 0.005,                    # weight of each connection
+    # 'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    # 'threshold': 10,                    # threshold
+    # 'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 netParams.addConnParams(2,
     {'preConds': {'popLabel': ['PYR']}, 'postConds': {'cellModel': 'HH', 'popLabel': 'PYR2'},

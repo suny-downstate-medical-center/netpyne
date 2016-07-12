@@ -394,7 +394,30 @@ class Cell (object):
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
-   
+
+
+    def modifyConns (self, params):
+        for conn in self.conns:
+            conditionsMet = 1
+            
+            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
+                if conn[condKey] != condVal: 
+                    conditionsMet = 0
+                    break
+
+            if conditionsMet:  # if all conditions are met, set values for this cell
+                if sim.cfg.createPyStruct:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                        conn[paramName] = paramValue
+                if sim.cfg.createNEURONObj:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                        try:
+                            if paramName == 'weight':
+                                conn['hNetcon'].weight[0] = paramValue
+                            else:
+                                setattr(conn['hNetcon'], paramName, paramValue)
+                        except:
+                            print 'Error setting %s=%s on Netcon' % (paramName, str(paramValue))
 
     def addNetStim (self, params, stimContainer=None):
         if not stimContainer:

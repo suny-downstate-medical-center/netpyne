@@ -116,12 +116,12 @@ netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell prope
 #     'synMech': 'AMPA',
 #     'synsPerConn': 3})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
-# netParams.addConnParams(1,
-    # {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-    # 'weight': 0.005,                    # weight of each connection
-    # 'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    # 'threshold': 10,                    # threshold
-    # 'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams.addConnParams('PYR->PYR',
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'weight': 0.001,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams.addConnParams(2,
 #     {'preConds': {'popLabel': ['PYR']}, 'postConds': {'cellModel': 'HH', 'popLabel': 'PYR2'},
@@ -143,7 +143,7 @@ netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell prope
 #     'threshold': 10})                   # threshold
 
 
-netParams.addConnParams(4,
+netParams.addConnParams('bg->PYR',
     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
     'weight': 1.0,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
@@ -215,7 +215,7 @@ simConfig.saveCSV = 0
 simConfig.addAnalysis('plotRaster', True)
 # simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
-#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
+#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})
 # simConfig.addAnalysis('plotConn', True)
 
@@ -243,11 +243,11 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # creat
 # sim.simulate() # create and simulate network
 # sim.analyze()
 
-sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
-                    'secs': {'soma': {'geom': {'L': 100}}}})
+# sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
+#                     'secs': {'soma': {'geom': {'L': 100}}}})
 
-#sim.net.modifyConns(conds={},
-                    #params={})
+sim.net.modifyConns({'conds': {'label': 'PYR->PYR'},
+                    'weight': 0.01})
 
 #sim.net.modifyStims
 

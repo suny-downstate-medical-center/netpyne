@@ -651,57 +651,17 @@ class Network (object):
     ###############################################################################
     ### Modify conn params
     ###############################################################################
-    def modifyConn (self, params):
+    def modifyConns (self, params):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyConnsTime')
         if sim.rank==0: 
             print('Modfying connection parameters...')
 
-        # if sim.nhosts > 1: # Gather tags from all cells 
-        #     allCellTags = sim.gatherAllCellTags()  
-        # else:
-        #     allCellTags = {cell.gid: cell.tags for cell in self.cells}        
-
-        # # find  cells that match conditions
-        # cellsTags = self._findCellsCondition(self, allCellTags, conds)
-
-        # for cellGid in cellsTags:
-        #     cell = sim.cellByGid(cellGid)
-        #     cell.modify(params)
-
-        #     for key,value in changes:
-        #         if isinstance(key, tuple):  # loops through nested structure eg. ("secs", "soma", "L")
-        #             pointer = cell
-        #             for item in key:
-        #                 if isinstance(pointer, sim.Class):
-        #                     pointer = getattr(pointer, item, None)
-        #                 if isinstance(pointer, dict) or isinstance(pointer, tuple):
-        #                     pointer = pointer.get(item)
-        #                 if isinstance(pointer, list) and isinstance(item, int) and len(pointer)>item+1:
-        #                     pointer = pointer[item]
-        #                 if isinstance(pointer, None):
-        #                     print 'Error: %s not found'%(key)
-        #                     break
-                    
-        #             # attempt to modify
-        #             if pointer: 
-        #                 try:
-        #                     setattr(pointer, value)  # modify Python struct value
-
-        #                     # modify NEURON struct value
-
-        #                 except:
-        #                     print 'Error: could not modify %s to value %s'%(key,value)
-
-                        
-
-        #         else:
-        #             print 'Error: the "changes" argument of modifyCellParams() needs to be a dictionary where keys are tuples, e.g. modifyCellParams(changes={("secs", "soma", "L"): 50})  '
-        #             return
-
+        for cell in self.cells:
+            cell.modifyConns(params)
 
         sim.timing('stop', 'modifyConnsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
 
 
 

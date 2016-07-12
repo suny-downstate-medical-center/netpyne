@@ -14,7 +14,7 @@ Contributors: salvadordura@gmail.com
 #
 ###############################################################################
 
-from netpyne import specs
+from netpyne import specs,sim
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
@@ -27,7 +27,7 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 netParams.scaleConnWeightModels = {'HH': 1.0}
 
 # Population parameters
-netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR', 'ynormRange': [0,0.5], 'numCells': 10}) # add dict with params for this pop 
+netParams.addPopParams('PYR', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0,0.5], 'numCells': 10}) # add dict with params for this pop 
 netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.3,0.6], 'numCells': 20}) # add dict with params for this pop 
 netParams.addPopParams('PYR3', {'cellModel': 'HH', 'cellType': 'PYR2sec', 'ynormRange': [0.2,1.0],'numCells': 20}) # add dict with params for this pop 
 
@@ -69,52 +69,52 @@ netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell prope
 # netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
 
 
-# Stimulation parameters
-netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
-netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
-netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+# # Stimulation parameters
+# netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+# netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
+# netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+# netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
 
-netParams.addStimTargetParams('Input_1_PYR', 
-    {'source': 'Input_1', 
-    'sec':'soma', 
-    'loc': 0.5, 
-    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
-
-
-netParams.addStimTargetParams('Input_3_PYR2', 
-    {'source': 'Input_3', 
-    'sec':'soma', 
-    'loc': 0.5, 
-    'conds': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
-
-netParams.addStimTargetParams('Input_4_PYR3', 
-	{'source': 'Input_4', 
-	'sec':'soma', 
-	'loc': 0.5, 
-    'weight': '0.1+gauss(0.2,0.05)',
-    'delay': 1,
-	'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+# netParams.addStimTargetParams('Input_1_PYR', 
+#     {'source': 'Input_1', 
+#     'sec':'soma', 
+#     'loc': 0.5, 
+#     'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
 
-# Connectivity parameters
-netParams.addConnParams('PYRconn1',
-    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-    'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'synsPerConn': 5,
-    'sec': 'all',
-    'synMech': ['AMPA', 'NMDA'],
-    'threshold': 10})                    # threshold
+# netParams.addStimTargetParams('Input_3_PYR2', 
+#     {'source': 'Input_3', 
+#     'sec':'soma', 
+#     'loc': 0.5, 
+#     'conds': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
 
-netParams.addConnParams('PYRconn2',
-    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-    'weight': 0.005,                    # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'threshold': 10,                    # threshold
-    'convergence': 'uniform(1,15)',
-    'synMech': 'AMPA',
-    'synsPerConn': 3})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+# netParams.addStimTargetParams('Input_4_PYR3', 
+# 	{'source': 'Input_4', 
+# 	'sec':'soma', 
+# 	'loc': 0.5, 
+#     'weight': '0.1+gauss(0.2,0.05)',
+#     'delay': 1,
+# 	'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+
+
+# # Connectivity parameters
+# netParams.addConnParams('PYRconn1',
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+#     'weight': [[0.005, 0.02, 0.05, 0.04, 0.1], [0.11, 0.22, 0.33, 0.44, 0.55]],                  # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'synsPerConn': 5,
+#     'sec': 'all',
+#     'synMech': ['AMPA', 'NMDA'],
+#     'threshold': 10})                    # threshold
+
+# netParams.addConnParams('PYRconn2',
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+#     'weight': 0.005,                    # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'threshold': 10,                    # threshold
+#     'convergence': 'uniform(1,15)',
+#     'synMech': 'AMPA',
+#     'synsPerConn': 3})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams.addConnParams(1,
     # {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
@@ -123,24 +123,24 @@ netParams.addConnParams('PYRconn2',
     # 'threshold': 10,                    # threshold
     # 'divergence': 'uniform(1,15)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
-netParams.addConnParams(2,
-    {'preConds': {'popLabel': ['PYR']}, 'postConds': {'cellModel': 'HH', 'popLabel': 'PYR2'},
-    'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'threshold': 10,                    # threshold
-    'convergence': 10})
-    #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+# netParams.addConnParams(2,
+#     {'preConds': {'popLabel': ['PYR']}, 'postConds': {'cellModel': 'HH', 'popLabel': 'PYR2'},
+#     'weight': 'uniform(0.01, 0.1)',                    # weight of each connection
+#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'threshold': 10,                    # threshold
+#     'convergence': 10})
+#     #'probability': 'uniform(0.2,0.6)'})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 
-netParams.addConnParams(3,
-    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-    'connList': [[0,1],[3,1]],			# list of connections
-    'synMech': ['AMPA', 'NMDA'], 
-    'synsPerConn': 3,
-    'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
-	'delay': 5,
-    'loc': 0.2,
-    'threshold': 10})                   # threshold
+# netParams.addConnParams(3,
+#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+#     'connList': [[0,1],[3,1]],			# list of connections
+#     'synMech': ['AMPA', 'NMDA'], 
+#     'synsPerConn': 3,
+#     'weight': [[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]],[[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]],           # weight of each connection
+# 	'delay': 5,
+#     'loc': 0.2,
+#     'threshold': 10})                   # threshold
 
 
 netParams.addConnParams(4,
@@ -150,35 +150,35 @@ netParams.addConnParams(4,
     'delay': 4,
     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
-netParams.addConnParams('PYRconn3',
-    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
-    'synMech': ['AMPA', 'NMDA'], 
-    'synsPerConn': 3,
-    'weight': 0.2,                  
-    'delay': [5, 10],                
-    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
+# netParams.addConnParams('PYRconn3',
+#     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'synMech': ['AMPA', 'NMDA'], 
+#     'synsPerConn': 3,
+#     'weight': 0.2,                  
+#     'delay': [5, 10],                
+#     'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # uniformly distributed delays between 1-5ms
 
-netParams.addConnParams('PYRconn4',
-    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': 0.02,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'synsPerConn': 2,
-    'delay': 1})           # uniformly distributed delays between 1-5ms
-
-
-
-netParams.connParams['PYRconn5']= {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
+# netParams.addConnParams('PYRconn4',
+#     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'weight': 0.02,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'synsPerConn': 2,
+#     'delay': 1})           # uniformly distributed delays between 1-5ms
 
 
-netParams.addConnParams('PYRsub1',
-    {'preConds': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
-    'postConds': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
-    'sec': 'all',
-    'ynormRange': [0, 1.0],
-    'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+
+# netParams.connParams['PYRconn5']= {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
+#     'weight': 0.1,                    # fixed weight of 0.08
+#     'synMech': 'AMPA',                     # target NMDA synapse
+#     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
+
+
+# netParams.addConnParams('PYRsub1',
+#     {'preConds': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
+#     'postConds': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
+#     'sec': 'all',
+#     'ynormRange': [0, 1.0],
+#     'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
 
 
 
@@ -213,8 +213,46 @@ simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True)
-simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
-simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
-    'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
-simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})
-simConfig.addAnalysis('plotConn', True)
+# simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
+# simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
+#     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': None, 'saveFig': None, 'showFig': True})
+# simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})
+# simConfig.addAnalysis('plotConn', True)
+
+
+###############################################################################
+# RUN SIM
+###############################################################################
+
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
+
+###############################################################################
+# MODIFY and RUN SIM
+###############################################################################
+
+# newCellRule = netParams.cellParams['PYR2sec']
+# #newCellRule['secs']['soma']['diam'] = 5
+
+# #newCellRule = {'conds': netParams.cellParams['PYR2sec']['conds'], 'secs': {'soma':{}}}
+# newCellRule['secs']['soma']['geom']['diam'] = 5.0
+# sim.net.modifyCells(newCellRule)
+
+# #newSec = {'soma': {'geom': {'L': 5}}}
+# #sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 'secs': newSec})
+
+# sim.simulate() # create and simulate network
+# sim.analyze()
+
+sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
+                    'secs': {'soma': {'geom': {'L': 100}}}})
+
+#sim.net.modifyConns(conds={},
+                    #params={})
+
+#sim.net.modifyStims
+
+
+sim.simulate() # create and simulate network
+sim.analyze()
+
+

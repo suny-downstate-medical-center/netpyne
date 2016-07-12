@@ -22,7 +22,7 @@ class Pop (object):
     ''' Python class used to instantiate the network population '''
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
-        self.tags['label'] = label
+        self.tags['popLabel'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
 
     # Function to instantiate Cell objects based on the characteristics of this population
@@ -47,7 +47,7 @@ class Pop (object):
         # not enough tags to create cells
         else:
             cells = []
-            print 'Not enough tags to create cells of population %s'%(self.tags['label'])
+            print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
 
         return cells
 
@@ -71,7 +71,7 @@ class Pop (object):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['popLabel'] = self.tags['label']
+            cellTags['popLabel'] = self.tags['popLabel']
             cellTags['xnorm'] = randLocs[i,0] # set x location (um)
             cellTags['ynorm'] = randLocs[i,1] # set y location (um)
             cellTags['znorm'] = randLocs[i,2] # set z location (um)
@@ -80,7 +80,7 @@ class Pop (object):
             cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['label'], sim.rank))
+            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['popLabel'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
         return cells
 
@@ -145,7 +145,7 @@ class Pop (object):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['popLabel'] = self.tags['label']
+            cellTags['popLabel'] = self.tags['popLabel']
             cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
             cellTags['ynorm'] = randLocs[i,1]  # calculate y location (um)
             cellTags['znorm'] = randLocs[i,2]  # calculate z location (um)
@@ -171,7 +171,7 @@ class Pop (object):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['popLabel'] = self.tags['label']
+            cellTags['popLabel'] = self.tags['popLabel']
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             for coord in ['x','y','z']:
                 if coord in cellTags:  # if absolute coord exists

@@ -223,7 +223,7 @@ def _loadFile (filename):
         print('Loading file %s ... ' % (filename))
         #fn=sim.cfg.filename #.split('.')
         #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
-        print('Finished saving!')
+        print('NOT IMPLEMENTED!')
 
     # load json file
     elif ext == 'json':
@@ -231,7 +231,7 @@ def _loadFile (filename):
         print('Loading file %s ... ' % (filename))
         #with open(sim.cfg.filename+'.json', 'w') as fileObj:
         #    json.dump(dataSave, fileObj)
-        print('Finished saving!')
+        print('NOT IMPLEMENTED!')
 
     # load mat file
     elif ext == 'mat':
@@ -246,7 +246,7 @@ def _loadFile (filename):
         import hdf5storage
         print('Loading file %s ... ' % (filename))
         #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
-        print('Finished saving!')
+        print('NOT IMPLEMENTED!')
 
     # load CSV file (currently only saves spikes)
     elif ext == 'csv':
@@ -256,20 +256,21 @@ def _loadFile (filename):
         #for dic in dataSave['simData']:
         #    for values in dic:
         #        writer.writerow(values)
-        print('Finished saving!')
+        print('NOT IMPLEMENTED!')
 
     # load Dat file(s) 
     elif ext == 'dat': 
         print('Loading file %s ... ' % (filename))
-        traces = sim.cfg.recordTraces
-        for ref in traces.keys():
-            for cellid in sim.allSimData[ref].keys():
-                dat_file_name = '%s_%s.dat'%(ref,cellid)
-                dat_file = open(dat_file_name, 'w')
-                trace = sim.allSimData[ref][cellid]
-                print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
-                for i in range(len(trace)):
-                    dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
+        print('NOT IMPLEMENTED!')
+        # traces = sim.cfg.recordTraces
+        # for ref in traces.keys():
+        #     for cellid in sim.allSimData[ref].keys():
+        #         dat_file_name = '%s_%s.dat'%(ref,cellid)
+        #         dat_file = open(dat_file_name, 'w')
+        #         trace = sim.allSimData[ref][cellid]
+        #         print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+        #         for i in range(len(trace)):
+        #             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
     else:
         print 'Format not recognized for file %s'%(filename)

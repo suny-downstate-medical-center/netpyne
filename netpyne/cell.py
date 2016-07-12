@@ -48,6 +48,23 @@ class Cell (object):
                 if sim.cfg.createNEURONObj:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
+    def modify (self, prop):
+        conditionsMet = 1
+        for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
+            if condKey=='label':
+                if condVal not in self.tags['label']:
+                    conditionsMet = 0
+                    break
+            elif self.tags[condKey] != condVal: 
+                conditionsMet = 0
+                break
+
+        if conditionsMet:  # if all conditions are met, set values for this cell
+            if sim.cfg.createPyStruct:
+                self.createPyStruct(prop)
+            if sim.cfg.createNEURONObj:
+                self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+
 
     def createPyStruct (self, prop):
         # set params for all sections
@@ -87,12 +104,12 @@ class Cell (object):
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         sec['geom'][geomParamName] = geomParamValue
 
-            # add 3d geometry
-            if 'pt3d' in sectParams['geom']:
-                if 'pt3d' not in sec['geom']:  
-                    sec['geom']['pt3d'] = []
-                for pt3d in sectParams['geom']['pt3d']:
-                    sec['geom']['pt3d'].append(pt3d)
+                # add 3d geometry
+                if 'pt3d' in sectParams['geom']:
+                    if 'pt3d' not in sec['geom']:  
+                        sec['geom']['pt3d'] = []
+                    for pt3d in sectParams['geom']['pt3d']:
+                        sec['geom']['pt3d'].append(pt3d)
 
             # add topolopgy params
             if 'topol' in sectParams:
@@ -125,7 +142,8 @@ class Cell (object):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create sect dict if doesn't exist
-            self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
+            if not self.secs[sectName].get('hSection'): 
+                self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
             
             # add distributed mechanisms 
@@ -166,17 +184,17 @@ class Cell (object):
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sec['hSection'], geomParamName, geomParamValue)
 
-            # set 3d geometry
-            if 'pt3d' in sectParams['geom']:  
-                h.pt3dclear(sec=sec['hSection'])
-                x = self.tags['x']
-                if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
-                    y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
-                else:
-                    y = self.tags['y']
-                z = self.tags['z']
-                for pt3d in sectParams['geom']['pt3d']:
-                    h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
+                # set 3d geometry
+                if 'pt3d' in sectParams['geom']:  
+                    h.pt3dclear(sec=sec['hSection'])
+                    x = self.tags['x']
+                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
+                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
+                    else:
+                        y = self.tags['y']
+                    z = self.tags['z']
+                    for pt3d in sectParams['geom']['pt3d']:
+                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
 
         # set topology 
         for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)

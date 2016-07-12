@@ -475,17 +475,18 @@ class Cell (object):
                     conn = next((conn for conn in self.conns if conn['source'] == stim['source']), None)
                 if sim.cfg.createPyStruct:
                     for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
-                        if paramName in ['weight', 'delay', 'threshold']:
+                        if stim['type'] == 'NetStim' and paramName in ['weight', 'delay', 'threshold']:
                             conn[paramName] = paramValue
                         else:
                             stim[paramName] = paramValue
                 if sim.cfg.createNEURONObj:
                     for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
                         try:
-                            if paramName == 'weight':
-                                conn['hNetcon'].weight[0] = paramValue
-                            elif paramName in ['delay', 'threshold']:
-                                setattr(conn['hNetcon'], paramName, paramValue)
+                            if stim['type'] == 'NetStim':
+                                if paramName == 'weight':
+                                    conn['hNetcon'].weight[0] = paramValue
+                                elif paramName in ['delay', 'threshold']:
+                                    setattr(conn['hNetcon'], paramName, paramValue)
                             else:
                                 setattr(stim['h'+stim['type']], paramName, paramValue)
                         except:

@@ -705,10 +705,12 @@ Saving and loading:
 
 
 Export and import:
+
 * **sim.exportNeuroML2()**
 
 
 Misc/utilities:
+
 * **sim.cellByGid()**
 * **sim.version()**
 * **sim.gitversion()**

@@ -58,7 +58,10 @@ def _showFigure():
 ######################################################################################################################################################
 ## Save figure data
 ######################################################################################################################################################
-def _saveFigData(figData, fileName):
+def _saveFigData(figData, fileName, type=''):
+    if not isinstance(fileName, str):
+        fileName = sim.cfg.filename+'_'+type+'.pkl'
+
     fileName = fileName.split('.')
     ext = fileName[1] if len(fileName) > 1 else 'pkl'
 
@@ -153,8 +156,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
+            if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
@@ -303,10 +308,15 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
         'syncLines': syncLines}
 
-        _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData, 'raster')
  
     # save figure
-    if saveFig: savefig(saveFig)
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'raster.png'
+        savefig(filename)
 
     # show fig 
     if showFig: _showFigure()
@@ -329,8 +339,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
         - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
@@ -436,10 +448,15 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-        _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData, 'spikeHist')
  
     # save figure
-    if saveFig: savefig(saveFig)
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'spikeHist.png'
+        savefig(filename)
 
     # show fig 
     if showFig: _showFigure()
@@ -463,8 +480,10 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
             or per trace (showing multiple cells) (default: 'cell')
         - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
         - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
@@ -560,10 +579,15 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
         figData = {'tracesData': tracesData, 'include': include, 'timeRange': timeRange, 'oneFigPer': oneFigPer,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-        _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData, 'traces')
  
     # save figure
-    if saveFig: savefig(saveFig)
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'traces.png'
+        savefig(filename)
 
     # show fig 
     if showFig: _showFigure()
@@ -625,8 +649,10 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
         - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
         - figSize ((width, height)): Size of figure (default: (10,10))
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure; 
+            if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
@@ -875,10 +901,15 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
         figData = {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy,
          'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-        _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData, 'conn')
  
     # save figure
-    if saveFig: savefig(saveFig)
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'conn.png'
+        savefig(filename)
 
     # show fig 
     if showFig: _showFigure()
@@ -896,8 +927,10 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
         - showConns (True|False): Whether to show connections or not (default: True)
         - figSize ((width, height)): Size of figure (default: (12,12))
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+        - saveFig (None|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)(default: None)
+        - showFig (True|False): Whether to show the figure or not;
+            if set to True uses filename from simConfig (default: None)
 
         - Returns figure handles
     '''
@@ -946,10 +979,15 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
         figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
          'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-        _saveFigData(figData, saveData)
+        _saveFigData(figData, saveData, '2Dnet')
  
     # save figure
-    if saveFig: savefig(saveFig)
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'2Dnet.png'
+        savefig(filename)
 
     # show fig 
     if showFig: _showFigure()

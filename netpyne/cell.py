@@ -38,14 +38,32 @@ class Cell (object):
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
-                if 'propList' not in self.tags:
-                    self.tags['propList'] = [propLabel] # create list of property sets
-                else:
-                    self.tags['propList'].append(propLabel)  # add label of cell property set to list of property sets for this cell
+                if sim.cfg.includeParamsLabel:
+                    if 'label' not in self.tags:
+                        self.tags['label'] = [propLabel] # create list of property sets
+                    else:
+                        self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
                 if sim.cfg.createNEURONObj:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+
+    def modify (self, prop):
+        conditionsMet = 1
+        for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
+            if condKey=='label':
+                if condVal not in self.tags['label']:
+                    conditionsMet = 0
+                    break
+            elif self.tags[condKey] != condVal: 
+                conditionsMet = 0
+                break
+
+        if conditionsMet:  # if all conditions are met, set values for this cell
+            if sim.cfg.createPyStruct:
+                self.createPyStruct(prop)
+            if sim.cfg.createNEURONObj:
+                self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
     def createPyStruct (self, prop):
@@ -86,12 +104,12 @@ class Cell (object):
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         sec['geom'][geomParamName] = geomParamValue
 
-            # add 3d geometry
-            if 'pt3d' in sectParams['geom']:
-                if 'pt3d' not in sec['geom']:  
-                    sec['geom']['pt3d'] = []
-                for pt3d in sectParams['geom']['pt3d']:
-                    sec['geom']['pt3d'].append(pt3d)
+                # add 3d geometry
+                if 'pt3d' in sectParams['geom']:
+                    if 'pt3d' not in sec['geom']:  
+                        sec['geom']['pt3d'] = []
+                    for pt3d in sectParams['geom']['pt3d']:
+                        sec['geom']['pt3d'].append(pt3d)
 
             # add topolopgy params
             if 'topol' in sectParams:
@@ -124,7 +142,8 @@ class Cell (object):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = {}  # create sect dict if doesn't exist
-            self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
+            if not self.secs[sectName].get('hSection'): 
+                self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
             
             # add distributed mechanisms 
@@ -165,17 +184,17 @@ class Cell (object):
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sec['hSection'], geomParamName, geomParamValue)
 
-            # set 3d geometry
-            if 'pt3d' in sectParams['geom']:  
-                h.pt3dclear(sec=sec['hSection'])
-                x = self.tags['x']
-                if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
-                    y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
-                else:
-                    y = self.tags['y']
-                z = self.tags['z']
-                for pt3d in sectParams['geom']['pt3d']:
-                    h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
+                # set 3d geometry
+                if 'pt3d' in sectParams['geom']:  
+                    h.pt3dclear(sec=sec['hSection'])
+                    x = self.tags['x']
+                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
+                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
+                    else:
+                        y = self.tags['y']
+                    z = self.tags['z']
+                    for pt3d in sectParams['geom']['pt3d']:
+                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
 
         # set topology 
         for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)
@@ -375,7 +394,30 @@ class Cell (object):
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
                     (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
-   
+
+
+    def modifyConns (self, params):
+        for conn in self.conns:
+            conditionsMet = 1
+            
+            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
+                if conn[condKey] != condVal: 
+                    conditionsMet = 0
+                    break
+
+            if conditionsMet:  # if all conditions are met, set values for this cell
+                if sim.cfg.createPyStruct:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                        conn[paramName] = paramValue
+                if sim.cfg.createNEURONObj:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                        try:
+                            if paramName == 'weight':
+                                conn['hNetcon'].weight[0] = paramValue
+                            else:
+                                setattr(conn['hNetcon'], paramName, paramValue)
+                        except:
+                            print 'Error setting %s=%s on Netcon' % (paramName, str(paramValue))
 
     def addNetStim (self, params, stimContainer=None):
         if not stimContainer:
@@ -451,7 +493,7 @@ class Cell (object):
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
-            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec']}
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):

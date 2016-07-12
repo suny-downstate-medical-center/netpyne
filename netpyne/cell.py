@@ -400,23 +400,24 @@ class Cell (object):
         for conn in self.conns:
             conditionsMet = 1
             
-            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                # choose what to comapare to 
-                if condKey in ['postGid']:
-                    compareTo = self.gid
-                else:
-                    compareTo = conn.get(condKey)
+            if 'conds' in params:
+                for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
+                    # choose what to comapare to 
+                    if condKey in ['postGid']:
+                        compareTo = self.gid
+                    else:
+                        compareTo = conn.get(condKey)
 
-                # check if conditions met
-                if isinstance(condVal, list):
-                    if compareTo < condVal[0] or compareTo > condVal[1]:
+                    # check if conditions met
+                    if isinstance(condVal, list):
+                        if compareTo < condVal[0] or compareTo > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif compareTo != condVal: 
                         conditionsMet = 0
                         break
-                elif compareTo != condVal: 
-                    conditionsMet = 0
-                    break
 
-            if conditionsMet:
+            if conditionsMet and 'postConds' in params:
                 for (condKey,condVal) in params['postConds'].iteritems():  # check if all conditions are met
                     # check if conditions met
                     if isinstance(condVal, list):

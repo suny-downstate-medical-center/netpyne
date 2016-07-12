@@ -45,7 +45,7 @@ netParams.addConnParams('hop->hop',
     {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
-    'delay': 5})       				    # delay 
+    'delay': 5})                        # delay 
 
 
 ###############################################################################
@@ -54,13 +54,13 @@ netParams.addConnParams('hop->hop',
 simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
 
 # Simulation options
-simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
-simConfig.dt = 0.025 				# Internal integration timestep to use
-simConfig.verbose = False  			# Show detailed messages 
+simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+simConfig.dt = 0.025                # Internal integration timestep to use
+simConfig.verbose = False           # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
-simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
 simConfig.addAnalysis('plotRaster', {'syncLines': True})      # Plot a raster
 simConfig.addAnalysis('plotTraces', {'include': [1]})      # Plot recorded traces for this list of cells
@@ -90,16 +90,7 @@ sim.analysis.plotData()                   # plot spike raster
 # # INTERACTING WITH INSTANTIATED NETWORK
 # ###############################################################################
 
-# def changeWeights(net, newWeight):
-#     netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
-#     for netcon in netcons: 
-#         netcon.weight[0] = newWeight
-
-
-# changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
-
-sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 
-                    'weight': 0.5})
+sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 
 sim.runSim()                          # run parallel Neuron simulation  
 sim.gatherData()                      # gather spiking data and cell info from each node

@@ -2,6 +2,8 @@
 
 - Functions to modify parameters of instanced network cells, conns and stims (issue #59)
 
+- Ordered sim.net.allCells by gid
+
 - Option to save figures with same name as data
 
 ## Version 0.5.2

@@ -680,7 +680,8 @@ def gatherData ():
                             sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                     else: 
                         sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
-            sim.net.allCells = allCells
+
+            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
             
             for popLabel,pop in allPops.iteritems():
                 pop['cellGids'] = sorted(allPopsCellGids[popLabel])

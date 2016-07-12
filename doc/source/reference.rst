@@ -691,7 +691,6 @@ Run and gather:
 * **sim.runSim()**
 * **sim.runSimWithIntervalFunc(interval, func)**
 * **sim.gatherData()**
-* **sim.gatherAllCellTags()**
 
 
 Saving and loading:

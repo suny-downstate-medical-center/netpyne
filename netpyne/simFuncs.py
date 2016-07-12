@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
-__all__.extend(['runSim', 'runSimWithIntervalFunc', 'gatherAllCellTags', 'gatherData'])  # run and gather
+__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
 __all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
@@ -620,7 +620,7 @@ def runSimWithIntervalFunc (interval, func):
 ###############################################################################
 ### Gather tags from cells
 ###############################################################################
-def gatherAllCellTags ():
+def _gatherAllCellTags ():
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()

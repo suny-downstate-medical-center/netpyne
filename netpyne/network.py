@@ -87,7 +87,7 @@ class Network (object):
                 print('Adding stims...')
                 
             if sim.nhosts > 1: # Gather tags from all cells 
-                allCellTags = sim.gatherAllCellTags()  
+                allCellTags = sim._gatherAllCellTags()  
             else:
                 allCellTags = {cell.gid: cell.tags for cell in self.cells}
             # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
@@ -239,7 +239,7 @@ class Network (object):
             print('Making connections...')
 
         if sim.nhosts > 1: # Gather tags from all cells 
-            allCellTags = sim.gatherAllCellTags()  
+            allCellTags = sim._gatherAllCellTags()  
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
@@ -662,6 +662,24 @@ class Network (object):
 
         sim.timing('stop', 'modifyConnsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
+
+
+    ###############################################################################
+    ### Modify stim source params
+    ###############################################################################
+    def modifyStims (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifyStimsTime')
+        if sim.rank==0: 
+            print('Modfying stimulation parameters...')
+
+        for cell in self.cells:
+            cell.modifyStims(params)
+
+        sim.timing('stop', 'modifyStimsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
+
+
 
 
 

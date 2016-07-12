@@ -1,6 +1,6 @@
 ## Version 0.5.3
 
-- Functions to modify parameters of instanced network cells, conns and stims (issue #53)
+- Functions to modify parameters of instanced network cells, conns and stims (issue #59)
 
 - Option to save figures with same name as data
 

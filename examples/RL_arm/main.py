@@ -33,7 +33,7 @@ sim.startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural 
 sim.targetDist = 0.15 # target distance from center (15 cm)
 
 # Propriocpetive encoding
-allCellTags = sim.gatherAllCellTags()
+allCellTags = sim._gatherAllCellTags()
 sim.pop_sh = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel'] == 'Psh']
 sim.pop_el = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel'] == 'Pel']
 sim.minPval = radians(-30) 

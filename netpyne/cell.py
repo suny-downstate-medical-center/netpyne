@@ -401,16 +401,41 @@ class Cell (object):
             conditionsMet = 1
             
             for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                if conn[condKey] != condVal: 
+                # choose what to comapare to 
+                if condKey in ['postGid']:
+                    compareTo = self.gid
+                else:
+                    compareTo = conn.get(condKey)
+
+                # check if conditions met
+                if isinstance(condVal, list):
+                    if compareTo < condVal[0] or compareTo > condVal[1]:
+                        conditionsMet = 0
+                        break
+                elif compareTo != condVal: 
                     conditionsMet = 0
                     break
 
+            if conditionsMet:
+                for (condKey,condVal) in params['postConds'].iteritems():  # check if all conditions are met
+                    # check if conditions met
+                    if isinstance(condVal, list):
+                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif self.tags.get(condKey) != condVal: 
+                        conditionsMet = 0
+                        break
+
+            if conditionsMet and 'preConds' in params: 
+                print 'Warning: modifyConns() does not yet support conditions of presynaptic cells'
+
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.createPyStruct:
-                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','preConds','postConds']}.iteritems():
                         conn[paramName] = paramValue
                 if sim.cfg.createNEURONObj:
-                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds']}.iteritems():
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','preConds','postConds']}.iteritems():
                         try:
                             if paramName == 'weight':
                                 conn['hNetcon'].weight[0] = paramValue
@@ -418,6 +443,54 @@ class Cell (object):
                                 setattr(conn['hNetcon'], paramName, paramValue)
                         except:
                             print 'Error setting %s=%s on Netcon' % (paramName, str(paramValue))
+
+
+    def modifyStims (self, params):
+        for stim in self.stims:
+            conditionsMet = 1
+            
+            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
+                # check if conditions met
+                if isinstance(condVal, list):
+                    if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
+                        conditionsMet = 0
+                        break
+                elif stim[condKey] != stim[condKey]: 
+                    conditionsMet = 0
+                    break
+
+            if conditionsMet:
+                for (condKey,condVal) in params['cellConds'].iteritems():  # check if all conditions are met
+                    # check if conditions met
+                    if isinstance(condVal, list):
+                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif self.tags.get(condKey) != condVal: 
+                        conditionsMet = 0
+                        break
+
+            if conditionsMet:  # if all conditions are met, set values for this cell
+                if stim['type'] == 'NetStim':  # for netstims, find associated netcon
+                    conn = next((conn for conn in self.conns if conn['source'] == stim['source']), None)
+                if sim.cfg.createPyStruct:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
+                        if paramName in ['weight', 'delay', 'threshold']:
+                            conn[paramName] = paramValue
+                        else:
+                            stim[paramName] = paramValue
+                if sim.cfg.createNEURONObj:
+                    for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
+                        try:
+                            if paramName == 'weight':
+                                conn['hNetcon'].weight[0] = paramValue
+                            elif paramName in ['delay', 'threshold']:
+                                setattr(conn['hNetcon'], paramName, paramValue)
+                            else:
+                                setattr(stim['h'+stim['type']], paramName, paramValue)
+                        except:
+                            print 'Error setting %s=%s on stim' % (paramName, str(paramValue))
+
 
     def addNetStim (self, params, stimContainer=None):
         if not stimContainer:

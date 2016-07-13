@@ -174,9 +174,9 @@ class Pop (object):
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             for coord in ['x','y','z']:
                 if coord in cellTags:  # if absolute coord exists
-                    cellTags[coord+'norm'] = cellTags[coord]/f.net.params['size'+coord.upper()]  # calculate norm coord
+                    cellTags[coord+'norm'] = cellTags[coord]/sim.net.params['size'+coord.upper()]  # calculate norm coord
                 elif coord+'norm' in cellTags:  # elif norm coord exists
-                    cellTags[coord] = cellTags[coord+'norm']*f.net.params['size'+coord.upper()]  # calculate norm coord
+                    cellTags[coord] = cellTags[coord+'norm']*sim.net.params['size'+coord.upper()]  # calculate norm coord
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist

@@ -40,7 +40,7 @@ netParams.addStimTargetParams('Input_2->M1',
     {'source': 'Input_3', 
     'sec':'soma', 
     'loc': 0.2, 
-    'conds': {'popLabel':'M1', 'cellList': [2,4,5,8,10,15,19]}})
+    'conds': {'popLabel':'M', 'cellList': [2,4,5,8,10,15,19]}})
 
 netParams.addStimTargetParams('Input_4->PYR', 
   {'source': 'Input_4', 

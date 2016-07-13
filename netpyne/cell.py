@@ -221,10 +221,10 @@ class Cell (object):
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
                         if stimPropName == 'amp': 
-                            for i,val in stimPropValue.enumerate():
+                            for i,val in enumerate(stimPropValue):
                                 stim.amp[i] = val
                         elif stimPropName == 'dur': 
-                            for i,val in stimPropValue.enumerate():
+                            for i,val in enumerate(stimPropValue):
                                 stim.dur[i] = val
                         #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                     else: 
@@ -580,8 +580,12 @@ class Cell (object):
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):
-                    print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
-                    pass
+                    if stimParamName == 'amp': 
+                        for i,val in enumerate(stimParamValue):
+                            stim.amp[i] = val
+                    elif stimParamName == 'dur': 
+                        for i,val in enumerate(stimParamValue):
+                            stim.dur[i] = val
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 else: 
                     setattr(stim, stimParamName, stimParamValue)

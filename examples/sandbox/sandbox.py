@@ -70,16 +70,16 @@ netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell prope
 
 
 # Stimulation parameters
-netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
-netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
-netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+# netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+# netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
+# netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+# netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
 
-netParams.addStimTargetParams('Input_1_PYR', 
-    {'source': 'Input_1', 
-    'sec':'soma', 
-    'loc': 0.5, 
-    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
+# netParams.addStimTargetParams('Input_1_PYR', 
+#     {'source': 'Input_1', 
+#     'sec':'soma', 
+#     'loc': 0.5, 
+#     'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
 
 # netParams.addStimTargetParams('Input_3_PYR2', 
@@ -107,14 +107,15 @@ netParams.addStimTargetParams('Input_1_PYR',
 #     'synMech': ['AMPA', 'NMDA'],
 #     'threshold': 10})                    # threshold
 
-# netParams.addConnParams('PYRconn2',
-#     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
-#     'weight': 0.005,                    # weight of each connection
-#     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-#     'threshold': 10,                    # threshold
-#     'convergence': 'uniform(1,15)',
-#     'synMech': 'AMPA',
-#     'synsPerConn': 3})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+netParams.addConnParams('PYRconn2',
+    {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'weight': 0.005,                    # weight of each connection
+    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)',
+    'synMech': 'AMPA',
+    'sec': 'all',
+    'synsPerConn': 2})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 
 # netParams.addConnParams('PYR->PYR',
 #     {'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': ['PYR','PYR2', 'PYR3']},
@@ -226,24 +227,24 @@ simConfig.addAnalysis('plotRaster', True)
 
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
 
-###############################################################################
-# MODIFY and RUN SIM
-###############################################################################
+# ###############################################################################
+# # MODIFY and RUN SIM
+# ###############################################################################
 
-# sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
-#                     'secs': {'soma': {'geom': {'L': 100}}}})
+# # sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
+# #                     'secs': {'soma': {'geom': {'L': 100}}}})
 
-# sim.net.modifyConns({'conds': {'label': 'PYR->PYR', 'weight': [0,0.001], 'loc': 0.5},
-#                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
-#                     'weight': 0.01})
+# # sim.net.modifyConns({'conds': {'label': 'PYR->PYR', 'weight': [0,0.001], 'loc': 0.5},
+# #                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
+# #                     'weight': 0.01})
 
-sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
-                    'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
-                    'delay': 300})
+# sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
+#                     'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
+#                     'delay': 300})
 
 
 
-sim.simulate() # create and simulate network
-sim.analyze()
+# sim.simulate() # create and simulate network
+# sim.analyze()
 
 

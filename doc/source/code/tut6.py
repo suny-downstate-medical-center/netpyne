@@ -19,31 +19,36 @@ netParams.addCellParams('PYRrule', cellRule)                                    
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
 ## Stimulation parameters
-netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
-netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur':[0,1,1], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
-netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 200, 'dur': 400, 'amp': 'uniform(0.05,0.5)'})
+netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur': [0,1,200], 'amp': [1,1,1], 'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1})
+netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(600,800)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 800, 'noise': 0.1})
 
-netParams.addStimTargetParams('Input_1_PYR', 
+netParams.addStimTargetParams('Input_1->S', 
     {'source': 'Input_1', 
     'sec':'soma', 
-    'loc': 0.5, 
-    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
+    'loc': 0.8, 
+    'conds': {'popLabel':'S', 'cellList': range(15)}})
 
-
-netParams.addStimTargetParams('Input_3_PYR2', 
-    {'source': 'Input_3', 
+netParams.addStimTargetParams('Input_2->S', 
+    {'source': 'Input_2', 
     'sec':'soma', 
     'loc': 0.5, 
-    'conds': {'popLabel':'PYR2', 'ynorm':[0.2,0.6]}})
+    'conds': {'popLabel':'S', 'ynorm': [0,0.5]}})
 
-netParams.addStimTargetParams('Input_4_PYR3', 
+netParams.addStimTargetParams('Input_2->M1', 
+    {'source': 'Input_3', 
+    'sec':'soma', 
+    'loc': 0.2, 
+    'conds': {'popLabel':'M1', 'cellList': [2,4,5,8,10,15,19]}})
+
+netParams.addStimTargetParams('Input_4->PYR', 
   {'source': 'Input_4', 
   'sec':'soma', 
   'loc': 0.5, 
-    'weight': '0.1+gauss(0.2,0.05)',
-    'delay': 1,
-  'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,3,4,5,10,11,12,13,14,15]}})
+  'weight': '0.1+gauss(0.2,0.05)',
+  'delay': 1,
+  'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}})
 
 
 # Simulation options

@@ -220,8 +220,12 @@ class Cell (object):
                 stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
-                        print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
-                        pass
+                        if stimPropName == 'amp': 
+                            for i,val in stimPropValue.enumerate():
+                                stim.amp[i] = val
+                        elif stimPropName == 'dur': 
+                            for i,val in stimPropValue.enumerate():
+                                stim.dur[i] = val
                         #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                     else: 
                         setattr(stim, stimPropName, stimPropValue)

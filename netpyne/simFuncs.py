@@ -960,7 +960,7 @@ def _export_synapses (net, nml_doc):
 
             nml_doc.exp_two_synapses.append(syn0)
         elif syn['mod'] == 'ExpSyn':
-            syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
+            syn0 = neuroml.ExpOneSynapse(id=id, 
                                          gbase='1uS',
                                          erev='%smV'%syn['e'],
                                          tau_decay='%sms'%syn['tau'])

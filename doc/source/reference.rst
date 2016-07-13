@@ -512,6 +512,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+.. _stimulation:
 
 Stimulation
 ^^^^^^^^^^^^^^^^^^^

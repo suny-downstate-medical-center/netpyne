@@ -501,7 +501,10 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 Stimulating the network 
 ------------------------
 
+See :ref:`stimulation`
 
+
+The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
 
 

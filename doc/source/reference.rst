@@ -838,9 +838,10 @@ Methods to set up network
 Methods to modify network
 
 * **net.modifyCells(params)**
-* **net.modifyCells(params)**
-* **net.modifyCells(params)**
 
+* **net.modifyConns(params)**
+
+* **net.modifyStims(params)**
 
 
 Population class methods 

@@ -9,7 +9,7 @@ Version: 2015jan28 by salvadordura@gmail.com
 """
 
 from neuron import h
-from numpy import array, zeros, pi, ones, cos, sin, mean
+from numpy import array, zeros, pi, ones, cos, sin, mean, nonzero
 from pylab import concatenate, figure, show, ion, ioff, pause,xlabel, ylabel, plot, Circle, sqrt, arctan, arctan2, close
 from copy import copy
 from random import uniform, seed, sample, randint
@@ -190,7 +190,7 @@ class Arm:
     ### SETUP
     ################################
     def setup(self, f):#, nduration, loopstep, RLinterval, pc, scale, popnumbers, p): 
-        self.duration = f.cfg['duration']#/1000.0 # duration in msec
+        self.duration = f.cfg.duration#/1000.0 # duration in msec
         self.interval = f.updateInterval #/1000.0 # interval between arm updates in ,sec       
         self.RLinterval = f.RLinterval # interval between RL updates in msec
         self.minRLerror = f.minRLerror # minimum error change for RL (m)
@@ -217,7 +217,7 @@ class Arm:
         self.initArmMovement = int(f.initArmMovement) # start arm movement after x msec
         self.trial = 0 # trial number
         self.origMotorBackgroundRate = 1
-        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params['connParams'] if connParam['preTags']['popLabel'] == 'stimEM'][0]
+        #self.origMotorBackgroundWeight = [connParam['weight'] for connParam in f.net.params.connParams if connParam['preConds']['popLabel'] == 'stimEM'][0]
 
         # motor command encoding
         self.vec = h.Vector()
@@ -280,16 +280,16 @@ class Arm:
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 if cell.gid in self.targetCells:  # for each rand cell selected
                     for stim in cell.stims:
-                        if stim['label'] == 'stimEM':
+                        if stim['source'] == 'stimEM':
                             stim['hNetStim'].interval = 1000/self.randRate
                             break
                 else: # if not stimulated
                     for stim in cell.stims:
-                        if stim['label'] == 'stimEM':
+                        if stim['source'] == 'stimEM':
                             stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                             break
             f.timeoflastexplor = t
-            if f.rank==0 and f.cfg['verbose']: 
+            if f.rank==0 and f.cfg.verbose: 
                 print 'Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur   
 
 
@@ -301,7 +301,7 @@ class Arm:
             # reset explor movs
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 for stim in cell.stims:
-                    if stim['label'] == 'stimEM':
+                    if stim['source'] == 'stimEM':
                         stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                         break
             f.timeoflastexplor = t
@@ -311,7 +311,12 @@ class Arm:
         if t > self.initArmMovement:
             # Gather spikes from all vectors to then calculate motor command 
             for i in range(f.nMuscles):
-                cmdVecs = array([spkt for spkt,spkid in zip(f.simData['spkt'], f.simData['spkid']) if spkid in f.motorCmdCellRange[i]])
+                spktvec = array(f.simData['spkt'])
+                spkgids = array(f.simData['spkid'])
+                inds = nonzero((spktvec < t) * (spktvec > t-self.cmdtimewin)) # Filter
+                spktvec = spktvec[inds]
+                spkgids = spkgids[inds]
+                cmdVecs = array([spkt for spkt,spkid in zip(spktvec, spkgids) if spkid in f.motorCmdCellRange[i]]) # CK: same outcome, but much slower: cmdVecs = array([spkt for spkt,spkid in zip(f.simData['spkt'], f.simData['spkid']) if spkid in f.motorCmdCellRange[i]])
                 self.motorCmd[i] = len(cmdVecs[(cmdVecs < t) * (cmdVecs > t-self.cmdtimewin)])
                 f.pc.allreduce(self.vec.from_python([self.motorCmd[i]]), 1) # sum
                 self.motorCmd[i] = self.vec.to_python()[0]        
@@ -343,24 +348,24 @@ class Arm:
         for cell in [c for c in f.net.cells if c.gid in f.pop_sh]:   # shoulder
             if (self.ang[SH] >= cell.prange[0] and self.ang[SH] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
-                    if stim['label'] == 'stimPsh':
+                    if stim['source'] == 'stimPsh':
                         stim['hNetStim'].interval = 1000/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
-                    if stim['label'] == 'stimPsh':
+                    if stim['source'] == 'stimPsh':
                         stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]:   # elbow
             if (self.ang[EL] >= cell.prange[0] and self.ang[EL] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
-                    if stim['label'] == 'stimPel':
+                    if stim['source'] == 'stimPel':
                         stim['hNetStim'].interval = 1000.0/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
-                    if stim['label'] == 'stimPel':
+                    if stim['source'] == 'stimPel':
                         stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
@@ -379,7 +384,7 @@ class Arm:
         # if f.explorMovs: # remove explor movs related noise to cells
         #     for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
         #         for stim in cell.stims:
-        #             if stim['label'] == 'backgroundE':
+        #             if stim['source'] == 'backgroundE':
         #                 stim['hNetcon'].weight[stim['weightIndex']] = self.origMotorBackgroundWeight
         #                 break
         if f.trialReset:

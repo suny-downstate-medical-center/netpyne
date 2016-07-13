@@ -8,45 +8,41 @@ simConfig is a dict containing a set of simulation configurations using a standa
 Contributors: salvadordura@gmail.com
 """
 
+from netpyne import specs
+
 ###############################################################################
 # NETWORK PARAMETERS
 ###############################################################################
 
-netParams = {}  # dictionary to store sets of network parameters
+netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 # Population parameters
-netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
-netParams['popParams'].append({'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
-netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5})  # background inputs
+netParams.addPopParams('hop', {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
+netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5})  # background inputs
 
 # Cell parameters
-netParams['cellParams'] = []
 
 ## PYR cell properties
-cellRule = {'label': 'PYR', 'conditions': {'cellType': 'PYR'},  'sections': {}}
-soma = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-soma['geom'] = {'diam': 18.8, 'L': 18.8}
-soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-cellRule['sections'] = {'soma': soma}  # add sections to dict
-netParams['cellParams'].append(cellRule)  # add dict to list of cell properties
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
+cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+netParams.addCellParams('PYR', cellRule)  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
-netParams['synMechParams'] = []
-netParams['synMechParams'].append({'label': 'exc', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams['synMechParams'].append({'label': 'inh', 'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80})
+netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams.addSynMechParams('inh', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80})
 
  
 # Connectivity parameters
-netParams['connParams'] = []  
-
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'background'}, 'postTags': {'popLabel': 'hop'}, # background -> PYR
+netParams.addConnParams('bg->hop',
+    {'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.1
     'synMech': 'exc',                 # target exc synapse
     'delay': 1})                      # uniformly distributed delays between 1-5ms
 
-netParams['connParams'].append(
-    {'preTags': {'popLabel': 'hop'}, 'postTags': {'popLabel': 'hop'},
+netParams.addConnParams('hop->hop',
+    {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
     'delay': 5})       				    # delay 
@@ -55,23 +51,20 @@ netParams['connParams'].append(
 ###############################################################################
 # SIMULATION PARAMETERS
 ###############################################################################
-simConfig = {}  # dictionary to store simConfig
+simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
 
 # Simulation options
-simConfig = {}
-simConfig['duration'] = 0.5*1e3 		# Duration of the simulation, in ms
-simConfig['dt'] = 0.025 				# Internal integration timestep to use
-simConfig['verbose'] = False  			# Show detailed messages 
-simConfig['recordTraces'] = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig['filename'] = 'model_output'  # Set file output name
-simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
+simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
+simConfig.dt = 0.025 				# Internal integration timestep to use
+simConfig.verbose = False  			# Show detailed messages 
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.filename = 'model_output'  # Set file output name
+simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-simConfig['analysis'] = {}
-simConfig['analysis']['plotRaster'] = {'syncLines': True}      # Plot a raster
-simConfig['analysis']['plotTraces'] = {'include': [1]}      # Plot recorded traces for this list of cells
-simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-
+simConfig.addAnalysis('plotRaster', {'syncLines': True})      # Plot a raster
+simConfig.addAnalysis('plotTraces', {'include': [1]})      # Plot recorded traces for this list of cells
+simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
 
 
 ###############################################################################

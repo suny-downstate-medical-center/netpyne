@@ -127,7 +127,7 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **seed** - Seed for randomizer (optional; defaults to value set in simConfig['seeds']['stim'])
+* **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
 Example of NetStim population::
 	
@@ -178,48 +178,47 @@ Each item of the ``cellParams`` list contains a dictionary that defines a cell p
 		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 * **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
-	e.g. ``cellRule['sections']['soma']['vinit'] = -72``
+	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
 
 * **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
-	e.g. ``cellRule['sections']['axon']['spikeGenLoc'] = 1.0``
+	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
 
 Example of two cell property rules::
 
 	## PYR cell properties (HH)
-	cellRule = {'label': 'PYR_HH', 'conditions': {'cellType': 'PYR', 'cellModel': 'HH'},  'sections': {}}
+	cellRule = {'label': 'PYR_HH', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
 
 	soma = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
 	soma['geom']['pt3d'].append((0, 0, 0, 20))
 	soma['geom']['pt3d'].append((0, 0, 20, 20))
 	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
 	dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}  # dend properties
 	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
 	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
 	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-	dend['synMechs']['AMPA'] = {'mod': 'Exp2Syn', 'loc': 1.0, 'tau1': 0.1, 'tau2': 1, 'e': 0}
 
-	cellRule['sections'] = {'soma': soma, 'dend': dend}  # add sections to dict
+	cellRule['secs'] = {'soma': soma, 'dend': dend}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule dict to list of cell property rules
 
 
 	## PYR cell properties (Izhi)
-	cellRule = {'label': 'PYR_Izhi', 'conditions': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'sections': {}}
+	cellRule = {'label': 'PYR_Izhi', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
 
 	soma = {'geom': {}, 'pointps':{}, 'synMechs': {}}  # soma properties
 	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	soma['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-	soma['synMechs']['AMPA'] = {'mod': 'ExpSyn', 'loc': 0.5, 'tau': 0.1, 'e': 0}
 
-	cellRule['sections'] = {'soma': soma}  # add sections to dict
+	cellRule['secs'] = {'soma': soma}  # add sections to dict
 	netParams['cellParams'].append(cellRule)  # add rule to list of cell property rules
 
 
 .. note:: As in the example above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams['cellParams']``.
 
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
+
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, eg. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
@@ -302,7 +301,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 
 	Can be defined as a function (see :ref:`function_string`).
 
-	If omitted, defaults to ``netParams['defaultWeight'] = 1``.
+	If omitted, defaults to ``netParams.defaultWeight = 1``.
 
 	If have list of ``synMechs``, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: ``[0.1, 0.01]``).
 
@@ -313,7 +312,7 @@ Each item of the ``connParams`` list contains a dictionary that defines a connec
 * **delay** (optional) - Time (in ms) for the presynaptic spike to reach the postsynaptic neuron.
 	Can be defined as a function (see :ref:`function_string`).
 
-	If omitted, defaults to ``netParams['defaultDelay'] = 1``
+	If omitted, defaults to ``netParams.defaultDelay = 1``
 
 	If have list of ``synMechs``, can have single delay for all, or list of delays (one per synMech, e.g. for 2 synMechs: ``[5, 7]``).
 
@@ -368,8 +367,8 @@ Example of connectivity rules:
 	netParams['connParams'] = [] 
 
 	netParams['connParams'].append({
-		'preTags': {'popLabel': 'S'}, 
-		'postTags': {'popLabel': 'M'},  #  S -> M
+		'preConds': {'popLabel': 'S'}, 
+		'postConds': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
 		'synMech': 'AMPA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
@@ -377,15 +376,15 @@ Example of connectivity rules:
 		'probability': 0.5})				# probability of connection		
 
 	netParams['connParams'].append(
-		{'preTags': {'popLabel': 'background'}, 
-		'postTags': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
+		{'preConds': {'popLabel': 'background'}, 
+		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
 	netParams['connParams'].append(
-	    {'preTags': {'y': [100, 600]}, 
-	    'postTags': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
+	    {'preConds': {'y': [100, 600]}, 
+	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
 	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
 	    'synsPerConn': 3, 		# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
 	    'weight': 0.02,			# single weight for all synapses
@@ -522,7 +521,7 @@ Each item of the ``stimList`` list contains the following fields:
 	* **source** - Label of the stimulation source (e.g. 'electrode_current').
 
 	* **conditions** - Dictionary with conditions of cells where the stim will be applied. 
-		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conditions': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
 
 	* **sec** (optional) - Target section (default: 'soma')
 		Can be defined as a function (see :ref:`function_string`)
@@ -566,13 +565,13 @@ The code below shows an example of how to create different types of stimulation 
 	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conditions': {'popLabel':'PYR', 'cellList': range(8)}})
+	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
 	netParams['stimParams']['stimList'].append({
 	    'source': 'Input_3', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conditions': {'cellType':'Basket'}})
+	    'conds': {'cellType':'Basket'}})
 
 	netParams['stimParams']['stimList'].append({
 		'source': 'Input_4', 
@@ -580,7 +579,7 @@ The code below shows an example of how to create different types of stimulation 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
 	    'delay': 1,
-		'conditions': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
+		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
 
 
 
@@ -645,23 +644,50 @@ Once you have defined your ``simConfig`` and ``netParams`` dicts, you can use th
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Wrappers:
+
 * **sim.createAndSimulate(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
 * **sim.create(simConfig, netParams)** - wrapper to create the network.
 * **sim.simulate()** - wrapper to simulate the network.
 * **sim.createAndExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
-* **sim.initialize()**
-* **sim.setNet()**
-* **sim.setNetParams()**
-* **sim.setSimCfg()**
-* **sim.loadSimCfg()**
-* **sim.loadSimParams()**
+
+
+Initialize and set up:
+
+* **sim.initialize(simConfig, netParams)**
+* **sim.setNet(net)**
+* **sim.setNetParams(params)**
+* **sim.setSimCfg(cfg)**
 * **sim.createParallelContext()**
 * **sim.setupRecording()**
+
+
+Run and gather:
+
 * **sim.runSim()**
-* **sim.runSimWithIntervalFunc()**
+* **sim.runSimWithIntervalFunc(interval, func)**
 * **sim.gatherData()**
-* **sim.saveData()**
+* **sim.gatherAllCellTags()**
+
+
+Saving and loading:
+
+* **sim.saveData(filename)**
+* **sim.loadSimCfg(filename)**
+* **sim.loadNetParams(filename)**
+* **sim.loadNet(filename)**
+* **sim.loadSimData(filename)**
+* **sim.loadAll(filename)**
+
+
+Export and import:
 * **sim.exportNeuroML2()**
+
+
+Misc/utilities:
+* **sim.cellByGid()**
+* **sim.version()**
+* **sim.gitversion()**
 
 
 .. _analysis_functions:
@@ -707,14 +733,15 @@ Analysis-related functions
     - Returns figure handle
     
 
-* **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+* **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
-    Plot recorded traces (specified in ``simConfig['recordTraces'])`. Optional arguments: 
+    Plot recorded traces (specified in ``simConfig.recordTraces)`. Optional arguments: 
 
     - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *overlay*: Whether to overlay the data lines or plot in separate subplots (True|False)
     - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace')
+    - *rerun*: rerun simulation so new set of cells gets recorded (True|False)
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
     - *saveFig*: File name where to save the figure (None|'fileName')

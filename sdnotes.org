@@ -969,9 +969,9 @@ for i in xrange(int(section_lists.count())):
 
 *** Netpyne implementation
 - Option 3
-cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'sections': {}, 'sectionLists': {}} 
+cellRule = {'label': 'PYRrule', 'conditions': {'cellType': 'PYR'},  'secs': {}, 'secLists': {}} 
 ...
-cellRule['sectionLists']['all'] = ['soma', 'dend']
+cellRule['secLists']['all'] = ['soma', 'dend']
 
 - Can't define properties of section lists in netpyne
 - Neuron section list object not created - just python version
@@ -979,7 +979,7 @@ cellRule['sectionLists']['all'] = ['soma', 'dend']
 - Can use sectionlists in connectivity
 
 - Modified importCell so it reads sectionLists with original variable names; and modified input arguments so now pass
-  cellRule as 1st arg -- so can add 'sections' and 'sectionLists' to cellRule dict
+  cellRule as 1st arg -- so can add 'secs' and 'secLists' to cellRule dict
 
 TODO:
 - update tut_import.py - DONE
@@ -1280,7 +1280,7 @@ after so not saved?)
 -- can add to sections in properties 
 -- can just add generic, by setting '_loc': 'generic' ? -- but still inside a section! :/
 -- just make algorithm look for synmechs in all sections, and use same params to replicate
--- maybe move 'synMechs' out, to same level as 'sections' ? 
+-- maybe move 'synMechs' out, to same level as 'secs' ? 
 -- add to sectionList !?
 
 ** sCRACM (Petreanu 2009; Suter,2015)

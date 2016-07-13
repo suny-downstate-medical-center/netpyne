@@ -74,8 +74,8 @@ sim.timeoflastreset = 0 # time when arm was last reseted
 # train/test params
 sim.trainTime = 1 * 1e3
 sim.testTime = 1 * 1e3
-sim.cfg['duration'] = sim.trainTime + sim.testTime
-sim.numTrials = ceil(sim.cfg['duration']/1e3)
+sim.cfg.duration = sim.trainTime + sim.testTime
+sim.numTrials = ceil(sim.cfg.duration/1e3)
 sim.numTargets = 1
 sim.targetid = 3 # target to train+test
 sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial

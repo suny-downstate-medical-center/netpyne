@@ -55,6 +55,10 @@ class Cell (object):
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
                     break
+            elif isinstance(condVal, list):
+                if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                    conditionsMet = 0
+                    break
             elif self.tags[condKey] != condVal: 
                 conditionsMet = 0
                 break

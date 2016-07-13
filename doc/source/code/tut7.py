@@ -90,6 +90,7 @@ sim.analysis.plotData()                   # plot spike raster
 # # INTERACTING WITH INSTANTIATED NETWORK
 # ###############################################################################
 
+# modify conn weights
 sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 
 sim.runSim()                          # run parallel Neuron simulation  
@@ -97,6 +98,13 @@ sim.gatherData()                      # gather spiking data and cell info from e
 sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
 sim.analysis.plotData()                   # plot spike raster
 
+# modify cells geometry
+sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+                    'secs': {'soma': {'geom': {'L': 160}}}})
+
+sim.simulate()
+sim.analysis.plotRaster(syncLines=True)
+sim.analysis.plotTraces(include = [1])
 
 
 

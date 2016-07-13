@@ -623,6 +623,7 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 	# INTERACTING WITH INSTANTIATED NETWORK
 	###############################################################################
 
+	# modify conn weights
 	sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 
 	sim.runSim()                          # run parallel Neuron simulation  
@@ -637,6 +638,28 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.70:
 
 .. image:: figs/tut7_2.png
+	:width: 70%
+	:align: center
+
+
+Additionally, we could also modify some of the cell properties to observe how this affects synchrony. The code below modifies the soma length of all cells in the 'hop' population to 160 um::
+
+
+	# modify cells geometry
+	sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+	                    'secs': {'soma': {'geom': {'L': 160}}}})
+
+	sim.simulate()
+	sim.analysis.plotRaster(syncLines=True)
+	sim.analysis.plotTraces(include = [1])
+
+
+.. note:: For illustration purposes we make use of the ``sim.simulate()`` wrapper, which simply calls ``runSim()`` and ``gatherData()``. Additionally, we interactively call the ``sim.plotRaster()`` and ``sim.plotTraces()`` functions.
+
+
+The resulting plot shows decreased firing rate and increased synchrony due to the new cell geometry:
+
+.. image:: figs/tut7_3.png
 	:width: 70%
 	:align: center
 

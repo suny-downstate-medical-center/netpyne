@@ -1,10 +1,16 @@
 ## Version 0.5.3
 
-- Functions to modify parameters of instanced network cells, conns and stims (issue #59)
+- Functions to modify parameters of cells, conns and stims in an instantiated network (issue #59)
+
+- Added label of param rule used to create cells, conns and stims, so can modify later  (issue #59)
 
 - Ordered sim.net.allCells by gid
 
 - Option to save figures with same name as data
+
+- Added support for VClamp list params (issue #32)
+
+- Fixed bug when creating pops consisiting of lists of cells 
 
 ## Version 0.5.2
 

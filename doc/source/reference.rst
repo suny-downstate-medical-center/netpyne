@@ -161,6 +161,7 @@ Finally, it is possible to define a population composed of individually-defined 
 	netParams.addPopParams('IT_cells', {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
 
 
+.. _cell_property_rules:
 
 Cell property rules
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -840,38 +841,49 @@ Methods to modify network
 
 * **net.modifyCells(params)**
 	
-	Modifies properties of an instantiated network. The ``params`` argument is a dictionary with the following 2 fields:
+	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following 2 items:
 
-	- 'conds': Dictionary of conditions to select cells that will be modified, where keys correspond to cell tags (see list of cell tags), and values are single  [min, max] range 
+	- 'conds': dictionary of conditions to select cells that will be modified, with each item containing a cell tag (see list of cell tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+	e.g. ``{'label': 'PYR_HH'}`` targets cells that were created using the cellParams rule labeled 'PYR_HH'.
+	e.g. ``{'cellType': 'PYR', 'ynorm': [0.1, 0.6]} targets cells of type 'PYR' with normalized depth within 0.1 and 0.6.
+
+	- 'secs': dictionary of sections using same format as for initial setting of cell property rules (see :ref:`cell_property_rules` or :ref:`cell_class_data_model` for details)
+
+	e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 
 
-sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
-                    'secs': {'soma': {'geom': {'L': 100}}}})
-
-sim.net.modifyConns({'conds': {'label': 'PYR->PYR', 'weight': [0,0.001], 'loc': 0.5},
-                    'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
-                    'weight': 0.01})
-
-sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
-                    'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
-                    'delay': 300})	
-
-(include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)
-
-    Plot 2D representation of network cell positions and connections. Optional arguments:
-
-    - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *showConns*: Whether to show connections or not (True|False)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
-
-    - Returns figure handles
 
 * **net.modifyConns(params)**
 
+	Modifies properties of connections in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select connections that will be modified, with each item containing a conn tag (see list of conn tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+	e.g. ``{'label': 'M->S'}`` targets connections that were created using the connParams rule labeled 'M->S'.
+	e.g. ``{'weight': [0.4, 0.8], 'sec': 'soma'} targets connections with weight within 0.4 and 0.8, and that were made onto the 'soma' section. 
+
+	- 'postConds': dictionary of conditions to select postsynaptic cells that will contain the connections to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+	e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]} targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- 'weight' | 'threshold': New value for connection weight or threshold.
+
+
 * **net.modifyStims(params)**
+
+	Modifies properties of stim in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select stims that will be modified, with each item containing a stim tag (see list of stim tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+	e.g. ``{'label': 'VClamp1->S'}`` targets stims that were created using the stimTargetParms rule labeled 'VClamp1->S'.
+	e.g. ``{'source': 'IClamp2', 'dur': [100, 300]} targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
+
+	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+	e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]} targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- '[stim property] (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
 
 
 Population class methods 
@@ -898,7 +910,7 @@ Population class methods
 * **cell.recordStimSpikes()**
 
 
-:ref:`data_model`
+.. _data_model:
 
 NetPyNE data model (structure of instantiated network and output data)
 -----------------------------------------------------------------------
@@ -939,7 +951,7 @@ Population class
 - tags (dict)
 
 
-:ref:`cell_class_data_model`
+.. _cell_class_data_model:
 
 Cell class
 ^^^^^^^^^^^^^

@@ -87,14 +87,14 @@ class Network (object):
                 print('Adding stims...')
                 
             if sim.nhosts > 1: # Gather tags from all cells 
-                allCellTags = sim.gatherAllCellTags()  
+                allCellTags = sim._gatherAllCellTags()  
             else:
                 allCellTags = {cell.gid: cell.tags for cell in self.cells}
             # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
 
             sources = self.params.stimSourceParams
 
-            for target in self.params.stimTargetParams.values():  # for each target parameter set
+            for targetLabel, target in self.params.stimTargetParams.iteritems():  # for each target parameter set
                 if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
                 
                 source = sources.get(target['source'])
@@ -126,6 +126,7 @@ class Network (object):
 
                         # stim target params
                         params = {}
+                        params['label'] = targetLabel
                         params['source'] = target['source']
                         params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else target['sec']
                         params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else target['loc']
@@ -139,9 +140,9 @@ class Network (object):
 
                         postCell.addStim(params)  # call cell method to add connections
 
-            sim.timing('stop', 'stimsTime')
+        sim.timing('stop', 'stimsTime')
 
-            return [cell.stims for cell in self.cells]
+        return [cell.stims for cell in self.cells]
 
 
 
@@ -158,12 +159,12 @@ class Network (object):
 
         # dict to store correspondence between string and actual variable
         dictVars = {}   
-        dictVars['post_x']      = lambda postTags: postTags['x'] 
-        dictVars['post_y']      = lambda postTags: postTags['y'] 
-        dictVars['post_z']      = lambda postTags: postTags['z'] 
-        dictVars['post_xnorm']  = lambda postTags: postTags['xnorm'] 
-        dictVars['post_ynorm']  = lambda postTags: postTags['ynorm'] 
-        dictVars['post_znorm']  = lambda postTags: postTags['znorm'] 
+        dictVars['post_x']      = lambda postConds: postConds['x'] 
+        dictVars['post_y']      = lambda postConds: postConds['y'] 
+        dictVars['post_z']      = lambda postConds: postConds['z'] 
+        dictVars['post_xnorm']  = lambda postConds: postConds['xnorm'] 
+        dictVars['post_ynorm']  = lambda postConds: postConds['ynorm'] 
+        dictVars['post_znorm']  = lambda postConds: postConds['znorm'] 
          
         # add netParams variables
         for k,v in self.params.__dict__.iteritems():
@@ -200,7 +201,7 @@ class Network (object):
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
-            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
 
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
@@ -238,16 +239,17 @@ class Network (object):
             print('Making connections...')
 
         if sim.nhosts > 1: # Gather tags from all cells 
-            allCellTags = sim.gatherAllCellTags()  
+            allCellTags = sim._gatherAllCellTags()  
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
 
-        for connParamTemp in self.params.connParams.values():  # for each conn rule or parameter set
+        for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
+            connParam['label'] = connParamLabel
 
             # find pre and post cells that match conditions
-            preCellsTags, postCellsTags = self._findCellsCondition(allCellTags, allPopTags, connParam['preConds'], connParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, connParam['preConds'], connParam['postConds'])
 
             # call appropriate conn function
             if 'connFunc' not in connParam:  # if conn function not specified, select based on params
@@ -274,15 +276,36 @@ class Network (object):
 
         return [cell.conns for cell in self.cells]
 
+
     ###############################################################################
-    # Find cells matching conditions
+    # Find pre and post cells matching conditions
     ###############################################################################
-    def _findCellsCondition(self, allCellTags, allPopTags, preTags, postTags):
+    def _findCellsCondition(self, allCellTags, conds):
+        cellsTags = dict(allCellTags)
+        for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
+            if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
+                prePops = {}
+            else:
+                if isinstance(condValue, list): 
+                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+                else:
+                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
+                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+
+        return cellsTags
+
+
+    ###############################################################################
+    # Find pre and post cells matching conditions
+    ###############################################################################
+    def _findPrePostCellsCondition(self, allCellTags, allPopTags, preConds, postConds):
         preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
         prePops = allPopTags  # initialize with all presyn pops
         postCellsTags = None
 
-        for condKey,condValue in preTags.iteritems():  # Find subset of cells that match presyn criteria
+        for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
             if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                 preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
                 prePops = {}
@@ -304,7 +327,7 @@ class Network (object):
         
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
-            for condKey,condValue in postTags.iteritems():  # Find subset of cells that match postsyn criteria
+            for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                 elif isinstance(condValue, list): 
@@ -313,6 +336,7 @@ class Network (object):
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
 
         return preCellsTags, postCellsTags
+
 
     ###############################################################################
     # Convert connection param string to function
@@ -323,34 +347,34 @@ class Network (object):
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  
-        dictVars['pre_x']       = lambda preTags,postTags: preTags['x'] 
-        dictVars['pre_y']       = lambda preTags,postTags: preTags['y'] 
-        dictVars['pre_z']       = lambda preTags,postTags: preTags['z'] 
-        dictVars['pre_xnorm']   = lambda preTags,postTags: preTags['xnorm'] 
-        dictVars['pre_ynorm']   = lambda preTags,postTags: preTags['ynorm'] 
-        dictVars['pre_znorm']   = lambda preTags,postTags: preTags['znorm'] 
-        dictVars['post_x']      = lambda preTags,postTags: postTags['x'] 
-        dictVars['post_y']      = lambda preTags,postTags: postTags['y'] 
-        dictVars['post_z']      = lambda preTags,postTags: postTags['z'] 
-        dictVars['post_xnorm']  = lambda preTags,postTags: postTags['xnorm'] 
-        dictVars['post_ynorm']  = lambda preTags,postTags: postTags['ynorm'] 
-        dictVars['post_znorm']  = lambda preTags,postTags: postTags['znorm'] 
-        dictVars['dist_x']      = lambda preTags,postTags: abs(preTags['x'] - postTags['x'])
-        dictVars['dist_y']      = lambda preTags,postTags: abs(preTags['y'] - postTags['y']) 
-        dictVars['dist_z']      = lambda preTags,postTags: abs(preTags['z'] - postTags['z'])
-        dictVars['dist_3D']    = lambda preTags,postTags: sqrt((preTags['x'] - postTags['x'])**2 +
-                                (preTags['y'] - postTags['y'])**2 + 
-                                (preTags['z'] - postTags['z'])**2)
-        dictVars['dist_2D']     = lambda preTags,postTags: sqrt((preTags['x'] - postTags['x'])**2 +
-                                (preTags['z'] - postTags['z'])**2)
-        dictVars['dist_xnorm']  = lambda preTags,postTags: abs(preTags['xnorm'] - postTags['xnorm'])
-        dictVars['dist_ynorm']  = lambda preTags,postTags: abs(preTags['ynorm'] - postTags['ynorm']) 
-        dictVars['dist_znorm']  = lambda preTags,postTags: abs(preTags['znorm'] - postTags['znorm'])
-        dictVars['dist_norm3D'] = lambda preTags,postTags: sqrt((preTags['xnorm'] - postTags['xnorm'])**2 +
-                                sqrt(preTags['ynorm'] - postTags['ynorm']) + 
-                                sqrt(preTags['znorm'] - postTags['znorm']))
-        dictVars['dist_norm2D'] = lambda preTags,postTags: sqrt((preTags['xnorm'] - postTags['xnorm'])**2 +
-                                sqrt(preTags['znorm'] - postTags['znorm']))
+        dictVars['pre_x']       = lambda preConds,postConds: preConds['x'] 
+        dictVars['pre_y']       = lambda preConds,postConds: preConds['y'] 
+        dictVars['pre_z']       = lambda preConds,postConds: preConds['z'] 
+        dictVars['pre_xnorm']   = lambda preConds,postConds: preConds['xnorm'] 
+        dictVars['pre_ynorm']   = lambda preConds,postConds: preConds['ynorm'] 
+        dictVars['pre_znorm']   = lambda preConds,postConds: preConds['znorm'] 
+        dictVars['post_x']      = lambda preConds,postConds: postConds['x'] 
+        dictVars['post_y']      = lambda preConds,postConds: postConds['y'] 
+        dictVars['post_z']      = lambda preConds,postConds: postConds['z'] 
+        dictVars['post_xnorm']  = lambda preConds,postConds: postConds['xnorm'] 
+        dictVars['post_ynorm']  = lambda preConds,postConds: postConds['ynorm'] 
+        dictVars['post_znorm']  = lambda preConds,postConds: postConds['znorm'] 
+        dictVars['dist_x']      = lambda preConds,postConds: abs(preConds['x'] - postConds['x'])
+        dictVars['dist_y']      = lambda preConds,postConds: abs(preConds['y'] - postConds['y']) 
+        dictVars['dist_z']      = lambda preConds,postConds: abs(preConds['z'] - postConds['z'])
+        dictVars['dist_3D']    = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
+                                (preConds['y'] - postConds['y'])**2 + 
+                                (preConds['z'] - postConds['z'])**2)
+        dictVars['dist_2D']     = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
+                                (preConds['z'] - postConds['z'])**2)
+        dictVars['dist_xnorm']  = lambda preConds,postConds: abs(preConds['xnorm'] - postConds['xnorm'])
+        dictVars['dist_ynorm']  = lambda preConds,postConds: abs(preConds['ynorm'] - postConds['ynorm']) 
+        dictVars['dist_znorm']  = lambda preConds,postConds: abs(preConds['znorm'] - postConds['znorm'])
+        dictVars['dist_norm3D'] = lambda preConds,postConds: sqrt((preConds['xnorm'] - postConds['xnorm'])**2 +
+                                sqrt(preConds['ynorm'] - postConds['ynorm']) + 
+                                sqrt(preConds['znorm'] - postConds['znorm']))
+        dictVars['dist_norm2D'] = lambda preConds,postConds: sqrt((preConds['xnorm'] - postConds['xnorm'])**2 +
+                                sqrt(preConds['znorm'] - postConds['znorm']))
         
         # add netParams variables
         for k,v in self.params.__dict__.iteritems():
@@ -491,7 +515,7 @@ class Network (object):
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellGid)))  
             postCellsSample = sample(postCellsTags, divergence)  # selected gids of postsyn cells
-            postCellsDiv = {postGid:postTags  for postGid,postTags in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+            postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
@@ -557,6 +581,7 @@ class Network (object):
 
         connParam['netStimParams'] = netStimParams
 
+
     ###############################################################################
     ### Set parameters and create connection
     ###############################################################################
@@ -601,4 +626,60 @@ class Network (object):
             'synsPerConn': finalParam['synsPerConn'],
             'plasticity': connParam.get('plasticity')}
             
-            postCell.addConn(params = params, netStimParams = connParam.get('netStimParams'))
+            if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
+
+            postCell.addConn(params=params, netStimParams=connParam.get('netStimParams'))
+
+
+    ###############################################################################
+    ### Modify cell params
+    ###############################################################################
+    def modifyCells (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifyCellsTime')
+        if sim.rank==0: 
+            print('Modfying cell parameters...')
+
+        for cell in self.cells:
+            cell.modify(params)
+
+        sim.timing('stop', 'modifyCellsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
+
+
+
+    ###############################################################################
+    ### Modify conn params
+    ###############################################################################
+    def modifyConns (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifyConnsTime')
+        if sim.rank==0: 
+            print('Modfying connection parameters...')
+
+        for cell in self.cells:
+            cell.modifyConns(params)
+
+        sim.timing('stop', 'modifyConnsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
+
+
+    ###############################################################################
+    ### Modify stim source params
+    ###############################################################################
+    def modifyStims (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifyStimsTime')
+        if sim.rank==0: 
+            print('Modfying stimulation parameters...')
+
+        for cell in self.cells:
+            cell.modifyStims(params)
+
+        sim.timing('stop', 'modifyStimsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
+
+
+
+
+

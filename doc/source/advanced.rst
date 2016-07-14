@@ -8,12 +8,12 @@ Coming soon
 Importing externally-defined cell models
 ---------------------------------------
 
-NetPyNE provides support for internally defining cell properties of for example Hodgkin-Huxley type cells with one or multiple compartments, or Izhikevich type cells (eg. see :ref:`tutorial`). However, it is also possible to import previously defined cells in external files eg. in hoc cell templates, or cell classes, using the NetPyNE ``importCell()`` function. This function will convert all the cell information into the required NetPyNE format. This way it is possible to make use of cells which have been implemented separately.
+NetPyNE provides support for internally defining cell properties of for example Hodgkin-Huxley type cells with one or multiple compartments, or Izhikevich type cells (eg. see :ref:`tutorial`). However, it is also possible to import previously defined cells in external files eg. in hoc cell templates, or cell classes, using the ``importCellParams()`` method. This method will convert all the cell information into the required NetPyNE format. This way it is possible to make use of cells which have been implemented separately.
 
-The ``importCell(cellRule, fileName, cellName, cellArgs={}, synMechParams={})`` function takes as arguments the cell rule where to store the imported cell properties, the name of the file where the cell is defined (either .py or .hoc files), and the name of the cell template (hoc) or class (python). Optionally, a set of arguments can be passed to the cell template/class (eg. ``{'type': 'RS'}``); and the synaptic mechanisms parameters can also be read from the file and stored in ``synMechParams``.
+The ``cellRule = netParams.importCellParams(label, conds, fileName, cellName, cellArgs={}, importSynMechs=False)`` method takes as arguments the label of the new cell rule, the name of the file where the cell is defined (either .py or .hoc files), and the name of the cell template (hoc) or class (python). Optionally, a set of arguments can be passed to the cell template/class (eg. ``{'type': 'RS'}``). If you wish to import the synaptic mechanisms parameters, you can set the ``importSynMechs=True``. The method returns the new cell rule so that it can be further modified.
 
 
-NetPyNE contains no built-in information about any of the cell models being imported. Importing is based on temporarily instantiating the external cell model and reading all the required information (geometry, topology, distributed mechanisms, point processes, etc.).
+NetPyNE contains NO built-in information about any of the cell models being imported. Importing is based on temporarily instantiating the external cell model and reading all the required information (geometry, topology, distributed mechanisms, point processes, etc.).
 
 Below we show example of importing 9 different cell models from external files. For each one we provide the required files as well as the NetPyNE code. Make sure you run ``nrnivmodl`` to compile the mod files for each example. The list of example cell models is:
 
@@ -46,26 +46,8 @@ Hodgkin-Huxley model
 
 *NetPyNE Code* ::
 
-	## Cell property rules
-	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-
-	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='HHCellFile.py', cellName='HHCellClass')
-	netParams['cellParams'].append(cellRule)  
-
-
-*NetPyNE Code (to import synaptic mechanisms as well)* ::
-
-	## Cell property rules
-	netParams['cellParams'] = [] # list of cell property rules - each item will contain dict with cell properties
-	netParams['synMechParams'] = []
-
-	### HH
-	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
-	synMechsImport = []
-	utils.importCell(cellRule=cellRule, synMechParams=synMechsImport, fileName='HHCellFile.py', cellName='HHCellClass')
-	netParams['cellParams'].append(cellRule)  												
-	netParams['synMechParams'].extend(synMechsImport)  		# extend list of synaptic mechanisms with those imported
+	netParams.importCellParams(label='PYR_HH_rule', conds={'cellType': 'PYR', 'cellModel': 'HH'},
+		fileName='HHCellFile.py', cellName='HHCellClass', importSynMechs=True)
 
 
 .. _import_HH3D:
@@ -80,13 +62,12 @@ Hodgkin-Huxley model with 3D geometry
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_HH3D_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH3D'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='geom.hoc', cellName='E21')
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+	cellRule = netParams.importCellParams(label='PYR_HH3D_rule', conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, 
+		fileName='geom.hoc', cellName='E21', importSynMechs=True)
+	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
 	for secName in cellRule['secs']:
-		cellRule['secs'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
-		cellRule['secs'][secName]['geom']['cm'] = 10
-	netParams['cellParams'].append(cellRule)  
+	 	cellRule['secs'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+	 	cellRule['secs'][secName]['geom']['cm'] = 1
 
 
 .. _import_Traub:
@@ -115,9 +96,10 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showmodel.cshtml?model=20756
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Traub_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Traub'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='pyr3_traub.hoc', cellName='pyr3')
-	netParams['cellParams'].append(cellRule) 
+	cellRule = netParams.importCellParams(label='PYR_Traub_rule', conds= {'cellType': 'PYR', 'cellModel': 'Traub'}, 
+		fileName='pyr3_traub.hoc', cellName='pyr3')
+	somaSec = cellRule['secLists']['Soma'][0] 
+	cellRule['secs'][somaSec]['spikeGenLoc'] = 0.5
 
 
 .. _import_Mainen:
@@ -140,9 +122,8 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showModel.cshtml?model=2488 (
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Mainen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Mainen'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule,fileName='mainen.py', cellName='PYR2')
-	netParams['cellParams'].append(cellRule)  
+	netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'cellModel': 'Mainen'}, 
+		fileName='mainen.py', cellName='PYR2')
 
 
 .. _import_Friesen:
@@ -163,11 +144,9 @@ Friesen model
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Friesen_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'Friesen'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='friesen.py', cellName='MakeRSFCELL')
+	cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
+		fileName='friesen.py', cellName='MakeRSFCELL')
 	cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
-	netParams['cellParams'].append(cellRule)  
-
 
 .. _import_Izhi03a:
 
@@ -184,10 +163,9 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Izhi03a_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2003a'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+	cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
+		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 	cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
-	netParams['cellParams'].append(cellRule)  
 
 
 .. _import_Izhi03b:
@@ -205,9 +183,8 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Izhi03b_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2003b'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='izhi2003Wrapper.py', cellName='IzhiCell', cellArgs={'type':'tonic spiking'})
-	netParams['cellParams'].append(cellRule) 
+	netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003b'},
+		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
 
 
 .. _import_Izhi07a:
@@ -225,11 +202,10 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Izhi07a_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007a'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell', cellArgs={'type':'RS', 'host':'dummy'})
+	cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007a'}, 
+		fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
 	cellRule['secs']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
-	cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synaptic mechanisms
-	netParams['cellParams'].append(cellRule) 
+	cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 
 
 .. _import_Izhi07b:
@@ -247,10 +223,8 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = {'label': 'PYR_Izhi07b_rule', 'conds': {'cellType': 'PYR', 'cellModel':'Izhi2007b'}} 	# cell rule dict
-	utils.importCell(cellRule=cellRule, fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
-	netParams['cellParams'].append(cellRule)  	
-
+	netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007b'},
+		fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
 
 
 The full code to import all cell models above and create a network with them is available here: :download:`tut_import.py <code/tut_import.py>`.

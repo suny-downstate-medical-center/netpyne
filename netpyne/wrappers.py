@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
-'createAndExportNeuroML2'])  # wrappers
+'createExportNeuroML2'])  # wrappers
 
 import sim
 
@@ -117,7 +117,7 @@ def loadSimulateAnalyze (filename, output=False):
 ###############################################################################
 # Wrapper to create and export network to NeuroML2
 ###############################################################################
-def createAndExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
+def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
     ''' Sequence of commands to create and export network to NeuroML2 '''
     import __main__ as top
     if not netParams: netParams = top.netParams

@@ -824,7 +824,7 @@ The figure show usage examples for the different analysis functions:
 	:align: center
 
 
-:ref:`network_methods`
+.. _network_methods:
 
 Network class methods
 ^^^^^^^^^^^^^^^^^^^^^^^

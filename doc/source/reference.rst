@@ -882,7 +882,7 @@ Methods to modify network
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-	e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]} targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+	e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[stim property] (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
 

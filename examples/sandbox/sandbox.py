@@ -231,12 +231,12 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # creat
 # # MODIFY and RUN SIM
 # ###############################################################################
 
-# # sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
-# #                     'secs': {'soma': {'geom': {'L': 100}}}})
+# sim.net.modifyCells({'conds': {'label': 'PYR2sec'}, 
+#                     'secs': {'soma': {'geom': {'L': 100}}}})
 
-# # sim.net.modifyConns({'conds': {'label': 'PYR->PYR', 'weight': [0,0.001], 'loc': 0.5},
-# #                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
-# #                     'weight': 0.01})
+# sim.net.modifyConns({'conds': {'label': 'PYR->PYR', 'weight': [0,0.001], 'loc': 0.5},
+#                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
+#                     'weight': 0.01})
 
 # sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
 #                     'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},

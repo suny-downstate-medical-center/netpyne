@@ -528,8 +528,6 @@ Now we can map or apply any of the above stimulation sources to any subset of ce
 
 Running the above network with different types of stimulation should produce the following raster::
 
-
-
 The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
 .. image:: figs/tut6.png

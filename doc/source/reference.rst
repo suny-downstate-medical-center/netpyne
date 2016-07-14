@@ -866,7 +866,7 @@ Methods to modify network
 
 	- 'postConds': dictionary of conditions to select postsynaptic cells that will contain the connections to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]} targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- 'weight' | 'threshold': New value for connection weight or threshold.
 
@@ -884,7 +884,7 @@ Methods to modify network
 
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
-	- '[stim property] (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
+	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
 
 
 Population class methods 

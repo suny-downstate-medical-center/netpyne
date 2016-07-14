@@ -643,6 +643,9 @@ class Network (object):
         for cell in self.cells:
             cell.modify(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyCellsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
 
@@ -660,6 +663,9 @@ class Network (object):
         for cell in self.cells:
             cell.modifyConns(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyConnsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
 
@@ -675,6 +681,9 @@ class Network (object):
 
         for cell in self.cells:
             cell.modifyStims(params)
+
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyStimsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])

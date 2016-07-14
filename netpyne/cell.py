@@ -134,7 +134,6 @@ class Cell (object):
             self.secLists.update(prop['secLists'])  # diction of section lists
 
 
-
     def initV (self): 
         for sec in self.secs.values():
             if 'vinit' in sec:

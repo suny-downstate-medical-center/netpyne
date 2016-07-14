@@ -8,10 +8,10 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
-__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', 'gatherData'])  # run and gather
+__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export/import
-__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -728,12 +728,67 @@ def gatherData ():
         else:
             sim.connsPerCell = 0
         if sim.cfg.timing: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
-        print('  Simulated time: %i-s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
+        print('  Simulated time: %0.1f s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
 
         return sim.allSimData
 
+
+###############################################################################
+### Calculate and print avg pop rates
+###############################################################################
+def popAvgRates(trange = None, show = True):
+    if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
+        print 'Error: sim.allSimData not available; please call sim.gatherData()'
+        return None
+
+    spkts = sim.allSimData['spkt']
+    spkids = sim.allSimData['spkid']
+
+    if not trange: 
+        trange = [0, sim.cfg.duration]
+    else:
+        spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]])
+
+    avgRates = {}
+    for pop in sim.net.allPops:
+        numCells = float(len(sim.net.allPops[pop]['cellGids']))
+        if numCells > 0:
+            tsecs = float((trange[1]-trange[0]))/1000.0
+            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
+            print '%s : %.3f Hz'%(pop, avgRates[pop])
+    return avgRates
+
+
+
+###############################################################################
+### Gather data from nodes
+###############################################################################
+def _gatherCells ():
+    ## Pack data from all hosts
+    if sim.rank==0: 
+        print('\nUpdating sim.net.allCells...')
+
+    if sim.nhosts > 1:  # only gather if >1 nodes 
+        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells]} 
+        data = [None]*sim.nhosts
+        data[0] = {}
+        for k,v in nodeData.iteritems():
+            data[0][k] = v 
+        gather = sim.pc.py_alltoall(data)
+        sim.pc.barrier()  
+        if sim.rank == 0:
+            allCells = []
+         
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+            for node in gather:  # concatenate data from each node
+                allCells.extend(node['netCells'])  # extend allCells list
+            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
+         
+    else:  # if single node, save data in same format as for multiple nodes for consistency
+        sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+      
 
 ###############################################################################
 ### Save data

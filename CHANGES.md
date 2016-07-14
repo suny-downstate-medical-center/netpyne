@@ -1,3 +1,9 @@
+## Version 0.5.4
+
+- Functions to modify cells, conns or stims also update sim.allCells (issue #59)
+
+- Added sim.popAvgRates() to calculate and optionally print population avg rates 
+
 ## Version 0.5.3
 
 - Functions to modify parameters of cells, conns and stims in an instantiated network (issue #59)

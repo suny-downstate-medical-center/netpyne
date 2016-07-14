@@ -824,6 +824,8 @@ The figure show usage examples for the different analysis functions:
 	:align: center
 
 
+:ref:`network_methods`
+
 Network class methods
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -834,8 +836,6 @@ Methods to set up network
 * **net.createCells()**
 * **net.connectCells()**
 
-
-:ref:`net_modify_methods`
 
 Methods to modify network
 

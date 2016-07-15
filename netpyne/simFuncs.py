@@ -370,12 +370,12 @@ def replaceFuncObj (obj):
 def replaceNoneObj (obj):
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
-            if type(item) in [list, dict]:#, tuple]:
+            if type(item) in [list, dict, Dict, ODict]:
                 replaceNoneObj(item)
 
-    elif type(obj) == dict or type(obj) == ODict:
+    elif type(obj) in [dict, Dict, ODict]:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, ODict]:
+            if type(val) in [list, dict, Dict, ODict]:
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
@@ -506,6 +506,7 @@ def setupRecording ():
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
+        print cellsRecord
 
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell

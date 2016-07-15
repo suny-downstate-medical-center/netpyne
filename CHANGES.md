@@ -1,12 +1,12 @@
 ## Version 0.5.4
 
-- Support for dot notation to access dictionaries via new inherited classes Dict() and ODict() (issue #123)
+- Access to nested dictionaries via dot notation (secs.soma.geom) using new inherited classes Dict() and ODict() (issue #123)
 
-- 'hSec' replaced with 'hSection'
-
-- Functions to modify cells, conns or stims also update sim.allCells (issue #59)
+- 'hSection' replaced with 'hSec' 
 
 - Added sim.popAvgRates() to calculate and optionally print population avg rates 
+
+- Functions to modify cells, conns or stims also update sim.allCells (issue #59)
 
 - Fixed bug so can modify funcs now accept lists of strings (issue #59)
 

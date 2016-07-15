@@ -207,15 +207,15 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'mpiHHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = 1 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveJson = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveMat = 0 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveJson = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveDpk = 0 # save to a .dpk pickled file
 simConfig.saveHDF5 = 0
 simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True)
-simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
+#simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

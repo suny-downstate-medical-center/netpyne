@@ -934,9 +934,9 @@ In order to allow dot notation (a.b.c) to access NetPyNE structures we have adde
 
 	* Missing elements are automatically added (note this can have undesired effects if you use the wrong keys): ``a=Dict(); a.b.c.d.e=1``
 
-	* The constructor allows a dict (including nested dicts) and/or kwargs: ``a=Dict(b=1, c=2)`` or ``a=Dict({'a': 1, 'b': {'c': 2}})
+	* The constructor allows a dict (including nested dicts) and/or kwargs: ``a=Dict(b=1, c=2)`` or ``a=Dict({'a': 1, 'b': {'c': 2}})`
 
-	* The method .todict() returns the dict version of Dict: ``a=Dict({'b':1}); a_dict=a.todict()`
+	* The method .todict() returns the dict version of Dict: ``a=Dict({'b':1}); a_dict=a.todict()``
 
 	* Serialization via __getstate__() method (eg. when pickled) returns a normal dict (using .todict() method).
 

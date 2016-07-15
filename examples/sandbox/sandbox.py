@@ -15,6 +15,7 @@ Contributors: salvadordura@gmail.com
 ###############################################################################
 
 from netpyne import specs,sim
+from netpyne.specs import Dict
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 simConfig = specs.SimConfig()  # dictionary to store sets of simulation configurations
@@ -60,7 +61,7 @@ dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                               
 cellParams = {'conds': {'cellType': 'PYR2sec'},  
             'secs': {'soma': soma, 'dend': dend}, 
             'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
-netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
+netParams.addCellParams('PYR2sec', Dict(cellParams))  # add dict to list of cell properties
 
 ### HH
 # cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict

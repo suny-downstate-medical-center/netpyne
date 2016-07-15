@@ -663,7 +663,7 @@ def gatherData ():
 
             # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
             for node in gather:  # concatenate data from each node
-                allCells.extend(node['netCells'])  # extend allCells list
+                allCells.extend(Dict(node['netCells']))  # extend allCells list
                 for popLabel,popCellGids in node['netPopsCellGids'].iteritems():
                     allPopsCellGids[popLabel].extend(popCellGids)
                     
@@ -689,7 +689,7 @@ def gatherData ():
             sim.net.allPops = allPops
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
-        sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+        sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]
         sim.net.allPops = ODict()
         for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         sim.allSimData = Dict() 

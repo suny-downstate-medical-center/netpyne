@@ -303,7 +303,7 @@ class Cell (object):
                     sec['synMechs'] = []
                 synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if synMech not in section, then create
-                    synMech = {'label': synLabel, 'loc': loc}
+                    synMech = Dict({'label': synLabel, 'loc': loc})
                     sec['synMechs'].append(synMech)
 
             if sim.cfg.createNEURONObj:
@@ -521,7 +521,7 @@ class Cell (object):
 
     def addNetStim (self, params, stimContainer=None):
         if not stimContainer:
-            self.stims.append(params.copy())  # add new stim to Cell object
+            self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
         
         rand = h.Random()
@@ -607,7 +607,7 @@ class Cell (object):
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
-            self.stims.append(params) # add to python structure
+            self.stims.append(Dict(params)) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))

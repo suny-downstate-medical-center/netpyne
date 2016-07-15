@@ -19,3 +19,9 @@ umac
 /examples/HHTut/*.hoc
 /examples/HHTut/LEMS*.xml
 /examples/NeuroMLImport/*.dat
+/examples/M1/*.nml
+/examples/M1/*.svg
+/examples/sandbox/mpiHHTut.pkl
+/examples/sandbox/sandbox.net.nml
+/examples/sandbox/sandbox.net.pov
+/examples/sandbox/sandbox.net.svg

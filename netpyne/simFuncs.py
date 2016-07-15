@@ -876,7 +876,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     popPost, indexPost = gids_vs_pop_indices[cell.gid]
-                    print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
+                    #print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
                     for conn in cell.conns:
                         preGid = conn['preGid']
                         if not preGid == 'NetStim':
@@ -888,7 +888,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
                             synMech = conn['synMech']
                             threshold = conn['threshold']
 
-                            print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            #print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
 
                             projection_info = (popPre,popPost,synMech)
                             if not projection_info in nn.keys():
@@ -896,7 +896,8 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
                             nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
                         else:
-                            print("      Conn NetStim->%s[%s] with %s"%(popPost, indexPost, '??'))
+                            #print("      Conn NetStim->%s[%s] with %s"%(popPost, indexPost, '??'))
+                            pass
                                 
     return nn                 
 
@@ -914,7 +915,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     pop, index = gids_vs_pop_indices[cell.gid]
-                    print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
+                    #print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
                     for stim in cell.stims:
                         ref = stim['source']
                         rate = stim['rate']
@@ -940,7 +941,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
                         stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
 
-    print(stims)
+    #print(stims)
     return stims
 
 
@@ -1080,7 +1081,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
 
             count = 0
             for stim in stims[stim_info]:
-                print("  Adding stim: %s"%stim)
+                #print("  Adding stim: %s"%stim)
 
                 connection = neuroml.ConnectionWD(id=count, \
                         pre_cell_id="../%s[%i]"%(stim_pop.id, count), \
@@ -1100,12 +1101,6 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
 
     writers.NeuroMLWriter.write(nml_doc, nml_file_name)
 
-    '''
-    from pyneuroml.lems import LEMSSimulation
-
-    ls = LEMSSimulation('Sim_%s'%reference, sim.cfg.dt,sim.cfg.duration,reference)
-
-    ls.include_neuroml2_file(nml_file_name)'''
 
     import pyneuroml.lems
 

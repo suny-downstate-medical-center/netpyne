@@ -968,7 +968,11 @@ Examples of accessing NetPyNE structures via dot notation:
 
 	* ``sim.net.allPops.Mpop.cellGids``
 
-	* 
+	* ``sim.allSimData.spkt``
+
+	* ``sim.allSimData.stims.cell_31.Input_4``
+
+	* ``sim.allSimData.V_soma.cell_1``
 
 
 

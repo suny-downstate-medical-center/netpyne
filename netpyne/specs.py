@@ -14,6 +14,8 @@ from netpyne import utils
 
 class Dict(dict):
 
+    __slots__ = []
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]

@@ -662,7 +662,7 @@ def gatherData ():
 
             # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
             for node in gather:  # concatenate data from each node
-                allCells.extend(Dict(node['netCells']))  # extend allCells list
+                allCells.extend(node['netCells'])  # extend allCells list
                 for popLabel,popCellGids in node['netPopsCellGids'].iteritems():
                     allPopsCellGids[popLabel].extend(popCellGids)
                     

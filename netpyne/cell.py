@@ -157,7 +157,7 @@ class Cell (object):
             
             # add distributed mechanisms 
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].iteritems():  
+                for mechName,mechParams in sectParams['mechs'].iteritems(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
                     sec['hSec'].insert(mechName)
@@ -222,7 +222,7 @@ class Cell (object):
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSec'](stimParams['loc']))
-                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
+                stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['label', 'type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
                         if stimPropName == 'amp': 

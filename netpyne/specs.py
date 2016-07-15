@@ -110,6 +110,9 @@ class Dict(dict):
     def __getstate__ (self):
         return self.todict()
 
+    def __setstate__ (self, d):
+        self = self.fromdict(d)
+
 
 ###############################################################################
 # ODict class (allows dot notation for ordered dicts)
@@ -117,8 +120,8 @@ class Dict(dict):
 
 class ODict(OrderedDict):
    
-    def __init__(self):
-        super(ODict, self).__init__()
+    def __init__(self, *args, **kwargs):
+        super(ODict, self).__init__(*args, **kwargs)
 
     def __contains__(self, k):
         try:
@@ -167,13 +170,13 @@ class ODict(OrderedDict):
         else:
             object.__delattr__(self, k)
     
-    # def todict(self):
-    #     return self.undotify(self)
+    def toOrderedDict(self):
+        return self.undotify(self)
 
-    # def fromdict(self, d):
-    #     d = self.dotify(d) 
-    #     for k,v in d.iteritems():
-    #         self[k] = v
+    def fromOrderedDict(self, d):
+        d = self.dotify(d) 
+        for k,v in d.iteritems():
+            self[k] = v
     
     def __repr__(self):
         keys = self.keys()
@@ -181,29 +184,36 @@ class ODict(OrderedDict):
         return '{%s}' % (args)
     
 
-    # def dotify(self, x):
-    #     if isinstance(x, dict):
-    #         return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
-    #     elif isinstance(x, (list, tuple)):
-    #         return type(x)( self.dotify(v) for v in x )
-    #     else:
-    #         return x
+    def dotify(self, x):
+        if isinstance(x, OrderedDict):
+            return ODict( (k, self.dotify(v)) for k,v in x.iteritems() )
+        elif isinstance(x, dict):
+            return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
+        elif isinstance(x, (list, tuple)):
+            return type(x)( self.dotify(v) for v in x )
+        else:
+            return x
 
-    # def undotify(self, x): 
-    #     if isinstance(x, dict):
-    #         return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
-    #     elif isinstance(x, (list, tuple)):
-    #         return type(x)( self.undotify(v) for v in x )
-    #     else:
-    #         return x
+    def undotify(self, x):  
+        if isinstance(x, OrderedDict):
+            return OrderedDict( (k, self.undotify(v)) for k,v in x.iteritems() ) 
+        elif isinstance(x, dict):
+            return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
+        elif isinstance(x, (list, tuple)):
+            return type(x)( self.undotify(v) for v in x )
+        else:
+            return x
 
     # def __missing__(self, key):
     #     if not key.startswith('_ipython'):
     #         value = self[key] = Dict()
     #         return value
 
-    # def __getstate__ (self):
-    #     return self.todict(self)
+    def __getstate__ (self):
+        return self.toOrderedDict()
+
+    def __setstate__ (self, d):
+        self = self.fromOrderedDict(d)
 
 
 ###############################################################################

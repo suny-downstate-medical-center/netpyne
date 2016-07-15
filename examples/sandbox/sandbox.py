@@ -207,11 +207,11 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'mpiHHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = 1 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveJson = 1 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveMat = 1 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveJson = 0 # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = 0 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveDpk = 0 # save to a .dpk pickled file
 simConfig.saveHDF5 = 0
-simConfig.saveCSV = 1
+simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True)
@@ -227,8 +227,9 @@ simConfig.addAnalysis('plotRaster', True)
 ###############################################################################
 
 #sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
-sim.createSimulate(netParams = netParams, simConfig = simConfig)  # create and simulate network
-sim.saveData()
+#sim.createSimulate(netParams = netParams, simConfig = simConfig)  # create and simulate network
+#sim.saveData()
+sim.loadSimulateAnalyze('mpiHHTut.pkl')
 #sim.analysis.plotData()
 # sim.initialize(netParams = netParams, simConfig = simConfig)
 # sim.net.createPops()

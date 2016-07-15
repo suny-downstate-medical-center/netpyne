@@ -506,7 +506,6 @@ def setupRecording ():
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
-        print cellsRecord
 
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
@@ -806,9 +805,10 @@ def saveData (include = None):
         if 'netCells' in include: net['cells'] = sim.net.allCells
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
-        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
+        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg
         if 'simData' in include: dataSave['simData'] = sim.allSimData
 
+        
         if dataSave:
             if sim.cfg.timestampFilename: 
                 timestamp = time()

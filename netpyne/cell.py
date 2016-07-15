@@ -599,7 +599,7 @@ class Cell (object):
         else:
             if sim.cfg.verbose: print('Adding exotic stim (NeuroML2 based?): %s'% params['type'])   
             stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
-            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):

@@ -10,7 +10,8 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['exportNeuroML2'])  # export/import
+__all__.extend(['exportNeuroML2'])  # export
+__all__.extend(['importNeuroML2'])  # import
 __all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
@@ -1125,8 +1126,63 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                                save_all_segments = False,
                                seed=1234)
 
+###############################################################################
+# Import network from NeuroML2
+###############################################################################
+def importNeuroML2(fileName, simConfig):
+    
+    from netpyne.utils import NetPyNEBuilder
+    
+    netParams = specs.NetParams()
 
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    
+    print("Importing NeuroML 2 network from: %s"%fileName)
 
+    if fileName.endswith(".nml"):
+        
+        import logging
+        logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
 
+        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
+        nmlHandler = NetPyNEBuilder()     
+
+        currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+        currParser.parse(fileName)
+        
+        for popParam in nmlHandler.popParams.keys():
+            netParams.addPopParams(popParam, nmlHandler.popParams[popParam])
+            
+        for cellParam in nmlHandler.cellParams.keys():
+            netParams.addCellParams(cellParam, nmlHandler.cellParams[cellParam])
+            
+        
+        #netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+        
+        for stimName in nmlHandler.stimSources.keys():
+            netParams.addStimSourceParams(stimName,nmlHandler.stimSources[stimName])
+            netParams.addStimTargetParams(stimName,nmlHandler.stimLists[stimName])
+            
+            #netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
+            
+        
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+    
+    #pp.pprint(netParams)
+    #pp.pprint(simConfig)
+
+    sim.net.createPops()  
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    sim.runSim()                      # run parallel Neuron simulation  
+    sim.gatherData()                  # gather spiking data and cell info from each node
+    sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+    sim.analysis.plotData()               # plot spike raster
+    h('forall psection()')
+    
+    
 

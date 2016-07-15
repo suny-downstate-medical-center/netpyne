@@ -18,3 +18,4 @@ umac
 /examples/HHTut/*.dat
 /examples/HHTut/*.hoc
 /examples/HHTut/LEMS*.xml
+/examples/NeuroMLImport/*.dat

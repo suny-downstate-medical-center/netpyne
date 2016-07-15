@@ -337,7 +337,7 @@ from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
 class NetPyNEBuilder(DefaultNetworkHandler):
     
-    cellParams = []
+    cellParams = {}
     popParams = {}
     projections = {}
     
@@ -359,13 +359,13 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         
         self.popParams[population_id] = popInfo
         
-        cellRule = {'label': component, 'conditions': {'cellType': component, 'cellModel': component},  'sections': {}}
+        cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
 
         soma = {'geom': {}, 'pointps':{}}  # soma properties
         soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
         soma['pointps'][component] = {'mod':component}
-        cellRule['sections'] = {'soma': soma}  # add sections to dict
-        self.cellParams.append(cellRule)
+        cellRule['secs'] = {'soma': soma}  # add sections to dict
+        self.cellParams[component] = cellRule
             
     
     #
@@ -389,7 +389,7 @@ class NetPyNEBuilder(DefaultNetworkHandler):
                     'source': inputListId, 
                     'sec':'soma', 
                     'loc': 0.5, 
-                    'conditions': {'popLabel':population_id, 'cellList': []}}
+                    'conds': {'popLabel':population_id, 'cellList': []}}
         
    
     #
@@ -403,56 +403,5 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         if fract!=0.5:
             raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
         
-        self.stimLists[inputListId]['conditions']['cellList'].append(cellId)
+        self.stimLists[inputListId]['conds']['cellList'].append(cellId)
         
-        
-
-def importNeuroML2Network(fileName, simConfig):
-    
-    netParams = {}
-
-    import pprint
-
-    pp = pprint.PrettyPrinter(indent=4)
-    
-    print("Importing NeuroML 2 network from: %s"%fileName)
-
-    if fileName.endswith(".nml"):
-        
-        import logging
-        logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
-
-        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
-
-        nmlHandler = NetPyNEBuilder()     
-
-        currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
-
-        currParser.parse(fileName)
-        
-        netParams['popParams'] = nmlHandler.popParams.values()
-        netParams['cellParams'] = nmlHandler.cellParams
-        
-        netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-        
-        for stimName in nmlHandler.stimSources.keys():
-            netParams['stimParams']['sourceList'].append(nmlHandler.stimSources[stimName])
-            netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
-            
-        
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    
-    pp.pprint(netParams)
-    pp.pprint(simConfig)
-
-    sim.net.createPops()  
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    sim.runSim()                      # run parallel Neuron simulation  
-    sim.gatherData()                  # gather spiking data and cell info from each node
-    sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
-    sim.analysis.plotData()               # plot spike raster
-    h('forall psection()')
-    
-    

@@ -969,7 +969,7 @@ Cell class
 
 - secs (dict)
 	- 'secName' (e.g. 'soma') (dict)
-		- 'hSection' (NEURON object)
+		- 'hSec' (NEURON object)
 		- 'geom' (dict)
 			- 'L'
 			- 'diam'

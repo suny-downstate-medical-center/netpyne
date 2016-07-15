@@ -143,7 +143,7 @@ class Cell (object):
     def initV (self): 
         for sec in self.secs.values():
             if 'vinit' in sec:
-                sec['hSection'].v = sec['vinit']
+                sec['hSec'].v = sec['vinit']
 
     def createNEURONObj (self, prop):
         # set params for all sections
@@ -151,8 +151,8 @@ class Cell (object):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if not self.secs[sectName].get('hSection'): 
-                self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
+            if not self.secs[sectName].get('hSec'): 
+                self.secs[sectName]['hSec'] = h.Section(name=sectName)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
             
             # add distributed mechanisms 
@@ -160,10 +160,10 @@ class Cell (object):
                 for mechName,mechParams in sectParams['mechs'].iteritems():  
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
-                    sec['hSection'].insert(mechName)
+                    sec['hSec'].insert(mechName)
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
-                        for iseg,seg in enumerate(sec['hSection']):  # set mech params for each segment
+                        for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
@@ -182,7 +182,7 @@ class Cell (object):
                         sec['pointps'][pointpName] = Dict() 
                     pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSection'])  # create h Pointp object (eg. h.Izhi2007b)
+                    sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
@@ -191,11 +191,11 @@ class Cell (object):
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec['hSection'], geomParamName, geomParamValue)
+                        setattr(sec['hSec'], geomParamName, geomParamValue)
 
                 # set 3d geometry
                 if 'pt3d' in sectParams['geom']:  
-                    h.pt3dclear(sec=sec['hSection'])
+                    h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
                     if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
                         y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
@@ -203,14 +203,14 @@ class Cell (object):
                         y = self.tags['y']
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
-                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSection'])
+                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
 
         # set topology 
         for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
-                    sec['hSection'].connect(self.secs[sectParams['topol']['parentSec']]['hSection'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+                    sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -221,7 +221,7 @@ class Cell (object):
                 self.addNetStim (stimParams, stimContainer=stimParams)
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
-                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSection'](stimParams['loc']))
+                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSec'](stimParams['loc']))
                 stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
@@ -282,10 +282,10 @@ class Cell (object):
             if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                 for pointpName, pointpParams in sec['pointps'].iteritems():
                     if 'vref' in pointpParams:
-                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSection'])
+                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
                         break
             if not nc:  # if still haven't created netcon  
-                nc = h.NetCon(sec['hSection'](loc)._ref_v, None, sec=sec['hSection'])
+                nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
             nc.threshold = threshold
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
             sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
@@ -317,7 +317,7 @@ class Cell (object):
                     sec['synMechs'].append(synMech)
                 if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
-                    synMech['hSyn'] = synObj(loc, sec = sec['hSection'])  # create h Syn object (eg. h.Exp2Syn)
+                    synMech['hSyn'] = synObj(loc, sec = sec['hSec'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
                         if synParamName not in ['label', 'mod']:
                             setattr(synMech['hSyn'], synParamName, synParamValue)
@@ -592,7 +592,7 @@ class Cell (object):
        
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
-            stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
+            stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
@@ -718,7 +718,7 @@ class Cell (object):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        secLengths = [self.secs[s]['hSection'].L for s in secList]
+        secLengths = [self.secs[s]['hSec'].L for s in secList]
         totLength = sum(secLengths)
         cumLengths = list(cumsum(secLengths))
         absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
@@ -732,7 +732,7 @@ class Cell (object):
         plasticity = params.get('plasticity')
         if plasticity and sim.cfg.createNEURONObj:
             try:
-                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hSection'])  # create plasticity mechanism (eg. h.STDP)
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hSec'])  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].iteritems():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
                 if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
@@ -756,13 +756,13 @@ class Cell (object):
                 ptr = None
                 if 'loc' in params:
                     if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                        ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
                     elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                         sec = self.secs[params['sec']]
                         synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
                         ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
                     else:  # eg. soma(0.5)._ref_v
-                        ptr = self.secs[params['sec']]['hSection'](params['loc']).__getattribute__('_ref_'+params['var'])
+                        ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__('_ref_'+params['var'])
                 else:
                     if 'pointp' in params: # eg. soma.izh._ref_u
                         if params['pointp'] in self.secs[params['sec']]['pointps']:

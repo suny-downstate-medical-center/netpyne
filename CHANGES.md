@@ -10,6 +10,8 @@
 
 - Fixed bug so can modify funcs now accept lists of strings (issue #59)
 
+- Fixed bug when recording traces of relative cell indices of populations across multiple nodes.
+
 ## Version 0.5.3
 
 - Functions to modify parameters of cells, conns and stims in an instantiated network (issue #59)

@@ -502,7 +502,7 @@ def setupRecording ():
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = getCellsList(sim.cfg.analysis['plotTraces']['include'])
         else:
-            cellsPlot = [] 
+            cellsPlot = []
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
@@ -519,34 +519,35 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList(include):
-    allCells = sim.net.cells
+
+    if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
+        allCellTags = sim._gatherAllCellTags()  
+    else:
+        allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
+
     cellGids = []
     cells = []
     for condition in include:
-        if condition == 'all':  # all cells + Netstims 
-            cellGids = [c.gid for c in allCells]
-            cells = list(allCells)
+        if condition in ['all', 'allCells']:  # all cells + Netstims 
+            cells = list(sim.net.cells)
             return cells
-
-        elif condition == 'allCells':  # all cells 
-            cellGids = [c.gid for c in allCells]
-            cells = list(allCells)
 
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
         elif isinstance(condition, str):  # entire pop
-            cellGids.extend([c.gid for c in allCells if c.tags['popLabel']==condition])
+            cellGids.extend(list(sim.net.pops[condition].cellGids)) 
+            #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         
         elif isinstance(condition, tuple):  # subset of a pop with relative indices
-            cellsPop = [c.gid for c in allCells if c.tags['popLabel']==condition[0]]
+            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = [cell for cell in allCells if cell.gid in cellGids]
+    cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
     return cells
 
 

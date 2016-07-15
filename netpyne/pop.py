@@ -27,7 +27,6 @@ class Pop (object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()

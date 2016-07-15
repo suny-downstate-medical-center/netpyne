@@ -12,7 +12,7 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
-from collections import OrderedDict
+from specs import ODict
 from neuron import h  # import NEURON
 import sim
 
@@ -32,7 +32,7 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
-        self.pops = OrderedDict()  # list to store populations ('Pop' objects)
+        self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
@@ -197,7 +197,7 @@ class Network (object):
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
 
-        for subConnParamTemp in self.params.subConnParams:  # for each conn rule or parameter set
+        for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
@@ -206,11 +206,15 @@ class Network (object):
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
                 for postCellGid in postCellsTags:  # for each postsyn cell
+                    print postCellGid, self.lid2gid
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+                        
                         print [(conn['sec'],conn['loc']) for conn in conns]
+
                         # different case if has vs doesn't have 3d points
+
 
         # find postsyn cells
         # for each postsyn cell:
@@ -643,6 +647,9 @@ class Network (object):
         for cell in self.cells:
             cell.modify(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyCellsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
 
@@ -660,6 +667,9 @@ class Network (object):
         for cell in self.cells:
             cell.modifyConns(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyConnsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
 
@@ -675,6 +685,9 @@ class Network (object):
 
         for cell in self.cells:
             cell.modifyStims(params)
+
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyStimsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])

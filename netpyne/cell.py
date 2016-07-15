@@ -592,6 +592,25 @@ class Cell (object):
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
+
+            if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
+                
+        else:
+            if sim.cfg.verbose: print('Adding exotic stim (NeuroML2 based?): %s'% params['type'])   
+            stim = getattr(h, params['type'])(sec['hSection'](params['loc']))
+            stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'label', 'loc', 'sec']}
+            stringParams = ''
+            for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
+                if isinstance(stimParamValue, list):
+                    print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
+                    pass
+                    #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                else: 
+                    setattr(stim, stimParamName, stimParamValue)
+                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+            self.stims.append(params) # add to python structure
+            self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 

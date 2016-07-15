@@ -32,7 +32,7 @@ import sim, specs
 ###############################################################################
 def initialize (netParams = {}, simConfig = {}, net = None):
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
-        print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
+        print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
     sim.simData = {}  # used to store output simulation data (spikes etc)
@@ -108,11 +108,11 @@ def createParallelContext ():
 ###############################################################################
 def loadNetParams (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading netParams...'
+    print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
         setNetParams(data['net']['params'])
     else:
-        print 'netParams not found in file %s'%(filename)
+        print('netParams not found in file %s'%(filename))
 
     pass
 
@@ -124,7 +124,7 @@ def loadNet (filename, data=None, instantiate=True):
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         sim.timing('start', 'loadNetTime')
-        print 'Loading net...'
+        print('Loading net...')
         sim.net.allPops = data['net']['pops']
         sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -140,11 +140,11 @@ def loadNet (filename, data=None, instantiate=True):
                     cell.conns = cellLoad['conns']
                     cell.stims = cellLoad['stims']
                     sim.net.cells.append(cell)
-                print '  Created %d cells' % (len(data['net']['cells']))
+                print('  Created %d cells' % (len(data['net']['cells'])))
 
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:  
-                    if sim.cfg.verbose: print "  Adding NEURON objects..."
+                    if sim.cfg.verbose: print("  Adding NEURON objects...")
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
                         prop = {'secs': cell.secs}
@@ -155,12 +155,12 @@ def loadNet (filename, data=None, instantiate=True):
                         cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
                         cell.addConnsNEURONObj()
 
-                    print '  Added NEURON objects to %d cells' % (len(sim.net.cells))
+                    print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
 
             if sim.cfg.timing: sim.timing('stop', 'loadNetTime')
             print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
-        print '  netCells and/or netPops not found in file %s'%(filename)
+        print('  netCells and/or netPops not found in file %s'%(filename))
 
 
 ###############################################################################
@@ -168,11 +168,11 @@ def loadNet (filename, data=None, instantiate=True):
 ###############################################################################
 def loadSimCfg (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading simConfig...'
+    print('Loading simConfig...')
     if 'simConfig' in data:
         setSimCfg(data['simConfig'])
     else:
-        print '  simConfig not found in file %s'%(filename)
+        print('  simConfig not found in file %s'%(filename))
 
     pass
 
@@ -182,11 +182,11 @@ def loadSimCfg (filename, data=None):
 ###############################################################################
 def loadSimData (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading simData...'
+    print('Loading simData...')
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
-        print '  simData not found in file %s'%(filename)
+        print('  simData not found in file %s'%(filename))
 
     pass
 
@@ -273,7 +273,7 @@ def _loadFile (filename):
         #             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
     else:
-        print 'Format not recognized for file %s'%(filename)
+        print('Format not recognized for file %s'%(filename))
         return 
 
     if sim.cfg.timing: sim.timing('stop', 'loadFileTime')
@@ -563,7 +563,7 @@ def runSim ():
     for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
@@ -593,7 +593,7 @@ def runSimWithIntervalFunc (interval, func):
     h.dt = sim.cfg.dt
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
@@ -823,7 +823,7 @@ def saveData (include = None):
 
                 print('Finished saving!')
         else: 
-            print 'Nothing to save'
+            print('Nothing to save')
 
 
         # Save timing
@@ -849,7 +849,7 @@ def timing (mode, processName):
 ###############################################################################
 def version():
     import netpyne 
-    print netpyne.__version__
+    print(netpyne.__version__)
 
 
 ###############################################################################
@@ -869,7 +869,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
     nn = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         print("Adding conns for: %s"%np_pop.tags)
         if not np_pop.tags['cellModel'] ==  'NetStim':
             for cell in net.cells:
@@ -907,7 +907,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
     stims = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         if not np_pop.tags['cellModel'] ==  'NetStim':
             print("Adding stims for: %s"%np_pop.tags)
             for cell in net.cells:
@@ -915,7 +915,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
                     pop, index = gids_vs_pop_indices[cell.gid]
                     print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
                     for stim in cell.stims:
-                        ref = stim['label']
+                        ref = stim['source']
                         rate = stim['rate']
                         noise = stim['noise']
                         
@@ -939,7 +939,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
                         stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
 
-    print stims             
+    print(stims)
     return stims
 
 
@@ -950,11 +950,11 @@ def _export_synapses (net, nml_doc):
 
     import neuroml
 
-    for syn in net.params.synMechParams:
+    for id,syn in net.params.synMechParams.iteritems():
 
         print('Exporting details of syn: %s'%syn)
         if syn['mod'] == 'Exp2Syn':
-            syn0 = neuroml.ExpTwoSynapse(id=syn['label'], 
+            syn0 = neuroml.ExpTwoSynapse(id=id, 
                                          gbase='1uS',
                                          erev='%smV'%syn['e'],
                                          tau_rise='%sms'%syn['tau1'],
@@ -962,7 +962,7 @@ def _export_synapses (net, nml_doc):
 
             nml_doc.exp_two_synapses.append(syn0)
         elif syn['mod'] == 'ExpSyn':
-            syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
+            syn0 = neuroml.ExpOneSynapse(id=id, 
                                          gbase='1uS',
                                          erev='%smV'%syn['e'],
                                          tau_decay='%sms'%syn['tau'])
@@ -995,7 +995,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
     gids_vs_pop_indices ={}
     populations_vs_components = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         index = 0
         print("Adding: %s"%np_pop.tags)
         positioned = len(np_pop.cellGids)>0

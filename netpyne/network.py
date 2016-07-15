@@ -197,7 +197,7 @@ class Network (object):
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
 
-        for subConnParamTemp in self.params.subConnParams:  # for each conn rule or parameter set
+        for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
@@ -206,11 +206,15 @@ class Network (object):
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
                 for postCellGid in postCellsTags:  # for each postsyn cell
+                    print postCellGid, self.lid2gid
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+                        
                         print [(conn['sec'],conn['loc']) for conn in conns]
+
                         # different case if has vs doesn't have 3d points
+
 
         # find postsyn cells
         # for each postsyn cell:

@@ -14,7 +14,7 @@ from netpyne import utils
 
 class Dict(dict):
 
-    __slots__ = []
+    __slots__ = []#'todict', 'fromdict', 'dotify', 'undotify']
 
     def __init__(*args, **kwargs):
         self = args[0]
@@ -108,7 +108,7 @@ class Dict(dict):
             return value
 
     def __getstate__ (self):
-        return self.todict(self)
+        return self.todict()
 
 
 ###############################################################################

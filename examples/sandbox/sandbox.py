@@ -43,11 +43,11 @@ netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 
 
 # Cell parameters
 ## PYR cell properties
-soma = {'geom': {}, 'mechs': {}}  # soma properties
-soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-cellParams = {'conds': {'cellType': 'PYR'},  'secs': {'soma': soma}}
-netParams.addCellParams('PYR', cellParams)  # add dict to list of cell properties
+cellParams = Dict()
+cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+cellParams.conds = {'cellType': 'PYR'}
+netParams.addCellParams('PYR', cellParams)
 
 
 ## PYR2sec cell properties
@@ -61,7 +61,7 @@ dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                               
 cellParams = {'conds': {'cellType': 'PYR2sec'},  
             'secs': {'soma': soma, 'dend': dend}, 
             'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
-netParams.addCellParams('PYR2sec', Dict(cellParams))  # add dict to list of cell properties
+netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
 
 ### HH
 # cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
@@ -228,7 +228,8 @@ simConfig.addAnalysis('plotRaster', True)
 
 #sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
 sim.createSimulate(netParams = netParams, simConfig = simConfig)  # create and simulate network
-sim.analysis.plotData()
+sim.saveData()
+#sim.analysis.plotData()
 # sim.initialize(netParams = netParams, simConfig = simConfig)
 # sim.net.createPops()
 # sim.net.createCells()

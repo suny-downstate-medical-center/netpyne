@@ -21,7 +21,6 @@ import cPickle as pk
 import hashlib 
 from numbers import Number
 from copy import copy
-#from collections import OrderedDict
 from specs import Dict, ODict
 from neuron import h, init # Import NEURON
 
@@ -302,20 +301,20 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
             if type(item) in [list]:
                 objCopy.append([])
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
-            elif type(item) in [dict]:
+            elif type(item) in [dict, Dict]:
                 objCopy.append({})
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
             else:
                 objCopy.append(item)
 
-    elif type(obj) == dict:
+    elif type(obj) in [dict, Dict]:
         if objCopy == 'ROOT':
-            objCopy = {}
+            objCopy = Dict() 
         for key,val in obj.iteritems():
             if type(val) in [list]:
                 objCopy[key] = [] 
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
-            elif type(val) in [dict]:
+            elif type(val) in [dict, Dict]:
                 objCopy[key] = {}
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
             elif key.startswith(keystart):
@@ -798,6 +797,8 @@ def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
         
+        include = ['simConfig', 'netCells'] 
+
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}

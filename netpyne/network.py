@@ -12,7 +12,6 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
-#from collections import OrderedDict
 from specs import ODict
 from neuron import h  # import NEURON
 import sim

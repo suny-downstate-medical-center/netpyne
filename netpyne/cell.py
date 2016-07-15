@@ -373,7 +373,7 @@ class Cell (object):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                self.conns.append(connParams)
+                self.conns.append(Dict(connParams))
                     
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())

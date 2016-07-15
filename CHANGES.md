@@ -1,5 +1,9 @@
 ## Version 0.5.4
 
+- Support for dot notation to access dictionaries via new inherited classes Dict() and ODict() (issue #123)
+
+- 'hSec' replaced with 'hSection'
+
 - Functions to modify cells, conns or stims also update sim.allCells (issue #59)
 
 - Added sim.popAvgRates() to calculate and optionally print population avg rates 

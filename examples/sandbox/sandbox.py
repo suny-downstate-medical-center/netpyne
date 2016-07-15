@@ -210,8 +210,8 @@ simConfig.savePickle = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveJson = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveMat = 1 # Whether or not to write spikes etc. to a .mat file
 simConfig.saveDpk = 0 # save to a .dpk pickled file
-simConfig.saveHDF5 = 1
-simConfig.saveCSV = 0
+simConfig.saveHDF5 = 0
+simConfig.saveCSV = 1
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True)

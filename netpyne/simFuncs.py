@@ -797,8 +797,6 @@ def _gatherCells ():
 def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
-        
-        include = ['simConfig', 'netCells'] 
 
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}

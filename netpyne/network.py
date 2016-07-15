@@ -12,7 +12,8 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
-from collections import OrderedDict
+#from collections import OrderedDict
+from specs import ODict
 from neuron import h  # import NEURON
 import sim
 
@@ -32,7 +33,7 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
-        self.pops = OrderedDict()  # list to store populations ('Pop' objects)
+        self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)

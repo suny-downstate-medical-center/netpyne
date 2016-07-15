@@ -6,7 +6,9 @@ Contains Cell related classes
 Contributors: salvadordura@gmail.com
 """
 
+from numbers import Number
 from neuron import h # Import NEURON
+from specs import Dict
 import sim
 
 
@@ -22,8 +24,8 @@ class Cell (object):
     def __init__ (self, gid, tags, create=True, associateGid=True):
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
-        self.secs = {}  # dict of sections
-        self.secLists = {}  # dict of sectionLists
+        self.secs = Dict()  # dict of sections
+        self.secLists = Dict()  # dict of sectionLists
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
@@ -55,10 +57,14 @@ class Cell (object):
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
                     break
-            elif isinstance(condVal, list):
+            elif isinstance(condVal, list) and isinstance(condVal[0], Number):
                 if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                     conditionsMet = 0
                     break
+            elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                if self.tags[condKey] not in condVal:
+                    conditionsMet = 0
+                    break 
             elif self.tags[condKey] != condVal: 
                 conditionsMet = 0
                 break
@@ -75,16 +81,16 @@ class Cell (object):
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
             if sectName not in self.secs:
-                self.secs[sectName] = {}  # create section dict
+                self.secs[sectName] = Dict()  # create section dict
             sec = self.secs[sectName]  # pointer to section
             
             # add distributed mechanisms 
             if 'mechs' in sectParams:
                 for mechName,mechParams in sectParams['mechs'].iteritems(): 
                     if 'mechs' not in sec:
-                        sec['mechs'] = {}
+                        sec['mechs'] = Dict()
                     if mechName not in sec['mechs']: 
-                        sec['mechs'][mechName] = {}  
+                        sec['mechs'][mechName] = Dict()  
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         sec['mechs'][mechName][mechParamName] = mechParamValue
 
@@ -93,9 +99,9 @@ class Cell (object):
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
                     #if self.tags['cellModel'] == pointpName: # only required if want to allow setting various cell models in same rule
                     if 'pointps' not in sec:
-                        sec['pointps'] = {}
+                        sec['pointps'] = Dict()
                     if pointpName not in sec['pointps']: 
-                        sec['pointps'][pointpName] = {}  
+                        sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
@@ -104,7 +110,7 @@ class Cell (object):
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
                     if 'geom' not in sec:
-                        sec['geom'] = {}
+                        sec['geom'] = Dict()
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         sec['geom'][geomParamName] = geomParamValue
 
@@ -118,7 +124,7 @@ class Cell (object):
             # add topolopgy params
             if 'topol' in sectParams:
                 if 'topol' not in sec:
-                    sec['topol'] = {}
+                    sec['topol'] = Dict()
                 for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
                     sec['topol'][topolParamName] = topolParamValue
 
@@ -144,7 +150,7 @@ class Cell (object):
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
             if sectName not in self.secs:
-                self.secs[sectName] = {}  # create sect dict if doesn't exist
+                self.secs[sectName] = Dict()  # create sect dict if doesn't exist
             if not self.secs[sectName].get('hSection'): 
                 self.secs[sectName]['hSection'] = h.Section(name=sectName)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
@@ -153,7 +159,7 @@ class Cell (object):
             if 'mechs' in sectParams:
                 for mechName,mechParams in sectParams['mechs'].iteritems():  
                     if mechName not in sec['mechs']: 
-                        sec['mechs'][mechName] = {}
+                        sec['mechs'][mechName] = Dict()
                     sec['hSection'].insert(mechName)
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
@@ -173,7 +179,7 @@ class Cell (object):
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
                     #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
                     if pointpName not in sec['pointps']:
-                        sec['pointps'][pointpName] = {} 
+                        sec['pointps'][pointpName] = Dict() 
                     pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSection'])  # create h Pointp object (eg. h.Izhi2007b)
@@ -307,7 +313,7 @@ class Cell (object):
                 if not synMech:  # if pointer not created in createPyStruct, then check 
                     synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if still doesnt exist, then create
-                    synMech = {}
+                    synMech = Dict()
                     sec['synMechs'].append(synMech)
                 if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
@@ -370,7 +376,7 @@ class Cell (object):
                 self.conns.append(connParams)
                     
             else:  # do not fill in python structure (just empty dict for NEURON obj)
-                self.conns.append({})
+                self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
@@ -416,10 +422,14 @@ class Cell (object):
                         compareTo = conn.get(condKey)
 
                     # check if conditions met
-                    if isinstance(condVal, list):
+                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
                         if compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
+                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
                     elif compareTo != condVal: 
                         conditionsMet = 0
                         break
@@ -427,10 +437,14 @@ class Cell (object):
             if conditionsMet and 'postConds' in params:
                 for (condKey,condVal) in params['postConds'].iteritems():  # check if all conditions are met
                     # check if conditions met
-                    if isinstance(condVal, list):
+                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
+                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
                     elif self.tags.get(condKey) != condVal: 
                         conditionsMet = 0
                         break
@@ -459,10 +473,14 @@ class Cell (object):
             
             for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
                 # check if conditions met
-                if isinstance(condVal, list):
+                if isinstance(condVal, list) and isinstance(condVal[0], Number):
                     if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                         conditionsMet = 0
                         break
+                elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    if self.tags[condKey] not in condVal:
+                        conditionsMet = 0
+                        break 
                 elif stim[condKey] != stim[condKey]: 
                     conditionsMet = 0
                     break
@@ -759,7 +777,7 @@ class Cell (object):
 
 
     def recordStimSpikes (self):
-        sim.simData['stims'].update({'cell_'+str(self.gid): {}})
+        sim.simData['stims'].update({'cell_'+str(self.gid): Dict()})
         for conn in self.conns:
             if conn['preGid'] == 'NetStim':
                 stimSpikeVecs = h.Vector() # initialize vector to store 

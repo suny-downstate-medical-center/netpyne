@@ -21,7 +21,8 @@ import cPickle as pk
 import hashlib 
 from numbers import Number
 from copy import copy
-from collections import OrderedDict
+#from collections import OrderedDict
+from specs import Dict, ODict
 from neuron import h, init # Import NEURON
 
 import sim, specs
@@ -35,10 +36,10 @@ def initialize (netParams = {}, simConfig = {}, net = None):
         print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
         sys.exit()
 
-    sim.simData = {}  # used to store output simulation data (spikes etc)
+    sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
-    sim.timingData = {}  # dict to store timing
+    sim.timingData = Dict()  # dict to store timing
 
     sim.createParallelContext()  # iniitalize PC, nhosts and rank
     
@@ -355,7 +356,7 @@ def replaceFuncObj (obj):
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
-            if hasattr(val,'func_name'):
+            if 'func_name' in dir(val): #hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts() 
                 #line = inspect.getsource(val)
                 #startInd = line.find('lambda')
                 #endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
@@ -373,9 +374,9 @@ def replaceNoneObj (obj):
             if type(item) in [list, dict]:#, tuple]:
                 replaceNoneObj(item)
 
-    elif type(obj) == dict or type(obj) == specs.OrderedDict:
+    elif type(obj) == dict or type(obj) == ODict:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, specs.OrderedDict]:
+            if type(val) in [list, dict, ODict]:
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
@@ -395,9 +396,9 @@ def tupleToStr (obj):
             elif type(item) == tuple:
                 obj[obj.index(item)] = str(item)
 
-    elif type(obj) == dict or type(obj) == specs.OrderedDict:
+    elif type(obj) == dict or type(obj) == ODict:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, specs.OrderedDict]:
+            if type(val) in [list, dict, ODict]:
                 tupleToStr(val)
             elif type(val) == tuple:
                 obj[key] = str(val) # also replace empty dicts with empty list
@@ -492,7 +493,7 @@ def setupRecording ():
                     break
                   
     if sim.cfg.recordStim:
-        sim.simData['stims'] = {}
+        sim.simData['stims'] = Dict()
         for cell in sim.net.cells: 
             cell.recordStimSpikes()
 
@@ -507,7 +508,7 @@ def setupRecording ():
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
 
-        for key in sim.cfg.recordTraces.keys(): sim.simData[key] = {}  # create dict to store traces
+        for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
     
     timing('stop', 'setrecordTime')
@@ -652,10 +653,10 @@ def gatherData ():
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
-            allPops = OrderedDict()
+            allPops = ODict()
             for popLabel,pop in sim.net.pops.iteritems(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
             allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
-            sim.allSimData = {} 
+            sim.allSimData = Dict()
 
             for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = {}
@@ -671,7 +672,7 @@ def gatherData ():
                         if isinstance(val,dict):                
                             for cell,val2 in val.iteritems():
                                 if isinstance(val2,dict):       
-                                    sim.allSimData[key].update({cell:{}})
+                                    sim.allSimData[key].update(Dict({cell:Dict()}))
                                     for stim,val3 in val2.iteritems():
                                         sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
                                 else:
@@ -689,17 +690,17 @@ def gatherData ():
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
-        sim.net.allPops = OrderedDict()
+        sim.net.allPops = ODict()
         for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
-        sim.allSimData = {} 
+        sim.allSimData = Dict() 
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
-                sim.allSimData[k] = {}
+                sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector 
                 if key in simDataVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):                
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):       
-                                sim.allSimData[key].update({cell:{}})
+                                sim.allSimData[key].update(Dict({cell:Dict()}))
                                 for stim,val3 in val2.iteritems():
                                     sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
                             else:
@@ -751,7 +752,7 @@ def popAvgRates(trange = None, show = True):
     else:
         spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]])
 
-    avgRates = {}
+    avgRates = Dict()
     for pop in sim.net.allPops:
         numCells = float(len(sim.net.allPops[pop]['cellGids']))
         if numCells > 0:

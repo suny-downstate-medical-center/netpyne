@@ -10,7 +10,7 @@
 
 - Fixed bug so can modify funcs now accept lists of strings (issue #59)
 
-- Fixed bug when recording traces of relative cell indices of populations across multiple nodes.
+- Fixed bug when recording traces of relative cell indices of populations across multiple nodes
 
 ## Version 0.5.3
 

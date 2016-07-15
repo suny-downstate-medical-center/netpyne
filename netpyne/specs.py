@@ -37,7 +37,7 @@ class NetParams (object):
 
 		# Population params dict
 		self.popParams = OrderedDict()  # create list of populations - each item will contain dict with pop params
-		self.popTagsCopiedToCells = ['popLabel', 'cellModel', 'cellType']
+		self.popTagsCopiedToCells = ['cellModel', 'cellType']
 
 		# Synaptic mechanism params dict
 		self.synMechParams = OrderedDict()		
@@ -127,6 +127,7 @@ class SimConfig (object):
 		self.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 		self.createNEURONObj= True  # create HOC objects when instantiating network
 		self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
+		self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
 		self.timing = True  # show timing of each process
 		self.saveTiming = False  # save timing data to pickle file
 		self.verbose = False  # show detailed messages 

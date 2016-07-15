@@ -1,112 +1,52 @@
-"""
-params.py 
+from netpyne import specs, sim
 
-netParams is a dict containing a set of network parameters using a standardized structure
-
-simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
-"""
-
-from netpyne import specs
-
-###############################################################################
-# NETWORK PARAMETERS
-###############################################################################
-
+# Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-# Population parameters
-netParams.addPopParams('hop', {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
-netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5})  # background inputs
+## Population parameters
+netParams.addPopParams('S', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams.addPopParams('M', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
+netParams.addPopParams('background', {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'})
 
-# Cell parameters
+## Cell property rules
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}  # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}                                       # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+netParams.addCellParams('PYRrule', cellRule)                                                # add dict to list of cell params
 
-## PYR cell properties
-cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
-cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-netParams.addCellParams('PYR', cellRule)  # add dict to list of cell properties
-
-# Synaptic mechanism parameters
-netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams.addSynMechParams('inh', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80})
-
+## Synaptic mechanism parameters
+netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
-# Connectivity parameters
-netParams.addConnParams('bg->hop',
-    {'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.1
-    'synMech': 'exc',                 # target exc synapse
-    'delay': 1})                      # uniformly distributed delays between 1-5ms
+## Stimulation parameters
+netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 300, 'dur': 100, 'amp': 'uniform(0.4,0.5)'})
+netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur': [0,50,200], 'amp': [-60,-30,40], 'gain': 1e5, 'rstim': 1, 'tau1': 0.1, 'tau2': 0})
+netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(300,600)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1})
 
-netParams.addConnParams('hop->hop',
-    {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-    'weight': 0.0,                      # weight of each connection
-    'synMech': 'inh',                   # target inh synapse
-    'delay': 5})       				    # delay 
+netParams.addStimTargetParams('Input_1->S', {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'popLabel':'S', 'cellList': range(15)}})
+netParams.addStimTargetParams('Input_2->S', {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'S', 'ynorm': [0,0.5]}})
+netParams.addStimTargetParams('Input_3->M1', {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'popLabel':'M', 'cellList': [2,4,5,8,10,15,19]}})
+netParams.addStimTargetParams('Input_4->PYR', {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+gauss(0.2,0.05)','delay': 1,
+                              'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}})
 
-
-###############################################################################
-# SIMULATION PARAMETERS
-###############################################################################
-simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
 
 # Simulation options
-simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
-simConfig.dt = 0.025 				# Internal integration timestep to use
-simConfig.verbose = False  			# Show detailed messages 
+simConfig = specs.SimConfig()       # object of class SimConfig to store simulation configuration
+
+simConfig.duration = 1*1e3          # Duration of the simulation, in ms
+simConfig.dt = 0.025                # Internal integration timestep to use
+simConfig.verbose = False           # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordStep = 0.1          # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
-simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.addAnalysis('plotRaster', {'syncLines': True})      # Plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [1]})      # Plot recorded traces for this list of cells
-simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
+simConfig.addAnalysis('plotRaster', True)           # Plot a raster
+simConfig.addAnalysis('plotTraces', {'include': [('S',0), ('M',0)]})           # Plot recorded traces for this list of cells
 
-
-###############################################################################
-# EXECUTION CODE (via netpyne)
-###############################################################################
-from netpyne import sim
 
 # Create network and run simulation
-sim.initialize(                       # create network object and set cfg and net params
-    simConfig = simConfig,   # pass simulation config and network params as arguments
-    netParams = netParams)   
-sim.net.createPops()                      # instantiate network populations
-sim.net.createCells()                     # instantiate network cells based on defined populations
-sim.net.connectCells()                    # create connections between cells based on params
-sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
-sim.runSim()                          # run parallel Neuron simulation  
-sim.gatherData()                      # gather spiking data and cell info from each node
-sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-sim.analysis.plotData()                   # plot spike raster
-
-
-# ###############################################################################
-# # INTERACTING WITH INSTANTIATED NETWORK
-# ###############################################################################
-
-def changeWeights(net, newWeight):
-    netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
-    for netcon in netcons: 
-        netcon.weight[0] = newWeight
-
-
-changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
-
-sim.runSim()                          # run parallel Neuron simulation  
-sim.gatherData()                      # gather spiking data and cell info from each node
-sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-sim.analysis.plotData()                   # plot spike raster
-
-
-
-
-
-
-
-
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+   
+# import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

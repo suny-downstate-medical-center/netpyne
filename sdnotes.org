@@ -2136,6 +2136,8 @@ h.load_file( prcellstate.hoc )
 if pc.gid_exists(gid):
 h.prcellgid(gid)
 
+* 16jul11 Modify network instance
+
 
 * Paper
 ** Title

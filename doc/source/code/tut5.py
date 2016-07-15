@@ -19,6 +19,7 @@ netParams.addPopParams('E5', {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.
 netParams.addPopParams('I5', {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
 netParams.addPopParams('background', {'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'})
 
+
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict

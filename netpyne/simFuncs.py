@@ -27,6 +27,9 @@ from neuron import h, init # Import NEURON
 
 import sim, specs
 
+import pprint
+pp = pprint.PrettyPrinter(depth=4)
+
 
 ###############################################################################
 # initialize variables and MPI
@@ -1030,7 +1033,49 @@ def _export_synapses (net, nml_doc):
         else:
             raise Exception("Cannot yet export synapse type: %s"%syn['mod'])
 
+hh_nml2_chans = """
 
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2  https://raw.githubusercontent.com/NeuroML/NeuroML2/master/Schemas/NeuroML2/NeuroML_v2beta3.xsd"   
+         id="kChan">
+         
+    <ionChannelHH id="leak_hh" conductance="10pS" type="ionChannelPassive">
+        
+        <notes>Single ion channel in NeuroML2 format: passive channel providing a leak conductance </notes>
+        
+    </ionChannelHH>
+    
+    <ionChannelHH id="na_hh" conductance="10pS" species="na">
+        
+        <notes>Single ion channel in NeuroML2 format: standard Sodium channel from the Hodgkin Huxley model</notes>
+
+        <gateHHrates id="m" instances="3">
+            <forwardRate type="HHExpLinearRate" rate="1per_ms" midpoint="-40mV" scale="10mV"/>
+            <reverseRate type="HHExpRate" rate="4per_ms" midpoint="-65mV" scale="-18mV"/>
+        </gateHHrates>
+
+        <gateHHrates id="h" instances="1">
+            <forwardRate type="HHExpRate" rate="0.07per_ms" midpoint="-65mV" scale="-20mV"/>
+            <reverseRate type="HHSigmoidRate" rate="1per_ms" midpoint="-35mV" scale="10mV"/>
+        </gateHHrates>
+
+    </ionChannelHH>
+
+    <ionChannelHH id="k_hh" conductance="10pS" species="k">
+        
+        <notes>Single ion channel in NeuroML2 format: standard Potassium channel from the Hodgkin Huxley model</notes>
+
+        <gateHHrates id="n" instances="4">
+            <forwardRate type="HHExpLinearRate" rate="0.1per_ms" midpoint="-55mV" scale="10mV"/>
+            <reverseRate type="HHExpRate" rate="0.125per_ms" midpoint="-65mV" scale="-80mV"/>
+        </gateHHrates>
+            
+    </ionChannelHH>
+    
+
+</neuroml>
+"""
 
 ###############################################################################
 ### Export generated structure of network to NeuroML 2 
@@ -1054,16 +1099,155 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
     gids_vs_pop_indices ={}
     populations_vs_components = {}
 
+    for cell_name in net.params.cellParams.keys():
+        cell_param_set = net.params.cellParams[cell_name]
+        print("---------------  Adding a cell %s: \n%s"%(cell_name,cell_param_set))
+        print("Adding a cell %s: \n%s"%(cell_name,pp.pprint(cell_param_set.todict())))
+        
+        # Single section; one known mechanism...
+        soma = cell_param_set.secs.soma
+        if len(cell_param_set.secs) == 1 \
+           and soma is not None\
+           and len(soma.mechs) == 0 \
+           and len(soma.pointps) == 1:
+               
+            pproc = soma.pointps.values()[0]
+            cell_id = 'CELL_%s_%s'%(cell_param_set.conds.cellModel,cell_param_set.conds.cellType)
+            if len(cell_param_set.conds.cellModel)==0:
+                cell_id = 'CELL_%s_%s'%(pproc.mod,cell_param_set.conds.cellType)
+            print("Assuming abstract cell with behaviour set by single point process: %s!"%pproc)
+            
+            if pproc.mod == 'Izhi2007b':
+                izh = neuroml.Izhikevich2007Cell(id=cell_id)
+                izh.a = '%s per_ms'%pproc.a
+                izh.b = '%s nS'%pproc.b
+                izh.c = '%s mV'%pproc.c
+                izh.d = '%s pA'%pproc.d
+                
+                izh.v0 = '%s mV'%pproc.vr # Note: using vr for v0
+                izh.vr = '%s mV'%pproc.vr
+                izh.vt = '%s mV'%pproc.vt
+                izh.vpeak = '%s mV'%pproc.vpeak
+                izh.C = '%s pF'%(pproc.C*100)
+                izh.k = '%s nS_per_mV'%pproc.k
+                
+                nml_doc.izhikevich2007_cells.append(izh)
+            else:
+                print("Unknown point process: %s; can't convert to NeuroML 2 equivalent!"%pproc.mod)
+                exit(1)
+        else:
+            print("Assuming normal cell with behaviour set by ion channel mechanisms!")
+            
+            cell_id = 'CELL_%s_%s'%(cell_param_set.conds.cellModel,cell_param_set.conds.cellType)
+            
+            cell = neuroml.Cell(id=cell_id)
+            cell.notes = "Cell exported from NetPyNE:\n%s"%cell_param_set
+            cell.morphology = neuroml.Morphology(id='morph_%s'%cell_id)
+            cell.biophysical_properties = neuroml.BiophysicalProperties(id='biophys_%s'%cell_id)
+            mp = neuroml.MembraneProperties()
+            cell.biophysical_properties.membrane_properties = mp
+            ip = neuroml.IntracellularProperties()
+            cell.biophysical_properties.intracellular_properties = ip
+            
+            count = 0
+            
+            for np_sec_name in cell_param_set.secs.keys():
+                
+                np_sec = cell_param_set.secs[np_sec_name]
+                nml_seg = neuroml.Segment(id=count,name=np_sec_name)
+                if len(np_sec.geom.pt3d)!=2:
+                    print("Currently only support cell geoms with 2 pt3ds: %s"%np_sec.geom)
+                    exit(1)
+                    
+                prox = np_sec.geom.pt3d[0]
+                nml_seg.proximal = neuroml.Point3DWithDiam(x=prox[0],
+                                                          y=prox[1],
+                                                          z=prox[2],
+                                                          diameter=prox[3])
+                dist = np_sec.geom.pt3d[1]
+                nml_seg.distal = neuroml.Point3DWithDiam(x=dist[0],
+                                                          y=dist[1],
+                                                          z=dist[2],
+                                                          diameter=dist[3])
+                          
+                nml_seg_group = neuroml.SegmentGroup(id='%s_group'%np_sec_name)
+                nml_seg_group.members.append(neuroml.Member(segments=count))
+                cell.morphology.segment_groups.append(nml_seg_group)
+                
+                    
+                cell.morphology.segments.append(nml_seg)
+                
+                count+=1
+            
+                ip.resistivities.append(neuroml.Resistivity(value="%s ohm_cm"%np_sec.geom.Ra, 
+                                                           segment_groups=nml_seg_group.id))
+                                                           
+                cm = np_sec.geom.cm
+                if len(cm)==0:
+                    cm = 1
+                mp.specific_capacitances.append(neuroml.SpecificCapacitance(value="%s uF_per_cm2"%cm, 
+                                                           segment_groups=nml_seg_group.id))
+                                                           
+                                                           
+                mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%'-65'))
+                                                           
+                mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%'0'))
+                                                           
+                for mech_name in np_sec.mechs.keys():
+                    mech = np_sec.mechs[mech_name]
+                    if mech_name == 'hh':
+                        
+                        
+                        import neuroml.nml.nml
+                        chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
+                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[0])
+                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[1])
+                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[2])
+                        
+                        
+                        leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
+                                                    ion_channel='leak_hh',
+                                                    cond_density='%s mS_per_cm2'%mech.gl,
+                                                    erev='%s mV'%mech.el,
+                                                    ion='non_specific')
+                        mp.channel_densities.append(leak_cd)
+                        
+                        k_cd = neuroml.ChannelDensity(id='k_%s'%nml_seg_group.id,
+                                                    ion_channel='k_hh',
+                                                    cond_density='%s mS_per_cm2'%mech.gkbar,
+                                                    erev='%s mV'%'-77',
+                                                    ion='k')
+                        mp.channel_densities.append(k_cd)
+                        
+                        na_cd = neuroml.ChannelDensity(id='na_%s'%nml_seg_group.id,
+                                                    ion_channel='na_hh',
+                                                    cond_density='%s mS_per_cm2'%mech.gnabar,
+                                                    erev='%s mV'%'50',
+                                                    ion='na')
+                        mp.channel_densities.append(na_cd)
+                    else:
+                        print("Currently NML2 export only supports mech hh, not: %s"%mech_name)
+                        exit(1)
+
+                
+            nml_doc.cells.append(cell)
+            
+            
+            
+            
+        
+        
+        
     for np_pop in net.pops.values(): 
         index = 0
-        print("Adding: %s"%np_pop.tags)
+        print("Adding population: %s"%np_pop.tags)
         positioned = len(np_pop.cellGids)>0
         type = 'populationList'
         if not np_pop.tags['cellModel'] ==  'NetStim':
-            pop = neuroml.Population(id=np_pop.tags['popLabel'],component=np_pop.tags['cellModel'], type=type)
+            comp_id = 'CELL_%s_%s'%(np_pop.tags['cellModel'],np_pop.tags['cellType'])
+            pop = neuroml.Population(id=np_pop.tags['popLabel'],component=comp_id, type=type)
             populations_vs_components[pop.id]=pop.component
             nml_net.populations.append(pop)
-            nml_doc.includes.append(neuroml.IncludeType('%s.cell.nml'%np_pop.tags['cellModel']))
 
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:

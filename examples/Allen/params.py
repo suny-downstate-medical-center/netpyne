@@ -3,20 +3,23 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.sizeX = 100 # x-dimension (horizontal length) size in um
-netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
+netParams.sizeX = 50 # x-dimension (horizontal length) size in um
+netParams.sizeY = 1200 # y-dimension (vertical height or cortical depth) size in um
+netParams.sizeZ = 50 # z-dimension (horizontal length) size in um
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 
 ## Population parameters
-netParams.addPopParams('E2', {'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}) 
-netParams.addPopParams('I2', {'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}) 
-netParams.addPopParams('E4', {'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}) 
-netParams.addPopParams('I4', {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}) 
-netParams.addPopParams('E5', {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
-netParams.addPopParams('I5', {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
+netParams.addPopParams('E2',  {'cellType': 'E', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
+netParams.addPopParams('IF2', {'cellType': 'I', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
+netParams.addPopParams('IL2', {'cellType': 'I', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
+netParams.addPopParams('E4',  {'cellType': 'E', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
+netParams.addPopParams('IF4', {'cellType': 'I', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
+netParams.addPopParams('IL4', {'cellType': 'I', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
+netParams.addPopParams('E5',  {'cellType': 'E', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
+netParams.addPopParams('IF5', {'cellType': 'I', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
+netParams.addPopParams('IL5', {'cellType': 'I', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
 netParams.addPopParams('background', {'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'})
 
 

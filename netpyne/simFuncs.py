@@ -881,6 +881,7 @@ def saveData (include = None):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
                 print('Finished saving!')
+                return os.getcwd()+'/'+sim.cfg.filename
         else: 
             print 'Nothing to save'
 

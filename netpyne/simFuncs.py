@@ -1246,21 +1246,21 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                         
                         leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
                                                     ion_channel='leak_hh',
-                                                    cond_density='%s mS_per_cm2'%mech.gl,
+                                                    cond_density='%s S_per_cm2'%mech.gl,
                                                     erev='%s mV'%mech.el,
                                                     ion='non_specific')
                         mp.channel_densities.append(leak_cd)
                         
                         k_cd = neuroml.ChannelDensity(id='k_%s'%nml_seg_group.id,
                                                     ion_channel='k_hh',
-                                                    cond_density='%s mS_per_cm2'%mech.gkbar,
+                                                    cond_density='%s S_per_cm2'%mech.gkbar,
                                                     erev='%s mV'%'-77',
                                                     ion='k')
                         mp.channel_densities.append(k_cd)
                         
                         na_cd = neuroml.ChannelDensity(id='na_%s'%nml_seg_group.id,
                                                     ion_channel='na_hh',
-                                                    cond_density='%s mS_per_cm2'%mech.gnabar,
+                                                    cond_density='%s S_per_cm2'%mech.gnabar,
                                                     erev='%s mV'%'50',
                                                     ion='na')
                         mp.channel_densities.append(na_cd)

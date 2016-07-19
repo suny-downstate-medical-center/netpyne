@@ -10,7 +10,8 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['exportNeuroML2'])  # export/import
+__all__.extend(['exportNeuroML2'])  # export
+__all__.extend(['importNeuroML2'])  # import
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
@@ -32,7 +33,7 @@ import sim, specs
 ###############################################################################
 def initialize (netParams = {}, simConfig = {}, net = None):
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
-        print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
+        print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
@@ -108,11 +109,11 @@ def createParallelContext ():
 ###############################################################################
 def loadNetParams (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading netParams...'
+    print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
         setNetParams(data['net']['params'])
     else:
-        print 'netParams not found in file %s'%(filename)
+        print('netParams not found in file %s'%(filename))
 
     pass
 
@@ -124,7 +125,7 @@ def loadNet (filename, data=None, instantiate=True):
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         sim.timing('start', 'loadNetTime')
-        print 'Loading net...'
+        print('Loading net...')
         sim.net.allPops = data['net']['pops']
         sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -140,11 +141,11 @@ def loadNet (filename, data=None, instantiate=True):
                     cell.conns = cellLoad['conns']
                     cell.stims = cellLoad['stims']
                     sim.net.cells.append(cell)
-                print '  Created %d cells' % (len(data['net']['cells']))
+                print('  Created %d cells' % (len(data['net']['cells'])))
 
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:  
-                    if sim.cfg.verbose: print "  Adding NEURON objects..."
+                    if sim.cfg.verbose: print("  Adding NEURON objects...")
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
                         prop = {'secs': cell.secs}
@@ -155,12 +156,12 @@ def loadNet (filename, data=None, instantiate=True):
                         cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
                         cell.addConnsNEURONObj()
 
-                    print '  Added NEURON objects to %d cells' % (len(sim.net.cells))
+                    print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
 
             if sim.cfg.timing: sim.timing('stop', 'loadNetTime')
             print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
-        print '  netCells and/or netPops not found in file %s'%(filename)
+        print('  netCells and/or netPops not found in file %s'%(filename))
 
 
 ###############################################################################
@@ -168,11 +169,11 @@ def loadNet (filename, data=None, instantiate=True):
 ###############################################################################
 def loadSimCfg (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading simConfig...'
+    print('Loading simConfig...')
     if 'simConfig' in data:
         setSimCfg(data['simConfig'])
     else:
-        print '  simConfig not found in file %s'%(filename)
+        print('  simConfig not found in file %s'%(filename))
 
     pass
 
@@ -182,11 +183,11 @@ def loadSimCfg (filename, data=None):
 ###############################################################################
 def loadSimData (filename, data=None):
     if not data: data = _loadFile(filename)
-    print 'Loading simData...'
+    print('Loading simData...')
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
-        print '  simData not found in file %s'%(filename)
+        print('  simData not found in file %s'%(filename))
 
     pass
 
@@ -273,7 +274,7 @@ def _loadFile (filename):
         #             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
     else:
-        print 'Format not recognized for file %s'%(filename)
+        print('Format not recognized for file %s'%(filename))
         return 
 
     if sim.cfg.timing: sim.timing('stop', 'loadFileTime')
@@ -564,7 +565,7 @@ def runSim ():
     for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
@@ -594,7 +595,7 @@ def runSimWithIntervalFunc (interval, func):
     h.dt = sim.cfg.dt
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print 'Minimum delay (time-step for queue exchange) is ',mindelay
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
@@ -880,7 +881,7 @@ def saveData (include = None):
 
                 print('Finished saving!')
         else: 
-            print 'Nothing to save'
+            print('Nothing to save')
 
 
         # Save timing
@@ -906,7 +907,7 @@ def timing (mode, processName):
 ###############################################################################
 def version():
     import netpyne 
-    print netpyne.__version__
+    print(netpyne.__version__)
 
 
 ###############################################################################
@@ -926,13 +927,13 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
     nn = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         print("Adding conns for: %s"%np_pop.tags)
         if not np_pop.tags['cellModel'] ==  'NetStim':
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     popPost, indexPost = gids_vs_pop_indices[cell.gid]
-                    print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
+                    #print("Cell %s: %s\n    %s[%i]\n"%(cell.gid,cell.tags,popPost, indexPost))
                     for conn in cell.conns:
                         preGid = conn['preGid']
                         if not preGid == 'NetStim':
@@ -944,7 +945,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
                             synMech = conn['synMech']
                             threshold = conn['threshold']
 
-                            print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            #print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
 
                             projection_info = (popPre,popPost,synMech)
                             if not projection_info in nn.keys():
@@ -952,7 +953,8 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
                             nn[projection_info].append({'indexPre':indexPre,'indexPost':indexPost,'weight':weight,'delay':delay})
                         else:
-                            print("      Conn NetStim->%s[%s] with %s"%(popPost, indexPost, '??'))
+                            #print("      Conn NetStim->%s[%s] with %s"%(popPost, indexPost, '??'))
+                            pass
                                 
     return nn                 
 
@@ -964,15 +966,15 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
     stims = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         if not np_pop.tags['cellModel'] ==  'NetStim':
             print("Adding stims for: %s"%np_pop.tags)
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     pop, index = gids_vs_pop_indices[cell.gid]
-                    print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
+                    #print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
                     for stim in cell.stims:
-                        ref = stim['label']
+                        ref = stim['source']
                         rate = stim['rate']
                         noise = stim['noise']
                         
@@ -996,7 +998,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
 
                         stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
 
-    print stims             
+    #print(stims)
     return stims
 
 
@@ -1007,11 +1009,11 @@ def _export_synapses (net, nml_doc):
 
     import neuroml
 
-    for syn in net.params.synMechParams:
+    for id,syn in net.params.synMechParams.iteritems():
 
         print('Exporting details of syn: %s'%syn)
         if syn['mod'] == 'Exp2Syn':
-            syn0 = neuroml.ExpTwoSynapse(id=syn['label'], 
+            syn0 = neuroml.ExpTwoSynapse(id=id, 
                                          gbase='1uS',
                                          erev='%smV'%syn['e'],
                                          tau_rise='%sms'%syn['tau1'],
@@ -1019,7 +1021,7 @@ def _export_synapses (net, nml_doc):
 
             nml_doc.exp_two_synapses.append(syn0)
         elif syn['mod'] == 'ExpSyn':
-            syn0 = neuroml.ExpOneSynapse(id=syn['label'], 
+            syn0 = neuroml.ExpOneSynapse(id=id, 
                                          gbase='1uS',
                                          erev='%smV'%syn['e'],
                                          tau_decay='%sms'%syn['tau'])
@@ -1052,7 +1054,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
     gids_vs_pop_indices ={}
     populations_vs_components = {}
 
-    for np_pop in net.pops: 
+    for np_pop in net.pops.values(): 
         index = 0
         print("Adding: %s"%np_pop.tags)
         positioned = len(np_pop.cellGids)>0
@@ -1136,7 +1138,7 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
 
             count = 0
             for stim in stims[stim_info]:
-                print("  Adding stim: %s"%stim)
+                #print("  Adding stim: %s"%stim)
 
                 connection = neuroml.ConnectionWD(id=count, \
                         pre_cell_id="../%s[%i]"%(stim_pop.id, count), \
@@ -1156,12 +1158,6 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
 
     writers.NeuroMLWriter.write(nml_doc, nml_file_name)
 
-    '''
-    from pyneuroml.lems import LEMSSimulation
-
-    ls = LEMSSimulation('Sim_%s'%reference, sim.cfg.dt,sim.cfg.duration,reference)
-
-    ls.include_neuroml2_file(nml_file_name)'''
 
     import pyneuroml.lems
 
@@ -1182,8 +1178,63 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                                save_all_segments = False,
                                seed=1234)
 
+###############################################################################
+# Import network from NeuroML2
+###############################################################################
+def importNeuroML2(fileName, simConfig):
+    
+    from netpyne.utils import NetPyNEBuilder
+    
+    netParams = specs.NetParams()
 
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    
+    print("Importing NeuroML 2 network from: %s"%fileName)
 
+    if fileName.endswith(".nml"):
+        
+        import logging
+        logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
 
+        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
+        nmlHandler = NetPyNEBuilder()     
+
+        currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+        currParser.parse(fileName)
+        
+        for popParam in nmlHandler.popParams.keys():
+            netParams.addPopParams(popParam, nmlHandler.popParams[popParam])
+            
+        for cellParam in nmlHandler.cellParams.keys():
+            netParams.addCellParams(cellParam, nmlHandler.cellParams[cellParam])
+            
+        
+        #netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+        
+        for stimName in nmlHandler.stimSources.keys():
+            netParams.addStimSourceParams(stimName,nmlHandler.stimSources[stimName])
+            netParams.addStimTargetParams(stimName,nmlHandler.stimLists[stimName])
+            
+            #netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
+            
+        
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+    
+    #pp.pprint(netParams)
+    #pp.pprint(simConfig)
+
+    sim.net.createPops()  
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
+    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+    sim.runSim()                      # run parallel Neuron simulation  
+    sim.gatherData()                  # gather spiking data and cell info from each node
+    sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+    sim.analysis.plotData()               # plot spike raster
+    h('forall psection()')
+    
+    
 

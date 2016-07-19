@@ -471,7 +471,7 @@ class Network (object):
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                             self._addNetStimParams(connParam, preCellTags) # cell method to add connection       
                             self._addCellConn(connParam, preCellGid, postCellGid) # add connection        
-                        if preCellGid != postCellGid: # if not self-connection
+                        elif preCellGid != postCellGid: # if not self-connection
                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 

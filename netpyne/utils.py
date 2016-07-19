@@ -8,7 +8,8 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
-def getSecName (sec, dirCellSecNames = {}):
+def getSecName (sec, dirCellSecNames = None):
+	if dirCellSecNames is None: dirCellSecNames = {}
     if '>.' in sec.name():
         fullSecName = sec.name().split('>.')[1] 
     elif '.' in sec.name():
@@ -76,8 +77,10 @@ def _equal_dicts (d1, d2, ignore_keys):
             return False
     return True
 
-def importCell (fileName, cellName, cellArgs = []):
+def importCell (fileName, cellName, cellArgs = None):
     h.initnrn()
+
+    if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc'):

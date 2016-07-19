@@ -35,8 +35,8 @@ pp = pprint.PrettyPrinter(depth=4)
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-	if netParams is None: netParams = {} # If not specified, initialize as empty dict
-	if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
+    if netParams is None: netParams = {} # If not specified, initialize as empty dict
+    if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
@@ -1152,25 +1152,46 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
             cell.biophysical_properties.intracellular_properties = ip
             
             count = 0
+
+            import neuroml.nml.nml
+            chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
+            chans_added = []
+            
+            nml_segs = {}
+            
+            parentDistal = neuroml.Point3DWithDiam(x=0,y=0,z=0,diameter=0)
             
             for np_sec_name in cell_param_set.secs.keys():
                 
+                parent_seg = None
+                
                 np_sec = cell_param_set.secs[np_sec_name]
                 nml_seg = neuroml.Segment(id=count,name=np_sec_name)
+                nml_segs[np_sec_name] = nml_seg
+                
+                if len(np_sec.topol)>0:
+                    parent_seg = nml_segs[np_sec.topol.parentSec]
+                    nml_seg.parent = neuroml.SegmentParent(segments=parent_seg.id)
+                    
+                    if not (np_sec.topol.parentX == 1.0 and  np_sec.topol.childX == 0):
+                        print("Currently only support cell topol with parentX == 1.0 and childX == 0")
+                        exit(1)
+                
                 if not (len(np_sec.geom.pt3d)==2 or len(np_sec.geom.pt3d)==0):
                     print("Currently only support cell geoms with 2 pt3ds (or 0 and diam/L specified): %s"%np_sec.geom)
                     exit(1)
                  
                 if len(np_sec.geom.pt3d)==0:
                     
-                    nml_seg.proximal = neuroml.Point3DWithDiam(x=0,
-                                                          y=0,
-                                                          z=0,
+                    if parent_seg == None:
+                        nml_seg.proximal = neuroml.Point3DWithDiam(x=parentDistal.x,
+                                                          y=parentDistal.y,
+                                                          z=parentDistal.z,
                                                           diameter=np_sec.geom.diam)
                     
-                    nml_seg.distal = neuroml.Point3DWithDiam(x=0,
-                                                          y=np_sec.geom.L,
-                                                          z=0,
+                    nml_seg.distal = neuroml.Point3DWithDiam(x=parentDistal.x,
+                                                          y=(parentDistal.y+np_sec.geom.L),
+                                                          z=parentDistal.z,
                                                           diameter=np_sec.geom.diam)
                 else:
                 
@@ -1216,12 +1237,11 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                     mech = np_sec.mechs[mech_name]
                     if mech_name == 'hh':
                         
-                        
-                        import neuroml.nml.nml
-                        chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
-                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[0])
-                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[1])
-                        nml_doc.ion_channel_hhs.append(chans_doc.ion_channel_hhs[2])
+                        for chan in chans_doc.ion_channel_hhs:
+                            if (chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh'):
+                                if not chan.id in chans_added:
+                                    nml_doc.ion_channel_hhs.append(chan)
+                                    chans_added.append(chan.id)
                         
                         
                         leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
@@ -1244,6 +1264,21 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                                                     erev='%s mV'%'50',
                                                     ion='na')
                         mp.channel_densities.append(na_cd)
+                                
+                    elif mech_name == 'pas':
+                                    
+                        for chan in chans_doc.ion_channel_hhs:
+                            if (chan.id == 'leak_hh'):
+                                if not chan.id in chans_added:
+                                    nml_doc.ion_channel_hhs.append(chan)
+                                    chans_added.append(chan.id)
+                                    
+                        leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
+                                                    ion_channel='leak_hh',
+                                                    cond_density='%s mS_per_cm2'%mech.g,
+                                                    erev='%s mV'%mech.e,
+                                                    ion='non_specific')
+                        mp.channel_densities.append(leak_cd)
                     else:
                         print("Currently NML2 export only supports mech hh, not: %s"%mech_name)
                         exit(1)

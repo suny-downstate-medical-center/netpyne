@@ -69,9 +69,10 @@ simConfig.verbose = False            # Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
-simConfig.savePickle = False         # Save params, network and sim output to pickle file
+simConfig.savePickle = True        # Save params, network and sim output to pickle file
+simConfig.timestampFilename = True
 
-simConfig.addAnalysis('plotRaster', {'orderBy': 'y', 'orderInverse': True})      # Plot a raster
+simConfig.addAnalysis('plotRaster', {'orderBy': 'y', 'orderInverse': True, 'saveFig': True})      # Plot a raster
 simConfig.addAnalysis('plotTraces', {'include': [('E2',0), ('E4', 0), ('E5', 5)]})      # Plot recorded traces for this list of cells
 simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
 simConfig.addAnalysis('plotConn', True)           # plot connectivity matrix

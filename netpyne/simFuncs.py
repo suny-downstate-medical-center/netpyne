@@ -31,8 +31,8 @@ import sim, specs
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-	if netParams is None: netParams = {} # If not specified, initialize as empty dict
-	if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
+    if netParams is None: netParams = {} # If not specified, initialize as empty dict
+    if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
         sys.exit()
@@ -881,7 +881,8 @@ def saveData (include = None):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
                 print('Finished saving!')
-                return os.getcwd()+'/'+sim.cfg.filename
+            import os
+            return os.getcwd()+'/'+sim.cfg.filename
         else: 
             print 'Nothing to save'
 

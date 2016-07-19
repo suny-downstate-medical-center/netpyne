@@ -9,7 +9,7 @@ import os, sys
 from neuron import h
 
 def getSecName (sec, dirCellSecNames = None):
-	if dirCellSecNames is None: dirCellSecNames = {}
+    if dirCellSecNames is None: dirCellSecNames = {}
     if '>.' in sec.name():
         fullSecName = sec.name().split('>.')[1] 
     elif '.' in sec.name():

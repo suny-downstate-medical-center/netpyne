@@ -222,111 +222,111 @@ class ODict(OrderedDict):
 
 class NetParams (object):
 
-	def __init__(self, netParamsDict=None):
-		self._labelid = 0
-		# General network parameters
-		self.scale = 1 	 # scale factor for number of cells 
-		self.sizeX = 100 # x-dimension (horizontal length) size in um
-		self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
-		self.sizeZ = 100 # z-dimension (horizontal depth) size in um
+    def __init__(self, netParamsDict=None):
+        self._labelid = 0
+        # General network parameters
+        self.scale = 1   # scale factor for number of cells 
+        self.sizeX = 100 # x-dimension (horizontal length) size in um
+        self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
+        self.sizeZ = 100 # z-dimension (horizontal depth) size in um
 
 
-		## General connectivity parameters
-		self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
-		self.scaleConnWeightNetStims = 1 # Connection weight scale factor for NetStims
-		self.scaleConnWeightModels = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
-		self.defaultWeight = 1  # default connection weight
-		self.defaultDelay = 1  # default connection delay (ms)
-		self.defaultThreshold = 10  # default Netcon threshold (mV)
-		self.propVelocity = 500.0  # propagation velocity (um/ms)
-		 
-		# Cell params dict
-		self.cellParams = ODict()
+        ## General connectivity parameters
+        self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
+        self.scaleConnWeightNetStims = 1 # Connection weight scale factor for NetStims
+        self.scaleConnWeightModels = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
+        self.defaultWeight = 1  # default connection weight
+        self.defaultDelay = 1  # default connection delay (ms)
+        self.defaultThreshold = 10  # default Netcon threshold (mV)
+        self.propVelocity = 500.0  # propagation velocity (um/ms)
+         
+        # Cell params dict
+        self.cellParams = ODict()
 
-		# Population params dict
-		self.popParams = ODict()  # create list of populations - each item will contain dict with pop params
-		self.popTagsCopiedToCells = ['cellModel', 'cellType']
+        # Population params dict
+        self.popParams = ODict()  # create list of populations - each item will contain dict with pop params
+        self.popTagsCopiedToCells = ['cellModel', 'cellType']
 
-		# Synaptic mechanism params dict
-		self.synMechParams = ODict()		
+        # Synaptic mechanism params dict
+        self.synMechParams = ODict()        
 
-		# Connectivity params dict
-		self.connParams = ODict()  
+        # Connectivity params dict
+        self.connParams = ODict()  
 
-		# Subcellular connectivity params dict
-		self.subConnParams = ODict()  
+        # Subcellular connectivity params dict
+        self.subConnParams = ODict()  
 
-		# Stimulation source and target params dicts
-		self.stimSourceParams = ODict()  
-		self.stimTargetParams = ODict() 
+        # Stimulation source and target params dicts
+        self.stimSourceParams = ODict()  
+        self.stimTargetParams = ODict() 
 
-		# fill in params from dict passed as argument
-		if netParamsDict:
-			for k,v in netParamsDict.iteritems(): 
-				setattr(self, k, v)
+        # fill in params from dict passed as argument
+        if netParamsDict:
+            for k,v in netParamsDict.iteritems(): 
+                setattr(self, k, v)
 
-	def addCellParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.cellParams[label] = Dict(params)
+    def addCellParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.cellParams[label] = Dict(params)
 
-	def addPopParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.popParams[label] = Dict(params)
+    def addPopParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.popParams[label] = Dict(params)
 
-	def addSynMechParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.synMechParams[label] = Dict(params)
+    def addSynMechParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.synMechParams[label] = Dict(params)
 
-	def addConnParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.connParams[label] = Dict(params)
+    def addConnParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.connParams[label] = Dict(params)
 
-	def addSubConnParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.subConnParams[label] = Dict(params)
+    def addSubConnParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.subConnParams[label] = Dict(params)
 
-	def addStimSourceParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.stimSourceParams[label] = Dict(params)
+    def addStimSourceParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.stimSourceParams[label] = Dict(params)
 
-	def addStimTargetParams(self, label=None, params=None):
-		if params is None: params = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		self.stimTargetParams[label] = Dict(params)
+    def addStimTargetParams(self, label=None, params=None):
+        if params is None: params = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        self.stimTargetParams[label] = Dict(params)
 
-	def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
-		if cellArgs is None: cellArgs = {}
-		if not label: 
-			label = int(self._labelid)
-			self._labelid += 1
-		secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
-		cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
-		self.addCellParams(label, cellRule)
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
+        if cellArgs is None: cellArgs = {}
+        if not label: 
+            label = int(self._labelid)
+            self._labelid += 1
+        secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
+        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        self.addCellParams(label, cellRule)
 
-		if importSynMechs:
-			for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+        if importSynMechs:
+            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
 
-		return self.cellParams[label]
+        return self.cellParams[label]
 
 
 ###############################################################################
@@ -335,45 +335,45 @@ class NetParams (object):
 
 class SimConfig (object):
 
-	def __init__(self, simConfigDict = None):
-		# Simulation parameters
-		self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
-		self.dt = 0.025 # Internal integration timestep to use
-		self.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}  # parameters of h module 
-		self.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
-		self.createNEURONObj= True  # create HOC objects when instantiating network
-		self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
-		self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
-		self.timing = True  # show timing of each process
-		self.saveTiming = False  # save timing data to pickle file
-		self.verbose = False  # show detailed messages 
+    def __init__(self, simConfigDict = None):
+        # Simulation parameters
+        self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
+        self.dt = 0.025 # Internal integration timestep to use
+        self.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}  # parameters of h module 
+        self.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+        self.createNEURONObj= True  # create HOC objects when instantiating network
+        self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
+        self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
+        self.timing = True  # show timing of each process
+        self.saveTiming = False  # save timing data to pickle file
+        self.verbose = False  # show detailed messages 
 
-		# Recording 
-		self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
-		self.recordTraces = {}  # Dict of traces to record 
-		self.recordStim = False  # record spikes of cell stims
-		self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+        # Recording 
+        self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
+        self.recordTraces = {}  # Dict of traces to record 
+        self.recordStim = False  # record spikes of cell stims
+        self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
-		# Saving
-		self.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
-		self.filename = 'model_output'  # Name of file to save model output
-		self.timestampFilename = False  # Add timestamp to filename to avoid overwriting
-		self.savePickle = False # save to pickle file
-		self.saveJson = False # save to json file
-		self.saveMat = False # save to mat file
-		self.saveCSV = False # save to txt file
-		self.saveDpk = False # save to .dpk pickled file
-		self.saveHDF5 = False # save to HDF5 file 
-		self.saveDat = False # save traces to .dat file(s)
+        # Saving
+        self.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
+        self.filename = 'model_output'  # Name of file to save model output
+        self.timestampFilename = False  # Add timestamp to filename to avoid overwriting
+        self.savePickle = False # save to pickle file
+        self.saveJson = False # save to json file
+        self.saveMat = False # save to mat file
+        self.saveCSV = False # save to txt file
+        self.saveDpk = False # save to .dpk pickled file
+        self.saveHDF5 = False # save to HDF5 file 
+        self.saveDat = False # save traces to .dat file(s)
 
-		# Analysis and plotting 
-		self.analysis = ODict()
+        # Analysis and plotting 
+        self.analysis = ODict()
 
-		# fill in params from dict passed as argument
-		if simConfigDict:
-			for k,v in simConfigDict.iteritems(): 
-				setattr(self, k, v)
+        # fill in params from dict passed as argument
+        if simConfigDict:
+            for k,v in simConfigDict.iteritems(): 
+                setattr(self, k, v)
 
-	def addAnalysis(self, func, params):
-		self.analysis[func] =  params
+    def addAnalysis(self, func, params):
+        self.analysis[func] =  params
 

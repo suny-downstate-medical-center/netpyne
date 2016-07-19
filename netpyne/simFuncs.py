@@ -30,7 +30,9 @@ import sim, specs
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
-def initialize (netParams = {}, simConfig = {}, net = None):
+def initialize (netParams = None, simConfig = None, net = None):
+	if netParams is None: netParams = {} # If not specified, initialize as empty dict
+	if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print 'Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)'
         sys.exit()

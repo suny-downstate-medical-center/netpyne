@@ -1,3 +1,10 @@
+/examples/NeuroMLImport/LEMS_SimpleNet.xml
+/examples/NeuroMLImport/LEMS_SimpleNet_netpyne.py
+/examples/NeuroMLImport/LEMS_SimpleNet_netpyne.py_main.json
+/examples/NeuroMLImport/RS.cell.json
+/examples/NeuroMLImport/RS_celldefinition.py
+/examples/NeuroMLImport/poissonFiringSyn.input.json
+/examples/NeuroMLImport/poissonFiringSyn_inputdefinition.py
 /examples/HHTut/HHTut.net.svg
 *.pyc
 *.egg-info

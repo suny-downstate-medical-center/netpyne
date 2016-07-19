@@ -1177,13 +1177,92 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                                gen_saves_for_only_populations = populations_vs_components.keys(),
                                save_all_segments = False,
                                seed=1234)
+                               
+                               
+                
+###############################################################################
+### Class for handling NeuroML2 constructs and generating the equivalent in 
+### NetPyNE's internal representation
+############################################################################### 
+
+from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
+
+
+class NetPyNEBuilder(DefaultNetworkHandler):
+    
+    cellParams = {}
+    popParams = {}
+    projections = {}
+    
+    stimSources = {}
+    stimLists = {}
+    
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handlePopulation(self, population_id, component, size):
+        
+        self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
+        
+        popInfo={}
+        popInfo['popLabel'] = population_id
+        popInfo['cellModel'] = component
+        popInfo['cellType'] = component
+        popInfo['cellsList'] = []
+        
+        self.popParams[population_id] = popInfo
+        
+        cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
+
+        soma = {'geom': {}, 'pointps':{}}  # soma properties
+        soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+        soma['pointps'][component] = {'mod':component}
+        cellRule['secs'] = {'soma': soma}  # add sections to dict
+        self.cellParams[component] = cellRule
+            
+    
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handleLocation(self, id, population_id, component, x, y, z):
+        DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
+    
+        cellsList = self.popParams[population_id]['cellsList']
+        cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
+   
+   
+    #
+    #  Overridden from DefaultNetworkHandler
+    #    
+    def handleInputList(self, inputListId, population_id, component, size):
+        DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+        
+        self.stimSources[inputListId] = {'label': inputListId, 'type': component}
+        self.stimLists[inputListId] = {
+                    'source': inputListId, 
+                    'sec':'soma', 
+                    'loc': 0.5, 
+                    'conds': {'popLabel':population_id, 'cellList': []}}
+        
+   
+    #
+    #  Overridden from DefaultNetworkHandler
+    #   
+    def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
+        
+        print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
+        if segId!=0:
+            raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
+        if fract!=0.5:
+            raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
+        
+        self.stimLists[inputListId]['conds']['cellList'].append(cellId)
 
 ###############################################################################
 # Import network from NeuroML2
 ###############################################################################
 def importNeuroML2(fileName, simConfig):
     
-    from netpyne.utils import NetPyNEBuilder
     
     netParams = specs.NetParams()
 

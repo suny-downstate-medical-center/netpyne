@@ -265,49 +265,57 @@ class NetParams (object):
 			for k,v in netParamsDict.iteritems(): 
 				setattr(self, k, v)
 
-	def addCellParams(self, label=None, params={}):
+	def addCellParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.cellParams[label] = Dict(params)
 
-	def addPopParams(self, label=None, params={}):
+	def addPopParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.popParams[label] = Dict(params)
 
-	def addSynMechParams(self, label=None, params={}):
+	def addSynMechParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.synMechParams[label] = Dict(params)
 
-	def addConnParams(self, label=None, params={}):
+	def addConnParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.connParams[label] = Dict(params)
 
-	def addSubConnParams(self, label=None, params={}):
+	def addSubConnParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.subConnParams[label] = Dict(params)
 
-	def addStimSourceParams(self, label=None, params={}):
+	def addStimSourceParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.stimSourceParams[label] = Dict(params)
 
-	def addStimTargetParams(self, label=None, params={}):
+	def addStimTargetParams(self, label=None, params=None):
+		if params is None: params = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1
 		self.stimTargetParams[label] = Dict(params)
 
-	def importCellParams(self, label, conds, fileName, cellName, cellArgs={}, importSynMechs=False):
+	def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
+		if cellArgs is None: cellArgs = {}
 		if not label: 
 			label = int(self._labelid)
 			self._labelid += 1

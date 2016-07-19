@@ -1,3 +1,9 @@
+## Version 0.5.5
+
+- Fixed bug that created 2 instead of 1 NetStims per cell
+
+- Fixed bug regarding mutable default args in Python funcs
+
 ## Version 0.5.4
 
 - Access to nested dictionaries via dot notation (secs.soma.geom) using new inherited classes Dict() and ODict() (issue #123)

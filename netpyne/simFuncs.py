@@ -8,11 +8,12 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
-__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', 'gatherData'])  # run and gather
+__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export
 __all__.extend(['importNeuroML2'])  # import
 __all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -22,7 +23,7 @@ import cPickle as pk
 import hashlib 
 from numbers import Number
 from copy import copy
-from collections import OrderedDict
+from specs import Dict, ODict
 from neuron import h, init # Import NEURON
 
 import sim, specs
@@ -36,10 +37,10 @@ def initialize (netParams = {}, simConfig = {}, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    sim.simData = {}  # used to store output simulation data (spikes etc)
+    sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
-    sim.timingData = {}  # dict to store timing
+    sim.timingData = Dict()  # dict to store timing
 
     sim.createParallelContext()  # iniitalize PC, nhosts and rank
     
@@ -302,20 +303,20 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
             if type(item) in [list]:
                 objCopy.append([])
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
-            elif type(item) in [dict]:
+            elif type(item) in [dict, Dict]:
                 objCopy.append({})
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
             else:
                 objCopy.append(item)
 
-    elif type(obj) == dict:
+    elif type(obj) in [dict, Dict]:
         if objCopy == 'ROOT':
-            objCopy = {}
+            objCopy = Dict() 
         for key,val in obj.iteritems():
             if type(val) in [list]:
                 objCopy[key] = [] 
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
-            elif type(val) in [dict]:
+            elif type(val) in [dict, Dict]:
                 objCopy[key] = {}
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
             elif key.startswith(keystart):
@@ -356,7 +357,7 @@ def replaceFuncObj (obj):
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
-            if hasattr(val,'func_name'):
+            if 'func_name' in dir(val): #hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts() 
                 #line = inspect.getsource(val)
                 #startInd = line.find('lambda')
                 #endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
@@ -371,12 +372,12 @@ def replaceFuncObj (obj):
 def replaceNoneObj (obj):
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
-            if type(item) in [list, dict]:#, tuple]:
+            if type(item) in [list, dict, Dict, ODict]:
                 replaceNoneObj(item)
 
-    elif type(obj) == dict or type(obj) == specs.OrderedDict:
+    elif type(obj) in [dict, Dict, ODict]:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, specs.OrderedDict]:
+            if type(val) in [list, dict, Dict, ODict]:
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
@@ -396,9 +397,9 @@ def tupleToStr (obj):
             elif type(item) == tuple:
                 obj[obj.index(item)] = str(item)
 
-    elif type(obj) == dict or type(obj) == specs.OrderedDict:
+    elif type(obj) == dict or type(obj) == ODict:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, specs.OrderedDict]:
+            if type(val) in [list, dict, ODict]:
                 tupleToStr(val)
             elif type(val) == tuple:
                 obj[key] = str(val) # also replace empty dicts with empty list
@@ -493,7 +494,7 @@ def setupRecording ():
                     break
                   
     if sim.cfg.recordStim:
-        sim.simData['stims'] = {}
+        sim.simData['stims'] = Dict()
         for cell in sim.net.cells: 
             cell.recordStimSpikes()
 
@@ -503,12 +504,12 @@ def setupRecording ():
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = getCellsList(sim.cfg.analysis['plotTraces']['include'])
         else:
-            cellsPlot = [] 
+            cellsPlot = []
 
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
 
-        for key in sim.cfg.recordTraces.keys(): sim.simData[key] = {}  # create dict to store traces
+        for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
     
     timing('stop', 'setrecordTime')
@@ -520,34 +521,35 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList(include):
-    allCells = sim.net.cells
+
+    if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
+        allCellTags = sim._gatherAllCellTags()  
+    else:
+        allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
+
     cellGids = []
     cells = []
     for condition in include:
-        if condition == 'all':  # all cells + Netstims 
-            cellGids = [c.gid for c in allCells]
-            cells = list(allCells)
+        if condition in ['all', 'allCells']:  # all cells + Netstims 
+            cells = list(sim.net.cells)
             return cells
-
-        elif condition == 'allCells':  # all cells 
-            cellGids = [c.gid for c in allCells]
-            cells = list(allCells)
 
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
         elif isinstance(condition, str):  # entire pop
-            cellGids.extend([c.gid for c in allCells if c.tags['popLabel']==condition])
+            cellGids.extend(list(sim.net.pops[condition].cellGids)) 
+            #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         
         elif isinstance(condition, tuple):  # subset of a pop with relative indices
-            cellsPop = [c.gid for c in allCells if c.tags['popLabel']==condition[0]]
+            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = [cell for cell in allCells if cell.gid in cellGids]
+    cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
     return cells
 
 
@@ -653,10 +655,10 @@ def gatherData ():
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
-            allPops = OrderedDict()
+            allPops = ODict()
             for popLabel,pop in sim.net.pops.iteritems(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
             allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
-            sim.allSimData = {} 
+            sim.allSimData = Dict()
 
             for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = {}
@@ -672,7 +674,7 @@ def gatherData ():
                         if isinstance(val,dict):                
                             for cell,val2 in val.iteritems():
                                 if isinstance(val2,dict):       
-                                    sim.allSimData[key].update({cell:{}})
+                                    sim.allSimData[key].update(Dict({cell:Dict()}))
                                     for stim,val3 in val2.iteritems():
                                         sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
                                 else:
@@ -689,18 +691,18 @@ def gatherData ():
             sim.net.allPops = allPops
     
     else:  # if single node, save data in same format as for multiple nodes for consistency
-        sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
-        sim.net.allPops = OrderedDict()
+        sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]
+        sim.net.allPops = ODict()
         for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
-        sim.allSimData = {} 
+        sim.allSimData = Dict() 
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
-                sim.allSimData[k] = {}
+                sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector 
                 if key in simDataVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):                
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):       
-                                sim.allSimData[key].update({cell:{}})
+                                sim.allSimData[key].update(Dict({cell:Dict()}))
                                 for stim,val3 in val2.iteritems():
                                     sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
                             else:
@@ -729,7 +731,7 @@ def gatherData ():
         else:
             sim.connsPerCell = 0
         if sim.cfg.timing: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
-        print('  Simulated time: %i-s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
+        print('  Simulated time: %0.1f s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
         print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
 
@@ -737,12 +739,67 @@ def gatherData ():
 
 
 ###############################################################################
+### Calculate and print avg pop rates
+###############################################################################
+def popAvgRates(trange = None, show = True):
+    if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
+        print 'Error: sim.allSimData not available; please call sim.gatherData()'
+        return None
+
+    spkts = sim.allSimData['spkt']
+    spkids = sim.allSimData['spkid']
+
+    if not trange: 
+        trange = [0, sim.cfg.duration]
+    else:
+        spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]])
+
+    avgRates = Dict()
+    for pop in sim.net.allPops:
+        numCells = float(len(sim.net.allPops[pop]['cellGids']))
+        if numCells > 0:
+            tsecs = float((trange[1]-trange[0]))/1000.0
+            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
+            print '%s : %.3f Hz'%(pop, avgRates[pop])
+    return avgRates
+
+
+
+###############################################################################
+### Gather data from nodes
+###############################################################################
+def _gatherCells ():
+    ## Pack data from all hosts
+    if sim.rank==0: 
+        print('\nUpdating sim.net.allCells...')
+
+    if sim.nhosts > 1:  # only gather if >1 nodes 
+        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells]} 
+        data = [None]*sim.nhosts
+        data[0] = {}
+        for k,v in nodeData.iteritems():
+            data[0][k] = v 
+        gather = sim.pc.py_alltoall(data)
+        sim.pc.barrier()  
+        if sim.rank == 0:
+            allCells = []
+         
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+            for node in gather:  # concatenate data from each node
+                allCells.extend(node['netCells'])  # extend allCells list
+            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
+         
+    else:  # if single node, save data in same format as for multiple nodes for consistency
+        sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+      
+
+###############################################################################
 ### Save data
 ###############################################################################
 def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
-        
+
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}
@@ -751,9 +808,10 @@ def saveData (include = None):
         if 'netCells' in include: net['cells'] = sim.net.allCells
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
-        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
+        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg
         if 'simData' in include: dataSave['simData'] = sim.allSimData
 
+        
         if dataSave:
             if sim.cfg.timestampFilename: 
                 timestamp = time()

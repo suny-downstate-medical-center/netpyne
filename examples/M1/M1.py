@@ -56,7 +56,7 @@ simConfig.saveHDF5 = False # save to HDF5 file
 
 # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True) # Whether or not to plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [('IT_L23',1) ,('PT_L5B',1), ('PV_L23',1), ('SOM_L5',1)]}) # plot recorded traces for this list of cells
+simConfig.addAnalysis('plotTraces', {'include': [('IT_L23',0), ('PT_L5B',1), ('PV_L23',2), ('SOM_L5',3)]}) # plot recorded traces for this list of cells
 simConfig.addAnalysis('plot2Dnet', {'showConns': False})
 
 ###############################################################################

@@ -2137,8 +2137,115 @@ if pc.gid_exists(gid):
 h.prcellgid(gid)
 
 * 16jul11 Modify network instance
+** sim.net.modifyCells
+** sim.net.modifyConns
+** sim.net.modifyStims
+* 16jul15 Use dot notation
+** new classes Dict and ODict
+** ~25% slower
+*** old dicts
+Creating simulation of 23 cell populations for 0.1 s on 1 hosts...
+  Number of cells on node 0: 4768 
+  Done; cell creation time = 3.07 s.
+Making connections...
+  Number of connections on node 0: 9536 
+  Done; cell connection time = 1.28 s.
+
+Running...
+0 
+  Done; run time = 125.21 s; real-time ratio: 0.00.
+
+Gathering spikes...
+  Done; gather time = 1.91 s.
+
+Analyzing...
+  Run time: 125.21 s
+  Simulated time: 0.1 s; 4768 cells; 1 workers
+  Spikes: 2120 (4.45 Hz)
+  Connections: 9536 (2.00 per cell)
+162.0 89.4 820
+IT_L23   2.20985431331  Hz
+89.0 89.4 113
+PV_L23   8.80996218645  Hz
+97.0 89.4 113
+SOM_L23   9.60186889984  Hz
+69.0 89.4 431
+IT_L4   1.79074728663  Hz
+72.0 89.4 475
+IT_L5A   1.69551395267  Hz
+111.0 89.4 540
+IT_L5B   2.29927914492  Hz
+751.0 89.4 540
+PT_L5B   15.5563841246  Hz
+169.0 89.4 248
+PV_L5   7.6225012629  Hz
+235.0 89.4 248
+SOM_L5   10.5993360756  Hz
+83.0 89.4 496
+IT_L6   1.8717976474  Hz
+95.0 89.4 496
+CT_L6   2.14241899401  Hz
+81.0 89.4 124
+PV_L6   7.30677635852  Hz
+106.0 89.4 124
+SOM_L6   9.56195424695  Hz
+Plotting recorded cell traces ...
+  Done; plotting time = 0.61 s
+
+Total time = 132.20 s
 
 
+
+*** new dot Dicts
+Creating simulation of 23 cell populations for 0.1 s on 1 hosts...
+  Number of cells on node 0: 4768 
+  Done; cell creation time = 4.08 s.
+Making connections...
+  Number of connections on node 0: 9536 
+  Done; cell connection time = 1.55 s.
+
+Running...
+0 
+  Done; run time = 123.59 s; real-time ratio: 0.00.
+
+Gathering spikes...
+  Done; gather time = 3.34 s.
+
+Analyzing...
+  Run time: 123.59 s
+  Simulated time: 0.1 s; 4768 cells; 1 workers
+  Spikes: 2120 (4.45 Hz)
+  Connections: 9536 (2.00 per cell)
+162.0 89.4 820
+IT_L23   2.20985431331  Hz
+89.0 89.4 113
+PV_L23   8.80996218645  Hz
+97.0 89.4 113
+SOM_L23   9.60186889984  Hz
+69.0 89.4 431
+IT_L4   1.79074728663  Hz
+72.0 89.4 475
+IT_L5A   1.69551395267  Hz
+111.0 89.4 540
+IT_L5B   2.29927914492  Hz
+751.0 89.4 540
+PT_L5B   15.5563841246  Hz
+169.0 89.4 248
+PV_L5   7.6225012629  Hz
+235.0 89.4 248
+SOM_L5   10.5993360756  Hz
+83.0 89.4 496
+IT_L6   1.8717976474  Hz
+95.0 89.4 496
+CT_L6   2.14241899401  Hz
+81.0 89.4 124
+PV_L6   7.30677635852  Hz
+106.0 89.4 124
+SOM_L6   9.56195424695  Hz
+Plotting recorded cell traces ...
+  Done; plotting time = 0.93 s
+
+Total time = 133.78 s
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models

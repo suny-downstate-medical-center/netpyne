@@ -8,7 +8,6 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
-import sim
 
 def getSecName (sec, dirCellSecNames = {}):
     if '>.' in sec.name():

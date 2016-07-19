@@ -12,7 +12,6 @@ __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gath
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export
 __all__.extend(['importNeuroML2'])  # import
-__all__.extend(['id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 

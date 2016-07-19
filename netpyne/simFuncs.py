@@ -1155,20 +1155,34 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
                 
                 np_sec = cell_param_set.secs[np_sec_name]
                 nml_seg = neuroml.Segment(id=count,name=np_sec_name)
-                if len(np_sec.geom.pt3d)!=2:
-                    print("Currently only support cell geoms with 2 pt3ds: %s"%np_sec.geom)
+                if not (len(np_sec.geom.pt3d)==2 or len(np_sec.geom.pt3d)==0):
+                    print("Currently only support cell geoms with 2 pt3ds (or 0 and diam/L specified): %s"%np_sec.geom)
                     exit(1)
+                 
+                if len(np_sec.geom.pt3d)==0:
                     
-                prox = np_sec.geom.pt3d[0]
-                nml_seg.proximal = neuroml.Point3DWithDiam(x=prox[0],
-                                                          y=prox[1],
-                                                          z=prox[2],
-                                                          diameter=prox[3])
-                dist = np_sec.geom.pt3d[1]
-                nml_seg.distal = neuroml.Point3DWithDiam(x=dist[0],
-                                                          y=dist[1],
-                                                          z=dist[2],
-                                                          diameter=dist[3])
+                    nml_seg.proximal = neuroml.Point3DWithDiam(x=0,
+                                                          y=0,
+                                                          z=0,
+                                                          diameter=np_sec.geom.diam)
+                    
+                    nml_seg.distal = neuroml.Point3DWithDiam(x=0,
+                                                          y=np_sec.geom.L,
+                                                          z=0,
+                                                          diameter=np_sec.geom.diam)
+                else:
+                
+                    prox = np_sec.geom.pt3d[0]
+
+                    nml_seg.proximal = neuroml.Point3DWithDiam(x=prox[0],
+                                                              y=prox[1],
+                                                              z=prox[2],
+                                                              diameter=prox[3])
+                    dist = np_sec.geom.pt3d[1]
+                    nml_seg.distal = neuroml.Point3DWithDiam(x=dist[0],
+                                                              y=dist[1],
+                                                              z=dist[2],
+                                                              diameter=dist[3])
                           
                 nml_seg_group = neuroml.SegmentGroup(id='%s_group'%np_sec_name)
                 nml_seg_group.members.append(neuroml.Member(segments=count))
@@ -1181,9 +1195,12 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
             
                 ip.resistivities.append(neuroml.Resistivity(value="%s ohm_cm"%np_sec.geom.Ra, 
                                                            segment_groups=nml_seg_group.id))
-                                                           
+                       
+                '''
+                See https://github.com/Neurosim-lab/netpyne/issues/130
+                '''
                 cm = np_sec.geom.cm
-                if len(cm)==0:
+                if isinstance(cm,dict) and len(cm)==0:
                     cm = 1
                 mp.specific_capacitances.append(neuroml.SpecificCapacitance(value="%s uF_per_cm2"%cm, 
                                                            segment_groups=nml_seg_group.id))

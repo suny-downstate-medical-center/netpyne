@@ -135,6 +135,8 @@ class Network (object):
                         if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
                             params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else target.get('weight', 1.0)
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
+                            params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
+                            params['synMech'] = target.get('synMech', None)
                         
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
@@ -212,7 +214,7 @@ class Network (object):
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
                         
-                        print [(conn['sec'],conn['loc']) for conn in conns]
+                        # print [(conn['sec'],conn['loc']) for conn in conns]
 
                         # different case if has vs doesn't have 3d points
 

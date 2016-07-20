@@ -810,7 +810,6 @@ def saveData (include = None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg
         if 'simData' in include: dataSave['simData'] = sim.allSimData
-
         
         if dataSave:
             if sim.cfg.timestampFilename: 

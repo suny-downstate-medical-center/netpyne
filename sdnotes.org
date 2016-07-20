@@ -500,10 +500,10 @@ STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 
                             stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
                             stdpmech.useRLexp = s.useRLexp # RL 
                             stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
-'plast': {'mech': 'STDP', 'params': STDPparams}
+'plasticity': {'mech': 'STDP', 'params': STDPparams}
 
 - Single set of STDP params for all:
-'plast':  'STDP'
+'plasticity':  'STDP'
 
 ** revisiting STDP mod implementation
 *** stdp.m1ms
@@ -2352,7 +2352,58 @@ Loading simData...
   Recording  V_soma from cell  6045
   Recording  V_dend6 from cell  6045
 
-*** 380x120x38'
+*** 380x120x380
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 17.84 s.
+Making connections...
+  Number of connections on node 0: 9647815 
+  Done; cell connection time = 1625.43 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.23 s.
+
+Gathering data...
+  Done; gather time = 563.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 9699775 (933.39 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 2.0Gb (crashed)
+
+*** 380x120x380 (less conns)
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 18.68 s.
+Making connections...
+  Number of connections on node 0: 6329300 
+  Done; cell connection time = 1388.36 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.06 s.
+
+Gathering data...
+  Done; gather time = 353.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 1.4Gb (crashed)
+
+
+*** 380x120x380 (less conns, with subcell)
+
+
 * 16jul20 Matplotlib errors
 - http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc

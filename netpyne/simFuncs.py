@@ -147,9 +147,9 @@ def loadNet (filename, data=None, instantiate=True):
                     cell.conns = cellLoad['conns']
                     cell.stims = cellLoad['stims']
                     sim.net.cells.append(cell)
-                print('  Created %d cells' % (len(data['net']['cells'])))
-                print('  Created %d connections' % (len(data['net']['cells'])))
-                print('  Created %d stims' % (len(data['net']['cells'])))
+                print('  Created %d cells' % (len(sim.net.cells)))
+                print('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
+                print('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells])))
 
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:  
@@ -936,8 +936,7 @@ def saveData (include = None):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
                 print('Finished saving!')
-            import os
-            return os.getcwd()+'/'+sim.cfg.filename
+
             # Save timing
             if sim.cfg.timing: 
                 timing('stop', 'saveTime')
@@ -945,6 +944,9 @@ def saveData (include = None):
             if sim.cfg.timing and sim.cfg.saveTiming: 
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
+
+            import os
+            return os.getcwd()+'/'+sim.cfg.filename
 
         else: 
             print('Nothing to save')

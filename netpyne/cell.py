@@ -364,6 +364,9 @@ class Cell (object):
         # Create connections
         for i in range(params['synsPerConn']):
 
+            if netStimParams:
+                    netstim = self.addNetStim(netStimParams)
+            
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -389,7 +392,6 @@ class Cell (object):
                     postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
 
                 if netStimParams:
-                    netstim = self.addNetStim(netStimParams)
                     netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
@@ -524,35 +526,36 @@ class Cell (object):
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
+
+            if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
         
-        rand = h.Random()
-        #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
-        #rand.negexp(1)
-        stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
+        if sim.cfg.createNEURONObj:
+            rand = h.Random()
+            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
+            #rand.negexp(1)
+            stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
-        if isinstance(params['rate'], str):
-            if params['rate'] == 'variable':
-                try:
-                    netstim = h.NSLOC()
-                    netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                    netstim.noise = params['noise']
-                except:
-                    print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
+            if isinstance(params['rate'], str):
+                if params['rate'] == 'variable':
+                    try:
+                        netstim = h.NSLOC()
+                        netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
+                        netstim.noise = params['noise']
+                    except:
+                        print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
+                else:
+                    print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
             else:
-                print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
-        else:
-            netstim = h.NetStim()
-            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-            netstim.noise = params['noise']
-            netstim.start = params['start']
-        netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
-        netstim.number = params['number']   
-            
-        stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
+                netstim = h.NetStim()
+                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+                netstim.noise = params['noise']
+                netstim.start = params['start']
+            netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
+            netstim.number = params['number']   
+                
+            stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
-
-        return stimContainer['hNetStim']
+            return stimContainer['hNetStim']
 
 
     def addStim (self, params):

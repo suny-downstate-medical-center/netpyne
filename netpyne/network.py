@@ -143,7 +143,10 @@ class Network (object):
 
                         postCell.addStim(params)  # call cell method to add connections
 
+        print('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
+        sim.pc.barrier()
         sim.timing('stop', 'stimsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
 
         return [cell.stims for cell in self.cells]
 

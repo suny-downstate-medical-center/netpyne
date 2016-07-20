@@ -841,6 +841,11 @@ def _gatherCells ():
 ### Save data
 ###############################################################################
 def saveData (include = None):
+
+    if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
+    else: needGather = False
+    if needGather: gatherData()
+
     if sim.rank == 0:
         timing('start', 'saveTime')
 

@@ -6,9 +6,9 @@ from netpyne import specs,sim
 
 netParams = specs.NetParams()       # object of class NetParams to store the network parameters
 
-netParams.sizeX = 25                # x-dimension (horizontal length) size in um
+netParams.sizeX = 300                # x-dimension (horizontal length) size in um
 netParams.sizeY = 1200              # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 25                # z-dimension (horizontal length) size in um
+netParams.sizeZ = 300                # z-dimension (horizontal length) size in um
 netParams.propVelocity = 200.0      # propagation velocity (um/ms)
 netParams.probLengthConst = 100.0   # length constant for conn probability (um)
 
@@ -95,28 +95,12 @@ netParams.stimTargetParams['Input1->all'] = {'source': 'Input1', 'conds': {'ynor
 
 simConfig = specs.SimConfig()                # object of class SimConfig to store simulation configuration
 
-simConfig.duration = 100                     # Duration of the simulation, in ms
-simConfig.dt = 0.1                           # Internal integration timestep, in ms
-simConfig.verbose = 1                        # Show detailed messages 
-simConfig.createNEURONObj = False              # create HOC objects when instantiating network
+simConfig.verbose = 0                        # Show detailed messages 
+simConfig.createNEURONObj = 0              # create HOC objects when instantiating network
 simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
-
-# Recording
-simConfig.recordStep = 0.1                                  # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
-    'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}   # Dict with traces to record
 
 # Saving
 simConfig.filename = 'Allen'                  # Set file output name
-simConfig.saveDataInclude = ['netParams', 'net', 'simConfig']
+simConfig.saveDataInclude = ['netParams', 'net']
 simConfig.saveJson = True                     # Save params, network and sim output to pickle file
 
-# Analysis
-simConfig.addAnalysis('plotRaster', True) #{'orderBy': 'y', 'orderInverse': True})      # Plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [('L2_E', 0), ('L5_IF', 0)]})      # Plot recorded traces for this list of cells
-# simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
-# simConfig.addAnalysis('plotConn', True)           # plot connectivity matrix
-
-#sim.createSimulateAnalyze(netParams=netParams, simConfig=simConfig) 
-
-# import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

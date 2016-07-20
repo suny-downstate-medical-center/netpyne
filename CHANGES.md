@@ -1,6 +1,16 @@
 ## Version 0.5.5
 
+- Improved export/import from/to NeuroML2 (issue #12)
+
+- All structures (including Dict and ODict) can now  be saved and loaded via json
+
+- Added option to use separate simConfig when loading data from file
+
+- saveData() calls gatherData() if required 
+
 - saveData() returns string with full path of saved file (issue #127)
+
+- Fixed bugs so its possible to create and save Python structure independently of NEURON objects
 
 - Fixed bug that created 2 instead of 1 NetStims per cell
 

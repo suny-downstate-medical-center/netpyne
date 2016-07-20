@@ -2,6 +2,9 @@
 
 - Only load neuroml libraries and functions if installed to avoid error when importing sim
 
+- Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
+
+
 ## Version 0.5.5
 
 - New example using Allen Institute cells showing how to save large net and reload for simulation

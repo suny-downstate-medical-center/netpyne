@@ -27,4 +27,4 @@ simConfig.addAnalysis('plotConn', True)                                         
 # LOAD, RUN AND ANALYZE NETWORK
 ###############################################################################
 
-sim.loadSimulateAnalyze(filename='Allen2.json', simConfig=simConfig)    
+sim.loadSimulateAnalyze(filename='V1.json', simConfig=simConfig)    

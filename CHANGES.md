@@ -1,3 +1,7 @@
+## Version 0.5.6
+
+- Only load neuroml libraries and functions if installed to avoid error when importing sim
+
 ## Version 0.5.5
 
 - New example using Allen Institute cells showing how to save large net and reload for simulation

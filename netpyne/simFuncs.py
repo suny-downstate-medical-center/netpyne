@@ -362,10 +362,6 @@ def replaceFuncObj (obj):
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
             if 'func_name' in dir(val): #hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts() 
-                #line = inspect.getsource(val)
-                #startInd = line.find('lambda')
-                #endInd = min([line[startInd:].find(c) for c in [']', '}', '\n', '\''] if line[startInd:].find(c)>0])
-                #funcSource = line[startInd:startInd+endInd]
                 obj[key] = 'func' # funcSource
     return obj
 
@@ -391,7 +387,34 @@ def replaceNoneObj (obj):
 
 
 ###############################################################################
-### Replace None from dict or list with [](so can be saved to .mat)
+### Replace Dict with dict and Odict with OrderedDict
+###############################################################################
+def replaceDictODict (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict, Dict, ODict]:
+                replaceDictODict(item)
+
+    elif type(obj) == Dict:
+        obj = obj.todict()
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict, Dict, ODict]:
+                replaceDictODict(val)
+
+    elif type(obj) == ODict:
+        obj = obj.toOrderedDict()
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict, Dict, ODict]:
+                replaceDictODict(val)
+
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict, Dict, ODict]:
+                replaceDictODict(val)
+    return obj
+
+###############################################################################
+### Replace tuples with str
 ###############################################################################
 def tupleToStr (obj):
     if type(obj) == list:
@@ -809,10 +832,11 @@ def saveData (include = None):
         net = {}
 
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
+        if 'net' in include: include.extend(['netPops', 'netCells'])
         if 'netCells' in include: net['cells'] = sim.net.allCells
-        if 'netPops' in include: net['pops'] = sim.net.allPops
+        if 'netPops' in include: net['pops'] = sim.net.allPops.toOrderedDict()
         if net: dataSave['net'] = net
-        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg
+        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: dataSave['simData'] = sim.allSimData
         
         if dataSave:
@@ -840,6 +864,8 @@ def saveData (include = None):
             # Save to json file
             if sim.cfg.saveJson:
                 import json
+                dataSave = replaceDictODict(dataSave)
+
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.json '))
                 with open(sim.cfg.filename+'.json', 'w') as fileObj:
                     json.dump(dataSave, fileObj)

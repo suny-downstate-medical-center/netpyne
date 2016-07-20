@@ -101,7 +101,7 @@ simConfig.verbose = True                     # Show detailed messages
 
 # Saving
 simConfig.filename = 'Allen'                  # Set file output name
-simConfig.saveDataInclude = ['netCells', 'netPops']#, 'simConfig']
+simConfig.saveDataInclude = ['net', 'simConfig']
 simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
                           'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}  # Dict with traces to record
 

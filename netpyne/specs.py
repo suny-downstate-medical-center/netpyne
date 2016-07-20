@@ -266,49 +266,42 @@ class NetParams (object):
                 setattr(self, k, v)
 
     def addCellParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.cellParams[label] = Dict(params)
 
     def addPopParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.popParams[label] = Dict(params)
 
     def addSynMechParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.synMechParams[label] = Dict(params)
 
     def addConnParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.connParams[label] = Dict(params)
 
     def addSubConnParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.subConnParams[label] = Dict(params)
 
     def addStimSourceParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         self.stimSourceParams[label] = Dict(params)
 
     def addStimTargetParams(self, label=None, params=None):
-        if params is None: params = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1

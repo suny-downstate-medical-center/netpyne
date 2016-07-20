@@ -48,8 +48,9 @@ def Cell(path = None):
 	owd = os.getcwd()
 	os.chdir(path)
 	from cell_utils import Utils
-	return Utils().cell
+	cell = Utils().cell
 	os.chdir(owd)
+	return cell
 
 # Functions to return object with sections for each specific cell type
 def E2(): return Cell('E2')

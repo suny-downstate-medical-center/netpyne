@@ -1,8 +1,12 @@
 ## Version 0.5.5
 
+- saveData() returns string with full path of saved file (issue #127)
+
 - Fixed bug that created 2 instead of 1 NetStims per cell
 
 - Fixed bug regarding mutable default args in Python funcs
+
+- Fixed bug so NetStim stim params are set to default if missing 
 
 ## Version 0.5.4
 

@@ -814,7 +814,6 @@ def saveData (include = None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg
         if 'simData' in include: dataSave['simData'] = sim.allSimData
-
         
         if dataSave:
             if sim.cfg.timestampFilename: 
@@ -885,6 +884,8 @@ def saveData (include = None):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
                 print('Finished saving!')
+            import os
+            return os.getcwd()+'/'+sim.cfg.filename
         else: 
             print('Nothing to save')
 

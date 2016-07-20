@@ -2246,6 +2246,69 @@ Plotting recorded cell traces ...
   Done; plotting time = 0.93 s
 
 Total time = 133.78 s
+* 16jul19 Allen Brain example
+** emails
+---
+Hi Salvador,
+ 
+Thank you very much for talking to us today.  That was helpful.
+ 
+As a next step for us, I wonder if I could ask you to give a quick tutorial to a larger group of folks here at the Allen Institute.  We have a meeting with several more people planned for Wednesday, July 20, at 3 pm Pacific time.  Would you be able to talk to us then?
+ 
+I am thinking that perhaps you could speak for 20 minutes or so, and then do 10 minutes of Q&A.
+ 
+It would be most helpful if for this tutorial you could walk us through a specific example of NetPyNE workflow applied to a question that’s of interest to us.  It doesn’t have to be a fully finished example – could be pseudo-code in part.  We would just really benefit from seeing how you are doing these operations.
+ 
+Here’s the example I have in mind.
+1. Let’s say you have 5 or so neuron types, each represented by a particular cell model and a morphology.  Let’s build a model consisting of 10,000 neurons that are replicas of these 5 models.
+ 
+2. Distribute the 10,000 cells in space.
+ 
+3. Connect the neurons using cell-type specific connectivity rules (let’s say, probabilistic rules based on distances between somata).
+ 
+4. Establish feedforward inputs into the 10,000 cells representing spike trains incoming from other parts of the brain.  Use arbitrary spike trains (e.g., experimental recordings), if possible.
+ 
+5. Save the constructed system to a file.  Read the file into NetPyNE and run the simulation. 
+ 
+6. Visualize the output.
+ 
+Do you think it’s feasible?  Sorry for a short notice, and please do let me know if this is too much to ask :).
+ 
+Many thanks,
+ 
+Anton.
+
+--- 
+Hi Anton,
+
+Yes, I think its feasible. 
+
+Were you interested in any particular cell models / number of compartments? any ones available in hoc or python (eg. from ModelDB) can be directly imported. Of course 10k cells with very detailed morphologies might take a while to simulate. In our M1 sim we combine Izhikevich point neurons, 5-compartment, and full >170 compartment cells. Let me know if you'd be interested in seeing an example of this. 
+
+Any requirements in terms of subcellular connectivity? Want single soma to soma synapse, or multiple synapses per cell-to-cell connection? Currently can provide specific section/location for each synapse, or can choose to distribute uniformly across a set of sections or sectionList (also about to release feature to distribute synapses over dendritic tree based on more complex patterns, eg. 1D or 2D density maps). 
+
+I'll let you know if I have any issues, but otherwise talk to you Wednesday 3pm (pacific time). 
+
+Thanks again for your interest.
+Salva
+
+--- 
+Sounds great, Salvador.  Thank you very much.
+ 
+We typically use models with a few hundred compartments.  They all can be found here:
+http://celltypes.brain-map.org/
+They are also available on ModelDB.
+ 
+Let’s not worry about actually running a simulation with 10,000 cells.  We are just curious to see the workflow and get an idea about the scale of the problem.  If you can estimate how long it will take to run the model-building part, how long it would take to simulate it, and how large are the files in which you would save the model details, that would be great, but don’t worry if it turns out that estimating those numbers is not straightforward.
+ 
+For the connectivity, we are using multiple synapses per connection (let’s assume, five synapses per connection on average).  Synapses should be distributed over dendritic tree, with rules depending on target and source cell types.  For example, something like “for this connection type, place synapses on the soma and dendrites within 100 um of path distance from the soma”.  Again, please don’t worry about actually instantiating all this.  We would just like to see an example of your code that does that.
+ 
+One additional thought we have is that we could ask you for the code from such a tutorial after we talk on Wednesday.  That way we could start playing around with NetPyNE in a meaningful way.  Hope that’s OK.
+ 
+Thanks, and looking forward to chatting soon!  Best,
+ 
+Anton.
+
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models

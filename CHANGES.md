@@ -1,5 +1,7 @@
 ## Version 0.5.5
 
+- New example using Allen Institute cells showing how to save large net and reload for simulation
+
 - Improved export/import from/to NeuroML2 (issue #12)
 
 - All structures (including Dict and ODict) can now  be saved and loaded via json

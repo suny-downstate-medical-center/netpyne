@@ -30,7 +30,7 @@ class Cell (object):
         self.stims = []  # list of stimuli
 
         if create: self.create()  # create cell 
-        if associateGid and sim.cfg.createNEURONObj: self.associateGid() # register cell for this node
+        if associateGid: self.associateGid() # register cell for this node
 
     def create (self):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
@@ -271,26 +271,28 @@ class Cell (object):
 
     def associateGid (self, threshold = 10.0):
         if self.secs:
-            sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
-            sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
-            if sec:
-                loc = sec['spikeGenLoc']  # get location of spike generator within section
-            else:
-                sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
-                loc = 0.5
-            nc = None
-            if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
-                for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if 'vref' in pointpParams:
-                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
-                        break
-            if not nc:  # if still haven't created netcon  
-                nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
-            nc.threshold = threshold
-            sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+            if sim.cfg.createNEURONObj: 
+                sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
+                if sec:
+                    loc = sec['spikeGenLoc']  # get location of spike generator within section
+                else:
+                    sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    loc = 0.5
+                nc = None
+                if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
+                    for pointpName, pointpParams in sec['pointps'].iteritems():
+                        if 'vref' in pointpParams:
+                            nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
+                            break
+                if not nc:  # if still haven't created netcon  
+                    nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                nc.threshold = threshold
+                sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+                del nc # discard netcon
             sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
             sim.net.lid2gid.append(self.gid) # index = local id; value = global id
-            del nc # discard netcon
+
 
 
     def addSynMech (self, synLabel, secLabel, loc):
@@ -373,8 +375,7 @@ class Cell (object):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                self.conns.append(Dict(connParams))
-                    
+                self.conns.append(Dict(connParams))                
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
@@ -398,8 +399,8 @@ class Cell (object):
                 netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
-            # Add plasticity
-            self._addConnPlasticity(params, sec, netcon, weightIndex)
+                # Add plasticity
+                self._addConnPlasticity(params, sec, netcon, weightIndex)
 
             if sim.cfg.verbose: 
                 sec = params['sec'] if pointp else synMechSecs[i]
@@ -740,7 +741,8 @@ class Cell (object):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        secLengths = [self.secs[s]['hSec'].L for s in secList]
+        #secLengths = [self.secs[s]['hSec'].L for s in secList]
+        secLengths = [self.secs[s]['geom']['L'] for s in secList]
         totLength = sum(secLengths)
         cumLengths = list(cumsum(secLengths))
         absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]

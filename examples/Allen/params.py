@@ -64,7 +64,7 @@ if conns:
 
     netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},         # presyn: L4_E
         'postConds': {'popLabel': 'L2_E'},                                      # postsyn: L2_E 
-        'probability': 0.25,                                                    # fixed probability
+        'probability': 0.15,                                                    # fixed probability
         'weight': '0.5*post_ynorm',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
         'delay': 'gauss(5,1)',                                                  # gaussian distributed transmission delay (ms) 
         'synMech': 'AMPA',                                                      # target synaptic mechanism 
@@ -72,7 +72,7 @@ if conns:
 
     netParams.connParams['I->all'] = {'preConds': {'cellType': ['IF', 'IL']}, # presyn: I
         'postConds': {'cellModel': 'perisom', 'y': [100, 1100]},                # postsyn: perisom, [100,1100]
-        'probability': '0.3*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
+        'probability': '0.2*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
         'weight': 0.002,                                                        # synaptic weight 
         'delay': 'dist_3D/propVelocity',                                        # transmission delay (ms) 
         'synMech': 'GABA',                                                      # synaptic mechanism 
@@ -97,16 +97,18 @@ simConfig = specs.SimConfig()                # object of class SimConfig to stor
 
 simConfig.duration = 100                     # Duration of the simulation, in ms
 simConfig.dt = 0.1                           # Internal integration timestep, in ms
-simConfig.verbose = True                     # Show detailed messages 
+simConfig.verbose = 1                        # Show detailed messages 
+simConfig.createNEURONObj = False              # create HOC objects when instantiating network
+simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
+
+# Recording
+simConfig.recordStep = 0.1                                  # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
+    'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}   # Dict with traces to record
 
 # Saving
 simConfig.filename = 'Allen'                  # Set file output name
 simConfig.saveDataInclude = ['netParams', 'net', 'simConfig']
-simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
-                          'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}  # Dict with traces to record
-
-simConfig.recordStep = 0.1                    # Step size in ms to save data (eg. V traces, LFP, etc)
-#simConfig.savePickle = True
 simConfig.saveJson = True                     # Save params, network and sim output to pickle file
 
 # Analysis

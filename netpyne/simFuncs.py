@@ -682,7 +682,7 @@ def gatherData ():
     timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0: 
-        print('\nGathering spikes...')
+        print('\nGathering data...')
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 

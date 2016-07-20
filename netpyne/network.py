@@ -63,7 +63,7 @@ class Network (object):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
-            print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), sim.cfg.duration/1000.,sim.nhosts)) 
+            print("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)) 
         
         for ipop in self.pops.values(): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method

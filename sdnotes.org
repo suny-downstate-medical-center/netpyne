@@ -2313,6 +2313,7 @@ Anton.
 * 16jul20 Matplotlib errors
 - http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
+- actually just deactivated
 
 * Paper
 ** Title

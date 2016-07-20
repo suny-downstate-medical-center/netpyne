@@ -99,9 +99,6 @@ def importCell (fileName, cellName, cellArgs = None):
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
         modulePointer = tempModule
         if isinstance(cellArgs, dict):
-            print modulePointer
-            print cellName
-            print cellArgs
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
         else:
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args

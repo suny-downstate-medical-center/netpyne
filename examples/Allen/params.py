@@ -13,25 +13,31 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.addPopParams('L2_E',  {'cellType': 'E2', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
-netParams.addPopParams('L2_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
-netParams.addPopParams('L2_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [100,300], 'cellModel': 'HH'}) 
-netParams.addPopParams('L4_E',  {'cellType': 'E4', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
-netParams.addPopParams('L4_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
-netParams.addPopParams('L4_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [300,600], 'cellModel': 'HH'}) 
-netParams.addPopParams('L5_E',  {'cellType': 'E5', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
-netParams.addPopParams('L5_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
-netParams.addPopParams('L5_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}) 
-netParams.addPopParams('background', {'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'})
+netParams.addPopParams('L2_E',  {'cellType': 'E2', 'density': 50, 'ynormRange': [0.2,0.4], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L2_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [0.2,0.4], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L2_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [0.2,0.4], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L4_E',  {'cellType': 'E4', 'density': 50, 'ynormRange': [0.4,0.6], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L4_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [0.4,0.6], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L4_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [0.4,0.6], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L5_E',  {'cellType': 'E5', 'density': 50, 'ynormRange': [0.6,0.8], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L5_IF', {'cellType': 'IF', 'density': 50, 'ynormRange': [0.6,0.8], 'cellModel': 'perisom'}) 
+netParams.addPopParams('L5_IL', {'cellType': 'IL', 'density': 50, 'ynormRange': [0.6,0.8], 'cellModel': 'perisom'}) 
+
+#netParams.popParams['L2_E'] = {'cellType': 'E2', 'density': 50, 'ynormRange': [0.2,0.4], 'cellModel': 'perisom'}
 
 ## Cell property rules
-netParams.importCellParams(label='E2_rule', conds={'cellType': 'PYR', 'cellModel': 'HH'}, fileName='getCells.py', cellName='E2')
+netParams.importCellParams(label='E2_perisom', conds={'cellType': 'E2', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E2')
+netParams.importCellParams(label='E4_perisom', conds={'cellType': 'E4', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E4')
+netParams.importCellParams(label='E5_perisom', conds={'cellType': 'E5', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E5')
+netParams.importCellParams(label='IF_perisom', conds={'cellType': 'IF', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='IF')
+netParams.importCellParams(label='IL_perisom', conds={'cellType': 'IL', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='IL')
+
+#netParams.addCellParams()
 
 ## Synaptic mechanism parameters
-netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0})  # NMDA synaptic mechanism
-netParams.addSynMechParams('inh', {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75})  # GABA synaptic mechanism
+netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0})  # excitatory synaptic mechanism
+netParams.addSynMechParams('GABA', {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80})  # inhibitory synaptic mechanism
  
-
 ## Cell connectivity rules
 # netParams.addConnParams('bg->all',
 # {'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
@@ -74,6 +80,6 @@ simConfig.timestampFilename = True
 # simConfig.addAnalysis('plotConn', True)           # plot connectivity matrix
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

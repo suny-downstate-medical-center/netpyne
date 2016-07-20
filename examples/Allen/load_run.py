@@ -6,8 +6,8 @@ from netpyne import specs, sim
 
 simConfig = specs.SimConfig()                # object of class SimConfig to store simulation configuration
 
-simConfig.duration = 10                       # Duration of the simulation, in ms
-simConfig.dt = 1.0                           # Internal integration timestep, in ms
+simConfig.duration = 50                      # Duration of the simulation, in ms
+simConfig.dt = 0.05                           # Internal integration timestep, in ms
 simConfig.createNEURONObj = True             # create HOC objects when instantiating network
 simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
 
@@ -23,9 +23,8 @@ simConfig.addAnalysis('plot2Dnet', {'include': ['L2_E', 'L4_E']})               
 simConfig.addAnalysis('plotConn', True)                                               	# plot connectivity matrix
 
 
-
 ###############################################################################
 # LOAD, RUN AND ANALYZE NETWORK
 ###############################################################################
 
-sim.loadSimulateAnalyze(filename='Allen_10k.json', simConfig=simConfig)    
+sim.loadSimulateAnalyze(filename='Allen.json', simConfig=simConfig)    

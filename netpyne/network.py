@@ -250,8 +250,13 @@ class Network (object):
 
                         # modify syn positions
                         for conn,newSec,newLoc in zip(conns, newSecs, newLocs):
+                            if newSec != conn['sec']:
+                                postCell.addSynMech(conn['synMech'], newSec, newLoc)
+                                # remove old too!
                             conn['sec'] = newSec
                             conn['loc'] = newLoc
+
+
                             #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
 
                         # different case if has vs doesn't have 3d points

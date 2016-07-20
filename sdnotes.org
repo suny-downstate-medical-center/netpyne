@@ -2400,8 +2400,42 @@ Finished saving!
 
 - size: 1.4Gb (crashed)
 
+load_run.py:
+
+Loading file Allen_10k.json ... 
+  Done; file loading time = 99.93 s
+Loading simConfig...
+  simConfig not found in file Allen_10k.json
+Loading netParams...
+Loading net...
+  Created 10392 cells
+  Created 6381260 connections
+  Created 51960 stims
+  Added NEURON objects to 10392 cells
+  Done; re-instantiate net time = 116.31 s
+Loading simData...
+  simData not found in file Allen_10k.json
+
+Running...
+  Done; run time = 32.55 s; real-time ratio: 0.00.
+
+Gathering data...
+  Done; gather time = 751.81 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+  Spikes: 0 (0.00 Hz)
+  Simulated time: 0.0 s; 1 workers
+  Run time: 32.55 s
+  Done; saving time = 0.11 s.
+Plotting raster...
+No spikes available to plot raster
+Plotting recorded cell traces ...
+Plotting 2D representation of network cell locations and connections...
 
 *** 380x120x380 (less conns, with subcell)
+
 
 
 * 16jul20 Matplotlib errors

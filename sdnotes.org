@@ -2309,6 +2309,11 @@ Thanks, and looking forward to chatting soon!  Best,
  
 Anton.
 
+
+* 16jul20 Matplotlib errors
+- http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
+- fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
+
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models

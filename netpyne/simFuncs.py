@@ -570,7 +570,7 @@ def runSim ():
     for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
     
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:

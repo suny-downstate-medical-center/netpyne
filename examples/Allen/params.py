@@ -26,21 +26,24 @@ netParams.popParams['L5_IL'] = {'cellType': 'IL', 'density': 10e3, 'ynormRange':
 
 
 ## Cell property rules
+# import biophysical perisomatic models
 netParams.importCellParams(label='E2_perisom', conds={'cellType': 'E2', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E2')
 netParams.importCellParams(label='E4_perisom', conds={'cellType': 'E4', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E4')
 netParams.importCellParams(label='E5_perisom', conds={'cellType': 'E5', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='E5')
 netParams.importCellParams(label='IF_perisom', conds={'cellType': 'IF', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='IF')
 netParams.importCellParams(label='IL_perisom', conds={'cellType': 'IL', 'cellModel': 'perisom'}, fileName='getCells.py', cellName='IL')
 
+# add simple model
+cellRule = {'conds': {'cellType': 'E2', 'cellModel': 'simple'},  'secs': {}}                        # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+netParams.cellParams['E2_simple'] = cellRule                                                        # add cell params rule
+
+# Set vinit for all sections of all cells
 for cellRule in netParams.cellParams.values():
     for sec in cellRule['secs'].values():
         sec['vinit'] = -90.0
-
-cellRule = {'conds': {'cellType': 'E2', 'cellModel': 'simple'},  'secs': {}}  # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                   # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.addCellParams('PYRrule', cellRule)                          # add dict to list of cell params
 
 
 ## Synaptic mechanism parameters
@@ -51,7 +54,7 @@ netParams.synMechParams['GABA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2,
 ## Cell connectivity rules
 conns = 1
 if conns:
-    netParams.connParams['E2->all'] = {'preConds': {'cellType': 'E2'},        # presyn: E2
+    netParams.connParams['E2->all'] = {'preConds': {'cellType': 'E2'},          # presyn: E2
         'postConds': {'ynorm': [0.2, 0.8]},                                     # postsyn: 0.2-0.8
         'probability': '0.2*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
         'weight': 0.05,                                                         # synaptic weight 
@@ -59,7 +62,7 @@ if conns:
         'synMech': 'AMPA',                                                      # target synaptic mechanism        
         'synsPerConn': 5}                                                       # synapses per connection  
 
-    netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},       # presyn: L4_E
+    netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},         # presyn: L4_E
         'postConds': {'popLabel': {'L2_E'}},                                    # postsyn: L2_E 
         'probability': 0.25,                                                    # fixed probability
         'weight': '0.5*ynorm_post',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
@@ -90,21 +93,21 @@ netParams.stimTargetParams['Input1->all'] = {'source': 'Input1', 'conds': {'ynor
 # SIMULATION CONFIGURATION
 ###############################################################################
 
-simConfig = specs.SimConfig()                 # object of class SimConfig to store simulation configuration
+simConfig = specs.SimConfig()                # object of class SimConfig to store simulation configuration
 
-simConfig.duration = 100                      # Duration of the simulation, in ms
-simConfig.dt = 0.05                           # Internal integration timestep, in ms
+simConfig.duration = 100                     # Duration of the simulation, in ms
+simConfig.dt = 0.1                           # Internal integration timestep, in ms
 simConfig.verbose = True                     # Show detailed messages 
 
 # Saving
 simConfig.filename = 'Allen'                  # Set file output name
 simConfig.saveDataInclude = ['netCells', 'netPops']#, 'simConfig']
 simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
-                          'V_dend': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}  # Dict with traces to record
+                          'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}  # Dict with traces to record
 
 simConfig.recordStep = 0.1                    # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.savePickle = True
-#simConfig.saveJson = True                     # Save params, network and sim output to pickle file
+#simConfig.savePickle = True
+simConfig.saveJson = True                     # Save params, network and sim output to pickle file
 
 # Analysis
 simConfig.addAnalysis('plotRaster', True) #{'orderBy': 'y', 'orderInverse': True})      # Plot a raster

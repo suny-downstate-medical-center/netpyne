@@ -6,6 +6,8 @@
 
 - Fixed bug regarding mutable default args in Python funcs
 
+- Fixed bug so NetStim stim params are set to default if missing 
+
 ## Version 0.5.4
 
 - Access to nested dictionaries via dot notation (secs.soma.geom) using new inherited classes Dict() and ODict() (issue #123)

@@ -570,6 +570,9 @@ class Cell (object):
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
         if params['type'] == 'NetStim':
+            if not 'start' in params: params['start'] = 0  # add default start time
+            if not 'number' in params: params['number'] = 1e9  # add default number 
+
             connParams = {'preGid': params['type'], 
                 'sec': params.get('sec'), 
                 'loc': params.get('loc'), 

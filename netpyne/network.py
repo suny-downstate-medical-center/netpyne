@@ -96,6 +96,7 @@ class Network (object):
 
             for targetLabel, target in self.params.stimTargetParams.iteritems():  # for each target parameter set
                 if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+                if 'loc' not in target: target['loc'] = None  # if location not specified, make None 
                 
                 source = sources.get(target['source'])
 

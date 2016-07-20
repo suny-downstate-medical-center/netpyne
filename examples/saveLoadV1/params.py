@@ -6,9 +6,10 @@ from netpyne import specs
 
 netParams = specs.NetParams()       # object of class NetParams to store the network parameters
 
-netParams.sizeX = 380               # x-dimension (horizontal length) size in um
+# note: set sizeX and sizeZ to 380 to get ~10k cells
+netParams.sizeX = 38                # x-dimension (horizontal length) size in um 
 netParams.sizeY = 1200              # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 380               # z-dimension (horizontal length) size in um
+netParams.sizeZ = 38                # z-dimension (horizontal length) size in um
 netParams.propVelocity = 200.0      # propagation velocity (um/ms)
 netParams.probLengthConst = 100.0   # length constant for conn probability (um)
 
@@ -113,7 +114,7 @@ simConfig.createNEURONObj = 0                       # create HOC objects when in
 simConfig.createPyStruct = True                     # create Python structure (simulator-independent) when instantiating network
 
 # Saving
-simConfig.filename = 'Allen'                        # Set file output name
+simConfig.filename = 'V1'                        # Set file output name
 simConfig.saveDataInclude = ['netParams', 'net']    # data structures to save
 simConfig.saveJson = True                           # Save params, network and sim output to pickle file
 

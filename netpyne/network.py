@@ -248,13 +248,18 @@ class Network (object):
                         # calculate new syn positions
                         newSecs, newLocs = postCell._distributeSynsUniformly (secList=secList, numSyns=len(conns))
 
+                        postSynMechs = postCell.secs[conn['sec']].synMechs
+
                         # modify syn positions
-                        for conn,newSec,newLoc in zip(conns, newSecs, newLocs):
-                            if newSec != conn['sec']:
-                                postCell.addSynMech(conn['synMech'], newSec, newLoc)
-                                # remove old too!
-                            conn['sec'] = newSec
-                            conn['loc'] = newLoc
+                        # for conn,newSec,newLoc in zip(conns, newSecs, newLocs):
+                        #     if newSec != conn['sec'] or newLoc != conn['loc']:
+                        #         indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+                        #         if indexOld: del postSynMechs[indexOld]
+                        #         print conn['synMech']
+                        #         postCell.addSynMech(conn['synMech'], newSec, newLoc)
+
+                        #     conn['sec'] = newSec
+                        #     conn['loc'] = newLoc
 
 
                             #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))

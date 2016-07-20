@@ -148,6 +148,8 @@ def loadNet (filename, data=None, instantiate=True):
                     cell.stims = cellLoad['stims']
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(data['net']['cells'])))
+                print('  Created %d connections' % (len(data['net']['cells'])))
+                print('  Created %d stims' % (len(data['net']['cells'])))
 
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:  
@@ -936,15 +938,16 @@ def saveData (include = None):
                 print('Finished saving!')
             import os
             return os.getcwd()+'/'+sim.cfg.filename
+            # Save timing
+            if sim.cfg.timing: 
+                timing('stop', 'saveTime')
+                print('  Done; saving time = %0.2f s.' % sim.timingData['saveTime'])
+            if sim.cfg.timing and sim.cfg.saveTiming: 
+                import pickle
+                with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
+
         else: 
             print('Nothing to save')
-
-
-        # Save timing
-        timing('stop', 'saveTime')
-        if sim.cfg.timing and sim.cfg.saveTiming: 
-            import pickle
-            with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
 
 ###############################################################################
@@ -1474,78 +1477,81 @@ def exportNeuroML2 (reference, connections=True, stimulations=True):
 ### NetPyNE's internal representation
 ############################################################################### 
 
-from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
+#### NOTE: commented out because generated error when running via mpiexec
+####       maybe find way to check if exectued via mpi 
+
+    # from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
 
-class NetPyNEBuilder(DefaultNetworkHandler):
-    
-    cellParams = {}
-    popParams = {}
-    projections = {}
-    
-    stimSources = {}
-    stimLists = {}
-    
-    #
-    #  Overridden from DefaultNetworkHandler
-    #    
-    def handlePopulation(self, population_id, component, size):
+    # class NetPyNEBuilder(DefaultNetworkHandler):
         
-        self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
+    #     cellParams = {}
+    #     popParams = {}
+    #     projections = {}
         
-        popInfo={}
-        popInfo['popLabel'] = population_id
-        popInfo['cellModel'] = component
-        popInfo['cellType'] = component
-        popInfo['cellsList'] = []
+    #     stimSources = {}
+    #     stimLists = {}
         
-        self.popParams[population_id] = popInfo
-        
-        cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
-
-        soma = {'geom': {}, 'pointps':{}}  # soma properties
-        soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-        soma['pointps'][component] = {'mod':component}
-        cellRule['secs'] = {'soma': soma}  # add sections to dict
-        self.cellParams[component] = cellRule
+    #     #
+    #     #  Overridden from DefaultNetworkHandler
+    #     #    
+    #     def handlePopulation(self, population_id, component, size):
             
-    
-    #
-    #  Overridden from DefaultNetworkHandler
-    #    
-    def handleLocation(self, id, population_id, component, x, y, z):
-        DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
-    
-        cellsList = self.popParams[population_id]['cellsList']
-        cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
-   
-   
-    #
-    #  Overridden from DefaultNetworkHandler
-    #    
-    def handleInputList(self, inputListId, population_id, component, size):
-        DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+    #         self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
+            
+    #         popInfo={}
+    #         popInfo['popLabel'] = population_id
+    #         popInfo['cellModel'] = component
+    #         popInfo['cellType'] = component
+    #         popInfo['cellsList'] = []
+            
+    #         self.popParams[population_id] = popInfo
+            
+    #         cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
+
+    #         soma = {'geom': {}, 'pointps':{}}  # soma properties
+    #         soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+    #         soma['pointps'][component] = {'mod':component}
+    #         cellRule['secs'] = {'soma': soma}  # add sections to dict
+    #         self.cellParams[component] = cellRule
+                
         
-        self.stimSources[inputListId] = {'label': inputListId, 'type': component}
-        self.stimLists[inputListId] = {
-                    'source': inputListId, 
-                    'sec':'soma', 
-                    'loc': 0.5, 
-                    'conds': {'popLabel':population_id, 'cellList': []}}
+    #     #
+    #     #  Overridden from DefaultNetworkHandler
+    #     #    
+    #     def handleLocation(self, id, population_id, component, x, y, z):
+    #         DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
         
-   
-    #
-    #  Overridden from DefaultNetworkHandler
-    #   
-    def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
-        
-        print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
-        if segId!=0:
-            raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
-        if fract!=0.5:
-            raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
-        
-        self.stimLists[inputListId]['conds']['cellList'].append(cellId)
+    #         cellsList = self.popParams[population_id]['cellsList']
+    #         cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
+       
+       
+    #     #
+    #     #  Overridden from DefaultNetworkHandler
+    #     #    
+    #     def handleInputList(self, inputListId, population_id, component, size):
+    #         DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+            
+    #         self.stimSources[inputListId] = {'label': inputListId, 'type': component}
+    #         self.stimLists[inputListId] = {
+    #                     'source': inputListId, 
+    #                     'sec':'soma', 
+    #                     'loc': 0.5, 
+    #                     'conds': {'popLabel':population_id, 'cellList': []}}
+            
+       
+    #     #
+    #     #  Overridden from DefaultNetworkHandler
+    #     #   
+    #     def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
+            
+    #         print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
+    #         if segId!=0:
+    #             raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
+    #         if fract!=0.5:
+    #             raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
+            
+    #         self.stimLists[inputListId]['conds']['cellList'].append(cellId)
 
 ###############################################################################
 # Import network from NeuroML2

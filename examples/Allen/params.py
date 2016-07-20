@@ -1,4 +1,4 @@
-from netpyne import specs,sim
+from netpyne import specs
 
 ###############################################################################
 # NETWORK PARAMETERS
@@ -6,9 +6,9 @@ from netpyne import specs,sim
 
 netParams = specs.NetParams()       # object of class NetParams to store the network parameters
 
-netParams.sizeX = 300                # x-dimension (horizontal length) size in um
+netParams.sizeX = 380               # x-dimension (horizontal length) size in um
 netParams.sizeY = 1200              # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 300                # z-dimension (horizontal length) size in um
+netParams.sizeZ = 380               # z-dimension (horizontal length) size in um
 netParams.propVelocity = 200.0      # propagation velocity (um/ms)
 netParams.probLengthConst = 100.0   # length constant for conn probability (um)
 
@@ -52,34 +52,38 @@ netParams.synMechParams['GABA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2,
  
 
 ## Cell connectivity rules
-conns = 1
-if conns:
-    netParams.connParams['E2->all'] = {'preConds': {'cellType': 'E2'},          # presyn: E2
-        'postConds': {'ynorm': [0.2, 0.8]},                                     # postsyn: 0.2-0.8
-        'probability': '0.2*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
-        'weight': 0.05,                                                         # synaptic weight 
-        'delay': 'dist_3D/propVelocity',                                        # distance-dependent transmission delay (ms) 
-        'synMech': 'AMPA',                                                      # target synaptic mechanism        
-        'synsPerConn': 5}                                                       # synapses per connection  
+netParams.connParams['E2->all'] = {'preConds': {'cellType': 'E2'},          # presyn: E2
+    'postConds': {'ynorm': [0.2, 0.8]},                                     # postsyn: 0.2-0.8
+    'probability': '0.15*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
+    'weight': 0.05,                                                         # synaptic weight 
+    'delay': 'dist_3D/propVelocity',                                        # distance-dependent transmission delay (ms) 
+    'synMech': 'AMPA',                                                      # target synaptic mechanism        
+    'synsPerConn': 5}                                                       # synapses per connection  
 
-    netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},         # presyn: L4_E
-        'postConds': {'popLabel': 'L2_E'},                                      # postsyn: L2_E 
-        'probability': 0.15,                                                    # fixed probability
-        'weight': '0.5*post_ynorm',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
-        'delay': 'gauss(5,1)',                                                  # gaussian distributed transmission delay (ms) 
-        'synMech': 'AMPA',                                                      # target synaptic mechanism 
-        'synsPerConn': 5}                                                       # uniformly distributed synapses per connection  
+netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},         # presyn: L4_E
+    'postConds': {'popLabel': 'L2_E'},                                      # postsyn: L2_E 
+    'probability': 0.1,                                                    # fixed probability
+    'weight': '0.5*post_ynorm',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
+    'delay': 'gauss(5,1)',                                                  # gaussian distributed transmission delay (ms) 
+    'synMech': 'AMPA',                                                      # target synaptic mechanism 
+    'synsPerConn': 5}                                                       # uniformly distributed synapses per connection  
 
-    netParams.connParams['I->all'] = {'preConds': {'cellType': ['IF', 'IL']}, # presyn: I
-        'postConds': {'cellModel': 'perisom', 'y': [100, 1100]},                # postsyn: perisom, [100,1100]
-        'probability': '0.2*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
-        'weight': 0.002,                                                        # synaptic weight 
-        'delay': 'dist_3D/propVelocity',                                        # transmission delay (ms) 
-        'synMech': 'GABA',                                                      # synaptic mechanism 
-        'synsPerConn': 5}                                                       # synapses per connection  
+netParams.connParams['I->all'] = {'preConds': {'cellType': ['IF', 'IL']}, # presyn: I
+    'postConds': {'cellModel': 'perisom', 'y': [100, 1100]},                # postsyn: perisom, [100,1100]
+    'probability': '0.1*exp(-dist_3D/probLengthConst)',                     # distance-dependent probability
+    'weight': 0.002,                                                        # synaptic weight 
+    'delay': 'dist_3D/propVelocity',                                        # transmission delay (ms) 
+    'synMech': 'GABA',                                                      # synaptic mechanism 
+    'synsPerConn': 5}                                                       # synapses per connection  
 
 
 ## Subcellular connectivity rules
+netParams['subConnParams'].append(
+{'preConds': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
+'postConds': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
+'sec': 'all',
+'ynormRange': [0, 1.0],
+'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
 
 
 ## Stimulation parameters
@@ -93,14 +97,14 @@ netParams.stimTargetParams['Input1->all'] = {'source': 'Input1', 'conds': {'ynor
 # SIMULATION CONFIGURATION
 ###############################################################################
 
-simConfig = specs.SimConfig()                # object of class SimConfig to store simulation configuration
+simConfig = specs.SimConfig()                       # object of class SimConfig to store simulation configuration
 
-simConfig.verbose = 0                        # Show detailed messages 
-simConfig.createNEURONObj = 0              # create HOC objects when instantiating network
-simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = 0                               # Show detailed messages 
+simConfig.createNEURONObj = 0                       # create HOC objects when instantiating network
+simConfig.createPyStruct = True                     # create Python structure (simulator-independent) when instantiating network
 
 # Saving
-simConfig.filename = 'Allen'                  # Set file output name
-simConfig.saveDataInclude = ['netParams', 'net']
-simConfig.saveJson = True                     # Save params, network and sim output to pickle file
+simConfig.filename = 'Allen'                        # Set file output name
+simConfig.saveDataInclude = ['netParams', 'net']    # data structures to save
+simConfig.saveJson = True                           # Save params, network and sim output to pickle file
 

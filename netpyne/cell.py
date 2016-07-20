@@ -264,8 +264,8 @@ class Cell (object):
             conn['hNetcon'] = netcon
 
             # Add plasticity 
-            if conn.get('plasticity'):
-                self._addConnPlasticity(conn['plasticity'], self.secs[conn['sec']], netcon, 0)
+            if conn.get('plast'):
+                self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
 
 
@@ -585,7 +585,7 @@ class Cell (object):
                 'delay': params.get('delay'),
                 'threshold': params.get('threshold'),
                 'synsPerConn': params.get('synsPerConn'),
-                'plasticity': params.get('plasticity')}
+                'plast': params.get('plast')}
 
             netStimParams = {'source': params['source'],
                 'type': params['type'],
@@ -756,7 +756,7 @@ class Cell (object):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
-        plasticity = params.get('plasticity')
+        plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hSec'])  # create plasticity mechanism (eg. h.STDP)

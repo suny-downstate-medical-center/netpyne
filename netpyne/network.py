@@ -220,6 +220,16 @@ class Network (object):
                         # print [(conn['sec'],conn['loc']) for conn in conns]
 
                         # different case if has vs doesn't have 3d points
+                        #  h.distance(sec=h.soma[0], seg=0)
+                        # for sec in apical:
+                        #    print h.secname()
+                        #    for seg in sec:
+                        #      print seg.x, h.distance(seg.x)
+
+                             
+            # def fromtodistance(origin_segment, to_segment):
+            #   h.distance(0, origin_segment.x, sec=origin_segment.sec)
+            #   return h.distance(to_segment.x, sec=to_segment.sec)
 
 
         # find postsyn cells
@@ -634,7 +644,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
-            'plasticity': connParam.get('plasticity')}
+            'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
 

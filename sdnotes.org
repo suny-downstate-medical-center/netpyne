@@ -500,10 +500,10 @@ STDPparams = {'hebbwt': , 'antiwt':, 'wmax':, 'RLon': , 'RLhebbwt', 'RLantiwt', 
                             stdpmech.RLwindhebb = stdpmech.RLwindhebb = s.eligwin # RL eligibility trace window length (ms)
                             stdpmech.useRLexp = s.useRLexp # RL 
                             stdpmech.softthresh = s.useRLsoft # RL soft-thresholding
-'plasticity': {'mech': 'STDP', 'params': STDPparams}
+'plast': {'mech': 'STDP', 'params': STDPparams}
 
 - Single set of STDP params for all:
-'plasticity':  'STDP'
+'plast':  'STDP'
 
 ** revisiting STDP mod implementation
 *** stdp.m1ms
@@ -2309,7 +2309,50 @@ Thanks, and looking forward to chatting soon!  Best,
  
 Anton.
 
+** results
+*** 300x1200x300
+create_save.py:
 
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 6477 
+  Done; cell creation time = 11.53 s.
+Making connections...
+  Number of connections on node 0: 4160680 
+  Done; cell connection time = 617.51 s.
+Adding stims...
+  Number of stims on node 0: 32385 
+  Done; cell stims creation time = 3.49 s.
+
+Gathering data...
+  Done; gather time = 193.44 s.
+
+Analyzing...
+  Cells: 6477
+  Connections: 4193065 (647.38 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 970Mb
+
+load_run.py:
+
+Loading file Allen.json ... 
+  Done; file loading time = 56.78 s
+Loading simConfig...
+  simConfig not found in file Allen.json
+Loading netParams...
+Loading net...
+  Created 6477 cells
+  Added NEURON objects to 6477 cells
+  Done; re-instantiate net time = 75.16 s
+Loading simData...
+  simData not found in file Allen.json
+  Recording  V_soma from cell  0
+  Recording  V_dend6 from cell  0
+  Recording  V_soma from cell  6045
+  Recording  V_dend6 from cell  6045
+
+*** 380x120x38'
 * 16jul20 Matplotlib errors
 - http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc

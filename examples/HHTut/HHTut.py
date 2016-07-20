@@ -31,7 +31,7 @@ netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 10, 'noise
 # Cell parameters
 
 ## PYR cell properties
-cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism

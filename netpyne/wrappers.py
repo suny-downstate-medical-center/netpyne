@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
-'createExportNeuroML2'])  # wrappers
+'createExportNeuroML2','importNeuroML2SimulateAnalyze'])  # wrappers
 
 import sim
 
@@ -132,4 +132,11 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
     sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
 
     if output: return (pops, cells, conns, stims, simData)
+    
+    
+###############################################################################
+# Wrapper to import network from NeuroML2
+###############################################################################
+def importNeuroML2SimulateAnalyze(fileName, simConfig):
         
+    sim.importNeuroML2(fileName, simConfig)

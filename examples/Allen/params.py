@@ -63,12 +63,12 @@ if conns:
         'synsPerConn': 5}                                                       # synapses per connection  
 
     netParams.connParams['E4->E2'] = {'preConds': {'popLabel': 'L4_E'},         # presyn: L4_E
-        'postConds': {'popLabel': {'L2_E'}},                                    # postsyn: L2_E 
+        'postConds': {'popLabel': 'L2_E'},                                      # postsyn: L2_E 
         'probability': 0.25,                                                    # fixed probability
-        'weight': '0.5*ynorm_post',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
+        'weight': '0.5*post_ynorm',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
         'delay': 'gauss(5,1)',                                                  # gaussian distributed transmission delay (ms) 
         'synMech': 'AMPA',                                                      # target synaptic mechanism 
-        'synsPerConn': 'uniform(4,6)'}                                          # uniformly distributed synapses per connection  
+        'synsPerConn': 5}                                                       # uniformly distributed synapses per connection  
 
     netParams.connParams['I->all'] = {'preConds': {'cellType': ['IF', 'IL']}, # presyn: I
         'postConds': {'cellModel': 'perisom', 'y': [100, 1100]},                # postsyn: perisom, [100,1100]
@@ -101,7 +101,7 @@ simConfig.verbose = True                     # Show detailed messages
 
 # Saving
 simConfig.filename = 'Allen'                  # Set file output name
-simConfig.saveDataInclude = ['net', 'simConfig']
+simConfig.saveDataInclude = ['netParams', 'net', 'simConfig']
 simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
                           'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}  # Dict with traces to record
 
@@ -115,6 +115,6 @@ simConfig.addAnalysis('plotTraces', {'include': [('L2_E', 0), ('L5_IF', 0)]})   
 # simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
 # simConfig.addAnalysis('plotConn', True)           # plot connectivity matrix
 
-sim.createSimulateAnalyze(netParams=netParams, simConfig=simConfig) 
+#sim.createSimulateAnalyze(netParams=netParams, simConfig=simConfig) 
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

@@ -12,7 +12,7 @@ __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gath
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['exportNeuroML2'])  # export
 __all__.extend(['importNeuroML2'])  # import
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -23,6 +23,7 @@ import hashlib
 from numbers import Number
 from copy import copy
 from specs import Dict, ODict
+from collections import OrderedDict
 from neuron import h, init # Import NEURON
 
 import sim, specs
@@ -235,9 +236,8 @@ def _loadFile (filename):
     elif ext == 'json':
         import json
         print('Loading file %s ... ' % (filename))
-        #with open(sim.cfg.filename+'.json', 'w') as fileObj:
-        #    json.dump(dataSave, fileObj)
-        print('NOT IMPLEMENTED!')
+        with open(filename, 'r') as fileObj:
+            data = json.load(fileObj)
 
     # load mat file
     elif ext == 'mat':
@@ -392,25 +392,39 @@ def replaceNoneObj (obj):
 def replaceDictODict (obj):
     if type(obj) == list:
         for item in obj:
-            if type(item) in [list, dict, Dict, ODict]:
+            if type(item) == Dict:
+                item = item.todict()
+            elif type(item) == ODict:
+                item = item.toOrderedDict()
+            if type(item) in [list, dict, OrderedDict]:
                 replaceDictODict(item)
 
-    elif type(obj) == Dict:
-        obj = obj.todict()
+    elif type(obj) in [dict, OrderedDict, Dict, ODict]:
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, Dict, ODict]:
-                replaceDictODict(val)
+            if type(val) == Dict:
+                obj[key] = val.todict()
+            elif type(val) == ODict:
+                obj[key] = val.toOrderedDict()
+            if type(val) in [list, dict, OrderedDict]:
+                replaceDictODict(val)       
 
-    elif type(obj) == ODict:
-        obj = obj.toOrderedDict()
-        for key,val in obj.iteritems():
-            if type(val) in [list, dict, Dict, ODict]:
-                replaceDictODict(val)
+    # elif type(obj) == Dict:
+    #     obj = obj.todict()
+    #     for key,val in obj.iteritems():
+    #         if type(val) in [list, dict, Dict, ODict]:
+    #             replaceDictODict(val)
 
-    elif type(obj) == dict:
-        for key,val in obj.iteritems():
-            if type(val) in [list, dict, Dict, ODict]:
-                replaceDictODict(val)
+    # elif type(obj) == ODict:
+    #     print obj.keys()
+    #     obj = obj.toOrderedDict()
+    #     for key,val in obj.iteritems():
+    #         if type(val) in [list, dict, Dict, ODict]:
+    #             replaceDictODict(val)
+
+    # elif type(obj) == dict:
+    #     for key,val in obj.iteritems():
+    #         if type(val) in [list, dict, Dict, ODict]:
+    #             replaceDictODict(val)
     return obj
 
 ###############################################################################
@@ -757,11 +771,14 @@ def gatherData ():
             sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
         else:
             sim.connsPerCell = 0
-        if sim.cfg.timing: print('  Run time: %0.2f s' % (sim.timingData['runTime']))
-        print('  Simulated time: %0.1f s; %i cells; %i workers' % (sim.cfg.duration/1e3, sim.numCells, sim.nhosts))
-        print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
+         
+        print('  Cells: %i' % (sim.numCells) ) 
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
-
+        if sim.timingData.get('runTime'): 
+            print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
+            print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
+            print('  Run time: %0.2f s' % (sim.timingData['runTime']))
+            
         return sim.allSimData
 
 
@@ -834,7 +851,7 @@ def saveData (include = None):
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
         if 'netCells' in include: net['cells'] = sim.net.allCells
-        if 'netPops' in include: net['pops'] = sim.net.allPops.toOrderedDict()
+        if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: dataSave['simData'] = sim.allSimData
@@ -864,7 +881,9 @@ def saveData (include = None):
             # Save to json file
             if sim.cfg.saveJson:
                 import json
-                dataSave = replaceDictODict(dataSave)
+                #dataSave = replaceDictODict(dataSave)
+
+                #return dataSave
 
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.json '))
                 with open(sim.cfg.filename+'.json', 'w') as fileObj:

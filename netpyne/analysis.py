@@ -468,7 +468,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -490,6 +490,8 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
     '''
 
     print('Plotting recorded cell traces ...')
+
+    if include is None: include = [] # If not defined, initialize as empty list
 
     # rerun simulation so new include cells get recorded from
     if rerun: 

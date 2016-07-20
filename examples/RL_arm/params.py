@@ -129,7 +129,7 @@ netParams.addConnParams(None,
     'probability': 0.1125,              
     'delay': 5,     
     'synMech': 'AMPA',
-    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
+    'plast': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams.addConnParams(None,
     {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'ES'},  # ES -> ES 
@@ -159,7 +159,7 @@ netParams.addConnParams(None,
     'probability': 0.33750,              
     'delay': 5,     
     'synMech': 'AMPA',
-    'plasticity': {'mech': 'STDP', 'params': STDPparams}})
+    'plast': {'mech': 'STDP', 'params': STDPparams}})
 
 
 netParams.addConnParams(None,
@@ -212,7 +212,7 @@ netParams.addConnParams(None,
     'probability': 0.01125,              
     'delay': 5,     
     'synMech': 'AMPA'})#,
-#    'plasticity': {'mech': 'STDP', 'params': STDPparams}}) 
+#    'plast': {'mech': 'STDP', 'params': STDPparams}}) 
 
 
 # Motor

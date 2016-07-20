@@ -1,0 +1,162 @@
+{
+  "biophys": [
+    {
+      "model_type": "Biophysical - perisomatic", 
+      "model_file": [
+        "manifest.json", 
+        "313861608_fit.json"
+      ]
+    }
+  ], 
+  "runs": [
+    {
+      "sweeps": [
+        4, 
+        5, 
+        6, 
+        7, 
+        8, 
+        9, 
+        10, 
+        11, 
+        12, 
+        13, 
+        14, 
+        15, 
+        17, 
+        18, 
+        19, 
+        20, 
+        21, 
+        23, 
+        24, 
+        25, 
+        26, 
+        28, 
+        29, 
+        30, 
+        31, 
+        32, 
+        33, 
+        34, 
+        35, 
+        36, 
+        37, 
+        39, 
+        40, 
+        41, 
+        42, 
+        43, 
+        44, 
+        45, 
+        46, 
+        47, 
+        48, 
+        49, 
+        50, 
+        51, 
+        52, 
+        53, 
+        54, 
+        55, 
+        57, 
+        58, 
+        59, 
+        60, 
+        61, 
+        62, 
+        63, 
+        64, 
+        65, 
+        66, 
+        68, 
+        69, 
+        71, 
+        72, 
+        73, 
+        74, 
+        75, 
+        76, 
+        77, 
+        78, 
+        79, 
+        80, 
+        81, 
+        82, 
+        83, 
+        84, 
+        85, 
+        86, 
+        87, 
+        88, 
+        89, 
+        90, 
+        91, 
+        92, 
+        93, 
+        94, 
+        95, 
+        96, 
+        97, 
+        98, 
+        99, 
+        100, 
+        101, 
+        102, 
+        103, 
+        104, 
+        105
+      ]
+    }
+  ], 
+  "neuron": [
+    {
+      "hoc": [
+        "stdgui.hoc", 
+        "import3d.hoc",
+        "cell_template.hoc"
+      ]
+    }
+  ], 
+  "manifest": [
+    {
+      "type": "dir", 
+      "spec": ".", 
+      "key": "BASEDIR"
+    }, 
+    {
+      "parent": "BASEDIR", 
+      "type": "dir", 
+      "spec": "work", 
+      "key": "WORKDIR"
+    }, 
+    {
+      "type": "file", 
+      "spec": "Pvalb-IRES-Cre_Ai14-165874.04.02.01_491119570_m.swc", 
+      "key": "MORPHOLOGY"
+    }, 
+    {
+      "type": "file", 
+      "spec": "Pvalb-IRES-Cre_Ai14-165874.04.02.01_491119570_marker_m.swc", 
+      "key": "MARKER"
+    }, 
+    {
+      "type": "dir", 
+      "spec": "modfiles", 
+      "key": "MODFILE_DIR"
+    }, 
+    {
+      "type": "file", 
+      "spec": "313861603.nwb", 
+      "key": "stimulus_path", 
+      "format": "NWB"
+    }, 
+    {
+      "key": "output_path", 
+      "type": "file", 
+      "spec": "313861603.nwb", 
+      "parent_key": "WORKDIR", 
+      "format": "NWB"
+    }
+  ]
+}

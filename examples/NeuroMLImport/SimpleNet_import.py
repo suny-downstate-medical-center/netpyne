@@ -1,11 +1,9 @@
 
 from netpyne import sim
-
 from netpyne import specs 
 
-specs.SimConfig()
 
-file_name = 'SimpleNet.net.nml'
+nml2_file_name = 'SimpleNet.net.nml'
 
 simConfig = specs.SimConfig()  # dictionary to store simConfig
 
@@ -23,4 +21,4 @@ simConfig.saveDat = True # save traces
 simConfig.plotRaster = True # Whether or not to plot a raster
 simConfig.plotCells = ['all'] # plot recorded traces for this list of cells
 
-sim.importNeuroML2SimulateAnalyze(file_name,simConfig)
+sim.importNeuroML2SimulateAnalyze(nml2_file_name,simConfig)

@@ -1431,17 +1431,22 @@ class NetPyNEBuilder(DefaultNetworkHandler):
     
     cellParams = {}
     popParams = {}
-    projections = {}
+    
+    projection_infos = {}
+    connections = {}
     
     stimSources = {}
     stimLists = {}
+    
+    gids = {}
+    next_gid = 0
     
     #
     #  Overridden from DefaultNetworkHandler
     #    
     def handlePopulation(self, population_id, component, size):
         
-        self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
+        self.log.info("A population: "+population_id+", component: "+component+", size: %i"%size)
         
         popInfo={}
         popInfo['popLabel'] = population_id
@@ -1458,6 +1463,8 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         soma['pointps'][component] = {'mod':component}
         cellRule['secs'] = {'soma': soma}  # add sections to dict
         self.cellParams[component] = cellRule
+        
+        self.gids[population_id] = [-1]*size
             
     
     #
@@ -1468,7 +1475,42 @@ class NetPyNEBuilder(DefaultNetworkHandler):
     
         cellsList = self.popParams[population_id]['cellsList']
         cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
+        self.gids[population_id][id] = self.next_gid
+        self.next_gid+=1
    
+    #
+    #  Overridden from DefaultNetworkHandler
+    #
+    def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False):
+
+
+        self.log.info("A projection: "+projName+" from "+prePop+" -> "+postPop+" with syn: "+synapse)
+        self.projection_infos[projName] = (projName, prePop, postPop, synapse)
+        self.connections[projName] = []
+        
+    #
+    #  Overridden from DefaultNetworkHandler
+    #  
+    def handleConnection(self, projName, id, prePop, postPop, synapseType, \
+                                                    preCellId, \
+                                                    postCellId, \
+                                                    preSegId = 0, \
+                                                    preFract = 0.5, \
+                                                    postSegId = 0, \
+                                                    postFract = 0.5, \
+                                                    delay = 0, \
+                                                    weight = 1):
+        
+        self.log.info("A connection "+str(id)+" of: "+projName+": cell "+str(preCellId)+" in "+prePop \
+                              +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
+                              +", weight: "+str(weight)+", delay: "+str(delay))
+                              
+        if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
+            raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
+        
+        self.connections[projName].append( (self.gids[prePop][preCellId],self.gids[postPop][postCellId],delay, weight) )
+        
+        
    
     #
     #  Overridden from DefaultNetworkHandler
@@ -1509,6 +1551,8 @@ def importNeuroML2(fileName, simConfig):
     pp = pprint.PrettyPrinter(indent=4)
     
     print("Importing NeuroML 2 network from: %s"%fileName)
+    
+    nmlHandler = None
 
     if fileName.endswith(".nml"):
         
@@ -1529,15 +1573,34 @@ def importNeuroML2(fileName, simConfig):
         for cellParam in nmlHandler.cellParams.keys():
             netParams.addCellParams(cellParam, nmlHandler.cellParams[cellParam])
             
-        
-        #netParams['stimParams'] = {'sourceList': [], 'stimList': []}
+        for proj_id in nmlHandler.projection_infos.keys():
+            projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
+            
+            netParams.addSynMechParams(synapse, {'mod': synapse})
         
         for stimName in nmlHandler.stimSources.keys():
             netParams.addStimSourceParams(stimName,nmlHandler.stimSources[stimName])
             netParams.addStimTargetParams(stimName,nmlHandler.stimLists[stimName])
             
-            #netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
+        print('Finished import: %s'%nmlHandler.gids)
+        print('Connections: %s'%nmlHandler.connections)
             
+        
+        
+        
+        
+        
+        
+        
+        
+        # TODO check gids equal....
+        
+        
+        
+        
+        
+        
+        
         
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     
@@ -1545,7 +1608,19 @@ def importNeuroML2(fileName, simConfig):
     #pp.pprint(simConfig)
 
     sim.net.createPops()  
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
+    cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
+    
+    for proj_id in nmlHandler.projection_infos.keys():
+        projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
+        print("Creating connections for %s: %s->%s via %s"%(projName, prePop, postPop, synapse))
+        
+        for conn in nmlHandler.connections[projName]:
+            connParam = {'delay':conn[2],'weight':conn[3],'synsPerConn':1, 'loc':0.5}
+            connParam['synMech'] = synapse
+            
+            sim.net._addCellConn(connParam, conn[0], conn[1])
+        
+    #conns = sim.net.connectCells()                # create connections between cells based on params
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     sim.runSim()                      # run parallel Neuron simulation  

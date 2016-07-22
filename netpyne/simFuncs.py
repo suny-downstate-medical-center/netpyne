@@ -1474,7 +1474,8 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
     
         cellsList = self.popParams[population_id]['cellsList']
-        cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
+        
+        cellsList.append({'cellLabel':id, 'x': x if x else 0, 'y': y if y else 0 , 'z': z if z else 0})
         self.gids[population_id][id] = self.next_gid
         self.next_gid+=1
    

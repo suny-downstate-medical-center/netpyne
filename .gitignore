@@ -1,6 +1,6 @@
 /examples/sandbox/LEMS_sandbox.xml
 /examples/M1/LEMS_M1.xml
-/examples/NeuroMLImport/LEMS_SimpleNet.xml
+
 /examples/NeuroMLImport/LEMS_SimpleNet_netpyne.py
 /examples/NeuroMLImport/LEMS_SimpleNet_netpyne.py_main.json
 /examples/NeuroMLImport/RS.cell.json

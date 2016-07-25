@@ -1441,12 +1441,34 @@ class NetPyNEBuilder(DefaultNetworkHandler):
     gids = {}
     next_gid = 0
     
+    def __init__(self, netParams):
+        self.netParams = netParams
+        
+    def finalise(self):
+        
+        for popParam in self.popParams.keys():
+            self.netParams.addPopParams(popParam, self.popParams[popParam])
+            
+        for cellParam in self.cellParams.keys():
+            self.netParams.addCellParams(cellParam, self.cellParams[cellParam])
+            
+        for proj_id in self.projection_infos.keys():
+            projName, prePop, postPop, synapse = self.projection_infos[proj_id]
+            
+            self.netParams.addSynMechParams(synapse, {'mod': synapse})
+        
+        for stimName in self.stimSources.keys():
+            self.netParams.addStimSourceParams(stimName,self.stimSources[stimName])
+            self.netParams.addStimTargetParams(stimName,self.stimLists[stimName])
+    
     #
     #  Overridden from DefaultNetworkHandler
     #    
-    def handlePopulation(self, population_id, component, size):
+    def handlePopulation(self, population_id, component, size, component_obj):
         
-        self.log.info("A population: "+population_id+", component: "+component+", size: %i"%size)
+        self.log.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+        
+        assert(component==component_obj.id)
         
         popInfo={}
         popInfo['popLabel'] = population_id
@@ -1456,13 +1478,24 @@ class NetPyNEBuilder(DefaultNetworkHandler):
         
         self.popParams[population_id] = popInfo
         
-        cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
+        from neuroml import Cell
+        if isinstance(component_obj,Cell):
+            
+            self.netParams.importCellParams(label=component, conds={'cellType': component, 'cellModel': component},
+                fileName='%s.hoc'%component, cellName=component, importSynMechs=False)
+                
+                
+            pp.pprint(dict(self.netParams.cellParams.toOrderedDict()))
+            
+        else:
+        
+            cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
 
-        soma = {'geom': {}, 'pointps':{}}  # soma properties
-        soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-        soma['pointps'][component] = {'mod':component}
-        cellRule['secs'] = {'soma': soma}  # add sections to dict
-        self.cellParams[component] = cellRule
+            soma = {'geom': {}, 'pointps':{}}  # soma properties
+            soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+            soma['pointps'][component] = {'mod':component}
+            cellRule['secs'] = {'soma': soma}  # add sections to dict
+            self.cellParams[component] = cellRule
         
         self.gids[population_id] = [-1]*size
             
@@ -1562,33 +1595,17 @@ def importNeuroML2(fileName, simConfig):
 
         from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-        nmlHandler = NetPyNEBuilder()     
+        nmlHandler = NetPyNEBuilder(netParams)     
 
         currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
         currParser.parse(fileName)
         
-        for popParam in nmlHandler.popParams.keys():
-            netParams.addPopParams(popParam, nmlHandler.popParams[popParam])
-            
-        for cellParam in nmlHandler.cellParams.keys():
-            netParams.addCellParams(cellParam, nmlHandler.cellParams[cellParam])
-            
-        for proj_id in nmlHandler.projection_infos.keys():
-            projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
-            
-            netParams.addSynMechParams(synapse, {'mod': synapse})
-        
-        for stimName in nmlHandler.stimSources.keys():
-            netParams.addStimSourceParams(stimName,nmlHandler.stimSources[stimName])
-            netParams.addStimTargetParams(stimName,nmlHandler.stimLists[stimName])
+        nmlHandler.finalise()
             
         print('Finished import: %s'%nmlHandler.gids)
         print('Connections: %s'%nmlHandler.connections)
             
-        
-        
-        
         
         
         

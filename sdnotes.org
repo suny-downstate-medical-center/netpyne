@@ -2309,6 +2309,140 @@ Thanks, and looking forward to chatting soon!  Best,
  
 Anton.
 
+** results
+*** 300x1200x300
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 6477 
+  Done; cell creation time = 11.53 s.
+Making connections...
+  Number of connections on node 0: 4160680 
+  Done; cell connection time = 617.51 s.
+Adding stims...
+  Number of stims on node 0: 32385 
+  Done; cell stims creation time = 3.49 s.
+
+Gathering data...
+  Done; gather time = 193.44 s.
+
+Analyzing...
+  Cells: 6477
+  Connections: 4193065 (647.38 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 970Mb
+
+load_run.py:
+
+Loading file Allen.json ... 
+  Done; file loading time = 56.78 s
+Loading simConfig...
+  simConfig not found in file Allen.json
+Loading netParams...
+Loading net...
+  Created 6477 cells
+  Added NEURON objects to 6477 cells
+  Done; re-instantiate net time = 75.16 s
+Loading simData...
+  simData not found in file Allen.json
+  Recording  V_soma from cell  0
+  Recording  V_dend6 from cell  0
+  Recording  V_soma from cell  6045
+  Recording  V_dend6 from cell  6045
+
+*** 380x120x380
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 17.84 s.
+Making connections...
+  Number of connections on node 0: 9647815 
+  Done; cell connection time = 1625.43 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.23 s.
+
+Gathering data...
+  Done; gather time = 563.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 9699775 (933.39 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 2.0Gb (crashed)
+
+*** 380x120x380 (less conns)
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 18.68 s.
+Making connections...
+  Number of connections on node 0: 6329300 
+  Done; cell connection time = 1388.36 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.06 s.
+
+Gathering data...
+  Done; gather time = 353.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 1.4Gb (crashed)
+
+load_run.py:
+
+Loading file Allen_10k.json ... 
+  Done; file loading time = 99.93 s
+Loading simConfig...
+  simConfig not found in file Allen_10k.json
+Loading netParams...
+Loading net...
+  Created 10392 cells
+  Created 6381260 connections
+  Created 51960 stims
+  Added NEURON objects to 10392 cells
+  Done; re-instantiate net time = 116.31 s
+Loading simData...
+  simData not found in file Allen_10k.json
+
+Running...
+  Done; run time = 32.55 s; real-time ratio: 0.00.
+
+Gathering data...
+  Done; gather time = 751.81 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+  Spikes: 0 (0.00 Hz)
+  Simulated time: 0.0 s; 1 workers
+  Run time: 32.55 s
+  Done; saving time = 0.11 s.
+Plotting raster...
+No spikes available to plot raster
+Plotting recorded cell traces ...
+Plotting 2D representation of network cell locations and connections...
+
+*** 380x120x380 (less conns, with subcell)
+
+
+
+* 16jul20 Matplotlib errors
+- http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
+- fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
+- actually just deactivated
+
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models

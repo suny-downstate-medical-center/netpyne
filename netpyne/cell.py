@@ -30,7 +30,7 @@ class Cell (object):
         self.stims = []  # list of stimuli
 
         if create: self.create()  # create cell 
-        if associateGid and sim.cfg.createNEURONObj: self.associateGid() # register cell for this node
+        if associateGid: self.associateGid() # register cell for this node
 
     def create (self):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
@@ -264,33 +264,35 @@ class Cell (object):
             conn['hNetcon'] = netcon
 
             # Add plasticity 
-            if conn.get('plasticity'):
-                self._addConnPlasticity(conn['plasticity'], self.secs[conn['sec']], netcon, 0)
+            if conn.get('plast'):
+                self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
 
 
     def associateGid (self, threshold = 10.0):
         if self.secs:
-            sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
-            sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
-            if sec:
-                loc = sec['spikeGenLoc']  # get location of spike generator within section
-            else:
-                sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
-                loc = 0.5
-            nc = None
-            if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
-                for pointpName, pointpParams in sec['pointps'].iteritems():
-                    if 'vref' in pointpParams:
-                        nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
-                        break
-            if not nc:  # if still haven't created netcon  
-                nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
-            nc.threshold = threshold
-            sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+            if sim.cfg.createNEURONObj: 
+                sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
+                if sec:
+                    loc = sec['spikeGenLoc']  # get location of spike generator within section
+                else:
+                    sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    loc = 0.5
+                nc = None
+                if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
+                    for pointpName, pointpParams in sec['pointps'].iteritems():
+                        if 'vref' in pointpParams:
+                            nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
+                            break
+                if not nc:  # if still haven't created netcon  
+                    nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                nc.threshold = threshold
+                sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+                del nc # discard netcon
             sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
             sim.net.lid2gid.append(self.gid) # index = local id; value = global id
-            del nc # discard netcon
+
 
 
     def addSynMech (self, synLabel, secLabel, loc):
@@ -362,6 +364,9 @@ class Cell (object):
         # Create connections
         for i in range(params['synsPerConn']):
 
+            if netStimParams:
+                    netstim = self.addNetStim(netStimParams)
+            
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -373,8 +378,7 @@ class Cell (object):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                self.conns.append(Dict(connParams))
-                    
+                self.conns.append(Dict(connParams))                
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
@@ -388,7 +392,6 @@ class Cell (object):
                     postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
 
                 if netStimParams:
-                    netstim = self.addNetStim(netStimParams)
                     netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
@@ -398,8 +401,8 @@ class Cell (object):
                 netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
-            # Add plasticity
-            self._addConnPlasticity(params, sec, netcon, weightIndex)
+                # Add plasticity
+                self._addConnPlasticity(params, sec, netcon, weightIndex)
 
             if sim.cfg.verbose: 
                 sec = params['sec'] if pointp else synMechSecs[i]
@@ -523,35 +526,36 @@ class Cell (object):
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
+
+            if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
         
-        rand = h.Random()
-        #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
-        #rand.negexp(1)
-        stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
+        if sim.cfg.createNEURONObj:
+            rand = h.Random()
+            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
+            #rand.negexp(1)
+            stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
-        if isinstance(params['rate'], str):
-            if params['rate'] == 'variable':
-                try:
-                    netstim = h.NSLOC()
-                    netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
-                    netstim.noise = params['noise']
-                except:
-                    print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
+            if isinstance(params['rate'], str):
+                if params['rate'] == 'variable':
+                    try:
+                        netstim = h.NSLOC()
+                        netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
+                        netstim.noise = params['noise']
+                    except:
+                        print 'Error: tried to create variable rate NetStim but NSLOC mechanism not available'
+                else:
+                    print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
             else:
-                print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
-        else:
-            netstim = h.NetStim()
-            netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-            netstim.noise = params['noise']
-            netstim.start = params['start']
-        netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
-        netstim.number = params['number']   
-            
-        stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
+                netstim = h.NetStim()
+                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+                netstim.noise = params['noise']
+                netstim.start = params['start']
+            netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
+            netstim.number = params['number']   
+                
+            stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
-        if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
-
-        return stimContainer['hNetStim']
+            return stimContainer['hNetStim']
 
 
     def addStim (self, params):
@@ -581,7 +585,7 @@ class Cell (object):
                 'delay': params.get('delay'),
                 'threshold': params.get('threshold'),
                 'synsPerConn': params.get('synsPerConn'),
-                'plasticity': params.get('plasticity')}
+                'plast': params.get('plast')}
 
             netStimParams = {'source': params['source'],
                 'type': params['type'],
@@ -740,7 +744,8 @@ class Cell (object):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        secLengths = [self.secs[s]['hSec'].L for s in secList]
+        #secLengths = [self.secs[s]['hSec'].L for s in secList]
+        secLengths = [self.secs[s]['geom']['L'] for s in secList]
         totLength = sum(secLengths)
         cumLengths = list(cumsum(secLengths))
         absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
@@ -751,7 +756,7 @@ class Cell (object):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
-        plasticity = params.get('plasticity')
+        plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
                 plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hSec'])  # create plasticity mechanism (eg. h.STDP)

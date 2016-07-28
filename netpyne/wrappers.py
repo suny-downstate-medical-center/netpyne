@@ -76,10 +76,11 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 ###############################################################################
 # Wrapper to load all, ready for simulation
 ###############################################################################
-def load (filename, output=False):
+def load (filename, simConfig=None, output=False):
     ''' Sequence of commands load, simulate and analyse network '''
     sim.initialize()  # create network object and set cfg and net params
     sim.loadAll(filename)
+    if simConfig: sim.setSimCfg(simConfig)
     if len(sim.net.cells) == 0:
         pops = sim.net.createPops()                  # instantiate network populations
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations
@@ -96,8 +97,8 @@ def load (filename, output=False):
 ###############################################################################
 # Wrapper to load net and simulate
 ###############################################################################
-def loadSimulate (filename, output=False):
-    sim.load(filename)
+def loadSimulate (filename, simConfig=None, output=False):
+    sim.load(filename, simConfig)
     sim.simulate()
 
     #if output: return (pops, cells, conns, stims, simData)
@@ -106,8 +107,8 @@ def loadSimulate (filename, output=False):
 ###############################################################################
 # Wrapper to load net and simulate
 ###############################################################################
-def loadSimulateAnalyze (filename, output=False):
-    sim.load(filename)
+def loadSimulateAnalyze (filename, simConfig=None, output=False):
+    sim.load(filename, simConfig)
     sim.simulate()
     sim.analyze()
 

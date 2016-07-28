@@ -1,6 +1,25 @@
+## Version 0.5.6
+
+- Only load neuroml libraries and functions if installed to avoid error when importing sim
+
+- Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
+
+
 ## Version 0.5.5
 
+- New example using Allen Institute cells showing how to save large net and reload for simulation
+
+- Improved export/import from/to NeuroML2 (issue #12)
+
+- All structures (including Dict and ODict) can now  be saved and loaded via json
+
+- Added option to use separate simConfig when loading data from file
+
+- saveData() calls gatherData() if required 
+
 - saveData() returns string with full path of saved file (issue #127)
+
+- Fixed bugs so its possible to create and save Python structure independently of NEURON objects
 
 - Fixed bug that created 2 instead of 1 NetStims per cell
 

@@ -25,7 +25,8 @@ from collections import OrderedDict
 from neuron import h, init # Import NEURON
 try:
     import neuroml
-    import neuroml.writers as writers
+    from pyneuroml import pynml
+    
     __all__.extend(['exportNeuroML2'])  # export
     __all__.extend(['importNeuroML2'])  # import
     neuromlExists = True
@@ -36,7 +37,7 @@ except:
 import sim, specs
 
 import pprint
-pp = pprint.PrettyPrinter(depth=4)
+pp = pprint.PrettyPrinter(depth=6)
 
 
 ###############################################################################
@@ -1549,11 +1550,86 @@ if neuromlExists:
             from neuroml import Cell
             if isinstance(component_obj,Cell):
 
+                '''
                 self.netParams.importCellParams(label=component, conds={'cellType': component, 'cellModel': component},
                     fileName='%s.hoc'%component, cellName=component, importSynMechs=False)
+                self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']['e'] = -10
+                print self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']'''
+                
+                cellRule = {'conds':{'cellType': component, 'cellModel': component},  'secs': {}, 'secLists':{}}  # cell rule dict
+                
+                seg_ids_vs_segs = {}
+                seg_grps_vs_seg_names = {}
+                seg_grps_vs_seg_names['all'] = []
+                
+                for seg in component_obj.morphology.segments:
+                    seg_ids_vs_segs[seg.id] = seg
+                    cellRule['secs'][seg.name] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
+                    seg_grps_vs_seg_names['all'].append(seg.name)
+                    
+                    prox = None
+                    if seg.proximal:
+                        prox = seg.proximal
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+                    else: 
+                        parent_seg = seg_ids_vs_segs[seg.parent.segment]
+                        prox = parent_seg.distal
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
 
-
-                pp.pprint(dict(self.netParams.cellParams.toOrderedDict()))
+                    dist = seg.distal
+                    if prox.x==dist.x and prox.y==dist.y and prox.z==dist.z:
+                        
+                        if prox.diameter==dist.diameter:
+                            dist.y = prox.diameter
+                        else:
+                            raise Exception('Unsupported geometry in segment: %s of cell %s'%(seg.name,cell.id))
+                        
+                    cellRule['secs'][seg.name]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
+                    
+                for seg_grp in component_obj.morphology.segment_groups:
+                    seg_grps_vs_seg_names[seg_grp.id] = []
+                    for member in seg_grp.members:
+                        seg_grps_vs_seg_names[seg_grp.id].append(seg_ids_vs_segs[member.segments].name)
+                    cellRule['secLists'][seg_grp.id] = seg_grps_vs_seg_names[seg_grp.id]
+                    
+                for cm in component_obj.biophysical_properties.membrane_properties.channel_densities:
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
+                        mech = {'gmax':gmax}
+                        erev = pynml.convert_to_units(cm.erev,'mV')
+                        
+                        cellRule['secs'][seg_name]['mechs'][cm.ion_channel] = mech
+                        
+                        if cm.ion and cm.ion == 'non_specific':
+                            mech['e'] = erev
+                        else:
+                            if not cellRule['secs'][seg_name]['ions'].has_key(cm.ion):
+                                cellRule['secs'][seg_name]['ions'][cm.ion] = {}
+                            cellRule['secs'][seg_name]['ions'][cm.ion]['e'] = erev
+                            
+                for vi in component_obj.biophysical_properties.membrane_properties.init_memb_potentials:
+                    
+                    group = 'all' if not vi.segment_groups else vi.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['vinit'] = pynml.convert_to_units(vi.value,'mV')
+                            
+                for sc in component_obj.biophysical_properties.membrane_properties.specific_capacitances:
+                    
+                    group = 'all' if not sc.segment_groups else sc.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['geom']['cm'] = pynml.convert_to_units(sc.value,'uF_per_cm2')
+                            
+                for ra in component_obj.biophysical_properties.intracellular_properties.resistivities:
+                    
+                    group = 'all' if not ra.segment_groups else ra.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+                
+                self.cellParams[component] = cellRule
+                
+                for cp in self.cellParams.keys():
+                    pp.pprint(self.cellParams[cp])
 
             else:
 
@@ -1646,7 +1722,6 @@ if neuromlExists:
     ###############################################################################
     def importNeuroML2(fileName, simConfig):
 
-
         netParams = specs.NetParams()
 
         import pprint
@@ -1714,4 +1789,5 @@ if neuromlExists:
         sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
         sim.analysis.plotData()               # plot spike raster
         h('forall psection()')
+        h('forall { print secname(), ", ions: ena: ", ena,"; ek: ",ek } ')
 

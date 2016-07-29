@@ -189,7 +189,15 @@ class Cell (object):
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
                             if type(ionParamValue) in [list]: 
                                 ionParamValueFinal = ionParamValue[iseg]
-                            seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                            if ionParamName == 'e':
+                                seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_ext_conc':
+                                seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_int_conc':
+                                seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                
+                    if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
+                             (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
             # add synMechs (only used when loading)
             if 'synMechs' in sectParams:

@@ -1572,7 +1572,7 @@ if neuromlExists:
                         prox = seg.proximal
                         cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
                     else: 
-                        parent_seg = seg_ids_vs_segs[seg.parent.segment]
+                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
                         prox = parent_seg.distal
                         cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
 
@@ -1586,11 +1586,23 @@ if neuromlExists:
                         
                     cellRule['secs'][seg.name]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
                     
+                    if seg.parent:
+                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                        
+                        cellRule['secs'][seg.name]['topol'] = {'parentSec': parent_seg.name, 'parentX': float(seg.parent.fraction_along), 'childX': 0}
+                    
                 for seg_grp in component_obj.morphology.segment_groups:
                     seg_grps_vs_seg_names[seg_grp.id] = []
+
                     for member in seg_grp.members:
                         seg_grps_vs_seg_names[seg_grp.id].append(seg_ids_vs_segs[member.segments].name)
-                    cellRule['secLists'][seg_grp.id] = seg_grps_vs_seg_names[seg_grp.id]
+
+                    for inc in seg_grp.includes:
+                        for seg_name in seg_grps_vs_seg_names[inc.segment_groups]:
+                            seg_grps_vs_seg_names[seg_grp.id].append(seg_name)
+
+                    if not seg_grp.neuro_lex_id or seg_grp.neuro_lex_id !="sao864921383":
+                        cellRule['secLists'][seg_grp.id] = seg_grps_vs_seg_names[seg_grp.id]
                     
                 for cm in component_obj.biophysical_properties.membrane_properties.channel_densities:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
@@ -1625,6 +1637,16 @@ if neuromlExists:
                     group = 'all' if not ra.segment_groups else ra.segment_groups
                     for seg_name in seg_grps_vs_seg_names[group]:
                         cellRule['secs'][seg_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+                        
+                for specie in component_obj.biophysical_properties.intracellular_properties.species:
+                    
+                    group = 'all' if not specie.segment_groups else specie.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_ext_conc'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
+                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_int_conc'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                        
+                        cellRule['secs'][seg_name]['mechs'][specie.concentration_model] = {}
+                        
                 
                 self.cellParams[component] = cellRule
                 
@@ -1683,8 +1705,8 @@ if neuromlExists:
                                   +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
                                   +", weight: "+str(weight)+", delay: "+str(delay))
 
-            if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
-                raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
+            #if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
+            #    raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
 
             self.connections[projName].append( (self.gids[prePop][preCellId],self.gids[postPop][postCellId],delay, weight) )
 
@@ -1789,5 +1811,7 @@ if neuromlExists:
         sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
         sim.analysis.plotData()               # plot spike raster
         h('forall psection()')
-        h('forall { print secname(), ", ions: ena: ", ena,"; ek: ",ek } ')
+        h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
+        h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
+        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')
 

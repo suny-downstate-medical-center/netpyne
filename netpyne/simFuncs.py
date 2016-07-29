@@ -1608,7 +1608,10 @@ if neuromlExists:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for seg_name in seg_grps_vs_seg_names[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
-                        mech = {'gmax':gmax}
+                        if cm.ion_channel=='pas':
+                            mech = {'g':gmax}
+                        else:
+                            mech = {'gmax':gmax}
                         erev = pynml.convert_to_units(cm.erev,'mV')
                         
                         cellRule['secs'][seg_name]['mechs'][cm.ion_channel] = mech
@@ -1705,8 +1708,8 @@ if neuromlExists:
                                   +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
                                   +", weight: "+str(weight)+", delay: "+str(delay))
 
-            #if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
-            #    raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
+            if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
+                raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
 
             self.connections[projName].append( (self.gids[prePop][preCellId],self.gids[postPop][postCellId],delay, weight) )
 

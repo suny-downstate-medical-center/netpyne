@@ -497,6 +497,44 @@ Notice that the 2D network diagram now shows inhibitory connections in blue, and
 The full tutorial code for this example is available here: :download:`tut5.py <code/tut5.py>`.
 
 
+
+Adding stimulation to  the network 
+----------------------------------
+
+Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells). See See :ref:`stimulation` for details.
+
+In this example, we will take as a starting point the simple network in :download:`tut2.py <code/tut2.py>`, remove all connection parameters, and add external stimulation instead.
+
+Below we use the ``netParams.addStimSourceParams()`` method to easily add four typical NEURON sources of stimulation, each of a different type: IClamp, VClamp, AlphaSynapse, NetStim. Note that parameters values can also include string-based functions (:ref:`function_string`), for example to set a uniform distribution of onset values (``'onset': 'uniform(600,800)'``), or maximum conductance dependent on the target cell normalized depth (``'gmax': 'post_ynorm'``)::
+
+	netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 300, 'dur': 100, 'amp': 'uniform(0.4,0.5)'})
+	netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur': [0,50,200], 'amp': [-60,-30,40], 'gain': 1e5, 'rstim': 1, 'tau1': 0.1, 'tau2': 0})
+	netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(300,600)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+	netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1})
+
+
+Now we can map or apply any of the above stimulation sources to any subset of cells in the network, using the ``netParams.addStimTargetParams()``. Note that we can use any of the cell tags (e.g. 'popLabel', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
+
+	netParams.addStimTargetParams('Input_1->S', {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'popLabel':'S', 'cellList': range(15)}})
+	netParams.addStimTargetParams('Input_2->S', {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'S', 'ynorm': [0,0.5]}})
+	netParams.addStimTargetParams('Input_3->M1', {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'popLabel':'M', 'cellList': [2,4,5,8,10,15,19]}})
+	netParams.addStimTargetParams('Input_4->PYR', {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+gauss(0.2,0.05)','delay': 1, 'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}})
+
+
+.. note:: The stimTargetParams of NetStims require connection parameters (e.g. weight and delay), since a new connection will be created to map/apply the NetStim to each target cell. 
+
+.. note:: NetStims can be added both using the above method (as stims), or by creating a special type of population with ``'cellModel': 'NetStim'`` and adding the appropriate connections.
+
+
+Running the above network with different types of stimulation should produce the following raster::
+
+The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
+
+.. image:: figs/tut6.png
+	:width: 50%
+	:align: center
+
+
 Modifying the instantiated network interactively
 -------------------------------------------------
 
@@ -588,38 +626,35 @@ Finally, we add the code to create the network and run the simulation, but for i
 
 If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
 
-.. image:: figs/tut6_1.png
+.. image:: figs/tut7_1.png
 	:width: 100%
 	:align: center
 
-We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``sim`` object contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells`` list. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). 
+.. note:: We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``sim`` object contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells``. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). NEURON objects are contained within this python hierarchical structure. See :ref:`data_model` for details.
 
-A list of population objects is available via ``sim.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.
+.. note:: A list of population objects is available via ``sim.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.
 
-Spiking data is available via ``sim.allSimData['spkt']`` and ``sim.allSimData['spkid']``. Voltage traces are available via eg. ``sim.allSimData['V']['cell_25']`` (for cell with gid 25).
+.. note:: Spiking data is available via ``sim.allSimData['spkt']`` and ``sim.allSimData['spkid']``. Voltage traces are available via eg. ``sim.allSimData['V']['cell_25']`` (for cell with gid 25).
 
-All the simulation configuration options can be modified interactively via ``sim.cfg``. For example, to turn off plotting of 2D visualization run: ``sim.cfg.analysis['plot2Dnet']=False``
+.. note:: All the simulation configuration options can be modified interactively via ``sim.cfg``. For example, to turn off plotting of 2D visualization run: ``sim.cfg.analysis['plot2Dnet']=False``
 
 A representation of the instantiated network structure generated by NetPyNE is shown below:
 
 .. image:: figs/netstruct.png
-	:width: 90%
+	:width: 80%
 	:align: center
 
 
-Given the information above, we can now create a simple function ``changeWeights`` that modifies the weights of all Netcons in the network. We can now call this function to increase all th weights (eg. to 0.5) of the inhibitory connections, and rerun the simulation interactively::
+The Network object ``net`` also provides functions to easily modify its cell, connection and stimulation parameters: ``modifyCells(params)``, ``modifyConns(params)`` and ``modifyStims(params)``, respectively. The syntax for the ``params`` argument is similar to that used to initially set the network parameters, i.e. a dictionary including the conditions and parameters to set. For details see :ref:`network_methods`. 
+
+We can therefore call the ``sim.net.modifyConns()`` function to increase all the weights of the inhibitory connections (eg. to 0.5), and then rerun the simulation interactively::
 
 	###############################################################################
 	# INTERACTING WITH INSTANTIATED NETWORK
 	###############################################################################
 
-	def changeWeights(net, newWeight):
-	    netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
-	    for netcon in netcons: 
-	        netcon.weight[0] = newWeight
-
-
-	changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
+	# modify conn weights
+	sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 
 	sim.runSim()                          # run parallel Neuron simulation  
 	sim.gatherData()                      # gather spiking data and cell info from each node
@@ -628,14 +663,38 @@ Given the information above, we can now create a simple function ``changeWeights
 
 
 
-The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.67:
+.. note:: that for the condition we have used the `hop->hop` label, which makes reference to the set of recurrent connections previously created.
 
-.. image:: figs/tut6_2.png
+The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.70:
+
+.. image:: figs/tut7_2.png
 	:width: 70%
 	:align: center
 
 
-The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
+Additionally, we could also modify some of the cell properties to observe how this affects synchrony. The code below modifies the soma length of all cells in the 'hop' population to 160 um::
+
+
+	# modify cells geometry
+	sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+	                    'secs': {'soma': {'geom': {'L': 160}}}})
+
+	sim.simulate()
+	sim.analysis.plotRaster(syncLines=True)
+	sim.analysis.plotTraces(include = [1])
+
+
+.. note:: For illustration purposes we make use of the ``sim.simulate()`` wrapper, which simply calls ``runSim()`` and ``gatherData()``. Additionally, we interactively call the ``sim.plotRaster()`` and ``sim.plotTraces()`` functions.
+
+
+The resulting plot shows decreased firing rate and increased synchrony due to the new cell geometry:
+
+.. image:: figs/tut7_3.png
+	:width: 70%
+	:align: center
+
+
+The full tutorial code for this example is available here: :download:`tut7.py <code/tut7.py>`.
 
 An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 

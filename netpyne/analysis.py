@@ -468,7 +468,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -491,6 +491,8 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
 
     print('Plotting recorded cell traces ...')
 
+    if include is None: include = [] # If not defined, initialize as empty list
+
     # rerun simulation so new include cells get recorded from
     if rerun: 
         cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
@@ -499,7 +501,6 @@ def plotTraces (include = [], timeRange = None, overlay = False, oneFigPer = 'ce
                 sim.cfg.recordCells.append(cellRecord)
         sim.setupRecording()
         sim.simulate()
-
 
 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],

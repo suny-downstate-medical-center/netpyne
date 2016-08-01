@@ -2137,7 +2137,311 @@ if pc.gid_exists(gid):
 h.prcellgid(gid)
 
 * 16jul11 Modify network instance
+** sim.net.modifyCells
+** sim.net.modifyConns
+** sim.net.modifyStims
+* 16jul15 Use dot notation
+** new classes Dict and ODict
+** ~25% slower
+*** old dicts
+Creating simulation of 23 cell populations for 0.1 s on 1 hosts...
+  Number of cells on node 0: 4768 
+  Done; cell creation time = 3.07 s.
+Making connections...
+  Number of connections on node 0: 9536 
+  Done; cell connection time = 1.28 s.
 
+Running...
+0 
+  Done; run time = 125.21 s; real-time ratio: 0.00.
+
+Gathering spikes...
+  Done; gather time = 1.91 s.
+
+Analyzing...
+  Run time: 125.21 s
+  Simulated time: 0.1 s; 4768 cells; 1 workers
+  Spikes: 2120 (4.45 Hz)
+  Connections: 9536 (2.00 per cell)
+162.0 89.4 820
+IT_L23   2.20985431331  Hz
+89.0 89.4 113
+PV_L23   8.80996218645  Hz
+97.0 89.4 113
+SOM_L23   9.60186889984  Hz
+69.0 89.4 431
+IT_L4   1.79074728663  Hz
+72.0 89.4 475
+IT_L5A   1.69551395267  Hz
+111.0 89.4 540
+IT_L5B   2.29927914492  Hz
+751.0 89.4 540
+PT_L5B   15.5563841246  Hz
+169.0 89.4 248
+PV_L5   7.6225012629  Hz
+235.0 89.4 248
+SOM_L5   10.5993360756  Hz
+83.0 89.4 496
+IT_L6   1.8717976474  Hz
+95.0 89.4 496
+CT_L6   2.14241899401  Hz
+81.0 89.4 124
+PV_L6   7.30677635852  Hz
+106.0 89.4 124
+SOM_L6   9.56195424695  Hz
+Plotting recorded cell traces ...
+  Done; plotting time = 0.61 s
+
+Total time = 132.20 s
+
+
+
+*** new dot Dicts
+Creating simulation of 23 cell populations for 0.1 s on 1 hosts...
+  Number of cells on node 0: 4768 
+  Done; cell creation time = 4.08 s.
+Making connections...
+  Number of connections on node 0: 9536 
+  Done; cell connection time = 1.55 s.
+
+Running...
+0 
+  Done; run time = 123.59 s; real-time ratio: 0.00.
+
+Gathering spikes...
+  Done; gather time = 3.34 s.
+
+Analyzing...
+  Run time: 123.59 s
+  Simulated time: 0.1 s; 4768 cells; 1 workers
+  Spikes: 2120 (4.45 Hz)
+  Connections: 9536 (2.00 per cell)
+162.0 89.4 820
+IT_L23   2.20985431331  Hz
+89.0 89.4 113
+PV_L23   8.80996218645  Hz
+97.0 89.4 113
+SOM_L23   9.60186889984  Hz
+69.0 89.4 431
+IT_L4   1.79074728663  Hz
+72.0 89.4 475
+IT_L5A   1.69551395267  Hz
+111.0 89.4 540
+IT_L5B   2.29927914492  Hz
+751.0 89.4 540
+PT_L5B   15.5563841246  Hz
+169.0 89.4 248
+PV_L5   7.6225012629  Hz
+235.0 89.4 248
+SOM_L5   10.5993360756  Hz
+83.0 89.4 496
+IT_L6   1.8717976474  Hz
+95.0 89.4 496
+CT_L6   2.14241899401  Hz
+81.0 89.4 124
+PV_L6   7.30677635852  Hz
+106.0 89.4 124
+SOM_L6   9.56195424695  Hz
+Plotting recorded cell traces ...
+  Done; plotting time = 0.93 s
+
+Total time = 133.78 s
+* 16jul19 Allen Brain example
+** emails
+---
+Hi Salvador,
+ 
+Thank you very much for talking to us today.  That was helpful.
+ 
+As a next step for us, I wonder if I could ask you to give a quick tutorial to a larger group of folks here at the Allen Institute.  We have a meeting with several more people planned for Wednesday, July 20, at 3 pm Pacific time.  Would you be able to talk to us then?
+ 
+I am thinking that perhaps you could speak for 20 minutes or so, and then do 10 minutes of Q&A.
+ 
+It would be most helpful if for this tutorial you could walk us through a specific example of NetPyNE workflow applied to a question that’s of interest to us.  It doesn’t have to be a fully finished example – could be pseudo-code in part.  We would just really benefit from seeing how you are doing these operations.
+ 
+Here’s the example I have in mind.
+1. Let’s say you have 5 or so neuron types, each represented by a particular cell model and a morphology.  Let’s build a model consisting of 10,000 neurons that are replicas of these 5 models.
+ 
+2. Distribute the 10,000 cells in space.
+ 
+3. Connect the neurons using cell-type specific connectivity rules (let’s say, probabilistic rules based on distances between somata).
+ 
+4. Establish feedforward inputs into the 10,000 cells representing spike trains incoming from other parts of the brain.  Use arbitrary spike trains (e.g., experimental recordings), if possible.
+ 
+5. Save the constructed system to a file.  Read the file into NetPyNE and run the simulation. 
+ 
+6. Visualize the output.
+ 
+Do you think it’s feasible?  Sorry for a short notice, and please do let me know if this is too much to ask :).
+ 
+Many thanks,
+ 
+Anton.
+
+--- 
+Hi Anton,
+
+Yes, I think its feasible. 
+
+Were you interested in any particular cell models / number of compartments? any ones available in hoc or python (eg. from ModelDB) can be directly imported. Of course 10k cells with very detailed morphologies might take a while to simulate. In our M1 sim we combine Izhikevich point neurons, 5-compartment, and full >170 compartment cells. Let me know if you'd be interested in seeing an example of this. 
+
+Any requirements in terms of subcellular connectivity? Want single soma to soma synapse, or multiple synapses per cell-to-cell connection? Currently can provide specific section/location for each synapse, or can choose to distribute uniformly across a set of sections or sectionList (also about to release feature to distribute synapses over dendritic tree based on more complex patterns, eg. 1D or 2D density maps). 
+
+I'll let you know if I have any issues, but otherwise talk to you Wednesday 3pm (pacific time). 
+
+Thanks again for your interest.
+Salva
+
+--- 
+Sounds great, Salvador.  Thank you very much.
+ 
+We typically use models with a few hundred compartments.  They all can be found here:
+http://celltypes.brain-map.org/
+They are also available on ModelDB.
+ 
+Let’s not worry about actually running a simulation with 10,000 cells.  We are just curious to see the workflow and get an idea about the scale of the problem.  If you can estimate how long it will take to run the model-building part, how long it would take to simulate it, and how large are the files in which you would save the model details, that would be great, but don’t worry if it turns out that estimating those numbers is not straightforward.
+ 
+For the connectivity, we are using multiple synapses per connection (let’s assume, five synapses per connection on average).  Synapses should be distributed over dendritic tree, with rules depending on target and source cell types.  For example, something like “for this connection type, place synapses on the soma and dendrites within 100 um of path distance from the soma”.  Again, please don’t worry about actually instantiating all this.  We would just like to see an example of your code that does that.
+ 
+One additional thought we have is that we could ask you for the code from such a tutorial after we talk on Wednesday.  That way we could start playing around with NetPyNE in a meaningful way.  Hope that’s OK.
+ 
+Thanks, and looking forward to chatting soon!  Best,
+ 
+Anton.
+
+** results
+*** 300x1200x300
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 6477 
+  Done; cell creation time = 11.53 s.
+Making connections...
+  Number of connections on node 0: 4160680 
+  Done; cell connection time = 617.51 s.
+Adding stims...
+  Number of stims on node 0: 32385 
+  Done; cell stims creation time = 3.49 s.
+
+Gathering data...
+  Done; gather time = 193.44 s.
+
+Analyzing...
+  Cells: 6477
+  Connections: 4193065 (647.38 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 970Mb
+
+load_run.py:
+
+Loading file Allen.json ... 
+  Done; file loading time = 56.78 s
+Loading simConfig...
+  simConfig not found in file Allen.json
+Loading netParams...
+Loading net...
+  Created 6477 cells
+  Added NEURON objects to 6477 cells
+  Done; re-instantiate net time = 75.16 s
+Loading simData...
+  simData not found in file Allen.json
+  Recording  V_soma from cell  0
+  Recording  V_dend6 from cell  0
+  Recording  V_soma from cell  6045
+  Recording  V_dend6 from cell  6045
+
+*** 380x120x380
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 17.84 s.
+Making connections...
+  Number of connections on node 0: 9647815 
+  Done; cell connection time = 1625.43 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.23 s.
+
+Gathering data...
+  Done; gather time = 563.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 9699775 (933.39 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 2.0Gb (crashed)
+
+*** 380x120x380 (less conns)
+create_save.py:
+
+Creating network of 9 cell populations on 1 hosts...
+  Number of cells on node 0: 10392 
+  Done; cell creation time = 18.68 s.
+Making connections...
+  Number of connections on node 0: 6329300 
+  Done; cell connection time = 1388.36 s.
+Adding stims...
+  Number of stims on node 0: 51960 
+  Done; cell stims creation time = 6.06 s.
+
+Gathering data...
+  Done; gather time = 353.89 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+Saving output as Allen.json  ... 
+Finished saving!
+
+- size: 1.4Gb (crashed)
+
+load_run.py:
+
+Loading file Allen_10k.json ... 
+  Done; file loading time = 99.93 s
+Loading simConfig...
+  simConfig not found in file Allen_10k.json
+Loading netParams...
+Loading net...
+  Created 10392 cells
+  Created 6381260 connections
+  Created 51960 stims
+  Added NEURON objects to 10392 cells
+  Done; re-instantiate net time = 116.31 s
+Loading simData...
+  simData not found in file Allen_10k.json
+
+Running...
+  Done; run time = 32.55 s; real-time ratio: 0.00.
+
+Gathering data...
+  Done; gather time = 751.81 s.
+
+Analyzing...
+  Cells: 10392
+  Connections: 6381260 (614.06 per cell)
+  Spikes: 0 (0.00 Hz)
+  Simulated time: 0.0 s; 1 workers
+  Run time: 32.55 s
+  Done; saving time = 0.11 s.
+Plotting raster...
+No spikes available to plot raster
+Plotting recorded cell traces ...
+Plotting 2D representation of network cell locations and connections...
+
+*** 380x120x380 (less conns, with subcell)
+
+
+
+* 16jul20 Matplotlib errors
+- http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
+- fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
+- actually just deactivated
 
 * Paper
 ** Title

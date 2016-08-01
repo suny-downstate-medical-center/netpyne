@@ -231,8 +231,8 @@ The full code to import all cell models above and create a network with them is 
 
 
 
-Cell density and connectivity as a function of cell location
-------------------------------------------------------------
+.. Cell density and connectivity as a function of cell location
+.. ------------------------------------------------------------
 
 
 Create population as list of individual cells 
@@ -240,10 +240,10 @@ Create population as list of individual cells
 .. (eg. measured experimentally)
 
 
-Adding connectivity functions
-------------------------------
+.. Adding connectivity functions
+.. ------------------------------
 
 
-Adding cell classes
---------------------
+.. Adding cell classes
+.. --------------------
 

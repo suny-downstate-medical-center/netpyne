@@ -12,7 +12,7 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time
 from numbers import Number
 from copy import copy
-from collections import OrderedDict
+from specs import ODict
 from neuron import h  # import NEURON
 import sim
 
@@ -32,7 +32,7 @@ class Network (object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
-        self.pops = OrderedDict()  # list to store populations ('Pop' objects)
+        self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
 
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
@@ -63,7 +63,7 @@ class Network (object):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
-            print("\nCreating simulation of %i cell populations for %0.1f s on %i hosts..." % (len(self.pops), sim.cfg.duration/1000.,sim.nhosts)) 
+            print("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)) 
         
         for ipop in self.pops.values(): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
@@ -87,7 +87,7 @@ class Network (object):
                 print('Adding stims...')
                 
             if sim.nhosts > 1: # Gather tags from all cells 
-                allCellTags = sim.gatherAllCellTags()  
+                allCellTags = sim._gatherAllCellTags()  
             else:
                 allCellTags = {cell.gid: cell.tags for cell in self.cells}
             # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
@@ -96,6 +96,7 @@ class Network (object):
 
             for targetLabel, target in self.params.stimTargetParams.iteritems():  # for each target parameter set
                 if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
+                if 'loc' not in target: target['loc'] = None  # if location not specified, make None 
                 
                 source = sources.get(target['source'])
 
@@ -134,13 +135,18 @@ class Network (object):
                         if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
                             params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else target.get('weight', 1.0)
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
+                            params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
+                            params['synMech'] = target.get('synMech', None)
                         
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
 
                         postCell.addStim(params)  # call cell method to add connections
 
+        print('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
+        sim.pc.barrier()
         sim.timing('stop', 'stimsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
 
         return [cell.stims for cell in self.cells]
 
@@ -193,11 +199,20 @@ class Network (object):
         return strParams
 
     ###############################################################################
+    # Calculate distance between 2 segmetns
+    ###############################################################################
+    def fromtodistance(self, origin_segment, to_segment):
+        h.distance(0, origin_segment.x, sec=origin_segment.sec)
+        return h.distance(to_segment.x, sec=to_segment.sec)
+
+
+    ###############################################################################
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
 
-        for subConnParamTemp in self.params.subConnParams:  # for each conn rule or parameter set
+        print('  Distributing synapses based on subcellular connectivity rules...')
+        for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
@@ -209,9 +224,56 @@ class Network (object):
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
-                        print [(conn['sec'],conn['loc']) for conn in conns]
-                        # different case if has vs doesn't have 3d points
+                        # find origin section 
+                        if 'soma' in postCell.secs: 
+                            secOrig = 'soma' 
+                        elif any([secName.startswith('som') for secName in postCell.secs.keys()]):
+                            secOrig = next(secName for secName in postCell.secs.keys() if secName.startswith('soma'))
+                        else: 
+                            secOrig = postCell.secs.keys()[0]
 
+                        # if sectionList
+                        if isinstance(subConnParam.get('sec'), str) and subConnParam.get('sec') in postCell.secLists:
+                            secList = list(self.secLists[subConnParam['sec']])
+                        elif isinstance(subConnParam['sec'], list):
+                            for item in subConnParam['sec']:
+                                secList = []
+                                if item in postCell.secLists:
+                                    secList.extend(postCell.secLists[item])
+                                else:
+                                    secList.append(item)
+                        else:
+                            secList = [subConnParam['sec']]
+                        
+                        # calculate new syn positions
+                        newSecs, newLocs = postCell._distributeSynsUniformly (secList=secList, numSyns=len(conns))
+
+                        postSynMechs = postCell.secs[conn['sec']].synMechs
+
+                        # modify syn positions
+                        # for conn,newSec,newLoc in zip(conns, newSecs, newLocs):
+                        #     if newSec != conn['sec'] or newLoc != conn['loc']:
+                        #         indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+                        #         if indexOld: del postSynMechs[indexOld]
+                        #         print conn['synMech']
+                        #         postCell.addSynMech(conn['synMech'], newSec, newLoc)
+
+                        #     conn['sec'] = newSec
+                        #     conn['loc'] = newLoc
+
+
+                            #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
+
+                        # different case if has vs doesn't have 3d points
+                        #  h.distance(sec=h.soma[0], seg=0)
+                        # for sec in apical:
+                        #    print h.secname()
+                        #    for seg in sec:
+                        #      print seg.x, h.distance(seg.x)
+
+
+        # print [(conn['sec'],conn['loc']) for conn in conns]
+        
         # find postsyn cells
         # for each postsyn cell:
             # find syns from presyn cells
@@ -229,6 +291,7 @@ class Network (object):
 
 
 
+
     ###############################################################################
     # Connect Cells
     ###############################################################################
@@ -239,7 +302,7 @@ class Network (object):
             print('Making connections...')
 
         if sim.nhosts > 1: # Gather tags from all cells 
-            allCellTags = sim.gatherAllCellTags()  
+            allCellTags = sim._gatherAllCellTags()  
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
@@ -467,7 +530,7 @@ class Network (object):
                         if preCellTags['cellModel'] == 'NetStim':  # if NetStim
                             self._addNetStimParams(connParam, preCellTags) # cell method to add connection       
                             self._addCellConn(connParam, preCellGid, postCellGid) # add connection        
-                        if preCellGid != postCellGid: # if not self-connection
+                        elif preCellGid != postCellGid: # if not self-connection
                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -624,7 +687,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
-            'plasticity': connParam.get('plasticity')}
+            'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
 
@@ -643,6 +706,9 @@ class Network (object):
         for cell in self.cells:
             cell.modify(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyCellsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
 
@@ -660,8 +726,32 @@ class Network (object):
         for cell in self.cells:
             cell.modifyConns(params)
 
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
         sim.timing('stop', 'modifyConnsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
+
+
+    ###############################################################################
+    ### Modify stim source params
+    ###############################################################################
+    def modifyStims (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifyStimsTime')
+        if sim.rank==0: 
+            print('Modfying stimulation parameters...')
+
+        for cell in self.cells:
+            cell.modifyStims(params)
+
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
+        sim.timing('stop', 'modifyStimsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
+
+
 
 
 

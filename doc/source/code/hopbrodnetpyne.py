@@ -40,17 +40,12 @@ def create ():
 def run (): sim.simulate()
 def plot (): sim.analysis.plotData()
 
-# Interacting with network
-def changeWeights(net, newWeight):
-    netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
-    for netcon in netcons: 
-      netcon.weight[0] = newWeight
-
 
 create()
 run()
 sim.analysis.plotRaster()
 sim.analysis.plotRaster(syncLines=True)
 sim.analysis.plotData()
-changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
+
+sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5}) # increase inh conns weight increase sync
 

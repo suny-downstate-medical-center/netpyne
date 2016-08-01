@@ -27,7 +27,6 @@ class Pop (object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
-
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -78,7 +77,6 @@ class Pop (object):
             cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
             cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
             cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['popLabel'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
@@ -152,10 +150,9 @@ class Pop (object):
             cellTags['x'] = sim.net.params.sizeX * randLocs[i,0]  # calculate x location (um)
             cellTags['y'] = sim.net.params.sizeY * randLocs[i,1]  # calculate y location (um)
             cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2]  # calculate z location (um)
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: 
-                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['ynorm'], cellTags['z'], sim.rank))
+                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
         return cells
 

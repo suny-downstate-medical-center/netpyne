@@ -161,6 +161,7 @@ Finally, it is possible to define a population composed of individually-defined 
 	netParams.addPopParams('IT_cells', {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
 
 
+.. _cell_property_rules:
 
 Cell property rules
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -186,7 +187,7 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
-		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})`. 
+		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})``. 
 		
 		Apart from internal point process variables, the following properties can be specified for each point process:
 
@@ -512,6 +513,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+.. _stimulation:
 
 Stimulation
 ^^^^^^^^^^^^^^^^^^^
@@ -524,7 +526,7 @@ Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a
 
 		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
 
-	* **stim params** (optional)- These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
+	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
 
 		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
@@ -646,7 +648,7 @@ Related to plotting and analysis:
 
 	E.g. ``simConfig.analysis['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include=['PYR'], timeRange=[200,600], saveFig='PYR_raster.png')``
 
-	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]}))
+	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
 
@@ -691,7 +693,6 @@ Run and gather:
 * **sim.runSim()**
 * **sim.runSimWithIntervalFunc(interval, func)**
 * **sim.gatherData()**
-* **sim.gatherAllCellTags()**
 
 
 Saving and loading:
@@ -823,47 +824,267 @@ The figure show usage examples for the different analysis functions:
 	:align: center
 
 
-Network, Population and Cell class methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Network
-	* net.setParams()
-	* net.createPops()
-	* net.createCells()
-	* net.connectCells()
+.. _network_methods:
 
-* Population
-	* pop.createCells()
-	* pop.createCellsFixedNum()
-	* pop.createCellsDensity()
-	* pop.createCellsList()
+Network class methods
+^^^^^^^^^^^^^^^^^^^^^^^
 
-* Cell
-	* cell.create()
-	* cell.createPyStruct()
-	* cell.createNEURONObj()
-	* cell.associateGid()
-	* cell.addConn()
-	* cell.addNetStim()
-	* cell.addIClamp()	
-	* cell.recordTraces()
-	* cell.recordStimSpikes()
+Methods to set up network
+
+* **net.setParams()**
+* **net.createPops()**
+* **net.createCells()**
+* **net.connectCells()**
 
 
-Structure of data and code
----------------------------
+Methods to modify network
 
-* Sim module
-* Network, Population and Cell classes
-* simFunc and analysis modules
+* **net.modifyCells(params)**
+	
+	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following 2 items:
+
+	- 'conds': dictionary of conditions to select cells that will be modified, with each item containing a cell tag (see list of cell tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'label': 'PYR_HH'}`` targets cells that were created using the cellParams rule labeled 'PYR_HH'.
+		e.g. ``{'cellType': 'PYR', 'ynorm': [0.1, 0.6]} targets cells of type 'PYR' with normalized depth within 0.1 and 0.6.
+
+	- 'secs': dictionary of sections using same format as for initial setting of cell property rules (see :ref:`cell_property_rules` or :ref:`cell_class_data_model` for details)
+
+		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
+
+
+
+* **net.modifyConns(params)**
+
+	Modifies properties of connections in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select connections that will be modified, with each item containing a conn tag (see list of conn tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'label': 'M->S'}`` targets connections that were created using the connParams rule labeled 'M->S'.
+		e.g. ``{'weight': [0.4, 0.8], 'sec': 'soma'}`` targets connections with weight within 0.4 and 0.8, and that were made onto the 'soma' section. 
+
+	- 'postConds': dictionary of conditions to select postsynaptic cells that will contain the connections to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- 'weight' | 'threshold': New value for connection weight or threshold.
+
+
+* **net.modifyStims(params)**
+
+	Modifies properties of stim in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select stims that will be modified, with each item containing a stim tag (see list of stim tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'label': 'VClamp1->S'}`` targets stims that were created using the stimTargetParms rule labeled 'VClamp1->S'.
+		e.g. ``{'source': 'IClamp2', 'dur': [100, 300]} targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
+
+	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
+
+
+Population class methods 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+* **pop.createCells()**
+* **pop.createCellsFixedNum()**
+* **pop.createCellsDensity()**
+* **pop.createCellsList()**
+
+
+Population class methods 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **cell.create()**
+* **cell.createPyStruct()**
+* **cell.createNEURONObj()**
+* **cell.associateGid()**
+* **cell.addConn()**
+* **cell.addNetStim()**
+* **cell.addIClamp()**	
+* **cell.recordTraces()**
+* **cell.recordStimSpikes()**
+
+
+.. _data_model:
+
+NetPyNE data model (structure of instantiated network and output data)
+-----------------------------------------------------------------------
 
 A representation of the instantiated network structure generated by NetPyNE is shown below:
 
 .. image:: figs/netstruct.png
-	:width: 100%
+	:width: 90%
 	:align: center
+
+
+.. _dicts_dotnotation:
+
+Accessing dictionaries using dot notation: Dict and ODict classes 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to allow dot notation (a.b.c) to access NetPyNE structures we have added the Dict an ODict classes which are subclasses that inherit from the original Python dict and OrderedDict classes. All NetPyNE internal dictionaries are either of class Dict or ODict. Below are some features of the Dict class:
 	
-Structure of saved data
+	* Can be accessed either using standard dict methods: ``a['b']['c']``, ``a.iteritems()``, ``a.keys()``, ``a.update()``, etc.), or attribute methods / dot notation: ``a.b.c=2``.
+
+	* Missing elements are automatically added (note this can have undesired effects if you use the wrong keys): ``a=Dict(); a.b.c.d.e=1``
+
+	* The constructor allows a dict (including nested dicts) and/or kwargs: ``a=Dict(b=1, c=2)`` or ``a=Dict({'a': 1, 'b': {'c': 2}})`
+
+	* The method .todict() returns the dict version of Dict: ``a=Dict({'b':1}); a_dict=a.todict()``
+
+	* Serialization via __getstate__() method (eg. when pickled) returns a normal dict (using .todict() method).
+
+To specify the ``netParams`` you can use either standard dicts or the Dict() class. To use the Dict class you first need to import it via::
+	
+	from netpyne.specs import Dict
+
+Examples of accessing NetPyNE structures via dot notation:
+
+	* ``cellRule = Dict(); cellParam.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036}; cellParam.conds = {'cellType': 'IT'}``
+
+	* ``netParams.cellParams.PYR_rule.secs.soma.mechs.hh.gnabar``
+
+	* ``simConfig.analysis.plotRaster.include = ['all']``
+
+	* ``sim.net.cells[0].secs.soma.mechs.nap.gbar = 0.1``
+
+	* ``sim.net.cells[0].secs.soma.hSec(0.5).gbar_nap = 0.1``
+
+	* ``sim.net.allCells[5].tags.popLabel``
+
+	* ``sim.net.cells[0].conns[1].weight``
+
+	* ``sim.net.cells[0].conns[1].hNetcon.weight[0]``	
+
+	* ``sim.net.cells[0].stims[0].type``
+
+	* ``sim.net.pops.PYRpop.tags``
+
+	* ``sim.net.allPops.Mpop.cellGids``
+
+	* ``sim.allSimData.spkt``
+
+	* ``sim.allSimData.stims.cell_31.Input_4``
+
+	* ``sim.allSimData.V_soma.cell_1``
+
+
+
+Sim module
+^^^^^^^^^^^
+
+- net (Network object)
+- cfg (SimConfig object)
+- pc (h.ParallelContext object)
+- nhosts (int)
+- rank (int)
+- timingData (Dict)
+
+
+Network class
+^^^^^^^^^^^^^^^
+
+- pops (Dict of Pop objects)
+- cells (list of Cell objects)
+- params (NetParams object)
+
+After gatherting from nodes:
+- allCells (list of Dicts)
+- allPops (list of Dicts)
+
+Population class
+^^^^^^^^^^^^^^^^^^
+
+- cellGids (list)
+- tags (Dict)
+
+
+.. _cell_class_data_model:
+
+Cell class
+^^^^^^^^^^^^^
+
+- gid (int)
+
+- tags (Dict)
+	- 'label'
+	- 'popLabel'
+	- 'cellModel'
+	- 'cellType'
+	- 'x', 'y', 'z'
+	- 'xnorm', 'ynorm', 'znorm'	
+
+- secs (Dict)
+	- 'secName' (e.g. 'soma') (Dict)
+		- 'hSec' (NEURON object)
+		- 'geom' (Dict)
+			- 'L'
+			- 'diam'
+			- 'pt3d' (list of tuples)
+			- ...
+		- 'topol' (Dict)
+			- 'parentSec'
+			- 'parentX'
+			- 'childX'
+		- 'mechs' (Dict)
+			- 'mechName' (e.g. 'hh') (Dict)
+				- 'gnabar'
+				- 'gkbar'
+				- ...
+		- 'pointps' (Dict)
+			- 'pointpName' (e.g. 'Izhi') (Dict)
+				- 'hPointp' (NEURON object)
+				- 'mod'
+				- 'a'
+				- 'b'
+				- ...
+		- 'synMechs' (list)
+			- [0] (Dict)
+				- 'hSyn': NEURON object
+				- 'label'
+				- 'loc'
+
+- secLists (Dict)
+	- 'secListName' (e.g. 'alldends') (list)
+
+- conns (list)
+	- [0] (Dict)
+		- 'hNetCon': NEURON object
+		- 'label'
+		- 'preGid'
+		- 'preLabel'
+		- 'sec'
+		- 'loc'
+		- 'synMech'
+		- 'weight'
+		- 'threshold'
+
+- stims (list)
+	- [0] (Dict)
+		- 'hIClamp' (NEURON object)
+		- 'source'
+		- 'type'
+		- 'label'
+		- 'sec'
+		- 'loc'
+		- 'amp'
+		- 'dur'
+		- 'delay'
+
+
+Simulation output data (spikes, etc)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- sim.allSimData (Dict)
+
+
+Data saved to file
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 * simConfig

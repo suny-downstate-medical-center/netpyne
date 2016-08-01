@@ -1,8 +1,59 @@
+## Version 0.5.6
+
+- Only load neuroml libraries and functions if installed to avoid error when importing sim
+
+- Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
+
+
+## Version 0.5.5
+
+- New example using Allen Institute cells showing how to save large net and reload for simulation
+
+- Improved export/import from/to NeuroML2 (issue #12)
+
+- All structures (including Dict and ODict) can now  be saved and loaded via json
+
+- Added option to use separate simConfig when loading data from file
+
+- saveData() calls gatherData() if required 
+
+- saveData() returns string with full path of saved file (issue #127)
+
+- Fixed bugs so its possible to create and save Python structure independently of NEURON objects
+
+- Fixed bug that created 2 instead of 1 NetStims per cell
+
+- Fixed bug regarding mutable default args in Python funcs
+
+- Fixed bug so NetStim stim params are set to default if missing 
+
+## Version 0.5.4
+
+- Access to nested dictionaries via dot notation (secs.soma.geom) using new inherited classes Dict() and ODict() (issue #123)
+
+- 'hSection' replaced with 'hSec' 
+
+- Added sim.popAvgRates() to calculate and optionally print population avg rates 
+
+- Functions to modify cells, conns or stims also update sim.allCells (issue #59)
+
+- Fixed bug so can modify funcs now accept lists of strings (issue #59)
+
+- Fixed bug when recording traces of relative cell indices of populations across multiple nodes
+
 ## Version 0.5.3
 
-- Functions to modify parameters of instanced network cells, conns and stims (issue #53)
+- Functions to modify parameters of cells, conns and stims in an instantiated network (issue #59)
+
+- Added label of param rule used to create cells, conns and stims, so can modify later  (issue #59)
+
+- Ordered sim.net.allCells by gid
 
 - Option to save figures with same name as data
+
+- Added support for VClamp list params (issue #32)
+
+- Fixed bug when creating pops consisiting of lists of cells 
 
 ## Version 0.5.2
 

@@ -13,8 +13,8 @@ A good understading of python nested dictionaries and lists is recommended, sinc
 
 .. _simple_example:
 
-Very simple and quick example
--------------------------------
+Very simple and quick example (Tutorial 1)
+------------------------------------------
 To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
 
 You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
@@ -69,8 +69,8 @@ In the remaining of this tutorial we will see how to easily specify your own par
 
 We begin with an overview of the Python objects where you will define all your network parameters.
 
-Network parameters
-----------------------
+Network parameters (Tutorial 2)
+-------------------------------
 
 The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 6 ordered dictionaries:
 
@@ -294,8 +294,8 @@ You should get the raster plot and voltage trace figures shown below. Notice how
 Feel free to explore the effect of changing any of the model parameters, eg. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 
 
-Adding a compartment (dendrite) to cells
--------------------------------------------
+Adding a compartment (dendrite) to cells (Tutorial 3)
+-------------------------------------------------------
 
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
@@ -326,7 +326,7 @@ The full tutorial code for this example is available here: :download:`tut3.py <c
 If you run the network, you will observe the new dendritic compartment has the effect of reducing the firing rate.
 
 
-Using a simplified cell model (Izhikevich) 
+Using a simplified cell model (Izhikevich) (Tutorial 4)
 --------------------------------------------------------------------
 
 When dealing with large simulations it is sometimes useful to use simpler cell models for some populations, in order to gain speed. Here we will replace the HH model with the simpler Izhikevich cell model only for cells in the sensory (``S``) population. 
@@ -363,8 +363,8 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 .. seealso:: NetPyNE also supports importing cells defined in other files (eg. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
 
 
-Position and distance based connectivity
-------------------------------------------
+Position and distance based connectivity (Tutorial 5)
+---------------------------------------------------------
 
 The following example demonstrates how to spatially separate populations, add inhbitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
@@ -498,8 +498,8 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 
 
 
-Adding stimulation to  the network 
-----------------------------------
+Adding stimulation to  the network (Tutorial 6)
+-----------------------------------------------------
 
 Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells). See See :ref:`stimulation` for details.
 
@@ -535,8 +535,8 @@ The full tutorial code for this example is available here: :download:`tut6.py <c
 	:align: center
 
 
-Modifying the instantiated network interactively
--------------------------------------------------
+Modifying the instantiated network interactively (Tutorial 7)
+--------------------------------------------------------------
 
 This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and fires synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which wel will modify interactively.
 

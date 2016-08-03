@@ -1500,6 +1500,8 @@ if neuromlExists:
 
         cellParams = {}
         popParams = {}
+        
+        pops_vs_seg_ids_vs_segs = {}
 
         projection_infos = {}
         connections = {}
@@ -1655,6 +1657,8 @@ if neuromlExists:
                 
                 for cp in self.cellParams.keys():
                     pp.pprint(self.cellParams[cp])
+                    
+                self.pops_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
             else:
 

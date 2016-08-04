@@ -22,6 +22,7 @@ from numbers import Number
 from copy import copy
 from specs import Dict, ODict
 from collections import OrderedDict
+import math
 from neuron import h, init # Import NEURON
 try:
     import neuroml
@@ -1498,18 +1499,18 @@ if neuromlExists:
 
     class NetPyNEBuilder(DefaultNetworkHandler):
 
-        cellParams = {}
-        popParams = {}
+        cellParams = OrderedDict()
+        popParams = OrderedDict()
         
         pops_vs_seg_ids_vs_segs = {}
 
-        projection_infos = {}
-        connections = {}
+        projection_infos = OrderedDict()
+        connections = OrderedDict()
 
         stimSources = {}
         stimLists = {}
 
-        gids = {}
+        gids = OrderedDict()
         next_gid = 0
 
         def __init__(self, netParams):
@@ -1541,7 +1542,7 @@ if neuromlExists:
 
             assert(component==component_obj.id)
 
-            popInfo={}
+            popInfo=OrderedDict()
             popInfo['popLabel'] = population_id
             popInfo['cellModel'] = component
             popInfo['cellType'] = component
@@ -1665,7 +1666,23 @@ if neuromlExists:
                 cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
 
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
-                soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
+                default_diam = 10
+                soma['geom'] = {'diam': default_diam, 'L': default_diam}
+                
+                # TODO: add correct hierarchy to Schema for baseCellMembPotCap etc. and use this...
+                if hasattr(component_obj,'C'):
+                    capTotSI = pynml.convert_to_units(component_obj.C,'F')
+                    area = math.pi * default_diam * default_diam
+                    specCapNeu = 10e13 * capTotSI / area
+                    
+                    #print("c: %s, area: %s, sc: %s"%(capTotSI, area, specCapNeu))
+                    
+                    soma['geom']['cm'] = specCapNeu
+                else:
+                    
+                    soma['geom']['cm'] = 318.319
+                    #print("sc: %s"%(soma['geom']['cm']))
+                
                 soma['pointps'][component] = {'mod':component}
                 cellRule['secs'] = {'soma': soma}  # add sections to dict
                 self.cellParams[component] = cellRule
@@ -1779,19 +1796,6 @@ if neuromlExists:
             print('Connections: %s'%nmlHandler.connections)
 
 
-
-
-
-
-            # TODO check gids equal....
-
-
-
-
-
-
-
-
         sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
 
         #pp.pprint(netParams)
@@ -1800,6 +1804,12 @@ if neuromlExists:
         sim.net.createPops()  
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
 
+
+        # Check gids equal....
+        for popLabel,pop in sim.net.pops.iteritems():
+            #print("%s: %s, %s"%(popLabel,pop, pop.cellGids))
+            assert(pop.cellGids==nmlHandler.gids[popLabel])
+            
         for proj_id in nmlHandler.projection_infos.keys():
             projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
             print("Creating connections for %s: %s->%s via %s"%(projName, prePop, postPop, synapse))

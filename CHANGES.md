@@ -4,6 +4,7 @@
 
 - Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
 
+- Fixed bugs in net.modifyStims() method
 
 ## Version 0.5.5
 

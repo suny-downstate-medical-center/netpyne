@@ -22,7 +22,7 @@ netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, '
 netParams.addStimSourceParams('Input_1', {'type': 'IClamp', 'delay': 300, 'dur': 100, 'amp': 'uniform(0.4,0.5)'})
 netParams.addStimSourceParams('Input_2', {'type': 'VClamp', 'dur': [0,50,200], 'amp': [-60,-30,40], 'gain': 1e5, 'rstim': 1, 'tau1': 0.1, 'tau2': 0})
 netParams.addStimSourceParams('Input_3', {'type': 'AlphaSynapse', 'onset': 'uniform(300,600)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
-netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1})
+netParams.addStimSourceParams('Input_4', {'type': 'NetStim', 'interval': 'uniform(20,100)', 'start': 600, 'noise': 0.1})
 
 netParams.addStimTargetParams('Input_1->S', {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'popLabel':'S', 'cellList': range(15)}})
 netParams.addStimTargetParams('Input_2->S', {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'S', 'ynorm': [0,0.5]}})

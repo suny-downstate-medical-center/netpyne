@@ -988,6 +988,13 @@ def saveData (include = None):
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
+
+            # clean to avoid mem leaks
+            for key in dataSave.keys(): 
+                del dataSave[key]
+            del dataSave
+
+            # return full path
             import os
             return os.getcwd()+'/'+sim.cfg.filename
 

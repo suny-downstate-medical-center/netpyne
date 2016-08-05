@@ -2444,8 +2444,13 @@ Plotting 2D representation of network cell locations and connections...
 - actually just deactivated
 
 * 16aug20 Fixing memory leak when running batch
-* 16aug04 fixing memory leak
+** links
 - http://chase-seibert.github.io/blog/2013/08/03/diagnosing-memory-leaks-python.html
+- http://stackoverflow.com/questions/11891755/find-all-references-to-an-object-in-python/11891904#11891904
+- http://stackoverflow.com/questions/10446839/does-dictionarys-clear-method-delete-all-the-item-related-objects-from-memory
+- http://stackoverflow.com/questions/7101404/how-can-i-release-memory-after-creating-matplotlib-figures
+- https://pymotw.com/2/gc/
+** testing different cleaning methods
 
 - added after iteration:
 print 'Memory usage: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -2707,7 +2712,11 @@ type                       1094
 
 - only happens when multiple cores! related to gather 
 
-- if no stims, then doesn't increase
+- leakage when pc.py_alltoall -- need to clear vars inside func
+
+- small leakage when saving - think reduced by clearing vars
+
+- huge leakge with plotSpikeHist
 
 
 * Paper

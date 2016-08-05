@@ -473,31 +473,33 @@ class Cell (object):
     def modifyStims (self, params):
         for stim in self.stims:
             conditionsMet = 1
-            
-            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                # check if conditions met
-                if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                    if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
-                        conditionsMet = 0
-                        break
-                elif isinstance(condVal, list) and isinstance(condVal[0], str):
-                    if self.tags[condKey] not in condVal:
-                        conditionsMet = 0
-                        break 
-                elif stim[condKey] != stim[condKey]: 
-                    conditionsMet = 0
-                    break
 
-            if conditionsMet:
-                for (condKey,condVal) in params['cellConds'].iteritems():  # check if all conditions are met
+            if 'conds' in params:
+                for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
                     # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
+                        if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif self.tags.get(condKey) != condVal: 
+                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
+                    elif stim[condKey] != condVal: 
                         conditionsMet = 0
                         break
+
+            if conditionsMet and 'cellConds' in params:
+                if conditionsMet:
+                    for (condKey,condVal) in params['cellConds'].iteritems():  # check if all conditions are met
+                        # check if conditions met
+                        if isinstance(condVal, list):
+                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                                conditionsMet = 0
+                                break
+                        elif self.tags.get(condKey) != condVal: 
+                            conditionsMet = 0
+                            break
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if stim['type'] == 'NetStim':  # for netstims, find associated netcon

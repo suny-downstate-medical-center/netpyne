@@ -2443,6 +2443,282 @@ Plotting 2D representation of network cell locations and connections...
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
 - actually just deactivated
 
+* 16aug20 Fixing memory leak when running batch
+** links
+- http://chase-seibert.github.io/blog/2013/08/03/diagnosing-memory-leaks-python.html
+- http://stackoverflow.com/questions/11891755/find-all-references-to-an-object-in-python/11891904#11891904
+- http://stackoverflow.com/questions/10446839/does-dictionarys-clear-method-delete-all-the-item-related-objects-from-memory
+- http://stackoverflow.com/questions/7101404/how-can-i-release-memory-after-creating-matplotlib-figures
+- https://pymotw.com/2/gc/
+** testing different cleaning methods
+
+- added after iteration:
+print 'Memory usage: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+- memory increases in master node after iter
+master: 89 mb -> 362 -> 569 -> 800 -> 993 -> 1190
+slaves: 90 -> 139 ...
+
+- trying gc.collect() - same
+
+- tried: replaceItemObj([cell.__dict__ for cell in sim.net.cells], 'h', None)
+lowered mem, but crashed -- need to gid_clear before
+
+- with gid_clear before, increasing but less
+98 -> 180 -> 230 
+
+- clear recorded stuff
+89 -> 180 -> 230 -> 280
+
+- trying: 
+import objgraph
+objgraph.show_most_common_types()
+
+function                   11471
+Dict                       10633
+list                       8925
+dict                       6759
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+
+function                   11471
+Dict                       10658
+list                       8929
+dict                       6761
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+
+function                   11471
+Dict                       10597
+list                       8917
+dict                       6755
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+Dict                       63291
+list                       19046
+
+function                   11471
+dict                       6786
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+Setting stimulation (NetCon) weight to 0.02
+Memory usage: 181530624
+Memory usage: 140632064
+Memory usage: 140087296
+Memory usage: 140316672
+
+
+function                   11471
+list                       11433
+Dict                       10658
+dict                       9270
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+
+function                   11471
+list                       11421
+Dict                       10597
+dict                       9264
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+
+function                   11471
+list                       11429
+Dict                       10633
+dict                       9268
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+Dict                       113384
+list                       31602
+
+function                   11471
+dict                       9303
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+Setting stimulation (NetCon) weight to 0.03
+Memory usage: 234979328
+Memory usage: 140632064
+Memory usage: 140087296
+Memory usage: 140316672
+
+
+
+- clear allSimData and allCells
+
+function                   11471
+Dict                       10597
+list                       8917
+dict                       6755
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+
+function                   11471
+Dict                       10658
+list                       8929
+dict                       6761
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+
+function                   11471
+Dict                       10633
+list                       8925
+dict                       6759
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+Dict                       63291
+list                       19011
+
+function                   11471
+dict                       6785
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+Setting stimulation (NetCon) weight to 0.02
+Memory usage: 183537664
+Memory usage: 140525568
+Memory usage: 140050432
+Memory usage: 140353536
+
+
+function                   11471
+list                       11421
+Dict                       10597
+dict                       9264
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+
+function                   11471
+list                       11429
+Dict                       10633
+dict                       9268
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+
+function                   11471
+list                       11433
+Dict                       10658
+dict                       9270
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+Dict                       115886
+list                       31567
+
+function                   11471
+dict                       9302
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+Setting stimulation (NetCon) weight to 0.03
+Memory usage: 233951232
+Memory usage: 140353536
+Memory usage: 140525568
+Memory usage: 140050432
+
+
+
+- remove allCells and simDAta objects themselves
+
+Memory usage: 183980032
+Dict                       52598
+list                       16498
+function                   11471
+dict                       5529
+tuple                      2616
+wrapper_descriptor         1880
+weakref                    1748
+builtin_function_or_method 1288
+method_descriptor          1194
+type                       1094
+
+Memory usage: 232386560
+Dict                       105193
+list                       29054
+function                   11471
+dict                       8046
+tuple                      2481
+wrapper_descriptor         1895
+weakref                    1752
+builtin_function_or_method 1288
+method_descriptor          1196
+type                       1094
+
+
+- objects in sim:
+ 'allSimData', 'simData', 'net', 'cfg'
+
+- if no gather, then only increases 2mb / iteration
+
+- only happens when multiple cores! related to gather 
+
+- leakage when pc.py_alltoall -- need to clear vars inside func
+
+- small leakage when saving - think reduced by clearing vars
+
+- huge leakge with plotSpikeHist
+
+
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models

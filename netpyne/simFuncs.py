@@ -10,7 +10,7 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -343,16 +343,16 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
-def _replaceItemObj (obj, keystart, newval):
+def replaceItemObj (obj, keystart, newval):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                _replaceItemObj(item, keystart, newval)
+                replaceItemObj(item, keystart, newval)
 
     elif type(obj) == dict:
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
-                _replaceItemObj(val, keystart, newval)
+                replaceItemObj(val, keystart, newval)
             if key.startswith(keystart):
                 obj[key] = newval
     return obj
@@ -681,7 +681,17 @@ def _gatherAllCellTags ():
     allCellTags = {}
     for dataNode in gather:         
         allCellTags.update(dataNode)
-    del gather, data  # removed unnecesary variables
+    
+    # clean to avoid mem leaks
+    for node in gather: 
+        if node:
+            node.clear()
+            del node
+    for item in data:
+        if item: 
+            item.clear()
+            del item
+
     return allCellTags
 
 
@@ -703,6 +713,7 @@ def gatherData ():
         for k,v in nodeData.iteritems():
             data[0][k] = v 
         gather = sim.pc.py_alltoall(data)
+
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
@@ -741,6 +752,17 @@ def gatherData ():
                 pop['cellGids'] = sorted(allPopsCellGids[popLabel])
             sim.net.allPops = allPops
     
+
+        # clean to avoid mem leaks
+        for node in gather: 
+            if node:
+                node.clear()
+                del node
+        for item in data:
+            if item: 
+                item.clear()
+                del item
+
     else:  # if single node, save data in same format as for multiple nodes for consistency
         if sim.cfg.createNEURONObj:
             sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]
@@ -845,7 +867,17 @@ def _gatherCells ():
             for node in gather:  # concatenate data from each node
                 allCells.extend(node['netCells'])  # extend allCells list
             sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
-         
+        
+        # clean to avoid mem leaks
+        for node in gather: 
+            if node:
+                node.clear()
+                del node
+        for item in data:
+            if item: 
+                item.clear()
+                del item
+                 
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
       
@@ -956,6 +988,13 @@ def saveData (include = None):
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
+
+            # clean to avoid mem leaks
+            for key in dataSave.keys(): 
+                del dataSave[key]
+            del dataSave
+
+            # return full path
             import os
             return os.getcwd()+'/'+sim.cfg.filename
 

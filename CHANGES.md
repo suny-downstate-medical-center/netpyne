@@ -1,6 +1,6 @@
 ## Version 0.5.7
 
-- 
+- Improved NeuroML import/export functions
 
 - Added option for cache_efficient (optimized load balance when many cores) (issue #77)
 

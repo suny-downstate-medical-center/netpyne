@@ -1,8 +1,14 @@
 ## Version 0.5.7
 
+- 
+
+- Added option for cache_efficient (optimized load balance when many cores) (issue #77)
+
 - Added sim.clearAll() function to clear all objects in memory and avoid leaks
 
 - Cleared variables after gathering from multiple nodes to avoid memory leak
+
+- Separated common runSim() commands into preRun() (issue #83)
 
 - Fixed bugs in net.modifyStims() method
 

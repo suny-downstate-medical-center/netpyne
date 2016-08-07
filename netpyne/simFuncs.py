@@ -659,14 +659,14 @@ def getCellsList(include):
 
 
 ###############################################################################
-### Run Simulation
+### Commands required just before running simulation
 ###############################################################################
-def runSim ():
-    sim.pc.barrier()
-    timing('start', 'runTime')
-    if sim.rank == 0:
-        print('\nRunning...')
-        runstart = time() # See how long the run takes
+def preRun():
+    if sim.cfg.cache_efficient:
+        h('objref cvode')
+        h('cvode = new CVode()')
+        h.cvode.cache_efficient(0)
+
     h.dt = sim.cfg.dt  # set time step
     for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
@@ -680,13 +680,24 @@ def runSim ():
                 stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
 
+
+###############################################################################
+### Run Simulation
+###############################################################################
+def runSim ():
+    sim.pc.barrier()
+    timing('start', 'runTime')
+    preRun()
     init()
+
+    if sim.rank == 0: print('\nRunning...')
     sim.pc.psolve(sim.cfg.duration)
-    if sim.rank==0: 
-        runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
+    
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
+    if sim.rank==0: 
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % 
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
 ###############################################################################
@@ -695,34 +706,19 @@ def runSim ():
 def runSimWithIntervalFunc (interval, func):
     sim.pc.barrier()
     timing('start', 'runTime')
-    if sim.rank == 0:
-        print('\nRunning...')
-        runstart = time() # See how long the run takes
-    h.dt = sim.cfg.dt
-    sim.pc.set_maxstep(10)
-    mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
-    
-    # reset all netstims so runs are always equivalent
-    for cell in sim.net.cells:
-        for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(sim.cfg.seeds['stim'])))
-            stim['hRandom'].negexp(1)
-
+    preRun()
     init()
+    if sim.rank == 0: print('\nRunning...')
 
-    #progUpdate = 1000  # update every second
     while round(h.t) < sim.cfg.duration:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        #if sim.cfg.verbose and (round(h.t) % progUpdate):
-            #print(' Sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg.duration*100)))
         func(h.t) # function to be called at intervals
 
-    if sim.rank==0: 
-        runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
+    if sim.rank==0: 
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % 
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
                 
 
 ###############################################################################

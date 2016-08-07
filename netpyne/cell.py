@@ -93,6 +93,16 @@ class Cell (object):
                         sec['mechs'][mechName] = Dict()  
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         sec['mechs'][mechName][mechParamName] = mechParamValue
+            
+            # add ion info 
+            if 'ions' in sectParams:
+                for ionName,ionParams in sectParams['ions'].iteritems(): 
+                    if 'ions' not in sec:
+                        sec['ions'] = Dict()
+                    if ionName not in sec['ions']: 
+                        sec['ions'][ionName] = Dict()  
+                    for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the ion
+                        sec['ions'][ionName][ionParamName] = ionParamValue
 
             # add point processes
             if 'pointps' in sectParams:
@@ -167,6 +177,27 @@ class Cell (object):
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
+                            
+            # add ions
+            if 'ions' in sectParams:
+                for ionName,ionParams in sectParams['ions'].iteritems(): 
+                    if ionName not in sec['ions']: 
+                        sec['ions'][ionName] = Dict()
+                    # Assume a mechanism using this ion is already present...
+                    for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the mechanism
+                        ionParamValueFinal = ionParamValue
+                        for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
+                            if type(ionParamValue) in [list]: 
+                                ionParamValueFinal = ionParamValue[iseg]
+                            if ionParamName == 'e':
+                                seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_ext_conc':
+                                seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_int_conc':
+                                seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                
+                    if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
+                             (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
             # add synMechs (only used when loading)
             if 'synMechs' in sectParams:

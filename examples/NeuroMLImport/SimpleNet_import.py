@@ -1,16 +1,14 @@
 
 from netpyne import sim
-
 from netpyne import specs 
 
-specs.SimConfig()
 
-file_name = 'SimpleNet.net.nml'
+nml2_file_name = 'SimpleNet.net.nml'
 
 simConfig = specs.SimConfig()  # dictionary to store simConfig
 
 # Simulation parameters
-simConfig.duration = 1000 # Duration of the simulation, in ms
+simConfig.duration = 10000 # Duration of the simulation, in ms
 simConfig.dt = 0.025 # Internal integration timestep to use
 simConfig.verbose = True
 
@@ -23,4 +21,4 @@ simConfig.saveDat = True # save traces
 simConfig.plotRaster = True # Whether or not to plot a raster
 simConfig.plotCells = ['all'] # plot recorded traces for this list of cells
 
-sim.importNeuroML2SimulateAnalyze(file_name,simConfig)
+sim.importNeuroML2SimulateAnalyze(nml2_file_name,simConfig)

@@ -22,10 +22,12 @@ from numbers import Number
 from copy import copy
 from specs import Dict, ODict
 from collections import OrderedDict
+import math
 from neuron import h, init # Import NEURON
 try:
     import neuroml
-    import neuroml.writers as writers
+    from pyneuroml import pynml
+    
     __all__.extend(['exportNeuroML2'])  # export
     __all__.extend(['importNeuroML2'])  # import
     neuromlExists = True
@@ -36,7 +38,7 @@ except:
 import sim, specs
 
 import pprint
-pp = pprint.PrettyPrinter(depth=4)
+pp = pprint.PrettyPrinter(depth=6)
 
 
 ###############################################################################
@@ -1182,10 +1184,11 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
     return stims
 
 
-###############################################################################
-### Export synapses to NeuroML2
-############################################################################### 
 if neuromlExists:
+
+    ###############################################################################
+    ### Export synapses to NeuroML2
+    ############################################################################### 
     def _export_synapses (net, nml_doc):
 
         for id,syn in net.params.synMechParams.iteritems():
@@ -1261,6 +1264,10 @@ if neuromlExists:
         net = sim.net
         
         print("Exporting network to NeuroML 2, reference: %s"%reference)
+        
+        import neuroml
+        import neuroml.writers as writers
+
         nml_doc = neuroml.NeuroMLDocument(id='%s'%reference)
         nml_net = neuroml.Network(id='%s'%reference)
         nml_doc.networks.append(nml_net)
@@ -1593,137 +1600,345 @@ if neuromlExists:
     ### NetPyNE's internal representation
     ############################################################################### 
 
-    #### NOTE: commented out because generated error when running via mpiexec
-    ####       maybe find way to check if exectued via mpi 
+          #### NOTE: commented out because generated error when running via mpiexec
+          ####       maybe find way to check if exectued via mpi 
 
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
+
     class NetPyNEBuilder(DefaultNetworkHandler):
+
+        cellParams = OrderedDict()
+        popParams = OrderedDict()
         
-        cellParams = {}
-        popParams = {}
-        projections = {}
-        
+        pops_vs_seg_ids_vs_segs = {}
+
+        projection_infos = OrderedDict()
+        connections = OrderedDict()
+
         stimSources = {}
         stimLists = {}
-        
+
+        gids = OrderedDict()
+        next_gid = 0
+
+        def __init__(self, netParams):
+            self.netParams = netParams
+
+        def finalise(self):
+
+            for popParam in self.popParams.keys():
+                self.netParams.addPopParams(popParam, self.popParams[popParam])
+
+            for cellParam in self.cellParams.keys():
+                self.netParams.addCellParams(cellParam, self.cellParams[cellParam])
+
+            for proj_id in self.projection_infos.keys():
+                projName, prePop, postPop, synapse = self.projection_infos[proj_id]
+
+                self.netParams.addSynMechParams(synapse, {'mod': synapse})
+
+            for stimName in self.stimSources.keys():
+                self.netParams.addStimSourceParams(stimName,self.stimSources[stimName])
+                self.netParams.addStimTargetParams(stimName,self.stimLists[stimName])
+
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handlePopulation(self, population_id, component, size):
-            
-            self.log.info("Population: "+population_id+", component: "+component+", size: %i"%size)
-            
-            popInfo={}
+        def handlePopulation(self, population_id, component, size, component_obj):
+
+            self.log.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+
+            assert(component==component_obj.id)
+
+            popInfo=OrderedDict()
             popInfo['popLabel'] = population_id
             popInfo['cellModel'] = component
             popInfo['cellType'] = component
             popInfo['cellsList'] = []
-            
-            self.popParams[population_id] = popInfo
-            
-            cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
 
-            soma = {'geom': {}, 'pointps':{}}  # soma properties
-            soma['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-            soma['pointps'][component] = {'mod':component}
-            cellRule['secs'] = {'soma': soma}  # add sections to dict
-            self.cellParams[component] = cellRule
+            self.popParams[population_id] = popInfo
+
+            from neuroml import Cell
+            if isinstance(component_obj,Cell):
+
+                '''
+                self.netParams.importCellParams(label=component, conds={'cellType': component, 'cellModel': component},
+                    fileName='%s.hoc'%component, cellName=component, importSynMechs=False)
+                self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']['e'] = -10
+                print self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']'''
                 
-        
+                cellRule = {'conds':{'cellType': component, 'cellModel': component},  'secs': {}, 'secLists':{}}  # cell rule dict
+                
+                seg_ids_vs_segs = {}
+                seg_grps_vs_seg_names = {}
+                seg_grps_vs_seg_names['all'] = []
+                
+                for seg in component_obj.morphology.segments:
+                    seg_ids_vs_segs[seg.id] = seg
+                    cellRule['secs'][seg.name] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
+                    seg_grps_vs_seg_names['all'].append(seg.name)
+                    
+                    prox = None
+                    if seg.proximal:
+                        prox = seg.proximal
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+                    else: 
+                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                        prox = parent_seg.distal
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+
+                    dist = seg.distal
+                    if prox.x==dist.x and prox.y==dist.y and prox.z==dist.z:
+                        
+                        if prox.diameter==dist.diameter:
+                            dist.y = prox.diameter
+                        else:
+                            raise Exception('Unsupported geometry in segment: %s of cell %s'%(seg.name,cell.id))
+                        
+                    cellRule['secs'][seg.name]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
+                    
+                    if seg.parent:
+                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                        
+                        cellRule['secs'][seg.name]['topol'] = {'parentSec': parent_seg.name, 'parentX': float(seg.parent.fraction_along), 'childX': 0}
+                    
+                for seg_grp in component_obj.morphology.segment_groups:
+                    seg_grps_vs_seg_names[seg_grp.id] = []
+
+                    for member in seg_grp.members:
+                        seg_grps_vs_seg_names[seg_grp.id].append(seg_ids_vs_segs[member.segments].name)
+
+                    for inc in seg_grp.includes:
+                        for seg_name in seg_grps_vs_seg_names[inc.segment_groups]:
+                            seg_grps_vs_seg_names[seg_grp.id].append(seg_name)
+
+                    if not seg_grp.neuro_lex_id or seg_grp.neuro_lex_id !="sao864921383":
+                        cellRule['secLists'][seg_grp.id] = seg_grps_vs_seg_names[seg_grp.id]
+                    
+                for cm in component_obj.biophysical_properties.membrane_properties.channel_densities:
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
+                        if cm.ion_channel=='pas':
+                            mech = {'g':gmax}
+                        else:
+                            mech = {'gmax':gmax}
+                        erev = pynml.convert_to_units(cm.erev,'mV')
+                        
+                        cellRule['secs'][seg_name]['mechs'][cm.ion_channel] = mech
+                        
+                        if cm.ion and cm.ion == 'non_specific':
+                            mech['e'] = erev
+                        else:
+                            if not cellRule['secs'][seg_name]['ions'].has_key(cm.ion):
+                                cellRule['secs'][seg_name]['ions'][cm.ion] = {}
+                            cellRule['secs'][seg_name]['ions'][cm.ion]['e'] = erev
+                            
+                for vi in component_obj.biophysical_properties.membrane_properties.init_memb_potentials:
+                    
+                    group = 'all' if not vi.segment_groups else vi.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['vinit'] = pynml.convert_to_units(vi.value,'mV')
+                            
+                for sc in component_obj.biophysical_properties.membrane_properties.specific_capacitances:
+                    
+                    group = 'all' if not sc.segment_groups else sc.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['geom']['cm'] = pynml.convert_to_units(sc.value,'uF_per_cm2')
+                            
+                for ra in component_obj.biophysical_properties.intracellular_properties.resistivities:
+                    
+                    group = 'all' if not ra.segment_groups else ra.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+                        
+                for specie in component_obj.biophysical_properties.intracellular_properties.species:
+                    
+                    group = 'all' if not specie.segment_groups else specie.segment_groups
+                    for seg_name in seg_grps_vs_seg_names[group]:
+                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_ext_conc'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
+                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_int_conc'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                        
+                        cellRule['secs'][seg_name]['mechs'][specie.concentration_model] = {}
+                        
+                
+                self.cellParams[component] = cellRule
+                
+                for cp in self.cellParams.keys():
+                    pp.pprint(self.cellParams[cp])
+                    
+                self.pops_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
+
+            else:
+
+                cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
+
+                soma = {'geom': {}, 'pointps':{}}  # soma properties
+                default_diam = 10
+                soma['geom'] = {'diam': default_diam, 'L': default_diam}
+                
+                # TODO: add correct hierarchy to Schema for baseCellMembPotCap etc. and use this...
+                if hasattr(component_obj,'C'):
+                    capTotSI = pynml.convert_to_units(component_obj.C,'F')
+                    area = math.pi * default_diam * default_diam
+                    specCapNeu = 10e13 * capTotSI / area
+                    
+                    #print("c: %s, area: %s, sc: %s"%(capTotSI, area, specCapNeu))
+                    
+                    soma['geom']['cm'] = specCapNeu
+                else:
+                    
+                    soma['geom']['cm'] = 318.319
+                    #print("sc: %s"%(soma['geom']['cm']))
+                
+                soma['pointps'][component] = {'mod':component}
+                cellRule['secs'] = {'soma': soma}  # add sections to dict
+                self.cellParams[component] = cellRule
+
+            self.gids[population_id] = [-1]*size
+
+
         #
         #  Overridden from DefaultNetworkHandler
         #    
         def handleLocation(self, id, population_id, component, x, y, z):
             DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
-        
+
             cellsList = self.popParams[population_id]['cellsList']
-            cellsList.append({'cellLabel':id, 'x': x, 'y': y , 'z': z})
-       
-       
+
+            cellsList.append({'cellLabel':id, 'x': x if x else 0, 'y': y if y else 0 , 'z': z if z else 0})
+            self.gids[population_id][id] = self.next_gid
+            self.next_gid+=1
+
+        #
+        #  Overridden from DefaultNetworkHandler
+        #
+        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False):
+
+
+            self.log.info("A projection: "+projName+" from "+prePop+" -> "+postPop+" with syn: "+synapse)
+            self.projection_infos[projName] = (projName, prePop, postPop, synapse)
+            self.connections[projName] = []
+
+        #
+        #  Overridden from DefaultNetworkHandler
+        #  
+        def handleConnection(self, projName, id, prePop, postPop, synapseType, \
+                                                        preCellId, \
+                                                        postCellId, \
+                                                        preSegId = 0, \
+                                                        preFract = 0.5, \
+                                                        postSegId = 0, \
+                                                        postFract = 0.5, \
+                                                        delay = 0, \
+                                                        weight = 1):
+
+            self.log.info("A connection "+str(id)+" of: "+projName+": cell "+str(preCellId)+" in "+prePop \
+                                  +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
+                                  +", weight: "+str(weight)+", delay: "+str(delay))
+
+            if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
+                raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
+
+            self.connections[projName].append( (self.gids[prePop][preCellId],self.gids[postPop][postCellId],delay, weight) )
+
+
+
         #
         #  Overridden from DefaultNetworkHandler
         #    
         def handleInputList(self, inputListId, population_id, component, size):
             DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
-            
+
             self.stimSources[inputListId] = {'label': inputListId, 'type': component}
             self.stimLists[inputListId] = {
                         'source': inputListId, 
                         'sec':'soma', 
                         'loc': 0.5, 
                         'conds': {'popLabel':population_id, 'cellList': []}}
-            
-       
+
+
         #
         #  Overridden from DefaultNetworkHandler
         #   
         def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
-            
+
             print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
             if segId!=0:
                 raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
             if fract!=0.5:
                 raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
-            
+
             self.stimLists[inputListId]['conds']['cellList'].append(cellId)
 
-###############################################################################
-# Import network from NeuroML2
-###############################################################################
-def importNeuroML2(fileName, simConfig):
-    
-    
-    netParams = specs.NetParams()
+    ###############################################################################
+    # Import network from NeuroML2
+    ###############################################################################
+    def importNeuroML2(fileName, simConfig):
 
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
-    
-    print("Importing NeuroML 2 network from: %s"%fileName)
+        netParams = specs.NetParams()
 
-    if fileName.endswith(".nml"):
-        
-        import logging
-        logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
 
-        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+        print("Importing NeuroML 2 network from: %s"%fileName)
 
-        nmlHandler = NetPyNEBuilder()     
+        nmlHandler = None
 
-        currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+        if fileName.endswith(".nml"):
 
-        currParser.parse(fileName)
-        
-        for popParam in nmlHandler.popParams.keys():
-            netParams.addPopParams(popParam, nmlHandler.popParams[popParam])
+            import logging
+            logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+            from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+
+            nmlHandler = NetPyNEBuilder(netParams)     
+
+            currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+            currParser.parse(fileName)
+
+            nmlHandler.finalise()
+
+            print('Finished import: %s'%nmlHandler.gids)
+            print('Connections: %s'%nmlHandler.connections)
+
+
+        sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+
+        #pp.pprint(netParams)
+        #pp.pprint(simConfig)
+
+        sim.net.createPops()  
+        cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
+
+
+        # Check gids equal....
+        for popLabel,pop in sim.net.pops.iteritems():
+            #print("%s: %s, %s"%(popLabel,pop, pop.cellGids))
+            assert(pop.cellGids==nmlHandler.gids[popLabel])
             
-        for cellParam in nmlHandler.cellParams.keys():
-            netParams.addCellParams(cellParam, nmlHandler.cellParams[cellParam])
-            
-        
-        #netParams['stimParams'] = {'sourceList': [], 'stimList': []}
-        
-        for stimName in nmlHandler.stimSources.keys():
-            netParams.addStimSourceParams(stimName,nmlHandler.stimSources[stimName])
-            netParams.addStimTargetParams(stimName,nmlHandler.stimLists[stimName])
-            
-            #netParams['stimParams']['stimList'].append(nmlHandler.stimLists[stimName])
-            
-        
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    
-    #pp.pprint(netParams)
-    #pp.pprint(simConfig)
+        for proj_id in nmlHandler.projection_infos.keys():
+            projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
+            print("Creating connections for %s: %s->%s via %s"%(projName, prePop, postPop, synapse))
 
-    sim.net.createPops()  
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations    conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    sim.runSim()                      # run parallel Neuron simulation  
-    sim.gatherData()                  # gather spiking data and cell info from each node
-    sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
-    sim.analysis.plotData()               # plot spike raster
-    h('forall psection()')
-    
-    
+            for conn in nmlHandler.connections[projName]:
+                connParam = {'delay':conn[2],'weight':conn[3],'synsPerConn':1, 'loc':0.5}
+                connParam['synMech'] = synapse
 
+                sim.net._addCellConn(connParam, conn[0], conn[1])
+
+        #conns = sim.net.connectCells()                # create connections between cells based on params
+        stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+        simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+        sim.runSim()                      # run parallel Neuron simulation  
+        sim.gatherData()                  # gather spiking data and cell info from each node
+        sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+        sim.analysis.plotData()               # plot spike raster
+        h('forall psection()')
+        h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
+        h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
+        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')
+
+        return nmlHandler.gids

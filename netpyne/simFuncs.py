@@ -67,8 +67,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     else: 
         sim.setNet(sim.Network())  # or create new network
 
-    if netParams: 
-        sim.setNetParams(netParams)  # set network parameters
+    sim.setNetParams(netParams)  # set network parameters
 
     #sim.readArgs()  # read arguments from commandline
 
@@ -1079,6 +1078,26 @@ def gitversion():
     currentPath = os.getcwd()
     netpynePath = os.path.dirname(netpyne.__file__)
     os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath) 
+
+
+###############################################################################
+### Print github version
+###############################################################################
+def checkMemory():
+    # print memory diagnostic info
+    if sim.rank == 0: # and checkMemory:
+        import resource
+        print '\nMEMORY -----------------------'
+        print 'Sections: '
+        print h.topology()
+        print 'NetCons: '
+        print len(h.List("NetCon"))
+        print 'NetStims:'
+        print len(h.List("NetStim"))
+        print '\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        # import objgraph
+        # objgraph.show_most_common_types()
+        print '--------------------------------\n'
 
 
 ###############################################################################

@@ -93,6 +93,16 @@ class Cell (object):
                         sec['mechs'][mechName] = Dict()  
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         sec['mechs'][mechName][mechParamName] = mechParamValue
+            
+            # add ion info 
+            if 'ions' in sectParams:
+                for ionName,ionParams in sectParams['ions'].iteritems(): 
+                    if 'ions' not in sec:
+                        sec['ions'] = Dict()
+                    if ionName not in sec['ions']: 
+                        sec['ions'][ionName] = Dict()  
+                    for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the ion
+                        sec['ions'][ionName][ionParamName] = ionParamValue
 
             # add point processes
             if 'pointps' in sectParams:
@@ -167,6 +177,27 @@ class Cell (object):
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
+                            
+            # add ions
+            if 'ions' in sectParams:
+                for ionName,ionParams in sectParams['ions'].iteritems(): 
+                    if ionName not in sec['ions']: 
+                        sec['ions'][ionName] = Dict()
+                    # Assume a mechanism using this ion is already present...
+                    for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the mechanism
+                        ionParamValueFinal = ionParamValue
+                        for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
+                            if type(ionParamValue) in [list]: 
+                                ionParamValueFinal = ionParamValue[iseg]
+                            if ionParamName == 'e':
+                                seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_ext_conc':
+                                seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                            elif ionParamName == 'init_int_conc':
+                                seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                
+                    if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
+                             (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
             # add synMechs (only used when loading)
             if 'synMechs' in sectParams:
@@ -473,31 +504,33 @@ class Cell (object):
     def modifyStims (self, params):
         for stim in self.stims:
             conditionsMet = 1
-            
-            for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                # check if conditions met
-                if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                    if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
-                        conditionsMet = 0
-                        break
-                elif isinstance(condVal, list) and isinstance(condVal[0], str):
-                    if self.tags[condKey] not in condVal:
-                        conditionsMet = 0
-                        break 
-                elif stim[condKey] != stim[condKey]: 
-                    conditionsMet = 0
-                    break
 
-            if conditionsMet:
-                for (condKey,condVal) in params['cellConds'].iteritems():  # check if all conditions are met
+            if 'conds' in params:
+                for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
                     # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
+                        if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif self.tags.get(condKey) != condVal: 
+                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
+                    elif stim[condKey] != condVal: 
                         conditionsMet = 0
                         break
+
+            if conditionsMet and 'cellConds' in params:
+                if conditionsMet:
+                    for (condKey,condVal) in params['cellConds'].iteritems():  # check if all conditions are met
+                        # check if conditions met
+                        if isinstance(condVal, list):
+                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                                conditionsMet = 0
+                                break
+                        elif self.tags.get(condKey) != condVal: 
+                            conditionsMet = 0
+                            break
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if stim['type'] == 'NetStim':  # for netstims, find associated netcon

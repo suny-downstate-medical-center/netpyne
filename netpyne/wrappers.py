@@ -140,4 +140,4 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
 ###############################################################################
 def importNeuroML2SimulateAnalyze(fileName, simConfig):
         
-    sim.importNeuroML2(fileName, simConfig)
+    return sim.importNeuroML2(fileName, simConfig)

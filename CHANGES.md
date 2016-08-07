@@ -1,9 +1,22 @@
+## Version 0.5.7
+
+- Improved NeuroML import/export functions
+
+- Added option for cache_efficient (optimized load balance when many cores) (issue #77)
+
+- Added sim.clearAll() function to clear all objects in memory and avoid leaks
+
+- Cleared variables after gathering from multiple nodes to avoid memory leak
+
+- Separated common runSim() commands into preRun() (issue #83)
+
+- Fixed bugs in net.modifyStims() method
+
 ## Version 0.5.6
 
 - Only load neuroml libraries and functions if installed to avoid error when importing sim
 
 - Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
-
 
 ## Version 0.5.5
 

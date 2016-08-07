@@ -7,17 +7,17 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
 from time import time
 from datetime import datetime
 import cPickle as pk
-import hashlib 
+#import hashlib 
 from numbers import Number
 from copy import copy
 from specs import Dict, ODict
@@ -69,8 +69,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     else: 
         sim.setNet(sim.Network())  # or create new network
 
-    if netParams: 
-        sim.setNetParams(netParams)  # set network parameters
+    sim.setNetParams(netParams)  # set network parameters
 
     #sim.readArgs()  # read arguments from commandline
 
@@ -299,12 +298,49 @@ def _loadFile (filename):
 
     return data
 
+###############################################################################
+# Clear all sim objects in memory
+###############################################################################
+def clearAll():
+    # clean up
+    sim.pc.barrier() 
+    sim.pc.gid_clear()                    # clear previous gid settings
+
+    # clean cells and simData in all nodes
+    sim.clearObj([cell.__dict__ for cell in sim.net.cells])
+    sim.clearObj([stim for stim in sim.simData['stims']])
+    for key in sim.simData.keys(): del sim.simData[key]  
+    for c in sim.net.cells: del c
+    for p in sim.net.pops: del p
+    del sim.net.params
+    
+    
+    # clean cells and simData gathered in master node
+    if sim.rank == 0:
+        sim.clearObj([cell.__dict__ for cell in sim.net.allCells])
+        sim.clearObj([stim for stim in sim.allSimData['stims']])
+        for key in sim.allSimData.keys(): del sim.allSimData[key]
+        for c in sim.net.allCells: del c
+        for p in sim.net.allPops: del p
+        del sim.net.allCells
+        del sim.allSimData
+
+        import matplotlib
+        matplotlib.pyplot.clf()
+        matplotlib.pyplot.close()
+
+    del sim.net
+
+    import gc; gc.collect()
+
+
 
 ###############################################################################
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj): 
-    return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+    #return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+    return 0  # convert 8 first chars of md5 hash in base 16 to int
 
 
 ###############################################################################
@@ -342,18 +378,36 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 
 
 ###############################################################################
+### Recursively remove items of an object (used to avoid mem leaks)
+###############################################################################
+def clearObj (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict, Dict, ODict]:
+                clearObj(item)
+            del item
+                
+    elif type(obj) in [dict, Dict, ODict]:
+        for key in obj.keys():
+            val = obj[key]
+            if type(val) in [list, dict, Dict, ODict]:
+                clearObj(val)
+            del obj[key]
+    return obj
+
+###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
-def _replaceItemObj (obj, keystart, newval):
+def replaceItemObj (obj, keystart, newval):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                _replaceItemObj(item, keystart, newval)
+                replaceItemObj(item, keystart, newval)
 
     elif type(obj) == dict:
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
-                _replaceItemObj(val, keystart, newval)
+                replaceItemObj(val, keystart, newval)
             if key.startswith(keystart):
                 obj[key] = newval
     return obj
@@ -606,14 +660,14 @@ def getCellsList(include):
 
 
 ###############################################################################
-### Run Simulation
+### Commands required just before running simulation
 ###############################################################################
-def runSim ():
-    sim.pc.barrier()
-    timing('start', 'runTime')
-    if sim.rank == 0:
-        print('\nRunning...')
-        runstart = time() # See how long the run takes
+def preRun():
+    if sim.cfg.cache_efficient:
+        h('objref cvode')
+        h('cvode = new CVode()')
+        h.cvode.cache_efficient(0)
+
     h.dt = sim.cfg.dt  # set time step
     for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
     sim.pc.set_maxstep(10)
@@ -627,13 +681,24 @@ def runSim ():
                 stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
 
+
+###############################################################################
+### Run Simulation
+###############################################################################
+def runSim ():
+    sim.pc.barrier()
+    timing('start', 'runTime')
+    preRun()
     init()
+
+    if sim.rank == 0: print('\nRunning...')
     sim.pc.psolve(sim.cfg.duration)
-    if sim.rank==0: 
-        runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
+    
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
+    if sim.rank==0: 
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % 
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
 ###############################################################################
@@ -642,34 +707,19 @@ def runSim ():
 def runSimWithIntervalFunc (interval, func):
     sim.pc.barrier()
     timing('start', 'runTime')
-    if sim.rank == 0:
-        print('\nRunning...')
-        runstart = time() # See how long the run takes
-    h.dt = sim.cfg.dt
-    sim.pc.set_maxstep(10)
-    mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is ',mindelay)
-    
-    # reset all netstims so runs are always equivalent
-    for cell in sim.net.cells:
-        for stim in cell.stims:
-            stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(sim.cfg.seeds['stim'])))
-            stim['hRandom'].negexp(1)
-
+    preRun()
     init()
+    if sim.rank == 0: print('\nRunning...')
 
-    #progUpdate = 1000  # update every second
     while round(h.t) < sim.cfg.duration:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        #if sim.cfg.verbose and (round(h.t) % progUpdate):
-            #print(' Sim time: %0.1f s (%d %%)' % (h.t/1e3, int(h.t/f.cfg.duration*100)))
         func(h.t) # function to be called at intervals
 
-    if sim.rank==0: 
-        runtime = time()-runstart # See how long it took
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % (runtime, sim.cfg.duration/1000/runtime))
     sim.pc.barrier() # Wait for all hosts to get to this point
     timing('stop', 'runTime')
+    if sim.rank==0: 
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' % 
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
                 
 
 ###############################################################################
@@ -682,7 +732,17 @@ def _gatherAllCellTags ():
     allCellTags = {}
     for dataNode in gather:         
         allCellTags.update(dataNode)
-    del gather, data  # removed unnecesary variables
+    
+    # clean to avoid mem leaks
+    for node in gather: 
+        if node:
+            node.clear()
+            del node
+    for item in data:
+        if item: 
+            item.clear()
+            del item
+
     return allCellTags
 
 
@@ -704,6 +764,7 @@ def gatherData ():
         for k,v in nodeData.iteritems():
             data[0][k] = v 
         gather = sim.pc.py_alltoall(data)
+
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []
@@ -742,6 +803,17 @@ def gatherData ():
                 pop['cellGids'] = sorted(allPopsCellGids[popLabel])
             sim.net.allPops = allPops
     
+
+        # clean to avoid mem leaks
+        for node in gather: 
+            if node:
+                node.clear()
+                del node
+        for item in data:
+            if item: 
+                item.clear()
+                del item
+
     else:  # if single node, save data in same format as for multiple nodes for consistency
         if sim.cfg.createNEURONObj:
             sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]
@@ -846,7 +918,17 @@ def _gatherCells ():
             for node in gather:  # concatenate data from each node
                 allCells.extend(node['netCells'])  # extend allCells list
             sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
-         
+        
+        # clean to avoid mem leaks
+        for node in gather: 
+            if node:
+                node.clear()
+                del node
+        for item in data:
+            if item: 
+                item.clear()
+                del item
+                 
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
       
@@ -957,6 +1039,13 @@ def saveData (include = None):
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
 
+
+            # clean to avoid mem leaks
+            for key in dataSave.keys(): 
+                del dataSave[key]
+            del dataSave
+
+            # return full path
             import os
             return os.getcwd()+'/'+sim.cfg.filename
 
@@ -991,6 +1080,26 @@ def gitversion():
     currentPath = os.getcwd()
     netpynePath = os.path.dirname(netpyne.__file__)
     os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath) 
+
+
+###############################################################################
+### Print github version
+###############################################################################
+def checkMemory():
+    # print memory diagnostic info
+    if sim.rank == 0: # and checkMemory:
+        import resource
+        print '\nMEMORY -----------------------'
+        print 'Sections: '
+        print h.topology()
+        print 'NetCons: '
+        print len(h.List("NetCon"))
+        print 'NetStims:'
+        print len(h.List("NetStim"))
+        print '\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        # import objgraph
+        # objgraph.show_most_common_types()
+        print '--------------------------------\n'
 
 
 ###############################################################################

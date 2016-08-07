@@ -14,7 +14,7 @@ from netpyne import utils
 
 class Dict(dict):
 
-    __slots__ = []#'todict', 'fromdict', 'dotify', 'undotify']
+    __slots__ = []
 
     def __init__(*args, **kwargs):
         self = args[0]
@@ -119,6 +119,8 @@ class Dict(dict):
 ###############################################################################
 
 class ODict(OrderedDict):
+
+    __slots__ = []
    
     def __init__(self, *args, **kwargs):
         super(ODict, self).__init__(*args, **kwargs)
@@ -333,6 +335,7 @@ class SimConfig (object):
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}  # parameters of h module 
+        self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.createNEURONObj= True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network

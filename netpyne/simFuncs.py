@@ -7,10 +7,10 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion'])  # misc/utilities
 
 import sys
@@ -297,6 +297,42 @@ def _loadFile (filename):
 
     return data
 
+###############################################################################
+# Clear all sim objects in memory
+###############################################################################
+def clearAll():
+    # clean up
+    sim.pc.barrier() 
+    sim.pc.gid_clear()                    # clear previous gid settings
+
+    # clean cells and simData in all nodes
+    sim.clearObj([cell.__dict__ for cell in sim.net.cells])
+    sim.clearObj([stim for stim in sim.simData['stims']])
+    for key in sim.simData.keys(): del sim.simData[key]  
+    for c in sim.net.cells: del c
+    for p in sim.net.pops: del p
+    del sim.net.params
+    
+    
+    # clean cells and simData gathered in master node
+    if sim.rank == 0:
+        sim.clearObj([cell.__dict__ for cell in sim.net.allCells])
+        sim.clearObj([stim for stim in sim.allSimData['stims']])
+        for key in sim.allSimData.keys(): del sim.allSimData[key]
+        for c in sim.net.allCells: del c
+        for p in sim.net.allPops: del p
+        del sim.net.allCells
+        del sim.allSimData
+
+        import matplotlib
+        matplotlib.pyplot.clf()
+        matplotlib.pyplot.close()
+
+    del sim.net
+
+    import gc; gc.collect()
+
+
 
 ###############################################################################
 # Hash function to obtain random value
@@ -339,6 +375,24 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
                 objCopy[key] = val
     return objCopy
 
+
+###############################################################################
+### Recursively remove items of an object (used to avoid mem leaks)
+###############################################################################
+def clearObj (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict, Dict, ODict]:
+                clearObj(item)
+            del item
+                
+    elif type(obj) in [dict, Dict, ODict]:
+        for key in obj.keys():
+            val = obj[key]
+            if type(val) in [list, dict, Dict, ODict]:
+                clearObj(val)
+            del obj[key]
+    return obj
 
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)

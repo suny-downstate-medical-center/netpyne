@@ -1,13 +1,16 @@
+## Version 0.5.7
+
+- Added sim.clearAll() function to clear all objects in memory and avoid leaks
+
+- Cleared variables after gathering from multiple nodes to avoid memory leak
+
+- Fixed bugs in net.modifyStims() method
+
 ## Version 0.5.6
 
 - Only load neuroml libraries and functions if installed to avoid error when importing sim
 
 - Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
-
-- Fixed memory leak by clearing variables after gathering from >1 nodes
-
-- Fixed bugs in net.modifyStims() method
-
 
 ## Version 0.5.5
 

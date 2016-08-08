@@ -1127,7 +1127,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
                             synMech = conn['synMech']
                             threshold = conn['threshold']
 
-                            #print("      Conn %s[%i]->%s[%i] with %s"%(popPre, indexPre,popPost, indexPost, synMech))
+                            if sim.cfg.verbose: print("      Conn %s[%i]->%s[%i] with %s, w: %s, d: %s"%(popPre, indexPre,popPost, indexPost, synMech, weight, delay))
 
                             projection_info = (popPre,popPost,synMech)
                             if not projection_info in nn.keys():
@@ -1506,7 +1506,7 @@ if neuromlExists:
                                   synapse=synMech)
                 index = 0      
                 for conn in nn[proj_info]:
-
+                    if sim.cfg.verbose: print("Adding conn %s"%conn)
                     connection = neuroml.ConnectionWD(id=index, \
                                 pre_cell_id="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
                                 pre_segment_id=0, \
@@ -1612,6 +1612,8 @@ if neuromlExists:
         popParams = OrderedDict()
         
         pops_vs_seg_ids_vs_segs = {}
+        
+        pop_ids_vs_components = {}
 
         projection_infos = OrderedDict()
         connections = OrderedDict()
@@ -1648,6 +1650,8 @@ if neuromlExists:
         def handlePopulation(self, population_id, component, size, component_obj):
 
             self.log.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+            
+            self.pop_ids_vs_components[population_id] = component_obj
 
             assert(component==component_obj.id)
 
@@ -1765,8 +1769,8 @@ if neuromlExists:
                 
                 self.cellParams[component] = cellRule
                 
-                for cp in self.cellParams.keys():
-                    pp.pprint(self.cellParams[cp])
+                #for cp in self.cellParams.keys():
+                #    pp.pprint(self.cellParams[cp])
                     
                 self.pops_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
@@ -1864,13 +1868,22 @@ if neuromlExists:
         #   
         def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
 
-            print("Input: %s[%s], cellId: %i, seg: %i, fract: %f" % (inputListId,id,cellId,segId,fract))
             if segId!=0:
                 raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
+            
+            pop_id = self.stimLists[inputListId]['conds']['popLabel']
+            seg_name = self.pops_vs_seg_ids_vs_segs[pop_id][segId].name if self.pops_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
+            # TODO fix!
+            self.stimLists[inputListId]['sec'] = seg_name
+            
+            print("Input: %s[%s], cellId: %i, seg: %i (%s), fract: %f" % (inputListId,id,cellId,segId,seg_name,fract))
+            
             if fract!=0.5:
                 raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
 
             self.stimLists[inputListId]['conds']['cellList'].append(cellId)
+            #self.stimLists[inputListId]['conds']['secList'].append(seg_name)
+            #self.stimLists[inputListId]['conds']['locList'].append(fract)
 
     ###############################################################################
     # Import network from NeuroML2
@@ -1917,17 +1930,38 @@ if neuromlExists:
         # Check gids equal....
         for popLabel,pop in sim.net.pops.iteritems():
             #print("%s: %s, %s"%(popLabel,pop, pop.cellGids))
-            assert(pop.cellGids==nmlHandler.gids[popLabel])
+            for gid in pop.cellGids:
+                assert(gid in nmlHandler.gids[popLabel])
             
         for proj_id in nmlHandler.projection_infos.keys():
             projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
             print("Creating connections for %s: %s->%s via %s"%(projName, prePop, postPop, synapse))
+            
+            preComp = nmlHandler.pop_ids_vs_components[prePop]
+            
+            from neuroml import Cell
+            
+            if isinstance(preComp,Cell):
+                if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
+                    st = preComp.biophysical_properties.membrane_properties.spike_threshes[0]
+                    # Ensure threshold is same everywhere on cell
+                    assert(st.segment_groups=='all')
+                    assert(len(preComp.biophysical_properties.membrane_properties.spike_threshes)==1)
+                    threshold = pynml.convert_to_units(st.value,'mV')
+                else:
+                    threshold = 0
+            elif hasattr(preComp,'thresh'):
+                threshold = pynml.convert_to_units(preComp.thresh,'mV')
+            else:
+                threshold = 0
 
             for conn in nmlHandler.connections[projName]:
-                connParam = {'delay':conn[2],'weight':conn[3],'synsPerConn':1, 'loc':0.5}
+                connParam = {'delay':conn[2],'weight':conn[3],'synsPerConn':1, 'loc':0.5, 'threshold':threshold}
+                
                 connParam['synMech'] = synapse
 
-                sim.net._addCellConn(connParam, conn[0], conn[1])
+                if conn[1] in sim.net.lid2gid:  # check if postsyn is in this node's list of gids
+                    sim.net._addCellConn(connParam, conn[0], conn[1])
 
         #conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
@@ -1936,9 +1970,10 @@ if neuromlExists:
         sim.gatherData()                  # gather spiking data and cell info from each node
         sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
         sim.analysis.plotData()               # plot spike raster
+        '''
         h('forall psection()')
         h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
         h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
-        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')
+        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids

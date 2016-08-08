@@ -1,3 +1,7 @@
+## Version 0.5.8
+
+- Fixed bug (introduced during debugging) that prevented random seeds from working properly
+
 ## Version 0.5.7
 
 - Improved NeuroML import/export functions

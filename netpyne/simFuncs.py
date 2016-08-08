@@ -17,7 +17,7 @@ import sys
 from time import time
 from datetime import datetime
 import cPickle as pk
-#import hashlib 
+import hashlib 
 from numbers import Number
 from copy import copy
 from specs import Dict, ODict
@@ -339,9 +339,8 @@ def clearAll():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj): 
-    #return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
-    return 0  # convert 8 first chars of md5 hash in base 16 to int
-
+    return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+    
 
 ###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)

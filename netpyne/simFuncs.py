@@ -1617,7 +1617,9 @@ if neuromlExists:
         projection_infos = OrderedDict()
         connections = OrderedDict()
 
+        popStimSources = {}
         stimSources = {}
+        popStimLists = {}
         stimLists = {}
 
         gids = OrderedDict()
@@ -1841,10 +1843,12 @@ if neuromlExists:
                                   +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
                                   +", weight: "+str(weight)+", delay: "+str(delay))
 
-            if preSegId!=0 or postSegId!=0 or preFract!=0.5 or postFract!=0.5:
-                raise Exception("Not yet supported in connection segId !=0 or fract !=0.5")
+            pre_seg_name = self.pops_vs_seg_ids_vs_segs[prePop][preSegId].name if self.pops_vs_seg_ids_vs_segs.has_key(prePop) else 'soma'
+            post_seg_name = self.pops_vs_seg_ids_vs_segs[postPop][postSegId].name if self.pops_vs_seg_ids_vs_segs.has_key(postPop) else 'soma'
 
-            self.connections[projName].append( (self.gids[prePop][preCellId],self.gids[postPop][postCellId],delay, weight) )
+            self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,preFract, \
+                                                self.gids[postPop][postCellId], post_seg_name, postFract, \
+                                                delay, weight) )
 
 
 
@@ -1853,34 +1857,45 @@ if neuromlExists:
         #    
         def handleInputList(self, inputListId, population_id, component, size):
             DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
-
+            
+            
+            self.popStimSources[inputListId] = {'label': inputListId, 'type': component}
+            self.popStimLists[inputListId] = {'source': inputListId, 
+                        'conds': {'popLabel':population_id}}
+            
+            # TODO: build just one stimLists/stimSources entry for the inputList
+            # Issue: how to specify the sec/loc per individual stim??
+            '''
             self.stimSources[inputListId] = {'label': inputListId, 'type': component}
             self.stimLists[inputListId] = {
                         'source': inputListId, 
                         'sec':'soma', 
                         'loc': 0.5, 
-                        'conds': {'popLabel':population_id, 'cellList': []}}
+                        'conds': {'popLabel':population_id, 'cellList': []}}'''
 
 
         #
         #  Overridden from DefaultNetworkHandler
         #   
         def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
-
-            if segId!=0:
-                raise Exception("Not yet supported in input (%s[%s]) segId!=0"% (inputListId,id))
             
-            pop_id = self.stimLists[inputListId]['conds']['popLabel']
+            pop_id = self.popStimLists[inputListId]['conds']['popLabel']
             seg_name = self.pops_vs_seg_ids_vs_segs[pop_id][segId].name if self.pops_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
-            # TODO fix!
-            self.stimLists[inputListId]['sec'] = seg_name
             
-            print("Input: %s[%s], cellId: %i, seg: %i (%s), fract: %f" % (inputListId,id,cellId,segId,seg_name,fract))
+            stimId = "%s_%s_%s_%s_%s"%(inputListId,pop_id,cellId,seg_name,(str(fract)).replace('.','_'))
             
-            if fract!=0.5:
-                raise Exception("Not yet supported in input (%s[%s]) fract!=0.5"% (inputListId,id))
-
-            self.stimLists[inputListId]['conds']['cellList'].append(cellId)
+            self.stimSources[stimId] = {'label': stimId, 'type': self.popStimSources[inputListId]['type']}
+            self.stimLists[stimId] = {'source': stimId, 
+                        'sec':seg_name, 
+                        'loc': fract, 
+                        'conds': {'popLabel':pop_id, 'cellList': [cellId]}}
+                        
+            
+            print("Input: %s[%s] on %s, cellId: %i, seg: %i (%s), fract: %f; ref: %s" % (inputListId,id,pop_id,cellId,segId,seg_name,fract,stimId))
+            
+            # TODO: build just one stimLists/stimSources entry for the inputList
+            # Issue: how to specify the sec/loc per individual stim??
+            #self.stimLists[inputListId]['conds']['cellList'].append(cellId)
             #self.stimLists[inputListId]['conds']['secList'].append(seg_name)
             #self.stimLists[inputListId]['conds']['locList'].append(fract)
 
@@ -1955,12 +1970,15 @@ if neuromlExists:
                 threshold = 0
 
             for conn in nmlHandler.connections[projName]:
-                connParam = {'delay':conn[2],'weight':conn[3],'synsPerConn':1, 'loc':0.5, 'threshold':threshold}
+                
+                pre_id, pre_seg, pre_fract, post_id, post_seg, post_fract, delay, weight = conn
+                
+                connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
                 
                 connParam['synMech'] = synapse
 
-                if conn[1] in sim.net.lid2gid:  # check if postsyn is in this node's list of gids
-                    sim.net._addCellConn(connParam, conn[0], conn[1])
+                if post_id in sim.net.lid2gid:  # check if postsyn is in this node's list of gids
+                    sim.net._addCellConn(connParam, pre_id, post_id)
 
         #conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)

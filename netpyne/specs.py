@@ -25,17 +25,6 @@ class Dict(dict):
             self.update(self.dotify(args[0]))
         if len(kwargs):
             self.update(self.dotify(kwargs))
-   
-    # def __contains__(self, k):
-    #     try:
-    #         print k
-    #         print self
-    #         #print hasattr(self, k)
-    #         print dict.__contains__(self, k)
-    #         #return hasattr(self, k) or dict.__contains__(self, k)
-    #         return dict.__contains__(self, k)
-    #     except:
-    #         return False
     
     # only called if k not found in normal places 
     def __getattr__(self, k):
@@ -206,11 +195,6 @@ class ODict(OrderedDict):
         else:
             return x
 
-    # def __missing__(self, key):
-    #     if not key.startswith('_ipython'):
-    #         value = self[key] = Dict()
-    #         return value
-
     def __getstate__ (self):
         return self.toOrderedDict()
 
@@ -323,6 +307,10 @@ class NetParams (object):
 
         return self.cellParams[label]
 
+    def todict(self):
+        from sim import replaceDictODict
+        return replaceDictODict(self.__dict__)
+
 
 ###############################################################################
 # SIMULATION CONFIGURATION CLASS
@@ -372,4 +360,8 @@ class SimConfig (object):
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params
+
+    def todict(self):
+        from sim import replaceDictODict
+        return replaceDictODict(self.__dict__)
 

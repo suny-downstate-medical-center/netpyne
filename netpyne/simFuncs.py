@@ -213,7 +213,6 @@ def loadSimData (filename, data=None):
 ###############################################################################
 def loadAll (filename, data=None):
     if not data: data = _loadFile(filename)
-    print data
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
     loadNet(filename, data=data)

@@ -8,7 +8,10 @@ Contributors: salvadordura@gmail.com
 import os, sys
 from neuron import h
 
-def getSecName (sec, dirCellSecNames = {}):
+
+def getSecName (sec, dirCellSecNames = None):
+    if dirCellSecNames is None: dirCellSecNames = {}
+
     if '>.' in sec.name():
         fullSecName = sec.name().split('>.')[1] 
     elif '.' in sec.name():
@@ -76,8 +79,10 @@ def _equal_dicts (d1, d2, ignore_keys):
             return False
     return True
 
-def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = []):
+def importCell (fileName, cellName, cellArgs = None):
     h.initnrn()
+
+    if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc'):
@@ -230,9 +235,9 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
 
         h.pop_section()  # to prevent section stack overflow
 
-    # store synMechs in input argument
-    if synMechs: 
-        for synMech in synMechs: synMechParams.append(synMech)
+    # # store synMechs in input argument
+    # if synMechs: 
+    #     for synMech in synMechs: synMechParams.append(synMech)
         
     # store section lists
     secLists = h.List('SectionList')
@@ -246,7 +251,7 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
                 secListName = hname
             secListDic[secListName] = [getSecName(sec, dirCellSecNames) for sec in secLists.o(i)]
     else:
-        secListDic = None
+        secListDic = {}
 
     # celsius warning
     if hasattr(h, 'celsius'):
@@ -258,9 +263,11 @@ def importCell (cellRule, fileName, cellName, cellArgs = [], synMechParams = [])
     del(cell) # delete cell
     import gc; gc.collect()
 
-    cellRule['sections'] = secDic
-    if secListDic:
-        cellRule['sectionLists'] = secListDic
+    return secDic, secListDic, synMechs
+
+    # cellRule['secs'] = secDic
+    # if secListDic:
+    #     cellRule['secLists'] = secListDic
 
 
 
@@ -300,7 +307,7 @@ def importConnFromExcel (fileName, sheetName):
                 weight = sheet.cell(row=row, column=colWeight).value
 
                 # write preTags
-                line = "netParams['connParams'].append({'preTags': {"
+                line = "netParams['connParams'].append({'preConds': {"
                 for i,cond in enumerate(pre.split(';')):  # split into different conditions
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value
@@ -308,7 +315,7 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + "}" # end of preTags      
 
                 # write postTags
-                line = line + ",\n'postTags': {"
+                line = line + ",\n'postConds': {"
                 for i,cond in enumerate(post.split(';')):  # split into different conditions
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value
@@ -322,3 +329,4 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + '\n\n' # new line after each conn rule
                 sim.write(line)  # write to file
                 
+        

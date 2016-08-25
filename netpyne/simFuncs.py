@@ -213,6 +213,7 @@ def loadSimData (filename, data=None):
 ###############################################################################
 def loadAll (filename, data=None):
     if not data: data = _loadFile(filename)
+    print data
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
     loadNet(filename, data=data)
@@ -965,6 +966,7 @@ def saveData (include = None):
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
+                dataSave = replaceDictODict(dataSave)
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.pkl'))
                 with open(sim.cfg.filename+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
@@ -981,10 +983,7 @@ def saveData (include = None):
             # Save to json file
             if sim.cfg.saveJson:
                 import json
-                #dataSave = replaceDictODict(dataSave)
-
-                #return dataSave
-
+                #dataSave = replaceDictODict(dataSave)  # not required since json saves as dict
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.json '))
                 with open(sim.cfg.filename+'.json', 'w') as fileObj:
                     json.dump(dataSave, fileObj)

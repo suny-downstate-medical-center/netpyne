@@ -27,7 +27,9 @@ netParams['sizeZ'] = 100 # z-dimension (horizontal depth) size in um
 
 
 ## General connectivity parameters
-netParams['scaleConnWeight'] = 1 # Connection weight scale factor
+netParams['scaleConnWeight'] = 1 # Connection weight scale factor (NetStims not included)
+netParams['scaleConnWeightNetStims'] = 1 # Connection weight scale factor for NetStims
+netParams['scaleConnWeightModels'] = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
 netParams['defaultWeight'] = 1  # default connection weight
 netParams['defaultDelay'] = 1  # default connection delay (ms)
 netParams['defaultThreshold'] = 10  # default Netcon threshold (mV)
@@ -66,9 +68,10 @@ simConfig['verbose'] = False  # show detailed messages
 simConfig['recordCells'] = []  # what cells to record from (eg. 'all', 5, or 'PYR')
 simConfig['recordTraces'] = {}  # Dict of traces to record 
 simConfig['recordStim'] = False  # record spikes of cell stims
-simConfig['recordStep'] = 1 # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig['recordStep'] = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
+simConfig['saveDataInclude'] = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
 simConfig['filename'] = 'model_output'  # Name of file to save model output
 simConfig['timestampFilename'] = False  # Add timestamp to filename to avoid overwriting
 simConfig['savePickle'] = False # save to pickle file
@@ -81,13 +84,4 @@ simConfig['saveDat'] = False # save traces to .dat file(s)
 
 
 # Analysis and plotting 
-simConfig['plotCells'] = [] # plot recorded traces for this list of cells
-simConfig['plotRaster'] = True # Whether or not to plot a raster
-simConfig['plotSync'] = False  # add vertical lines for all spikes as an indication of synchrony
-simConfig['maxspikestoplot'] = 3e8 # Maximum number of spikes to plot
-simConfig['orderRasterYnorm'] = False # Order cells in raster by yfrac (default is by pop and cell id)
-simConfig['plotLFPSpectrum'] = False # plot power spectral density (not yet implemented)
-simConfig['plot2Dnet'] = False # plot 2D visualization of cell positions and connections
-simConfig['plotConn'] = False # whether to plot conn matrix (not yet implemented)
-simConfig['plotWeightChanges'] = False # whether to plot weight changes (not yet implemented)
-simConfig['plot3dArch'] = False # plot 3d architecture (not yet implemented)
+simConfig['analysis'] = {}

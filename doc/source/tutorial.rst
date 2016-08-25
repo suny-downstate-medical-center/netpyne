@@ -22,12 +22,12 @@ You will need to **download** the ``HHTut.py`` example parameter file (`download
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
 	import HHTut
-	from netpyne import init
-	init.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
+	from netpyne import sim
+	sim.createAndSimulate(netParams = HHTut.netParams, simConfig = HHTut.simConfig)    
 
 The first line imports the ``HHTut`` module with the network and simulation parameters. 
 
-The second line imports the ``init`` module from the ``netpyne`` package. The `init`` module provides functions to easily create and simulate networks based on these parameters.
+The second line imports the ``sim`` module from the ``netpyne`` package. The `sim`` module provides functions to easily create and simulate networks based on these parameters.
 
 The third line calls the ``createAndSimulate`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
 
@@ -81,6 +81,8 @@ The ``netParams`` dictionary includes all the information necessary to define yo
 
 * ``connParams`` - list of network connectivity rules and their associated parameters. 
 
+* ``stimParams`` - dict with stimulation parameters. 
+
 .. image:: figs/netparams.png
 	:width: 40%
 	:align: center
@@ -90,9 +92,12 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule)
+* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
 * creates a set of connections based on ``connParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+
+* add stimulation to the cells based on ``stimParams``.
+
 
 The image below illustrates this process:
 
@@ -244,13 +249,13 @@ The complete list of simulation configuration options is available here: :ref:`s
 Network creation and simulation
 -----------------------------------------------
 
-Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createAndSimulate`` function from the ``init`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
+Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createAndSimulate`` function from the ``sim`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
 
-	init.createAndSimulate(netParams, simConfig)    
+	sim.createAndSimulate(netParams, simConfig)    
 
-Note that as before we need to import the ``init`` module from the ``netpyne`` package, but in this case we don't need to import the ``params`` subpackage, since we are defining our own. Thus, we can just add this line to the top of the file::
+Note that as before we need to import the ``sim`` module from the ``netpyne`` package, but in this case we don't need to import the ``params`` subpackage, since we are defining our own. Thus, we can just add this line to the top of the file::
 
-	from netpyne import init
+	from netpyne import sim
 
 The full tutorial code for this example is available here: :download:`tut2.py <code/tut2.py>`
 
@@ -358,7 +363,7 @@ We will build a cortical-like network with 6 populations (3 excitatory and 3 inh
 
 Since we want to distribute the cells spatially, the first thing we need to do is define the volume dimensions where cells will be placed. By convention we take the X and Z to be the horizontal or lateral dimensions, and Y to be the vertical dimension (representing cortical depth in this case.) To define a cuboid with volume of 100x1000x100 um (ie. horizontal spread of 100x100 um and cortical depth of 1000um) we can use the ``sizeX``, ``sizeY`` and ``sizeZ`` network parameters as follows::
 
-	from netpyne import init
+	from netpyne import sim
 
 	# Network parameters
 	netParams = {}  # dictionary to store sets of network parameters
@@ -424,7 +429,7 @@ In terms of connectivity, we'll start by adding background inputs to all cell in
 	  'synMech': 'exc'})                  # synaptic mechanism 
 
 
-We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``simConfig['plotCells'] = ['E2','E4','E5']``), plot the raster ordered based on cell cortical depth (``simConfig['orderRasterYnorm'] = 1``), and show a 2D visualization of cell positions and connections (``simConfig['plot2Dnet'] = True``)::
+We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}```), plot the raster ordered based on cell cortical depth (``simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'} ``), show a 2D visualization of cell positions and connections (``simConfig['analysis']['plot2Dnet']``), and the connectivity matrix (`simConfig['analysis']['plotConn'] = True``) ::
 
 	# Simulation options
 	simConfig = {}
@@ -435,13 +440,15 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig['recordStep'] = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False         # Save params, network and sim output to pickle file
-	simConfig['plotRaster'] = True          # Plot a raster
-	simConfig['orderRasterYnorm'] = 1       # Order cells in raster by yfrac (default is by pop and cell id)
-	simConfig['plotCells'] = ['E2','E4','E5']    # Plot recorded traces for this list of cells
-	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	
+	simConfig['analysis'] = {}				# Initialize dict for analysis options
+	simConfig['analysis']['plotRaster'] = {'orderBy': 'ynorm'}          # Plot a raster
+	simConfig['analysis']['plotTraces'] = {'include': [('E2',0), ('E4',0), ('E5',0)]}    # Plot recorded traces for this list of cells
+	simConfig['analysis']['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig['analysis']['plotConn'] = True           # plot connectivity matrix
 
 	# Create network and run simulation
-	init.createAndSimulate(netParams = netParams, simConfig = simConfig)    
+	sim.createAndSimulate(netParams = netParams, simConfig = simConfig)    
 
 
 If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input:
@@ -509,7 +516,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	# Population parameters
 	netParams['popParams'] = []  # create list of populations - each item will contain dict with pop params
 	netParams['popParams'].append({'popLabel': 'hop', 'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}) # add dict with params for this pop 
-	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5, 'source': 'random'})  # background inputs
+	netParams['popParams'].append({'popLabel': 'background', 'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5})  # background inputs
 
 	# Cell parameters
 	netParams['cellParams'] = []
@@ -543,7 +550,7 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	    'delay': 5})       				    # delay 
 
 
-We now add the standard simulation configuration options, and include the ``plotSync`` so that raster plots shown vertical lines at for each spike as an indication of synchrony::
+We now add the standard simulation configuration options, and include the ``syncLines`` option so that raster plots shown vertical lines at for each spike as an indication of synchrony::
 
 	###############################################################################
 	# SIMULATION PARAMETERS
@@ -559,13 +566,14 @@ We now add the standard simulation configuration options, and include the ``plot
 	simConfig['recordStep'] = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 	simConfig['filename'] = 'model_output'  # Set file output name
 	simConfig['savePickle'] = False 		# Save params, network and sim output to pickle file
-	simConfig['plotRaster'] = True 			# Plot a raster
-	simConfig['plotSync'] = True  # add vertical lines for all spikes as an indication of synchrony
-	simConfig['plotCells'] = [1] 			# Plot recorded traces for this list of cells
-	simConfig['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+
+	simConfig['analysis'] = {}									# Initialize dict for analysis options
+	simConfig['analysis']['plotRaster'] = {'syncLines': True} 	# Plot a raster with vertical synchrony lines
+	simConfig['analysis']['plotCells'] = {'include': [1]} 		# Plot recorded traces for this list of cells
+	simConfig['analysis']['plot2Dnet'] = True           		# plot 2D visualization of cell positions and connections
 
 
-Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``init.createAndSimulate()`` function used before)::
+Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``sim.createAndSimulate()`` function used before)::
 
 	###############################################################################
 	# EXECUTION CODE (via netpyne)
@@ -573,20 +581,20 @@ Finally, we add the code to create the network and run the simulation, but for i
 	from netpyne import framework as f
 
 	# Create network and run simulation
-	f.sim.initialize(                       # create network object and set cfg and net params
+	sim.initialize(                       # create network object and set cfg and net params
 	    simConfig = simConfig,   # pass simulation config and network params as arguments
 	    netParams = netParams)   
-	f.net.createPops()                      # instantiate network populations
-	f.net.createCells()                     # instantiate network cells based on defined populations
-	f.net.connectCells()                    # create connections between cells based on params
-	f.sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
-	f.sim.runSim()                          # run parallel Neuron simulation  
-	f.sim.gatherData()                      # gather spiking data and cell info from each node
-	f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	f.analysis.plotData()                   # plot spike raster
+	sim.net.createPops()                      # instantiate network populations
+	sim.net.createCells()                     # instantiate network cells based on defined populations
+	sim.net.connectCells()                    # create connections between cells based on params
+	sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
+	sim.runSim()                          # run parallel Neuron simulation  
+	sim.gatherData()                      # gather spiking data and cell info from each node
+	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	sim.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.37 (vertical red lines illustrate poor synchrony):
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
 
 .. image:: figs/tut6_1.png
 	:width: 100%
@@ -594,11 +602,11 @@ If we run the above code, the resulting network 2D map shows the inhibitory conn
 
 We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``f`` object (which stands for framework), contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells`` list. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). 
 
-A list of population objects is available via ``f.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.
+A list of population objects is available via ``sim.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.
 
-Spiking data is available via ``f.allSimData['spkt']`` and ``f.allSimData['spkid']``. Voltage traces are available via eg. ``f.allSimData['V']['cell_25']`` (for cell with gid 25).
+Spiking data is available via ``sim.allSimData['spkt']`` and ``sim.allSimData['spkid']``. Voltage traces are available via eg. ``sim.allSimData['V']['cell_25']`` (for cell with gid 25).
 
-All the simulation configuration options can be modified interactively via ``f.cfg``. For example, to turn off plotting of 2D visualization run: ``f.cfg['plot2Dnet']=False``
+All the simulation configuration options can be modified interactively via ``sim.cfg``. For example, to turn off plotting of 2D visualization run: ``sim.cfg['plot2Dnet']=False``
 
 A representation of the instantiated network structure generated by NetPyNE is shown below:
 
@@ -617,15 +625,15 @@ Given the information above, we can now create a simple function ``changeWeights
 		netcons = [conn['hNetcon'] for cell in net.cells for conn in cell.conns]
 		for netcon in netcons: netcon.weight[0] = newWeight
 
-	changeWeights(f.net, 0.5)  # increase inh conns weight increase sync
+	changeWeights(sim.net, 0.5)  # increase inh conns weight increase sync
 
-	f.sim.runSim()                          # run parallel Neuron simulation  
-	f.sim.gatherData()                      # gather spiking data and cell info from each node
-	f.sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	f.analysis.plotData()                   # plot spike raster
+	sim.runSim()                          # run parallel Neuron simulation  
+	sim.gatherData()                      # gather spiking data and cell info from each node
+	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	sim.analysis.plotData()                   # plot spike raster
 
 
-The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.72:
+The resulting plots show that the increased mutual inhibitions synchronizes the network activity, increasing the synchrony measure to 0.67:
 
 .. image:: figs/tut6_2.png
 	:width: 70%
@@ -633,5 +641,7 @@ The resulting plots show that the increased mutual inhibitions synchronizes the 
 
 
 The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
+
+An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

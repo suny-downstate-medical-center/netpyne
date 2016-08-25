@@ -1,3 +1,67 @@
+## Version 0.5.0
+
+- Added option 'dataSaveInclude' to select what data to save to file (issue #30)
+
+- Added sim.net.allPops which contains all cellGids of each when running on >1 nodes (issue #30)
+
+- Connectivity matrix can now be grouped by numeric tags in intervals (eg. cortical depth y in 50 um intervals) (issue #92)
+
+- Added support for all stims (VClamp, SEClamp, AlphaSynapse, etc) and can specify any of the stim params (amp, dur, delay,etc) as a function (eg. 'uniform(a,b)' or '2*post_ynorm') (issue #32)
+
+- Fixed bugs so plotRaster() is identical when running on >1 nodes, and is ordered by gid correctly 
+
+- Fixed bug so can have multiple plot function calls even when one of them is False 
+
+## Version 0.4.9
+
+- Modified format of simConfig analysis options to make it equivalent to calling analysis functions (issue #69)
+
+- Improved plotRaster() function to add customizable options (select cells, time range, order, overlay histogram, and others) (issue #39)
+
+- Improved plotTraces() function to add customizable options (select cells, time range, arrage by cell or trace, and others) (issue #39)
+
+- Improved plot2Dnet() function to add customizable options (select cells, show connections, and others) (issue #39)
+
+- Added spikeHist() function to plot spike histogram with customizable options (select cells, time range, bin size, and others) (issue #63)
+
+- Added plotConn() function to plot spike histogram with multiple customizable options (select cells, feature, order, and others) (issue #39)
+
+- Added option to save figure, save figure data, specify figure size, and show figure to all analysis/plotting functions (issue #39)
+
+- Fixed bug when generating function-based random probability values -- made random stream independent 
+
+- Fixed bug when generating density-based random cell locations -- made random stream independent (issue #93)
+
+
+## Version 0.4.8
+
+- Removed framework and init modules, and consolidated in sim module (so just need: 'from netpyne import sim')
+
+- Added option to specify weight scale factor separately for each cell model, and for NetStims (issue #69)
+
+- Conn rules can now have list of synMechs (eg. [AMPA, NMDA]) and synMechWeightFactor (eg. [1.0, 0.1]) (issue #69)
+
+- Conn rules allow list of weights, delays and/or locs for each synMech in list (issue #69)
+
+- Conn rules allow synsPerConn and loc to be described functionally (at the cell connection level) (eg. 'uniform(5,2)') (issue #69)
+
+- Conn rules allow list of weights, delays, and/or locs when synsPerConn > 1 (issue #69)
+
+- Conn rules allow 2D list of weights, delays, and/or locs when have list of synMechs and synsPerConn > 1 (issue #69)
+
+- Conn rules allow list of sections or sectionList when synsPerConn > 1; synMechs distributed uniformly (loc list not allowed) (issue #69)
+
+- Extended fromList connectivity function so can also provide synapse locs (issue #69)
+
+- Added separate wrapper sim functions to create and simulate the network  
+
+- Sim functions use simConfig and netParams from __main__ as default (if not specified) 
+
+- Connections between NetStims and cells are included in conn list (issue #69)
+
+- Fixed bug so can create Python and NEURON objects for connections independently (issue #69)
+
+
 ## Version 0.4.7
 
 - Added option for random seeds for connectivity, stimulation, and cell locations (issue #49)

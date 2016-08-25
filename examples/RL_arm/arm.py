@@ -24,6 +24,8 @@ class Arm:
     def __init__(self, anim, graphs): # initialize variables
         self.anim = anim # whether to show arm animation or not
         self.graphs = graphs # whether to show graphs at the end
+        self.angs_sh = []
+        self.angs_el = []
 
 
     ################################
@@ -101,11 +103,21 @@ class Arm:
         self.trial = self.trial + 1
         f.timeoflastreset = t
         self.ang = list(self.startAng) # keeps track of shoulder and elbow angles
+        
+        if f.gridTrain and not f.oneLastReset:
+            gridsquare = len(f.resetids)
+            lensh = len(self.angs_sh)-1
+            lenel = len(self.angs_el)-1
+            
+            c1 = (gridsquare % (lensh*lenel))/lensh     # Note the integer division!
+            c2 = gridsquare % lenel
+            self.ang = [(self.angs_sh[c1]+self.angs_sh[c1+1])/2,(self.angs_el[c2]+self.angs_el[c2+1])/2]        
+        
         self.angVel = [0,0] # keeps track of joint angular velocities
         self.motorCmd = [0,0,0,0] # motor commands to muscles
         self.error = 0 # error signal (eg. difference between )
         self.critic = 0 # critic signal (1=reward; -1=punishment)
-        self.initArmMovement = self.initArmMovement + f.testTime
+        self.initArmMovement = self.initArmMovement + f.trialTime
         
     #%% plot motor commands
     def RLcritic(self, t):
@@ -128,12 +140,41 @@ class Arm:
         return self.critic
 
     #%% plot joint angles
-    def plotTraj(self):
+    def plotTraj(self,f):
         fig = figure() 
         l = 1.1*sum(self.armLen)
         ax = fig.add_subplot(111, autoscale_on=False, xlim=(-l/2, +l), ylim=(-l/2, +l)) # create subplot
-        posX, posY = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll])
-        ax.plot(posX, posY, 'r')
+        
+        prev_ang_sh = None        
+        for ang_sh in self.angs_sh:
+            prev_ang_el = None
+            for ang_el in self.angs_el:
+                posX, posY = self.angles2pos([ang_sh,ang_el], self.armLen)
+                if prev_ang_el:
+                    posXpe, posYpe = self.angles2pos([ang_sh,prev_ang_el], self.armLen)
+                    ax.plot([posXpe,posX], [posYpe,posY], 'b:')
+                if prev_ang_sh:
+                    posXps, posYps = self.angles2pos([prev_ang_sh,ang_el], self.armLen)
+                    ax.plot([posXps,posX], [posYps,posY], 'b:')
+#                ax.plot(posX, posY, 'kx')
+                prev_ang_el = ang_el
+            prev_ang_sh = ang_sh        
+        
+#        from pylab import ceil        
+#        lentest = int(len(f.arm.angAll)*f.testTime/f.cfg['duration'])
+#        lentrial = int(len(f.arm.angAll)*f.trialTime/f.cfg['duration'])
+#        numTrains = int(ceil(f.trainTime/f.trialTime))
+#        for train in xrange(numTrains):
+        prevresetid = 0
+        for resetid in f.resetids:
+            posXtrain, posYtrain = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll[prevresetid:resetid]])
+            ax.plot(posXtrain, posYtrain, 'r')
+            print 'train'
+            prevresetid = resetid
+        posXtest, posYtest = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll[prevresetid:]])
+        ax.plot(posXtest, posYtest, 'k')
+        print 'test'
+#        for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: print cell.prange[0]
         targ = Circle((self.targetPos),0.04, color='g', fill=False) # target
         ax.add_artist(targ)
         ax.grid()
@@ -230,26 +271,40 @@ class Arm:
         self.minPval = f.minPval
         self.maxPrate = f.maxPrate
         self.minPrate = f.minPrate
-        angInterval = (self.maxPval - self.minPval) / (self.numPcells - 1) # angle interval (times 2 because shoulder+elbow)
+        angInterval = (self.maxPval - self.minPval) / (self.numPcells) # angle interval (times 2 because shoulder+elbow)
 
         cellPranges = {}
         currentPval = f.minPval  
+        self.angs_sh = []
         for cellGid in f.pop_sh: # set angle range of each cell tuned to shoulder 
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
+            self.angs_sh.append(currentPval)
             currentPval += angInterval
+        self.angs_sh.append(currentPval)
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: # set angle range of each cell tuned to shoulder 
             cell.prange = cellPranges[cell.gid]
 
         cellPranges = {}
         currentPval = f.minPval
+        self.angs_el = []
         for cellGid in f.pop_el: # set angle range of each cell tuned to elbow
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
+            self.angs_el.append(currentPval)
             currentPval += angInterval
+        self.angs_el.append(currentPval)
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]: # set angle range of each cell tuned to shoulder 
             cell.prange = cellPranges[cell.gid]
-
+            
+#        cells_sh = [c for c in f.net.cells if c.gid in f.pop_sh]
+#        cells_el = [c for c in f.net.cells if c.gid in f.pop_el]
+#        self.angs_sh = [cell.prange[0] for cell in cells_sh] + [cells_sh[-1].prange[-1]]
+#        self.angs_el = [cell.prange[0] for cell in cells_el] + [cells_el[-1].prange[-1]]
+        
+        if f.gridTrain:
+            self.ang = [(self.angs_sh[0]+self.angs_sh[1])/2,(self.angs_el[0]+self.angs_el[1])/2]         
+        
         # initialize dummy or musculoskeletal arm 
         if f.rank == 0: 
             self.setupDummyArm() # setup dummyArm (eg. graph animation)
@@ -280,12 +335,12 @@ class Arm:
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 if cell.gid in self.targetCells:  # for each rand cell selected
                     for stim in cell.stims:
-                        if stim['popLabel'] == 'stimEM':
+                        if stim['label'] == 'stimEM':
                             stim['hNetStim'].interval = 1000/self.randRate
                             break
                 else: # if not stimulated
                     for stim in cell.stims:
-                        if stim['popLabel'] == 'stimEM':
+                        if stim['label'] == 'stimEM':
                             stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                             break
             f.timeoflastexplor = t
@@ -294,16 +349,19 @@ class Arm:
 
 
         # Reset arm and set target after every trial -start from center etc
-        if f.trialReset and t-f.timeoflastreset >= f.testTime: 
+        if f.trialReset and t-f.timeoflastreset >= f.trialTime: 
+            f.resetids.append(len(self.angAll))
             self.resetArm(f, t)
             f.targetid = f.trialTargets[self.trial] # set target based on trial number
             self.targetPos = self.setTargetByID(f.targetid, self.startAng, self.targetDist, self.armLen) 
             # reset explor movs
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 for stim in cell.stims:
-                    if stim['popLabel'] == 'stimEM':
+                    if stim['label'] == 'stimEM':
                         stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                         break
+            if f.oneLastReset:
+                f.timeoflastreset = f.cfg['duration']
             f.timeoflastexplor = t
 
 
@@ -343,24 +401,24 @@ class Arm:
         for cell in [c for c in f.net.cells if c.gid in f.pop_sh]:   # shoulder
             if (self.ang[SH] >= cell.prange[0] and self.ang[SH] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
-                    if stim['popLabel'] == 'stimPsh':
+                    if stim['label'] == 'stimPsh':
                         stim['hNetStim'].interval = 1000/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
-                    if stim['popLabel'] == 'stimPsh':
+                    if stim['label'] == 'stimPsh':
                         stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]:   # elbow
             if (self.ang[EL] >= cell.prange[0] and self.ang[EL] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
-                    if stim['popLabel'] == 'stimPel':
+                    if stim['label'] == 'stimPel':
                         stim['hNetStim'].interval = 1000.0/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
-                    if stim['popLabel'] == 'stimPel':
+                    if stim['label'] == 'stimPel':
                         stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
@@ -379,7 +437,7 @@ class Arm:
         # if f.explorMovs: # remove explor movs related noise to cells
         #     for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
         #         for stim in cell.stims:
-        #             if stim['popLabel'] == 'backgroundE':
+        #             if stim['label'] == 'backgroundE':
         #                 stim['hNetcon'].weight[stim['weightIndex']] = self.origMotorBackgroundWeight
         #                 break
         if f.trialReset:
@@ -393,7 +451,7 @@ class Arm:
                 ioff() # turn interactive mode off
                 close(self.fig) # close arm animation graph 
             if self.graphs: # plot graphs
-                self.plotTraj()
+                self.plotTraj(f)
                 self.plotAngs()
                 self.plotMotorCmds()
                 self.plotRL()

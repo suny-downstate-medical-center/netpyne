@@ -39,7 +39,8 @@ netParams.addPopParams('background2', {'cellModel': 'NetStim', 'rate': 20, 'nois
 # Synaptic mechanism parameters
 netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
 netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
- 
+netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0, 'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0}})
+
 
 # Cell parameters
 ## PYR cell properties
@@ -130,7 +131,7 @@ netParams.addConnParams('PYRconn2',
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(1,15)',
-    'synMech': 'AMPA',
+    'synMech': 'homSyn',
     'sec': 'all',
     'synsPerConn': 2})    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
 

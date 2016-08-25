@@ -350,10 +350,17 @@ class Cell (object):
                     sec['synMechs'].append(synMech)
                 if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
-                    synMech['hSyn'] = synObj(loc, sec = sec['hSec'])  # create h Syn object (eg. h.Exp2Syn)
+                    synMech['hSyn'] = synObj(loc, sec=sec['hSec'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
-                        if synParamName not in ['label', 'mod']:
+                        if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
                             setattr(synMech['hSyn'], synParamName, synParamValue)
+                        elif synParamName == 'selfNetCon':  # create self netcon required for some synapses (eg. homeostatic)
+                            synMech['hNetCon'] = h.NetCon(sec['hSec'](loc)._ref_v, synMech['hSyn'], sec=sec['hSec'])
+                            for paramName,paramValue in synParamValue.iteritems():
+                                if paramName == 'weight':
+                                    synMech['hNetCon'].weight[0] = paramValue
+                                else:
+                                    setattr(synMech['hNetCon'], paramName, paramValue)
             return synMech
 
 

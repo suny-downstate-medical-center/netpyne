@@ -1,3 +1,7 @@
+# Version 0.5.9
+
+- Added support for homeostatic scaling synapse (requires self NetCon) (issue #148)
+
 ## Version 0.5.8
 
 - Fixed bug (introduced during debugging) that prevented random seeds from working properly

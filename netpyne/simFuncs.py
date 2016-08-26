@@ -247,7 +247,7 @@ def _loadFile (filename):
         import json
         print('Loading file %s ... ' % (filename))
         with open(filename, 'r') as fileObj:
-            data = json.load(fileObj)
+            data = json.load(fileObj, object_pairs_hook=OrderedDict)
 
     # load mat file
     elif ext == 'mat':

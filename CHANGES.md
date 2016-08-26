@@ -1,8 +1,10 @@
 # Version 0.5.9
 
-- Added support for homeostatic scaling synapse (requires self NetCon) (issue #148)
+- Added support for homeostatic scaling synapse (requires self NetCon) (issue #141)
 
-- Added method to convert NetParams and SimConfig objects to dicts (issue #148)
+- Added method to convert NetParams and SimConfig objects to dicts (issue #141)
+
+- Fixed NetParams and SimConfig constructors so arguments are converted to Dict/ODict (issue #141)
 
 ## Version 0.5.8
 

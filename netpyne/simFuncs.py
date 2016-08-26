@@ -1462,11 +1462,6 @@ if neuromlExists:
                     
                 nml_doc.cells.append(cell)
                 
-                
-                
-                
-            
-            
             
         for np_pop in net.pops.values(): 
             index = 0
@@ -1610,9 +1605,10 @@ if neuromlExists:
         cellParams = OrderedDict()
         popParams = OrderedDict()
         
-        pops_vs_seg_ids_vs_segs = {}
-        
+        pop_ids_vs_seg_ids_vs_segs = {}
         pop_ids_vs_components = {}
+        pop_ids_vs_use_segment_groups_for_neuron = {}
+        pop_ids_vs_ordered_segs = {}
 
         projection_infos = OrderedDict()
         connections = OrderedDict()
@@ -1645,6 +1641,24 @@ if neuromlExists:
                 self.netParams.addStimSourceParams(stimName,self.stimSources[stimName])
                 self.netParams.addStimTargetParams(stimName,self.stimLists[stimName])
 
+        def _get_prox_dist(self, seg, seg_ids_vs_segs):
+            prox = None
+            if seg.proximal:
+                prox = seg.proximal
+            else: 
+                parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                prox = parent_seg.distal
+
+            dist = seg.distal
+            if prox.x==dist.x and prox.y==dist.y and prox.z==dist.z:
+
+                if prox.diameter==dist.diameter:
+                    dist.y = prox.diameter
+                else:
+                    raise Exception('Unsupported geometry in segment: %s of cell %s'%(seg.name,cell.id))
+                
+            return prox, dist
+
         #
         #  Overridden from DefaultNetworkHandler
         #    
@@ -1666,64 +1680,91 @@ if neuromlExists:
 
             from neuroml import Cell
             if isinstance(component_obj,Cell):
-
-                '''
-                self.netParams.importCellParams(label=component, conds={'cellType': component, 'cellModel': component},
-                    fileName='%s.hoc'%component, cellName=component, importSynMechs=False)
-                self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']['e'] = -10
-                print self.netParams.cellParams[component]['secs']['soma']['mechs']['passiveChan']'''
                 
+                cell = component_obj
                 cellRule = {'conds':{'cellType': component, 'cellModel': component},  'secs': {}, 'secLists':{}}  # cell rule dict
                 
-                seg_ids_vs_segs = {}
-                seg_grps_vs_seg_names = {}
-                seg_grps_vs_seg_names['all'] = []
+                seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
+                seg_grps_vs_nrn_sections = {}
+                seg_grps_vs_nrn_sections['all'] = []
+                                
+                use_segment_groups_for_neuron = False
                 
-                for seg in component_obj.morphology.segments:
-                    seg_ids_vs_segs[seg.id] = seg
-                    cellRule['secs'][seg.name] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
-                    seg_grps_vs_seg_names['all'].append(seg.name)
+                for seg_grp in cell.morphology.segment_groups:
+                    if hasattr(seg_grp,'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383"+"xxxxxxxxxx":
+                        use_segment_groups_for_neuron = True
+                        cellRule['secs'][seg_grp.id] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
+                        #seg_grps_vs_nrn_sections[seg_grp.id] = seg_grp.id
+                        seg_grps_vs_nrn_sections['all'].append(seg_grp.id)
+                        
+                self.pop_ids_vs_use_segment_groups_for_neuron[population_id] = use_segment_groups_for_neuron
                     
-                    prox = None
-                    if seg.proximal:
-                        prox = seg.proximal
-                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
-                    else: 
-                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
-                        prox = parent_seg.distal
-                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+                
+                if not use_segment_groups_for_neuron:
+                    for seg in cell.morphology.segments:
+                    
+                        seg_grps_vs_nrn_sections['all'].append(seg.name)
+                        cellRule['secs'][seg.name] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
+                    
+                        prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
 
-                    dist = seg.distal
-                    if prox.x==dist.x and prox.y==dist.y and prox.z==dist.z:
-                        
-                        if prox.diameter==dist.diameter:
-                            dist.y = prox.diameter
-                        else:
-                            raise Exception('Unsupported geometry in segment: %s of cell %s'%(seg.name,cell.id))
-                        
-                    cellRule['secs'][seg.name]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
-                    
-                    if seg.parent:
-                        parent_seg = seg_ids_vs_segs[seg.parent.segments]
-                        
-                        cellRule['secs'][seg.name]['topol'] = {'parentSec': parent_seg.name, 'parentX': float(seg.parent.fraction_along), 'childX': 0}
-                    
-                for seg_grp in component_obj.morphology.segment_groups:
-                    seg_grps_vs_seg_names[seg_grp.id] = []
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+                        cellRule['secs'][seg.name]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
 
-                    for member in seg_grp.members:
-                        seg_grps_vs_seg_names[seg_grp.id].append(seg_ids_vs_segs[member.segments].name)
+                        if seg.parent:
+                            parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                            cellRule['secs'][seg.name]['topol'] = {'parentSec': parent_seg.name, 'parentX': float(seg.parent.fraction_along), 'childX': 0}
+                
+                
+                else:
+                    ordered_segs = cell.get_ordered_segments_in_groups(cellRule['secs'].keys())
+                    self.pop_ids_vs_ordered_segs[population_id] = ordered_segs
+                    for section in cellRule['secs'].keys():
+                        #print("ggg %s: %s"%(section,ordered_segs[section]))
+                        for seg in ordered_segs[section]:
+                            prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
+                            
+                            if seg.id == ordered_segs[section][0].id:
+                                cellRule['secs'][section]['geom']['pt3d'].append((prox.x,prox.y,prox.z,prox.diameter))
+                                if seg.parent:
+                                    parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                                    parent_sec = None
+                                    #TODO: optimise
+                                    for sec in ordered_segs.keys():
+                                        if parent_seg.id in [s.id for s in ordered_segs[sec]]:
+                                            parent_sec = sec
+                                    fract = float(seg.parent.fraction_along)
+                                    
+                                    assert(fract==1.0 or fract==0.0)
+                                    
+                                    cellRule['secs'][section]['topol'] = {'parentSec': parent_sec, 'parentX':fract , 'childX': 0}
+                                
+                            cellRule['secs'][section]['geom']['pt3d'].append((dist.x,dist.y,dist.z,dist.diameter))
+                        
+
+                    
+                for seg_grp in cell.morphology.segment_groups:
+                    seg_grps_vs_nrn_sections[seg_grp.id] = []
+
+                    if not use_segment_groups_for_neuron:
+                        for member in seg_grp.members:
+                            seg_grps_vs_nrn_sections[seg_grp.id].append(seg_ids_vs_segs[member.segments].name)
 
                     for inc in seg_grp.includes:
-                        for seg_name in seg_grps_vs_seg_names[inc.segment_groups]:
-                            seg_grps_vs_seg_names[seg_grp.id].append(seg_name)
+                        
+                        if not use_segment_groups_for_neuron:
+                            for section_name in seg_grps_vs_nrn_sections[inc.segment_groups]:
+                                seg_grps_vs_nrn_sections[seg_grp.id].append(section_name)
+                        else:
+                            seg_grps_vs_nrn_sections[seg_grp.id].append(inc.segment_groups)
 
                     if not seg_grp.neuro_lex_id or seg_grp.neuro_lex_id !="sao864921383":
-                        cellRule['secLists'][seg_grp.id] = seg_grps_vs_seg_names[seg_grp.id]
+                        cellRule['secLists'][seg_grp.id] = seg_grps_vs_nrn_sections[seg_grp.id]
                     
-                for cm in component_obj.biophysical_properties.membrane_properties.channel_densities:
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_densities:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
-                    for seg_name in seg_grps_vs_seg_names[group]:
+                    for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
                         if cm.ion_channel=='pas':
                             mech = {'g':gmax}
@@ -1731,49 +1772,49 @@ if neuromlExists:
                             mech = {'gmax':gmax}
                         erev = pynml.convert_to_units(cm.erev,'mV')
                         
-                        cellRule['secs'][seg_name]['mechs'][cm.ion_channel] = mech
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
                         
                         if cm.ion and cm.ion == 'non_specific':
                             mech['e'] = erev
                         else:
-                            if not cellRule['secs'][seg_name]['ions'].has_key(cm.ion):
-                                cellRule['secs'][seg_name]['ions'][cm.ion] = {}
-                            cellRule['secs'][seg_name]['ions'][cm.ion]['e'] = erev
+                            if not cellRule['secs'][section_name]['ions'].has_key(cm.ion):
+                                cellRule['secs'][section_name]['ions'][cm.ion] = {}
+                            cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
                             
-                for vi in component_obj.biophysical_properties.membrane_properties.init_memb_potentials:
+                for vi in cell.biophysical_properties.membrane_properties.init_memb_potentials:
                     
                     group = 'all' if not vi.segment_groups else vi.segment_groups
-                    for seg_name in seg_grps_vs_seg_names[group]:
-                        cellRule['secs'][seg_name]['vinit'] = pynml.convert_to_units(vi.value,'mV')
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        cellRule['secs'][section_name]['vinit'] = pynml.convert_to_units(vi.value,'mV')
                             
-                for sc in component_obj.biophysical_properties.membrane_properties.specific_capacitances:
+                for sc in cell.biophysical_properties.membrane_properties.specific_capacitances:
                     
                     group = 'all' if not sc.segment_groups else sc.segment_groups
-                    for seg_name in seg_grps_vs_seg_names[group]:
-                        cellRule['secs'][seg_name]['geom']['cm'] = pynml.convert_to_units(sc.value,'uF_per_cm2')
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        cellRule['secs'][section_name]['geom']['cm'] = pynml.convert_to_units(sc.value,'uF_per_cm2')
                             
-                for ra in component_obj.biophysical_properties.intracellular_properties.resistivities:
+                for ra in cell.biophysical_properties.intracellular_properties.resistivities:
                     
                     group = 'all' if not ra.segment_groups else ra.segment_groups
-                    for seg_name in seg_grps_vs_seg_names[group]:
-                        cellRule['secs'][seg_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        cellRule['secs'][section_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
                         
-                for specie in component_obj.biophysical_properties.intracellular_properties.species:
+                for specie in cell.biophysical_properties.intracellular_properties.species:
                     
                     group = 'all' if not specie.segment_groups else specie.segment_groups
-                    for seg_name in seg_grps_vs_seg_names[group]:
-                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_ext_conc'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
-                        cellRule['secs'][seg_name]['ions'][specie.ion]['init_int_conc'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        cellRule['secs'][section_name]['ions'][specie.ion]['init_ext_conc'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
+                        cellRule['secs'][section_name]['ions'][specie.ion]['init_int_conc'] = pynml.convert_to_units(specie.initial_concentration,'mM')
                         
-                        cellRule['secs'][seg_name]['mechs'][specie.concentration_model] = {}
+                        cellRule['secs'][section_name]['mechs'][specie.concentration_model] = {}
                         
                 
                 self.cellParams[component] = cellRule
                 
-                #for cp in self.cellParams.keys():
-                #    pp.pprint(self.cellParams[cp])
+                for cp in self.cellParams.keys():
+                    pp.pprint(self.cellParams[cp])
                     
-                self.pops_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
+                self.pop_ids_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
             else:
 
@@ -1803,6 +1844,21 @@ if neuromlExists:
 
             self.gids[population_id] = [-1]*size
 
+
+        def _convert_to_nrn_section_location(self, population_id, seg_id, fract_along):
+            
+            if not self.pop_ids_vs_seg_ids_vs_segs.has_key(population_id) or not self.pop_ids_vs_seg_ids_vs_segs[population_id].has_key(seg_id):
+                return 'soma', 0.5
+            
+            if not self.pop_ids_vs_use_segment_groups_for_neuron[population_id]:
+                
+                return self.pop_ids_vs_seg_ids_vs_segs[population_id][seg_id].name, fract_along
+            else:
+                
+                for sec in self.pop_ids_vs_ordered_segs[population_id].keys():
+                    if seg_id in [s.id for s in self.pop_ids_vs_ordered_segs[population_id][sec]]:
+                        nrn_sec = sec
+                return nrn_sec, 0.777777
 
         #
         #  Overridden from DefaultNetworkHandler
@@ -1843,8 +1899,8 @@ if neuromlExists:
                                   +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
                                   +", weight: "+str(weight)+", delay: "+str(delay))
 
-            pre_seg_name = self.pops_vs_seg_ids_vs_segs[prePop][preSegId].name if self.pops_vs_seg_ids_vs_segs.has_key(prePop) else 'soma'
-            post_seg_name = self.pops_vs_seg_ids_vs_segs[postPop][postSegId].name if self.pops_vs_seg_ids_vs_segs.has_key(postPop) else 'soma'
+            pre_seg_name = self.pop_ids_vs_seg_ids_vs_segs[prePop][preSegId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(prePop) else 'soma'
+            post_seg_name = self.pop_ids_vs_seg_ids_vs_segs[postPop][postSegId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(postPop) else 'soma'
 
             self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,preFract, \
                                                 self.gids[postPop][postCellId], post_seg_name, postFract, \
@@ -1880,18 +1936,20 @@ if neuromlExists:
         def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
             
             pop_id = self.popStimLists[inputListId]['conds']['popLabel']
-            seg_name = self.pops_vs_seg_ids_vs_segs[pop_id][segId].name if self.pops_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
+            nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)
             
-            stimId = "%s_%s_%s_%s_%s"%(inputListId,pop_id,cellId,seg_name,(str(fract)).replace('.','_'))
+            #seg_name = self.pop_ids_vs_seg_ids_vs_segs[pop_id][segId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
+            
+            stimId = "%s_%s_%s_%s_%s"%(inputListId,pop_id,cellId,nrn_sec,(str(fract)).replace('.','_'))
             
             self.stimSources[stimId] = {'label': stimId, 'type': self.popStimSources[inputListId]['type']}
             self.stimLists[stimId] = {'source': stimId, 
-                        'sec':seg_name, 
-                        'loc': fract, 
+                        'sec':nrn_sec, 
+                        'loc': nrn_fract, 
                         'conds': {'popLabel':pop_id, 'cellList': [cellId]}}
                         
             
-            print("Input: %s[%s] on %s, cellId: %i, seg: %i (%s), fract: %f; ref: %s" % (inputListId,id,pop_id,cellId,segId,seg_name,fract,stimId))
+            print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))
             
             # TODO: build just one stimLists/stimSources entry for the inputList
             # Issue: how to specify the sec/loc per individual stim??

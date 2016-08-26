@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion'])  # misc/utilities
+'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
 
 import sys
 from time import time
@@ -892,6 +892,26 @@ def popAvgRates(trange = None, show = True):
             print '%s : %.3f Hz'%(pop, avgRates[pop])
     return avgRates
 
+
+###############################################################################
+### Calculate and print load balance
+###############################################################################
+def loadBalance():
+    computation_time = sim.pc.step_time()
+    max_comp_time = sim.pc.allreduce(computation_time, 2)
+    min_comp_time = sim.pc.allreduce(computation_time, 3)
+    avg_comp_time = sim.pc.allreduce(computation_time, 1)/sim.nhosts
+    load_balance = avg_comp_time/max_comp_time
+
+    print 'node:',sim.rank,' comp_time:',computation_time
+    if sim.rank==0:
+        print 'max_comp_time:', max_comp_time
+        print 'min_comp_time:', min_comp_time
+        print 'avg_comp_time:', avg_comp_time
+        print 'load_balance:',load_balance
+        print '\nspike exchange time (run_time-comp_time): ', sim.timingData['runTime'] - max_comp_time
+
+    return [max_comp_time, min_comp_time, avg_comp_time, load_balance]
 
 
 ###############################################################################

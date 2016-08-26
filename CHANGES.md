@@ -6,6 +6,8 @@
 
 - Fixed NetParams and SimConfig constructors so arguments are converted to Dict/ODict (issue #141)
 
+- Added sim.loadBalance() func to calculate and print load balance information (issue #77)
+
 ## Version 0.5.8
 
 - Fixed bug (introduced during debugging) that prevented random seeds from working properly

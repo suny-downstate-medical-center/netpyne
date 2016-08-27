@@ -6,7 +6,7 @@
 Welcome to NetPyNE's documentation!
 =======================================
 
-NetPyNE is a python package to facilitate the development and parallel simulation of biological cell networks using the NEURON simulator.
+NetPyNE is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
 
 
 Table of Contents

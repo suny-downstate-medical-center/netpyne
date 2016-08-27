@@ -1,3 +1,15 @@
+# Version 0.5.9
+
+- Improved NeuroML2 import functions (issue #12)
+
+- Added support for homeostatic scaling synapse (requires self NetCon) (issue #141)
+
+- Added method to convert NetParams and SimConfig objects to dicts (issue #141)
+
+- Fixed NetParams and SimConfig constructors so arguments are converted to Dict/ODict (issue #141)
+
+- Added sim.loadBalance() func to calculate and print load balance information (issue #77)
+
 ## Version 0.5.8
 
 - Fixed bug (introduced during debugging) that prevented random seeds from working properly

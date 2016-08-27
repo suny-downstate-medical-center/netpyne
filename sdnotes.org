@@ -2745,6 +2745,124 @@ NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal
 ** Claustrum network (Jing, George Augustine)
 ** Sensorimotor network + arm (Cliff, Kerr lab)
 
+* Grant
+** 16aug17 11:00 MBL bill discuss netpyne with hines [my notes]
+- value of dictionaries would be a small lambda function that gives generality 
+
+- two things i'd like to see -- notation is reasonable but very descriptive 
+-- seems there would be a better way to organize it [similar to NeuroML but shorter; needs to be standardized format]
+-- what can be additional value added for the user [easy creation, parallel sim and analysis of net; complex conn patterns simplified; subcellular; inputs]
+
+-- ultimate would the the traub model -- very compact network level description of the traub model 13 cell types, ~128
+  projection types -- 128 statements -- shouldn't have to write down the same things -- pij, weight, delay (cf NQS) [conn
+  matrix can be converted to netpynec conn rules eg. M1; but need to write down same things so have consistent standard
+  format for all nets, eg. some not based on pij, dist-dep, yfrac] 
+-- extract all this from the current 15k line code [neuroml version can extract net instance; but will have to check manually
+  for high-level conn rules]
+
+- lambda function style encourages compactness; or def if used more than once [can use; string-based more compact and same effect; complexity of lambda: have to include arguments (eg. dist, x loc), not same for all rules]
+
+- on the setup set -- instantiation -- target cells for a particular rank -- only setup on that rank
+  due to the sources, building the netcon depends on location of the source; rules have SRC->TARG info so need to use the
+  net-rendezvous-rank strategy (a common idiom used to resolve these problems)
+
+- net-rendezvous-rank strategy: used if trying to decide if something exists or not; can't answer question unless all of the
+  types exist but they exist randomly distributed across all the ranks so have to gather info from all the ranks; were do we
+  meet?  -- we don't meet at a single master;  we are in double loops (for targ over TARG for src over SRC) -- 
+  here's the answer:  we rendezvous at target_gid%nhost to decide  [can implement in netpyne]
+
+- bad (but still common) idiom: sometimes useful to do net-rendezvous-rank in 2 phases - build round-robin system first and
+  then throw away and rebuild with balanced distribution 
+
+- I mentioned mark hereld example of an interactive HPC (also cf vslice) sim that is managed thru a remote GUI [netpyne GUI,
+  OSB gepetto, new NEURON GUI, NSG]
+
+- change name? -- NetPyNe sounds to much like PYNN -- mh also works with Andrew Davison so would like to avoid  the apparent
+overlap; domain of PYNN -- metasimulator to construct models in NEURON, NEST, BRIAN, using neuromorophic  simulators
+  (spinnaker, analog VLSI); NeuroML, MUSIC (multi-simulator-coordinator == lower level data interchange) in somewhat similar
+  domains [mostly phonetic similarity; many python packages have py so similar; discuss with Andrew in Janelia]
+
+ 
+- look into Nengo -- language used to put together Eliasmith -- prob has a good network connectivity algorithm/layout 
+  https://pythonhosted.org/nengo/examples/network_design.html: 'def motor_cortex(command_threshold, n_neurons_per_command=30)'
+  https://pythonhosted.org/nengo/examples/network_design_advanced.html?highlight=tips%20tricks [included most of NEST conn
+  features + others; Nengo very artificial non-bio eg. implement math funcs using spiking neurons]
+
+- separate issues: advantages of branch failure; cf Paul Rhodes branch point failure [?]
+
+** MBL meeting
+*** Reverse engineering
+- inverse problem: approximation, computer-aided design
+- use GA to aid in the inverse problem
+- netpyne can generate initial attempt to inverse network; then user can update the randomizer functions etc based on the
+  source code
+- modelview gets lowest hangin fruit, but netpyne could do more sophisticated analysis to extract features
+- network
+-- find cell types
+-- connections to other types etc
+-- given projection is there a constant/pattern that can be reverse engineered, convergence
+- Try out example of reverse engineering -- maybe CA3 model
+- reverse engineer data - eg. M1 model have physio + conns and turn into model
+- netpyne can import cells from hoc template or cell class instance
+- people have done before -- create model that generates data, and from data use Bayesian learning to infer params
+- 1000 noisy channels, get data and do experiments to get back params of sodium channels back
+- eg. get maximal conductance param from data - maximum likelihood (won't be same since noise)
+- hidden parameters that have to be informed - markov model 
+- process noise + experimental noise - log likelihood 
+- always wrong - only approximation
+
+- 3 approaches:
+-- 1) current modeldb - get approx same rule
+-- 2) GA - get different rule from original 
+-- 3) BRAIN (reality)
+
+*** Evolutionary
+- What to optimize
+-- 1) GA - Learning params (eg. learning rate)
+-- 2) High-level specs (eg. prob of conn)
+-- 3) Network instance params (eg. explicit weights) 
+
+- What to invert from GA generated network
+-- 1) High-level specs (eg. prob of conn)
+-- 2) Dynamical properties (can be used to fit)
+
+*** Aim 1
+- Brett et al 
+
+*** grant approach
+- we have done this in the last 5 years - can we do this for the next 5 years
+
+- significance
+- innovation
+- investigator
+
+
+*** redefine aims
+- Aim 1: front end
+-- GUI
+-- dendritic connectivity
+
+- Aim 2: back end
+-- rendezvous
+
+- not good - front vs back
+
+- make Aim 2: parallelization
+-- parallelize setup - rendezvous
+-- load balance
+-- parameter optimization (evol etc)
+
+*** subworlds
+- set of nodes working on same networks
+- can have 10 subworlds, each for 1 net
+- bulletin board - old 1994 - currently master but could be done as distributed bulletin baoard
+
+*** GUI
+- interface to create network
+- 
+- simtracker managing of sims
+- simtracker summary of model data
+
 
 * TODO (moved to Github issues - 16may31)
 ** DONE - unify cellmodel 

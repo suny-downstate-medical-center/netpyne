@@ -234,7 +234,7 @@ class Network (object):
 
                         # if sectionList
                         if isinstance(subConnParam.get('sec'), str) and subConnParam.get('sec') in postCell.secLists:
-                            secList = list(self.secLists[subConnParam['sec']])
+                            secList = list(postCell.secLists[subConnParam['sec']])
                         elif isinstance(subConnParam['sec'], list):
                             for item in subConnParam['sec']:
                                 secList = []

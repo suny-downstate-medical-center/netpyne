@@ -25,17 +25,6 @@ class Dict(dict):
             self.update(self.dotify(args[0]))
         if len(kwargs):
             self.update(self.dotify(kwargs))
-   
-    # def __contains__(self, k):
-    #     try:
-    #         print k
-    #         print self
-    #         #print hasattr(self, k)
-    #         print dict.__contains__(self, k)
-    #         #return hasattr(self, k) or dict.__contains__(self, k)
-    #         return dict.__contains__(self, k)
-    #     except:
-    #         return False
     
     # only called if k not found in normal places 
     def __getattr__(self, k):
@@ -206,11 +195,6 @@ class ODict(OrderedDict):
         else:
             return x
 
-    # def __missing__(self, key):
-    #     if not key.startswith('_ipython'):
-    #         value = self[key] = Dict()
-    #         return value
-
     def __getstate__ (self):
         return self.toOrderedDict()
 
@@ -265,7 +249,12 @@ class NetParams (object):
         # fill in params from dict passed as argument
         if netParamsDict:
             for k,v in netParamsDict.iteritems(): 
-                setattr(self, k, v)
+                if isinstance(v, OrderedDict):
+                    setattr(self, k, ODict(v))
+                elif isinstance(v, dict):
+                    setattr(self, k, Dict(v))
+                else:
+                    setattr(self, k, v)
 
     def addCellParams(self, label=None, params=None):
         if not label: 
@@ -323,6 +312,10 @@ class NetParams (object):
 
         return self.cellParams[label]
 
+    def todict(self):
+        from sim import replaceDictODict
+        return replaceDictODict(self.__dict__)
+
 
 ###############################################################################
 # SIMULATION CONFIGURATION CLASS
@@ -334,9 +327,9 @@ class SimConfig (object):
         # Simulation parameters
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
-        self.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}  # parameters of h module 
+        self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module 
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
-        self.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+        self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.createNEURONObj= True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
@@ -367,9 +360,18 @@ class SimConfig (object):
 
         # fill in params from dict passed as argument
         if simConfigDict:
-            for k,v in simConfigDict.iteritems(): 
-                setattr(self, k, v)
+            for k,v in simConfigDict.iteritems():
+                if isinstance(v, OrderedDict):
+                    setattr(self, k, ODict(v)) 
+                elif isinstance(v, dict):
+                    setattr(self, k, Dict(v))
+                else:
+                    setattr(self, k, v)
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params
+
+    def todict(self):
+        from sim import replaceDictODict
+        return replaceDictODict(self.__dict__)
 

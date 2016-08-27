@@ -1,5 +1,7 @@
 # Version 0.5.9
 
+- Improved NeuroML2 import functions (issue #12)
+
 - Added support for homeostatic scaling synapse (requires self NetCon) (issue #141)
 
 - Added method to convert NetParams and SimConfig objects to dicts (issue #141)

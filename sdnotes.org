@@ -2790,6 +2790,80 @@ overlap; domain of PYNN -- metasimulator to construct models in NEURON, NEST, BR
 
 - separate issues: advantages of branch failure; cf Paul Rhodes branch point failure [?]
 
+** MBL meeting
+*** Reverse engineering
+- inverse problem: approximation, computer-aided design
+- use GA to aid in the inverse problem
+- netpyne can generate initial attempt to inverse network; then user can update the randomizer functions etc based on the
+  source code
+- modelview gets lowest hangin fruit, but netpyne could do more sophisticated analysis to extract features
+- network
+-- find cell types
+-- connections to other types etc
+-- given projection is there a constant/pattern that can be reverse engineered, convergence
+- Try out example of reverse engineering -- maybe CA3 model
+- reverse engineer data - eg. M1 model have physio + conns and turn into model
+- netpyne can import cells from hoc template or cell class instance
+- people have done before -- create model that generates data, and from data use Bayesian learning to infer params
+- 1000 noisy channels, get data and do experiments to get back params of sodium channels back
+- eg. get maximal conductance param from data - maximum likelihood (won't be same since noise)
+- hidden parameters that have to be informed - markov model 
+- process noise + experimental noise - log likelihood 
+- always wrong - only approximation
+
+- 3 approaches:
+-- 1) current modeldb - get approx same rule
+-- 2) GA - get different rule from original 
+-- 3) BRAIN (reality)
+
+*** Evolutionary
+- What to optimize
+-- 1) GA - Learning params (eg. learning rate)
+-- 2) High-level specs (eg. prob of conn)
+-- 3) Network instance params (eg. explicit weights) 
+
+- What to invert from GA generated network
+-- 1) High-level specs (eg. prob of conn)
+-- 2) Dynamical properties (can be used to fit)
+
+*** Aim 1
+- Brett et al 
+
+*** grant approach
+- we have done this in the last 5 years - can we do this for the next 5 years
+
+- significance
+- innovation
+- investigator
+
+
+*** redefine aims
+- Aim 1: front end
+-- GUI
+-- dendritic connectivity
+
+- Aim 2: back end
+-- rendezvous
+
+- not good - front vs back
+
+- make Aim 2: parallelization
+-- parallelize setup - rendezvous
+-- load balance
+-- parameter optimization (evol etc)
+
+*** subworlds
+- set of nodes working on same networks
+- can have 10 subworlds, each for 1 net
+- bulletin board - old 1994 - currently master but could be done as distributed bulletin baoard
+
+*** GUI
+- interface to create network
+- 
+- simtracker managing of sims
+- simtracker summary of model data
+
+
 * TODO (moved to Github issues - 16may31)
 ** DONE - unify cellmodel 
 - cell prop conditions: 

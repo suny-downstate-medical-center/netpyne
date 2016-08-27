@@ -1694,6 +1694,9 @@ if neuromlExists:
                     if hasattr(seg_grp,'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383"+"xxxxxxxxxx":
                         use_segment_groups_for_neuron = True
                         cellRule['secs'][seg_grp.id] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
+                        for prop in seg_grp.properties:
+                            if prop.tag=="numberInternalDivisions":
+                                cellRule['secs'][seg_grp.id]['geom']['nseg'] = int(prop.value)
                         #seg_grps_vs_nrn_sections[seg_grp.id] = seg_grp.id
                         seg_grps_vs_nrn_sections['all'].append(seg_grp.id)
                         

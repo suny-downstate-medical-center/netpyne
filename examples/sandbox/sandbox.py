@@ -215,8 +215,10 @@ simConfig.verbose = 1 #False  # show detailed messages
 
 # Recording 
 simConfig.recordCells = [1,2]  # which cells to record from
-simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
-#'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
+'AMPA_i': {'synMech':'AMPA', 'var':'i'}}
+
+
 simConfig.recordStim = True  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -267,9 +269,9 @@ sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur
                     'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
                     'delay': 300})
 
-# sim.net.modifySynMechs({'conds': {'label':'homSyn', 'sec': 'soma', 'loc': [0,1]}, 
-#                     'cellConds': {'cellType': 'PYR2sec'},
-#                     'targetrate': 0.6})
+sim.net.modifySynMechs({'conds': {'label':'homSyn', 'sec': 'soma', 'loc': [0,1]}, 
+                    'cellConds': {'cellType': 'PYR2sec'},
+                    'targetrate': 0.6})
 
 
 # for c in sim.net.cells:

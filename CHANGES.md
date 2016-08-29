@@ -4,6 +4,8 @@
 
 - Fixed bugs and improved efficiency of modify, modifyConns and modifyStims function
 
+- Added option to record from all synMechs of a type (eg. 'AMPA')
+
 # Version 0.5.9
 
 - Improved NeuroML2 import functions (issue #12)

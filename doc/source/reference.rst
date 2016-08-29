@@ -856,6 +856,20 @@ Methods to modify network
 		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 
 
+* **net.modifySynMechs(params)**
+
+	Modifies properties of synMechs in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select synMechs that will be modified, with each item containing a synMech tag, and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'label': 'AMPA', 'sec': 'soma', 'loc': [0, 0.5]}`` targets synMechs with the label 'AMPA', at the soma section, with locations between 0 and 0.5.
+
+	- 'cellConds': dictionary of conditions to select target cells that will contain the synMechs to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
+
 
 * **net.modifyConns(params)**
 
@@ -870,7 +884,7 @@ Methods to modify network
 
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
-	- 'weight' | 'threshold': New value for connection weight or threshold.
+	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
 
 * **net.modifyStims(params)**
@@ -880,13 +894,13 @@ Methods to modify network
 	- 'conds': dictionary of conditions to select stims that will be modified, with each item containing a stim tag (see list of stim tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
 		e.g. ``{'label': 'VClamp1->S'}`` targets stims that were created using the stimTargetParms rule labeled 'VClamp1->S'.
-		e.g. ``{'source': 'IClamp2', 'dur': [100, 300]} targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
+		e.g. ``{'source': 'IClamp2', 'dur': [100, 300]}`` targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
-	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
+	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
 
 
 Population class methods 

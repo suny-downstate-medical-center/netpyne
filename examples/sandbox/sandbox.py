@@ -263,10 +263,21 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # creat
 #                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
 #                     'weight': 0.01})
 
-# sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
-#                     'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
-#                     'delay': 300})
+sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
+                    'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
+                    'delay': 300})
 
+# sim.net.modifySynMechs({'conds': {'label':'homSyn', 'sec': 'soma', 'loc': [0,1]}, 
+#                     'cellConds': {'cellType': 'PYR2sec'},
+#                     'targetrate': 0.6})
+
+
+# for c in sim.net.cells:
+#     if c.tags['cellType'] == 'PYR':
+#         for sec in c.secs:
+#             for synMech in sec.synMechs:
+#                 if synMech.label == 'homSyn':
+#                     synMech.hSyn.targetrate = 0.6
 
 
 # sim.simulate() # create and simulate network

@@ -1,3 +1,9 @@
+# Version 0.6.0
+
+- Added modifySynMechs function
+
+- Fixed bugs and improved efficiency of modify, modifyConns and modifyStims function
+
 # Version 0.5.9
 
 - Improved NeuroML2 import functions (issue #12)

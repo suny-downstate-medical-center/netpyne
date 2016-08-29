@@ -4,16 +4,16 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.addPopParams('HH_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}) 
-netParams.addPopParams('HH3D_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'}) 
-netParams.addPopParams('Traub_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'})
-netParams.addPopParams('Mainen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'})
-netParams.addPopParams('Friesen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'})
-netParams.addPopParams('Izhi03a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}) 
-netParams.addPopParams('Izhi03b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'}) 
-netParams.addPopParams('Izhi07a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'}) 
-netParams.addPopParams('Izhi07b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'}) 
-netParams.addPopParams('background', {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'})
+netParams.popParams['HH_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}
+netParams.popParams['HH3D_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'} 
+netParams.popParams['Traub_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'}
+netParams.popParams['Mainen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'}
+netParams.popParams['Friesen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'}
+netParams.popParams['Izhi03a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}
+netParams.popParams['Izhi03b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'} 
+netParams.popParams['Izhi07a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'} 
+netParams.popParams['Izhi07b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'} 
+netParams.popParams['background', {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 
 ### HH
@@ -64,32 +64,32 @@ netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', '
 
 
 ## Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # soma NMDA synapse
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # soma NMDA synapse
  
 
 ## Connectivity params
-netParams.addConnParams('bg1',
-	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
+netParams.connParams['bg1'] = {
+	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'sec': 'soma'})		
+	'sec': 'soma'}		
 
-netParams.addConnParams('bg2',
+netParams.connParams['bg2'] = {
 	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'synMech':'AMPA',
-	'sec': 'soma'})				
+	'sec': 'soma'}				
 
-netParams.addConnParams('recurrent',
+netParams.connParams['recurrent'] = {
 	{'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
 	'connFunc': 'convConn', 	# connectivity function (random)
 	'convergence': 'uniform(0,10)', 			# max number of incoming conns to cell
 	'weight': 0.001, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
-	'sec': 'soma'})				# section to connect to
+	'sec': 'soma'}				# section to connect to
 
 
 # Simulation options
@@ -102,8 +102,8 @@ simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, e
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-simConfig.addAnalysis('plotRaster', {'orderInverse': True})			# Plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [0]}) 			# Plot recorded traces for this list of cells
+simConfig.analysis['plotRaster'] = {'orderInverse': True}			# Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [0]} 			# Plot recorded traces for this list of cells
 
 
 # Create network and run simulation

@@ -78,21 +78,21 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
 
 ## create list of populations, where each item contains a dict with the pop params     
-netParams.addPopParams('IT_L23', {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3}) #  L2/3 IT
-netParams.addPopParams('IT_L4',  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3}) #  L4 IT
-netParams.addPopParams('IT_L5A', {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3}) #  L5A IT
-netParams.addPopParams('IT_L5B', {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.52, 0.77], 'density': 40e3}) #  L5B IT
-netParams.addPopParams('PT_L5B', {'cellModel': 'Izhi2007b', 'cellType': 'PT',  'ynormRange': [0.52, 0.77], 'density': 40e3}) #  L5B PT
-netParams.addPopParams('IT_L6',  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.77, 1.0], 'density': 40e3}) #  L6 IT
-netParams.addPopParams('CT_L6',  {'cellModel': 'Izhi2007b', 'cellType': 'CT',  'ynormRange': [0.77, 1.0], 'density': 40e3}) #  L6 CT
-netParams.addPopParams('PV_L23', {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.1, 0.31], 'density': 10e3}) #  L2/3 PV (FS)
-netParams.addPopParams('SOM_L23',{'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3}) #  L2/3 SOM (LTS)
-netParams.addPopParams('PV_L5',  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.31, 0.77], 'density': 10e3}) #  L5 PV (FS)
-netParams.addPopParams('SOM_L5', {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.31, 0.77], 'density': 10e3}) #  L5 SOM (LTS)
-netParams.addPopParams('PV_L6',  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 PV (FS)
-netParams.addPopParams('SOM_L6', {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.77, 1.0], 'density': 10e3}) #  L6 SOM (LTS)
-netParams.addPopParams('background_E', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Exc
-netParams.addPopParams('background_I', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5})  # background inputs to Inh
+netParams.popParams['IT_L23'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT
+netParams.popParams['IT_L4'] =  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
+netParams.popParams['IT_L5A'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
+netParams.popParams['IT_L5B'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B IT
+netParams.popParams['PT_L5B'] = {'cellModel': 'Izhi2007b', 'cellType': 'PT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B PT
+netParams.popParams['IT_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 IT
+netParams.popParams['CT_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'CT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 CT
+netParams.popParams['PV_L23'] = {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 PV (FS)
+netParams.popParams['SOM_L23'] ={'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 SOM (LTS)
+netParams.popParams['PV_L5'] =  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 PV (FS)
+netParams.popParams['SOM_L5'] = {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 SOM (LTS)
+netParams.popParams['PV_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 PV (FS)
+netParams.popParams['SOM_L6'] = {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 SOM (LTS)
+netParams.popParams['background_E'] = {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5}  # background inputs to Exc
+netParams.popParams['background_I'] = {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5}  # background inputs to Inh
 
 
 ## Izhi cell params (used in cell properties)
@@ -107,41 +107,41 @@ cellRule = {'conds': {'cellType': 'IT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
-netParams.addCellParams('IT', cellRule)  # add dict to list of cell properties
+netParams.cellParams['IT'] = cellRule  # add dict to list of cell properties
 
 ## PT cell params
 cellRule = {'conds': {'cellType': 'PT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['IB'] 
-netParams.addCellParams('PT', cellRule)  # add dict to list of cell properties
+netParams.cellParams['PT'] = cellRule  # add dict to list of cell properties
 
 ## CT cell params
 cellRule = {'conds': {'cellType': 'CT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
-netParams.addCellParams('CT', cellRule)  # add dict to list of cell properties
+netParams.cellParams['CT'] = cellRule  # add dict to list of cell properties
 
 ## SOM cell params
 cellRule = { 'conds': {'cellType': 'SOM'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['LTS'] 
-netParams.addCellParams('SOM', cellRule)  # add dict to list of cell properties 
+netParams.cellParams['SOM'] = cellRule  # add dict to list of cell properties 
 
 ## PV cell params
 cellRule = {'conds': {'cellType': 'PV'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['FS'] 
-netParams.addCellParams('PV', cellRule)  # add dict to list of cell properties
+netParams.cellParams['PV'] = cellRule  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0})  # AMPA
-netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0})  # NMDA
-netParams.addSynMechParams('GABAA', {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAA
-netParams.addSynMechParams('GABAB', {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80})  # GABAB
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 
 # List of connectivity rules/params

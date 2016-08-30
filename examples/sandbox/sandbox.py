@@ -39,7 +39,7 @@ netParams.addPopParams('background2', {'cellModel': 'NetStim', 'rate': 20, 'nois
 # Synaptic mechanism parameters
 netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
 netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
-netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0, 'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0}})
+netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0, 'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0, 'sec': 'soma', 'loc': 0.5}})
 
 
 # Cell parameters

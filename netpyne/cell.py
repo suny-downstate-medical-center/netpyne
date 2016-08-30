@@ -357,11 +357,14 @@ class Cell (object):
                         if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
                             setattr(synMech['hSyn'], synParamName, synParamValue)
                         elif synParamName == 'selfNetCon':  # create self netcon required for some synapses (eg. homeostatic)
-                            synMech['hNetCon'] = h.NetCon(sec['hSec'](loc)._ref_v, synMech['hSyn'], sec=sec['hSec'])
+                            secLabelNetCon = synParamValue.get('sec', 'soma')
+                            locNetCon = synParamValue.get('loc', 0.5)
+                            secNetCon = self.secs.get(secLabelNetCon, None)
+                            synMech['hNetCon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech['hSyn'], sec=secNetCon['hSec'])
                             for paramName,paramValue in synParamValue.iteritems():
                                 if paramName == 'weight':
                                     synMech['hNetCon'].weight[0] = paramValue
-                                else:
+                                elif paramName not in ['sec', 'loc']:
                                     setattr(synMech['hNetCon'], paramName, paramValue)
             return synMech
 

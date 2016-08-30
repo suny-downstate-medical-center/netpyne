@@ -253,7 +253,7 @@ To define the parameteres of a synaptic mechanism, add items to the ``synMechPar
 
 * mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
-* ``selfNetCon`` (optional) - Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0}``
+* ``selfNetCon`` (optional) - Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'sec': 'soma' , threshold': -15, 'weight': -1, 'delay': 0}`` (by default the source section, 'sec' = 'soma')
 
 Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
 

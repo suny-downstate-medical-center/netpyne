@@ -907,11 +907,14 @@ class Cell (object):
                             sec = self.secs[params['sec']]
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
                             ptr = [synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs]
+                            secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
                         else: 
                             ptr = []
-                            for sec in self.secs.values():
+                            secLocs = []
+                            for secName,sec in self.secs.iteritems():
                                 synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
                                 ptr.extend([synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs])
+                                secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
 
                     else:
                         if 'pointp' in params: # eg. soma.izh._ref_u
@@ -919,11 +922,12 @@ class Cell (object):
                                 ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
 
                     if ptr:  # if pointer has been created, then setup recording
+                        print ptr, secLocs
                         if isinstance(ptr, list):
-                            sim.simData[key]['cell_'+str(self.gid)] = []
-                            for ptrItem in ptr:
-                                sim.simData[key]['cell_'+str(self.gid)].append(h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0))
-                                sim.simData[key]['cell_'+str(self.gid)][-1].record(ptrItem, sim.cfg.recordStep)
+                            sim.simData[key]['cell_'+str(self.gid)] = {}
+                            for ptrItem,secLoc in zip(ptr, secLocs):
+                                sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                                sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
                         else:
                             sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                             sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)

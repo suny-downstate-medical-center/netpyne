@@ -216,7 +216,7 @@ simConfig.verbose = 1 #False  # show detailed messages
 # Recording 
 simConfig.recordCells = [1,2]  # which cells to record from
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
-'AMPA_i': {'synMech':'AMPA', 'var':'i'}}
+'AMPA_i': {'synMech':'homSyn', 'var':'i'}}
 
 
 simConfig.recordStim = True  # record spikes of cell stims

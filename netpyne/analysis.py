@@ -6,7 +6,7 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
     colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
 from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
@@ -528,14 +528,21 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in fullTrace.keys()]
+                        lenData = len(data[0])
+                        data = transpose(array(data))
+                    else:
+                        data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                        lenData = len(data)
                     t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList[itrace]
                     if not overlay:
                         subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
-                    plot(t[:len(data)], data, linewidth=1.5, color=color, label=trace)
+                    plot(data, linewidth=1.5, color=color, label=trace)
                     xlabel('Time (ms)', fontsize=fontsiz)
                     ylabel(trace, fontsize=fontsiz)
                     xlim(timeRange)

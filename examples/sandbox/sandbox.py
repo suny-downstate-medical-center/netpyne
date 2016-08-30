@@ -162,12 +162,12 @@ netParams.addConnParams('PYRconn2',
 #     'threshold': 10})                   # threshold
 
 
-# netParams.addConnParams('bg->PYR',
-#     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'weight': 1.0,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 4,
-#     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
+netParams.addConnParams('bg->PYR',
+    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
+    'weight': 1.0,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 4,
+    'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
 # netParams.addConnParams('PYRconn3',
 #     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
@@ -217,7 +217,7 @@ simConfig.verbose = 1 #False  # show detailed messages
 simConfig.recordCells = [1,2]  # which cells to record from
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'},
 'AMPA_i': {'synMech':'homSyn', 'var':'i'}}
-
+#'AMPA_i': {'synMech':'homSyn', 'sec': 'dend', 'loc': 0.775, 'var':'i'}}
 
 simConfig.recordStim = True  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -234,7 +234,7 @@ simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', True)
-#simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'trace'})
+simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'cell'})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

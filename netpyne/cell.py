@@ -922,7 +922,6 @@ class Cell (object):
                                 ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
 
                     if ptr:  # if pointer has been created, then setup recording
-                        print ptr, secLocs
                         if isinstance(ptr, list):
                             sim.simData[key]['cell_'+str(self.gid)] = {}
                             for ptrItem,secLoc in zip(ptr, secLocs):

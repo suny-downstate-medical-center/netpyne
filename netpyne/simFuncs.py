@@ -1627,6 +1627,7 @@ if neuromlExists:
         pop_ids_vs_components = {}
         pop_ids_vs_use_segment_groups_for_neuron = {}
         pop_ids_vs_ordered_segs = {}
+        pop_ids_vs_cumulative_lengths = {}
 
         projection_infos = OrderedDict()
         connections = OrderedDict()
@@ -1709,7 +1710,7 @@ if neuromlExists:
                 use_segment_groups_for_neuron = False
                 
                 for seg_grp in cell.morphology.segment_groups:
-                    if hasattr(seg_grp,'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383"+"xxxxxxxxxx":
+                    if hasattr(seg_grp,'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383":
                         use_segment_groups_for_neuron = True
                         cellRule['secs'][seg_grp.id] = {'geom': {'pt3d':[]}, 'mechs': {}, 'ions':{}} 
                         for prop in seg_grp.properties:
@@ -1738,8 +1739,10 @@ if neuromlExists:
                 
                 
                 else:
-                    ordered_segs = cell.get_ordered_segments_in_groups(cellRule['secs'].keys())
+                    ordered_segs, cumulative_lengths = cell.get_ordered_segments_in_groups(cellRule['secs'].keys(),include_cumulative_lengths=True)
                     self.pop_ids_vs_ordered_segs[population_id] = ordered_segs
+                    self.pop_ids_vs_cumulative_lengths[population_id] = cumulative_lengths
+                    
                     for section in cellRule['secs'].keys():
                         #print("ggg %s: %s"%(section,ordered_segs[section]))
                         for seg in ordered_segs[section]:
@@ -1778,6 +1781,8 @@ if neuromlExists:
                                 seg_grps_vs_nrn_sections[seg_grp.id].append(section_name)
                         else:
                             seg_grps_vs_nrn_sections[seg_grp.id].append(inc.segment_groups)
+                            if not cellRule['secLists'].has_key(seg_grp.id): cellRule['secLists'][seg_grp.id] = []
+                            cellRule['secLists'][seg_grp.id].append(inc.segment_groups)
 
                     if not seg_grp.neuro_lex_id or seg_grp.neuro_lex_id !="sao864921383":
                         cellRule['secLists'][seg_grp.id] = seg_grps_vs_nrn_sections[seg_grp.id]
@@ -1832,8 +1837,8 @@ if neuromlExists:
                 
                 self.cellParams[component] = cellRule
                 
-                for cp in self.cellParams.keys():
-                    pp.pprint(self.cellParams[cp])
+                #for cp in self.cellParams.keys():
+                #    pp.pprint(self.cellParams[cp])
                     
                 self.pop_ids_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
@@ -1875,11 +1880,25 @@ if neuromlExists:
                 
                 return self.pop_ids_vs_seg_ids_vs_segs[population_id][seg_id].name, fract_along
             else:
-                
+                fract_sec = -1
                 for sec in self.pop_ids_vs_ordered_segs[population_id].keys():
-                    if seg_id in [s.id for s in self.pop_ids_vs_ordered_segs[population_id][sec]]:
-                        nrn_sec = sec
-                return nrn_sec, 0.777777
+                    ind = 0
+                    for seg in self.pop_ids_vs_ordered_segs[population_id][sec]:
+                        if seg.id == seg_id:
+                            nrn_sec = sec
+                            if len(self.pop_ids_vs_ordered_segs[population_id][sec])==1:
+                                fract_sec = fract_along
+                            else:
+                                lens = self.pop_ids_vs_cumulative_lengths[population_id][sec]
+                                to_start = 0.0 if ind==0 else lens[ind-1]
+                                to_end = lens[ind]
+                                tot = lens[-1]
+                                print to_start, to_end, tot, ind, seg, seg_id
+                                fract_sec = (to_start + fract_along *(to_end-to_start))/(tot)
+                            
+                        ind+=1
+                print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
+                return nrn_sec, fract_sec  
 
         #
         #  Overridden from DefaultNetworkHandler
@@ -1916,15 +1935,16 @@ if neuromlExists:
                                                         delay = 0, \
                                                         weight = 1):
 
-            self.log.info("A connection "+str(id)+" of: "+projName+": cell "+str(preCellId)+" in "+prePop \
-                                  +" -> cell "+str(postCellId)+" in "+postPop+", syn: "+ str(synapseType) \
+
+            pre_seg_name, pre_fract = self._convert_to_nrn_section_location(prePop,preSegId,preFract)
+            post_seg_name, post_fract = self._convert_to_nrn_section_location(postPop,postSegId,postFract)
+
+            self.log.info("A connection "+str(id)+" of: "+projName+": "+prePop+"["+str(preCellId)+"]."+pre_seg_name+"("+str(pre_fract)+")" \
+                                  +" -> "+postPop+"["+str(postCellId)+"]."+post_seg_name+"("+str(post_fract)+")"+", syn: "+ str(synapseType) \
                                   +", weight: "+str(weight)+", delay: "+str(delay))
-
-            pre_seg_name = self.pop_ids_vs_seg_ids_vs_segs[prePop][preSegId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(prePop) else 'soma'
-            post_seg_name = self.pop_ids_vs_seg_ids_vs_segs[postPop][postSegId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(postPop) else 'soma'
-
-            self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,preFract, \
-                                                self.gids[postPop][postCellId], post_seg_name, postFract, \
+                                  
+            self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,pre_fract, \
+                                                self.gids[postPop][postCellId], post_seg_name, post_fract, \
                                                 delay, weight) )
 
 

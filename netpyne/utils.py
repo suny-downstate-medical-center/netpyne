@@ -132,6 +132,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
         print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
+        print h.name_declared('hcurrent')
         from neuron import load_mechanisms
         load_mechanisms(filePath)
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically

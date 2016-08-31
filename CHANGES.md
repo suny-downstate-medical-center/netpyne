@@ -1,5 +1,7 @@
 # Version 0.6.0
 
+- Added netParams.importCellParamsFromNet() to import parameters of multiple cells from existing network 
+
 - Added modifySynMechs function
 
 - Fixed bugs and improved efficiency of modify, modifyConns and modifyStims function

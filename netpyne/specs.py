@@ -312,6 +312,10 @@ class NetParams (object):
 
         return self.cellParams[label]
 
+    def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
+        utils.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
+        return self.cellParams
+
     def todict(self):
         from sim import replaceDictODict
         return replaceDictODict(self.__dict__)

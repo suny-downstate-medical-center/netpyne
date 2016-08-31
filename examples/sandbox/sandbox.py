@@ -14,7 +14,7 @@ Contributors: salvadordura@gmail.com
 #
 ###############################################################################
 
-from netpyne import specs,sim
+from netpyne import specs, sim
 from netpyne.specs import Dict
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
@@ -37,9 +37,9 @@ netParams.addPopParams('background2', {'cellModel': 'NetStim', 'rate': 20, 'nois
 
 
 # Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
-netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0, 'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0, 'sec': 'soma', 'loc': 0.5}})
+# netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+# netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})
+# netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0, 'selfNetCon': {'threshold': -15, 'weight': -1, 'delay': 0, 'sec': 'soma', 'loc': 0.5}})
 
 
 # Cell parameters
@@ -65,26 +65,35 @@ netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0,
 # netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
 
 ##
-cellRule = Dict(conds={'cellType': 'PYR2sec', 'cellModel': 'HH'},  secs=Dict(), secLists=Dict())
-cellRule.secs.soma.geom = Dict({'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]})
-cellRule.secs.soma.geom.pt3d.append((0, 0, 0, 20))
-cellRule.secs.soma.geom.pt3d.append((0, 0, 20, 20))
-cellRule.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+# cellRule = Dict(conds={'cellType': 'PYR2sec', 'cellModel': 'HH'},  secs=Dict(), secLists=Dict())
+# cellRule.secs.soma.geom = Dict({'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]})
+# cellRule.secs.soma.geom.pt3d.append((0, 0, 0, 20))
+# cellRule.secs.soma.geom.pt3d.append((0, 0, 20, 20))
+# cellRule.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 
-cellRule.secs.dend.geom = Dict({'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []})
-cellRule.secs.dend.geom.pt3d.append((0, 0, 0, 40))
-cellRule.secs.dend.geom.pt3d.append((0, 0, 50, 40))
-cellRule.secs.dend.topol = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
-cellRule.secs.dend.mechs.pas = {'g': 0.0000357, 'e': -70}
+# cellRule.secs.dend.geom = Dict({'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1, 'pt3d': []})
+# cellRule.secs.dend.geom.pt3d.append((0, 0, 0, 40))
+# cellRule.secs.dend.geom.pt3d.append((0, 0, 50, 40))
+# cellRule.secs.dend.topol = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
+# cellRule.secs.dend.mechs.pas = {'g': 0.0000357, 'e': -70}
 
-cellRule.secLists.all = ['soma', 'dend']
-netParams.addCellParams('PYR2sec', cellRule)  # add dict to list of cell properties
+# cellRule.secLists.all = ['soma', 'dend']
+# netParams.addCellParams('PYR2sec', cellRule)  # add dict to list of cell properties
 
 ### HH
 # cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}} 	# cell rule dict
 # synMechParams = []
 # utils.importCell(cellRule=cellRule, synMechParams=netParams['synMechParams'], fileName='HHCellFile.py', cellName='HHCellClass')
 # netParams['cellParams'].append(cellRule)  												# add dict to list of cell parameters
+
+### Import from net
+
+netParams.importCellParamsFromNet(
+    labelList = ['PYR', 'BAS'],
+    condsList = [{'cellType': 'PYR'}, {'cellType': 'BAS'}],
+    fileName = '/u/salvadord/Models/ca3ihdemo/simcells.py',
+    cellNameList = ['net.bas.cell[0]', 'net.bas.cell[0]'],
+    importSynMechs = True)
 
 
 #Stimulation parameters
@@ -245,7 +254,7 @@ simConfig.addAnalysis('plotTraces', {'include': [1, ('PYR2',1)], 'oneFigPer':'ce
 # RUN SIM
 ###############################################################################
 
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
+# sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # create and simulate network
 # sim.createSimulate(netParams = netParams, simConfig = simConfig)  # create and simulate network
 # sim.saveData()
 # sim.loadSimulateAnalyze('mpiHHTut.pkl')
@@ -265,13 +274,13 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)  # creat
 #                     'postConds': {'popLabel': 'PYR2', 'ynorm': [0.4,0.6]},
 #                     'weight': 0.01})
 
-sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
-                    'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
-                    'delay': 300})
+# sim.net.modifyStims({'conds': {'source': 'Input_1', 'label': 'Input_1_PYR', 'dur': [600, 900]}, 
+#                     'cellConds': {'popLabel': 'PYR', 'ynorm': [0.0,0.5]},
+#                     'delay': 300})
 
-sim.net.modifySynMechs({'conds': {'label':'homSyn', 'sec': 'soma', 'loc': [0,1]}, 
-                    'cellConds': {'cellType': 'PYR2sec'},
-                    'targetrate': 0.6})
+# sim.net.modifySynMechs({'conds': {'label':'homSyn', 'sec': 'soma', 'loc': [0,1]}, 
+#                     'cellConds': {'cellType': 'PYR2sec'},
+#                     'targetrate': 0.6})
 
 
 # for c in sim.net.cells:

@@ -1632,10 +1632,10 @@ if neuromlExists:
         projection_infos = OrderedDict()
         connections = OrderedDict()
 
-        popStimSources = {}
-        stimSources = {}
-        popStimLists = {}
-        stimLists = {}
+        popStimSources = OrderedDict()
+        stimSources = OrderedDict()
+        popStimLists = OrderedDict()
+        stimLists = OrderedDict()
 
         gids = OrderedDict()
         next_gid = 0
@@ -1981,7 +1981,7 @@ if neuromlExists:
             
             #seg_name = self.pop_ids_vs_seg_ids_vs_segs[pop_id][segId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
             
-            stimId = "%s_%s_%s_%s_%s"%(inputListId,pop_id,cellId,nrn_sec,(str(fract)).replace('.','_'))
+            stimId = "%s_%s_%s_%s_%s_%s"%(inputListId, id,pop_id,cellId,nrn_sec,(str(fract)).replace('.','_'))
             
             self.stimSources[stimId] = {'label': stimId, 'type': self.popStimSources[inputListId]['type']}
             self.stimLists[stimId] = {'source': stimId, 

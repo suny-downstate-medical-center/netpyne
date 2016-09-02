@@ -128,10 +128,12 @@ The value consists in turn of a dictionary with the parameters of the population
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
 
-The ``addPopParams(label, params)`` method of the class ``netParams`` can be used to add an item to ``popParams``. This has the advantage of checking the syntax of the parameters added.
-
 Examples of standard population::
 
+	netParams.popParams['Sensory'] = {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000}
+
+The ``addPopParams(label, params)`` method of the class ``netParams`` can be used to add an item to ``popParams``. If working interactively, this has the advantage of checking the syntax of the parameters added::
+ 
 	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
@@ -152,13 +154,13 @@ It is also possible to create a special type of population consisting of NetStim
 
 Example of NetStim population::
 	
-	netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5})  # background inputs
+	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5}  # background inputs
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
 	cellsList.append({'cellLabel':'gs15', 'x': 1, 'ynorm': 0.4 , 'z': 2})
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
-	netParams.addPopParams('IT_cells', {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList}) #  IT individual cells
+	netParams.popParams['IT_cells'] = {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
 
 
 .. _cell_property_rules:
@@ -232,14 +234,14 @@ Example of two cell property rules added using different valid approaches::
 	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
 
-	netParams.addCellParams('PYR_Izhi', cellRule)  # add rule to list of cell property rules
+	netParams.cellParams['PYR_Izhi'] = cellRule  # add rule to list of cell property rules
 
 
 .. note:: As in the examples above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams.cellParams``.
 
 .. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
 
-.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. The only reason for using the ``addCellParams()`` method is that it checks that all required parameters are included and the syntax is right.
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. 
 
 .. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
@@ -253,6 +255,8 @@ To define the parameteres of a synaptic mechanism, add items to the ``synMechPar
 
 * mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
+* ``selfNetCon`` (optional) - Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'sec': 'soma' , threshold': -15, 'weight': -1, 'delay': 0}`` (by default the source section, 'sec' = 'soma')
+
 Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
 
 Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV:
@@ -260,7 +264,7 @@ Example of synaptic mechanism parameters for a simple excitatory synaptic mechan
 .. code-block:: python
 
 	## Synaptic mechanism parameters
-	netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0})  # NMDA synaptic mechanism
+	netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -377,35 +381,55 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	User-defined connectivity functions can be added.
 
+* **shape** (optional) - Modifies the conn weight dynamically during the simulation based on the specified pattern.
+	Contains a dictionary with the following fields:
+
+		``'switchOnOff`` - times at which to switch on and off the weight 
+	
+		``'pulseType'`` - type of pulse to generate; either 'square' or 'gaussian'
+	
+		``'pulsePeriod'`` - period (in ms) of the pulse 
+	
+		``'pulseWidth'`` - width (in ms) of the pulse
+
+	Can be used to generate complex stimulation patterns, with oscillations or turning on and off at specific times.
+
+	e.g. ``'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50}``
+
+* **plasticity** (optional) - Plasticity mechanism to use for this connections.
+	Requires 2 fields: ``mech`` to specifiy the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism 
+
+	e.g. ``{'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}``
+
 Example of connectivity rules:
 
 .. code-block:: python
 
 	## Cell connectivity rules
-	netParams.addConnParams('S->M',
+	netParams.connParams['S->M'] = {
 		'preConds': {'popLabel': 'S'}, 
 		'postConds': {'popLabel': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
 		'synMech': 'AMPA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
-		'probability': 0.5})				# probability of connection		
+		'probability': 0.5}				# probability of connection		
 
-	netParams.addConnParams('bg->all',
-		{'preConds': {'popLabel': 'background'}, 
+	netParams.connParams['bg->all'] = {
+		'preConds': {'popLabel': 'background'}, 
 		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
-	netParams.addConnParams('yrange->HH',
+	netParams.connParams['yrange->HH'] = {
 	    {'preConds': {'y': [100, 600]}, 
 	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
 	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
 	    'synsPerConn': 3, 		# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
 	    'weight': 0.02,			# single weight for all synapses
 	    'delay': [5, 10],		# different delays for each of 3 synapses per synMech 
-	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]})           # different locations for each of the 6 synapses
+	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]}           # different locations for each of the 6 synapses
 
 .. note:: NetStim populations can only serve as presynaptic source of a connection. Additionally, only the ``fullConn`` (default) and ``probConn`` (using ``probability`` parameter) connectivity functions can be used to connect NetStims. NetStims are created *on the fly* during the implementation of the connectivity rules, instantiating one NetStim per postsynaptic cell.
 
@@ -458,7 +482,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'convergence': 'uniform(1,15)',
 		# ... 
 
@@ -466,7 +490,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	
 	.. code-block:: python
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'delay': '0.2 + gauss(13.0,1.4)',
 		# ...
 
@@ -480,7 +504,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 		# ...
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'delay': 'delayMin + gauss(delayMean, delayVar)',
 		# ...
 
@@ -488,7 +512,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'delay': 'defaultDelay + dist_3D/propVelocity',
 		# ...
 
@@ -496,7 +520,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 	.. code-block:: python
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'probability': '0.1+0.2*post_y', 
 		# ...
 
@@ -508,7 +532,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 		# ...
 
-		netParams.addConnParams(...
+		netParams.connParams[...] = {
 			'probability': 'exp(-dist_2D/lengthConst)', 
 		# ...
 
@@ -562,38 +586,34 @@ The code below shows an example of how to create different types of stimulation 
 	# Stimulation parameters
 
 	## Stimulation sources parameters
-	netParams.addStimSourceParams('Input_1', 
-		{'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'})
+	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
 
-	netParams.addStimSourceParams('Input_2',
-		{'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1})
+	netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
 
-	netParams.addStimParams('Input_3', 
-		{'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0})
+	netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
 
-	netParams.addStimParams('Input_4', 
-		{'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1})
+	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
 
 	## Stimulation mapping parameters
-	netParams.addStimTargetParams('Input1->PYR',
-	    {'source': 'Input_1', 
+	netParams.stimTargetParams['Input1->PYR'] = {
+	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
 	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
 
-	netParams.addStimTargetParams('Input3->Basket',
-	    {'source': 'Input_3', 
+	netParams.stimTargetParams['Input3->Basket'] = {
+	    'source': 'Input_3', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conds': {'cellType':'Basket'}})
+	    'conds': {'cellType':'Basket'}}
 
-	netParams.addStimTargetParams('Input4->PYR3',
-		{'source': 'Input_4', 
+	netParams.stimTargetParams['Input4->PYR3'] = {
+		'source': 'Input_4', 
 		'sec':'soma', 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
 	    'delay': 1,
-		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}})
+		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
 
 
 
@@ -854,6 +874,20 @@ Methods to modify network
 		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 
 
+* **net.modifySynMechs(params)**
+
+	Modifies properties of synMechs in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
+
+	- 'conds': dictionary of conditions to select synMechs that will be modified, with each item containing a synMech tag, and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'label': 'AMPA', 'sec': 'soma', 'loc': [0, 0.5]}`` targets synMechs with the label 'AMPA', at the soma section, with locations between 0 and 0.5.
+
+	- 'cellConds': dictionary of conditions to select target cells that will contain the synMechs to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
+
+		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+
+	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
+
 
 * **net.modifyConns(params)**
 
@@ -868,7 +902,7 @@ Methods to modify network
 
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
-	- 'weight' | 'threshold': New value for connection weight or threshold.
+	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
 
 * **net.modifyStims(params)**
@@ -878,13 +912,13 @@ Methods to modify network
 	- 'conds': dictionary of conditions to select stims that will be modified, with each item containing a stim tag (see list of stim tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
 		e.g. ``{'label': 'VClamp1->S'}`` targets stims that were created using the stimTargetParms rule labeled 'VClamp1->S'.
-		e.g. ``{'source': 'IClamp2', 'dur': [100, 300]} targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
+		e.g. ``{'source': 'IClamp2', 'dur': [100, 300]}`` targets stims that have as source 'Netstim2' (defined in stimSourceParams), with a duration between 100 and 300 ms.
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
-	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim).
+	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
 
 
 Population class methods 

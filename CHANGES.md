@@ -1,3 +1,19 @@
+# Version 0.6.0
+
+- Added option to shape conn weights dynamically to create temporal patterns (issue #33)
+
+- Store all params of synMechs exhaustively instead of by reference (issue #139)
+
+- Added netParams.importCellParamsFromNet() to import parameters of multiple cells from existing network (issue #154)
+
+- Added modifySynMechs function
+
+- Added option to record from all synMechs of a type (eg. 'AMPA')
+
+- Fixed bugs and improved efficiency of modify, modifyConns and modifyStims function
+
+- Fixed bug plotting traces
+
 # Version 0.5.9
 
 - Improved NeuroML2 import functions (issue #12)

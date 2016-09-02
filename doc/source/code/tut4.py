@@ -4,48 +4,48 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.addPopParams('S', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'}) 
-netParams.addPopParams('M', {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}) 
-netParams.addPopParams('background', {'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'})
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'} 
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['background'] = {'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-netParams.addCellParams('PYR_HH_rule', cellRule)  												# add dict to list of cell parameters
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  													# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  								# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanisms
+cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  										# dend params dict
+cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}						# dend geometry
+cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}					# dend topology 
+cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 									# dend mechanisms
+netParams.cellParams['PYR_HH_rule'] = cellRule  														# add dict to list of cell parameters
 
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}} 	# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}} 						# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  												# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  							# soma geometry
 cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
-	'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  		# soma hh mechanisms
-netParams.addCellParams('PYR_Izhi_rule', cellRule)  												# add dict to list of cell parameters
+	'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  					# soma hh mechanisms
+netParams.cellParams['PYR_Izhi_rule'] = cellRule  														# add dict to list of cell parameters
 
 
 ## Synaptic mechanism parameters
-netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synapse
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synapse
  
 
 ## Cell connectivity rules
-netParams.addConnParams('S->M', 
-	{'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
+netParams.connParams['S->M'] = {
+	'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.1, 		# probability of connection
 	'weight': 0.005, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
-	'synMech': 'exc'})   	# target synapse 
+	'synMech': 'exc'}   		# target synapse 
 
-netParams.addConnParams('bg->PYR', 
-	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
+netParams.connParams['bg->PYR'] = { 
+	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'exc'})  	# target synapse 
+	'synMech': 'exc'}  			# target synapse 
 
 
 # Simulation options
@@ -58,9 +58,9 @@ simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, e
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-simConfig.addAnalysis('plotRaster', True) 			# Plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [1]}) 			# Plot recorded traces for this list of cells
-simConfig.addAnalysis('plot2Dnet', True)           # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotRaster'] = True 				# Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [1]} 	# Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = True           		# plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation

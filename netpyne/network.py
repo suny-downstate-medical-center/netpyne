@@ -687,6 +687,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
+            'shape': connParam.get('shape'),
             'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
@@ -711,6 +712,25 @@ class Network (object):
 
         sim.timing('stop', 'modifyCellsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
+
+
+    ###############################################################################
+    ### Modify synMech params
+    ###############################################################################
+    def modifySynMechs (self, params):
+        # Instantiate network connections based on the connectivity rules defined in params
+        sim.timing('start', 'modifySynMechsTime')
+        if sim.rank==0: 
+            print('Modfying synaptic mech parameters...')
+
+        for cell in self.cells:
+            cell.modifySynMechs(params)
+
+        if hasattr(sim.net, 'allCells'): 
+            sim._gatherCells()  # update allCells
+
+        sim.timing('stop', 'modifySynMechsTime')
+        if sim.rank == 0 and sim.cfg.timing: print('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
 
 
 

@@ -4,16 +4,16 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.popParams['HH_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}
-netParams.popParams['HH3D_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'} 
-netParams.popParams['Traub_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'}
-netParams.popParams['Mainen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'}
-netParams.popParams['Friesen_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'}
-netParams.popParams['Izhi03a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}
-netParams.popParams['Izhi03b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'} 
-netParams.popParams['Izhi07a_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'} 
-netParams.popParams['Izhi07b_pop', {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'} 
-netParams.popParams['background', {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'}
+netParams.popParams['HH_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH'}
+netParams.popParams['HH3D_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'HH3D'} 
+netParams.popParams['Traub_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'}
+netParams.popParams['Mainen_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'}
+netParams.popParams['Friesen_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'}
+netParams.popParams['Izhi03a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}
+netParams.popParams['Izhi03b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'} 
+netParams.popParams['Izhi07a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'} 
+netParams.popParams['Izhi07b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'} 
+netParams.popParams['background'] = {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 
 ### HH
@@ -76,7 +76,7 @@ netParams.connParams['bg1'] = {
 	'sec': 'soma'}		
 
 netParams.connParams['bg2'] = {
-	{'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
+	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
@@ -84,7 +84,7 @@ netParams.connParams['bg2'] = {
 	'sec': 'soma'}				
 
 netParams.connParams['recurrent'] = {
-	{'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
+	'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
 	'connFunc': 'convConn', 	# connectivity function (random)
 	'convergence': 'uniform(0,10)', 			# max number of incoming conns to cell
 	'weight': 0.001, 			# synaptic weight 

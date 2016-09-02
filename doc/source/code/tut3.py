@@ -17,7 +17,7 @@ cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# den
 cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
 cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
 cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-netParams.cellParams['PYRrule'] = cellRule)  												# add dict to list of cell parameters
+netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell parameters
 
 
 ## Synaptic mechanism parameters
@@ -53,7 +53,7 @@ simConfig.savePickle = False 		# Save params, network and sim output to pickle f
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet']  = True)           # plot 2D visualization of cell positions and connections
+simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation

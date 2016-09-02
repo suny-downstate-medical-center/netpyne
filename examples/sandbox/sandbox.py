@@ -34,7 +34,7 @@ netParams.addPopParams('PYR3', {'cellModel': 'HH', 'cellType': 'PYR', 'ynormRang
 
 netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
 netParams.addPopParams('background2', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
-netParams.addPopParams('microstim', {'rate': 100, 'noise': 0, 'cellModel': 'NetStim'})
+netParams.addPopParams('microstim', {'rate': 50, 'noise': 0, 'cellModel': 'NetStim'})
 
 # Synaptic mechanism parameters
 netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
@@ -135,15 +135,15 @@ netParams.addCellParams('PYR2sec', cellParams)
 #     'threshold': 10})                    # threshold
 
 duration = 1*1e3
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'microstim'}, 'postConds': {'cellType': ['PYR']}, # microstim -> E layer 4/5
-    'probability': 1.0,
-    'weight': 0.1,                 # synaptic weight 
-    'shape': {'switchOnOff': [0.01*duration, 0.9*duration], # switching times in ms
-              'pulseType': 'square',
+netParams.connParams['mist->PYR'] = {
+    'preConds': {'popLabel': 'microstim'}, 
+    'postConds': {'cellType': 'PYR'},
+    'weight': 0.1,                 
+    'shape': {'switchOnOff': [200,400, 600, 800], 
+              'pulseType': 'gaussian',
               'pulsePeriod': 100,
-              'pulseWidth': 50},
-    'synMech':'AMPA'})
+              'pulseWidth': 60},
+    'synMech':'AMPA'}
 
 
 # netParams.addConnParams('PYRconn2',
@@ -278,24 +278,7 @@ sim.net.connectCells()
 sim.net.addStims()
 sim.setupRecording()
 
-from neuron import h
-from matplotlib import pyplot
-
-t_vec = h.Vector()
-v_vec_soma = h.Vector()
-v_vec_soma.record(sim.net.cells[0].secs.soma.hSec(0.5)._ref_v) # change recoding pos
-t_vec.record(h._ref_t)
-
 sim.simulate()
-
-# plot voltage vs time
-pyplot.ion()
-pyplot.figure(figsize=(8,4)) # Default figsize is (8,6)
-pyplot.plot(t_vec, v_vec_soma)
-pyplot.xlabel('time (ms)')
-pyplot.ylabel('mV')
-pyplot.xlabel('time (ms)')
-pyplot.show()
 
 sim.analyze()
 

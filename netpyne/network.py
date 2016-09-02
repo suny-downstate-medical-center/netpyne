@@ -687,6 +687,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'threshold': connParam.get('threshold'),
             'synsPerConn': finalParam['synsPerConn'],
+            'shape': connParam.get('shape'),
             'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')

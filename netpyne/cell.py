@@ -7,6 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from numbers import Number
+from copy import deepcopy
 from neuron import h # Import NEURON
 from specs import Dict
 import sim
@@ -427,6 +428,51 @@ class Cell (object):
                                     print 'Error setting %s=%s on synMech' % (synParamName, str(synParamValue))
 
 
+    
+    
+    # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
+    def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
+        from pylab import r_, convolve, shape, exp, zeros, hstack, array, rand
+        
+        # Create event times
+        timeres = 0.001 # Time resolution = 1 ms = 500 Hz (DJK to CK: 500...?)
+        pulselength = 10 # Length of pulse in units of width
+        currenttime = 0
+        timewindow = finish-start
+        allpts = int(timewindow/timeres)
+        output = []
+        while currenttime<timewindow:
+            # Note: The timeres/2 subtraction acts as an eps to avoid later int rounding errors.
+            if currenttime>=0 and currenttime<timewindow-timeres/2: output.append(currenttime)
+            currenttime = currenttime+isi+variation*(rand()-0.5)
+        
+        # Create single pulse
+        npts = pulselength*width/timeres
+        x = (r_[0:npts]-npts/2+1)*timeres
+        if stimshape=='gaussian': 
+            pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
+            pulse = pulse/max(pulse)
+        elif stimshape=='square': 
+            pulse = zeros(shape(x))
+            pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
+        else:
+            raise Exception('Stimulus shape "%s" not recognized' % stimshape)
+        
+        # Create full stimulus
+        events = zeros((allpts))
+        events[array(array(output)/timeres,dtype=int)] = 1
+        fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
+        fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
+        fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
+        
+        fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
+        fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
+        events = hstack((0,events,0)) # Ditto
+        stimvecs = deepcopy([fulltime, fulloutput, events]) # Combine vectors into a matrix                   
+        
+        return stimvecs  
+
+
     def addConn (self, params, netStimParams = None):
         if params.get('threshold') is None: params['threshold'] = sim.net.params.defaultThreshold  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
@@ -502,6 +548,40 @@ class Cell (object):
                 netcon.threshold = params['threshold']  # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
+
+                # Add time-dependent weight shaping
+                if 'shape' in params and params['shape']:
+                    
+                    temptimevecs = []
+                    tempweightvecs = []
+                    
+                    # Default shape
+                    pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
+                    pulsewidth = params['shape']['pulseWidth'] if 'pulseWidth' in params['shape'] else 100.0
+                    pulseperiod = params['shape']['pulsePeriod'] if 'pulsePeriod' in params['shape'] else 100.0
+                    
+                    # Determine on-off switching time pairs for stimulus, where default is always on
+                    if 'switchOnOff' not in params['shape']:
+                        switchtimes = [0, sim.cfg.duration]
+                    else:
+                        if not params['shape']['switchOnOff'] == sorted(params['shape']['switchOnOff']):
+                            raise Exception('On-off switching times for a particular stimulus are not monotonic')   
+                        switchtimes = deepcopy(params['shape']['switchOnOff'])
+                        switchtimes.append(sim.cfg.duration)
+                    
+                    switchiter = iter(switchtimes)
+                    switchpairs = zip(switchiter,switchiter)
+                    for pair in switchpairs:
+                        # Note: Cliff's makestim code is in seconds, so conversions from ms to s occurs in the args.
+                        stimvecs = self._shapeStim(width=float(pulsewidth)/1000.0, isi=float(pulseperiod)/1000.0, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
+                        temptimevecs.extend(stimvecs[0])
+                        tempweightvecs.extend(stimvecs[1])
+                    
+                    self.conns[-1]['shapeTimeVec'] = h.Vector().from_python(temptimevecs)
+                    self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
+                    self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
+
+
                 # Add plasticity
                 self._addConnPlasticity(params, sec, netcon, weightIndex)
 
@@ -690,6 +770,7 @@ class Cell (object):
                 'delay': params.get('delay'),
                 'threshold': params.get('threshold'),
                 'synsPerConn': params.get('synsPerConn'),
+                'shape': params.get('shape'),
                 'plast': params.get('plast')}
 
             netStimParams = {'source': params['source'],

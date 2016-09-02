@@ -542,7 +542,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     if not overlay:
                         subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
-                    plot(data, linewidth=1.5, color=color, label=trace)
+                    plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
                     xlabel('Time (ms)', fontsize=fontsiz)
                     ylabel(trace, fontsize=fontsiz)
                     xlim(timeRange)

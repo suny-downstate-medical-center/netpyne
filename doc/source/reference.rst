@@ -383,17 +383,18 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 * **shape** (optional) - Modifies the conn weight dynamically during the simulation based on the specified pattern.
 	Contains a dictionary with the following fields:
+
 		``'switchOnOff`` - times at which to switch on and off the weight 
+	
 		``'pulseType'`` - type of pulse to generate; either 'square' or 'gaussian'
+	
 		``'pulsePeriod'`` - period (in ms) of the pulse 
+	
 		``'pulseWidth'`` - width (in ms) of the pulse
 
 	Can be used to generate complex stimulation patterns, with oscillations or turning on and off at specific times.
 
-	e.g. ``'shape': {'switchOnOff': [200, 800], 
-             'pulseType': 'square',
-             'pulsePeriod': 100,
-             'pulseWidth': 50}``
+	e.g. ``'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50}``
 
 * **plasticity** (optional) - Plasticity mechanism to use for this connections.
 	Requires 2 fields: ``mech`` to specifiy the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism 

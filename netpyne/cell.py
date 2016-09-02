@@ -104,6 +104,13 @@ class Cell (object):
                     for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the ion
                         sec['ions'][ionName][ionParamName] = ionParamValue
 
+
+            # add synMechs
+            if 'synMechs' in sectParams:
+                for synMech in sectParams['synMechs']:
+                    if 'label' in synMech and 'loc' in synMech:
+                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
@@ -339,6 +346,8 @@ class Cell (object):
                 synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if synMech not in section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
+                    for paramName, paramValue in synMechParams.iteritems():
+                        synMech[paramName] = paramValue
                     sec['synMechs'].append(synMech)
 
             if sim.cfg.createNEURONObj:
@@ -407,15 +416,15 @@ class Cell (object):
                                 break
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
-                        if sim.cfg.createPyStruct:
-                            pass # currently no py struct copied from synMechs -- maybe modify netParams.synMechParams
-                        if sim.cfg.createNEURONObj:
-                            for synParamName,synParamValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():  # add params of the synaptic mechanism
-                                if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
-                                    try: 
-                                        setattr(synMech['hSyn'], synParamName, synParamValue)
-                                    except:
-                                        print 'Error setting %s=%s on synMech' % (synParamName, str(synParamValue))
+                        exclude = ['conds', 'cellConds', 'label', 'mod', 'selfNetCon', 'loc']
+                        for synParamName,synParamValue in {k: v for k,v in params.iteritems() if k not in exclude}.iteritems():
+                            if sim.cfg.createPyStruct: 
+                                synMech[synParamName] = synParamValue
+                            if sim.cfg.createNEURONObj:
+                                try: 
+                                    setattr(synMech['hSyn'], synParamName, synParamValue)
+                                except:
+                                    print 'Error setting %s=%s on synMech' % (synParamName, str(synParamValue))
 
 
     def addConn (self, params, netStimParams = None):

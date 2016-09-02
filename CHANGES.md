@@ -1,5 +1,7 @@
 # Version 0.6.0
 
+- Store all params of synMechs exhaustively instead of by reference (issue #139)
+
 - Added netParams.importCellParamsFromNet() to import parameters of multiple cells from existing network 
 
 - Added modifySynMechs function

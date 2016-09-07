@@ -26,20 +26,20 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 netParams.scaleConnWeight = 0.001 # Connection weight scale factor
 
 # Population parameters
-netParams.addPopParams('Psh', {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40}) # add dict with params for this pop 
-netParams.addPopParams('Pel', {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40}) # add dict with params for this pop 
-netParams.addPopParams('ES', {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80}) # add dict with params for this pop 
-netParams.addPopParams('ISL', {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10}) # add dict with params for this pop 
-netParams.addPopParams('IS', {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10}) # add dict with params for this pop 
-netParams.addPopParams('EM', {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80}) # add dict with params for this pop 
-netParams.addPopParams('IML', {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10}) # add dict with params for this pop 
-netParams.addPopParams('IM', {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10}) # add dict with params for this pop 
+netParams.popParams['Psh'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
+netParams.popParams['Pel'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
+netParams.popParams['ES'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
+netParams.popParams['ISL'] = {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['IS'] = {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['EM'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
+netParams.popParams['IML'] = {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['IM'] = {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
 
-netParams.addPopParams('backgroundE', {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5})  # background inputs
-netParams.addPopParams('backgroundI', {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5})  # background inputs
-netParams.addPopParams('stimPsh', {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0}) # stim inputs for P_sh
-netParams.addPopParams('stimPel', {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0}) # stim inputs for P_el 
-netParams.addPopParams('stimEM', {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0}) # stim inputs for EM (explor movs) 
+netParams.popParams['backgroundE'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
+netParams.popParams['backgroundI'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
+netParams.popParams['stimPsh'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_sh
+netParams.popParams['stimPel'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_el 
+netParams.popParams['stimEM'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for EM (explor movs) 
 
 
 # Izhi cell params (used in cell properties)
@@ -55,27 +55,27 @@ cellRule = {'conds': {'cellType': 'RS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
-netParams.addCellParams('RS_Izhi', cellRule)  # add dict to list of cell properties
+netParams.cellParams['RS_Izhi'] = cellRule  # add dict to list of cell properties
 
 ## LTS Izhi cell params
 cellRule = {'conds': {'cellType': 'LTS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['LTS'] 
-netParams.addCellParams('LTS_Izhi', cellRule)  # add dict to list of cell properties
+netParams.cellParams['LTS_Izhi'] = cellRule  # add dict to list of cell properties
 
 ## FS Izhi cell params
 cellRule = {'conds': {'cellType': 'FS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['FS'] 
-netParams.addCellParams('FS_Izhi', cellRule)  # add dict to list of cell properties
+netParams.cellParams['FS_Izhi'] = cellRule  # add dict to list of cell properties
 
 
 # Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}) # AMPA
-netParams.addSynMechParams('NMDA', {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 1.50, 'e': 0}) # NMDA
-netParams.addSynMechParams('GABA', {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}) # GABAA
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0} # AMPA
+netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 1.50, 'e': 0} # NMDA
+netParams.synMechParams['GABA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80} # GABAA
 
 
 # Connectivity parameters
@@ -318,6 +318,6 @@ simConfig.saveDpk = False # save to a .dpk pickled file
 
 
 # Analysis and plotting
-simConfig.addAnalysis('plotRaster', True) # Whether or not to plot a raster
+simConfig.analysis['plotRaster'] = True # Whether or not to plot a raster
 
 

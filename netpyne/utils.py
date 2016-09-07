@@ -3,7 +3,7 @@ utils.py
 
 Useful functions related to the parameters file, eg. create params file from excel table 
 
-Contributors: salvadordura@gmail.com
+Contributors: salvador dura@gmail.com
 """
 import os, sys
 from neuron import h
@@ -79,6 +79,7 @@ def _equal_dicts (d1, d2, ignore_keys):
             return False
     return True
 
+
 def importCell (fileName, cellName, cellArgs = None):
     h.initnrn()
 
@@ -91,8 +92,6 @@ def importCell (fileName, cellName, cellArgs = None):
             cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
         else:
             cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
-        secs = list(cell.allsec())
-        dirCell = dir(cell)
     elif fileName.endswith('.py'):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
@@ -104,23 +103,70 @@ def importCell (fileName, cellName, cellArgs = None):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
         else:
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
-        
-        dirCell = dir(cell)
-
-        if 'all_sec' in dirCell:
-            secs = cell.all_sec
-        elif 'sec' in dirCell:
-            secs = [cell.sec]
-        elif 'allsec' in dir(h):
-            secs = [sec for sec in h.allsec()]
-        elif 'soma' in dirCell:
-            secs = [cell.soma]
-        else:
-            secs = []
         sys.path.remove(filePath)
     else:
         print "File name should be either .hoc or .py file"
         return
+
+    secDic, secListDic, synMechs = getCellParams(cell)
+    return secDic, secListDic, synMechs
+
+
+def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
+    h.initnrn()
+
+    ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
+    if fileName.endswith('.hoc'):
+        print 'Importing from .hoc network not yet supported'
+        return
+        # h.load_file(fileName)
+        # for cellName in cellNames:
+        #     cell = getattr(h, cellName) # create cell using template, passing dict with args
+        #     secDic, secListDic, synMechs = getCellParams(cell)
+
+    elif fileName.endswith('.py'):
+        origDir = os.getcwd()
+        filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
+        if filePath not in sys.path:  # add to path if not there (need to import module)
+            sys.path.insert(0, filePath)
+        moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
+        os.chdir(filePath)
+        print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
+        print h.name_declared('hcurrent')
+        from neuron import load_mechanisms
+        load_mechanisms(filePath)
+        exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+        modulePointer = tempModule
+        sys.path.remove(filePath)
+    else:
+        print "File name should be either .hoc or .py file"
+        return
+
+    for label, conds, cellName in zip(labelList, condsList, cellNamesList):
+        print '\nImporting %s from %s ...'%(cellName, fileName)
+        exec('cell = tempModule' + '.' + cellName)
+        #cell = getattr(modulePointer, cellName) # get cell object
+        secs, secLists, synMechs = getCellParams(cell)
+        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        netParams.addCellParams(label, cellRule)
+        if importSynMechs:
+            for synMech in synMechs: netParams.addSynMechParams(synMech.pop('label'), synMech)
+
+
+def getCellParams(cell):
+    dirCell = dir(cell)
+
+    if 'all_sec' in dirCell:
+        secs = cell.all_sec
+    elif 'sec' in dirCell:
+        secs = [cell.sec]
+    elif 'allsec' in dir(h):
+        secs = [sec for sec in h.allsec()]
+    elif 'soma' in dirCell:
+        secs = [cell.soma]
+    else:
+        secs = []
+    
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
@@ -256,7 +302,7 @@ def importCell (fileName, cellName, cellArgs = None):
     # celsius warning
     if hasattr(h, 'celsius'):
         if h.celsius != 6.3:  # if not default value
-            print "Warning: h.celsius=%.4g in imported file %s -- you can set this value in simConfig['hParams']['celsius']"%(h.celsius, fileName)
+            print "Warning: h.celsius=%.4g in imported file -- you can set this value in simConfig['hParams']['celsius']"%(h.celsius)
 
     # clean 
     h.initnrn()

@@ -1655,7 +1655,7 @@ if neuromlExists:
                 self.netParams.addCellParams(cellParam, self.cellParams[cellParam])
 
             for proj_id in self.projection_infos.keys():
-                projName, prePop, postPop, synapse = self.projection_infos[proj_id]
+                projName, prePop, postPop, synapse, ptype = self.projection_infos[proj_id]
 
                 self.netParams.addSynMechParams(synapse, {'mod': synapse})
 
@@ -1918,11 +1918,11 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #
-        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False):
+        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection"):
 
 
-            self.log.info("A projection: "+projName+" from "+prePop+" -> "+postPop+" with syn: "+synapse)
-            self.projection_infos[projName] = (projName, prePop, postPop, synapse)
+            self.log.info("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
+            self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
         #
@@ -2024,7 +2024,7 @@ if neuromlExists:
 
             nmlHandler = NetPyNEBuilder(netParams)     
 
-            currParser = NeuroMLXMLParser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+            currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
             currParser.parse(fileName)
 
@@ -2050,8 +2050,8 @@ if neuromlExists:
                 assert(gid in nmlHandler.gids[popLabel])
             
         for proj_id in nmlHandler.projection_infos.keys():
-            projName, prePop, postPop, synapse = nmlHandler.projection_infos[proj_id]
-            print("Creating connections for %s: %s->%s via %s"%(projName, prePop, postPop, synapse))
+            projName, prePop, postPop, synapse, ptype = nmlHandler.projection_infos[proj_id]
+            print("Creating connections for %s (%s): %s->%s via %s"%(projName, ptype, prePop, postPop, synapse))
             
             preComp = nmlHandler.pop_ids_vs_components[prePop]
             

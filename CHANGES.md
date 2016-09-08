@@ -1,3 +1,7 @@
+# Version 0.6.1
+
+- Fixed bug when using point process-based cells that include synapses (eg. Izhi2007a)
+
 # Version 0.6.0
 
 - Added option to shape conn weights dynamically to create temporal patterns (issue #33)

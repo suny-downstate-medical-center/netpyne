@@ -500,7 +500,7 @@ class Cell (object):
             delays = [params['delay']] * params['synsPerConn']
 
         # Check if target is point process (artificial cell) with V not in section
-        pointp = self._setConnPointP(params, secLabels, weightIndex)
+        pointp, weightIndex = self._setConnPointP(params, secLabels, weightIndex)
         if pointp == -1: return
 
         # Add synaptic mechanisms
@@ -893,9 +893,9 @@ class Cell (object):
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
             if sim.cfg.verbose: print '  Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid)
-            return -1
+            return -1, weightIndex
 
-        return pointp
+        return pointp, weightIndex
 
     def _setConnSynMechs (self, params, secLabels):
         synsPerConn = params['synsPerConn']

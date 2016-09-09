@@ -2745,8 +2745,11 @@ NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal
 ** Claustrum network (Jing, George Augustine)
 ** Sensorimotor network + arm (Cliff, Kerr lab)
 
+** Hippocampus model (Ernie, Neurosim)
+** V1 load/save model (Allen Brain Institute)
+
 * Grant
-** 16aug17 11:00 MBL bill discuss netpyne with hines [my notes]
+** 16aug17 11:00 MBL bill discuss netpyne with hines - sald notesi []
 - value of dictionaries would be a small lambda function that gives generality 
 
 - two things i'd like to see -- notation is reasonable but very descriptive 
@@ -2790,7 +2793,7 @@ overlap; domain of PYNN -- metasimulator to construct models in NEURON, NEST, BR
 
 - separate issues: advantages of branch failure; cf Paul Rhodes branch point failure [?]
 
-** MBL meeting
+** 16aug26 MBL meeting (sald notes)
 *** Reverse engineering
 - inverse problem: approximation, computer-aided design
 - use GA to aid in the inverse problem
@@ -2862,6 +2865,148 @@ overlap; domain of PYNN -- metasimulator to construct models in NEURON, NEST, BR
 - 
 - simtracker managing of sims
 - simtracker summary of model data
+
+** 16aug26 Bill notes
+*** get output of modelview to read the flat instantiated model but currently doesn't do networks well
+*** Aim3 modelview outputs a small subset of cells (sees different templated / ?classes) and can export to netpyne 
+finds commonality also by common parameters, morphologies
+random values in 1 location -- can't currently find it -- could find distributions but can't find random seed (a cryptographic solution)
+does the netpyne and original create the same net -- Sub## are two networks identical
+Sub## netpyne description of the flat file -- straightforward
+subroutines for inverting random distros --- eg sampling without replacement -- if pick 50 out of 1000 
+*** can apply GA to the high level expression -- 
+NetPyNe expresses it and modelview interprets it 
+*** LEMS, LEMD (low entropy model description)
+*** current traub 20k fortran model to 20k hoc model 
+*** often have to factor out what is different among very similar fragments
+*** should we start with the single cell?  -- could that be the main piece to do here Sub3.x 
+cell build session file vs netpyne description; hoc file written by cell builder
+cell templates are usually never touched -- get a few
+PRELIM Data -- netpyne currently create instances and then reads those instances
+*** what are the metrics of similarity? -- how are we going to compare whether the output is good enough
+not currently much randomness in the modeldb models
+*** networks have been very program specific in the past and network construction is embodied in the code -- 1st step is to
+get rid of code accidents
+*** Aim3.x --- CAD vs fully automated
+CAD -- stick randomizer here 
+universals -- number of cells, how many types (small # of types based on morphology with minor variations)
+modelview currently only gets the lowest of low hanging
+*** same heuristics that are used for cells can be used for networks - whole pool of connections
+1. draw circles around all the types; 
+2. in that type are there connection to every other type or to a few types
+3. given a projection is there a constant or a distribution (make some usual assumptions -- eg, no 2 projections to 1 cell --
+without replacement);  what are the statistics of the projections; what those 35 cells are is random ?
+*** try one with 3 types - CA3 -- try to catch up with ernie
+*** HBP - read in 1e4 morphologies of 100 morphoelectric sites and Peter's principal 
+*** BRAIN -> modeldb -> we will reverse engineer M1 which we're already doing
+*** figure of merit -- size of the original code vs size of the final netpyne description
+*** how to create the network -- how to grow networks; growing networks; find some emergent rules
+just use GA on a set of parameters -- cell params and weights
+learning network -- RL or other, homeostatic plasticity 
+grow from axon growth cone rules  -- or GA on probabilities
+2 step growning -- grow the learning rules and then grow the network
+emergent properties -- dynamical properties, properties of network organization (not an inverse problem)
+  do the netpyne solutions give networks with dynamical properties that are similar to that seen with the grown network
+*** a lot of times algorithms for analysis need to look at places that you have the answer -- you don't care that it's not
+exact; need to see that 
+reduction problem from a 3D net to a stylized
+Bush and Sejnowsi -- reduce to a small cell that captures the dynamics of the big cell  (Pinsky and Rinzel, Michele, Ted, HBP)
+*** approach of having a test example of algorithms -- explore algorithms used for optimization - does your fitness function
+of getting back an optimal similar to the other model -- Sean Carver did this Bayesian optimization of ion channels
+1. develop a model (HH type channel model); 2. output data; 3. learn model with Bayesian algorithm from single channel data
+1000 Na channels so a noisy set -- what experiments can you do on this system to get back the parameters of the channel
+Bayesian == maximum likelihood -- a parameterized model ; a noisy system; let's say only param is gbar -- let's retrieve it
+orig data had randomness in it -- any model could create this but likelihood is low if the params isn't correct but even if
+correct won't get the data exactly since seed wasn't same
+practical difficulty 
+markov model contained some hidden parameters so that had some states for which had no data
+one problem with least squares on trajectories is that least squares depends on the 'fact' that every point on the curve is
+  independent ; it's a curve not a bunch of random points -- least squares is missing the parameterization
+*** two kinds of noise -- process noise and experimental noise (artifact)
+forcing it to be on the original data trajectory -- what's the likelihood that it's actually on that trajectory -- extremely
+small so work with log(likelihood)
+*** doing an AP in a model -- you are close to threshold so any kid of noise will cause a spike at any time or no spike at all
+*** statistical philosophy -- you can take any amount of data out of my distribution; want to know the mean of my distro
+  can take different ones and end up with a lot of means -- is your distribution of means which should be gaussian? what is
+  distro of the mean -- this now is recursive
+mean can be very different from what you find
+expectation value if the anomalous card had a very large value associated with it
+maximum likelihood - 95% likelihood but now can run 1e6 times and see ideally would see that 95% but only see 90% so is 90%
+close enough to 95% so that that is the same follow
+*** new way of organizing grants -- this is what we published in last 5 years -- is this good enough to continue
+*** LEMD == low-entropy model description, simplified model description, high-level model description, logical model description
+*** Aim 1 RxD part is innovative
+subcellular connectivity -- dendritic connectivity; deal with regions of the cell
+have to define the regions -- make a description that is indep of the specific morphology
+NeuronDB canonical cells -- medial proximal distal; basal apical axonal; 1st order, 2nd order, 3rd order; yfrac, distances from soma
+linear dec in IH, IA are functions of distance from soma
+do we want to find basilar dendrites? -- define cells 
+*** hoc uses strings and python traditionally uses callables but we're using strings here; lambdas are not particularly interesting
+give an explain as to why we use strings rather than lambda func -- nothing exists until it's instantiated
+*** why do we use python -- python gives flexibility for things like error checking interactively
+*** arbitrary keys (with arbitrary values) can be used in values
+*** Aim 4: GUI enter rules into a form that computes the netpyne file
+fill in the blanks
+pictorial stuff - drag&drop? 
+problems of the outsider -- what is the meaning of the terms that are obvious to the inventor? -- eg probability defined by a sin function??
+incorporate -- pdf -- probability distribution function
+biased distribution since no cells with too many or too few connections -- use convergence or divergence in netpyne
+*** how to do parallel setup -- integrate rendezvous rank in netpyne so all the implicit loops are parallel loops
+*** split up aims based on User Experience: Aim 1 -- include GUI?) 
+vs Aim 2: BackEnd -- parallel setup (rendezvous rank, use hash to find the node where you will rendezvous), evolutionary algorithms, 
+(5,3,7).__hash__()%1024 # 87 so can rendezvous on 14 -- #40 wants that and #375 has it so can find out where to send
+  (send the key of key:value or send the hash)
+collecting data can also use this use %10 to collect 10 files in 10 places
+*** instantiating on 64k nodes -- everyone has the description but no one can see the whole model
+can get in TACC or SDSC
+*** running tests and benchmarks -- standard tests
+*** outer loop of targets (exist on a particular node), inner loop of sources 
+   does everyone need to know about all targets -- we hope not
+gid contains no information about the cell unless you ask for it
+*** can hash the dict for describing a pop2pop connection -- node has a target or set of targets that know what set of sources
+they are looking for -- the source population doesn't exist anywhere (it's just a conceptual object; NB the source population
+(or target pop) will not fit on any node)  -- src gids have to declare themselves and made note of their node location
+NO - not so easy since the rules at the target will be intersections and unions of rules known at a source
+UHOH being when src->targ based on distance and then only define based on relation of src to targ
+pc.gidconnect(srcgid)
+for cell in targets: for netpyne_sources ,,,,
+relationship of target to source -- no common hash -- each one has a hash -- the target knows what sources it's looking for
+and the sources know what targets it's looking for
+*** distance -- can be handled in general - the hash is the rule -- everyone now in the same place -- the master
+handle with a specialized algorithm;  any rule that involves pruning is ok; as long as only get a reasonable size subet
+*** testing on megamachines is one reason we want to have a bunch of models to work with -- Traub, CA3, M1, Soltesz
+*** Aim 2 could be parallel assistance, fun with parallel
+1. rendezvous rank for setup
+2. load balance -- can always reduce to a round robin
+3. parameter optimization evolve,GA (subworlds)
+*** subworlds: doing allgather needs to be restricted to a subset of ranks so that those are doing the same problem
+then use bulletin board to throw out the networks -- bulletin board is a master/worker style of computation
+  could do bulletin board as a 'distributed bulletin board' (could be wasteful) -- Linda idea was distributed BB
+extremes is 1 subworld or 1 node per network and all bulletin board
+*** what are the modern ideas for distributed databases 
+*** model, view, controller
+*** graphical introspection -- what created this graph? -- do something by analogy; find something similar to what you want to do and modify
+*** declarative programming vs procedural -- Backus notation
+http://maude.cs.uiuc.edu/maude2-manual/html/maude-manualch1.html
+is there a grammar of networks?  can we invent one?  would it be useful?  -- NO, NO, NO
+the more that things correspond to reality the more likely they are to persist whereas when you are abstract a slight change
+  in perspective obviates the prior results
+*** Nengo -- draw lines between networks
+*** representation of the network instance -- exhaustive --- each cell has the full set of properties repeated or reference to
+some shared prototype -- each of the cells which are closely related have a shared representation with separate randomizers
+*** appropriate scaling -- typically scale down the weights if increase the convergence with increased network size
+once you get up to 1e4 no longer allow more convergence with increased network size
+scale is critical for debugging since need to work with a small networks or hybrid networks
+reduce to ART_CELLS --- can do that
+*** generate the network and save the network -- save to disk, save on subworlds, modify a model in netpyne
+remove a cell and dump the network back to netpyne -- idea of cell death different from another indstance of the network
+
+** Questions 
+*** GPU will be available for all users of just HBP? include in grant that netpyne will support?
+- yes will be available in core neuron - so open source, can be added to netpyne
+*** load balancing techniques? papers 
+
+*** Netpyne integrated with NEURON?
 
 
 * TODO (moved to Github issues - 16may31)

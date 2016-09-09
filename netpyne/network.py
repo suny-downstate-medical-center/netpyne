@@ -199,7 +199,7 @@ class Network (object):
         return strParams
 
     ###############################################################################
-    # Calculate distance between 2 segmetns
+    # Calculate distance between 2 segments
     ###############################################################################
     def fromtodistance(self, origin_segment, to_segment):
         h.distance(0, origin_segment.x, sec=origin_segment.sec)
@@ -609,7 +609,6 @@ class Network (object):
         if isinstance(connParam['weight'], list): connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
         if isinstance(connParam['delay'], list): connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
         if isinstance(connParam['loc'], list): connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
-
         
         orderedPreGids = sorted(preCellsTags.keys())
         orderedPostGids = sorted(postCellsTags.keys())

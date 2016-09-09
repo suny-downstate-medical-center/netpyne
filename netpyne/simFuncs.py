@@ -1810,6 +1810,45 @@ if neuromlExists:
                                 cellRule['secs'][section_name]['ions'][cm.ion] = {}
                             cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
                             
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
+                    raise Exception("<channelDensityNernst> not yet supported!")
+                
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
+                        if cm.ion_channel=='pas':
+                            mech = {'g':gmax}
+                        else:
+                            mech = {'gmax':gmax}
+                        
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
+                        
+                        #TODO: erev!!
+                        
+                        if cm.ion and cm.ion == 'non_specific':
+                            pass
+                            ##mech['e'] = erev
+                        else:
+                            if not cellRule['secs'][section_name]['ions'].has_key(cm.ion):
+                                cellRule['secs'][section_name]['ions'][cm.ion] = {}
+                            ##cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
+                            
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
+                    raise Exception("<channelDensityGHK> not yet supported!")
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
+                    raise Exception("<channelDensityGHK2> not yet supported!")
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms:
+                    raise Exception("<channelDensityNonUniform> not yet supported!")
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts:
+                    raise Exception("<channelDensityNonUniformNernst> not yet supported!")
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks:
+                    raise Exception("<channelDensityNonUniformGHK> not yet supported!")
+                
+                
                 for vi in cell.biophysical_properties.membrane_properties.init_memb_potentials:
                     
                     group = 'all' if not vi.segment_groups else vi.segment_groups

@@ -31,7 +31,12 @@ class Cell (object):
         self.stims = []  # list of stimuli
 
         if create: self.create()  # create cell 
-        if associateGid: self.associateGid() # register cell for this node
+        if associateGid: 
+            threshold = 10.0
+            try: 
+                threshold = float(self.tags['threshold'])
+            except: pass
+            self.associateGid(threshold = threshold) # register cell for this node
 
     def create (self):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties

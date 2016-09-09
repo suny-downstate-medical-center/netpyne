@@ -71,6 +71,7 @@ class Pop (object):
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['popLabel'] = self.tags['popLabel']
+            cellTags['threshold'] = self.tags['threshold']
             cellTags['xnorm'] = randLocs[i,0] # set x location (um)
             cellTags['ynorm'] = randLocs[i,1] # set y location (um)
             cellTags['znorm'] = randLocs[i,2] # set z location (um)

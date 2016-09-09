@@ -2,6 +2,8 @@
 
 - Fixed bug when using point process-based cells that include synapses (eg. Izhi2007a)
 
+- Fixed bug where spike hist subplot didn't match raster axis
+
 # Version 0.6.0
 
 - Added option to shape conn weights dynamically to create temporal patterns (issue #33)

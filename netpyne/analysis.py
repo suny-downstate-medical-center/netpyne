@@ -262,6 +262,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=subplot(gs[0])
     ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
+    ax1.set_xlim(timeRange)
     
     # Plot stats
     totalSpikes = len(spkts)   
@@ -283,11 +284,13 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax2 = ax1.twinx()
         ax2.plot (histoT, histoCount, linewidth=0.5)
         ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
+        ax2.set_xlim(timeRange)
     elif spikeHist == 'subplot':
         ax2=subplot(gs[1])
         plot (histoT, histoCount, linewidth=1.0)
         ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
         ax2.set_ylabel('Spike count', fontsize=fontsiz)
+        ax2.set_xlim(timeRange)
 
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)

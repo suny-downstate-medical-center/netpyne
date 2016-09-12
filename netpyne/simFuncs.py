@@ -1935,11 +1935,11 @@ if neuromlExists:
                                 to_start = 0.0 if ind==0 else lens[ind-1]
                                 to_end = lens[ind]
                                 tot = lens[-1]
-                                print to_start, to_end, tot, ind, seg, seg_id
+                                #print to_start, to_end, tot, ind, seg, seg_id
                                 fract_sec = (to_start + fract_along *(to_end-to_start))/(tot)
                             
                         ind+=1
-                print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
+                #print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
                 return nrn_sec, fract_sec  
 
         #
@@ -2070,7 +2070,7 @@ if neuromlExists:
             nmlHandler.finalise()
 
             print('Finished import: %s'%nmlHandler.gids)
-            print('Connections: %s'%nmlHandler.connections)
+            #print('Connections: %s'%nmlHandler.connections)
 
 
         sim.initialize(netParams, simConfig)  # create network object and set cfg and net params

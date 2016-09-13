@@ -255,7 +255,8 @@ simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})
-simConfig.addAnalysis('plotTraces', {'include': [0], 'oneFigPer':'cell'})
+simConfig.analysis['plotSpikeHist'] = {'overlay': False}
+#simConfig.addAnalysis('plotTraces', {'include': [0], 'oneFigPer':'cell'})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

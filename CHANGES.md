@@ -1,5 +1,7 @@
 # Version 0.6.1
 
+- Spike histogram fixes: axis labels only in 1st subplot, limit time range, tight_layout only if <5 subplots
+
 - Fixed bug when using point process-based cells that include synapses (eg. Izhi2007a)
 
 - Fixed bug where spike hist subplot didn't match raster axis

@@ -420,7 +420,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if not overlay: 
             subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            title (str(subset))
+            title (str(subset), fontsize=fontsiz)
             color = 'blue'
    
         if graphType == 'line':
@@ -428,14 +428,16 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         elif graphType == 'bar':
             bar(histoT, histoCount, width = binSize, color = color)
 
-        xlabel('Time (ms)', fontsize=fontsiz)
-        ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
-        ax1.set_xlim(timeRange)
+        if iplot == 0: 
+            xlabel('Time (ms)', fontsize=fontsiz)
+            ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
+        xlim(timeRange)
 
-    try:
-        tight_layout()
-    except:
-        pass
+    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+        try:
+            tight_layout()
+        except:
+            pass
 
     # Add legend
     if overlay:

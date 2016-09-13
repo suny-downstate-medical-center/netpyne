@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums
 from matplotlib import gridspec
 from scipy import size, array, linspace, ceil
 from numbers import Number
@@ -600,7 +600,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
-        savefig(filename)
+        fignums = get_fignums()
+        if len(fignums) > 1:
+            for i in fignums:
+                figure(i)
+                savefig(filename[:-4]+'_'+str(i)+filename[-4:])
+        else:
+            savefig(filename)
 
     # show fig 
     if showFig: _showFigure()

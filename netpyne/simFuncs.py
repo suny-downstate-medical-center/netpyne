@@ -1085,8 +1085,8 @@ def timing (mode, processName):
 ### Print netpyne version
 ###############################################################################
 def version():
-    import netpyne 
-    print(netpyne.__version__)
+    from netpyne import __version__ 
+    print(__version__)
 
 
 ###############################################################################

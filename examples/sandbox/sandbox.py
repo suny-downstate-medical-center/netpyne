@@ -14,6 +14,9 @@ Contributors: salvadordura@gmail.com
 #
 ###############################################################################
 
+import netpyne
+netpyne.__gui__ = False
+
 from netpyne import specs, sim
 from netpyne.specs import Dict
 

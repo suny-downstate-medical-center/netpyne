@@ -6,9 +6,13 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+from netpyne import __gui__
+
+if __gui__:
+    from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
     colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums
-from matplotlib import gridspec
+    from matplotlib import gridspec
+
 from scipy import size, array, linspace, ceil
 from numbers import Number
 import math
@@ -23,7 +27,7 @@ warnings.filterwarnings("ignore")
 ######################################################################################################################################################
 def plotData ():
     ## Plotting
-    if sim.rank == 0:
+    if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user

@@ -1,5 +1,7 @@
 # Version 0.6.1
 
+- Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)
+
 - Spike histogram fixes: axis labels only in 1st subplot, limit time range, tight_layout only if <5 subplots
 
 - Fixed bug so multiple traces figures are saved to separate files (issue #165)

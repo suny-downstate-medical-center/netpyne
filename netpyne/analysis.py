@@ -604,7 +604,6 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
-        print figs
         if len(figs) > 1:
             for figLabel, figObj in figs.iteritems():
                 figure(figObj.number)

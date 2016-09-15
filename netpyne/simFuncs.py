@@ -32,7 +32,7 @@ try:
     __all__.extend(['importNeuroML2'])  # import
     neuromlExists = True
 except:
-    print('(Note: NeuroML import failed; import/export functions will not be available)')
+    print('\n*******\n  Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  Install the pyNeuroML & libNeuroML Python packages: https://www.neuroml.org/getneuroml\n*******\n')
     neuromlExists = False
 
 import sim, specs

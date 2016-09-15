@@ -528,12 +528,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     recordStep = sim.cfg.recordStep
 
-    figs = []
+    figs = {}
     tracesData = []
     # Plot one fig per cell
     if oneFigPer == 'cell':
         for gid in cellGids:
-            figs.append(figure()) # Open a new figure
+            figs['_gid_'+str(gid)] = figure() # Open a new figure
             fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -565,7 +565,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # Plot one fig per cell
     elif oneFigPer == 'trace':
         for itrace, trace in enumerate(tracesList):
-            figs.append(figure()) # Open a new figure
+            figs['_'+trace] = figure() # Open a new figure
             fontsiz = 12
             for igid, gid in enumerate(cellGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -604,11 +604,11 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
-        fignums = get_fignums()
-        if len(fignums) > 1:
-            for i in fignums:
-                figure(i)
-                savefig(filename[:-4]+'_'+str(i)+filename[-4:])
+        print figs
+        if len(figs) > 1:
+            for figLabel, figObj in figs.iteritems():
+                figure(figObj.number)
+                savefig(filename[:-4]+figLabel+filename[-4:])
         else:
             savefig(filename)
 

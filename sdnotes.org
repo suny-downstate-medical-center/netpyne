@@ -2726,9 +2726,19 @@ type                       1094
 ** Parallel Neuron paper (Alex, Neurosim)
 ** Claustrum network (Jing, George Augustine)
 ** Sensorimotor network + arm (Cliff, Kerr lab)
-
 ** Hippocampus model (Ernie, Neurosim)
 ** V1 load/save model (Allen Brain Institute)
+** Basal Ganglia (Lucas, UCD)
+http://www.neuromuscularsystemsucd.info/research-areas
+*** email
+I made a new pull request into the development branch as requested. I am using Netpyne to model the Basal Ganglia network
+using biophysically detailed and simplified spiking models. I am going to look at the effect of pathological oscillations on
+task performance for motor tasks. One of the overarching goals of our group is to combine different models into a multi-scale
+model of Basal Ganglia, spinal chord and motor units in the muscles, so I may use Netpyne for that too.  I appreciate all the
+work that is made open source by your group. It helped me a lot while learning how to use the more advanced features of
+Neuron using Python.  All the best, Lucas
+
+
 * Related tools
 ** NEURON
 Multiscale simulator
@@ -2822,7 +2832,7 @@ https://www.neuroml.org/
 Declarative format for neural models
 http://incf.github.io/nineml/
 \cite{Raik12}
-** Reaction-difussion simulators
+** Reaction-diffusion simulators
 - RxD
 - MCell
 - Smoldyn

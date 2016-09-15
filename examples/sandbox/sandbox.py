@@ -15,7 +15,7 @@ Contributors: salvadordura@gmail.com
 ###############################################################################
 
 import netpyne
-netpyne.__gui__ = False
+netpyne.__gui__ = True
 
 from netpyne import specs, sim
 from netpyne.specs import Dict

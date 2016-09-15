@@ -530,6 +530,31 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     figs = {}
     tracesData = []
+
+    # Plot one fig per trace for given cell list
+    def plotFigPerTrace(subGids):
+        for itrace, trace in enumerate(tracesList):
+            figs.append(figure()) # Open a new figure
+            fontsiz = 12
+            for igid, gid in enumerate(subGids):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList[igid%len(colorList)]
+                    if not overlay:
+                        subplot(len(subGids),1,igid+1)
+                        color = 'blue'
+                        ylabel(trace, fontsize=fontsiz)
+                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    xlabel('Time (ms)', fontsize=fontsiz)
+                    xlim(timeRange)
+                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+            if overlay:
+                maxLabelLen = 10
+                subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+
     # Plot one fig per cell
     if oneFigPer == 'cell':
         for gid in cellGids:
@@ -547,7 +572,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         lenData = len(data)
                     t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[itrace]
+                    color = colorList[itrace%len(colorList)]
                     if not overlay:
                         subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
@@ -561,30 +586,15 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         subplots_adjust(right=(0.9-0.012*maxLabelLen))
                         legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-
-    # Plot one fig per cell
+    # Plot one fig per trace
     elif oneFigPer == 'trace':
-        for itrace, trace in enumerate(tracesList):
-            figs['_'+trace] = figure() # Open a new figure
-            fontsiz = 12
-            for igid, gid in enumerate(cellGids):
-                if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
-                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
-                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[igid]
-                    if not overlay:
-                        subplot(len(cellGids),1,igid+1)
-                        color = 'blue'
-                        ylabel(trace, fontsize=fontsiz)
-                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    xlabel('Time (ms)', fontsize=fontsiz)
-                    xlim(timeRange)
-                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-            if overlay:
-                maxLabelLen = 10
-                subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
-                legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        plotFigPerTrace(cellGids)
+
+    # Plot one fig per trace for each population
+    elif oneFigPer == 'popTrace':
+        allPopGids = invertDictMapping(gidPops)
+        for popLabel, popGids in allPopGids.iteritems():
+            plotFigPerTrace(popGids)
 
     try:
         tight_layout()
@@ -616,7 +626,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     return figs
 
-
+def invertDictMapping(d):
+    """ Invert mapping of dictionary (i.e. map values to list of keys) """
+    inv_map = {}
+    for k, v in d.iteritems():
+        inv_map[v] = inv_map.get(v, [])
+        inv_map[v].append(k)
+    return inv_map
 
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
@@ -870,9 +886,9 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
     hold(True)
     if groupBy == 'cell':
         # Make pretty
-        step = int(len(cells)/10.0)
+        step = max(1, int(len(cells)/10.0))
         base = 100 if step>100 else 10
-        step = int(base * floor(float(step)/base))
+        step = max(1, int(base * floor(float(step)/base)))
         h.set_xticks(arange(0,len(cells),step))
         h.set_yticks(arange(0,len(cells),step))
         h.set_xticklabels(arange(0,len(cells),step))

@@ -304,7 +304,7 @@ class Cell (object):
             netcon.delay = conn['delay']
             netcon.threshold = conn['threshold']
             conn['hNetcon'] = netcon
-
+            
             # Add plasticity 
             if conn.get('plast'):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)

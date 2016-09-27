@@ -138,22 +138,25 @@ def loadNetParams (filename, data=None):
 def loadNet (filename, data=None, instantiate=True):
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
-        sim.timing('start', 'loadNetTime')
-        print('Loading net...')
-        sim.net.allPops = data['net']['pops']
-        sim.net.allCells = data['net']['cells']
+        if sim.rank == 0:
+            sim.timing('start', 'loadNetTime')
+            print('Loading net...')
+            sim.net.allPops = data['net']['pops']
+            sim.net.allCells = data['net']['cells']
         if instantiate:
+            # calculate cells to instantiate in this node
+            cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts)] 
             if sim.cfg.createPyStruct:
                 for popLoadLabel, popLoad in data['net']['pops'].iteritems():
                     pop = sim.Pop(popLoadLabel, popLoad['tags'])
                     pop.cellGids = popLoad['cellGids']
                     sim.net.pops[popLoadLabel] = pop
-                for cellLoad in data['net']['cells']:
+                for cellLoad in cellsNode:
                     # create new Cell object and add attributes, but don't create sections or associate gid yet
                     cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
-                    cell.secs = cellLoad['secs']
-                    cell.conns = cellLoad['conns']
-                    cell.stims = cellLoad['stims']
+                    cell.secs = Dict(cellLoad['secs'])
+                    cell.conns = [Dict(conn) for conn in cellLoad['conns']]
+                    cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))
                 print('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
@@ -168,6 +171,7 @@ def loadNet (filename, data=None, instantiate=True):
                         cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs 
                         cell.associateGid()  # can only associate once the hSection obj has been created
                     # create all NEURON Netcons, NetStims, etc
+                    sim.pc.barrier()
                     for cell in sim.net.cells:
                         cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
                         cell.addConnsNEURONObj()
@@ -765,7 +769,6 @@ def gatherData ():
         for k,v in nodeData.iteritems():
             data[0][k] = v 
         gather = sim.pc.py_alltoall(data)
-
         sim.pc.barrier()  
         if sim.rank == 0:
             allCells = []

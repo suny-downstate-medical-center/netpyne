@@ -292,7 +292,7 @@ def _loadFile (filename):
         print('Format not recognized for file %s'%(filename))
         return 
 
-    if sim.cfg.timing: 
+    if sim.rank == 0 and sim.cfg.timing: 
         sim.timing('stop', 'loadFileTime')
         print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
    

@@ -10,6 +10,8 @@
 
 - Fixed bug where spike hist subplot didn't match raster axis
 
+- Fixed bug in print command when loading data from file  
+
 # Version 0.6.0
 
 - Added option to shape conn weights dynamically to create temporal patterns (issue #33)

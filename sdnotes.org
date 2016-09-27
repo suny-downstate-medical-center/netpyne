@@ -2760,10 +2760,15 @@ http://www.nest-simulator.org/
 Large scale network simulator
 http://www.nengo.ca/
 \cite{Stew09}
+** GeNN
+Large scale network simulator (GPUs)
+http://genn-team.github.io/genn/
+\cite{Yavu16}
 ** Brian
 Mathematically oriented simulator
 http://briansimulator.org/
 \cite{Good08}
+
 ** MUSIC
 Multi-simulator tool
 http://software.incf.org/software/music
@@ -2776,6 +2781,10 @@ http://neuralensemble.org/PyNN/
 Multi-simulator tool
 http://www.neuroconstruct.org/
 \cite{Glee07}
+** N2A
+Multi-simulator tool
+https://github.com/frothga/n2a
+\cite{Roth14} 
 ** PyNeuroML/libNeuroML
 Multi-simulator tool (for NeuroML2/LEMS models; combines libNeuroML, PyLEMS, jNeuroML)
 https://github.com/NeuroML/pyNeuroML
@@ -2784,6 +2793,10 @@ https://github.com/NeuroML/pyNeuroML
 Multi-simulator tool (focused on topographic maps)
 http://ioam.github.io/topographica/
 \cite{Bedn09}
+** NetPyNE
+Tool for design/simulation/analysis of multiscale networks in NEURON
+https://neurosimlab.org/netpyne
+\cite{Dura16c}
 ** Morphforge
 Tool for design/simulation/analysis of single cell and simple nets in NEURON
 \cite{Hull14}
@@ -2812,10 +2825,18 @@ http://sumatra.readthedocs.io/
 Parameter optimization; batch simulation organization and analysis
 https://pypet.readthedocs.io
 \cite{Meye16}
-** BluePyOpt
+** BluePyOpt / HBP Collab GUI
 Parameter optimization
-https://github.com/BlueBrain/BluePyOpt
+https://github.com/BlueBrain/BluePyOpt  
 \cite{VanG16}
+** NeuroTune
+Parameter optimization 
+http://optimal-neuron.readthedocs.io/en/latest/ 
+Mike Vella  and Padraig Gleeson
+** Optimizer
+Parameter optimization 
+http://optimizer.readthedocs.io/en/latest/ 
+\cite{Frie14b}
 ** NeuronVisio
 Analysis and visualization
 http://docs.neuronvisio.org/
@@ -2839,10 +2860,11 @@ http://incf.github.io/nineml/
 - STEPS
 - NeuroRD
 - PSICS
-** Reviews
+** Reviews / Other lists
 - \cite{Bret07}
 - \cite{McDo16}
-
+http://software.incf.org/software/?getTopics=Computational%20neuroscience&b_start:int=0&-C=
+http://software.incf.org/software?getTopics=Large%20scale%20modeling&-C=
 
 * Paper
 ** Title

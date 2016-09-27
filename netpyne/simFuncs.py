@@ -199,7 +199,7 @@ def loadSimCfg (filename, data=None):
 ###############################################################################
 def loadSimData (filename, data=None):
     if not data: data = _loadFile(filename)
-    print('Loading simData...')
+    print('Loading simData...')ss
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
@@ -292,8 +292,9 @@ def _loadFile (filename):
         print('Format not recognized for file %s'%(filename))
         return 
 
-    if sim.cfg.timing: sim.timing('stop', 'loadFileTime')
-    print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
+    if sim.cfg.timing: 
+        sim.timing('stop', 'loadFileTime')
+        print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
    
 
     return data

@@ -184,7 +184,8 @@ class Cell (object):
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
-                            seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
+                            if mechParamValueFinal:  # avoid setting None values
+                                seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
                             
             # add ions
             if 'ions' in sectParams:

@@ -174,8 +174,9 @@ def loadNet (filename, data=None, instantiate=True):
 
                     print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
 
-            if sim.cfg.timing: sim.timing('stop', 'loadNetTime')
-            print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
+            if sim.rank == 0 and sim.cfg.timing: 
+                sim.timing('stop', 'loadNetTime')
+                print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
         print('  netCells and/or netPops not found in file %s'%(filename))
 
@@ -923,6 +924,7 @@ def _gatherCells ():
     if sim.rank==0: 
         print('\nUpdating sim.net.allCells...')
 
+    print sim.nhosts
     if sim.nhosts > 1:  # only gather if >1 nodes 
         nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells]} 
         data = [None]*sim.nhosts

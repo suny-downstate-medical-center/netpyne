@@ -10,7 +10,7 @@
 
 - Fixed bug where spike hist subplot didn't match raster axis
 
-- Fixed bug in print command when loading data from file  
+- Fixed bug when loading data from file with multiple cores  
 
 # Version 0.6.0
 

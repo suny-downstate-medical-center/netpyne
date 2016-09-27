@@ -199,7 +199,7 @@ def loadSimCfg (filename, data=None):
 ###############################################################################
 def loadSimData (filename, data=None):
     if not data: data = _loadFile(filename)
-    print('Loading simData...')ss
+    print('Loading simData...')
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:

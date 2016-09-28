@@ -697,7 +697,7 @@ class Network (object):
     ###############################################################################
     ### Modify cell params
     ###############################################################################
-    def modifyCells (self, params):
+    def modifyCells (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyCellsTime')
         if sim.rank==0: 
@@ -706,7 +706,7 @@ class Network (object):
         for cell in self.cells:
             cell.modify(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyCellsTime')
@@ -716,7 +716,7 @@ class Network (object):
     ###############################################################################
     ### Modify synMech params
     ###############################################################################
-    def modifySynMechs (self, params):
+    def modifySynMechs (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifySynMechsTime')
         if sim.rank==0: 
@@ -725,8 +725,8 @@ class Network (object):
         for cell in self.cells:
             cell.modifySynMechs(params)
 
-        if hasattr(sim.net, 'allCells'): 
-            sim._gatherCells()  # update allCells
+        if updateMasterAllCells:
+             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifySynMechsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
@@ -736,7 +736,7 @@ class Network (object):
     ###############################################################################
     ### Modify conn params
     ###############################################################################
-    def modifyConns (self, params):
+    def modifyConns (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyConnsTime')
         if sim.rank==0: 
@@ -745,7 +745,7 @@ class Network (object):
         for cell in self.cells:
             cell.modifyConns(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyConnsTime')
@@ -755,7 +755,7 @@ class Network (object):
     ###############################################################################
     ### Modify stim source params
     ###############################################################################
-    def modifyStims (self, params):
+    def modifyStims (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyStimsTime')
         if sim.rank==0: 
@@ -764,7 +764,7 @@ class Network (object):
         for cell in self.cells:
             cell.modifyStims(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyStimsTime')

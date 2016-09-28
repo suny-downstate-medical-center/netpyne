@@ -12,6 +12,8 @@
 
 - Fixed bug when loading data from file with multiple cores  
 
+- Fixed bug so modify functions work with multiple cores 
+
 # Version 0.6.0
 
 - Added option to shape conn weights dynamically to create temporal patterns (issue #33)

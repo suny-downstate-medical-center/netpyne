@@ -927,7 +927,6 @@ def _gatherCells ():
     if sim.rank==0: 
         print('\nUpdating sim.net.allCells...')
 
-    print sim.nhosts
     if sim.nhosts > 1:  # only gather if >1 nodes 
         nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells]} 
         data = [None]*sim.nhosts

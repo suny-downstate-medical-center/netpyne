@@ -860,7 +860,7 @@ Methods to set up network
 
 Methods to modify network
 
-* **net.modifyCells(params)**
+* **net.modifyCells(params, updateMasterAllCells=False)**
 	
 	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following 2 items:
 
@@ -874,7 +874,7 @@ Methods to modify network
 		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 
 
-* **net.modifySynMechs(params)**
+* **net.modifySynMechs(params, updateMasterAllCells=False)**
 
 	Modifies properties of synMechs in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -889,7 +889,7 @@ Methods to modify network
 	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
 
 
-* **net.modifyConns(params)**
+* **net.modifyConns(params, updateMasterAllCells=False)**
 
 	Modifies properties of connections in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -905,7 +905,7 @@ Methods to modify network
 	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
 
-* **net.modifyStims(params)**
+* **net.modifyStims(params, updateMasterAllCells=False)**
 
 	Modifies properties of stim in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -919,6 +919,9 @@ Methods to modify network
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
+
+
+.. note:: The ``updateMasterAllCells`` argument ensures that the ``sim.net.allCells`` list in the master node is also updated with the modified parameters. By default this is set to False, since it slows down the modify functions, and ``sim.net.allCells`` will be updated automatically after running simulation and gathering data.
 
 
 Population class methods 

@@ -6,9 +6,13 @@ Functions to plot and analyse results
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout
-from matplotlib import gridspec
+from netpyne import __gui__
+
+if __gui__:
+    from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums
+    from matplotlib import gridspec
+
 from scipy import size, array, linspace, ceil
 from numbers import Number
 import math
@@ -23,7 +27,7 @@ warnings.filterwarnings("ignore")
 ######################################################################################################################################################
 def plotData ():
     ## Plotting
-    if sim.rank == 0:
+    if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user
@@ -262,6 +266,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=subplot(gs[0])
     ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
+    ax1.set_xlim(timeRange)
     
     # Plot stats
     totalSpikes = len(spkts)   
@@ -283,11 +288,13 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax2 = ax1.twinx()
         ax2.plot (histoT, histoCount, linewidth=0.5)
         ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
+        ax2.set_xlim(timeRange)
     elif spikeHist == 'subplot':
         ax2=subplot(gs[1])
         plot (histoT, histoCount, linewidth=1.0)
         ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
         ax2.set_ylabel('Spike count', fontsize=fontsiz)
+        ax2.set_xlim(timeRange)
 
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
@@ -417,7 +424,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if not overlay: 
             subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            title (str(subset))
+            title (str(subset), fontsize=fontsiz)
             color = 'blue'
    
         if graphType == 'line':
@@ -425,14 +432,16 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         elif graphType == 'bar':
             bar(histoT, histoCount, width = binSize, color = color)
 
-        xlabel('Time (ms)', fontsize=fontsiz)
-        ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
-        ax1.set_xlim(timeRange)
+        if iplot == 0: 
+            xlabel('Time (ms)', fontsize=fontsiz)
+            ylabel(yaxisLabel, fontsize=fontsiz) # add yaxis in opposite side
+        xlim(timeRange)
 
-    try:
-        tight_layout()
-    except:
-        pass
+    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+        try:
+            tight_layout()
+        except:
+            pass
 
     # Add legend
     if overlay:
@@ -519,12 +528,37 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     recordStep = sim.cfg.recordStep
 
-    figs = []
+    figs = {}
     tracesData = []
+
+    # Plot one fig per trace for given cell list
+    def plotFigPerTrace(subGids):
+        for itrace, trace in enumerate(tracesList):
+            figs.append(figure()) # Open a new figure
+            fontsiz = 12
+            for igid, gid in enumerate(subGids):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList[igid%len(colorList)]
+                    if not overlay:
+                        subplot(len(subGids),1,igid+1)
+                        color = 'blue'
+                        ylabel(trace, fontsize=fontsiz)
+                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    xlabel('Time (ms)', fontsize=fontsiz)
+                    xlim(timeRange)
+                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+            if overlay:
+                maxLabelLen = 10
+                subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+
     # Plot one fig per cell
     if oneFigPer == 'cell':
         for gid in cellGids:
-            figs.append(figure()) # Open a new figure
+            figs['_gid_'+str(gid)] = figure() # Open a new figure
             fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -538,7 +572,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         lenData = len(data)
                     t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[itrace]
+                    color = colorList[itrace%len(colorList)]
                     if not overlay:
                         subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
@@ -552,30 +586,15 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         subplots_adjust(right=(0.9-0.012*maxLabelLen))
                         legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
-
-    # Plot one fig per cell
+    # Plot one fig per trace
     elif oneFigPer == 'trace':
-        for itrace, trace in enumerate(tracesList):
-            figs.append(figure()) # Open a new figure
-            fontsiz = 12
-            for igid, gid in enumerate(cellGids):
-                if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
-                    t = arange(timeRange[0], timeRange[1]+recordStep, recordStep)
-                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[igid]
-                    if not overlay:
-                        subplot(len(cellGids),1,igid+1)
-                        color = 'blue'
-                        ylabel(trace, fontsize=fontsiz)
-                    plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    xlabel('Time (ms)', fontsize=fontsiz)
-                    xlim(timeRange)
-                    title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-            if overlay:
-                maxLabelLen = 10
-                subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
-                legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        plotFigPerTrace(cellGids)
+
+    # Plot one fig per trace for each population
+    elif oneFigPer == 'popTrace':
+        allPopGids = invertDictMapping(gidPops)
+        for popLabel, popGids in allPopGids.iteritems():
+            plotFigPerTrace(popGids)
 
     try:
         tight_layout()
@@ -595,14 +614,25 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
-        savefig(filename)
+        if len(figs) > 1:
+            for figLabel, figObj in figs.iteritems():
+                figure(figObj.number)
+                savefig(filename[:-4]+figLabel+filename[-4:])
+        else:
+            savefig(filename)
 
     # show fig 
     if showFig: _showFigure()
 
     return figs
 
-
+def invertDictMapping(d):
+    """ Invert mapping of dictionary (i.e. map values to list of keys) """
+    inv_map = {}
+    for k, v in d.iteritems():
+        inv_map[v] = inv_map.get(v, [])
+        inv_map[v].append(k)
+    return inv_map
 
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
@@ -856,9 +886,9 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
     hold(True)
     if groupBy == 'cell':
         # Make pretty
-        step = int(len(cells)/10.0)
+        step = max(1, int(len(cells)/10.0))
         base = 100 if step>100 else 10
-        step = int(base * floor(float(step)/base))
+        step = max(1, int(base * floor(float(step)/base)))
         h.set_xticks(arange(0,len(cells),step))
         h.set_yticks(arange(0,len(cells),step))
         h.set_xticklabels(arange(0,len(cells),step))

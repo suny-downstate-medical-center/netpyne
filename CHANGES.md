@@ -1,3 +1,19 @@
+# Version 0.6.1
+
+- Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)
+
+- Spike histogram fixes: axis labels only in 1st subplot, limit time range, tight_layout only if <5 subplots
+
+- Fixed bug so multiple traces figures are saved to separate files (issue #166)
+
+- Fixed bug when using point process-based cells that include synapses (eg. Izhi2007a)
+
+- Fixed bug where spike hist subplot didn't match raster axis
+
+- Fixed bug when loading data from file with multiple cores  
+
+- Fixed bug so modify functions work with multiple cores 
+
 # Version 0.6.0
 
 - Added option to shape conn weights dynamically to create temporal patterns (issue #33)

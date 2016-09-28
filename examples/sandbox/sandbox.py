@@ -14,6 +14,9 @@ Contributors: salvadordura@gmail.com
 #
 ###############################################################################
 
+import netpyne
+netpyne.__gui__ = True
+
 from netpyne import specs, sim
 from netpyne.specs import Dict
 
@@ -44,25 +47,25 @@ netParams.addSynMechParams('homSyn', {'mod':'hsyn','tau1':0.05,'tau2':5.3,'e':0,
 
 # Cell parameters
 ## PYR cell properties
-cellParams = Dict()
-cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
-cellParams.conds = {'cellType': 'PYR'}
-netParams.addCellParams('PYR2sec', cellParams)
+# cellParams = Dict()
+# cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+# cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+# cellParams.conds = {'cellType': 'PYR'}
+# netParams.addCellParams('PYR2sec', cellParams)
 
 
 ## PYR2sec cell properties
-# soma = {'geom': {}, 'mechs': {}}                                                    # soma params dict
-# soma['geom'] = {'diam': 18.8, 'L': 18.8, 'cm':1}                                   # soma geometry
-# soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54}          # soma hh mechanisms
-# dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
-# dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
-# dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
-# dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
-# cellParams = {'conds': {'cellType': 'PYR2sec'},  
-#             'secs': {'soma': soma, 'dend': dend}, 
-#             'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
-# netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
+soma = {'geom': {}, 'mechs': {}}                                                    # soma params dict
+soma['geom'] = {'diam': 18.8, 'L': 18.8, 'cm':1}                                   # soma geometry
+soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54}          # soma hh mechanisms
+dend = {'geom': {}, 'topol': {}, 'mechs': {}, 'synMechs': {}}                               # dend params dict
+dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                          # dend geometry
+dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                      # dend topology 
+dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                       # dend mechanisms
+cellParams = {'conds': {'cellType': 'PYR'},  
+            'secs': {'soma': soma, 'dend': dend}, 
+            'secLists': {'all': ['soma', 'dend']}}     # cell rule dict
+netParams.addCellParams('PYR2sec', cellParams)  # add dict to list of cell properties
 
 ##
 # cellRule = Dict(conds={'cellType': 'PYR2sec', 'cellModel': 'HH'},  secs=Dict(), secLists=Dict())
@@ -134,16 +137,16 @@ netParams.addCellParams('PYR2sec', cellParams)
 #     'synMech': ['AMPA', 'NMDA'],
 #     'threshold': 10})                    # threshold
 
-duration = 1*1e3
-netParams.connParams['mist->PYR'] = {
-    'preConds': {'popLabel': 'microstim'}, 
-    'postConds': {'cellType': 'PYR'},
-    'weight': 0.1,                 
-    'shape': {'switchOnOff': [200,400, 600, 800], 
-              'pulseType': 'gaussian',
-              'pulsePeriod': 100,
-              'pulseWidth': 60},
-    'synMech':'AMPA'}
+# duration = 1*1e3
+# netParams.connParams['mist->PYR'] = {
+#     'preConds': {'popLabel': 'microstim'}, 
+#     'postConds': {'cellType': 'PYR'},
+#     'weight': 0.1,                 
+#     'shape': {'switchOnOff': [200,400, 600, 800], 
+#               'pulseType': 'gaussian',
+#               'pulsePeriod': 100,
+#               'pulseWidth': 60},
+#     'synMech':'AMPA'}
 
 
 # netParams.addConnParams('PYRconn2',
@@ -183,12 +186,12 @@ netParams.connParams['mist->PYR'] = {
 #     'threshold': 10})                   # threshold
 
 
-# netParams.addConnParams('bg->PYR',
-#     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
-#     'weight': 1.0,                    # fixed weight of 0.08
-#     'synMech': 'AMPA',                     # target NMDA synapse
-#     'delay': 4,
-#     'sec': 'soma'})           # uniformly distributed delays between 1-5ms
+netParams.addConnParams('bg->PYR',
+    {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
+    'weight': 0.1,                    # fixed weight of 0.08
+    'synMech': 'AMPA',                     # target NMDA synapse
+    'delay': 4,
+    'sec': 'soma'})           # uniformly distributed delays between 1-5ms
 
 # netParams.addConnParams('PYRconn3',
 #     {'preConds': {'popLabel': 'background2'}, 'postConds': {'cellType': 'PYR2sec'}, # background -> PYR
@@ -213,12 +216,12 @@ netParams.connParams['mist->PYR'] = {
 #     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 
-# netParams.addSubConnParams('PYRsub1',
-#     {'preConds': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
-#     'postConds': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
-#     'sec': 'all',
-#     'ynormRange': [0, 1.0],
-#     'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
+netParams.addSubConnParams('PYRsub1',
+    {'preConds': {'cellType': ['PYR2sec']}, # 'cellType': ['IT', 'PT', 'CT']
+    'postConds': {'popLabel': 'PYR'},  # 'popLabel': 'L5_PT'
+    'sec': 'all',
+    'ynormRange': [0, 1.0],
+    'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
 
 
 
@@ -254,8 +257,9 @@ simConfig.saveHDF5 = 0
 simConfig.saveCSV = 0
 
 # # Analysis and plotting 
-simConfig.addAnalysis('plotRaster', True)
-simConfig.addAnalysis('plotTraces', {'include': [0], 'oneFigPer':'cell'})
+simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})
+simConfig.analysis['plotSpikeHist'] = {'overlay': False}
+simConfig.addAnalysis('plotTraces', {'include': [0,1,2], 'oneFigPer':'cell', 'saveFig':True})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})
@@ -271,6 +275,7 @@ simConfig.addAnalysis('plotTraces', {'include': [0], 'oneFigPer':'cell'})
 # sim.saveData()
 # sim.loadSimulateAnalyze('mpiHHTut.pkl')
 # sim.analysis.plotData()
+
 sim.initialize(netParams = netParams, simConfig = simConfig)
 sim.net.createPops()
 sim.net.createCells()

@@ -6,8 +6,6 @@
 
 - Added simLabel and saveFolder to simConfig (can be used instead of filename)
 
-- Added netCfg dict to simConfig so can specify parameters that can be used in netParams
-
 # Version 0.6.1
 
 - Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)

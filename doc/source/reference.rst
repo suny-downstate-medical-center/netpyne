@@ -675,8 +675,6 @@ Related to plotting and analysis:
 
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
 
-* **netCfg** - Dictionary with parameters that can be used in a parametrized version of netParams.
-
 .. _package_functions:
 
 Package functions

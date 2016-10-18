@@ -365,9 +365,6 @@ class SimConfig (object):
         # Analysis and plotting 
         self.analysis = ODict()
 
-        # Net config params
-        self.netCfg = Dict()
-
         # fill in params from dict passed as argument
         if simConfigDict:
             for k,v in simConfigDict.iteritems():

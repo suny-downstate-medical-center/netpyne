@@ -1,8 +1,12 @@
 # Version 0.6.2
 
-- Added simConfig option (eg. backupCfgFile = ['cfg.py', 'backupcfg/']) to copy cfg file after run
+- Added backupCfgFile (eg. ['cfg.py', 'backupcfg/']) to simConfig to copy cfg file after run
 
-- Added simConfig option (gatherOnlySimData) to gather only simulation data and not cells or pops
+- Added gatherOnlySimData to simConfig to gather only simulation data and not cells or pops
+
+- Added simLabel and saveFolder to simConfig (can be used instead of filename)
+
+- Added netCfg dict to simConfig so can specify parameters that can be used in netParams
 
 # Version 0.6.1
 

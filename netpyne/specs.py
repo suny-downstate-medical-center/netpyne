@@ -348,8 +348,10 @@ class SimConfig (object):
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
         # Saving
+        self.simLabel = ''  # name of simulation (used as filename if none provided)
+        self.saveFolder = ''  # path where to save output data
+        self.filename = 'model_output'  # Name of file to save model output (if omitted then saveFolder+simLabel is used)
         self.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
-        self.filename = 'model_output'  # Name of file to save model output
         self.timestampFilename = False  # Add timestamp to filename to avoid overwriting
         self.savePickle = False # save to pickle file
         self.saveJson = False # save to json file
@@ -362,6 +364,9 @@ class SimConfig (object):
 
         # Analysis and plotting 
         self.analysis = ODict()
+
+        # Net config params
+        self.netCfg = Dict()
 
         # fill in params from dict passed as argument
         if simConfigDict:

@@ -82,7 +82,6 @@ simConfig.filename = 'HHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
-
 # Analysis and plotting 
 simConfig.analysis['plotRaster'] = True  # Plot raster
 simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster

@@ -1,3 +1,7 @@
+# Version 0.6.2
+
+- simConfig option (eg. backupCfgFile = ['cfg.py', 'backupcfg/']) to copy cfg file after run
+
 # Version 0.6.1
 
 - Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)

@@ -654,6 +654,7 @@ Related to file saving:
 * **saveTxt** - Save data to txt file (default: False)
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
+* **backupCfgFile** - Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: [])
 
 
 .. _sim_config_analysis:

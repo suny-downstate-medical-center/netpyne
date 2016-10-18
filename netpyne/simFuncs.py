@@ -763,50 +763,92 @@ def gatherData ():
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
-        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData} 
-        data = [None]*sim.nhosts
-        data[0] = {}
-        for k,v in nodeData.iteritems():
-            data[0][k] = v 
-        gather = sim.pc.py_alltoall(data)
-        sim.pc.barrier()  
-        if sim.rank == 0:
-            allCells = []
-            allPops = ODict()
-            for popLabel,pop in sim.net.pops.iteritems(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
-            allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
-            sim.allSimData = Dict()
+        
+        # gather only sim data
+        if getattr(sim.cfg, 'gatherOnlySimData', False):
+            nodeData = {'simData': sim.simData} 
+            data = [None]*sim.nhosts
+            data[0] = {}
+            for k,v in nodeData.iteritems():
+                data[0][k] = v 
+            gather = sim.pc.py_alltoall(data)
+            sim.pc.barrier() 
 
-            for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                sim.allSimData[k] = {}
+            if sim.rank == 0: # simData
+                print '  Gathering only sim data...'
+                sim.allSimData = Dict()
+                for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
+                    sim.allSimData[k] = {}
 
-            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
-            for node in gather:  # concatenate data from each node
-                allCells.extend(node['netCells'])  # extend allCells list
-                for popLabel,popCellGids in node['netPopsCellGids'].iteritems():
-                    allPopsCellGids[popLabel].extend(popCellGids)
-                    
-                for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
-                    if key in simDataVecs:          # simData dicts that contain Vectors
-                        if isinstance(val,dict):                
-                            for cell,val2 in val.iteritems():
-                                if isinstance(val2,dict):       
-                                    sim.allSimData[key].update(Dict({cell:Dict()}))
-                                    for stim,val3 in val2.iteritems():
-                                        sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                else:
-                                    sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                        else:                                   
-                            sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                    else: 
-                        sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+                for node in gather:  # concatenate data from each node
+                    for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
+                        if key in simDataVecs:          # simData dicts that contain Vectors
+                            if isinstance(val,dict):                
+                                for cell,val2 in val.iteritems():
+                                    if isinstance(val2,dict):       
+                                        sim.allSimData[key].update(Dict({cell:Dict()}))
+                                        for stim,val3 in val2.iteritems():
+                                            sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                    else:
+                                        sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                            else:                                   
+                                sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        else: 
+                            sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
-            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
             
-            for popLabel,pop in allPops.iteritems():
-                pop['cellGids'] = sorted(allPopsCellGids[popLabel])
-            sim.net.allPops = allPops
-    
+            sim.net.allPops = ODict() # pops
+            for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+            
+            sim.net.allCells = [c.__dict__ for c in sim.net.cells]
+        
+        # gather cells, pops and sim data
+        else:
+            nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData} 
+            data = [None]*sim.nhosts
+            data[0] = {}
+            for k,v in nodeData.iteritems():
+                data[0][k] = v 
+            gather = sim.pc.py_alltoall(data)
+            sim.pc.barrier()  
+            if sim.rank == 0:
+                allCells = []
+                allPops = ODict()
+                for popLabel,pop in sim.net.pops.iteritems(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+                allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
+                sim.allSimData = Dict()
+
+                for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
+                    sim.allSimData[k] = {}
+
+                # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+                for node in gather:  # concatenate data from each node
+                    allCells.extend(node['netCells'])  # extend allCells list
+                    for popLabel,popCellGids in node['netPopsCellGids'].iteritems():
+                        allPopsCellGids[popLabel].extend(popCellGids)
+                        
+                    for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector 
+                        if key in simDataVecs:          # simData dicts that contain Vectors
+                            if isinstance(val,dict):                
+                                for cell,val2 in val.iteritems():
+                                    if isinstance(val2,dict):       
+                                        sim.allSimData[key].update(Dict({cell:Dict()}))
+                                        for stim,val3 in val2.iteritems():
+                                            sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                    else:
+                                        sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                            else:                                   
+                                sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        else: 
+                            sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+
+                sim.net.allCells =  sorted(allCells, key=lambda k: k['gid']) 
+                
+                for popLabel,pop in allPops.iteritems():
+                    pop['cellGids'] = sorted(allPopsCellGids[popLabel])
+                sim.net.allPops = allPops
+        
 
         # clean to avoid mem leaks
         for node in gather: 
@@ -969,6 +1011,27 @@ def saveData (include = None):
     if sim.rank == 0:
         timing('start', 'saveTime')
 
+        # copy source files
+        if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:
+            import os
+            print('Copying cfg file %s ... ' % (os.path.basename(sim.cfg.filename)))
+            source = sim.cfg.backupCfgFile[0]
+            targetFolder = sim.cfg.backupCfgFile[1]
+            # make dir
+            try:
+                os.mkdir(targetFolder)
+            except OSError:
+                if not os.path.exists(targetFolder):
+                    print ' Could not create', targetFolder
+            # copy file
+            targetFile = targetFolder + '/' + os.path.basename(sim.cfg.filename) + '_cfg.py'
+            if os.path.exists(targetFile):
+                print ' Removing prior cfg file' , targetFile
+                os.system('rm ' + targetFile)  
+            os.system('cp ' + source + ' ' + targetFile) 
+
+
+        # saving data
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}

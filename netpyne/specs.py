@@ -358,6 +358,7 @@ class SimConfig (object):
         self.saveDpk = False # save to .dpk pickled file
         self.saveHDF5 = False # save to HDF5 file 
         self.saveDat = False # save traces to .dat file(s)
+        self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # Analysis and plotting 
         self.analysis = ODict()

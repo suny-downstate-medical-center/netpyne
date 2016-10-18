@@ -1,6 +1,8 @@
 # Version 0.6.2
 
-- simConfig option (eg. backupCfgFile = ['cfg.py', 'backupcfg/']) to copy cfg file after run
+- Added simConfig option (eg. backupCfgFile = ['cfg.py', 'backupcfg/']) to copy cfg file after run
+
+- Added simConfig option (gatherOnlySimData) to gather only simulation data and not cells or pops
 
 # Version 0.6.1
 

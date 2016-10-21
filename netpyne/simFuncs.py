@@ -1014,7 +1014,8 @@ def saveData (include = None):
         # copy source files
         if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:
             import os
-            print('Copying cfg file %s ... ' % (os.path.basename(sim.cfg.filename)))
+            simName = sim.cfg.simLabel if sim.cfg.simLabel else os.path.basename(sim.cfg.filename)
+            print('Copying cfg file %s ... ' % simName)
             source = sim.cfg.backupCfgFile[0]
             targetFolder = sim.cfg.backupCfgFile[1]
             # make dir
@@ -1024,7 +1025,7 @@ def saveData (include = None):
                 if not os.path.exists(targetFolder):
                     print ' Could not create', targetFolder
             # copy file
-            targetFile = targetFolder + '/' + os.path.basename(sim.cfg.filename) + '_cfg.py'
+            targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
                 print ' Removing prior cfg file' , targetFile
                 os.system('rm ' + targetFile)  

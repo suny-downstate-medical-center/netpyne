@@ -698,7 +698,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
 
     print('Plotting connectivity matrix...')
     
-    cells, cellGids, netStimPops = getCellsInclude(include)    
+    cells, cellGids, netStimPops = getCellsInclude(include) 
 
     # Create plot
     fig = figure(figsize=figSize)

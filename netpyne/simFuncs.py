@@ -679,6 +679,17 @@ def preRun():
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
     
+    # handler for printing out time during simulation run
+    if sim.rank == 0 and sim.cfg.printRunTime:
+        def printRunTime():
+            h('objref cvode')
+            h('cvode = new CVode()')
+            for i in xrange(0,int(sim.cfg.duration), sim.cfg.printRunTime):
+                h.cvode.event(i, 'print ' + str(i) + ',"ms"')
+        
+        sim.printRunTime = printRunTime
+        sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
+
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         for stim in cell.stims:
@@ -903,11 +914,12 @@ def gatherData ():
             sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
         else:
             sim.connsPerCell = 0
-         
+        
         print('  Cells: %i' % (sim.numCells) ) 
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
         if sim.timingData.get('runTime'): 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
+            if sim.cfg.printPopAvgRates: sim.popAvgRates()
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
             
@@ -936,7 +948,7 @@ def popAvgRates(trange = None, show = True):
         if numCells > 0:
             tsecs = float((trange[1]-trange[0]))/1000.0
             avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
-            print '%s : %.3f Hz'%(pop, avgRates[pop])
+            print '   %s : %.3f Hz'%(pop, avgRates[pop])
     return avgRates
 
 

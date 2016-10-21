@@ -6,6 +6,10 @@
 
 - Added simLabel and saveFolder to simConfig (can be used instead of filename)
 
+- Added printRunTime to simConfig to print run time (in ms) during execution
+
+- Added printPopAvgRates to simConfig to print population avg firing rates after run 
+
 # Version 0.6.1
 
 - Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)

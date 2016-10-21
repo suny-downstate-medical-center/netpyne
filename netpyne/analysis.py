@@ -55,7 +55,6 @@ def plotData ():
 def _showFigure():
     try:
         show(block=False)
-        ion()
     except:
         show()
 

@@ -900,6 +900,7 @@ def gatherData ():
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
     ## Print statistics
+    sim.pc.barrier()
     if sim.rank == 0:
         timing('stop', 'gatherTime')
         if sim.cfg.timing: print('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
@@ -1053,6 +1054,8 @@ def saveData (include = None):
         dataSave = {}
         net = {}
 
+        dataSave['netpyne_version'] = sim.version(show=False)
+        if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
         if 'netCells' in include: net['cells'] = sim.net.allCells
@@ -1060,6 +1063,7 @@ def saveData (include = None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: dataSave['simData'] = sim.allSimData
+        
         
         if dataSave:
             if sim.cfg.timestampFilename: 
@@ -1169,9 +1173,11 @@ def timing (mode, processName):
 ###############################################################################
 ### Print netpyne version
 ###############################################################################
-def version():
+def version(show=True):
     from netpyne import __version__ 
-    print(__version__)
+    if show: 
+        print(__version__)
+    return __version__
 
 
 ###############################################################################

@@ -919,7 +919,8 @@ def gatherData ():
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
         if sim.timingData.get('runTime'): 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
-            if sim.cfg.printPopAvgRates: sim.popAvgRates()
+            if sim.cfg.printPopAvgRates: 
+                sim.popRates = sim.popAvgRates()
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
             

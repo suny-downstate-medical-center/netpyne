@@ -10,6 +10,8 @@
 
 - Added printPopAvgRates to simConfig to print population avg firing rates after run 
 
+- Fixe bug in plotTraces
+
 # Version 0.6.1
 
 - Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)

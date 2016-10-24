@@ -104,6 +104,9 @@ def setSimCfg (cfg):
     else:
         sim.cfg = specs.SimConfig()  # create new object
 
+    if cfg.simLabel and cfg.saveFolder:
+        cfg.filename = cfg.saveFolder+'/'+cfg.simLabel
+
 
 ###############################################################################
 # Create parallel context

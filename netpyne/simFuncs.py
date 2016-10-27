@@ -10,7 +10,7 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readArgs', 'getCellsList', 'cellByGid',\
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
 
 import sys
@@ -71,8 +71,6 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
-    #sim.readArgs()  # read arguments from commandline
-
     sim.timing('stop', 'initialTime')
 
 
@@ -124,11 +122,14 @@ def createParallelContext ():
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadNetParams (filename, data=None):
+def loadNetParams (filename, data=None, setLoaded=False):
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
-        setNetParams(data['net']['params'])
+        if setLoaded:
+            setNetParams(data['net']['params'])
+        else:
+            return specs.NetParams(data['net']['params'])
     else:
         print('netParams not found in file %s'%(filename))
 
@@ -191,14 +192,16 @@ def loadNet (filename, data=None, instantiate=True):
 ###############################################################################
 # Load simulation config from file
 ###############################################################################
-def loadSimCfg (filename, data=None):
+def loadSimCfg (filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading simConfig...')
     if 'simConfig' in data:
-        setSimCfg(data['simConfig'])
+        if setLoaded:
+            setSimCfg(data['simConfig'])
+        else:
+            return specs.SimConfig(data['simConfig'])
     else:
         print('  simConfig not found in file %s'%(filename))
-
     pass
 
 
@@ -231,9 +234,10 @@ def loadAll (filename, data=None):
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
-    
-    if sim.cfg.timing: sim.timing('start', 'loadFileTime')
-    ext = filename.split('.')[1]
+    import os
+
+    if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
+    ext = os.path.basename(filename).split('.')[1]
 
     # load pickle file
     if ext == 'pkl':
@@ -300,7 +304,7 @@ def _loadFile (filename):
         print('Format not recognized for file %s'%(filename))
         return 
 
-    if sim.rank == 0 and sim.cfg.timing: 
+    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing: 
         sim.timing('stop', 'loadFileTime')
         print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
    
@@ -550,27 +554,36 @@ def cellByGid(gid):
 
 
 ###############################################################################
-### Update model parameters from command-line arguments - UPDATE for sim and sim.net sim.params
+### Read simConfig and netParams from command line arguments
 ###############################################################################
-def readArgs ():
-    for argv in sys.argv[1:]: # Skip first argument, which is file name
-        arg = argv.replace(' ','').split('=') # ignore spaces and find varname and value
-        harg = arg[0].split('.')+[''] # Separate out variable name; '' since if split fails need to still have an harg[1]
-        if len(arg)==2:
-            if hasattr(sim.net.params,arg[0]) or hasattr(sim.s.params,harg[1]): # Check that variable exists
-                if arg[0] == 'outfilestem':
-                    exec('s.'+arg[0]+'="'+arg[1]+'"') # Actually set variable 
-                    if sim.rank==0: # messages only come from Master  
-                        print('  Setting %s=%s' %(arg[0],arg[1]))
-                else:
-                    exec('p.'+argv) # Actually set variable            
-                    if sim.rank==0: # messages only come from Master  
-                        print('  Setting %s=%r' %(arg[0],eval(arg[1])))
-            else: 
-                sys.tracebacklimit=0
-                raise Exception('Reading args from commandline: Variable "%s" not found' % arg[0])
-        elif argv=='-mpi':   sim.ismpi = True
-        else: pass # ignore -python 
+def readCmdLineArgs():
+    import imp, __main__
+
+    print '\nReading command line arguments using syntax: python file.py [simConfig_path [netParams_path]]'
+
+    argv = sys.argv
+    # read simConfig and netParams paths
+    if len(argv) > 2:  
+        cfgPath = argv[1]
+        netParamsPath = argv[2]
+        cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
+        netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+    # read simConfig path and use netParams.py
+    elif len(argv) > 1:  
+        cfgPath = argv[1]
+        cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
+        __main__.cfg = cfg
+        netParamsModule = imp.load_source('netParams', 'netParams.py')
+        netParams = netParamsModule.netParams
+    else: 
+        # use simConfig.py and netParams.py
+        cfgModule = imp.load_source('cfg', 'cfg.py')  
+        cfg = cfgModule.cfg
+        __main__.cfg = cfg
+        netParamsModule = imp.load_source('netParams', 'netParams.py')
+        netParams = netParamsModule.netParams
+
+    return cfg, netParams
 
 
 ###############################################################################
@@ -578,10 +591,6 @@ def readArgs ():
 ###############################################################################
 def setupRecording ():
     timing('start', 'setrecordTime')
-    # set initial v of cells
-    sim.fih = []
-    for cell in sim.net.cells:
-        sim.fih.append(h.FInitializeHandler(cell.initV))
 
     # spike recording
     sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})  # initialize
@@ -671,13 +680,23 @@ def getCellsList(include):
 ### Commands required just before running simulation
 ###############################################################################
 def preRun():
+    # set initial v of cells
+    sim.fih = []
+    for cell in sim.net.cells:
+       sim.fih.append(h.FInitializeHandler(cell.initV))
+
     if sim.cfg.cache_efficient:
         h('objref cvode')
         h('cvode = new CVode()')
         h.cvode.cache_efficient(0)
 
     h.dt = sim.cfg.dt  # set time step
-    for key,val in sim.cfg.hParams.iteritems(): setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+    h.tstop = sim.cfg.duration
+    for key,val in sim.cfg.hParams.iteritems(): 
+        try:
+            setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+        except:
+            print '\nError: could not set %s = %s' % (key, str(val))
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
@@ -687,8 +706,8 @@ def preRun():
         def printRunTime():
             h('objref cvode')
             h('cvode = new CVode()')
-            for i in xrange(0,int(sim.cfg.duration), sim.cfg.printRunTime):
-                h.cvode.event(i, 'print ' + str(i) + ',"ms"')
+            for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
+                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
         
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))

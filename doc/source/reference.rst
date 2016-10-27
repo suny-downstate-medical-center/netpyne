@@ -186,6 +186,10 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 	* **mechs**: Dictionary of density/distributed mechanisms.
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
+
+	* **ions**: Dictionary of ions.
+		The key contains the name of the ion (e.g. ``na`` or ``na``)
+		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
@@ -636,7 +640,7 @@ Related to the simulation and netpyne framework:
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
-* **printRunTime** - Print run time at interval (in ms) specified here (eg. 100) (default: False) 
+* **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
 * **printPopAvgRates** - Print population avg firing rates after run (default: False)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
 * **timing** - Show and record timing of each process (default: True)

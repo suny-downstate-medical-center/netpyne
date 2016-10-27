@@ -7,6 +7,7 @@ Contributors: salvador dura@gmail.com
 """
 import os, sys
 from neuron import h
+h.load_file("stdrun.hoc") 
 
 
 def getSecName (sec, dirCellSecNames = None):
@@ -215,28 +216,53 @@ def getCellParams(cell):
         # store mechanisms
         varList = mechVarList()  # list of properties for all density mechanisms and point processes
         ignoreMechs = ['dist']  # dist only used during cell creation 
+        ignoreVars = []  # 
         mechDic = {}
+        ionDic = {}
         sec.push()  # access current section so ismembrane() works
         for mech in dir(sec(0.5)): 
             if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
-                mechDic[mech] = {}  # create dic for mechanism properties
-                varNames = [varName.replace('_'+mech, '') for varName in varList['mechs'][mech]]
-                varVals = []
-                for varName in varNames:
-                    try:
-                        varVals = [seg.__getattribute__(mech).__getattribute__(varName) for seg in sec]
-                        if len(set(varVals)) == 1:
-                            varVals = varVals[0] 
-                        mechDic[mech][varName] = varVals
-                    except: 
-                        pass
-                        #print 'Could not read variable %s from mechanism %s'%(varName,mech)
+                if not mech.endswith('_ion'):  # exclude ions
+                    mechDic[mech] = {}  # create dic for mechanism properties
+                    varNames = [varName.replace('_'+mech, '') for varName in varList['mechs'][mech]]
+                    varVals = []
+                    for varName in varNames:
+                        if varName not in ignoreVars:
+                            try:
+                                varVals = [seg.__getattribute__(mech).__getattribute__(varName) for seg in sec]
+                                if len(set(varVals)) == 1:
+                                    varVals = varVals[0] 
+                                mechDic[mech][varName] = varVals
+                            except: 
+                                pass
+                                #print 'Could not read variable %s from mechanism %s'%(varName,mech)
+
+                # store ions
+                elif mech.endswith('_ion'):
+                    ionName = mech.split('_ion')[0]
+                    varNames = [varName.replace('_'+mech, '').replace(ionName,'') for varName in varList['mechs'][mech]]
+                    varNames.append('e')
+                    varVals = []
+                    ionDic[ionName] = {}  # create dic for mechanism properties
+                    for varName in varNames:
+                        varNameSplit = varName
+                        if varName not in ignoreVars:
+                            try:
+                                varVals = [seg.__getattribute__(varNameSplit+ionName) for seg in sec]
+                                if len(set(varVals)) == 1:
+                                    varVals = varVals[0] 
+                                ionDic[ionName][varNameSplit] = varVals
+                            except: 
+                                pass
+                                #print 'Could not read variable %s from mechanism %s'%(varName,mech)                    
+
 
         secDic[secName]['mechs'] = mechDic
+        if len(ionDic)>0: 
+            secDic[secName]['ions'] = ionDic
 
         # add synapses and point neurons
         # for now read fixed params, but need to find way to read only synapse params
-        
         pointps = {}
         for seg in sec:
             for ipoint,point in enumerate(seg.point_processes()):
@@ -280,10 +306,6 @@ def getCellParams(cell):
             secDic[secName]['topol']['childX'] = h.section_orientation()
 
         h.pop_section()  # to prevent section stack overflow
-
-    # # store synMechs in input argument
-    # if synMechs: 
-    #     for synMech in synMechs: synMechParams.append(synMech)
         
     # store section lists
     secLists = h.List('SectionList')

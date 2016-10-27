@@ -1,14 +1,32 @@
 # Version 0.6.2
 
+- Added importing of cell ion parameters (eg. 'ena' or 'ek')
+
 - Added backupCfgFile (eg. ['cfg.py', 'backupcfg/']) to simConfig to copy cfg file after run
 
 - Added gatherOnlySimData to simConfig to gather only simulation data and not cells or pops
 
 - Added simLabel and saveFolder to simConfig (can be used instead of filename)
 
-- Added printRunTime to simConfig to print run time (in ms) during execution
+- Added printRunTime to simConfig to print run time (in sec) during execution
 
 - Added printPopAvgRates to simConfig to print population avg firing rates after run 
+
+- Automatic saving of netpyne and netParams version to file
+
+- Moved creation of fih functions to set cell vinit from setupRecording() to preRun()
+
+- Can now load netParams and simConfig from file without setting in sim
+
+- Added sim.readCmdLineArgs to read simConfig and netParams filepaths from command line 
+
+- Can now access NEURON's h module via sim.h
+
+- Fixed bug so can load netParams and simConfig without initializing sim
+
+- Fixed bug that prevented mechanism properties with value 0.0 from being set
+
+- Fixed bug in code to distribute cells (converted numCells from float to int)
 
 - Fixe bug in plotTraces
 

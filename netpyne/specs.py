@@ -339,7 +339,7 @@ class SimConfig (object):
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
-        self.printRunTime = False  # print run time at interval (in ms) specified here (eg. 100)
+        self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages 
 

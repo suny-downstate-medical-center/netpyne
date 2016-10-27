@@ -1,3 +1,7 @@
+# Version 0.6.3
+
+- Added saving of avg pop rates
+
 # Version 0.6.2
 
 - Added importing of cell ion parameters (eg. 'ena' or 'ek')

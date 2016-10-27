@@ -943,9 +943,11 @@ def gatherData ():
         if sim.timingData.get('runTime'): 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
             if sim.cfg.printPopAvgRates: 
-                sim.popRates = sim.popAvgRates()
+                sim.allSimData['popRates'] = sim.popAvgRates()
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
+
+            sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
             
         return sim.allSimData
 
@@ -973,6 +975,7 @@ def popAvgRates(trange = None, show = True):
             tsecs = float((trange[1]-trange[0]))/1000.0
             avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
             print '   %s : %.3f Hz'%(pop, avgRates[pop])
+
     return avgRates
 
 

@@ -2738,6 +2738,11 @@ model of Basal Ganglia, spinal chord and motor units in the muscles, so I may us
 work that is made open source by your group. It helped me a lot while learning how to use the more advanced features of
 Neuron using Python.  All the best, Lucas
 
+** LFP oscillations (Fink, Ohio Wesleyan)
+Christian G. Fink, PhD
+Assistant Professor of Physics and Neuroscience
+Ohio Wesleyan University
+
 
 * Related tools
 ** NEURON

@@ -186,6 +186,10 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 	* **mechs**: Dictionary of density/distributed mechanisms.
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
+
+	* **ions**: Dictionary of ions.
+		The key contains the name of the ion (e.g. ``na`` or ``na``)
+		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
@@ -631,9 +635,16 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
+* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'clamp_resist': 0.001})
+* **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
+* **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
+* **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
+* **timing** - Show and record timing of each process (default: True)
+* **saveTiming** - Save timing data to pickle file (default: False)
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
@@ -646,6 +657,8 @@ Related to recording:
 Related to file saving:
 
 * **saveDataInclude** = Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
+* **simLabel** = Name of simulation (used as filename if none provided) (default: '')
+* **saveFolder** = Path where to save output data (default: '')
 * **filename** - Name of file to save model output (default: 'model_output')
 * **timestampFilename**  - Add timestamp to filename to avoid overwriting (default: False)
 * **savePickle** - Save data to pickle file (default: False)
@@ -654,6 +667,7 @@ Related to file saving:
 * **saveTxt** - Save data to txt file (default: False)
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
+* **backupCfgFile** - Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: [])
 
 
 .. _sim_config_analysis:
@@ -671,7 +685,6 @@ Related to plotting and analysis:
 	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
-
 
 .. _package_functions:
 

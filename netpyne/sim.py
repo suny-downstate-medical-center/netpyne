@@ -15,4 +15,5 @@ from network import Network
 from cell import Cell, PointNeuron
 from pop import Pop 
 import utils
+from neuron import h
 

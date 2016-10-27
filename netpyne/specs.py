@@ -339,6 +339,8 @@ class SimConfig (object):
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
+        self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
+        self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages 
 
         # Recording 
@@ -348,8 +350,10 @@ class SimConfig (object):
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
         # Saving
+        self.simLabel = ''  # name of simulation (used as filename if none provided)
+        self.saveFolder = ''  # path where to save output data
+        self.filename = 'model_output'  # Name of file to save model output (if omitted then saveFolder+simLabel is used)
         self.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
-        self.filename = 'model_output'  # Name of file to save model output
         self.timestampFilename = False  # Add timestamp to filename to avoid overwriting
         self.savePickle = False # save to pickle file
         self.saveJson = False # save to json file
@@ -358,6 +362,7 @@ class SimConfig (object):
         self.saveDpk = False # save to .dpk pickled file
         self.saveHDF5 = False # save to HDF5 file 
         self.saveDat = False # save traces to .dat file(s)
+        self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # Analysis and plotting 
         self.analysis = ODict()

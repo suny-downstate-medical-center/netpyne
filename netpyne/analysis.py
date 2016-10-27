@@ -534,7 +534,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
-            figs.append(figure()) # Open a new figure
+            figs['_trace_'+str(trace)] = figure() # Open a new figure
             fontsiz = 12
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -698,7 +698,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
 
     print('Plotting connectivity matrix...')
     
-    cells, cellGids, netStimPops = getCellsInclude(include)    
+    cells, cellGids, netStimPops = getCellsInclude(include) 
 
     # Create plot
     fig = figure(figsize=figSize)

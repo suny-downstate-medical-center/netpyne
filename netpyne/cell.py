@@ -184,7 +184,7 @@ class Cell (object):
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
-                            if mechParamValueFinal:  # avoid setting None values
+                            if mechParamValueFinal is not None:  # avoid setting None values
                                 seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
                             
             # add ions
@@ -367,16 +367,16 @@ class Cell (object):
                     for synParamName,synParamValue in synMechParams.iteritems():  # add params of the synaptic mechanism
                         if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
                             setattr(synMech['hSyn'], synParamName, synParamValue)
-                        elif synParamName == 'selfNetCon':  # create self netcon required for some synapses (eg. homeostatic)
+                        elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
                             secLabelNetCon = synParamValue.get('sec', 'soma')
                             locNetCon = synParamValue.get('loc', 0.5)
                             secNetCon = self.secs.get(secLabelNetCon, None)
-                            synMech['hNetCon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech['hSyn'], sec=secNetCon['hSec'])
+                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech['hSyn'], sec=secNetCon['hSec'])
                             for paramName,paramValue in synParamValue.iteritems():
                                 if paramName == 'weight':
-                                    synMech['hNetCon'].weight[0] = paramValue
+                                    synMech['hNetcon'].weight[0] = paramValue
                                 elif paramName not in ['sec', 'loc']:
-                                    setattr(synMech['hNetCon'], paramName, paramValue)
+                                    setattr(synMech['hNetcon'], paramName, paramValue)
             return synMech
 
 

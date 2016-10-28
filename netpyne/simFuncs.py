@@ -559,7 +559,8 @@ def cellByGid(gid):
 def readCmdLineArgs():
     import imp, __main__
 
-    print '\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]'
+    if len(sys.argv) > 1:
+        print '\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]'
 
     cfgPath = None
     netParamsPath = None
@@ -685,9 +686,14 @@ def preRun():
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(cell.initV))
 
-    if sim.cfg.cache_efficient:
+    if not getattr(h, 'cvode', None):
         h('objref cvode')
         h('cvode = new CVode()')
+
+    if sim.cfg.cvode_active:
+        h.cvode.active(1)
+
+    if sim.cfg.cache_efficient:
         h.cvode.cache_efficient(0)
 
     h.dt = sim.cfg.dt  # set time step

@@ -1,5 +1,7 @@
 # Version 0.6.3
 
+- Added cvode_active simConfig option to set variable time step (issue #116)
+
 - Added saving of avg pop rates
 
 - Added save method to SimConfig and NetParams class

@@ -256,6 +256,29 @@ class NetParams (object):
                 else:
                     setattr(self, k, v)
 
+    def save(self, filename):
+        import os
+        basename = os.path.basename(filename)
+        folder = filename.split(basename)[0]
+        ext = basename.split('.')[1]
+
+        # make dir
+        try:
+            os.mkdir(folder)
+        except OSError:
+            if not os.path.exists(folder):
+                print ' Could not create', folder
+
+        dataSave = {'netParams': self.__dict__}
+        
+        # Save to json file
+        if ext == 'json':
+            import json
+            print('Saving netParams to %s ... ' % (filename))
+            with open(filename, 'w') as fileObj:
+                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
+
+
     def addCellParams(self, label=None, params=None):
         if not label: 
             label = int(self._labelid)
@@ -376,6 +399,28 @@ class SimConfig (object):
                     setattr(self, k, Dict(v))
                 else:
                     setattr(self, k, v)
+
+    def save(self, filename):
+        import os
+        basename = os.path.basename(filename)
+        folder = filename.split(basename)[0]
+        ext = basename.split('.')[1]
+
+        # make dir
+        try:
+            os.mkdir(folder)
+        except OSError:
+            if not os.path.exists(folder):
+                print ' Could not create', folder
+
+        dataSave = {'simConfig': self.__dict__}
+        
+        # Save to json file
+        if ext == 'json':
+            import json
+            print('Saving simConfig to %s ... ' % (filename))
+            with open(filename, 'w') as fileObj:
+                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params

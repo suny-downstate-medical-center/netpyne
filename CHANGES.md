@@ -2,6 +2,10 @@
 
 - Added saving of avg pop rates
 
+- Added save method to SimConfig and NetParams class
+
+- Fixed bug in readCmdLine func
+
 # Version 0.6.2
 
 - Added importing of cell ion parameters (eg. 'ena' or 'ek')

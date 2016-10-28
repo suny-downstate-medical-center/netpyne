@@ -6,6 +6,8 @@
 
 - Fixed bug in readCmdLine func
 
+- Fixed bug reading from json (str vs unicode)
+
 # Version 0.6.2
 
 - Added importing of cell ion parameters (eg. 'ena' or 'ek')

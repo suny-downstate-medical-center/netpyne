@@ -62,7 +62,7 @@ class Cell (object):
                 if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                     conditionsMet = 0
                     break
-            elif isinstance(condVal, list) and isinstance(condVal[0], str):
+            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                 if self.tags[condKey] not in condVal:
                     conditionsMet = 0
                     break 
@@ -409,7 +409,7 @@ class Cell (object):
                                 if synMech.get(condKey) < condVal[0] or synMech.get(condKey) > condVal[1]:
                                     conditionsMet = 0
                                     break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                                 if synMech.get(condKey) not in condVal:
                                     conditionsMet = 0
                                     break 
@@ -611,7 +611,7 @@ class Cell (object):
                         if compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
                             break 
@@ -626,7 +626,7 @@ class Cell (object):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if self.tags[condKey] not in condVal:
                             conditionsMet = 0
                             break 
@@ -677,7 +677,7 @@ class Cell (object):
                             if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                                 conditionsMet = 0
                                 break
-                        elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                             if stim.get(condKey) not in condVal:
                                 conditionsMet = 0
                                 break 
@@ -721,7 +721,7 @@ class Cell (object):
             #rand.negexp(1)
             stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
-            if isinstance(params['rate'], str):
+            if isinstance(params['rate'], basestring):
                 if params['rate'] == 'variable':
                     try:
                         netstim = h.NSLOC()
@@ -745,7 +745,7 @@ class Cell (object):
 
 
     def addStim (self, params):
-        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+        if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, self.secs.keys(),params)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -829,7 +829,7 @@ class Cell (object):
 
     def _setConnSections (self, params):
         # if no section specified or single section specified does not exist
-        if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
+        if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -977,7 +977,7 @@ class Cell (object):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if self.tags[condKey] not in condVal:
                             conditionsMet = 0
                             break 

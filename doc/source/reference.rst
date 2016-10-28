@@ -640,6 +640,7 @@ Related to the simulation and netpyne framework:
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
+* **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
 * **printPopAvgRates** - Print population avg firing rates after run (default: False)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)

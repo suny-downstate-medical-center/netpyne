@@ -360,6 +360,7 @@ class SimConfig (object):
         self.createNEURONObj= True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
+        self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time 
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)

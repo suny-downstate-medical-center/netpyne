@@ -183,10 +183,7 @@ class Cell (object):
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
-                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
-                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
-                    else:
-                        y = self.tags['y']
+                    y = self.tags['y']
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])

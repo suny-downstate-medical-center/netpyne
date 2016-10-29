@@ -559,27 +559,28 @@ def cellByGid(gid):
 def readCmdLineArgs():
     import imp, __main__
 
-    print '\nReading command line arguments using syntax: python file.py [simConfig_path [netParams_path]]'
+    if len(sys.argv) > 1:
+        print '\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]'
 
-    argv = sys.argv
+    cfgPath = None
+    netParamsPath = None
+
     # read simConfig and netParams paths
-    if len(argv) > 2:  
-        cfgPath = argv[1]
-        netParamsPath = argv[2]
-        cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
-        netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
-    # read simConfig path and use netParams.py
-    elif len(argv) > 1:  
-        cfgPath = argv[1]
-        cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
-        __main__.cfg = cfg
-        netParamsModule = imp.load_source('netParams', 'netParams.py')
-        netParams = netParamsModule.netParams
-    else: 
-        # use simConfig.py and netParams.py
+    for arg in sys.argv:
+        if arg.startswith('simConfig='):  
+            cfgPath = arg.split('simConfig=')[1]
+            cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
+            __main__.cfg = cfg
+        elif arg.startswith('netParams='):  
+            netParamsPath = arg.split('netParamsPath=')[1]
+            netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+
+    if not cfgPath:
         cfgModule = imp.load_source('cfg', 'cfg.py')  
         cfg = cfgModule.cfg
         __main__.cfg = cfg
+
+    if not netParamsPath:
         netParamsModule = imp.load_source('netParams', 'netParams.py')
         netParams = netParamsModule.netParams
 
@@ -685,9 +686,14 @@ def preRun():
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(cell.initV))
 
-    if sim.cfg.cache_efficient:
+    if not getattr(h, 'cvode', None):
         h('objref cvode')
         h('cvode = new CVode()')
+
+    if sim.cfg.cvode_active:
+        h.cvode.active(1)
+
+    if sim.cfg.cache_efficient:
         h.cvode.cache_efficient(0)
 
     h.dt = sim.cfg.dt  # set time step
@@ -943,9 +949,11 @@ def gatherData ():
         if sim.timingData.get('runTime'): 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
             if sim.cfg.printPopAvgRates: 
-                sim.popRates = sim.popAvgRates()
+                sim.allSimData['popRates'] = sim.popAvgRates()
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
+
+            sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
             
         return sim.allSimData
 
@@ -973,6 +981,7 @@ def popAvgRates(trange = None, show = True):
             tsecs = float((trange[1]-trange[0]))/1000.0
             avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
             print '   %s : %.3f Hz'%(pop, avgRates[pop])
+
     return avgRates
 
 

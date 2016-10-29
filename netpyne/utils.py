@@ -133,7 +133,6 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
         print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
-        print h.name_declared('hcurrent')
         from neuron import load_mechanisms
         load_mechanisms(filePath)
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
@@ -202,6 +201,7 @@ def getCellParams(cell):
                 pass
 
         # store 3d geometry
+        sec.push()  # access current section so ismembrane() works
         numPoints = int(h.n3d())
         if numPoints: 
             points = []
@@ -219,7 +219,7 @@ def getCellParams(cell):
         ignoreVars = []  # 
         mechDic = {}
         ionDic = {}
-        sec.push()  # access current section so ismembrane() works
+        
         for mech in dir(sec(0.5)): 
             if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
                 if not mech.endswith('_ion'):  # exclude ions

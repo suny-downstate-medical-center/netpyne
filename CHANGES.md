@@ -1,3 +1,19 @@
+# Version 0.6.3
+
+- Added cvode_active simConfig option to set variable time step (issue #116)
+
+- Added saving of avg pop rates
+
+- Added save method to SimConfig and NetParams class
+
+- Fixed bug importing 3d cell geometries
+
+- Fixed bug in readCmdLine func
+
+- Fixed bug reading from json (str vs unicode)
+
+- Fixed bug setting mech param values for nseg>1
+
 # Version 0.6.2
 
 - Added importing of cell ion parameters (eg. 'ena' or 'ek')

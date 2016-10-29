@@ -6,6 +6,8 @@
 
 - Added save method to SimConfig and NetParams class
 
+- Fixed bug importing 3d cell geometries
+
 - Fixed bug in readCmdLine func
 
 - Fixed bug reading from json (str vs unicode)

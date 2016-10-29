@@ -172,7 +172,25 @@ class Cell (object):
             if not self.secs[sectName].get('hSec'): 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
-            
+
+            # set geometry params 
+            if 'geom' in sectParams:
+                for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        setattr(sec['hSec'], geomParamName, geomParamValue)
+
+                # set 3d geometry
+                if 'pt3d' in sectParams['geom']:  
+                    h.pt3dclear(sec=sec['hSec'])
+                    x = self.tags['x']
+                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
+                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
+                    else:
+                        y = self.tags['y']
+                    z = self.tags['z']
+                    for pt3d in sectParams['geom']['pt3d']:
+                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+
             # add distributed mechanisms 
             if 'mechs' in sectParams:
                 for mechName,mechParams in sectParams['mechs'].iteritems(): 
@@ -229,23 +247,6 @@ class Cell (object):
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
-            # set geometry params 
-            if 'geom' in sectParams:
-                for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
-                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec['hSec'], geomParamName, geomParamValue)
-
-                # set 3d geometry
-                if 'pt3d' in sectParams['geom']:  
-                    h.pt3dclear(sec=sec['hSec'])
-                    x = self.tags['x']
-                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
-                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
-                    else:
-                        y = self.tags['y']
-                    z = self.tags['z']
-                    for pt3d in sectParams['geom']['pt3d']:
-                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
 
         # set topology 
         for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)
@@ -308,7 +309,6 @@ class Cell (object):
             # Add plasticity 
             if conn.get('plast'):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
-
 
 
     def associateGid (self, threshold = 10.0):

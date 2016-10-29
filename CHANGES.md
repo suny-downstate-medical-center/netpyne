@@ -10,6 +10,8 @@
 
 - Fixed bug reading from json (str vs unicode)
 
+- Fixed bug setting mech param values for nseg>1
+
 # Version 0.6.2
 
 - Added importing of cell ion parameters (eg. 'ena' or 'ek')

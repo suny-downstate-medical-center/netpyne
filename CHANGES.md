@@ -1,5 +1,7 @@
 # Version 0.6.4
 
+- Added option to skip batch sims if output file already exists
+
 - Fixed bug positioning cells with 3d geom
 
 

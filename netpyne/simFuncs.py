@@ -696,6 +696,8 @@ def preRun():
         h.cvode.active(0)
 
     if sim.cfg.cache_efficient:
+        h.cvode.cache_efficient(1)
+    else:
         h.cvode.cache_efficient(0)
 
     h.dt = sim.cfg.dt  # set time step

@@ -95,7 +95,7 @@ class Batch(object):
 
                     # skip if output file already exists
                     import glob
-                    if self.runCfg.get('skip', False) and glob(jobName+'.*'):
+                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.*'):
                         print 'Skipping job %s since output file already exists...'
                     else:
                         # read params or set defaults

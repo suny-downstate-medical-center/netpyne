@@ -692,6 +692,8 @@ def preRun():
 
     if sim.cfg.cvode_active:
         h.cvode.active(1)
+    else:
+        h.cvode.active(0)
 
     if sim.cfg.cache_efficient:
         h.cvode.cache_efficient(0)

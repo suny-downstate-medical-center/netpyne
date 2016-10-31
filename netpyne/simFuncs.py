@@ -340,7 +340,7 @@ def clearAll():
 
         import matplotlib
         matplotlib.pyplot.clf()
-        matplotlib.pyplot.close()
+        matplotlib.pyplot.close('all')
 
     del sim.net
 

@@ -4,6 +4,7 @@
 
 - Fixed bug positioning cells with 3d geom
 
+- Fixed bug in sim.clearAll by closing all figures instead of current (issue #168)
 
 # Version 0.6.3
 

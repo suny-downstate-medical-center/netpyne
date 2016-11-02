@@ -757,7 +757,7 @@ Misc/utilities:
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
+* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
     Plot raster (spikes over time) of network cells. Optional arguments:
 
@@ -766,6 +766,8 @@ Analysis-related functions
     - *maxSpikes*: maximum number of spikes that will be plotted (int)
     - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
     - *orderInverse*: Invert the y-axis order (True|False)
+	- *labels*: Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))
+    - *popRates*: Include population rates ('legend'|'overlay')
     - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
     - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
     - *syncLines*: calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)

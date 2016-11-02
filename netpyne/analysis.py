@@ -10,10 +10,10 @@ from netpyne import __gui__
 
 if __gui__:
     from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums, text
     from matplotlib import gridspec
 
-from scipy import size, array, linspace, ceil
+from scipy import size, array, linspace, ceil, cumsum
 from numbers import Number
 import math
 
@@ -147,8 +147,8 @@ def getCellsInclude(include):
 ######################################################################################################################################################
 ## Raster plot 
 ######################################################################################################################################################
-def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, 
-        spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
+        spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Raster plot of network cells 
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -156,6 +156,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
         - orderInverse (True|False): Invert the y-axis order (default: False)
+        - labels = ('legend', 'overlay'): Show population labels in a legend or overlayed on one side of raster (default: 'legend')
+        - popRates = (True|False): Include population rates (default: False)
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
@@ -168,6 +170,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
+
 
     print('Plotting raster...')
 
@@ -252,6 +255,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkgidColors = spkgidColors[:maxSpikes]
         timeRange[1] =  max(spkts)
 
+
     # Calculate spike histogram 
     if spikeHist:
         histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], spikeHistBin))
@@ -269,11 +273,20 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
     
     # Plot stats
+    gidPops = [cell['tags']['popLabel'] for cell in cells]
+    popNumCells = [float(gidPops.count(pop)) for pop in popLabels]
     totalSpikes = len(spkts)   
     totalConnections = sum([len(cell['conns']) for cell in cells])   
     numCells = len(cells)
-    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0# Calculate firing rate 
+    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate 
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
+
+    if popRates:
+        avgRates = {}
+        for pop, popNum in zip(popLabels, popNumCells):
+            if numCells > 0:
+                tsecs = (timeRange[1]-timeRange[0])/1e3 
+                avgRates[pop] = len([spkid for spkid in spkinds if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/popNum/tsecs
     
     # Plot synchrony lines 
     if syncLines: 
@@ -303,11 +316,33 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_ylim(-1, len(cells)+numNetStims+1)    
 
     # Add legend
-    for popLabel in popLabels:
-        plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-    maxLabelLen = max([len(l) for l in popLabels])
-    subplots_adjust(right=(0.9-0.012*maxLabelLen))
+    if popRates:
+        popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels]
+
+    if labels == 'legend':
+        for ipop,popLabel in enumerate(popLabels):
+            label = popLabelRates[ipop] if popRates else popLabel
+            plot(0,0,color=popColors[popLabel],label=label)
+        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        maxLabelLen = max([len(l) for l in popLabels])
+        rightOffset = 0.85 if popRates else 0.9
+        subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
+    
+    elif labels == 'overlay':
+        ax = gca()
+        color = 'k'
+        tx = 1.01
+        margin = 1.0/numCells/2
+        tys = [(popLen/numCells)*(1-2*margin) for popLen in popNumCells]
+        tysOffset = list(cumsum(tys))[:-1]
+        tysOffset.insert(0, 0)
+        labels = popLabelRates if popRates else popLabels
+        for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):
+            label = popLabelRates[ipop] if popRates else popLabel
+            text(tx, tyOffset + ty/2.0 - 0.01, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
+        maxLabelLen = max([len(l) for l in labels])
+        subplots_adjust(right=(1.0-0.011*maxLabelLen))
+
 
     # save figure data
     if saveData:

@@ -661,7 +661,7 @@ def getCellsList(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids)) 
             #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         

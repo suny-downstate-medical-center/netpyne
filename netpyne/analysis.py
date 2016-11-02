@@ -63,7 +63,7 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName, type=''):
-    if not isinstance(fileName, str):
+    if not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     fileName = fileName.split('.')
@@ -124,7 +124,7 @@ def getCellsInclude(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             if condition in allNetStimPops:
                 netStimPops.append(condition)
             else:
@@ -206,7 +206,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             yorder = [cell['tags'][orderBy] for cell in cells]
 
-        if orderInverse: yorder.reverse()
+        #if orderInverse: yorder.reverse()
 
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
@@ -315,6 +315,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
     ax1.set_ylim(-1, len(cells)+numNetStims+1)    
 
+    if orderInverse: gca().invert_yaxis()
+
     # Add legend
     if popRates:
         popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels]
@@ -339,7 +341,11 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         labels = popLabelRates if popRates else popLabels
         for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):
             label = popLabelRates[ipop] if popRates else popLabel
-            text(tx, tyOffset + ty/2.0 - 0.01, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
+            if orderInverse:
+                finalty = 1.0 - (tyOffset + ty/2.0 - 0.01)
+            else:
+                finalty = tyOffset + ty/2.0 - 0.01
+            text(tx, finalty, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
         maxLabelLen = max([len(l) for l in labels])
         subplots_adjust(right=(1.0-0.011*maxLabelLen))
 
@@ -354,7 +360,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
@@ -434,18 +440,20 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         else: 
             spkinds,spkts = [],[]
 
+
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
         for netStimPop in netStimPops:
-            cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
-            if len(cellStims) > 0:
-                lastInd = max(spkinds) if len(spkinds)>0 else 0
-                spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
-                spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
-                spkts.extend(spktsNew)
-                spkinds.extend(spkindsNew)
-                numNetStims += len(cellStims)
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += len(cellStims)
 
         histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
@@ -496,7 +504,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikeHist.png'
@@ -645,7 +653,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
@@ -668,6 +676,51 @@ def invertDictMapping(d):
         inv_map[v] = inv_map.get(v, [])
         inv_map[v].append(k)
     return inv_map
+
+
+######################################################################################################################################################
+## Plot cell shape
+######################################################################################################################################################
+def plotShape (showSyns = True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot 3D cell shape using NEURON Interview PlotShape
+        - showSyns (True|False): Show synaptic connections in 3D 
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
+    from neuron import h, gui
+
+    fig = h.Shape()
+    if showSyns:
+        color = 2 # red
+        style = 'o'
+        siz = 10
+        for cell in sim.net.cells:
+            for sec in cell.secs.values():
+                for synMech in sec['synMechs']:
+                    fig.point_mark(synMech['hSyn'], color) 
+
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'shape.ps'
+        fig.printfile(filename)
+
+    
+    return fig
+
+
+
+
 
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
@@ -978,7 +1031,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'conn.png'
@@ -1027,7 +1080,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     if showConns:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
                     color='red'
@@ -1056,7 +1109,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'2Dnet.png'

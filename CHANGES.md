@@ -1,5 +1,7 @@
 # Version 0.6.4
 
+- Added plotShape to plot 3D morphology of cell and synapse locations
+
 - Added option to skip batch sims if output file already exists
 
 - Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
@@ -11,6 +13,10 @@
 - Fixed bug: cache_efficient was not being turned on
 
 - Fixed bug setting simConfig loaded from file
+
+- Fixed bug in plotRaster inverseOrder option
+
+- Fixed str vs basestring in analysis.py and simFuncs.py
 
 # Version 0.6.3
 

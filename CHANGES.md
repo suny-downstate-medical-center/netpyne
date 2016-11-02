@@ -10,6 +10,8 @@
 
 - Fixed bug: cache_efficient was not being turned on
 
+- Fixed bug setting simConfig loaded from file
+
 # Version 0.6.3
 
 - Added cvode_active simConfig option to set variable time step (issue #116)

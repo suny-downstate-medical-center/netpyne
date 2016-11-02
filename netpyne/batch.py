@@ -95,8 +95,8 @@ class Batch(object):
 
                     # skip if output file already exists
                     import glob
-                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.*'):
-                        print 'Skipping job %s since output file already exists...'
+                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+                        print 'Skipping job %s since output file already exists...' % (jobName)
                     else:
                         # read params or set defaults
                         sleepInterval = self.runCfg.get('sleepInterval', 1)

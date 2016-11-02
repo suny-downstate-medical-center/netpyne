@@ -102,8 +102,8 @@ def setSimCfg (cfg):
     else:
         sim.cfg = specs.SimConfig()  # create new object
 
-    if cfg.simLabel and cfg.saveFolder:
-        cfg.filename = cfg.saveFolder+'/'+cfg.simLabel
+    if sim.cfg.simLabel and sim.cfg.saveFolder:
+        sim.cfg.filename = sim.cfg.saveFolder+'/'+sim.cfg.simLabel
 
 
 ###############################################################################
@@ -122,7 +122,7 @@ def createParallelContext ():
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadNetParams (filename, data=None, setLoaded=False):
+def loadNetParams (filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:

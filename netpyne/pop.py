@@ -66,7 +66,7 @@ class Pop (object):
                 maxv = self.tags[coord+'normRange'][1] 
                 randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
         
-        for i in xrange(int(sim.rank), sim.net.params.scale * self.tags['numCells'], sim.nhosts):
+        for i in xrange(int(sim.rank), int(sim.net.params.scale * self.tags['numCells']), sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific

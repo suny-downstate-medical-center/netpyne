@@ -256,6 +256,29 @@ class NetParams (object):
                 else:
                     setattr(self, k, v)
 
+    def save(self, filename):
+        import os
+        basename = os.path.basename(filename)
+        folder = filename.split(basename)[0]
+        ext = basename.split('.')[1]
+
+        # make dir
+        try:
+            os.mkdir(folder)
+        except OSError:
+            if not os.path.exists(folder):
+                print ' Could not create', folder
+
+        dataSave = {'netParams': self.__dict__}
+        
+        # Save to json file
+        if ext == 'json':
+            import json
+            print('Saving netParams to %s ... ' % (filename))
+            with open(filename, 'w') as fileObj:
+                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
+
+
     def addCellParams(self, label=None, params=None):
         if not label: 
             label = int(self._labelid)
@@ -333,12 +356,16 @@ class SimConfig (object):
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module 
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
+        self.cvode_active = False  # Use CVode variable time step
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
-        self.createNEURONObj= True  # create HOC objects when instantiating network
+        self.createNEURONObj = True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
+        self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time 
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
+        self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
+        self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages 
 
         # Recording 
@@ -348,8 +375,10 @@ class SimConfig (object):
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
         # Saving
+        self.simLabel = ''  # name of simulation (used as filename if none provided)
+        self.saveFolder = ''  # path where to save output data
+        self.filename = 'model_output'  # Name of file to save model output (if omitted then saveFolder+simLabel is used)
         self.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
-        self.filename = 'model_output'  # Name of file to save model output
         self.timestampFilename = False  # Add timestamp to filename to avoid overwriting
         self.savePickle = False # save to pickle file
         self.saveJson = False # save to json file
@@ -358,6 +387,7 @@ class SimConfig (object):
         self.saveDpk = False # save to .dpk pickled file
         self.saveHDF5 = False # save to HDF5 file 
         self.saveDat = False # save traces to .dat file(s)
+        self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # Analysis and plotting 
         self.analysis = ODict()
@@ -371,6 +401,28 @@ class SimConfig (object):
                     setattr(self, k, Dict(v))
                 else:
                     setattr(self, k, v)
+
+    def save(self, filename):
+        import os
+        basename = os.path.basename(filename)
+        folder = filename.split(basename)[0]
+        ext = basename.split('.')[1]
+
+        # make dir
+        try:
+            os.mkdir(folder)
+        except OSError:
+            if not os.path.exists(folder):
+                print ' Could not create', folder
+
+        dataSave = {'simConfig': self.__dict__}
+        
+        # Save to json file
+        if ext == 'json':
+            import json
+            print('Saving simConfig to %s ... ' % (filename))
+            with open(filename, 'w') as fileObj:
+                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params

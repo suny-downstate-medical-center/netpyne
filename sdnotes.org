@@ -2719,6 +2719,158 @@ type                       1094
 - huge leakge with plotSpikeHist
 
 
+* Netpyne Models/Users
+** Github examples folder
+** Documentation tutorials
+** M1 network (Salva, Neurosim)
+** Parallel Neuron paper (Alex, Neurosim)
+** Claustrum network (Jing, George Augustine)
+** Sensorimotor network + arm (Cliff, Kerr lab)
+** Hippocampus model (Ernie, Neurosim)
+** V1 load/save model (Allen Brain Institute)
+** Basal Ganglia (Lucas, UCD)
+http://www.neuromuscularsystemsucd.info/research-areas
+*** email
+I made a new pull request into the development branch as requested. I am using Netpyne to model the Basal Ganglia network
+using biophysically detailed and simplified spiking models. I am going to look at the effect of pathological oscillations on
+task performance for motor tasks. One of the overarching goals of our group is to combine different models into a multi-scale
+model of Basal Ganglia, spinal chord and motor units in the muscles, so I may use Netpyne for that too.  I appreciate all the
+work that is made open source by your group. It helped me a lot while learning how to use the more advanced features of
+Neuron using Python.  All the best, Lucas
+
+** LFP oscillations (Fink, Ohio Wesleyan)
+Christian G. Fink, PhD
+Assistant Professor of Physics and Neuroscience
+Ohio Wesleyan University
+
+
+* Related tools
+** NEURON
+Multiscale simulator
+http://neuron.yale.edu/neuron/
+\cite{Carn06,Lytt16}
+** Genesis
+Multiscale simulator
+http://genesis-sim.org/
+\cite{Bowe12}
+** MOOSE
+Multiscale simulator
+https://moose.ncbs.res.in/
+\cite{RayB08}
+** NEST
+Large scale network simulator
+http://www.nest-simulator.org/
+\cite{Ples15}
+** Nengo
+Large scale network simulator
+http://www.nengo.ca/
+\cite{Stew09}
+** GeNN
+Large scale network simulator (GPUs)
+http://genn-team.github.io/genn/
+\cite{Yavu16}
+** Brian
+Mathematically oriented simulator
+http://briansimulator.org/
+\cite{Good08}
+
+** MUSIC
+Multi-simulator tool
+http://software.incf.org/software/music
+\cite{Djur10}
+** PyNN
+Multi-simulator tool
+http://neuralensemble.org/PyNN/
+\cite{Davi09}
+** NeuroConstruct
+Multi-simulator tool
+http://www.neuroconstruct.org/
+\cite{Glee07}
+** N2A
+Multi-simulator tool
+https://github.com/frothga/n2a
+\cite{Roth14} 
+** PyNeuroML/libNeuroML
+Multi-simulator tool (for NeuroML2/LEMS models; combines libNeuroML, PyLEMS, jNeuroML)
+https://github.com/NeuroML/pyNeuroML
+\cite{Vell14}
+** Topographica
+Multi-simulator tool (focused on topographic maps)
+http://ioam.github.io/topographica/
+\cite{Bedn09}
+** NetPyNE
+Tool for design/simulation/analysis of multiscale networks in NEURON
+https://neurosimlab.org/netpyne
+\cite{Dura16c}
+** Morphforge
+Tool for design/simulation/analysis of single cell and simple nets in NEURON
+\cite{Hull14}
+https://morphforge.readthedocs.io
+** AllenSDK
+Tool for design/simulation/analysis of single cell and simple nets in NEURON
+https://alleninstitute.github.io/AllenSDK/biophysical_models.html
+** Mozaik
+Multi-simulator tool; Batch simulation organization and analysis 
+http://neuralensemble.org/docs/mozaik/index.html
+\cite{Anto13}
+** Lancet
+Batch simulation organization and analysis
+http://ioam.github.io/lancet/
+\cite{Stev13}
+** SimTracker
+Batch simulation organization and analysis
+https://bitbucket.org/mbezaire/simtrackercode
+http://mariannebezaire.com/simtracker/
+\cite{} - under review
+** Sumatra
+Batch simulation organization and analysis
+http://sumatra.readthedocs.io/
+\cite{Dav14}
+** pypet
+Parameter optimization; batch simulation organization and analysis
+https://pypet.readthedocs.io
+\cite{Meye16}
+** BluePyOpt / HBP Collab GUI
+Parameter optimization
+https://github.com/BlueBrain/BluePyOpt  
+\cite{VanG16}
+** NeuroTune
+Parameter optimization 
+http://optimal-neuron.readthedocs.io/en/latest/ 
+Mike Vella  and Padraig Gleeson
+** Optimizer
+Parameter optimization 
+http://optimizer.readthedocs.io/en/latest/ 
+\cite{Frie14b}
+** NeuronVisio
+Analysis and visualization
+http://docs.neuronvisio.org/
+\cite{Matt12}
+** Geppetto/OSBViewer
+Analysis and visualization
+http://www.geppetto.org/
+\cite{Glee15}
+** NeuroML
+Declarative format for neural models
+https://www.neuroml.org/
+\cite{Glee10}
+** NineML
+Declarative format for neural models
+http://incf.github.io/nineml/
+\cite{Raik12}
+** Reaction-diffusion simulators
+- RxD
+- MCell
+- Smoldyn
+- STEPS
+- NeuroRD
+- PSICS
+** Reviews / Other lists
+- \cite{Bret07}
+- \cite{McDo16}
+http://software.incf.org/software/?getTopics=Computational%20neuroscience&b_start:int=0&-C=
+http://software.incf.org/software?getTopics=Large%20scale%20modeling&-C=
+
 * Paper
 ** Title
 NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal network models
@@ -2737,18 +2889,7 @@ NetPyNE: a tool to develop, simulate and analyze data-driven biological neuronal
 - Conversion to NeuroML: example of neuroml code? Gepetto/OSB visualization?
 - Example nets: M1, claustrum, RL
 
-* Netpyne Models/Users
-** Github examples folder
-** Documentation tutorials
-** M1 network (Salva, Neurosim)
-** Parallel Neuron paper (Alex, Neurosim)
-** Claustrum network (Jing, George Augustine)
-** Sensorimotor network + arm (Cliff, Kerr lab)
-
-** Hippocampus model (Ernie, Neurosim)
-** V1 load/save model (Allen Brain Institute)
-
-* Grant
+* Grant (moved to grant folder /u/salvadord/Work/netpyne_grant/sdnotes.org)
 ** 16aug17 11:00 MBL bill discuss netpyne with hines - sald notesi []
 - value of dictionaries would be a small lambda function that gives generality 
 

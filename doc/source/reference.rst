@@ -186,6 +186,10 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 	* **mechs**: Dictionary of density/distributed mechanisms.
 		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
+
+	* **ions**: Dictionary of ions.
+		The key contains the name of the ion (e.g. ``na`` or ``na``)
+		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
@@ -631,9 +635,18 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
+* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'clamp_resist': 0.001})
+* **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
+* **cvode_active** - Use CVode variable time step (default: False)
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
 * **createNEURONObj** - Create HOC objects when instantiating network (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
+* **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
+* **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
+* **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
+* **timing** - Show and record timing of each process (default: True)
+* **saveTiming** - Save timing data to pickle file (default: False)
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
@@ -646,6 +659,8 @@ Related to recording:
 Related to file saving:
 
 * **saveDataInclude** = Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
+* **simLabel** = Name of simulation (used as filename if none provided) (default: '')
+* **saveFolder** = Path where to save output data (default: '')
 * **filename** - Name of file to save model output (default: 'model_output')
 * **timestampFilename**  - Add timestamp to filename to avoid overwriting (default: False)
 * **savePickle** - Save data to pickle file (default: False)
@@ -654,6 +669,7 @@ Related to file saving:
 * **saveTxt** - Save data to txt file (default: False)
 * **saveDpk** - Save data to .dpk pickled file (default: False)
 * **saveHDF5** - Save data to save to HDF5 file (default: False)
+* **backupCfgFile** - Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: [])
 
 
 .. _sim_config_analysis:
@@ -671,7 +687,6 @@ Related to plotting and analysis:
 	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
 	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
-
 
 .. _package_functions:
 
@@ -860,7 +875,7 @@ Methods to set up network
 
 Methods to modify network
 
-* **net.modifyCells(params)**
+* **net.modifyCells(params, updateMasterAllCells=False)**
 	
 	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following 2 items:
 
@@ -874,7 +889,7 @@ Methods to modify network
 		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 
 
-* **net.modifySynMechs(params)**
+* **net.modifySynMechs(params, updateMasterAllCells=False)**
 
 	Modifies properties of synMechs in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -889,7 +904,7 @@ Methods to modify network
 	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
 
 
-* **net.modifyConns(params)**
+* **net.modifyConns(params, updateMasterAllCells=False)**
 
 	Modifies properties of connections in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -905,7 +920,7 @@ Methods to modify network
 	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
 
-* **net.modifyStims(params)**
+* **net.modifyStims(params, updateMasterAllCells=False)**
 
 	Modifies properties of stim in an instantiated network. The ``params`` argument is a dictionary with the following 3 items:
 
@@ -919,6 +934,9 @@ Methods to modify network
 		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
+
+
+.. note:: The ``updateMasterAllCells`` argument ensures that the ``sim.net.allCells`` list in the master node is also updated with the modified parameters. By default this is set to False, since it slows down the modify functions, and ``sim.net.allCells`` will be updated automatically after running simulation and gathering data.
 
 
 Population class methods 

@@ -1,6 +1,66 @@
+# Version 0.6.3
+
+- Added cvode_active simConfig option to set variable time step (issue #116)
+
+- Added saving of avg pop rates
+
+- Added save method to SimConfig and NetParams class
+
+- Fixed bug importing 3d cell geometries
+
+- Fixed bug in readCmdLine func
+
+- Fixed bug reading from json (str vs unicode)
+
+- Fixed bug setting mech param values for nseg>1
+
+# Version 0.6.2
+
+- Added importing of cell ion parameters (eg. 'ena' or 'ek')
+
+- Added backupCfgFile (eg. ['cfg.py', 'backupcfg/']) to simConfig to copy cfg file after run
+
+- Added gatherOnlySimData to simConfig to gather only simulation data and not cells or pops
+
+- Added simLabel and saveFolder to simConfig (can be used instead of filename)
+
+- Added printRunTime to simConfig to print run time (in sec) during execution
+
+- Added printPopAvgRates to simConfig to print population avg firing rates after run 
+
+- Automatic saving of netpyne and netParams version to file
+
+- Moved creation of fih functions to set cell vinit from setupRecording() to preRun()
+
+- Can now load netParams and simConfig from file without setting in sim
+
+- Added sim.readCmdLineArgs to read simConfig and netParams filepaths from command line 
+
+- Can now access NEURON's h module via sim.h
+
+- Fixed bug so can load netParams and simConfig without initializing sim
+
+- Fixed bug that prevented mechanism properties with value 0.0 from being set
+
+- Fixed bug in code to distribute cells (converted numCells from float to int)
+
+- Fixe bug in plotTraces
+
 # Version 0.6.1
 
+- Added global boolean variable netpyne.__gui__ to enable/disable graphics (issue #150)
+
+- Spike histogram fixes: axis labels only in 1st subplot, limit time range, tight_layout only if <5 subplots
+
+- Fixed bug so multiple traces figures are saved to separate files (issue #166)
+
 - Fixed bug when using point process-based cells that include synapses (eg. Izhi2007a)
+
+- Fixed bug where spike hist subplot didn't match raster axis
+
+- Fixed bug when loading data from file with multiple cores  
+
+- Fixed bug so modify functions work with multiple cores 
 
 # Version 0.6.0
 

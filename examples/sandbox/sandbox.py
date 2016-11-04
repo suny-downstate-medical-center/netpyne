@@ -14,6 +14,9 @@ Contributors: salvadordura@gmail.com
 #
 ###############################################################################
 
+import netpyne
+netpyne.__gui__ = True
+
 from netpyne import specs, sim
 from netpyne.specs import Dict
 
@@ -254,8 +257,9 @@ simConfig.saveHDF5 = 0
 simConfig.saveCSV = 0
 
 # # Analysis and plotting 
-simConfig.addAnalysis('plotRaster', True)
-simConfig.addAnalysis('plotTraces', {'include': [0], 'oneFigPer':'cell'})
+simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})
+simConfig.analysis['plotSpikeHist'] = {'overlay': False}
+simConfig.addAnalysis('plotTraces', {'include': [0,1,2], 'oneFigPer':'cell', 'saveFig':True})
 # simConfig.addAnalysis('plotSpikeHist', {'include': ['PYR', 'allNetStims', 'background2', ('PYR',[5,6,7,8])], 
 #     'timeRange': [400,600], 'binSize': 10, 'overlay':True, 'graphType': 'line', 'yaxis': 'count', 'saveData': True, 'saveFig': True, 'showFig': True})
 # simConfig.addAnalysis('plot2Dnet', {'include': ['allCells']})

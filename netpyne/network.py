@@ -483,7 +483,7 @@ class Network (object):
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells '''
-        if sim.cfg.verbose: print 'Generating set of all-to-all connections...'
+        if sim.cfg.verbose: print 'Generating set of all-to-all connections (rule: %s) ...' % (connParam['label'])
 
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
@@ -509,7 +509,7 @@ class Network (object):
     ###############################################################################
     def probConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of probabilistic connections...'
+        if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
 
         seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellsTags.keys()[-1]+postCellsTags.keys()[-1])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
@@ -539,7 +539,7 @@ class Network (object):
     ###############################################################################
     def convConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of convergent connections...'
+        if sim.cfg.verbose: print 'Generating set of convergent connections (rule: %s) ...' % (connParam['label'])
                
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
@@ -568,7 +568,7 @@ class Network (object):
     ###############################################################################
     def divConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of divergent connections...'
+        if sim.cfg.verbose: print 'Generating set of divergent connections (rule: %s) ...' % (connParam['label'])
          
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
@@ -596,7 +596,7 @@ class Network (object):
     ###############################################################################
     def fromListConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
-        if sim.cfg.verbose: print 'Generating set of connections from list...'
+        if sim.cfg.verbose: print 'Generating set of connections from list (rule: %s) ...' % (connParam['label'])
 
         # list of params that can have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
@@ -697,7 +697,7 @@ class Network (object):
     ###############################################################################
     ### Modify cell params
     ###############################################################################
-    def modifyCells (self, params):
+    def modifyCells (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyCellsTime')
         if sim.rank==0: 
@@ -706,7 +706,7 @@ class Network (object):
         for cell in self.cells:
             cell.modify(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyCellsTime')
@@ -716,7 +716,7 @@ class Network (object):
     ###############################################################################
     ### Modify synMech params
     ###############################################################################
-    def modifySynMechs (self, params):
+    def modifySynMechs (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifySynMechsTime')
         if sim.rank==0: 
@@ -725,8 +725,8 @@ class Network (object):
         for cell in self.cells:
             cell.modifySynMechs(params)
 
-        if hasattr(sim.net, 'allCells'): 
-            sim._gatherCells()  # update allCells
+        if updateMasterAllCells:
+             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifySynMechsTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
@@ -736,7 +736,7 @@ class Network (object):
     ###############################################################################
     ### Modify conn params
     ###############################################################################
-    def modifyConns (self, params):
+    def modifyConns (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyConnsTime')
         if sim.rank==0: 
@@ -745,7 +745,7 @@ class Network (object):
         for cell in self.cells:
             cell.modifyConns(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyConnsTime')
@@ -755,7 +755,7 @@ class Network (object):
     ###############################################################################
     ### Modify stim source params
     ###############################################################################
-    def modifyStims (self, params):
+    def modifyStims (self, params, updateMasterAllCells=False):
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyStimsTime')
         if sim.rank==0: 
@@ -764,7 +764,7 @@ class Network (object):
         for cell in self.cells:
             cell.modifyStims(params)
 
-        if hasattr(sim.net, 'allCells'): 
+        if updateMasterAllCells:
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyStimsTime')

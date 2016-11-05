@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time
 from numbers import Number
@@ -285,14 +285,24 @@ class Network (object):
                 for postCellGid in postCellsTags:  # for each postsyn cell
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
-                        conns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
-                        # find origin section 
-                        if 'soma' in postCell.secs: 
-                            secOrig = 'soma' 
-                        elif any([secName.startswith('som') for secName in postCell.secs.keys()]):
-                            secOrig = next(secName for secName in postCell.secs.keys() if secName.startswith('soma'))
-                        else: 
-                            secOrig = postCell.secs.keys()[0]
+                        allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+
+                        # group synMechs so they are not distributed separately
+                        if subConnParam.get('groupSynMechs', None):  
+                            conns = []
+                            connsGroup = {}
+                            iConn = -1
+                            for conn in allConns:
+                                if not conn['synMech'].startswith('__grouped__'):
+                                    conns.append(conn)
+                                    iConn = iConn + 1
+                                    if conn['synMech'] in subConnParam['groupSynMechs']:
+                                        for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
+                                            connGroup = next(c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc'])
+                                            connGroup['synMech'] = '__grouped__'+connGroup['synMech']
+                                            connsGroup[iConn] = connGroup
+                        else:
+                            conns = allConns
 
                         # if sectionList
                         if isinstance(subConnParam.get('sec'), str) and subConnParam.get('sec') in postCell.secLists:
@@ -307,11 +317,13 @@ class Network (object):
                         else:
                             secList = [subConnParam['sec']]
                         
+                        # Uniform distribution
                         if subConnParam.get('density', None) == 'uniform':
                             # calculate new syn positions
                             newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
 
-                        elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == '2Dmap':
+                        # 2D map and 1D map (radial)
+                        elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
                             somaX, _, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # move method to Cell!
                             gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
                             gridY = subConnParam['density']['gridY']
@@ -319,12 +331,21 @@ class Network (object):
 
                             segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
                             totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])
-                            scaleNumSyn = float(len(conns))/float(totSyn)
+                            scaleNumSyn = float(len(conns))/float(totSyn) if totSyn>0 else 0.0
                             for sec in segNumSyn: segNumSyn[sec] = [int(round(x * scaleNumSyn)) for x in segNumSyn[sec]]
+                            totSynRescale = sum([sum(nsyn) for nsyn in segNumSyn.values()])
 
-                            print gridSigma
-                            print segNumSyn
-                            print len(conns), totSyn, scaleNumSyn
+                            print len(conns), totSynRescale 
+                            if totSynRescale < len(conns):  # if missing syns, add extra
+                                extraSyns = len(conns)-totSynRescale
+                                extraAdded = 0
+                                for sec in segNumSyn.values():
+                                    if extraAdded == extraSyns: break
+                                    for nsyn in sec: 
+                                        if nsyn > 0: 
+                                            nsyn = nsyn + 1
+                                            extraAdded = extraAdded + 1
+                                            if extraAdded == extraSyns: break
 
                             # convert to list so can serialize and save
                             subConnParam['density']['gridY'] = list(subConnParam['density']['gridY'])
@@ -337,31 +358,59 @@ class Network (object):
                                         newSecs.append(sec)
                                         newLocs.append(seg.x)
 
-                        # modify syn positions
-                        for conn, newSec, newLoc in zip(conns, newSecs, newLocs):
+
+
+                        # Distance-based
+                        elif subConnParam.get('density', None) == 'distance':
+                            # find origin section 
+                            if 'soma' in postCell.secs: 
+                                secOrig = 'soma' 
+                            elif any([secName.startswith('som') for secName in postCell.secs.keys()]):
+                                secOrig = next(secName for secName in postCell.secs.keys() if secName.startswith('soma'))
+                            else: 
+                                secOrig = postCell.secs.keys()[0]
+
+                            #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
+
+                            # different case if has vs doesn't have 3d points
+                            #  h.distance(sec=h.soma[0], seg=0)
+                            # for sec in apical:
+                            #    print h.secname()
+                            #    for seg in sec:
+                            #      print seg.x, h.distance(seg.x)
+
+
+                        for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
                             postSynMechs = postCell.secs[conn['sec']].synMechs
+                            
+                            # if need to reposition conn, remove syns of conn, add new syn, and set new loc and sec
                             if newSec != conn['sec'] or newLoc != conn['loc']:
-                                indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-                                if indexOld: del postSynMechs[indexOld]
+                                indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None) 
+                                if indexOld != None: 
+                                    del postSynMechs[indexOld]
                                 postCell.addSynMech(conn['synMech'], newSec, newLoc)
-                            conn['sec'] = newSec
-                            conn['loc'] = newLoc
+                                conn['sec'] = newSec
+                                conn['loc'] = newLoc
+
+                            # find grouped conns 
+                            if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
+                                connGroup = connsGroup[i]  # get grouped conn from previously stored dict 
+                                connGroup['synMech']
+                                connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
+    
+                                # if need to reposition conn, remove syns of grouped conn, add new syn, and set new loc and sec
+                                if newSec != connGroup['sec'] or newLoc != connGroup['loc']: 
+                                    indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==connGroup['synMech'] and synMech['loc']==connGroup['loc']), None) 
+                                    if indexOld != None: 
+                                        del postSynMechs[indexOld]
+                                    connGroup['sec'] = newSec
+                                    connGroup['loc'] = newLoc
+                                    postCell.addSynMech(connGroup['synMech'], newSec, newLoc)
 
                         # Add synMechs, stim and conn NEURON objects
                         postCell.addSynMechsNEURONObj()
                         postCell.addStimsNEURONObj()  
                         postCell.addConnsNEURONObj()
-
-
-                            #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
-
-                        # different case if has vs doesn't have 3d points
-                        #  h.distance(sec=h.soma[0], seg=0)
-                        # for sec in apical:
-                        #    print h.secname()
-                        #    for seg in sec:
-                        #      print seg.x, h.distance(seg.x)
-
 
 
 

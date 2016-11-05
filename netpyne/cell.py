@@ -183,7 +183,7 @@ class Cell (object):
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
-                    y = self.tags['y']
+                    y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
@@ -251,6 +251,16 @@ class Cell (object):
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+
+
+    def addSynMechsNEURONObj(self):
+        # set params for all sections
+        for sectName,sectParams in self.secs.iteritems(): 
+            # add synMechs (only used when loading)
+            if 'synMechs' in sectParams:
+                for synMech in sectParams['synMechs']:
+                    if 'label' in synMech and 'loc' in synMech:
+                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
 
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -349,7 +359,7 @@ class Cell (object):
                         synMech[paramName] = paramValue
                     sec['synMechs'].append(synMech)
 
-            if sim.cfg.createNEURONObj:
+            if sim.cfg.createNEURONObj: 
                 # add synaptic mechanism NEURON objectes 
                 if 'synMechs' not in sec:
                     sec['synMechs'] = []

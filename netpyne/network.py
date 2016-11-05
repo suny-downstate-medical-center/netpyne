@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time
 from numbers import Number
@@ -207,6 +207,68 @@ class Network (object):
 
 
     ###############################################################################
+    # Calculate 2d point from segment location
+    ###############################################################################
+    def _posFromLoc(self, sec, x):
+        sec.push()
+        s = x * sec.L
+        numpts = int(h.n3d())
+        b = -1
+        for ii in range(numpts):
+            if h.arc3d(ii) >= s:
+                b = ii
+                break
+        if b == -1: print "an error occurred in pointFromLoc, SOMETHING IS NOT RIGHT"
+
+        if h.arc3d(b) == s:  # shortcut
+            x, y, z = h.x3d(b), h.y3d(b), h.z3d(b)
+        else:               # need to interpolate
+            a = b-1
+            t = (s - h.arc3d(a)) / (h.arc3d(b) - h.arc3d(a))
+            x = h.x3d(a) + t * (h.x3d(b) - h.x3d(a))
+            y = h.y3d(a) + t * (h.y3d(b) - h.y3d(a))
+            z = h.z3d(a) + t * (h.z3d(b) - h.z3d(a))    
+
+        h.pop_section()
+        return x, y, z
+
+
+    ###############################################################################
+    # Calculate syn density for each segment from grid
+    ###############################################################################
+    def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
+        segNumSyn = {}  #
+        for secName in secList:
+            sec = cell.secs[secName]
+            segNumSyn[secName] = []
+            for seg in sec['hSec']:
+                x, y, z = self._posFromLoc(sec['hSec'], seg.x)
+                distX = [abs(gx-x) for gx in gridX]
+                distY = [abs(gy-y) for gy in gridY]
+                ixs = array(distX).argsort()[:2]
+                jys = array(distY).argsort()[:2]
+                sigma = zeros((2,2))
+                i1,i2,j1,j2 = min(ixs), max(ixs), min(jys), max(jys) 
+                x1,x2,y1,y2 = gridX[i1], gridX[i2], gridY[j1], gridY[j2]
+                sigma_x1_y1 = gridSigma[i1,j1]
+                sigma_x1_y2 = gridSigma[i1,j2]
+                sigma_x2_y1 = gridSigma[i2,j1]
+                sigma_x2_y2 = gridSigma[i2,j2]
+
+                if x1 == x2 or y1 == y2: 
+                    print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
+                else:
+                   # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
+                   sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
+                   #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
+
+                numSyn = sigma * sec['hSec'].L / sec['hSec'].nseg  # return num syns 
+                segNumSyn[secName].append(numSyn)
+
+        return segNumSyn
+
+
+    ###############################################################################
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
@@ -245,21 +307,50 @@ class Network (object):
                         else:
                             secList = [subConnParam['sec']]
                         
-                        # calculate new syn positions
-                        newSecs, newLocs = postCell._distributeSynsUniformly (secList=secList, numSyns=len(conns))
+                        if subConnParam.get('density', None) == 'uniform':
+                            # calculate new syn positions
+                            newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
 
-                        postSynMechs = postCell.secs[conn['sec']].synMechs
+                        elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == '2Dmap':
+                            somaX, _, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # move method to Cell!
+                            gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
+                            gridY = subConnParam['density']['gridY']
+                            gridSigma = subConnParam['density']['gridValues']
+
+                            segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
+                            totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])
+                            scaleNumSyn = float(len(conns))/float(totSyn)
+                            for sec in segNumSyn: segNumSyn[sec] = [int(round(x * scaleNumSyn)) for x in segNumSyn[sec]]
+
+                            print gridSigma
+                            print segNumSyn
+                            print len(conns), totSyn, scaleNumSyn
+
+                            # convert to list so can serialize and save
+                            subConnParam['density']['gridY'] = list(subConnParam['density']['gridY'])
+                            subConnParam['density']['gridValues'] = list(subConnParam['density']['gridValues']) 
+
+                            newSecs, newLocs = [], []
+                            for sec, nsyns in segNumSyn.iteritems():
+                                for i, seg in enumerate(postCell.secs[sec]['hSec']):
+                                    for isyn in range(nsyns[i]):
+                                        newSecs.append(sec)
+                                        newLocs.append(seg.x)
 
                         # modify syn positions
-                        # for conn,newSec,newLoc in zip(conns, newSecs, newLocs):
-                        #     if newSec != conn['sec'] or newLoc != conn['loc']:
-                        #         indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-                        #         if indexOld: del postSynMechs[indexOld]
-                        #         print conn['synMech']
-                        #         postCell.addSynMech(conn['synMech'], newSec, newLoc)
+                        for conn, newSec, newLoc in zip(conns, newSecs, newLocs):
+                            postSynMechs = postCell.secs[conn['sec']].synMechs
+                            if newSec != conn['sec'] or newLoc != conn['loc']:
+                                indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+                                if indexOld: del postSynMechs[indexOld]
+                                postCell.addSynMech(conn['synMech'], newSec, newLoc)
+                            conn['sec'] = newSec
+                            conn['loc'] = newLoc
 
-                        #     conn['sec'] = newSec
-                        #     conn['loc'] = newLoc
+                        # Add synMechs, stim and conn NEURON objects
+                        postCell.addSynMechsNEURONObj()
+                        postCell.addStimsNEURONObj()  
+                        postCell.addConnsNEURONObj()
 
 
                             #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
@@ -272,21 +363,6 @@ class Network (object):
                         #      print seg.x, h.distance(seg.x)
 
 
-        # print [(conn['sec'],conn['loc']) for conn in conns]
-        
-        # find postsyn cells
-        # for each postsyn cell:
-            # find syns from presyn cells
-            # calculate new syn locations based on sec, yNormRange and density
-            # get y location of synapse -- check Ben's code
-            # move synapses
-
-        # netParams['subConnParams'].append(
-        # {'preConds': {'cellType': ['PYR']}, # 'cellType': ['IT', 'PT', 'CT']
-        # 'postConds': {'popLabel': 'PYR3'},  # 'popLabel': 'L5_PT'
-        # 'sec': 'all',
-        # 'ynormRange': [0, 1.0],
-        # 'density': [0.2, 0.1, 0.0, 0.0, 0.2, 0.5] }) # subcellulalr distribution
 
 
 
@@ -306,6 +382,10 @@ class Network (object):
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
+
+        if self.params.subConnParams:  # do not create NEURON objs until synapses are distributed based on subConnParams
+            origCreateNEURONObj = bool(sim.cfg.createNEURONObj)
+            sim.cfg.createNEURONObj = False
 
         for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
@@ -329,6 +409,7 @@ class Network (object):
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
+            sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             self.subcellularConn(allCellTags, allPopTags)
 
 

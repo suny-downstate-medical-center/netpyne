@@ -705,7 +705,8 @@ def plotShape (showSyns = True, figSize = (10,8), saveData = None, saveFig = Non
         for cell in sim.net.cells:
             for sec in cell.secs.values():
                 for synMech in sec['synMechs']:
-                    fig.point_mark(synMech['hSyn'], color) 
+                    if synMech['hSyn']:
+                        fig.point_mark(synMech['hSyn'], color) 
 
     # save figure
     if saveFig: 

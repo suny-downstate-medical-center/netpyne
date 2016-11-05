@@ -1297,7 +1297,7 @@ after so not saved?)
 
 - sCRACM maps were normalized to the largest pixels within a map and thus represent the relative strength of input within the dendritic tree.
 
-- Average sCRACM map of layer 2/3 inputs to M1-CSPs (n 􏰁 23 neurons). L, Input profiles by soma depth. M, Location of perisomatic input from layer 2/3 relative to soma position, plotted as a function of soma depth. For each profile, the input depth was calculated as the center of mass across the perisomatic pixels.
+- Average sCRACM map of layer 2/3 inputs to M1-CSPs (n = 23 neurons). L, Input profiles by soma depth. M, Location of perisomatic input from layer 2/3 relative to soma position, plotted as a function of soma depth. For each profile, the input depth was calculated as the center of mass across the perisomatic pixels.
 
 [[file+sys:/u/salvadord/Documents/ISB/Models/netpyne_repo/gif/20160313_212734.png][fig]]
 
@@ -1374,7 +1374,7 @@ eg an EPSP can end up being terminated by K chans or can be primarily and active
 -- within given pixel stimulated with blue light, pixel = 50x50 um, num of syns/um/dendrite - homogeneous within 50x50um 
 -- convert scracm map -> map of how many syns per length of dendrite at each region of the map (at each pixel)
 -- need to know how much dendrite in that pixel, and how many sysn were coactivated to get soma response
--- his method: put fixed number of dendrite, and then adjusted weight of these syns
+-- his method: put fixed number of [of syns in] dendrite, and then adjusted weight of these syns
 -- couldnt really separate weights from num of synapses -- started with plausible weight and num of syns 
 -- length density for a specific assumption of conductances (used to convert map)
 -- input to netpyne should be free from Neuron peculiarities -- relates to somehting experimentally -- num of syn per length

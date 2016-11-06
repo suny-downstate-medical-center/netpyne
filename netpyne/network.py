@@ -243,24 +243,39 @@ class Network (object):
             segNumSyn[secName] = []
             for seg in sec['hSec']:
                 x, y, z = self._posFromLoc(sec['hSec'], seg.x)
-                distX = [abs(gx-x) for gx in gridX]
-                distY = [abs(gy-y) for gy in gridY]
-                ixs = array(distX).argsort()[:2]
-                jys = array(distY).argsort()[:2]
-                sigma = zeros((2,2))
-                i1,i2,j1,j2 = min(ixs), max(ixs), min(jys), max(jys) 
-                x1,x2,y1,y2 = gridX[i1], gridX[i2], gridY[j1], gridY[j2]
-                sigma_x1_y1 = gridSigma[i1,j1]
-                sigma_x1_y2 = gridSigma[i1,j2]
-                sigma_x2_y1 = gridSigma[i2,j1]
-                sigma_x2_y2 = gridSigma[i2,j2]
+                if gridX and gridY: # 2D
+                    distX = [abs(gx-x) for gx in gridX]
+                    distY = [abs(gy-y) for gy in gridY]
+                    ixs = array(distX).argsort()[:2]
+                    jys = array(distY).argsort()[:2]
+                    i1,i2,j1,j2 = min(ixs), max(ixs), min(jys), max(jys) 
+                    x1,x2,y1,y2 = gridX[i1], gridX[i2], gridY[j1], gridY[j2]
+                    sigma_x1_y1 = gridSigma[i1,j1]
+                    sigma_x1_y2 = gridSigma[i1,j2]
+                    sigma_x2_y1 = gridSigma[i2,j1]
+                    sigma_x2_y2 = gridSigma[i2,j2]
 
-                if x1 == x2 or y1 == y2: 
-                    print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
-                else:
-                   # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
-                   sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
-                   #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
+                    if x1 == x2 or y1 == y2: 
+                        print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
+                    else:
+                       # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
+                       sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
+                       #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
+
+                elif gridY:  # 1d = radial
+                    distY = [abs(gy-y) for gy in gridY]
+                    jys = array(distY).argsort()[:2]
+                    sigma = zeros((1,2))
+                    j1,j2 = min(jys), max(jys)
+                    y1, y2 = gridY[j1], gridY[j2]
+                    sigma_y1 = gridSigma[j1]
+                    sigma_y2 = gridSigma[j2]
+
+                    if y1 == y2: 
+                        print "ERROR in closest grid points: ", secName, y1, y2
+                    else:
+                       # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
+                       sigma = ((sigma_y1*abs(y2-y) + sigma_y2*abs(y-y1)) / abs(y2-y1))
 
                 numSyn = sigma * sec['hSec'].L / sec['hSec'].nseg  # return num syns 
                 segNumSyn[secName].append(numSyn)
@@ -272,7 +287,7 @@ class Network (object):
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
-
+        sim.timing('start', 'subConnectTime')
         print('  Distributing synapses based on subcellular connectivity rules...')
         for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
@@ -324,18 +339,22 @@ class Network (object):
 
                         # 2D map and 1D map (radial)
                         elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
-                            somaX, _, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # move method to Cell!
-                            gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
+                            
                             gridY = subConnParam['density']['gridY']
                             gridSigma = subConnParam['density']['gridValues']
 
-                            segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
+                            if subConnParam['density']['type'] == '2Dmap': # 2D
+                                somaX, _, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # move method to Cell!
+                                gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
+                                segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
+                            elif subConnParam['density']['type'] == '1Dmap': # 1D
+                                segNumSyn = self._interpolateSegmentSigma(postCell, secList, None, gridY, gridSigma) # move method to Cell!
+
                             totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])
                             scaleNumSyn = float(len(conns))/float(totSyn) if totSyn>0 else 0.0
                             for sec in segNumSyn: segNumSyn[sec] = [int(round(x * scaleNumSyn)) for x in segNumSyn[sec]]
                             totSynRescale = sum([sum(nsyn) for nsyn in segNumSyn.values()])
 
-                            print len(conns), totSynRescale 
                             if totSynRescale < len(conns):  # if missing syns, add extra
                                 extraSyns = len(conns)-totSynRescale
                                 extraAdded = 0
@@ -412,9 +431,7 @@ class Network (object):
                         postCell.addStimsNEURONObj()  
                         postCell.addConnsNEURONObj()
 
-
-
-
+        sim.pc.barrier()
 
 
     ###############################################################################
@@ -622,7 +639,7 @@ class Network (object):
             # replace lambda function (with args as dict of lambda funcs) with list of values
             seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
             connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
-                    for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
+                for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
         
         for postCellGid in postCellsTags:  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids

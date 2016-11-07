@@ -797,6 +797,23 @@ Analysis-related functions
     - Returns figure handle
     
 
+* **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+     
+    Plot spikes power spectral density (PSD). Optional arguments:
+
+    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *binSize*: Size in ms of each bin (int)
+    - *Fs*: PSD sampling frequency used to calculate the Fourier frequencies (float)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle and power array
+
+
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
     Plot recorded traces (specified in ``simConfig.recordTraces)`. Optional arguments: 

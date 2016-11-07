@@ -515,7 +515,143 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     return fig
 
+
+
+######################################################################################################################################################
+## Plot spike histogram
+######################################################################################################################################################
+def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, 
+    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot spike histogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of spike bins (default: 5)
+        - Fs (float): PSD sampling frequency used to calculate the Fourier frequencies (default: 200)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
+    print('Plotting spikes power spectral density (PSD) ...')
+
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+
+    
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    histData = []
+
+    # create fig
+    fig,ax1 = subplots(figsize=figSize)
+    fontsiz = 12
+    
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimPops = getCellsInclude([subset])
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            except:
+                spkinds,spkts = [],[]
+        else: 
+            spkinds,spkts = [],[]
+
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += len(cellStims)
+
+        histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1]+binSize/2
+        histoCount = histo[0] 
+
+        histData.append(histoCount)
+
+        color = colorList[iplot%len(colorList)]
+
+        if not overlay: 
+            subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+            title (str(subset), fontsize=fontsiz)
+            color = 'blue'
         
+        power = psd(histoCount, Fs=Fs, linewidth=1.0, color=color)
+        #h=axes()
+        #h.set_yticklabels([])
+
+        if iplot == 0: 
+            xlabel('Frequency (Hz)', fontsize=fontsiz)
+            ylabel('Power', fontsize=fontsiz) # add yaxis in opposite side
+        xlim([0, Fs/2])
+
+    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+        try:
+            tight_layout()
+        except:
+            pass
+
+    # Add legend
+    if overlay:
+        for i,subset in enumerate(include):
+            plot(0,0,color=colorList[i%len(colorList)],label=str(subset))
+        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        maxLabelLen = min(10,max([len(str(l)) for l in include]))
+        subplots_adjust(right=(0.9-0.012*maxLabelLen))
+
+
+    # save figure data
+    if saveData:
+        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'spikeHist')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'spikePSD.png'
+        savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, power
+
+
 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)

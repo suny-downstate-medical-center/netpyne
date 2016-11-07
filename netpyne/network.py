@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
-from time import time
+from time import time, sleep
 from numbers import Number
 from copy import copy
 from specs import ODict
@@ -289,6 +289,7 @@ class Network (object):
     def subcellularConn(self, allCellTags, allPopTags):
         sim.timing('start', 'subConnectTime')
         print('  Distributing synapses based on subcellular connectivity rules...')
+
         for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
 
@@ -378,7 +379,6 @@ class Network (object):
                                         newLocs.append(seg.x)
 
 
-
                         # Distance-based
                         elif subConnParam.get('density', None) == 'distance':
                             # find origin section 
@@ -400,36 +400,17 @@ class Network (object):
 
 
                         for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
-                            postSynMechs = postCell.secs[conn['sec']].synMechs
-                            
-                            # if need to reposition conn, remove syns of conn, add new syn, and set new loc and sec
-                            if newSec != conn['sec'] or newLoc != conn['loc']:
-                                indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None) 
-                                if indexOld != None: 
-                                    del postSynMechs[indexOld]
-                                postCell.addSynMech(conn['synMech'], newSec, newLoc)
-                                conn['sec'] = newSec
-                                conn['loc'] = newLoc
+                            conn['sec'] = newSec
+                            conn['loc'] = newLoc
 
                             # find grouped conns 
                             if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
                                 connGroup = connsGroup[i]  # get grouped conn from previously stored dict 
-                                connGroup['synMech']
                                 connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
-    
-                                # if need to reposition conn, remove syns of grouped conn, add new syn, and set new loc and sec
-                                if newSec != connGroup['sec'] or newLoc != connGroup['loc']: 
-                                    indexOld = next((i for i,synMech in enumerate(postSynMechs) if synMech['label']==connGroup['synMech'] and synMech['loc']==connGroup['loc']), None) 
-                                    if indexOld != None: 
-                                        del postSynMechs[indexOld]
-                                    connGroup['sec'] = newSec
-                                    connGroup['loc'] = newLoc
-                                    postCell.addSynMech(connGroup['synMech'], newSec, newLoc)
 
-                        # Add synMechs, stim and conn NEURON objects
-                        postCell.addSynMechsNEURONObj()
-                        postCell.addStimsNEURONObj()  
-                        postCell.addConnsNEURONObj()
+                                connGroup['sec'] = newSec
+                                connGroup['loc'] = newLoc
+                                    
 
         sim.pc.barrier()
 
@@ -451,7 +432,10 @@ class Network (object):
 
         if self.params.subConnParams:  # do not create NEURON objs until synapses are distributed based on subConnParams
             origCreateNEURONObj = bool(sim.cfg.createNEURONObj)
+            origAddSynMechs = bool(sim.cfg.addSynMechs)
             sim.cfg.createNEURONObj = False
+            sim.cfg.addSynMechs = False
+
 
         for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
@@ -475,8 +459,14 @@ class Network (object):
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
-            sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             self.subcellularConn(allCellTags, allPopTags)
+            sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
+            sim.cfg.addSynMechs = origAddSynMechs # set to original value
+            for cell in sim.net.cells:    
+                # Add synMechs, stim and conn NEURON objects
+                cell.addStimsNEURONObj()
+                #cell.addSynMechsNEURONObj()
+                cell.addConnsNEURONObj()
 
 
         print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))

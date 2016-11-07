@@ -360,6 +360,7 @@ class SimConfig (object):
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.createNEURONObj = True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
+        self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time 
         self.timing = True  # show timing of each process

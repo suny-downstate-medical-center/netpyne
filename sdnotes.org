@@ -2437,7 +2437,6 @@ Plotting 2D representation of network cell locations and connections...
 *** 380x120x380 (less conns, with subcell)
 
 
-
 * 16jul20 Matplotlib errors
 - http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc

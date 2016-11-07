@@ -8,6 +8,7 @@ Contributors: salvadordura@gmail.com
 
 from numbers import Number
 from copy import deepcopy
+from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import sim
@@ -263,6 +264,7 @@ class Cell (object):
                         self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
 
 
+
     # Create NEURON objs for conns and syns if included in prop (used when loading)
     def addStimsNEURONObj(self):
         # assumes python structure exists
@@ -295,7 +297,9 @@ class Cell (object):
         for conn in self.conns:
             # set postsyn target
             synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-            if not synMech: continue  # go to next conn
+            if not synMech: 
+                synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
+                #continue  # go to next conn
             postTarget = synMech['hSyn']
 
             # create NetCon
@@ -347,22 +351,23 @@ class Cell (object):
     def addSynMech (self, synLabel, secLabel, loc):
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
+        # add synaptic mechanism to python struct
+        if 'synMechs' not in sec or not isinstance(sec['synMechs'], list):
+            sec['synMechs'] = []
+
         if synMechParams and sec:  # if both the synMech and the section exist
-            if sim.cfg.createPyStruct:
-                # add synaptic mechanism to python struct
-                if 'synMechs' not in sec:
-                    sec['synMechs'] = []
+            if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
                 synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if synMech not in section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
                     for paramName, paramValue in synMechParams.iteritems():
                         synMech[paramName] = paramValue
                     sec['synMechs'].append(synMech)
+            else:
+                synMech = None
 
-            if sim.cfg.createNEURONObj: 
+            if sim.cfg.createNEURONObj and sim.cfg.addSynMechs: 
                 # add synaptic mechanism NEURON objectes 
-                if 'synMechs' not in sec:
-                    sec['synMechs'] = []
                 if not synMech:  # if pointer not created in createPyStruct, then check 
                     synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if still doesnt exist, then create
@@ -384,6 +389,8 @@ class Cell (object):
                                     synMech['hNetcon'].weight[0] = paramValue
                                 elif paramName not in ['sec', 'loc']:
                                     setattr(synMech['hNetcon'], paramName, paramValue)
+            else:
+                synMech = None
             return synMech
 
 
@@ -938,14 +945,17 @@ class Cell (object):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        #secLengths = [self.secs[s]['hSec'].L for s in secList]
-        secLengths = [self.secs[s]['geom']['L'] for s in secList]
-        totLength = sum(secLengths)
-        cumLengths = list(cumsum(secLengths))
-        absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
-        inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
-        secs = [secList[ind] for ind in inds]
-        locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        secLengths = [self.secs[s]['hSec'].L for s in secList]
+        #secLengths = [self.secs[s]['geom']['L'] for s in secList]
+        try:
+            totLength = sum(secLengths)
+            cumLengths = list(cumsum(secLengths))
+            absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
+            inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
+            secs = [secList[ind] for ind in inds]
+            locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        except:
+            secs, locs = [],[]
         return secs, locs
 
 

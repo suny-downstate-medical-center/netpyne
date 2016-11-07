@@ -523,7 +523,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, 
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
-    Plot spike histogram
+    Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
@@ -542,7 +542,7 @@ def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize =
         - Returns figure handle
     '''
 
-    print('Plotting spikes power spectral density (PSD) ...')
+    print('Plotting firing rate power spectral density (PSD) ...')
 
     colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
                 [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
@@ -597,6 +597,7 @@ def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize =
         histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
         histoCount = histo[0] 
+        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to rates
 
         histData.append(histoCount)
 

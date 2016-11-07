@@ -1,6 +1,6 @@
 # Version 0.6.4
 
-- Added function plotSpikePSD to plot power spectral density of spiking data
+- Added function plotRatePSD to plot firing rate power spectral density 
 
 - Added plotShape to plot 3D morphology of cell and synapse locations
 

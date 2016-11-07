@@ -6,6 +6,8 @@
 
 - Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
 
+- All section now include argument cell=self to differentiate them 
+
 - Fixed bug positioning cells with 3d geom
 
 - Fixed bug in sim.clearAll by closing all figures instead of current (issue #168)

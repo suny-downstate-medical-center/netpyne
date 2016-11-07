@@ -171,7 +171,7 @@ class Cell (object):
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
             if not self.secs[sectName].get('hSec'): 
-                self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self.gid)  # create h Section object
+                self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
             # set geometry params 

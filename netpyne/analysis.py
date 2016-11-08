@@ -10,7 +10,7 @@ from netpyne import __gui__
 
 if __gui__:
     from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums, text
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums, text, log10
     from matplotlib import gridspec
 
 from scipy import size, array, linspace, ceil, cumsum
@@ -520,7 +520,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, 
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, 
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
@@ -615,7 +615,7 @@ def plotSpikePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize =
         if iplot == 0: 
             xlabel('Frequency (Hz)', fontsize=fontsiz)
             ylabel('Power', fontsize=fontsiz) # add yaxis in opposite side
-        xlim([0, Fs/2])
+        xlim([0, (Fs/2)])
 
     if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
         try:

@@ -127,6 +127,8 @@ class Batch(object):
                         input.write(jobString)
                         print jobString+'\n'
                         input.close()
+
+            sleep(10) # give time for last job to get on queue
                         
 
 

@@ -148,7 +148,7 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Raster plot of network cells 
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -161,6 +161,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
+        - lw (integer): Line width for each spike (default: 2)
+        - marker (char): Marker for each spike (default: '|')
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -269,7 +271,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=subplot(gs[0])
-    ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
+    ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats
@@ -818,7 +820,7 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-def plotShape (showSyns = True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotShape (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - showSyns (True|False): Show synaptic connections in 3D 
@@ -835,15 +837,20 @@ def plotShape (showSyns = True, figSize = (10,8), saveData = None, saveFig = Non
     from neuron import h, gui
 
     fig = h.Shape()
+    secList = h.SectionList()
     if showSyns:
         color = 2 # red
-        style = 'o'
-        siz = 10
-        for cell in sim.net.cells:
+        for cell in [c for c in sim.net.cells if c.tags['popLabel'] in include]:
             for sec in cell.secs.values():
+                sec['hSec'].push()
+                secList.append()
+                h.pop_section()
                 for synMech in sec['synMechs']:
                     if synMech['hSyn']:
-                        fig.point_mark(synMech['hSyn'], color) 
+                        fig.point_mark(synMech['hSyn'], color, style, siz) 
+
+    fig.observe(secList)
+    fig.flush()
 
     # save figure
     if saveFig: 

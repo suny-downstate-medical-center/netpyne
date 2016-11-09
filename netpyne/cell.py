@@ -300,7 +300,13 @@ class Cell (object):
             if not synMech: 
                 synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
                 #continue  # go to next conn
-            postTarget = synMech['hSyn']
+            try:
+                postTarget = synMech['hSyn']
+            except:
+                print 'tags:',self.tags
+                print 'synMechs:',self.secs[conn['sec']]['synMechs']
+                print 'conn:', conn
+                exit()
 
             # create NetCon
             if conn['preGid'] == 'NetStim':

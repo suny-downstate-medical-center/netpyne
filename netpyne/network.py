@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil, copy
 from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time, sleep
 from numbers import Number
@@ -250,10 +250,10 @@ class Network (object):
                     jys = array(distY).argsort()[:2]
                     i1,i2,j1,j2 = min(ixs), max(ixs), min(jys), max(jys) 
                     x1,x2,y1,y2 = gridX[i1], gridX[i2], gridY[j1], gridY[j2]
-                    sigma_x1_y1 = gridSigma[i1,j1]
-                    sigma_x1_y2 = gridSigma[i1,j2]
-                    sigma_x2_y1 = gridSigma[i2,j1]
-                    sigma_x2_y2 = gridSigma[i2,j2]
+                    sigma_x1_y1 = gridSigma[i1][j1]
+                    sigma_x1_y2 = gridSigma[i1][j2]
+                    sigma_x2_y1 = gridSigma[i2][j1]
+                    sigma_x2_y2 = gridSigma[i2][j2]
 
                     if x1 == x2 or y1 == y2: 
                         print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
@@ -351,21 +351,28 @@ class Network (object):
                             elif subConnParam['density']['type'] == '1Dmap': # 1D
                                 segNumSyn = self._interpolateSegmentSigma(postCell, secList, None, gridY, gridSigma) # move method to Cell!
 
-                            totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])
-                            scaleNumSyn = float(len(conns))/float(totSyn) if totSyn>0 else 0.0
-                            for sec in segNumSyn: segNumSyn[sec] = [int(round(x * scaleNumSyn)) for x in segNumSyn[sec]]
+                            totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])  # summed density
+                            scaleNumSyn = float(len(conns))/float(totSyn) if totSyn>0 else 0.0  
+                            diffList = []
+                            for sec in segNumSyn: 
+                                for seg,x in enumerate(segNumSyn[sec]):
+                                    orig = float(x*scaleNumSyn)
+                                    scaled = int(round(x * scaleNumSyn))
+                                    segNumSyn[sec][seg] = scaled
+                                    diff = orig - scaled
+                                    if diff > 0:
+                                        diffList.append([diff,sec,seg])
+
                             totSynRescale = sum([sum(nsyn) for nsyn in segNumSyn.values()])
 
-                            if totSynRescale < len(conns):  # if missing syns, add extra
+                            # if missing syns due to rescaling to 0, find top values which were rounded to 0 and make 1
+                            if totSynRescale < len(conns):  
                                 extraSyns = len(conns)-totSynRescale
-                                extraAdded = 0
-                                for sec in segNumSyn.values():
-                                    if extraAdded == extraSyns: break
-                                    for nsyn in sec: 
-                                        if nsyn > 0: 
-                                            nsyn = nsyn + 1
-                                            extraAdded = extraAdded + 1
-                                            if extraAdded == extraSyns: break
+                                diffList = sorted(diffList, key=lambda l:l[0], reverse=True)
+                                for i in range(extraSyns):
+                                    sec = diffList[i][1]
+                                    seg = diffList[i][2]
+                                    segNumSyn[sec][seg] += 1
 
                             # convert to list so can serialize and save
                             subConnParam['density']['gridY'] = list(subConnParam['density']['gridY'])
@@ -411,8 +418,7 @@ class Network (object):
                                 connGroup['sec'] = newSec
                                 connGroup['loc'] = newLoc
                                     
-
-        sim.pc.barrier()
+            sim.pc.barrier()
 
 
     ###############################################################################

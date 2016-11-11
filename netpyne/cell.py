@@ -184,7 +184,12 @@ class Cell (object):
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
-                    y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+                    #y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+
+                    ############################################################################
+                    y = -735  # TEMPORARILY FIX THIS FOR SFN16 EXPERIMENT!! - REMEMBER TO REMOVE!!!!!!!
+                    ############################################################################
+                    
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
@@ -303,9 +308,9 @@ class Cell (object):
             try:
                 postTarget = synMech['hSyn']
             except:
-                print 'tags:',self.tags
-                print 'synMechs:',self.secs[conn['sec']]['synMechs']
-                print 'conn:', conn
+                print '\nError: no synMech available for conn: ', conn
+                print ' cell tags: ',self.tags
+                print ' cell synMechs: ',self.secs[conn['sec']]['synMechs']
                 exit()
 
             # create NetCon

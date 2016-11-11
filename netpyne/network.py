@@ -320,18 +320,8 @@ class Network (object):
                         else:
                             conns = allConns
 
-                        # if sectionList
-                        if isinstance(subConnParam.get('sec'), str) and subConnParam.get('sec') in postCell.secLists:
-                            secList = list(postCell.secLists[subConnParam['sec']])
-                        elif isinstance(subConnParam['sec'], list):
-                            for item in subConnParam['sec']:
-                                secList = []
-                                if item in postCell.secLists:
-                                    secList.extend(postCell.secLists[item])
-                                else:
-                                    secList.append(item)
-                        else:
-                            secList = [subConnParam['sec']]
+                        # set sections to be used
+                        secList = postCell._setConnSections(subConnParam)
                         
                         # Uniform distribution
                         if subConnParam.get('density', None) == 'uniform':

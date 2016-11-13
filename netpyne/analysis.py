@@ -10,9 +10,9 @@ from netpyne import __gui__
 
 if __gui__:
     from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums, text, log10
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, ion, subplots_adjust, subplots, tight_layout, get_fignums, text, log10
     from matplotlib import gridspec
-
+    from matplotlib import mlab
 from scipy import size, array, linspace, ceil, cumsum
 from numbers import Number
 import math
@@ -82,6 +82,70 @@ def _saveFigData(figData, fileName, type=''):
             json.dump(figData, fileObj)
     else: 
         print 'File extension to save figure data not recognized: %s'%(ext)
+
+
+import numpy
+
+
+######################################################################################################################################################
+## Smooth 1d signal
+######################################################################################################################################################
+def _smooth1d(x,window_len=11,window='hanning'):
+    """smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+
+    input:
+        x: the input signal
+        window_len: the dimension of the smoothing window; should be an odd integer
+        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+            flat window will produce a moving average smoothing.
+
+    output:
+        the smoothed signal
+
+    example:
+
+    t=linspace(-2,2,0.1)
+    x=sin(t)+randn(len(t))*0.1
+    y=smooth(x)
+
+    see also:
+
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    scipy.signal.lfilter
+
+    TODO: the window parameter could be the window itself if an array instead of a string
+    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    """
+
+    if x.ndim != 1:
+        raise ValueError, "smooth only accepts 1 dimension arrays."
+
+    if x.size < window_len:
+        raise ValueError, "Input vector needs to be bigger than window size."
+
+
+    if window_len<3:
+        return x
+
+
+    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+
+
+    s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+    #print(len(s))
+    if window == 'flat': #moving average
+        w=numpy.ones(window_len,'d')
+    else:
+        w=eval('numpy.'+window+'(window_len)')
+
+    y=numpy.convolve(w/w.sum(),s,mode='valid')
+    return y[(window_len/2-1):-(window_len/2)]
 
 
 ######################################################################################################################################################
@@ -522,7 +586,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, 
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, 
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
@@ -531,6 +595,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - binSize (int): Size in ms of spike bins (default: 5)
         - Fs (float): PSD sampling frequency used to calculate the Fourier frequencies (default: 200)
+        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
@@ -610,14 +675,21 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             title (str(subset), fontsize=fontsiz)
             color = 'blue'
         
-        power = psd(histoCount, Fs=Fs, linewidth=1.0, color=color)
-        #h=axes()
-        #h.set_yticklabels([])
+        power = mlab.psd(histoCount, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
 
-        if iplot == 0: 
-            xlabel('Frequency (Hz)', fontsize=fontsiz)
-            ylabel('Power', fontsize=fontsiz) # add yaxis in opposite side
-        xlim([0, (Fs/2)])
+        if smooth:
+            signal = _smooth1d(10*log10(power[0]), smooth)
+        else:
+            signal = 10*log10(power[0])
+        freqs = power[1]
+
+
+        plot(freqs, signal, linewidth=1.5, color=color)
+
+        xlabel('Frequency (Hz)', fontsize=fontsiz)
+        ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
+        xlim([0, (Fs/2)-1])
 
     if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
         try:

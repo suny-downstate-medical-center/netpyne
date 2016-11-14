@@ -102,8 +102,8 @@ def setSimCfg (cfg):
     else:
         sim.cfg = specs.SimConfig()  # create new object
 
-    if cfg.simLabel and cfg.saveFolder:
-        cfg.filename = cfg.saveFolder+'/'+cfg.simLabel
+    if sim.cfg.simLabel and sim.cfg.saveFolder:
+        sim.cfg.filename = sim.cfg.saveFolder+'/'+sim.cfg.simLabel
 
 
 ###############################################################################
@@ -122,7 +122,7 @@ def createParallelContext ():
 ###############################################################################
 # Load netParams from cell
 ###############################################################################
-def loadNetParams (filename, data=None, setLoaded=False):
+def loadNetParams (filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
@@ -340,7 +340,7 @@ def clearAll():
 
         import matplotlib
         matplotlib.pyplot.clf()
-        matplotlib.pyplot.close()
+        matplotlib.pyplot.close('all')
 
     del sim.net
 
@@ -661,7 +661,7 @@ def getCellsList(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids)) 
             #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         
@@ -692,8 +692,12 @@ def preRun():
 
     if sim.cfg.cvode_active:
         h.cvode.active(1)
+    else:
+        h.cvode.active(0)
 
     if sim.cfg.cache_efficient:
+        h.cvode.cache_efficient(1)
+    else:
         h.cvode.cache_efficient(0)
 
     h.dt = sim.cfg.dt  # set time step

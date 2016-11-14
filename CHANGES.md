@@ -1,3 +1,27 @@
+# Version 0.6.4
+
+- Added function plotRatePSD to plot firing rate power spectral density 
+
+- Added plotShape to plot 3D morphology of cell and synapse locations
+
+- Added option to skip batch sims if output file already exists
+
+- Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
+
+- All section now include argument cell=self to differentiate them 
+
+- Fixed bug positioning cells with 3d geom
+
+- Fixed bug in sim.clearAll by closing all figures instead of current (issue #168)
+
+- Fixed bug: cache_efficient was not being turned on
+
+- Fixed bug setting simConfig loaded from file
+
+- Fixed bug in plotRaster inverseOrder option
+
+- Fixed str vs basestring in analysis.py and simFuncs.py
+
 # Version 0.6.3
 
 - Added cvode_active simConfig option to set variable time step (issue #116)

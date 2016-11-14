@@ -122,6 +122,7 @@ simConfig.saveDpk = False # save to a .dpk pickled file
 
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = True # Whether or not to plot a raster
-simConfig.analysis['plotTraces'] = {'include': [1,51]} # plot recorded traces for this list of cells
+simConfig.analysis['plotRaster'] = {'orderInverse': False} #True # Whether or not to plot a raster
+#simConfig.analysis['plotTraces'] = {'include': [1,51]} # plot recorded traces for this list of cells
+simConfig.analysis['plotRatePSD'] = {'include': ['allCells', 'PYR_HH', 'PYR_Izhi'], 'Fs': 200, 'smooth': 10} # plot recorded traces for this list of cells
 

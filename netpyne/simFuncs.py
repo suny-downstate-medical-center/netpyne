@@ -2020,6 +2020,13 @@ if neuromlExists:
                     #print("c: %s, area: %s, sc: %s"%(capTotSI, area, specCapNeu))
                     
                     soma['geom']['cm'] = specCapNeu
+                # PyNN cells
+                elif hasattr(component_obj,'cm') and 'IF_c' in str(type(component_obj)):
+                    capTotSI = component_obj.cm * 1e-9
+                    area = math.pi * default_diam * default_diam
+                    specCapNeu = 10e13 * capTotSI / area
+                    
+                    soma['geom']['cm'] = specCapNeu
                 else:
                     
                     soma['geom']['cm'] = 318.319
@@ -2226,6 +2233,8 @@ if neuromlExists:
                     threshold = 0
             elif hasattr(preComp,'thresh'):
                 threshold = pynml.convert_to_units(preComp.thresh,'mV')
+            elif hasattr(preComp,'v_thresh'):
+                threshold = float(preComp.v_thresh) # PyNN cells...
             else:
                 threshold = 0
 

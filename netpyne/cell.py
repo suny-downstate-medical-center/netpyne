@@ -590,8 +590,8 @@ class Cell (object):
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
+                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i],params['threshold']))
 
 
     def modifyConns (self, params):

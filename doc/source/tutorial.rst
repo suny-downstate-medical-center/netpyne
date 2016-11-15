@@ -110,7 +110,7 @@ The image below illustrates this process:
 	:width: 50%
 	:align: center
 
-We will now create a new model file (call it ``tut2.py``) where we will specify from scratch all the network parameters. To create the structures that will hold the network parameters add the following code:
+We will now create a new model file (call it ``tut2.py``) where we will specify from scratch all the network parameters. To create the structures that will hold the network parameters add the following code::
 
 	from netpyne import specs, sim
 
@@ -130,6 +130,8 @@ First, we need to create some populations for our network, by adding items to th
 * ``cellModel`` - an attribute or tag that will be assigned to cells in this population, can later be used to set specific cell model implementation for cells with this tag. Eg. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007b' (Izhikevich 2007 point neuron model). Cell models can be defined by the user or imported.
 
 We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor), with ``20`` cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell). 
+
+::
 
 	## Population parameters
 	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 

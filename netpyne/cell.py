@@ -208,7 +208,7 @@ class Cell (object):
                 for ionName,ionParams in sectParams['ions'].iteritems(): 
                     if ionName not in sec['ions']: 
                         sec['ions'][ionName] = Dict()
-                    # Assume a mechanism using this ion is already present...
+                    sec['hSec'].insert(ionName+'_ion')    # insert mechanism
                     for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment

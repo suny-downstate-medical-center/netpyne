@@ -38,10 +38,10 @@ cellRule['secs'][somaSec]['spikeGenLoc'] = 0.5
 netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'cellModel': 'Mainen'}, 
 	fileName='mainen.py', cellName='PYR2')
 
-### Friesen
-cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
-	fileName='friesen.py', cellName='MakeRSFCELL')
-cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
+# ### Friesen
+# cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
+# 	fileName='friesen.py', cellName='MakeRSFCELL')
+# cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 
 ### Izhi2003a (independent voltage)
 cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
@@ -68,6 +68,13 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, '
  
 
 ## Connectivity params
+# netParams.connParams['izhi07a->izhi07a'] = {
+# 	'preConds': {'popLabel': 'Izhi07a_pop'}, 'postConds': {'cellModel': ['Izhi2003b']}, # background -> PYR (weight=0.1)
+# 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
+# 	'weight': 0.1, 			# synaptic weight 
+# 	'delay': 5,					# transmission delay (ms) 
+# 	'sec': 'soma'}		
+
 netParams.connParams['bg1'] = {
 	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
@@ -78,7 +85,7 @@ netParams.connParams['bg1'] = {
 netParams.connParams['bg2'] = {
 	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
-	'weight': 5, 				# synaptic weight 
+	'weight': 0.1, 				# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'synMech':'AMPA',
 	'sec': 'soma'}				
@@ -96,7 +103,7 @@ netParams.connParams['recurrent'] = {
 simConfig = specs.SimConfig()					# object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
-simConfig.verbose = False			# Show detailed messages 
+simConfig.verbose = 1			# Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name

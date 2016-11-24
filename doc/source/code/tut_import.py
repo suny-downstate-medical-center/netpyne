@@ -91,12 +91,20 @@ netParams.connParams['recurrent'] = {
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'}				# section to connect to
 
-# netParams.connParams['izhi07a->izhi07a'] = {
-# 	'preConds': {'popLabel': 'HH_pop'}, 'postConds': {'popLabel': 'Izhi07a_pop'}, # background -> PYR (weight=0.1)
-# 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
-# 	'weight': 5, 			# synaptic weight 
-# 	'delay': 5,					# transmission delay (ms) 
-# 	'sec': 'soma'}		
+netParams.connParams['HH->izhi07a'] = {
+	'preConds': {'popLabel': 'HH_pop'}, 'postConds': {'popLabel': 'Izhi07a_pop'}, # background -> PYR (weight=0.1)
+	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
+	'weight': 5, 			# synaptic weight 
+	'delay': 5,					# transmission delay (ms) 
+	'sec': 'soma'}		
+
+netParams.connParams['izhi07a->HH'] = {
+	'preConds': {'popLabel': 'Izhi07a_pop'}, 'postConds': {'popLabel': 'HH_pop'}, # background -> PYR (weight=0.1)
+	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
+	'weight': 0.1, 			# synaptic weight 
+	'delay': 5,					# transmission delay (ms) 
+	'sec': 'soma'}		
+
 
 # Simulation options
 simConfig = specs.SimConfig()					# object of class SimConfig to store simulation configuration

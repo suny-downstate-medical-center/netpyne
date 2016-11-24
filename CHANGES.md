@@ -22,6 +22,8 @@
 
 - Fixed str vs basestring in analysis.py and simFuncs.py
 
+- Fixed bug due to not inserting ions in section
+
 # Version 0.6.3
 
 - Added cvode_active simConfig option to set variable time step (issue #116)

@@ -389,7 +389,7 @@ class Cell (object):
                             secLabelNetCon = synParamValue.get('sec', 'soma')
                             locNetCon = synParamValue.get('loc', 0.5)
                             secNetCon = self.secs.get(secLabelNetCon, None)
-                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech['hSyn'], sec=secNetCon['hSec'])
+                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hSec'])
                             for paramName,paramValue in synParamValue.iteritems():
                                 if paramName == 'weight':
                                     synMech['hNetcon'].weight[0] = paramValue
@@ -534,7 +534,24 @@ class Cell (object):
 
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
-            
+
+            if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
+                preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                postGapId = preGapId + 1  # global index for postsyn gap junc
+                sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
+                if not getattr(sim.net, 'preGapJunctions', False): 
+                    sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+                preGapParams = {'gid': params['preGid'],
+                                'preGid': self.gid, 
+                                'sec': params.get('preSec', 'soma'), 
+                                'loc': params.get('preLoc', 0.5), 
+                                'weight': params['weight'], 
+                                'gapId': preGapId,
+                                'preGapId': postGapId,
+                                'synMech': params['synMech'],
+                                'gapJunction': 'pre'}
+                sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
+
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -546,28 +563,46 @@ class Cell (object):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
+                if params.get('gapJunction', 'False') == True:  # only run for post gap junc (not pre)
+                    connParams['gapId'] = postGapId
+                    connParams['preGapId'] = preGapId
+                    connParams['gapJunction'] = 'post'
                 self.conns.append(Dict(connParams))                
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
-                if pointp:
-                    sec = self.secs[secLabels[0]]
-                    postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
-                else:
+                # gap junctions
+                if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
+                    synMechs[i]['hSyn'].weight = weights[i]
+                    sourceVar = self.secs[synMechSecs[i]]['hSec'](synMechLocs[i])._ref_v
+                    targetVar = synMechs[i]['hSyn']._ref_vgap  # assumes variable is vgap -- make a parameter
                     sec = self.secs[synMechSecs[i]]
-                    postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
+                    sim.pc.target_var(targetVar, connParams['gapId'])
+                    self.secs[synMechSecs[i]]['hSec'].push()
+                    sim.pc.source_var(sourceVar, connParams['preGapId'])
+                    h.pop_section()
+                    netcon = None
 
-                if netStimParams:
-                    netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
-                else:
-                    netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                
-                netcon.weight[weightIndex] = weights[i]  # set Netcon weight
-                netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = params['threshold']  # set Netcon threshold
-                self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+                # connections using NetCons
+                else:  
+                    if pointp:
+                        sec = self.secs[secLabels[0]]
+                        postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
+                    else:
+                        sec = self.secs[synMechSecs[i]]
+                        postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
+
+                    if netStimParams:
+                        netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
+                    else:
+                        netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+                    
+                    netcon.weight[weightIndex] = weights[i]  # set Netcon weight
+                    netcon.delay = delays[i]  # set Netcon delay
+                    netcon.threshold = params['threshold']  # set Netcon threshold
+                    self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
                 # Add time-dependent weight shaping
@@ -1073,11 +1108,11 @@ class Cell (object):
 
 ###############################################################################
 #
-# POINT NEURON CLASS (v not from Section)
+# ARTIFICIAL CELL CLASS (no sections)
 #
 ###############################################################################
 
-class PointNeuron (Cell):
+class ArtifCell (Cell):
     '''
     Point Neuron that doesn't use v from Section - TO DO
     '''

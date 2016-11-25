@@ -686,6 +686,7 @@ def preRun():
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(cell.initV))
 
+    # cvode variables
     if not getattr(h, 'cvode', None):
         h('objref cvode')
         h('cvode = new CVode()')
@@ -700,17 +701,23 @@ def preRun():
     else:
         h.cvode.cache_efficient(0)
 
-    h.dt = sim.cfg.dt  # set time step
+    # time vars
+    h.dt = sim.cfg.dt  
     h.tstop = sim.cfg.duration
+    
+    # h params
     for key,val in sim.cfg.hParams.iteritems(): 
         try:
             setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
         except:
             print '\nError: could not set %s = %s' % (key, str(val))
+    
+    # parallelcontext vars
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
     if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
-    
+    sim.pc.setup_transfer()  # setup transfer of source_var to target_var
+
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():

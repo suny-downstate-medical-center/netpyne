@@ -1,5 +1,7 @@
 # Version 0.6.4
 
+- Added support for gap junction (electrical synapse) connections
+
 - Added function plotRatePSD to plot firing rate power spectral density 
 
 - Added plotShape to plot 3D morphology of cell and synapse locations

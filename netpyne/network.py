@@ -38,7 +38,7 @@ class Network (object):
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
         self.lastGid = 0  # keep track of last cell gid 
-
+        self.lastGapId = 0  # keep track of last gap junction gid 
 
 
     ###############################################################################
@@ -453,6 +453,12 @@ class Network (object):
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
+        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                cell.addConn(preGapParams)
+
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
             self.subcellularConn(allCellTags, allPopTags)
@@ -823,6 +829,7 @@ class Network (object):
             'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
+            if connParam.get('gapJunction', False): params['gapJunction'] = connParam.get('gapJunction')
 
             postCell.addConn(params=params, netStimParams=connParam.get('netStimParams'))
 

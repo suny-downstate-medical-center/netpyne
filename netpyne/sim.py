@@ -12,7 +12,7 @@ from simFuncs import *
 from wrappers import *
 import analysis
 from network import Network
-from cell import Cell, PointNeuron
+from cell import Cell
 from pop import Pop 
 import utils
 from neuron import h

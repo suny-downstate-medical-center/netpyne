@@ -48,6 +48,7 @@ cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'e
 cellParams.conds = {'cellType': 'PYR'}
 netParams.addCellParams('PYR', cellParams)
 
+# Connections
 netParams.connParams['bg->PYR1'] = {
     'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'PYR1'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
@@ -55,28 +56,14 @@ netParams.connParams['bg->PYR1'] = {
     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 netParams.addConnParams('PYR1->PYR2',
-    {'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'}, # PYR1 -> PYR2
-    'weight': 200.0,                    # fixed weight of 0.08
-    'synMech': 'esyn',                     # target NMDA synapse
+    {'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
+    'weight': 200.0,              
+    'synMech': 'esyn',                   
     'gapJunction': True,
     'sec': 'soma',
     'loc': 0.5,
     'preSec': 'soma',
     'preLoc': 0.5})        
-
-
-# if (isCellOnNode("SampleCellGroup", 1)) {
-#     a_SampleCellGroup[1].Soma { elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0] = new ElectSyn(0.5) }
-#     elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0].weight = 1.0
-#     pnm.pc.target_var(&elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0].vgap, 100000000)
-#     pnm.pc.source_var(&a_SampleCellGroup[1].Soma.v(0.5), 200000000)
-# }
-# if (isCellOnNode("SampleCellGroup", 0)) {
-#     a_SampleCellGroup[0].Soma { elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0] = new ElectSyn(0.5) }
-#     elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0].weight = 1.0
-#     pnm.pc.target_var(&elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0].vgap, 200000000)
-#     pnm.pc.source_var(&a_SampleCellGroup[0].Soma.v(0.5), 100000000)
-# }
 
 
 ###############################################################################
@@ -94,8 +81,6 @@ simConfig.verbose = 1 #False  # show detailed messages
 # Recording 
 simConfig.recordCells = []# [1,2]  # which cells to record from
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
-#'AMPA_i': {'synMech':'homSyn', 'var':'i'}}
-#'AMPA_i': {'synMech':'homSyn', 'sec': 'dend', 'loc': 0.775, 'var':'i'}}
 
 simConfig.recordStim = True  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -104,11 +89,6 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'mpiHHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveJson = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveMat = 0 # Whether or not to write spikes etc. to a .mat file
-simConfig.saveDpk = 0 # save to a .dpk pickled file
-simConfig.saveHDF5 = 0
-simConfig.saveCSV = 0
 
 # # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})

@@ -302,6 +302,8 @@ class Network (object):
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+                        if 'NetStim' in [x['cellModel'] for x in preCellsTags.values()]: # temporary fix to include netstim conns 
+                            allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                         # group synMechs so they are not distributed separately
                         if subConnParam.get('groupSynMechs', None):  
@@ -327,7 +329,7 @@ class Network (object):
                         if subConnParam.get('density', None) == 'uniform':
                             # calculate new syn positions
                             newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
-
+                            
                         # 2D map and 1D map (radial)
                         elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
                             
@@ -526,7 +528,7 @@ class Network (object):
                     if not 'start' in prePop: prePop['start'] = 1  # add default start time
                     if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
                 preCellsTags = prePops
-        
+
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
             for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria

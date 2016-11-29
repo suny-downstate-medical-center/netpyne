@@ -2436,7 +2436,6 @@ Plotting 2D representation of network cell locations and connections...
 
 *** 380x120x380 (less conns, with subcell)
 
-
 * 16jul20 Matplotlib errors
 - http://stackoverflow.com/questions/4130355/python-matplotlib-framework-under-macosx
 - fixed by adding 'backend: Agg' to ~/.matplotlib/matplotlibrc
@@ -2717,6 +2716,37 @@ type                       1094
 
 - huge leakge with plotSpikeHist
 
+* 16nov23 Adding support for gap junctions
+** useful links
+http://www.neuron.yale.edu/neuron/static/new_doc/modelspec/programmatic/network/parcon.html?highlight=gap%20junction
+https://senselab.med.yale.edu/ModelDB/ShowModel.cshtml?model=97917
+https://senselab.med.yale.edu/ModelDB/ShowModel.cshtml?model=97917
+
+** example from padraig
+if (isCellOnNode("SampleCellGroup", 1)) {
+    a_SampleCellGroup[1].Soma { elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0] = new ElectSyn(0.5) }
+    elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0].weight = 1.0
+    pnm.pc.target_var(&elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_A[0].vgap, 100000000)
+    pnm.pc.source_var(&a_SampleCellGroup[1].Soma.v(0.5), 200000000)
+}
+if (isCellOnNode("SampleCellGroup", 0)) {
+    a_SampleCellGroup[0].Soma { elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0] = new ElectSyn(0.5) }
+    elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0].weight = 1.0
+    pnm.pc.target_var(&elecsyn_NetConn_SampleCellGroup_SampleCellGroup_ElectSyn_B[0].vgap, 200000000)
+    pnm.pc.source_var(&a_SampleCellGroup[0].Soma.v(0.5), 100000000)
+}
+
+** issues
+- bidirectional
+- requires creating synMechs both in presyn and postsyn
+- requires creating conns from pre->post and post->pre
+- need to do at the network.py level so can call createConn func for both cells
+- requires specifying sec and loc of source cell as well as of target cell -- add preSec and preLoc
+
+- create a temporal list with the presyn cells and ids, and create the synMech, target_var and source_var with the
+  appropriate ids after connections have been created. 
+- check that it plays well with subcellular distributions
+- check that no duplicates are created 
 
 * Netpyne Models/Users
 ** Github examples folder
@@ -2741,7 +2771,6 @@ Neuron using Python.  All the best, Lucas
 Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
-
 
 * Related tools
 ** NEURON

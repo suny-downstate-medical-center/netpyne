@@ -38,7 +38,7 @@ class Network (object):
         self.lid2gid = [] # Empty list for storing local index -> GID (index = local id; value = gid)
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
         self.lastGid = 0  # keep track of last cell gid 
-
+        self.lastGapId = 0  # keep track of last gap junction gid 
 
 
     ###############################################################################
@@ -302,6 +302,8 @@ class Network (object):
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
+                        if 'NetStim' in [x['cellModel'] for x in preCellsTags.values()]: # temporary fix to include netstim conns 
+                            allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                         # group synMechs so they are not distributed separately
                         if subConnParam.get('groupSynMechs', None):  
@@ -327,7 +329,7 @@ class Network (object):
                         if subConnParam.get('density', None) == 'uniform':
                             # calculate new syn positions
                             newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
-
+                            
                         # 2D map and 1D map (radial)
                         elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
                             
@@ -453,6 +455,12 @@ class Network (object):
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
+        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                cell.addConn(preGapParams)
+
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
             self.subcellularConn(allCellTags, allPopTags)
@@ -520,7 +528,7 @@ class Network (object):
                     if not 'start' in prePop: prePop['start'] = 1  # add default start time
                     if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
                 preCellsTags = prePops
-        
+
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
             for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
@@ -823,6 +831,7 @@ class Network (object):
             'plast': connParam.get('plast')}
             
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
+            if connParam.get('gapJunction', False): params['gapJunction'] = connParam.get('gapJunction')
 
             postCell.addConn(params=params, netStimParams=connParam.get('netStimParams'))
 

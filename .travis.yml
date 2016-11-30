@@ -9,53 +9,53 @@ addons:
     - python-numpy 
     - python-scipy 
     - python-matplotlib 
+    - python-tk
     - python-sympy
     - python-tables 
 
 language: python
 python: 2.7
 
-env:
+virtualenv:
     system_site_packages: true  
-    
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
 
 install:
+    # Install OMV to facilitate installation of packages below
     - pip install git+https://github.com/OpenSourceBrain/osb-model-validation
-    
     # Need to pre install NEURON so nrnivmodl can be run targeting mod files in a different directory
     - omv install NEURON
+    # Need to pre install pyNeuroML to test export to NeuroML 2
+    - omv install pyNeuroML
+    # Main install for NetPyNE
     - python setup.py install
     - export NEURON_HOME=/home/travis/neuron/nrn/x86_64/
-  
 
 script:
-    - cp examples/HHTut/HHTut.py doc/source/code/
-    - cd doc/source/code/
-    - $NEURON_HOME/bin/nrnivmodl mod
-    - python tut1.py
-    - python tut2.py
-    - python tut3.py
-    - python tut5.py
-    - python tut6.py
-    - python tut_import.py
-    - cd ../../../examples
-    - python HHTut/HHTut_run.py
-    - python HybridTut/HybridTut_run.py
-    - cd M1
+    # - cp examples/HHTut/HHTut.py doc/source/code/
+    # - cd doc/source/code/
+    # - $NEURON_HOME/bin/nrnivmodl mod
+    # - python tut1.py
+    # - python tut2.py
+    # - python tut3.py
+    # - python tut5.py
+    # - python tut6.py
+    # - python tut_import.py
+    - cd examples/HHTut
+    - python HHTut_run.py -nogui
+    - cd ../HybridTut
     - $NEURON_HOME/bin/nrnivmodl
-    - python M1/M1_run.py
-    - cd ../RL_arm
+    - python HybridTut_run.py -nogui
+    - cd ../M1
     - $NEURON_HOME/bin/nrnivmodl
-    - python RL_arm/main.py
+    - python M1_run.py -nogui
+    # - cd ../RL_arm
+    # - $NEURON_HOME/bin/nrnivmodl
+    # - python main.py
 
 
 notifications: 
     email: false
-    slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
+    #slack: neurosim:pj4DaRn3CrmH6hSRV0zBhfjS
 
 
 

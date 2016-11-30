@@ -335,9 +335,11 @@ class Network (object):
                             
                             gridY = subConnParam['density']['gridY']
                             gridSigma = subConnParam['density']['gridValues']
-
-                            if subConnParam['density']['type'] == '2Dmap': # 2D
-                                somaX, _, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # move method to Cell!
+                            somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
+                            if subConnParam['density'].get('fixedSomaY', None):  # is fixed cell soma y, adjust y grid accordingly
+                                fixedSomaY = subConnParam['density'].get('fixedSomaY')
+                                gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
+                            if subConnParam['density']['type'] == '2Dmap': # 2D    
                                 gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
                                 segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
                             elif subConnParam['density']['type'] == '1Dmap': # 1D

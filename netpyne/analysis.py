@@ -936,9 +936,6 @@ def plotShape (showSyns = True, include = [], style = '.', siz=10, figSize = (10
     return fig
 
 
-
-
-
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
@@ -1336,6 +1333,153 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     if showFig: _showFigure()
 
     return fig
+
+
+######################################################################################################################################################
+## Calculate normalized transfer entropy
+######################################################################################################################################################
+def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, trange = [0,1000], binSize = 20, numShuffle = 30):
+    ''' 
+    Calculate normalized transfer entropy
+        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
+        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
+         subset of cells in network
+        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
+        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
+        - trange ([min, max]): Range of time to calculate nTE in ms (default: [0,1000])
+        - binSize (int): Bin size used to convert spike times into histogram 
+        - numShuffle (int): Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P)
+
+        - Returns nTE (float): normalized transfer entropy 
+    '''
+
+    from neuron import h
+    import numpy as np
+    import netpyne
+    import os
+            
+    root = os.path.dirname(netpyne.__file__)
+    
+    if 'nte' not in dir(h): 
+        try: 
+            print ' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root)
+            os.system('cd ' + root + '; nrnivmodl support')
+            from neuron import load_mechanisms
+            load_mechanisms(root)
+            print ' Compilation of support folder mod files successful'
+        except:
+            print ' Error compiling support folder mod files'
+            return
+
+    h.load_file(root+'/support/nte.hoc') # nTE code (also requires support/net.mod)
+    
+    if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells1)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks1 = list(spkts)
+
+    if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells2)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks2 = list(spkts)
+
+
+    inputVec = h.Vector()
+    outputVec = h.Vector()
+    histo1 = histogram(spks1, bins = np.arange(trange[0], trange[1], binSize))
+    histoCount1 = histo1[0] 
+    histo2 = histogram(spks2, bins = np.arange(trange[0], trange[1], binSize))
+    histoCount2 = histo2[0] 
+
+    inputVec.from_python(histoCount1)
+    outputVec.from_python(histoCount2)
+    out = h.normte(inputVec, outputVec, numShuffle)
+    TE, H, nTE, _, _ = out.to_python()
+    return nTE
+
+
+######################################################################################################################################################
+## Calculate granger causality
+######################################################################################################################################################
+def granger(spk1, spk2, binSize=5, trange=[0,2000]):
+    """
+    Typical usage is as follows:
+    from bsmart import pwcausalr
+    F,pp,cohe,Fx2y,Fy2x,Fxy=pwcausalr(x,ntrls,npts,p,fs,freq);
+
+    Outputs:
+        F is the frequency vector for the remaining quantities
+    pp is the spectral power
+    cohe is the coherence
+    Fx2y is the causality of channel X to channel Y
+    Fy2x is the causality of channel Y to channel X
+    Fxy is the "instantaneous" causality (cohe-Fx2y-Fy2x I think)
+    Inputs:
+    x is the data for at least two channels, e.g. a 2x8000 array consisting of two LFP time series
+    ntrls is the number of trials (whatever that means -- just leave it at 1)
+    npts is the number of points in the data (in this example, 8000)
+    p is the order of the polynomial fit (e.g. 10 for a smooth fit, 20 for a less smooth fit)
+    fs is the sampling rate (e.g. 200 Hz)
+    freq is the maximum frequency to calculate (e.g. fs/2=100, which will return 0:100 Hz)
+    """
+    
+    from pylab import histogram, plot, show
+    import numpy as np
+    from support.bsmart import pwcausalr
+
+    histo1 = histogram(spk1, bins = np.arange(trange[0], trange[1], binSize))
+    histoCount1 = histo1[0] 
+
+    histo2 = histogram(spk2, bins = np.arange(trange[0], trange[1], binSize))
+    histoCount2 = histo2[0] 
+
+    fs = 1000/binSize
+    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, fs/2)
+
+    return F, Fx2y[0],Fy2x[0], Fxy[0]
+
 
 
 ######################################################################################################################################################

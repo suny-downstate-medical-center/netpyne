@@ -1343,7 +1343,6 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
     Calculate normalized transfer entropy
         - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
         - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-         subset of cells in network
         - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
         - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
         - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])

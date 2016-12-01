@@ -867,7 +867,6 @@ Analysis-related functions
 
     - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
     - *cells2*: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-     subset of cells in network
     - spks1: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
     - spks2: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
     - timeRange: Range of time to calculate nTE in ms ([min, max])
@@ -892,10 +891,8 @@ Analysis-related functions
     - binSize (int): Bin size used to convert spike times into histogram 
     - plotFug (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
     - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-    - saveFig (None|'fileName'): File name where to save the figure;
-        if set to True uses filename from simConfig (default: None)(default: None)
-    - showFig (True|False): Whether to show the figure or not;
-        if set to True uses filename from simConfig (default: None)
+    - saveFig (None|'fileName'): File name where to save the figure; if set to True uses filename from simConfig (default: None)(default: None)
+    - showFig (True|False): Whether to show the figure or not; if set to True uses filename from simConfig (default: None)
 
     Returns: 
     - F: list of freqs

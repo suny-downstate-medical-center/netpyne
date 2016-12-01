@@ -861,6 +861,51 @@ Analysis-related functions
     - Returns figure handles
 
 
+* **analysis.nTE** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30)
+
+    Calculate normalized transfer entropy
+
+    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *cells2*: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+     subset of cells in network
+    - spks1: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
+    - spks2: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
+    - timeRange: Range of time to calculate nTE in ms ([min, max])
+    - binSize: Bin size used to convert spike times into histogram (int)
+    - numShuffle: Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (int)
+
+    - Returns nTE: normalized transfer entropy (float)
+
+
+* **analysis.granger** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2',
+	timeRange = None, binSize=5, plotFig = True, saveData = None, saveFig = None, showFig = True):
+  
+    Calculate and optionally plot Granger Causality 
+
+    - cells1: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - cells2: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
+    - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
+    - label1 (string): Label for spike train 1 to use in plot
+    - label2 (string): Label for spike train 2 to use in plot
+    - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
+    - binSize (int): Bin size used to convert spike times into histogram 
+    - plotFug (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
+    - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+    - saveFig (None|'fileName'): File name where to save the figure;
+        if set to True uses filename from simConfig (default: None)(default: None)
+    - showFig (True|False): Whether to show the figure or not;
+        if set to True uses filename from simConfig (default: None)
+
+    Returns: 
+    - F: list of freqs
+    - Fx2y: causality measure from x to y 
+    - Fy2x: causality from y to x 
+    - Fxy: instantaneous causality between x and y 
+    - fig: Figure handle 
+
+
+
 NOTE: The *include* argument can have the following values:
 	- 'all': all cells and netstims
 	- 'allCells': only all cells

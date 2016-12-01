@@ -1346,7 +1346,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
          subset of cells in network
         - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
         - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
-        - trange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
+        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
         - binSize (int): Bin size used to convert spike times into histogram 
         - numShuffle (int): Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P)
 
@@ -1453,8 +1453,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
     ''' 
     Calculate and optionally plot Granger Causality 
         - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-         subset of cells in network
+        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 2 (default: [])
         - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
         - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
         - label1 (string): Label for spike train 1 to use in plot

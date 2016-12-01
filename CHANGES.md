@@ -2,6 +2,8 @@
 
 - Added analysis.nTE() function to calculate normalized transfer entropy (issue #42)
 
+- Added analysis.granger() function to calculate and plot Spectral Granger Causality (issue #42)
+
 - Added option to fix soma depth for subcellular distributions based on 1d and 2d maps
 
 - Improved import of multicompartmental cells from NeuroML2

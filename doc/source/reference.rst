@@ -757,7 +757,7 @@ Misc/utilities:
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True) 
+* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
     Plot raster (spikes over time) of network cells. Optional arguments:
 
@@ -766,6 +766,8 @@ Analysis-related functions
     - *maxSpikes*: maximum number of spikes that will be plotted (int)
     - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
     - *orderInverse*: Invert the y-axis order (True|False)
+	- *labels*: Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))
+    - *popRates*: Include population rates ('legend'|'overlay')
     - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
     - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
     - *syncLines*: calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)
@@ -795,6 +797,23 @@ Analysis-related functions
     - Returns figure handle
     
 
+* **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+     
+    Plot spikes power spectral density (PSD). Optional arguments:
+
+    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *binSize*: Size in ms of each bin (int)
+    - *Fs*: PSD sampling frequency used to calculate the Fourier frequencies (float)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle and power array
+
+
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
     Plot recorded traces (specified in ``simConfig.recordTraces)`. Optional arguments: 
@@ -804,6 +823,19 @@ Analysis-related functions
     - *overlay*: Whether to overlay the data lines or plot in separate subplots (True|False)
     - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace')
     - *rerun*: rerun simulation so new set of cells gets recorded (True|False)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+
+
+* **plotShape** (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot 3D cell shape using NEURON Interview PlotShape
+    
+    - *showSyns*: Show synaptic connections in 3D (True|False) 
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
     - *saveFig*: File name where to save the figure (None|'fileName')
@@ -840,6 +872,48 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handles
+
+
+* **analysis.nTE** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30)
+
+    Calculate normalized transfer entropy
+
+    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *cells2*: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
+    - *timeRange*: Range of time to calculate nTE in ms ([min, max])
+    - *binSize*: Bin size used to convert spike times into histogram (int)
+    - *numShuffle*: Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (int)
+
+    - Returns nTE: normalized transfer entropy (float)
+
+
+* **analysis.granger** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2',
+	timeRange = None, binSize=5, plotFig = True, saveData = None, saveFig = None, showFig = True):
+  
+    Calculate and optionally plot Granger Causality 
+
+    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - cells2: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
+    - *label1*: Label for spike train 1 to use in plot (string)
+    - *label2*: Label for spike train 2 to use in plot (string)
+    - *timeRange*: Range of time to calculate nTE in ms  ([min, max])
+    - *binSize*: Bin size used to convert spike times into histogram 
+    - *plotFig*: Whether to plot a figure showing Granger Causality Fx2y and Fy2x (True|False)
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    Returns: 
+    - *F*: list of freqs
+    - *Fx2y*: causality measure from x to y 
+    - *Fy2x*: causality from y to x 
+    - *Fxy*: instantaneous causality between x and y 
+    - *fig*: Figure handle 
+
 
 
 NOTE: The *include* argument can have the following values:

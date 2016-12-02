@@ -10,10 +10,10 @@ from netpyne import __gui__
 
 if __gui__:
     from matplotlib.pylab import transpose, nanmax, nanmin, errstate, bar, histogram, floor, ceil, yticks, arange, gca, scatter, figure, hold, subplot, axes, shape, imshow, \
-    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, psd, ion, subplots_adjust, subplots, tight_layout, get_fignums
+    colorbar, plot, xlabel, ylabel, title, xlim, ylim, clim, show, zeros, legend, savefig, ion, subplots_adjust, subplots, tight_layout, get_fignums, text, log10
     from matplotlib import gridspec
-
-from scipy import size, array, linspace, ceil
+    from matplotlib import mlab
+from scipy import size, array, linspace, ceil, cumsum
 from numbers import Number
 import math
 
@@ -35,7 +35,7 @@ def plotData ():
             if kwargs == True: kwargs = {}
             elif kwargs == False: continue
             func = getattr(sim.analysis, funcName)  # get pointer to function
-            func(**kwargs)  # call function with user arguments
+            out = func(**kwargs)  # call function with user arguments
 
         # Print timings
         if sim.cfg.timing:
@@ -63,7 +63,7 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName, type=''):
-    if not isinstance(fileName, str):
+    if not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     fileName = fileName.split('.')
@@ -82,6 +82,70 @@ def _saveFigData(figData, fileName, type=''):
             json.dump(figData, fileObj)
     else: 
         print 'File extension to save figure data not recognized: %s'%(ext)
+
+
+import numpy
+
+
+######################################################################################################################################################
+## Smooth 1d signal
+######################################################################################################################################################
+def _smooth1d(x,window_len=11,window='hanning'):
+    """smooth the data using a window with requested size.
+
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+
+    input:
+        x: the input signal
+        window_len: the dimension of the smoothing window; should be an odd integer
+        window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
+            flat window will produce a moving average smoothing.
+
+    output:
+        the smoothed signal
+
+    example:
+
+    t=linspace(-2,2,0.1)
+    x=sin(t)+randn(len(t))*0.1
+    y=smooth(x)
+
+    see also:
+
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    scipy.signal.lfilter
+
+    TODO: the window parameter could be the window itself if an array instead of a string
+    NOTE: length(output) != length(input), to correct this: return y[(window_len/2-1):-(window_len/2)] instead of just y.
+    """
+
+    if x.ndim != 1:
+        raise ValueError, "smooth only accepts 1 dimension arrays."
+
+    if x.size < window_len:
+        raise ValueError, "Input vector needs to be bigger than window size."
+
+
+    if window_len<3:
+        return x
+
+
+    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+
+
+    s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
+    #print(len(s))
+    if window == 'flat': #moving average
+        w=numpy.ones(window_len,'d')
+    else:
+        w=eval('numpy.'+window+'(window_len)')
+
+    y=numpy.convolve(w/w.sum(),s,mode='valid')
+    return y[(window_len/2-1):-(window_len/2)]
 
 
 ######################################################################################################################################################
@@ -124,7 +188,7 @@ def getCellsInclude(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             if condition in allNetStimPops:
                 netStimPops.append(condition)
             else:
@@ -147,8 +211,8 @@ def getCellsInclude(include):
 ######################################################################################################################################################
 ## Raster plot 
 ######################################################################################################################################################
-def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, spikeHist = None, 
-        spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Raster plot of network cells 
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -156,9 +220,13 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
         - orderInverse (True|False): Invert the y-axis order (default: False)
+        - labels = ('legend', 'overlay'): Show population labels in a legend or overlayed on one side of raster (default: 'legend')
+        - popRates = (True|False): Include population rates (default: False)
         - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
+        - lw (integer): Line width for each spike (default: 2)
+        - marker (char): Marker for each spike (default: '|')
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -168,6 +236,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
+
 
     print('Plotting raster...')
 
@@ -203,7 +272,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             yorder = [cell['tags'][orderBy] for cell in cells]
 
-        if orderInverse: yorder.reverse()
+        #if orderInverse: yorder.reverse()
 
         sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
@@ -252,6 +321,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkgidColors = spkgidColors[:maxSpikes]
         timeRange[1] =  max(spkts)
 
+
     # Calculate spike histogram 
     if spikeHist:
         histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], spikeHistBin))
@@ -265,15 +335,24 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=subplot(gs[0])
-    ax1.scatter(spkts, spkinds, 10, linewidths=2, marker='|', color = spkgidColors) # Create raster  
+    ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats
+    gidPops = [cell['tags']['popLabel'] for cell in cells]
+    popNumCells = [float(gidPops.count(pop)) for pop in popLabels]
     totalSpikes = len(spkts)   
     totalConnections = sum([len(cell['conns']) for cell in cells])   
     numCells = len(cells)
-    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0# Calculate firing rate 
+    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate 
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
+
+    if popRates:
+        avgRates = {}
+        for pop, popNum in zip(popLabels, popNumCells):
+            if numCells > 0:
+                tsecs = (timeRange[1]-timeRange[0])/1e3 
+                avgRates[pop] = len([spkid for spkid in spkinds if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/popNum/tsecs
     
     # Plot synchrony lines 
     if syncLines: 
@@ -302,12 +381,40 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
     ax1.set_ylim(-1, len(cells)+numNetStims+1)    
 
+    if orderInverse: gca().invert_yaxis()
+
     # Add legend
-    for popLabel in popLabels:
-        plot(0,0,color=popColors[popLabel],label=popLabel)
-    legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-    maxLabelLen = max([len(l) for l in popLabels])
-    subplots_adjust(right=(0.9-0.012*maxLabelLen))
+    if popRates:
+        popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels]
+
+    if labels == 'legend':
+        for ipop,popLabel in enumerate(popLabels):
+            label = popLabelRates[ipop] if popRates else popLabel
+            plot(0,0,color=popColors[popLabel],label=label)
+        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        maxLabelLen = max([len(l) for l in popLabels])
+        rightOffset = 0.85 if popRates else 0.9
+        subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
+    
+    elif labels == 'overlay':
+        ax = gca()
+        color = 'k'
+        tx = 1.01
+        margin = 1.0/numCells/2
+        tys = [(popLen/numCells)*(1-2*margin) for popLen in popNumCells]
+        tysOffset = list(cumsum(tys))[:-1]
+        tysOffset.insert(0, 0)
+        labels = popLabelRates if popRates else popLabels
+        for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):
+            label = popLabelRates[ipop] if popRates else popLabel
+            if orderInverse:
+                finalty = 1.0 - (tyOffset + ty/2.0 - 0.01)
+            else:
+                finalty = tyOffset + ty/2.0 - 0.01
+            text(tx, finalty, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
+        maxLabelLen = max([len(l) for l in labels])
+        subplots_adjust(right=(1.0-0.011*maxLabelLen))
+
 
     # save figure data
     if saveData:
@@ -319,7 +426,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
@@ -399,18 +506,20 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         else: 
             spkinds,spkts = [],[]
 
+
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
         for netStimPop in netStimPops:
-            cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
-            if len(cellStims) > 0:
-                lastInd = max(spkinds) if len(spkinds)>0 else 0
-                spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
-                spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
-                spkts.extend(spktsNew)
-                spkinds.extend(spkindsNew)
-                numNetStims += len(cellStims)
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += len(cellStims)
 
         histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
@@ -461,7 +570,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikeHist.png'
@@ -472,7 +581,152 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     return fig
 
+
+
+######################################################################################################################################################
+## Plot spike histogram
+######################################################################################################################################################
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, 
+    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot firing rate power spectral density (PSD)
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of spike bins (default: 5)
+        - Fs (float): PSD sampling frequency used to calculate the Fourier frequencies (default: 200)
+        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
+    print('Plotting firing rate power spectral density (PSD) ...')
+
+    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+                [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+                [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+                [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+
+    
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    histData = []
+
+    # create fig
+    fig,ax1 = subplots(figsize=figSize)
+    fontsiz = 12
+    
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimPops = getCellsInclude([subset])
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            except:
+                spkinds,spkts = [],[]
+        else: 
+            spkinds,spkts = [],[]
+
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += len(cellStims)
+
+        histo = histogram(spkts, bins = arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1]+binSize/2
+        histoCount = histo[0] 
+        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to rates
+
+        histData.append(histoCount)
+
+        color = colorList[iplot%len(colorList)]
+
+        if not overlay: 
+            subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+            title (str(subset), fontsize=fontsiz)
+            color = 'blue'
         
+        power = mlab.psd(histoCount, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
+
+        if smooth:
+            signal = _smooth1d(10*log10(power[0]), smooth)
+        else:
+            signal = 10*log10(power[0])
+        freqs = power[1]
+
+
+        plot(freqs, signal, linewidth=1.5, color=color)
+
+        xlabel('Frequency (Hz)', fontsize=fontsiz)
+        ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
+        xlim([0, (Fs/2)-1])
+
+    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+        try:
+            tight_layout()
+        except:
+            pass
+
+    # Add legend
+    if overlay:
+        for i,subset in enumerate(include):
+            plot(0,0,color=colorList[i%len(colorList)],label=str(subset))
+        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        maxLabelLen = min(10,max([len(str(l)) for l in include]))
+        subplots_adjust(right=(0.9-0.012*maxLabelLen))
+
+
+    # save figure data
+    if saveData:
+        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'spikeHist')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'spikePSD.png'
+        savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, power
+
+
 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
@@ -610,7 +864,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
@@ -633,6 +887,54 @@ def invertDictMapping(d):
         inv_map[v] = inv_map.get(v, [])
         inv_map[v].append(k)
     return inv_map
+
+
+######################################################################################################################################################
+## Plot cell shape
+######################################################################################################################################################
+def plotShape (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot 3D cell shape using NEURON Interview PlotShape
+        - showSyns (True|False): Show synaptic connections in 3D 
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
+    from neuron import h, gui
+
+    fig = h.Shape()
+    secList = h.SectionList()
+    if showSyns:
+        color = 2 # red
+        for cell in [c for c in sim.net.cells if c.tags['popLabel'] in include]:
+            for sec in cell.secs.values():
+                sec['hSec'].push()
+                secList.append()
+                h.pop_section()
+                for synMech in sec['synMechs']:
+                    if synMech['hSyn']:
+                        fig.point_mark(synMech['hSyn'], color, style, siz) 
+
+    fig.observe(secList)
+    fig.flush()
+
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'shape.ps'
+        fig.printfile(filename)
+
+    
+    return fig
+
 
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
@@ -943,7 +1245,7 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'conn.png'
@@ -992,7 +1294,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     if showConns:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
                     color='red'
@@ -1021,7 +1323,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'2Dnet.png'
@@ -1031,6 +1333,250 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     if showFig: _showFigure()
 
     return fig
+
+
+######################################################################################################################################################
+## Calculate normalized transfer entropy
+######################################################################################################################################################
+def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30):
+    ''' 
+    Calculate normalized transfer entropy
+        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
+        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
+        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
+        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
+        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
+        - binSize (int): Bin size used to convert spike times into histogram 
+        - numShuffle (int): Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P)
+
+        - Returns nTE (float): normalized transfer entropy 
+    '''
+
+    from neuron import h
+    import numpy as np
+    import netpyne
+    import os
+            
+    root = os.path.dirname(netpyne.__file__)
+    
+    if 'nte' not in dir(h): 
+        try: 
+            print ' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root)
+            os.system('cd ' + root + '; nrnivmodl support')
+            from neuron import load_mechanisms
+            load_mechanisms(root)
+            print ' Compilation of support folder mod files successful'
+        except:
+            print ' Error compiling support folder mod files'
+            return
+
+    h.load_file(root+'/support/nte.hoc') # nTE code (also requires support/net.mod)
+    
+    if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells1)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks1 = list(spkts)
+
+    if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells2)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks2 = list(spkts)
+
+    # time range
+    if getattr(sim, 'cfg', None):
+        timeRange = [0,sim.cfg.duration]
+    else:
+        timeRange = [0, max(spks1+spks2)]
+
+    inputVec = h.Vector()
+    outputVec = h.Vector()
+    histo1 = histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount1 = histo1[0] 
+    histo2 = histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount2 = histo2[0] 
+
+    inputVec.from_python(histoCount1)
+    outputVec.from_python(histoCount2)
+    out = h.normte(inputVec, outputVec, numShuffle)
+    TE, H, nTE, _, _ = out.to_python()
+    return nTE
+
+
+######################################################################################################################################################
+## Calculate granger causality
+######################################################################################################################################################
+def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2', timeRange = None, binSize=5, plotFig = True, 
+    saveData = None, saveFig = None, showFig = True):
+    ''' 
+    Calculate and optionally plot Granger Causality 
+        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
+        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 2 (default: [])
+        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
+        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
+        - label1 (string): Label for spike train 1 to use in plot
+        - label2 (string): Label for spike train 2 to use in plot
+        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
+        - binSize (int): Bin size used to convert spike times into histogram 
+        - plotFig (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
+        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
+        - saveFig (None|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)(default: None)
+        - showFig (True|False): Whether to show the figure or not;
+            if set to True uses filename from simConfig (default: None)
+
+        - Returns 
+            F: list of freqs
+            Fx2y: causality measure from x to y 
+            Fy2x: causality from y to x 
+            Fxy: instantaneous causality between x and y 
+            fig: Figure handle 
+    '''
+    
+    import numpy as np
+    from netpyne.support.bsmart import pwcausalr
+
+    if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells1)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks1 = list(spkts)
+
+    if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
+        cells, cellGids, netStimPops = getCellsInclude(cells2)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else: 
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks2 = list(spkts)
+
+
+    # time range
+    if timeRange is None:
+        if getattr(sim, 'cfg', None):
+            timeRange = [0,sim.cfg.duration]
+        else:
+            timeRange = [0, max(spks1+spks2)]
+
+    histo1 = histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount1 = histo1[0] 
+
+    histo2 = histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount2 = histo2[0] 
+
+    fs = 1000/binSize
+    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, fs/2)
+
+
+    # plot granger
+    fig = -1
+    if plotFig:
+        fig = figure()
+        plot(F, Fy2x[0], label = label2 + ' -> ' + label1)
+        plot(F, Fx2y[0], 'r', label = label1 + ' -> ' + label2)
+        xlabel('Frequency (Hz)')
+        ylabel('Granger Causality')
+        legend()
+        
+        # save figure data
+        if saveData:
+            figData = {'cells1': cells1, 'cells2': cells2, 'spks1': cells1, 'spks2': cells2, 'binSize': binSize, 'Fy2x': Fy2x[0], 'Fx2y': Fx2y[0], 
+            'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        
+            _saveFigData(figData, saveData, '2Dnet')
+     
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'2Dnet.png'
+            savefig(filename)
+
+        # show fig 
+        if showFig: _showFigure()
+
+    return F, Fx2y[0],Fy2x[0], Fxy[0], fig
+
 
 
 ######################################################################################################################################################

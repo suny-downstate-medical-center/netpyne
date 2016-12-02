@@ -20,7 +20,7 @@ Several example model parameters are provided, including:
 Additional details of the modelling framework can be found here:
 
 * [NetPyNE Documentation](http://neurosimlab.org/netpyne/)
-* [SFN'15 poster](http://neurosimlab.org/salvadord/sfn15-sal-final.pdf)
+* [CNS'16 poster](http://neurosimlab.org/salvadord/CNS16_poster.pdf)
 * [slides](https://drive.google.com/file/d/0B8v-knmZRjhtVl9BOFY2bzlWSWs/view?usp=sharing)       
  
       

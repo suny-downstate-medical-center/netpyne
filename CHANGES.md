@@ -1,3 +1,43 @@
+# Version 0.6.4
+
+- Added analysis.nTE() function to calculate normalized transfer entropy (issue #42)
+
+- Added analysis.granger() function to calculate and plot Spectral Granger Causality (issue #42)
+
+- Added analysis.plotRatePSD() to plot firing rate power spectral density 
+
+- Added analysis.plotShape() to plot 3D morphology of cell and synapse locations
+
+- Added option to fix soma depth for subcellular distributions based on 1d and 2d maps
+
+- Added support for gap junction (electrical synapse) connections
+
+- Improved import of multicompartmental cells from NeuroML2
+
+- Added option to turn off graphics by adding -nogui from command line
+
+- Added option to skip batch sims if output file already exists
+
+- Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
+
+- All section now include argument cell=self to differentiate them 
+
+- Fixed travis script so checks all tuts and examples after each commit (issue #37)
+
+- Fixed bug positioning cells with 3d geom
+
+- Fixed bug in sim.clearAll by closing all figures instead of current (issue #168)
+
+- Fixed bug: cache_efficient was not being turned on
+
+- Fixed bug setting simConfig loaded from file
+
+- Fixed bug in plotRaster inverseOrder option
+
+- Fixed str vs basestring in analysis.py and simFuncs.py
+
+- Fixed bug due to not inserting ions in section
+
 # Version 0.6.3
 
 - Added cvode_active simConfig option to set variable time step (issue #116)

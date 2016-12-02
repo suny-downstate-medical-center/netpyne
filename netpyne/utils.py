@@ -1,7 +1,7 @@
 """
 utils.py 
 
-Useful functions related to the parameters file, eg. create params file from excel table 
+Useful functions
 
 Contributors: salvador dura@gmail.com
 """

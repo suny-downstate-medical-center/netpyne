@@ -8,6 +8,7 @@ Contributors: salvadordura@gmail.com
 
 from numbers import Number
 from copy import deepcopy
+from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import sim
@@ -170,7 +171,7 @@ class Cell (object):
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
             if not self.secs[sectName].get('hSec'): 
-                self.secs[sectName]['hSec'] = h.Section(name=sectName)  # create h Section object
+                self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
             # set geometry params 
@@ -183,10 +184,7 @@ class Cell (object):
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
-                    if 'ynorm' in self.tags and hasattr(sim.net.params, 'sizeY'):
-                        y = self.tags['ynorm'] * sim.net.params.sizeY/1e3  # y as a func of ynorm and cortical thickness
-                    else:
-                        y = self.tags['y']
+                    y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
@@ -210,7 +208,7 @@ class Cell (object):
                 for ionName,ionParams in sectParams['ions'].iteritems(): 
                     if ionName not in sec['ions']: 
                         sec['ions'][ionName] = Dict()
-                    # Assume a mechanism using this ion is already present...
+                    sec['hSec'].insert(ionName+'_ion')    # insert mechanism
                     for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
@@ -256,6 +254,17 @@ class Cell (object):
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 
+    def addSynMechsNEURONObj(self):
+        # set params for all sections
+        for sectName,sectParams in self.secs.iteritems(): 
+            # add synMechs (only used when loading)
+            if 'synMechs' in sectParams:
+                for synMech in sectParams['synMechs']:
+                    if 'label' in synMech and 'loc' in synMech:
+                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+
+
+
     # Create NEURON objs for conns and syns if included in prop (used when loading)
     def addStimsNEURONObj(self):
         # assumes python structure exists
@@ -288,8 +297,16 @@ class Cell (object):
         for conn in self.conns:
             # set postsyn target
             synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-            if not synMech: continue  # go to next conn
-            postTarget = synMech['hSyn']
+            if not synMech: 
+                synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
+                #continue  # go to next conn
+            try:
+                postTarget = synMech['hSyn']
+            except:
+                print '\nError: no synMech available for conn: ', conn
+                print ' cell tags: ',self.tags
+                print ' cell synMechs: ',self.secs[conn['sec']]['synMechs']
+                exit()
 
             # create NetCon
             if conn['preGid'] == 'NetStim':
@@ -340,22 +357,23 @@ class Cell (object):
     def addSynMech (self, synLabel, secLabel, loc):
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
+        # add synaptic mechanism to python struct
+        if 'synMechs' not in sec or not isinstance(sec['synMechs'], list):
+            sec['synMechs'] = []
+
         if synMechParams and sec:  # if both the synMech and the section exist
-            if sim.cfg.createPyStruct:
-                # add synaptic mechanism to python struct
-                if 'synMechs' not in sec:
-                    sec['synMechs'] = []
+            if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
                 synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if synMech not in section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
                     for paramName, paramValue in synMechParams.iteritems():
                         synMech[paramName] = paramValue
                     sec['synMechs'].append(synMech)
+            else:
+                synMech = None
 
-            if sim.cfg.createNEURONObj:
+            if sim.cfg.createNEURONObj and sim.cfg.addSynMechs: 
                 # add synaptic mechanism NEURON objectes 
-                if 'synMechs' not in sec:
-                    sec['synMechs'] = []
                 if not synMech:  # if pointer not created in createPyStruct, then check 
                     synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if still doesnt exist, then create
@@ -371,12 +389,14 @@ class Cell (object):
                             secLabelNetCon = synParamValue.get('sec', 'soma')
                             locNetCon = synParamValue.get('loc', 0.5)
                             secNetCon = self.secs.get(secLabelNetCon, None)
-                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech['hSyn'], sec=secNetCon['hSec'])
+                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hSec'])
                             for paramName,paramValue in synParamValue.iteritems():
                                 if paramName == 'weight':
                                     synMech['hNetcon'].weight[0] = paramValue
                                 elif paramName not in ['sec', 'loc']:
                                     setattr(synMech['hNetcon'], paramName, paramValue)
+            else:
+                synMech = None
             return synMech
 
 
@@ -514,7 +534,24 @@ class Cell (object):
 
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
-            
+
+            if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
+                preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                postGapId = preGapId + 1  # global index for postsyn gap junc
+                sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
+                if not getattr(sim.net, 'preGapJunctions', False): 
+                    sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+                preGapParams = {'gid': params['preGid'],
+                                'preGid': self.gid, 
+                                'sec': params.get('preSec', 'soma'), 
+                                'loc': params.get('preLoc', 0.5), 
+                                'weight': params['weight'], 
+                                'gapId': preGapId,
+                                'preGapId': postGapId,
+                                'synMech': params['synMech'],
+                                'gapJunction': 'pre'}
+                sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
+
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -526,28 +563,46 @@ class Cell (object):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
+                if params.get('gapJunction', 'False') == True:  # only run for post gap junc (not pre)
+                    connParams['gapId'] = postGapId
+                    connParams['preGapId'] = preGapId
+                    connParams['gapJunction'] = 'post'
                 self.conns.append(Dict(connParams))                
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
-                if pointp:
-                    sec = self.secs[secLabels[0]]
-                    postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
-                else:
+                # gap junctions
+                if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
+                    synMechs[i]['hSyn'].weight = weights[i]
+                    sourceVar = self.secs[synMechSecs[i]]['hSec'](synMechLocs[i])._ref_v
+                    targetVar = synMechs[i]['hSyn']._ref_vgap  # assumes variable is vgap -- make a parameter
                     sec = self.secs[synMechSecs[i]]
-                    postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
+                    sim.pc.target_var(targetVar, connParams['gapId'])
+                    self.secs[synMechSecs[i]]['hSec'].push()
+                    sim.pc.source_var(sourceVar, connParams['preGapId'])
+                    h.pop_section()
+                    netcon = None
 
-                if netStimParams:
-                    netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
-                else:
-                    netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                
-                netcon.weight[weightIndex] = weights[i]  # set Netcon weight
-                netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = params['threshold']  # set Netcon threshold
-                self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+                # connections using NetCons
+                else:  
+                    if pointp:
+                        sec = self.secs[secLabels[0]]
+                        postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
+                    else:
+                        sec = self.secs[synMechSecs[i]]
+                        postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
+
+                    if netStimParams:
+                        netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
+                    else:
+                        netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
+                    
+                    netcon.weight[weightIndex] = weights[i]  # set Netcon weight
+                    netcon.delay = delays[i]  # set Netcon delay
+                    netcon.threshold = params['threshold']  # set Netcon threshold
+                    self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
                 # Add time-dependent weight shaping
@@ -590,8 +645,8 @@ class Cell (object):
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.1f'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
+                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i],params['threshold']))
 
 
     def modifyConns (self, params):
@@ -931,14 +986,17 @@ class Cell (object):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        #secLengths = [self.secs[s]['hSec'].L for s in secList]
-        secLengths = [self.secs[s]['geom']['L'] for s in secList]
-        totLength = sum(secLengths)
-        cumLengths = list(cumsum(secLengths))
-        absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
-        inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
-        secs = [secList[ind] for ind in inds]
-        locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        secLengths = [self.secs[s]['hSec'].L for s in secList]
+        #secLengths = [self.secs[s]['geom']['L'] for s in secList]
+        try:
+            totLength = sum(secLengths)
+            cumLengths = list(cumsum(secLengths))
+            absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
+            inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
+            secs = [secList[ind] for ind in inds]
+            locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
+        except:
+            secs, locs = [],[]
         return secs, locs
 
 
@@ -1050,11 +1108,11 @@ class Cell (object):
 
 ###############################################################################
 #
-# POINT NEURON CLASS (v not from Section)
+# ARTIFICIAL CELL CLASS (no sections)
 #
 ###############################################################################
 
-class PointNeuron (Cell):
+class ArtifCell (Cell):
     '''
     Point Neuron that doesn't use v from Section - TO DO
     '''

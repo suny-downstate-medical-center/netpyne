@@ -91,34 +91,45 @@ class Batch(object):
 
                 # run sim
                 if self.runCfg.get('type',None) == 'hpc_torque':
-                    # read params or set defaults
-                    jobName = self.saveFolder+'/'+simLabel  # Customize your options here
-                    numproc = self.runCfg.get('numproc', 1)
-                    script = self.runCfg.get('script', 'init.py')
-                    walltime = self.runCfg.get('walltime', '00:30:00')
-                    queueName = self.runCfg.get('queueName', 'default')
-                    nodesppn = 'nodes=1:ppn=%d'%(numproc)
-                    sleepInterval = self.runCfg.get('sleepInterval', 1)
-                    command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                    jobName = self.saveFolder+'/'+simLabel  
 
-                    output, input = popen2('qsub') # Open a pipe to the qsub command.
+                    # skip if output file already exists
+                    import glob
+                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+                        print 'Skipping job %s since output file already exists...' % (jobName)
+                    else:
+                        # read params or set defaults
+                        sleepInterval = self.runCfg.get('sleepInterval', 1)
+                        sleep(sleepInterval)
+                        
+                        numproc = self.runCfg.get('numproc', 1)
+                        script = self.runCfg.get('script', 'init.py')
+                        walltime = self.runCfg.get('walltime', '00:30:00')
+                        queueName = self.runCfg.get('queueName', 'default')
+                        nodesppn = 'nodes=1:ppn=%d'%(numproc)
+                        
+                        command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
 
-                    jobString = """#!/bin/bash 
-                    #PBS -N %s
-                    #PBS -l walltime=%s
-                    #PBS -q %s
-                    #PBS -l %s
-                    #PBS -o %s.run
-                    #PBS -e %s.err
-                    cd $PBS_O_WORKDIR
-                    echo $PBS_O_WORKDIR
-                    %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+                        output, input = popen2('qsub') # Open a pipe to the qsub command.
 
-                    # Send job_string to qsub
-                    input.write(jobString)
-                    print jobString
-                    input.close()
-                    sleep(sleepInterval)
+                        jobString = """#!/bin/bash 
+                        #PBS -N %s
+                        #PBS -l walltime=%s
+                        #PBS -q %s
+                        #PBS -l %s
+                        #PBS -o %s.run
+                        #PBS -e %s.err
+                        cd $PBS_O_WORKDIR
+                        echo $PBS_O_WORKDIR
+                        %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+
+                        # Send job_string to qsub
+                        input.write(jobString)
+                        print jobString+'\n'
+                        input.close()
+
+            sleep(10) # give time for last job to get on queue
+                        
 
 
 

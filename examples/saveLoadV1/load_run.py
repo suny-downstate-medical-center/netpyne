@@ -28,4 +28,3 @@ simConfig.addAnalysis('plotConn', True)                                         
 ###############################################################################
 
 sim.loadSimulateAnalyze(filename='V1.json', simConfig=simConfig)    
-#sim.load(filename='V1.json', simConfig=simConfig)    

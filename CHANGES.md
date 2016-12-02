@@ -4,15 +4,15 @@
 
 - Added analysis.granger() function to calculate and plot Spectral Granger Causality (issue #42)
 
+- Added analysis.plotRatePSD() to plot firing rate power spectral density 
+
+- Added analysis.plotShape() to plot 3D morphology of cell and synapse locations
+
 - Added option to fix soma depth for subcellular distributions based on 1d and 2d maps
 
 - Improved import of multicompartmental cells from NeuroML2
 
 - Added support for gap junction (electrical synapse) connections
-
-- Added function plotRatePSD to plot firing rate power spectral density 
-
-- Added plotShape to plot 3D morphology of cell and synapse locations
 
 - Added option to skip batch sims if output file already exists
 

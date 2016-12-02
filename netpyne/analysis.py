@@ -1459,7 +1459,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         - label2 (string): Label for spike train 2 to use in plot
         - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
         - binSize (int): Bin size used to convert spike times into histogram 
-        - plotFug (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
+        - plotFig (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure;
             if set to True uses filename from simConfig (default: None)(default: None)

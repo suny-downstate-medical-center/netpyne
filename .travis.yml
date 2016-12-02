@@ -33,14 +33,13 @@ install:
 script:
     - cd doc/source/code/
     - $NEURON_HOME/bin/nrnivmodl mod
-    - python tut1.py -nogui
     - python tut2.py -nogui
     - python tut3.py -nogui
     - python tut5.py -nogui
     - python tut6.py -nogui
     - python tut7.py -nogui
     - python tut_import.py
-    - cd examples/HHTut
+    - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
     - cd ../HybridTut
     - $NEURON_HOME/bin/nrnivmodl

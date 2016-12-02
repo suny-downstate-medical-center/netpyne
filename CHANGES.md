@@ -10,15 +10,19 @@
 
 - Added option to fix soma depth for subcellular distributions based on 1d and 2d maps
 
+- Added support for gap junction (electrical synapse) connections
+
 - Improved import of multicompartmental cells from NeuroML2
 
-- Added support for gap junction (electrical synapse) connections
+- Added option to turn off graphics by adding -nogui from command line
 
 - Added option to skip batch sims if output file already exists
 
 - Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
 
 - All section now include argument cell=self to differentiate them 
+
+- Fixed travis script so checks all tuts and examples after each commit (issue #37)
 
 - Fixed bug positioning cells with 3d geom
 

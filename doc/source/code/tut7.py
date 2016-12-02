@@ -104,8 +104,8 @@ sim.net.modifyCells({'conds': {'popLabel': 'hop'},
 
 sim.simulate()
 
-from netpyne import gui
-if gui:
+from netpyne import __gui__
+if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
 

@@ -38,7 +38,7 @@ script:
     - python tut5.py -nogui
     - python tut6.py -nogui
     - python tut7.py -nogui
-    - python tut_import.py
+    # - python tut_import.py
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
     - cd ../HybridTut

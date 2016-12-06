@@ -103,8 +103,11 @@ sim.net.modifyCells({'conds': {'popLabel': 'hop'},
                     'secs': {'soma': {'geom': {'L': 160}}}})
 
 sim.simulate()
-sim.analysis.plotRaster(syncLines=True)
-sim.analysis.plotTraces(include = [1])
+
+from netpyne import __gui__
+if __gui__:
+    sim.analysis.plotRaster(syncLines=True)
+    sim.analysis.plotTraces(include = [1])
 
 
 

@@ -7,7 +7,13 @@ It is imported as "sim" from all other file,  so that any variable or module can
 Contributors: salvadordura@gmail.com
 """
 
+# check for -nogui option 
+import sys
+if '-nogui' in sys.argv:
+    import netpyne
+    netpyne.__gui__ = False
 
+# import all required modules
 from simFuncs import *
 from wrappers import *
 import analysis

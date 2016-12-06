@@ -831,6 +831,19 @@ Analysis-related functions
     - Returns figure handles
 
 
+* **plotShape** (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot 3D cell shape using NEURON Interview PlotShape
+    
+    - *showSyns*: Show synaptic connections in 3D (True|False) 
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+
+
 * **analysis.plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)
 
     Plot network connectivity. Optional arguments:
@@ -859,6 +872,48 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handles
+
+
+* **analysis.nTE** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30)
+
+    Calculate normalized transfer entropy
+
+    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *cells2*: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
+    - *timeRange*: Range of time to calculate nTE in ms ([min, max])
+    - *binSize*: Bin size used to convert spike times into histogram (int)
+    - *numShuffle*: Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (int)
+
+    - Returns nTE: normalized transfer entropy (float)
+
+
+* **analysis.granger** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2',
+	timeRange = None, binSize=5, plotFig = True, saveData = None, saveFig = None, showFig = True):
+  
+    Calculate and optionally plot Granger Causality 
+
+    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - cells2: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
+    - *label1*: Label for spike train 1 to use in plot (string)
+    - *label2*: Label for spike train 2 to use in plot (string)
+    - *timeRange*: Range of time to calculate nTE in ms  ([min, max])
+    - *binSize*: Bin size used to convert spike times into histogram 
+    - *plotFig*: Whether to plot a figure showing Granger Causality Fx2y and Fy2x (True|False)
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    Returns: 
+    - *F*: list of freqs
+    - *Fx2y*: causality measure from x to y 
+    - *Fy2x*: causality from y to x 
+    - *Fxy*: instantaneous causality between x and y 
+    - *fig*: Figure handle 
+
 
 
 NOTE: The *include* argument can have the following values:

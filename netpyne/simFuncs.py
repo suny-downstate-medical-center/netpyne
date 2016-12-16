@@ -1444,17 +1444,17 @@ if neuromlExists:
                 cell_param_set0 = net.params.cellParams[cell_name]
                 someMatches = False
                 someMisMatches = False
-                if sim.cfg.verbose: print("-- Comparing conds: %s"%cell_param_set0)
+                if sim.cfg.verbose: print("  -- Comparing conds: %s"%cell_param_set0)
                 for cond in cell_param_set0['conds']:
                     if len(cell_param_set0['conds'][cond])>0:
                         if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
-                            if sim.cfg.verbose: print "Cond: %s matches..."%cond
+                            if sim.cfg.verbose: print "    Cond: %s matches..."%cond
                             someMatches = True
                         else:
-                            if sim.cfg.verbose: print "Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???")
+                            if sim.cfg.verbose: print "    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???")
                             someMisMatches = True
                 if someMatches and not someMisMatches:
-                    if sim.cfg.verbose: print("-- Matches: %s"%cell_param_set0)
+                    if sim.cfg.verbose: print("   Matches: %s"%cell_param_set0)
                     cell_param_set.update(cell_param_set0)
                 
             if not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
@@ -1462,11 +1462,12 @@ if neuromlExists:
                 exit(-1)
                 
             if not np_pop.tags['cellModel'] == 'NetStim':
-                cell_id = 'CELL_%s_%s'%(cell_param_set['conds']['cellModel'],cell_param_set['conds']['cellType'])
                 if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
                     cell_id = 'CELL_%s'%(cell_param_set['conds']['cellType'])
-                if not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
+                elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
                     cell_id = 'CELL_%s'%(cell_param_set['conds']['cellModel'])
+                else:
+                    cell_id = 'CELL_%s_%s'%(cell_param_set['conds']['cellModel'],cell_param_set['conds']['cellType'])
 
                 populations_vs_components[np_pop.tags['popLabel']]=cell_id
                 

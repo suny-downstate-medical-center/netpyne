@@ -3170,6 +3170,73 @@ reduce to ART_CELLS --- can do that
 *** generate the network and save the network -- save to disk, save on subworlds, modify a model in netpyne
 remove a cell and dump the network back to netpyne -- idea of cell death different from another indstance of the network
 
+** 16dec02 meeting at yale
+- This tool will subsequently be expanded to allow it to automate the process of employing new data being gathered by ongoing
+  efforts (BRAIN, HBP, Allen) to define specific brain networks and their cellular constituents. 
+-- eveything data-driven, clarify to what extent 
+
+- NEURON, including the intracellular molecular reaction chains for metabotropic synapses, a level of detail not provided by
+  most neural  simulators. We are also building in the ability to readily handle variant hybrid networks, where some cells
+  are modeled in great detail (MC cells)
+-- 
+
+- All of the parts, all of this complexity, will remain under the umbrella of a single conceptual model designed using
+  NetPyNE
+--
+
+- NetPyNE already supports the use of a simple spike-timing dependent plasticity (STDP) mechanism, which has been used to
+  develop a model of sensorimotor cortex that learns to drive a musculoskeletal arm model via reinforcement learning.
+
+- provide facilities for readily varying hybrid networks so that, for example, the many runs needed for parameter exploration
+  would be done with only a few MC cells,
+-- still complicated to switch in a biological sense -- need to take into account if connections change as a func of more
+biophys cell model
+-- computer-assisted
+
+- SA1 - comparison of original Traub model with netpyne version
+
+- Dont have space to put everyhting or say already done it -- appropriate prelim results that give credibility to what you
+  are going to do:
+-- eg. Traub model
+
+- Netpyne is an organizational method for promoting conceptual control
+-- the more compact, lower entropy 
+-- tends toward entropy, but also organizes into conceptual blocks without having the whole model in your head
+
+- without programming expertise - red flags
+-- use templates, can change parameters in isolated ways
+
+- high-level parameters to describe complex synaptic distribution
+-- include figs of sCRACM -> syn distribution
+
+- code optimization methods might be required to make the process feasible
+-- algorithmic optimization
+
+- A second premise is that there is not enough memory in any one process to hold a mapofwhichranksholdwhichobjects.
+-- a map supplied by single process does not scale
+
+- example of within dependent pre-and post-synaptic cell condition -- = not dist dependent
+
+- The simple random distribution of cells evenly on all processors provides a performance baseline for comparison with more
+  sophisticated distribution algorithms, such as dynamic load balance and least processing time algorithm 
+-- only used round-robin or least-processing time
+
+- However, it transiently requires twice the memory of the model, does not handle (the rare case) of mod files that use
+  POINTER, and typically shows no improvement for single thread models
+-- not true, significant
+
+gid compression is only available if each processor owns fewer than 256 cells
+- 16 -- from 12 to 2 -- could be to 3 or 4
+
+- the NEURON Subworlds feature has not been extensively used or tested and is based on an old implementation. Its efficiency
+should be evaluated and the implementation improved if deemed necessary.
+bulletin board does nto scale because of master rank -- 
+
+- remove grid search
+
+- reverse eng - spy skulduggery -- remove
+
+
 ** Questions 
 *** GPU will be available for all users of just HBP? include in grant that netpyne will support?
 - yes will be available in core neuron - so open source, can be added to netpyne

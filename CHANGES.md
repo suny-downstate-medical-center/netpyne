@@ -1,3 +1,7 @@
+# Version 0.6.5
+
+- Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
+
 # Version 0.6.4
 
 - Added analysis.nTE() function to calculate normalized transfer entropy (issue #42)

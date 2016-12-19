@@ -12,6 +12,21 @@ from itertools import product
 from popen2 import popen2
 from time import sleep
 import imp
+from neuron import h
+pc = h.ParallelContext() # use bulletin board master/slave
+if pc.id()==0: pc.master_works_on_jobs(0) 
+
+# function to run single job using ParallelContext bulletin board (master/slave) 
+# func needs to be outside of class
+def runJob(script, cfgSavePath):
+    from subprocess import Popen, PIPE
+
+    print '\nJob in rank id: ',pc.id()
+    command = 'nrniv %s simConfig=%s' % (script, cfgSavePath) 
+    print command+'\n'
+    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+    print proc.stdout.read()
+
 
 class Batch(object):
 
@@ -47,7 +62,7 @@ class Batch(object):
     def run(self):
         if self.method == 'grid':
             # create saveFolder
-            import os
+            import os,glob
             try:
                 os.mkdir(self.saveFolder)
             except OSError:
@@ -75,6 +90,11 @@ class Batch(object):
             labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params])
             valueCombinations = product(*(valuesList))
             indexCombinations = product(*[range(len(x)) for x in valuesList])
+
+            # if using pc bulletin board, initialize all workers
+            if self.runCfg.get('type', None) == 'mpi':
+                for iworker in range(int(pc.nhost())):
+                    pc.runworker()
             
             for iComb, pComb in zip(indexCombinations, valueCombinations):
                 for i, paramVal in enumerate(pComb):
@@ -89,15 +109,15 @@ class Batch(object):
                 cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                 self.cfg.save(cfgSavePath)
 
-                # run sim
-                if self.runCfg.get('type',None) == 'hpc_torque':
-                    jobName = self.saveFolder+'/'+simLabel  
 
-                    # skip if output file already exists
-                    import glob
-                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
-                        print 'Skipping job %s since output file already exists...' % (jobName)
-                    else:
+                # skip if output file already exists
+                jobName = self.saveFolder+'/'+simLabel  
+                if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+                    print 'Skipping job %s since output file already exists...' % (jobName)
+                else:
+                    # hpc torque job submission
+                    if self.runCfg.get('type',None) == 'hpc_torque':
+
                         # read params or set defaults
                         sleepInterval = self.runCfg.get('sleepInterval', 1)
                         sleep(sleepInterval)
@@ -128,8 +148,23 @@ class Batch(object):
                         print jobString+'\n'
                         input.close()
 
-            sleep(10) # give time for last job to get on queue
+                    # pc bulletin board job submission (master/slave) via mpi
+                    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
+                    elif self.runCfg.get('type',None) == 'mpi':
+                        jobName = self.saveFolder+'/'+simLabel     
+                        print 'Submitting job ',jobName
+                        # master/slave bulletin board schedulling of jobs
+                        pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
                         
+            # wait for pc bulletin board jobs to finish
+            try:
+                while pc.working():
+                    sleep(1)
+                pc.done()
+            except:
+                pass
+
+            sleep(10) # give time for last job to get on queue    
 
 
 

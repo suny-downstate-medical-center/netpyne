@@ -572,17 +572,25 @@ def readCmdLineArgs():
             cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
             __main__.cfg = cfg
         elif arg.startswith('netParams='):  
-            netParamsPath = arg.split('netParamsPath=')[1]
+            netParamsPath = arg.split('netParams=')[1]
             netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
 
     if not cfgPath:
-        cfgModule = imp.load_source('cfg', 'cfg.py')  
-        cfg = cfgModule.cfg
-        __main__.cfg = cfg
+        try:
+            cfgModule = imp.load_source('cfg', 'cfg.py')  
+            cfg = cfgModule.cfg
+            __main__.cfg = cfg
+        except:
+            print 'Could not load cfg from command line path or from default cfg.py'
+            cfg = None
 
     if not netParamsPath:
-        netParamsModule = imp.load_source('netParams', 'netParams.py')
-        netParams = netParamsModule.netParams
+        try:
+            netParamsModule = imp.load_source('netParams', 'netParams.py')
+            netParams = netParamsModule.netParams
+        except:
+            print 'Could not load netParams from command line path or from default netParams.py'
+            netParams = None
 
     return cfg, netParams
 

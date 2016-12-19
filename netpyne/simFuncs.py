@@ -2355,10 +2355,35 @@ if neuromlExists:
                 
                 connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
                 
+                if ptype == 'electricalProjection':
+                    connParam = {'synsPerConn': 1, 
+                                 'sec': post_seg, 
+                                 'loc': post_fract, 
+                                 'gapJunction': True, 
+                                 'weight': 1}
+                else:
+                    connParam = {'delay': delay,
+                                 'weight': weight,
+                                 'synsPerConn': 1, 
+                                 'sec': post_seg, 
+                                 'loc': post_fract, 
+                                 'threshold': threshold}
+
                 connParam['synMech'] = synapse
 
                 if post_id in sim.net.lid2gid:  # check if postsyn is in this node's list of gids
                     sim.net._addCellConn(connParam, pre_id, post_id)
+                    
+        
+        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+            if preGapParams['gid'] in sim.net.lid2gid:  # only cells in this rank
+                cell = sim.net.cells[sim.net.gid2lid[preGapParams['gid']]] 
+                cell.addConn(preGapParams)
+                
+        print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in sim.net.cells])))
+
+                        
 
         #conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)

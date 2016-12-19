@@ -50,10 +50,13 @@ script:
     - cd ../M1
     - $NEURON_HOME/bin/nrnivmodl
     - python M1_run.py -nogui
-    
     # - cd ../RL_arm
     # - $NEURON_HOME/bin/nrnivmodl
     # - python main.py
+    
+    - cd ../..
+    # Run all OMV tests...
+    - omv all -V
 
 
 notifications: 

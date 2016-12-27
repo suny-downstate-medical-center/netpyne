@@ -7,7 +7,8 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import arange, seed, rand, array, pi, sqrt, sin, cos
+from matplotlib.pylab import arange, seed, rand, array, pi, sqrt, sin, cos, arccos
+import numpy as np
 from neuron import h # Import NEURON
 import sim
 
@@ -57,37 +58,39 @@ class Pop (object):
         cells = []
         seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
-        for icoord, coord in enumerate(['x', 'y', 'z']):
-            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
-            # constrain to range set by user
-            if sim.net.params.shape == 'cuboid':
-                if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                    minv = self.tags[coord+'normRange'][0] 
-                    maxv = self.tags[coord+'normRange'][1] 
-                    randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
-        
+
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales 
             rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
             phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
-            x = 1 + sqrt(rho) * cos(phi)
-            z = 1 + sqrt(rho) * sin(phi)
-            ratio = sim.net.params.sizeX/sim.net.params.sizeZ
-            if ratio >= 1:
-                x = x * 1.0/2.0
-                z = z * (1.0/ratio)/2.0
-            else:
-                x = x * ratio/2.0
-                z = z * 1.0/2.0 
+            x = (1 + sqrt(rho) * cos(phi))/2.0
+            z = (1 + sqrt(rho) * sin(phi))/2.0
             randLocs[:,0] = x
             randLocs[:,2] = z
-            # y (depth of cylinder)
-            if 'ynormRange' in self.tags:  # if normalized y range, rescale random locations
-                minv = self.tags['ynormRange'][0] 
-                maxv = self.tags['ynormRange'][1] 
-                randLocs[:,1] = randLocs[:,1] * (maxv-minv) + minv
     
+        elif sim.net.params.shape == 'ellipsoid':
+            # Use the x,y,z random vales 
+            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
+            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
+            theta = arccos(costheta)  # obtain theta from cos(theta)
+            x = (1 + rho * cos(phi) * sin(theta))/2.0
+            y = (1 + rho * sin(phi) * sin(theta))/2.0
+            z = (1 + rho * cos(theta))/2.0 
+            randLocs[:,0] = x
+            randLocs[:,1] = y
+            randLocs[:,2] = z
+        
+        for icoord, coord in enumerate(['x', 'y', 'z']):
+            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
+                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
+            # constrain to range set by user
+            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
+                minv = self.tags[coord+'normRange'][0] 
+                maxv = self.tags[coord+'normRange'][1] 
+                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
+        
+
         for i in xrange(int(sim.rank), int(sim.net.params.scale * self.tags['numCells']), sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
@@ -208,6 +211,13 @@ class Pop (object):
 
     def _pointInEllipse (self, x, z, sizeX, sizeZ):
         perim = (((x-sizeX)**2)/(sizeX**2)) + (((z-sizeZ)**2)/(sizeZ**2))
+        if perim <= 1: 
+            return True
+        else:
+            return False
+
+    def _pointInEllipsoid (self, x, y, z, sizeX, sizeY, sizeZ):
+        perim = (((x-sizeX)**2)/(sizeX**2)) + (((y-sizeY)**2)/(sizeY**2)) + (((z-sizeZ)**2)/(sizeZ**2))
         if perim <= 1: 
             return True
         else:

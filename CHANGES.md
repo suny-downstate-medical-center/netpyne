@@ -2,7 +2,7 @@
 
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
-- netParams.shape paramter to select either 'cuboid' or 'cylinder' network shape
+- netParams.shape paramter to select either 'cuboid', 'cylinder' or 'ellipsoid' network shape (issue #26)
 
 - analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
 

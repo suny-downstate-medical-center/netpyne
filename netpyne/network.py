@@ -29,7 +29,7 @@ class Network (object):
         self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
+        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
@@ -258,7 +258,7 @@ class Network (object):
                     if x1 == x2 or y1 == y2: 
                         print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
                     else:
-                       # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
+                       # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
                        sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
                        #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
 

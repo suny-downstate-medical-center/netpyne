@@ -2,6 +2,10 @@
 
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
+- netParams.shape paramter to select either 'cuboid' or 'cylinder' network shape
+
+- analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
+
 - Fixed bug in readCmdLineArgs() 
 
 # Version 0.6.4

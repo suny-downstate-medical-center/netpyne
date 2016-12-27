@@ -1260,12 +1260,13 @@ def plotConn (include = ['all'], feature = 'strength', orderBy = 'gid', figSize 
 ######################################################################################################################################################
 ## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
-def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True): 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
         - showConns (True|False): Whether to show connections or not (default: True)
         - figSize ((width, height)): Size of figure (default: (12,12))
+        - view ('xy', 'xz'): Perspective view: front ('xy') or top-down ('xz')
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure;
             if set to True uses filename from simConfig (default: None)(default: None)
@@ -1288,25 +1289,33 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), showConns = True, save
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
+
+    # front view
+    if view == 'xy':
+        ycoord = 'y'
+    elif view == 'xz':
+        ycoord = 'z'
+
     posX = [cell['tags']['x'] for cell in cells]  # get all x positions
-    posY = [cell['tags']['y'] for cell in cells]  # get all y positions
+    posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
     scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
     if showConns:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
                 if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
-                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags']['y']) for cell in cells if cell['gid']==con['preGid']), None)  
-                    posXpost,posYpost = postCell['tags']['x'], postCell['tags']['y'] 
+                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
+                    posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
                     color='red'
                     if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
                         color = 'blue'
                     width = 0.1 #50*con['weight']
                     plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
     xlabel('x (um)')
-    ylabel('y (um)') 
+    ylabel(ycoord+' (um)') 
     xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
     ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
     fontsiz = 12
+
 
     for popLabel in popLabels:
         plot(0,0,color=popColors[popLabel],label=popLabel)

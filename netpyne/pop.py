@@ -7,7 +7,7 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import arange, seed, rand, array
+from matplotlib.pylab import arange, seed, rand, array, pi, sqrt, sin, cos
 from neuron import h # Import NEURON
 import sim
 
@@ -51,7 +51,6 @@ class Pop (object):
         return cells
 
 
-    # population based on numCells
     def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
         cellModelClass = sim.Cell
@@ -61,11 +60,34 @@ class Pop (object):
         for icoord, coord in enumerate(['x', 'y', 'z']):
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
                 self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
-            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                minv = self.tags[coord+'normRange'][0] 
-                maxv = self.tags[coord+'normRange'][1] 
-                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
+            # constrain to range set by user
+            if sim.net.params.shape == 'cuboid':
+                if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
+                    minv = self.tags[coord+'normRange'][0] 
+                    maxv = self.tags[coord+'normRange'][1] 
+                    randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
         
+        if sim.net.params.shape == 'cylinder':
+            # Use the x,z random vales 
+            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
+            x = 1 + sqrt(rho) * cos(phi)
+            z = 1 + sqrt(rho) * sin(phi)
+            ratio = sim.net.params.sizeX/sim.net.params.sizeZ
+            if ratio >= 1:
+                x = x * 1.0/2.0
+                z = z * (1.0/ratio)/2.0
+            else:
+                x = x * ratio/2.0
+                z = z * 1.0/2.0 
+            randLocs[:,0] = x
+            randLocs[:,2] = z
+            # y (depth of cylinder)
+            if 'ynormRange' in self.tags:  # if normalized y range, rescale random locations
+                minv = self.tags['ynormRange'][0] 
+                maxv = self.tags['ynormRange'][1] 
+                randLocs[:,1] = randLocs[:,1] * (maxv-minv) + minv
+    
         for i in xrange(int(sim.rank), int(sim.net.params.scale * self.tags['numCells']), sim.nhosts):
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
@@ -183,6 +205,13 @@ class Pop (object):
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
         return cells
 
+
+    def _pointInEllipse (self, x, z, sizeX, sizeZ):
+        perim = (((x-sizeX)**2)/(sizeX**2)) + (((z-sizeZ)**2)/(sizeZ**2))
+        if perim <= 1: 
+            return True
+        else:
+            return False
 
     def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''

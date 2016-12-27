@@ -2748,6 +2748,10 @@ if (isCellOnNode("SampleCellGroup", 0)) {
 - check that it plays well with subcellular distributions
 - check that no duplicates are created 
 
+* 16oct26 Cylindrical volume
+use sizeRadius
+radiusRange
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

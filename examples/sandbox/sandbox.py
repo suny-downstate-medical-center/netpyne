@@ -29,15 +29,19 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 netParams.scaleConnWeightModels = {'HH': 1.0}
+netParams.shape = 'cylinder'
+netParams.sizeX = 100
+netParams.sizeZ = 50
+
 
 # Population parameters
-netParams.addPopParams('PYR1', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1}) # add dict with params for this pop 
-netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1}) # add dict with params for this pop 
+netParams.addPopParams('PYR1', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1000}) # add dict with params for this pop 
+#netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1}) # add dict with params for this pop 
 netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
 
 # Synaptic mechanism parameters
 netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams.addSynMechParams('esyn', {'mod': 'ElectSyn', 'g': 0.000049999999999999996})
+#netParams.addSynMechParams('esyn', {'mod': 'ElectSyn', 'g': 0.000049999999999999996})
 
 
 # Cell parameters
@@ -55,15 +59,15 @@ netParams.connParams['bg->PYR1'] = {
     'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
-netParams.addConnParams('PYR1->PYR2',
-    {'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
-    'weight': 200.0,              
-    'synMech': 'esyn',                   
-    'gapJunction': True,
-    'sec': 'soma',
-    'loc': 0.5,
-    'preSec': 'soma',
-    'preLoc': 0.5})        
+# netParams.addConnParams('PYR1->PYR2',
+#     {'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
+#     'weight': 200.0,              
+#     'synMech': 'esyn',                   
+#     'gapJunction': True,
+#     'sec': 'soma',
+#     'loc': 0.5,
+#     'preSec': 'soma',
+#     'preLoc': 0.5})        
 
 
 ###############################################################################
@@ -76,7 +80,7 @@ simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 2, 'stim': 2, 'loc': 2} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = 1 #False  # show detailed messages 
+simConfig.verbose = 0 #False  # show detailed messages 
 
 # Recording 
 simConfig.recordCells = []# [1,2]  # which cells to record from
@@ -91,8 +95,9 @@ simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = 0 # Whether or not to write spikes etc. to a .mat file
 
 # # Analysis and plotting 
-simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})
-simConfig.addAnalysis('plotTraces', {'include': [0,1]})
+# simConfig.addAnalysis('plotRaster', {'spikeHist': 'subplot'})
+# simConfig.addAnalysis('plotTraces', {'include': [0,1]})
+simConfig.addAnalysis('plot2Dnet', {'view': 'xz'})
 
 
 ###############################################################################

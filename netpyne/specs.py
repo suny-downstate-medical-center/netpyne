@@ -215,6 +215,7 @@ class NetParams (object):
         self.sizeX = 100 # x-dimension (horizontal length) size in um
         self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
         self.sizeZ = 100 # z-dimension (horizontal depth) size in um
+        self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
 
 
         ## General connectivity parameters

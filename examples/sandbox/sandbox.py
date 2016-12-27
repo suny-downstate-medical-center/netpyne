@@ -29,14 +29,14 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 netParams.scaleConnWeightModels = {'HH': 1.0}
-netParams.shape = 'ellipsoid'# 'cylinder' 
+netParams.shape = 'cylinder'#'ellipsoid'# 'cylinder' 
 netParams.sizeX = 100
 netParams.sizeY = 300
 netParams.sizeZ = 50
 
 
 # Population parameters
-netParams.addPopParams('PYR1', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1000, 'xRange': [20,80], 'ynormRange': [0.3,0.7]}) # add dict with params for this pop 
+netParams.addPopParams('PYR1', {'cellModel': 'HH', 'cellType': 'PYR', 'density': 500000})#, 'xRange': [20,80], 'ynormRange': [0.3,0.7]}) # add dict with params for this pop 
 #netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1}) # add dict with params for this pop 
 netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
 

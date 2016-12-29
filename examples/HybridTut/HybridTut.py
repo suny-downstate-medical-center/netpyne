@@ -25,8 +25,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 
 # Population parameters
 netParams.popParams['PYR_HH'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50} # add dict with params for this pop 
-netParams.popParams['PYR_Izhi'] = {'cellModel': 'Izhi2007b', 'cellType': 'PYR', 'numCells': 50} # add dict with params for this pop 
-netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
+netParams.popParams['PYR_Izhi'] = {'cellModel': 'Izhi', 'cellType': 'PYR', 'numCells': 50} # add dict with params for this pop 
 
 
 # Cell parameters list
@@ -46,7 +45,7 @@ cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 netParams.cellParams['PYR_HH'] = cellRule  # add dict to list of cell properties
 
 ## PYR cell properties (Izhi)
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}}
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 
@@ -58,6 +57,14 @@ netParams.cellParams['PYR_Izhi'] = cellRule  # add dict to list of cell properti
 netParams.synMechParams['AMPA'] = {'mod': 'ExpSyn', 'tau': 0.1, 'e': 0}
  
 
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
+netParams.stimTargetParams['bg->PYR_Izhi'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'}, 
+                                            'weight': 1, 'delay': 'uniform(1,5)', 'synMech': 'AMPA'}  
+netParams.stimTargetParams['bg->PYR_HH'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'}, 
+                                            'weight': 1, 'synMech': 'AMPA', 'sec': 'dend', 'loc': 1.0, 'delay': 'uniform(1,5)'}
+
+
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
     'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},
@@ -67,23 +74,6 @@ netParams.connParams['PYR->PYR'] = {
     'convergence': 'uniform(0,5)',       # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
     'synMech': 'AMPA'}    
 
-
-netParams.connParams['bg->PYR_Izhi'] = {
-    'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR','cellModel': 'Izhi2007b'}, # background -> PYR (Izhi2007b)
-    'connFunc': 'fullConn',
-    'weight': 1, 
-    'delay': 'uniform(1,5)',
-    'synMech': 'AMPA'}  
-
-
-netParams.connParams['bg->PYR_HH'] = {
-    'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': 'HH'}, # background -> PYR (HH)
-    'connFunc': 'fullConn',
-    'weight': 1, 
-    'synMech': 'AMPA',
-    'sec': 'dend',
-    'loc': 1.0,
-    'delay': 'uniform(1,5)'}
 
 
 

@@ -1144,8 +1144,8 @@ class PointCell (Cell):
             if 'number' not in self.params:
                 params['number'] = 1e9 
                 setattr(self.hPointp, 'number', params['number']) 
-            if 'seed' not in params: 
-                params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
+            if 'seed' not in self.params: 
+                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
 
 
     def associateGid (self, threshold = 10.0):

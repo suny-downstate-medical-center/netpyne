@@ -2,6 +2,8 @@
 
 - Added support for artificial cells (without sections) (issue #44)
 
+- NetStims (created as a population) can now be shared among cells (issue #113)
+
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
 - netParams.shape paramter to select either 'cuboid', 'cylinder' or 'ellipsoid' network shape (issue #26)

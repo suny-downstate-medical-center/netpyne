@@ -121,8 +121,6 @@ class Pop (object):
             volume = sizeY/1e3 * sizeX/1e3/2 * sizeZ/1e3/2 * pi
         elif shape == 'ellipsoid':
             volume = sizeY/1e3/2.0 * sizeX/1e3/2.0 * sizeZ/1e3/2.0 * pi * 4.0 / 3.0
-        
-        print volume
 
         for coord in ['x', 'y', 'z']:
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized

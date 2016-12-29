@@ -1,19 +1,8 @@
 """
-sandbox.py 
+tut_gap.py 
 
-netParams is a class containing a set of network parameters using a standardized structure
-
-simConfig is a class containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
+Tutorial on using gap junctions
 """
-
-###############################################################################
-#
-# SANDBOX PARAMS
-#
-###############################################################################
-
 
 from netpyne import specs, sim
 from netpyne.specs import Dict

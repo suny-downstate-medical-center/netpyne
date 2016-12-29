@@ -1,5 +1,7 @@
 # Version 0.6.5
 
+- Added support for artificial cells (without sections) (issue #44)
+
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
 - netParams.shape paramter to select either 'cuboid', 'cylinder' or 'ellipsoid' network shape (issue #26)

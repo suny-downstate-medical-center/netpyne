@@ -2748,9 +2748,41 @@ if (isCellOnNode("SampleCellGroup", 0)) {
 - check that it plays well with subcellular distributions
 - check that no duplicates are created 
 
-* 16oct26 Cylindrical volume
-use sizeRadius
-radiusRange
+* 16oct26 Elliptic cylinder and ellipsoid shapes
+  if sim.net.params.shape == 'cylinder':
+            # Use the x,z random vales 
+            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
+            x = (1 + sqrt(rho) * cos(phi))/2.0
+            z = (1 + sqrt(rho) * sin(phi))/2.0
+            randLocs[:,0] = x
+            randLocs[:,2] = z
+    
+        elif sim.net.params.shape == 'ellipsoid':
+            # Use the x,y,z random vales 
+            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
+            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
+            theta = arccos(costheta)  # obtain theta from cos(theta)
+            x = (1 + rho * cos(phi) * sin(theta))/2.0
+            y = (1 + rho * sin(phi) * sin(theta))/2.0
+            z = (1 + rho * cos(theta))/2.0 
+            randLocs[:,0] = x
+            randLocs[:,1] = y
+            randLocs[:,2] = z
+* 16oct27 Netstims and artif cells as cell populations
+- change tutorials
+- if artificial cells (spike generators with no section), 'cellModel' refers to point process mech name (can be overriden if
+  cellRule with that name)
+- check if cellModel=rule, otherwise check if pointprocess, otherwise error 
+- use try except to set params
+- create oneToOne connectivity -- connect in order 
+- backward compatibility issues:
+-- netstim pop now requires numCells (default to numCells: 1 ??)
+-- connection should be oneToOne (default is fullConn)
+
+- cant check if rules exist for particular cellModel, since could be applied based on other features (eg. yfrac); so have to
+  make condition of point process make prioritary: 1st check if cellModel==point process -> PointCell; otherwise CompartCell
 
 * Netpyne Models/Users
 ** Github examples folder

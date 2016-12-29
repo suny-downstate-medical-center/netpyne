@@ -25,16 +25,14 @@ class Pop (object):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['popLabel'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
+        self._setCellClass()
+
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
-
-        # if NetStim pop do not create cell objects (Netstims added to postsyn cell object when creating connections)
-        elif self.tags['cellModel'] == 'NetStim':
-            cells = []
 
         # create cells based on fixed number of cells
         elif 'numCells' in self.tags:
@@ -46,15 +44,15 @@ class Pop (object):
 
         # not enough tags to create cells
         else:
-            cells = []
-            print 'Not enough tags to create cells of population %s'%(self.tags['popLabel'])
+            self.tags['numCells'] = 1
+            print 'Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['popLabel'])
+            cells = self.createCellsFixedNum()
 
         return cells
 
 
     def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
-        cellModelClass = sim.Cell
         cells = []
         seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
@@ -102,7 +100,7 @@ class Pop (object):
             cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
             cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
             cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['popLabel'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
         return cells
@@ -110,7 +108,6 @@ class Pop (object):
                 
     def createCellsDensity (self):
         ''' Create population cells based on density'''
-        cellModelClass = sim.Cell
         cells = []
         shape = sim.net.params.shape
         sizeX = sim.net.params.sizeX
@@ -215,7 +212,7 @@ class Pop (object):
             cellTags['x'] = sizeX * randLocs[i,0]  # calculate x location (um)
             cellTags['y'] = sizeY * randLocs[i,1]  # calculate y location (um)
             cellTags['z'] = sizeZ * randLocs[i,2]  # calculate z location (um)
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: 
                 print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
@@ -224,12 +221,11 @@ class Pop (object):
 
     def createCellsList (self):
         ''' Create population cells based on list of individual cells'''
-        cellModelClass = sim.Cell
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in xrange(int(sim.rank), len(self.tags['cellsList']), sim.nhosts):
             #if 'cellModel' in self.tags['cellsList'][i]:
-            #    cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
+            #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -243,25 +239,27 @@ class Pop (object):
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
-            cells.append(cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank))
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
         return cells
 
 
-    def _pointInEllipse (self, x, z, sizeX, sizeZ):
-        perim = (((x-sizeX)**2)/(sizeX**2)) + (((z-sizeZ)**2)/(sizeZ**2))
-        if perim <= 1: 
-            return True
-        else:
-            return False
+    def _setCellClass (self):
+        # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
+        try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+            tmp = getattr(h, self.tags['cellModel'])
+            self.cellModelClass = sim.PointCell
+            excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
+                        'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
+            params = {k:v for k,v in self.tags.iteritems() if k not in excludeTags}
+            self.tags['params'] = params
+            for k in self.tags['params']: self.tags.pop(k)
+            sim.net.params.popTagsCopiedToCells.append('params')
+        except:
+            self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
+            # print "Error: cellModel=%s not a key in netParam.cellParams or a point process mechanism (eg. NetStim or IntFire1)" % (self.tags['cellModel'])
 
-    def _pointInEllipsoid (self, x, y, z, sizeX, sizeY, sizeZ):
-        perim = (((x-sizeX)**2)/(sizeX**2)) + (((y-sizeY)**2)/(sizeY**2)) + (((z-sizeZ)**2)/(sizeZ**2))
-        if perim <= 1: 
-            return True
-        else:
-            return False
 
     def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''

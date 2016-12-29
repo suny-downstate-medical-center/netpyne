@@ -29,20 +29,23 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 netParams.scaleConnWeightModels = {'HH': 1.0}
-netParams.shape = 'cylinder'#'ellipsoid'# 'cylinder' 
+netParams.shape = 'cuboid'#'ellipsoid'# 'cylinder' 
 netParams.sizeX = 100
 netParams.sizeY = 300
 netParams.sizeZ = 50
 
 
 # Population parameters
-netParams.addPopParams('PYR1', {'cellModel': 'HH', 'cellType': 'PYR', 'density': 500000})#, 'xRange': [20,80], 'ynormRange': [0.3,0.7]}) # add dict with params for this pop 
+netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 10}#, 'xRange': [20,80], 'ynormRange': [0.3,0.7]}) # add dict with params for this pop 
 #netParams.addPopParams('PYR2', {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1}) # add dict with params for this pop 
-netParams.addPopParams('background', {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2})  # background inputs
+netParams.popParams['background'] = {'cellModel': 'NetStim', 'numCells': 500, 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2}  # background inputs
 
 # Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 #netParams.addSynMechParams('esyn', {'mod': 'ElectSyn', 'g': 0.000049999999999999996})
+
+#netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 5, 'number': 1000, 'start': 600, 'noise': 0.1}
+#netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
 
 
 # Cell parameters
@@ -87,7 +90,7 @@ simConfig.verbose = 0 #False  # show detailed messages
 simConfig.recordCells = []# [1,2]  # which cells to record from
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
 
-simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStim = False  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving

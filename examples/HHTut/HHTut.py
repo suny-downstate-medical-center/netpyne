@@ -26,10 +26,9 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 
 # Population parameters
 netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
-netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}  # background inputs
+
 
 # Cell parameters
-
 ## PYR cell properties
 cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
@@ -42,7 +41,11 @@ netParams.cellParams['PYR'] = cellRule  												# add dict to list of cell p
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 
- 
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'interval': 5, 'number': 1000, 'start': 600, 'noise': 0.1}
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel': 'PYR1'}, 
+										   'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1, 'synMech': 'AMPA'}
+
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
     'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
@@ -50,13 +53,6 @@ netParams.connParams['PYR->PYR'] = {
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(1,15)'}    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
-
-
-netParams.connParams['bg->PYR'] = {
-    'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.08
-    'synMech': 'AMPA',                     # target NMDA synapse
-    'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 
 ###############################################################################

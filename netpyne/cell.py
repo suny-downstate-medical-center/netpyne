@@ -90,11 +90,6 @@ class Cell (object):
             if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
         
         if sim.cfg.createNEURONObj:
-            rand = h.Random()
-            #rand.Random123(self.gid,self.gid*2) # moved to sim.runSim() to ensure reproducibility
-            #rand.negexp(1)
-            stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
-
             if isinstance(params['rate'], basestring):
                 if params['rate'] == 'variable':
                     try:
@@ -106,11 +101,10 @@ class Cell (object):
                 else:
                     print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
             else:
-                netstim = h.NetStim()
+                netstim = h.NetStim() 
                 netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-                netstim.noise = params['noise']
+                netstim.noise = params['noise'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
                 netstim.start = params['start']
-            netstim.noiseFromRandom(rand)  # use random number generator (replace with noiseFromRandom123()!)
             netstim.number = params['number']   
                 
             stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
@@ -432,7 +426,7 @@ class CompartCell (Cell):
         # assumes python structure exists
         for stimParams in self.stims:
             if stimParams['type'] == 'NetStim':
-                self.addNetStim (stimParams, stimContainer=stimParams)
+                self.addNetStim(stimParams, stimContainer=stimParams)
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSec'](stimParams['loc']))
@@ -1139,11 +1133,19 @@ class PointCell (Cell):
         for paramName, paramValue in params.iteritems():
             try:
                 if self.tags['cellModel'] == 'NetStim' and paramName == 'rate':
-                    setattr(self.hPointp, 'interval', 1.0/paramValue)
+                    setattr(self.hPointp, 'interval', 1000.0/paramValue)
                 else:
                     setattr(self.hPointp, paramName, paramValue)
             except:
                 pass
+
+        # set number and seed for NetStims
+        if self.tags['cellModel'] == 'NetStim':
+            if 'number' not in self.params:
+                params['number'] = 1e9 
+                setattr(self.hPointp, 'number', params['number']) 
+            if 'seed' not in params: 
+                params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
 
 
     def associateGid (self, threshold = 10.0):

@@ -41,10 +41,11 @@ netParams.cellParams['PYR'] = cellRule  												# add dict to list of cell p
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 
+
 # Stimulation parameters
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'interval': 5, 'number': 1000, 'start': 600, 'noise': 0.1}
-netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel': 'PYR1'}, 
-										   'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1, 'synMech': 'AMPA'}
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
+
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {

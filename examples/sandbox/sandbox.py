@@ -34,8 +34,8 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 # Population parameters
 #netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 10} # pop of HH cells
 #netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 10000, 'interval': 100, 'noise': 0.5, 'start': 50}  # pop of NetStims
-netParams.popParams['artifNet'] = {'cellModel': 'VecStim', 'numCells': 1000, 'rate': 5, 'noise': 0.5, 'start': 50, 
-    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
+netParams.popParams['artifNet'] = {'cellModel': 'VecStim', 'numCells': 1000, 'rate': [0.1,5], 'noise': 1.0, 'start': 50}#, 
+#    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}

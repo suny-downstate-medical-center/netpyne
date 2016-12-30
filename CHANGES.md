@@ -4,7 +4,9 @@
 
 - A single NetStim (within a population) can now be connected to multiple cells (issue #113)
 
-- VecStim populations using same params as NetStims and allows for pulses at arbitrary times with different rates
+- VecStim populations use same params as NetStims and allows for pulses at arbitrary times with different rates
+
+- NetStim and VecStim population allow for a uniformly distributed rates in the form [min,max]
 
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
@@ -15,7 +17,6 @@
 - Now using noiseFromRandom123() for NetStims() (issue #89)
 
 - Fixed bug in readCmdLineArgs() 
-
 
 
 # Version 0.6.4

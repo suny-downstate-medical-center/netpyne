@@ -12,6 +12,7 @@ from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import numpy as np
+from random import seed, uniform
 import sim
 
 
@@ -1115,7 +1116,7 @@ class PointCell (Cell):
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
-        self.params = self.tags.pop('params')
+        self.params = deepcopy(self.tags.pop('params'))
 
         if create: self.createNEURONObj()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
@@ -1129,7 +1130,11 @@ class PointCell (Cell):
             print "Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid)
             return 
 
-
+        # if rate is list with 2 items generate random value from uniform distribution
+        if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
+            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+self.gid)))  # initialize randomizer 
+            self.params['rate'] = uniform(self.params['rate'][0], self.params['rate'][1])
+ 
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.iteritems()}
         for paramName, paramValue in params.iteritems():
@@ -1141,7 +1146,6 @@ class PointCell (Cell):
                     setattr(self.hPointp, paramName, paramValue)
             except:
                 pass
-        
 
         # set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':

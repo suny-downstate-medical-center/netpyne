@@ -20,7 +20,8 @@ netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells':
 netParams.popParams['artif1'] = {'cellModel': 'NetStim', 'numCells': 100, 'rate': 50, 'noise': 0.8, 'start': 1, 'seed': 2}  # pop of NetStims
 netParams.popParams['artif2'] = {'cellModel': 'IntFire2', 'numCells': 100, 'ib': 0.0}  # pop of IntFire2
 netParams.popParams['artif3'] = {'cellModel': 'IntFire4', 'numCells': 100, 'taue': 1.0}  # pop of IntFire4
-
+netParams.popParams['artif4'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': 5, 'noise': 0.5, 'start': 50, 
+    'pulses': [{'start': 200, 'end': 300, 'rate': 60, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise': 0.5}]}  # pop of Vecstims with 2 pulses
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}

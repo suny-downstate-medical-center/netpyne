@@ -2770,6 +2770,7 @@ if (isCellOnNode("SampleCellGroup", 0)) {
             randLocs[:,0] = x
             randLocs[:,1] = y
             randLocs[:,2] = z
+
 * 16oct27 Netstims and artif cells as cell populations
 - change tutorials
 - if artificial cells (spike generators with no section), 'cellModel' refers to point process mech name (can be overriden if

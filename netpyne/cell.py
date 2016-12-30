@@ -11,6 +11,7 @@ from copy import deepcopy
 from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
+import numpy as np
 import sim
 
 
@@ -1128,16 +1129,19 @@ class PointCell (Cell):
             print "Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid)
             return 
 
+
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.iteritems()}
         for paramName, paramValue in params.iteritems():
             try:
-                if self.tags['cellModel'] == 'NetStim' and paramName == 'rate':
-                    setattr(self.hPointp, 'interval', 1000.0/paramValue)
+                if paramName == 'rate':
+                    self.params['interval'] = 1000.0/paramValue
+                    setattr(self.hPointp, 'interval', self.params['interval'])
                 else:
                     setattr(self.hPointp, paramName, paramValue)
             except:
                 pass
+        
 
         # set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
@@ -1146,6 +1150,90 @@ class PointCell (Cell):
                 setattr(self.hPointp, 'number', params['number']) 
             if 'seed' not in self.params: 
                 self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
+        
+
+        # VecStim - generate spike vector based on params
+        if self.tags['cellModel'] == 'VecStim':
+            # seed
+            if 'seed' not in self.params: 
+                self.params['seed'] = sim.cfg.seeds['stim']
+
+            # interval
+            if 'interval' in self.params:
+                interval = self.params['interval'] 
+            else:
+                return
+
+            # set start and noise params
+            start = self.params['start'] if 'start' in self.params else 0.0
+            noise = self.params['noise'] if 'noise' in self.params else 0.0
+
+            # fixed interval of duration (1 - noise)*interval 
+            fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+
+            # randomize the first spike so on average it occurs at start + noise*interval
+            # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
+            if noise == 0.0:
+                vec = h.Vector(len(fixedInterval))
+                spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
+            else:
+                # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
+                rand = h.Random()
+                rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+                vec = h.Vector(len(fixedInterval))
+                rand.negexp(noise*interval)
+                vec.setrand(rand)
+                negexpInterval = np.array(vec) 
+                spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise)) 
+
+            # pulse list: start, end, rate, noise
+            if 'pulses' in self.params:
+                for pulse in self.params['pulses']:
+                    
+                    # check interval or rate params
+                    if 'interval' in pulse:
+                        interval = pulse['interval'] 
+                    elif 'rate' in pulse:
+                        interval = 1000/pulse['rate']
+                    else:
+                        print 'Error: Vecstim pulse missing "rate" or "interval" parameter'
+                        return
+
+                    # check start,end and noise params
+                    if any([x not in pulse for x in ['start', 'end']]):  
+                        print 'Error: Vecstim pulse missing "start" and/or "end" parameter'
+                        return
+                    else:
+                        noise = pulse['noise'] if 'noise' in pulse else 0.0
+                        start = pulse['start']
+                        end = pulse['end']
+
+                        # fixed interval of duration (1 - noise)*interval 
+                        fixedInterval = np.full(((1+1.5*noise)*(end-start)/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+
+                        # randomize the first spike so on average it occurs at start + noise*interval
+                        # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
+                        if noise == 0.0:
+                            vec = h.Vector(len(fixedInterval))
+                            pulseSpikes = np.cumsum(fixedInterval) + (start - interval)
+                            pulseSpikes[pulseSpikes < start] = start
+                            spkTimes = np.append(spkTimes, pulseSpikes[pulseSpikes <= end])
+                        else:
+                            # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
+                            rand = h.Random()
+                            rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+                            vec = h.Vector(len(fixedInterval))
+                            rand.negexp(noise*interval)
+                            vec.setrand(rand)
+                            negexpInterval = np.array(vec) 
+                            pulseSpikes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+                            pulseSpikes[pulseSpikes < start] = start
+                            spkTimes = np.append(spkTimes, pulseSpikes[pulseSpikes <= end])
+
+            spkTimes[spkTimes < 0] = 0
+            spkTimes = np.sort(spkTimes)
+            spkTimes = spkTimes[spkTimes <= sim.cfg.duration]
+            self.hPointp.play(vec.from_python(spkTimes))
 
 
     def associateGid (self, threshold = 10.0):

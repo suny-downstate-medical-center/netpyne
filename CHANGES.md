@@ -2,7 +2,9 @@
 
 - Added support for artificial cells (without sections) (issue #44)
 
-- NetStims (created as a population) can now be shared among cells (issue #113)
+- A single NetStim (within a population) can now be connected to multiple cells (issue #113)
+
+- VecStim populations using same params as NetStims and allows for pulses at arbitrary times with different rates
 
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 

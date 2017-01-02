@@ -21,5 +21,6 @@ from network import Network
 from cell import CompartCell, PointCell
 from pop import Pop 
 import utils
+import neuromlFuncs
 from neuron import h
 

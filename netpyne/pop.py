@@ -87,7 +87,6 @@ class Pop (object):
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
                 randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
-        
 
         for i in xrange(int(sim.rank), int(sim.net.params.scale * self.tags['numCells']), sim.nhosts):
             gid = sim.net.lastGid+i
@@ -250,7 +249,7 @@ class Pop (object):
             self.cellModelClass = sim.PointCell
             excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
                         'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
-            params = {k:v for k,v in self.tags.iteritems() if k not in excludeTags}
+            params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
             self.tags['params'] = params
             for k in self.tags['params']: self.tags.pop(k)
             sim.net.params.popTagsCopiedToCells.append('params')

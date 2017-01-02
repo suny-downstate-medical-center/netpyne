@@ -1237,7 +1237,8 @@ class PointCell (Cell):
             spkTimes[spkTimes < 0] = 0
             spkTimes = np.sort(spkTimes)
             spkTimes = spkTimes[spkTimes <= sim.cfg.duration]
-            self.hPointp.play(vec.from_python(spkTimes))
+            self.hSpkTimes = vec  # store the vector containins spikes to avoid seg fault
+            self.hPointp.play(self.hSpkTimes.from_python(spkTimes))
 
 
     def associateGid (self, threshold = 10.0):

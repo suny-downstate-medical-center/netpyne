@@ -568,16 +568,16 @@ def readCmdLineArgs():
             cfg = cfgModule.cfg
             __main__.cfg = cfg
         except:
-            print 'Could not load cfg from command line path or from default cfg.py'
+            print '\nWarning: Could not load cfg from command line path or from default cfg.py'
             cfg = None
 
     if not netParamsPath:
-        try:
-            netParamsModule = imp.load_source('netParams', 'netParams.py')
-            netParams = netParamsModule.netParams
-        except:
-            print 'Could not load netParams from command line path or from default netParams.py'
-            netParams = None
+        #try:
+        netParamsModule = imp.load_source('netParams', 'netParams.py')
+        netParams = netParamsModule.netParams
+        #except:
+        #    print '\nWarning: Could not load netParams from command line path or from default netParams.py'
+        #    netParams = None
 
     return cfg, netParams
 

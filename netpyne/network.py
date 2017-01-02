@@ -487,18 +487,21 @@ class Network (object):
     # Find pre and post cells matching conditions
     ###############################################################################
     def _findCellsCondition(self, allCellTags, conds):
-        cellsTags = dict(allCellTags)
-        for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
-            if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
-                prePops = {}
-            else:
-                if isinstance(condValue, list): 
-                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+        try: 
+            cellsTags = dict(allCellTags)
+            for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
+                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
+                    prePops = {}
                 else:
-                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+                    if isinstance(condValue, list): 
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+                    else:
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+        except: 
+            return None
 
         return cellsTags
 
@@ -507,38 +510,40 @@ class Network (object):
     # Find pre and post cells matching conditions
     ###############################################################################
     def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
-        preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
-        postCellsTags = None
+        try:
+            preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
+            postCellsTags = None
 
-        for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
-            if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
-                #prePops = {}
-            else:
-                if isinstance(condValue, list): 
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
-                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
-                else:
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
-                
-
-        # if not preCellsTags: # if no presyn cells, check if netstim
-        #     if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
-        #         for prePop in prePops.values():
-        #             if not 'start' in prePop: prePop['start'] = 1  # add default start time
-        #             if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
-        #         preCellsTags = prePops
-
-        if preCellsTags:  # only check post if there are pre
-            postCellsTags = allCellTags
-            for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
+            for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-                elif isinstance(condValue, list): 
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
+                    #prePops = {}
                 else:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+                    if isinstance(condValue, list): 
+                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
+                        #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+                    else:
+                        preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
+                        #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+
+            # if not preCellsTags: # if no presyn cells, check if netstim
+            #     if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
+            #         for prePop in prePops.values():
+            #             if not 'start' in prePop: prePop['start'] = 1  # add default start time
+            #             if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
+            #         preCellsTags = prePops
+
+            if preCellsTags:  # only check post if there are pre
+                postCellsTags = allCellTags
+                for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
+                    if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    elif isinstance(condValue, list): 
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                    else:
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+        except:
+            return None, None
 
         return preCellsTags, postCellsTags
 

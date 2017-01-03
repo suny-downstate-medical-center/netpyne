@@ -28,7 +28,7 @@ The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
 The first line imports the ``HHTut`` module with the network and simulation parameters. 
 
-The second line imports the ``sim`` module from the ``netpyne`` package. The `sim` module provides functions to easily create and simulate networks based on these parameters.
+The second line imports the ``sim`` module from the ``netpyne`` package. The ``sim`` module provides functions to easily create and simulate networks based on these parameters.
 
 The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
 
@@ -54,7 +54,7 @@ If you want to avoid typing that long line every time, you can download this sim
 
 .. note:: To use the script make sure you change its permissions so its executable (e.g. ``chmod +x runsim``) 
 
-Whatever method you use, you should a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
+Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
 
 .. image:: figs/tut1.png
 	:width: 100%
@@ -65,7 +65,7 @@ Congratulations! You have created and simulated a biological neuronal network in
 
 .. note:: In some systems the figures that pop up may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``raster.png`` and ``traces.png``.
 
-In the remainder of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, in the rest of the tutorial, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
+In the remainder of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
 
 We begin with an overview of the Python objects where you will define all your network parameters.
 

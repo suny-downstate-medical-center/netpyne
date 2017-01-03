@@ -572,12 +572,12 @@ def readCmdLineArgs():
             cfg = None
 
     if not netParamsPath:
-        #try:
-        netParamsModule = imp.load_source('netParams', 'netParams.py')
-        netParams = netParamsModule.netParams
-        #except:
-        #    print '\nWarning: Could not load netParams from command line path or from default netParams.py'
-        #    netParams = None
+        try:
+            netParamsModule = imp.load_source('netParams', 'netParams.py')
+            netParams = netParamsModule.netParams
+        except:
+            print '\nWarning: Could not load netParams from command line path or from default netParams.py'
+            netParams = None
 
     return cfg, netParams
 

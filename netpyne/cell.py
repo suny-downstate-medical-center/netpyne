@@ -751,6 +751,8 @@ class CompartCell (Cell):
                     self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
 
+                else:  # if shape is empty remove field
+                    params.pop('shape')
 
                 # Add plasticity
                 self._addConnPlasticity(params, sec, netcon, weightIndex)
@@ -1099,6 +1101,8 @@ class CompartCell (Cell):
                     if sim.cfg.verbose: print('  Added STDP plasticity to synaptic mechanism')
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
+
+        if plasticity is None: params.pop('plast')
 
 
 

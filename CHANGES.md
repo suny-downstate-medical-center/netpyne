@@ -14,6 +14,8 @@
 
 - analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
 
+- Removed 'plast' and 'shape' from conns when not used (issue #177)
+
 - Now using noiseFromRandom123() for NetStims() (issue #89)
 
 - Fixed bug in readCmdLineArgs() 

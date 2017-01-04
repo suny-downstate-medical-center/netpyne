@@ -609,7 +609,7 @@ class CompartCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        if params.get('threshold') is None: params['threshold'] = sim.net.params.defaultThreshold  # if no threshold specified, set default
+        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
@@ -715,7 +715,7 @@ class CompartCell (Cell):
                     
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
-                    netcon.threshold = params['threshold']  # set Netcon threshold
+                    netcon.threshold = threshold  # set Netcon threshold
                     self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
@@ -751,8 +751,6 @@ class CompartCell (Cell):
                     self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
 
-                else:  # if shape is empty remove field
-                    params.pop('shape')
 
                 # Add plasticity
                 self._addConnPlasticity(params, sec, netcon, weightIndex)
@@ -762,7 +760,7 @@ class CompartCell (Cell):
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i],params['threshold']))
+                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i], threshold))
 
 
     def modifyConns (self, params):
@@ -1068,8 +1066,15 @@ class CompartCell (Cell):
 
     def _distributeSynsUniformly (self, secList, numSyns):
         from numpy import cumsum
-        secLengths = [self.secs[s]['hSec'].L for s in secList]
-        #secLengths = [self.secs[s]['geom']['L'] for s in secList]
+        if 'L' in self.secs[secList[0]]['geom']:
+            secLengths = [self.secs[s]['geom']['L'] for s in secList]
+        elif getattr(self.secs[secList[0]]['hSec'], 'L', None):
+            secLengths = [self.secs[s]['hSec'].L for s in secList]
+        else:
+            secLengths = [1.0 for s in secList]
+            if sim.cfg.verbose: 
+                print('  Section lengths not available to distribute synapses in cell %d'%self.gid)
+            
         try:
             totLength = sum(secLengths)
             cumLengths = list(cumsum(secLengths))
@@ -1102,7 +1107,7 @@ class CompartCell (Cell):
             except:
                 print 'Error: exception when adding plasticity using %s mechanism' % (plasticity['mech'])
 
-        if plasticity is None: params.pop('plast')
+
 
 
 
@@ -1122,7 +1127,8 @@ class PointCell (Cell):
         self.hPointp = None
         self.params = deepcopy(self.tags.pop('params'))
 
-        if create: self.createNEURONObj()  # create cell 
+        if create and sim.cfg.createNEURONObj:
+            self.createNEURONObj()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
 
 
@@ -1276,11 +1282,7 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        if params.get('threshold') is None: 
-            threshold = sim.net.params.defaultThreshold  # if no threshold specified, set default
-            params.pop('threshold')
-        else:
-            threshold = params.get('threshold')
+        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default

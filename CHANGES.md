@@ -14,6 +14,8 @@
 
 - analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
 
+- Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerconn)
+
 - Removed 'plast' and 'shape' from conns when not used (issue #177)
 
 - Now using noiseFromRandom123() for NetStims() (issue #89)

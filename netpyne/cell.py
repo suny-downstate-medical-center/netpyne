@@ -1276,7 +1276,11 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        if params.get('threshold') is None: params['threshold'] = sim.net.params.defaultThreshold  # if no threshold specified, set default
+        if params.get('threshold') is None: 
+            threshold = sim.net.params.defaultThreshold  # if no threshold specified, set default
+            params.pop('threshold')
+        else:
+            threshold = params.get('threshold')
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
@@ -1328,7 +1332,7 @@ class PointCell (Cell):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = params['threshold']  # set Netcon threshold
+                netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         
 

@@ -32,9 +32,10 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 # Population parameters
-#netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 10} # pop of HH cells
+netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50} # pop of HH cells
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50} # pop of HH cells
 #netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 10000, 'interval': 100, 'noise': 0.5, 'start': 50}  # pop of NetStims
-netParams.popParams['artifNet'] = {'cellModel': 'VecStim', 'numCells': 1000, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
+netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
 #    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
 
 # Synaptic mechanism parameters
@@ -58,22 +59,25 @@ netParams.cellParams['PYR'] = cellParams
 # Connections
 netParams.connParams['artif1->PYR1'] = {
     'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
-    'convergence': 8,
+    'convergence': 4,
     'weight': 0.005,                    
     'synMech': 'AMPA',                
-    'delay': 'uniform(1,5)'}          
+    'delay': 'uniform(1,5)',
+    'synsPerConn': 1}          
 
-# netParams.connParams['PYR1->artif2'] = {
-#     'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'artif2'},
-#     'probability': 0.2,
-#     'weight': 0.2,                     
-#     'delay': 'uniform(1,5)'}     
+netParams.connParams['PYR2->PYR1'] = {
+    'preConds': {'popLabel': 'PYR2'}, 'postConds': {'popLabel': 'PYR1'},
+    'probability': 0.1,
+    'weight': 0.2,                     
+    'delay': 'uniform(1,5)',
+    'synsPerConn': 1}     
 
-# netParams.addConnParams('artif2->artif3',
-#     {'preConds': {'popLabel': 'artif2'}, 'postConds': {'popLabel': 'artif3'}, 
-#     'divergence': 20,
-#     'weight': 0.05,              
-#     'delay': 3})        
+netParams.addConnParams('artif1->PYR2',
+    {'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR2'}, 
+    'divergence': 3,
+    'weight': 0.05,              
+    'delay': 3,
+    'synsPerConn': 1})        
 
 
 ###############################################################################
@@ -98,6 +102,7 @@ simConfig.analysis['plotRaster'] = True
 # RUN SIM
 ###############################################################################
 
-sim.createSimulateAnalyze()
-
+#sim.createSimulateAnalyze()
+sim.create()
+sim.gatherData()
 

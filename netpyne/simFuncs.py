@@ -943,7 +943,8 @@ def gatherData ():
 
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])   
-        sim.totalConnections = sum([len(cell['conns']) for cell in sim.net.allCells])   
+        sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells]) 
+        sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])   
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -952,11 +953,15 @@ def gatherData ():
             sim.firingRate = 0
         if sim.numCells > 0:
             sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
+            sim.synsPerCell = sim.totalSynapses/float(sim.numCells) # Calculate the number of connections per cell
         else:
             sim.connsPerCell = 0
+            sim.synsPerCell = 0
         
         print('  Cells: %i' % (sim.numCells) ) 
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
+        if sim.totalSynapses != sim.totalConnections:
+            print('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell))
         if sim.timingData.get('runTime'): 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
             if sim.cfg.printPopAvgRates: 

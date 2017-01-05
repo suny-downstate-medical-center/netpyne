@@ -1,8 +1,29 @@
 # Version 0.6.5
 
+- Added support for artificial cells (without sections) (issue #44)
+
+- A single NetStim (within a population) can now be connected to multiple cells (issue #113)
+
+- VecStim populations use same params as NetStims and allows for pulses at arbitrary times with different rates
+
+- NetStim and VecStim population allow for a uniformly distributed rates in the form [min,max]
+
 - Added option to run batch sims via mpi and bulletin board (master/slave) (issue #108)
 
+- netParams.shape paramter to select either 'cuboid', 'cylinder' or 'ellipsoid' network shape (issue #26)
+
+- analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
+
+- analysis.plotConn() option to plot stacked bar graph and select different pre and post pops
+
+- Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerconn)
+
+- Removed 'plast' and 'shape' from conns when not used (issue #177)
+
+- Now using noiseFromRandom123() for NetStims() (issue #89)
+
 - Fixed bug in readCmdLineArgs() 
+
 
 # Version 0.6.4
 

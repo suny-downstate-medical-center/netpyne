@@ -26,20 +26,14 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 netParams.scaleConnWeight = 0.001 # Connection weight scale factor
 
 # Population parameters
-netParams.popParams['Psh'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
-netParams.popParams['Pel'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
-netParams.popParams['ES'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
-netParams.popParams['ISL'] = {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
-netParams.popParams['IS'] = {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
-netParams.popParams['EM'] = {'cellModel': 'Izhi2007b', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
-netParams.popParams['IML'] = {'cellModel': 'Izhi2007b', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
-netParams.popParams['IM'] = {'cellModel': 'Izhi2007b', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
-
-netParams.popParams['backgroundE'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
-netParams.popParams['backgroundI'] = {'cellModel': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
-netParams.popParams['stimPsh'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_sh
-netParams.popParams['stimPel'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_el 
-netParams.popParams['stimEM'] = {'cellModel': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for EM (explor movs) 
+netParams.popParams['Psh'] = {'cellModel': 'Izhi', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
+netParams.popParams['Pel'] = {'cellModel': 'Izhi', 'cellType': 'RS', 'numCells': 40} # add dict with params for this pop 
+netParams.popParams['ES'] = {'cellModel': 'Izhi', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
+netParams.popParams['ISL'] = {'cellModel': 'Izhi', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['IS'] = {'cellModel': 'Izhi', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['EM'] = {'cellModel': 'Izhi', 'cellType': 'RS', 'numCells': 80} # add dict with params for this pop 
+netParams.popParams['IML'] = {'cellModel': 'Izhi', 'cellType': 'LTS', 'numCells': 10} # add dict with params for this pop 
+netParams.popParams['IM'] = {'cellModel': 'Izhi', 'cellType': 'FS', 'numCells': 10} # add dict with params for this pop 
 
 
 # Izhi cell params (used in cell properties)
@@ -51,21 +45,21 @@ izhiParams['FS'] = {'mod':'Izhi2007b', 'C':0.2, 'k':1.0, 'vr':-55, 'vt':-40, 'vp
 # Cell properties list
 
 ## RS Izhi cell params
-cellRule = {'conds': {'cellType': 'RS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
+cellRule = {'conds': {'cellType': 'RS', 'cellModel': 'Izhi'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
 netParams.cellParams['RS_Izhi'] = cellRule  # add dict to list of cell properties
 
 ## LTS Izhi cell params
-cellRule = {'conds': {'cellType': 'LTS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
+cellRule = {'conds': {'cellType': 'LTS', 'cellModel': 'Izhi'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['LTS'] 
 netParams.cellParams['LTS_Izhi'] = cellRule  # add dict to list of cell properties
 
 ## FS Izhi cell params
-cellRule = {'conds': {'cellType': 'FS', 'cellModel': 'Izhi2007b'}, 'secs': {}}
+cellRule = {'conds': {'cellType': 'FS', 'cellModel': 'Izhi'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['FS'] 
@@ -78,6 +72,16 @@ netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 1.50,
 netParams.synMechParams['GABA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80} # GABAA
 
 
+
+# Stimulation parameters
+netParams.stimSourceParams['backgroundE'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
+netParams.stimSourceParams['backgroundI'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}  # background inputs
+netParams.stimSourceParams['stimPsh'] = {'type': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_sh
+netParams.stimSourceParams['stimPel'] = {'type': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for P_el 
+netParams.stimSourceParams['stimEM'] = {'type': 'NetStim', 'rate': 'variable', 'noise': 0} # stim inputs for EM (explor movs) 
+
+
+
 # Connectivity parameters
 # STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.000013, 'wmax': 50, 'RLon': 1 , 'RLhebbwt': 0.001, 'RLantiwt': -0.001, \
 #     'tauhebb': 10, 'RLwindhebb': 50, 'useRLexp': 1, 'softthresh': 0, 'verbose':0}
@@ -87,38 +91,35 @@ STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.00001, 'wmax': 50, 'RLon': 1 , 'RLh
 
 # Background and stims
 
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'backgroundE'}, 'postConds': {'popLabel': ['ES', 'EM']}, # background -> Exc
-    'connFunc': 'fullConn',
+netParams.stimTargetParams['bg->E'] = {'source': 'backgroundE', 
+    'conds': {'popLabel': ['ES', 'EM']}, # background -> Exc
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
-    'synMech': 'NMDA'})  
+    'synMech': 'NMDA'}  
 
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'backgroundI'}, 'postConds': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
-    'connFunc': 'fullConn',
+netParams.stimTargetParams['bg->I'] = {'source': 'backgroundI', 
+    'conds': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
-    'synMech': 'NMDA'})   
+    'synMech': 'NMDA'}   
 
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'stimPsh'}, 'postConds': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
+netParams.stimTargetParams['Pstim_sh->Psh'] = {'source': 'stimPsh', 
+    'conds': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
     'weight': 0.1,                   
     'delay': 1,     
-    'synMech': 'NMDA'}) 
+    'synMech': 'NMDA'} 
 
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'stimPel'}, 'postConds': {'popLabel': 'Pel'},  # Pstim_el -> P_el
+netParams.stimTargetParams['Pstim_el->Pel'] = {'source': 'stimPel', 
+    'conds': {'popLabel': 'Pel'},  # Pstim_el -> P_el
     'weight': 0.1,                  
     'delay': 1,     
-    'synMech': 'NMDA'})
+    'synMech': 'NMDA'}
 
-netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'stimEM'}, 'postConds': {'popLabel': 'EM'}, # EMstim-> Exc
-    'connFunc': 'fullConn',
+netParams.stimTargetParams['EMstim->EM'] = {'source': 'stimEM', 
+    'conds': {'popLabel': 'EM'}, # EMstim-> EM
     'weight': 0.4, 
     'delay': 'uniform(1,5)',
-    'synMech': 'NMDA'})  
+    'synMech': 'NMDA'}  
 
 
 # Sensory

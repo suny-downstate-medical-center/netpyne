@@ -75,6 +75,8 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **scale**: Scale factor multiplier for number of cells (default: 1)
 
+* **shape**: Shape of network: 'cuboid', 'cylinder' or 'ellipsoid' (default: 'cuboid')
+
 * **sizeX**: x-dimension (horizontal length) network size in um (default: 100)
 
 * **sizeY**: y-dimension (vertical height or cortical depth) network size in um (default: 100)
@@ -860,12 +862,13 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), showConns = True, saveData = None, saveFig = None, showFig = True)
+* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 
     - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *showConns*: Whether to show connections or not (True|False)
+    - view: Perspective view, either front ('xy') or top-down ('xz')
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
     - *saveFig*: File name where to save the figure (None|'fileName')

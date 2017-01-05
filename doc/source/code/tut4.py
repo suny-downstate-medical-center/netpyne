@@ -4,9 +4,9 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'} 
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi'} 
 netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['background'] = {'rate': 100, 'noise': 0.5, 'cellModel': 'NetStim'}
+
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
@@ -19,7 +19,7 @@ cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'child
 cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 									# dend mechanisms
 netParams.cellParams['PYR_HH_rule'] = cellRule  														# add dict to list of cell parameters
 
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}} 						# cell rule dict
+cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 						# cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  												# soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  							# soma geometry
 cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
@@ -31,6 +31,11 @@ netParams.cellParams['PYR_Izhi_rule'] = cellRule  														# add dict to li
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synapse
  
 
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 100, 'noise': 0.5}
+netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
+
+
 ## Cell connectivity rules
 netParams.connParams['S->M'] = {
 	'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
@@ -40,12 +45,6 @@ netParams.connParams['S->M'] = {
 	'sec': 'dend',				# section to connect to
 	'loc': 1.0,
 	'synMech': 'exc'}   		# target synapse 
-
-netParams.connParams['bg->PYR'] = { 
-	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR'}, # background -> PYR
-	'weight': 0.01, 				# synaptic weight 
-	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'exc'}  			# target synapse 
 
 
 # Simulation options

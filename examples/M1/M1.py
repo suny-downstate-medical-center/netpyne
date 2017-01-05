@@ -24,7 +24,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 10.0*1e3 # Duration of the simulation, in ms
+simConfig.duration = 10*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
@@ -44,7 +44,7 @@ simConfig.recordStim = False  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
-simConfig.filename = '../data/M1_ynorm_izhi_correct'  # Set file output name
+simConfig.filename = '../data/M1_ynorm_izhi'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # save to pickle file
 simConfig.saveJson = False # save to json file
@@ -78,21 +78,19 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
 
 ## create list of populations, where each item contains a dict with the pop params     
-netParams.popParams['IT_L23'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT
-netParams.popParams['IT_L4'] =  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
-netParams.popParams['IT_L5A'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
-netParams.popParams['IT_L5B'] = {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B IT
-netParams.popParams['PT_L5B'] = {'cellModel': 'Izhi2007b', 'cellType': 'PT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B PT
-netParams.popParams['IT_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'IT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 IT
-netParams.popParams['CT_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'CT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 CT
-netParams.popParams['PV_L23'] = {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 PV (FS)
-netParams.popParams['SOM_L23'] ={'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 SOM (LTS)
-netParams.popParams['PV_L5'] =  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 PV (FS)
-netParams.popParams['SOM_L5'] = {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 SOM (LTS)
-netParams.popParams['PV_L6'] =  {'cellModel': 'Izhi2007b', 'cellType': 'PV',  'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 PV (FS)
-netParams.popParams['SOM_L6'] = {'cellModel': 'Izhi2007b', 'cellType': 'SOM', 'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 SOM (LTS)
-netParams.popParams['background_E'] = {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5}  # background inputs to Exc
-netParams.popParams['background_I'] = {'cellModel': 'NetStim', 'rate': 20, 'noise': 0.5}  # background inputs to Inh
+netParams.popParams['IT_L23'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT
+netParams.popParams['IT_L4'] =  {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
+netParams.popParams['IT_L5A'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
+netParams.popParams['IT_L5B'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B IT
+netParams.popParams['PT_L5B'] = {'cellModel': 'Izhi', 'cellType': 'PT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B PT
+netParams.popParams['IT_L6'] =  {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 IT
+netParams.popParams['CT_L6'] =  {'cellModel': 'Izhi', 'cellType': 'CT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 CT
+netParams.popParams['PV_L23'] = {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 PV (FS)
+netParams.popParams['SOM_L23'] ={'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 SOM (LTS)
+netParams.popParams['PV_L5'] =  {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 PV (FS)
+netParams.popParams['SOM_L5'] = {'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 SOM (LTS)
+netParams.popParams['PV_L6'] =  {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 PV (FS)
+netParams.popParams['SOM_L6'] = {'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 SOM (LTS)
 
 
 ## Izhi cell params (used in cell properties)
@@ -144,35 +142,21 @@ netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1,
 netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
 
 
+# Stimulation parameters
+netParams.stimSourceParams['background_E']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Exc
+netParams.stimSourceParams['background_I']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Inh
+
+netParams.stimTargetParams['bgE->IT,CT'] = {'source': 'background_E', 'conds': {'cellType': ['IT','CT']}, 
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+netParams.stimTargetParams['bgE->PT'] = {'source': 'background_E', 'conds': {'cellType': ['PT']}, 
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+netParams.stimTargetParams['bgI->PV'] = {'source': 'background_E', 'conds': {'cellType': ['PV']}, 
+                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'gauss(5,3)'}  
+netParams.stimTargetParams['bgI->SOM'] = {'source': 'background_E', 'conds': {'cellType': ['SOM']}, 
+                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'gauss(5,3)'}  
+
 # List of connectivity rules/params
 netParams.ItoIweight = 0.5
-
-netParams.addConnParams(None, {'preConds': {'popLabel': 'background_E'}, # background -> E IT,CT
-'postConds': {'cellType': ['IT','CT']}, 
-'synMech': 'NMDA',
-'weight': 0.1,
-'delay': 'gauss(5,3)'})  
-
-
-netParams.addConnParams(None, {'preConds': {'popLabel': 'background_E'}, # background -> E PT
-'postConds': {'cellType': ['PT']}, 
-'synMech': 'NMDA',
-'weight': 0.1,
-'delay': 'gauss(5,3)'}) 
-
-netParams.addConnParams(None, {'preConds': {'popLabel': 'background_I'}, # background -> I PV
-'postConds': {'cellType': ['PV']}, 
-'synMech': 'NMDA',
-'weight': 0.05,
-'delay': 'gauss(5,3)'}) 
-
-netParams.addConnParams(None, {'preConds': {'popLabel': 'background_I'}, # background -> I SOM
-'postConds': {'cellType': ['SOM']}, 
-'synMech': 'NMDA',
-'weight': 0.03,
-'delay': 'gauss(5,3)'}) 
-
-
 
 # Generated using importConnFromExcel() function in params/utils.py 
 netParams.addConnParams(None, {'preConds': {'cellType': ['IT','CT'], 'ynorm': [0.1,0.2]},

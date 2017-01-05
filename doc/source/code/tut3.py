@@ -6,7 +6,6 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
 netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
-netParams.popParams['background'] = {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
@@ -24,6 +23,11 @@ netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of ce
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
  
 
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
+netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
+
+
 ## Cell connectivity rules
 netParams.connParams['S->M'] = {'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
 	'probability': 0.5, 		# probability of connection
@@ -33,11 +37,6 @@ netParams.connParams['S->M'] = {'preConds': {'popLabel': 'S'}, 'postConds': {'po
 	'loc': 1.0,					# location of synapse
 	'synMech': 'exc'}   		# target synaptic mechanism
 
-netParams.connParams['bg->PYR'] = {'preConds': {'popLabel': 'background'}, 
-	'postConds': {'cellType': 'PYR'}, # background -> PYR
-	'weight': 0.01, 				# synaptic weight 
-	'delay': 5, 				# transmission delay (ms) 
-	'synMech': 'exc'}  			# target synapse 
 
 
 # Simulation options

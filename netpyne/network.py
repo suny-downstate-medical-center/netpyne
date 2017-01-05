@@ -29,7 +29,7 @@ class Network (object):
         self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 'i', 
+        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
@@ -103,13 +103,13 @@ class Network (object):
                 postCellsTags = allCellTags
                 for condKey,condValue in target['conds'].iteritems():  # Find subset of cells that match postsyn criteria
                     if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                     elif condKey == 'cellList':
                         pass
                     elif isinstance(condValue, list): 
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
                     else:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
                 
                 # subset of cells from selected pops (by relative indices)                     
                 if 'cellList' in target['conds']:
@@ -258,7 +258,7 @@ class Network (object):
                     if x1 == x2 or y1 == y2: 
                         print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
                     else:
-                       # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
+                       # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
                        sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
                        #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
 
@@ -442,7 +442,7 @@ class Network (object):
             connParam['label'] = connParamLabel
 
             # find pre and post cells that match conditions
-            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, connParam['preConds'], connParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, connParam['preConds'], connParam['postConds'])
 
             # call appropriate conn function
             if 'connFunc' not in connParam:  # if conn function not specified, select based on params
@@ -474,8 +474,12 @@ class Network (object):
                 #cell.addSynMechsNEURONObj()
                 cell.addConnsNEURONObj()
 
+        nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
+        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
 
-        print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in self.cells])))
+        print('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections))
+        if nodeSynapses != nodeConnections:
+            print('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses))
         sim.pc.barrier()
         sim.timing('stop', 'connectTime')
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
@@ -487,18 +491,21 @@ class Network (object):
     # Find pre and post cells matching conditions
     ###############################################################################
     def _findCellsCondition(self, allCellTags, conds):
-        cellsTags = dict(allCellTags)
-        for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
-            if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
-                prePops = {}
-            else:
-                if isinstance(condValue, list): 
-                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+        try: 
+            cellsTags = dict(allCellTags)
+            for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
+                if condKey in ['x','y','z','xnorm','ynorm','znorm']:
+                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
+                    prePops = {}
                 else:
-                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
+                    if isinstance(condValue, list): 
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
+                    else:
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
+        except: 
+            return None
 
         return cellsTags
 
@@ -506,40 +513,41 @@ class Network (object):
     ###############################################################################
     # Find pre and post cells matching conditions
     ###############################################################################
-    def _findPrePostCellsCondition(self, allCellTags, allPopTags, preConds, postConds):
+    def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
+        #try:
         preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
-        prePops = allPopTags  # initialize with all presyn pops
         postCellsTags = None
 
         for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
             if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with pre cell tags
-                prePops = {}
+                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
+                #prePops = {}
             else:
                 if isinstance(condValue, list): 
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] in condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] in condValue)}
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
+                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
                 else:
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags[condKey] == condValue}  # dict with pre cell tags
-                    prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags[condKey] == condValue)}
-                
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
+                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
 
-        if not preCellsTags: # if no presyn cells, check if netstim
-            if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
-                for prePop in prePops.values():
-                    if not 'start' in prePop: prePop['start'] = 1  # add default start time
-                    if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
-                preCellsTags = prePops
+        # if not preCellsTags: # if no presyn cells, check if netstim
+        #     if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
+        #         for prePop in prePops.values():
+        #             if not 'start' in prePop: prePop['start'] = 1  # add default start time
+        #             if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
+        #         preCellsTags = prePops
 
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
             for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags[condKey] < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                 elif isinstance(condValue, list): 
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] in condValue}  # dict with post Cell objects
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
                 else:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags[condKey] == condValue}  # dict with post Cell objects
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
+        #except:
+        #   return None, None
 
         return preCellsTags, postCellsTags
 
@@ -640,11 +648,7 @@ class Network (object):
         for postCellGid in postCellsTags:  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
-                    if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        self._addNetStimParams(connParam, preCellTags) # cell method to add connection  
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection             
-                    elif preCellGid != postCellGid: # if not self-connection
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                    self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
@@ -670,11 +674,7 @@ class Network (object):
                   
                     if probability >= allRands[preCellGid,postCellGid]:      
                         seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
-                        if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                            self._addNetStimParams(connParam, preCellTags) # cell method to add connection       
-                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection        
-                        elif preCellGid != postCellGid: # if not self-connection
-                           self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
@@ -700,8 +700,6 @@ class Network (object):
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
         
                     seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
-                    if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                        print 'Error: Convergent connectivity for NetStims is not implemented'
                     if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -727,9 +725,7 @@ class Network (object):
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                     connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
  
-                seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
-                if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    print 'Error: Divergent connectivity for NetStims is not implemented'           
+                seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -757,34 +753,15 @@ class Network (object):
         orderedPostGids = sorted(postCellsTags.keys())
 
         for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
-            preCellGid = orderedPreGids[relativePreId]
-            preCellTags = preCellsTags[preCellGid]  # get pre cell based on relative id        
+            preCellGid = orderedPreGids[relativePreId]     
             postCellGid = orderedPostGids[relativePostId]
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
                 
                 if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn] 
                 if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
-
-                if preCellTags['cellModel'] == 'NetStim':  # if NetStim
-                    print 'Error: fromList connectivity for NetStims is not implemented'           
+        
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
-
-
-    ###############################################################################
-    ### Set parameters and create NetStim and connection
-    ###############################################################################
-    def _addNetStimParams (self, connParam, preCellTags):
-
-        netStimParams = {'source': preCellTags['popLabel'],
-        'type': preCellTags['cellModel'],
-        'rate': preCellTags['rate'],
-        'noise': preCellTags['noise'],
-        'number': preCellTags['number'],
-        'start': preCellTags['start'],
-        'seed': preCellTags['seed'] if 'seed' in preCellTags else sim.cfg.seeds['stim']}
-
-        connParam['netStimParams'] = netStimParams
 
 
     ###############################################################################
@@ -827,15 +804,16 @@ class Network (object):
             'synMech': synMech, 
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],
-            'threshold': connParam.get('threshold'),
-            'synsPerConn': finalParam['synsPerConn'],
-            'shape': connParam.get('shape'),
-            'plast': connParam.get('plast')}
-            
-            if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
-            if connParam.get('gapJunction', False): params['gapJunction'] = connParam.get('gapJunction')
+            'synsPerConn': finalParam['synsPerConn']}
 
-            postCell.addConn(params=params, netStimParams=connParam.get('netStimParams'))
+            if connParam.get('threshold'): params['threshold'] = connParam.get('threshold')    
+            if connParam.get('shape'): params['shape'] = connParam.get('shape')    
+            if connParam.get('plast'): params['plast'] = connParam.get('plast')    
+            if connParam.get('gapJunction'): params['gapJunction'] = connParam.get('gapJunction')
+
+            if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
+
+            postCell.addConn(params=params)
 
 
     ###############################################################################

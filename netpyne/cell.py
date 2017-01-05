@@ -903,10 +903,11 @@ class CompartCell (Cell):
                 'synMech': params.get('synMech'), 
                 'weight': params.get('weight'),
                 'delay': params.get('delay'),
-                'threshold': params.get('threshold'),
-                'synsPerConn': params.get('synsPerConn'),
-                'shape': params.get('shape'),
-                'plast': params.get('plast')}
+                'synsPerConn': params.get('synsPerConn')}
+
+            if params.get('threshold'): connParams['threshold'] = params.get('threshold')    
+            if params.get('shape'): connParams['shape'] = params.get('shape')    
+            if params.get('plast'): connParams['plast'] = params.get('plast')    
 
             netStimParams = {'source': params['source'],
                 'type': params['type'],

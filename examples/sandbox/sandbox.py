@@ -66,7 +66,7 @@ netParams.connParams['artif1->PYR1'] = {
     'synsPerConn': 1}          
 
 netParams.connParams['PYR2->PYR1'] = {
-    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR1'},
+    'preConds': {'popLabel': 'PYR2'}, 'postConds': {'popLabel': 'PYR1'},
     'probability': 0.1,
     'weight': 0.2,                     
     'delay': 'uniform(1,5)',

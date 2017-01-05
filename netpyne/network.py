@@ -807,8 +807,8 @@ class Network (object):
             'synsPerConn': finalParam['synsPerConn']}
 
             if connParam.get('threshold'): params['threshold'] = connParam.get('threshold')    
-            if connParam.get('shape'): params['shape'] = connParam.get('threshold')    
-            if connParam.get('plast'): params['plast'] = connParam.get('threshold')    
+            if connParam.get('shape'): params['shape'] = connParam.get('shape')    
+            if connParam.get('plast'): params['plast'] = connParam.get('plast')    
             if connParam.get('gapJunction'): params['gapJunction'] = connParam.get('gapJunction')
 
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')

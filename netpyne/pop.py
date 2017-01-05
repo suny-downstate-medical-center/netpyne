@@ -245,6 +245,10 @@ class Pop (object):
     def _setCellClass (self):
         # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
         try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+        
+            # Make sure it's not a NeuroML2 based cell
+            assert(not ('originalFormat' in self.tags and self.tags['originalFormat'] == 'NeuroML2'))
+            
             tmp = getattr(h, self.tags['cellModel'])
             self.cellModelClass = sim.PointCell
             excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 

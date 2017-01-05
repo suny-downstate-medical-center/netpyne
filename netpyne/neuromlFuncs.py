@@ -549,19 +549,19 @@ if neuromlExists:
         def finalise(self):
 
             for popParam in self.popParams.keys():
-                self.netParams.addPopParams(popParam, self.popParams[popParam])
+                self.netParams.popParams[popParam] = self.popParams[popParam]
 
             for cellParam in self.cellParams.keys():
-                self.netParams.addCellParams(cellParam, self.cellParams[cellParam])
+                self.netParams.cellParams[cellParam] = self.cellParams[cellParam]
 
             for proj_id in self.projection_infos.keys():
                 projName, prePop, postPop, synapse, ptype = self.projection_infos[proj_id]
 
-                self.netParams.addSynMechParams(synapse, {'mod': synapse})
+                self.netParams.synMechParams[synapse] = {'mod': synapse}
 
             for stimName in self.stimSources.keys():
-                self.netParams.addStimSourceParams(stimName,self.stimSources[stimName])
-                self.netParams.addStimTargetParams(stimName,self.stimLists[stimName])
+                self.netParams.stimSourceParams[stimName] = self.stimSources[stimName]
+                self.netParams.stimTargetParams[stimName] = self.stimLists[stimName]
 
         def _get_prox_dist(self, seg, seg_ids_vs_segs):
             prox = None
@@ -596,6 +596,7 @@ if neuromlExists:
             popInfo['popLabel'] = population_id
             popInfo['cellModel'] = component
             popInfo['cellType'] = component
+            popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from artificial cells
             popInfo['cellsList'] = []
 
             self.popParams[population_id] = popInfo
@@ -604,7 +605,10 @@ if neuromlExists:
             if isinstance(component_obj,Cell):
                 
                 cell = component_obj
-                cellRule = {'conds':{'cellType': component, 'cellModel': component},  'secs': {}, 'secLists':{}}  # cell rule dict
+                cellRule = {'conds':{'cellType': component, 
+                                     'cellModel': component},  
+                            'secs': {}, 
+                            'secLists':{}}
                 
                 seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
                 seg_grps_vs_nrn_sections = {}
@@ -786,7 +790,10 @@ if neuromlExists:
 
             else:
 
-                cellRule = {'label': component, 'conds': {'cellType': component, 'cellModel': component},  'sections': {}}
+                cellRule = {'label': component, 
+                            'conds': {'cellType': component, 
+                                      'cellModel': component},  
+                            'sections': {}} # This parameter is required to distinguish NML2 "point processes" from artificial cells
 
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
                 default_diam = 10
@@ -816,7 +823,7 @@ if neuromlExists:
                 soma['pointps'][component] = {'mod':component}
                 cellRule['secs'] = {'soma': soma}  # add sections to dict
                 self.cellParams[component] = cellRule
-
+                
             self.gids[population_id] = [-1]*size
 
 

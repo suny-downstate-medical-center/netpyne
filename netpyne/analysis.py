@@ -983,7 +983,7 @@ def _roundFigures(x, n):
 ## Plot connectivity
 ######################################################################################################################################################
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
-            graphType = 'matrix', saveData = None, saveFig = None, showFig = True): 
+            graphType = 'matrix', synOrConn = 'syn', saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -994,6 +994,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
         - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
+        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
         - figSize ((width, height)): Size of figure (default: (10,10))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -1005,6 +1006,11 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     '''
 
     print('Plotting connectivity matrix...')
+
+    def list_of_dict_unique_by_key(seq, key):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
     
     cellsPre, cellGidsPre, netStimPopsPre = getCellsInclude(includePre)
     if includePre == includePost:
@@ -1049,7 +1055,13 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            for conn in cellConns:
                 if conn['preGid'] != 'NetStim' and conn['preGid'] in cellIndsPre:
                     if feature in ['weight', 'delay']: 
                         if conn['preGid'] in cellIndsPre:
@@ -1112,7 +1124,13 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+        
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            for conn in cellConns:
                 if conn['preGid'] == 'NetStim':
                     prePopLabel = conn['preLabel']
                 else:
@@ -1187,7 +1205,12 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            for conn in cellConns:
                 if conn['preGid'] == 'NetStim':
                     prePopLabel = -1  # maybe add in future
                 else:

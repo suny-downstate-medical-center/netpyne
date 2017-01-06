@@ -306,7 +306,7 @@ class Network (object):
                             allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                         # group synMechs so they are not distributed separately
-                        if subConnParam.get('groupSynMechs', None):  
+                        if 'groupSynMechs' in subConnParam:  
                             conns = []
                             connsGroup = {}
                             iConn = -1
@@ -336,7 +336,7 @@ class Network (object):
                             gridY = subConnParam['density']['gridY']
                             gridSigma = subConnParam['density']['gridValues']
                             somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
-                            if subConnParam['density'].get('fixedSomaY', None):  # is fixed cell soma y, adjust y grid accordingly
+                            if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                                 fixedSomaY = subConnParam['density'].get('fixedSomaY')
                                 gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
                             if subConnParam['density']['type'] == '2Dmap': # 2D    
@@ -806,10 +806,10 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'synsPerConn': finalParam['synsPerConn']}
 
-            if connParam.get('threshold'): params['threshold'] = connParam.get('threshold')    
-            if connParam.get('shape'): params['shape'] = connParam.get('shape')    
-            if connParam.get('plast'): params['plast'] = connParam.get('plast')    
-            if connParam.get('gapJunction'): params['gapJunction'] = connParam.get('gapJunction')
+            if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')    
+            if 'shape' in connParam: params['shape'] = connParam.get('shape')    
+            if 'plast' in connParam: params['plast'] = connParam.get('plast')    
+            if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
 
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
 

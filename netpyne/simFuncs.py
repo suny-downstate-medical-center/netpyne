@@ -962,7 +962,7 @@ def gatherData ():
         print('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
         if sim.totalSynapses != sim.totalConnections:
             print('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell))
-        if sim.timingData.get('runTime'): 
+        if 'runTime' in sim.timingData: 
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
             if sim.cfg.printPopAvgRates: 
                 sim.allSimData['popRates'] = sim.popAvgRates()

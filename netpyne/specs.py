@@ -92,7 +92,7 @@ class Dict(dict):
             return x
 
     def __missing__(self, key):
-        if not key.startswith('_ipython'):
+        if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
             return value
 

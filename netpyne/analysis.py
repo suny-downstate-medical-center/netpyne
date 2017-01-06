@@ -71,12 +71,12 @@ def _showFigure():
 ######################################################################################################################################################
 ## Save figure data
 ######################################################################################################################################################
-def _saveFigData(figData, fileName, type=''):
-    if not isinstance(fileName, basestring):
+def _saveFigData(figData, fileName=None, type=''):
+    if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     fileName = fileName.split('.')
-    ext = fileName[1] if len(fileName) > 1 else 'pkl'
+    ext = fileName[-1] if len(fileName) > 1 else 'pkl'
 
     if ext == 'pkl': # save to pickle
         import pickle
@@ -1124,7 +1124,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-        
+
             if synOrConn=='syn':
                 cellConns = cell['conns'] # include all synapses 
             else:
@@ -1352,7 +1352,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'conn.png'
+            filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
         savefig(filename)
 
     # show fig 

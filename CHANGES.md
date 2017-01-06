@@ -26,6 +26,9 @@
 
 - Fixed bug in readCmdLineArgs() 
 
+- Fixed bug in saveData option of figure plots
+
+
 
 # Version 0.6.4
 

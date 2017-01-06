@@ -369,7 +369,7 @@ if neuromlExists:
 
                         mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%'-65'))
 
-                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%'0'))
+                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
 
                         for mech_name in np_sec['mechs'].keys():
                             mech = np_sec['mechs'][mech_name]

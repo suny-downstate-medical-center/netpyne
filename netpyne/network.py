@@ -806,13 +806,13 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'synsPerConn': finalParam['synsPerConn']}
 
-            if connParam.get('threshold'): params['threshold'] = connParam.get('threshold')    
-            if connParam.get('shape'): params['shape'] = connParam.get('shape')    
-            if connParam.get('plast'): params['plast'] = connParam.get('plast')    
-            if connParam.get('gapJunction'): params['gapJunction'] = connParam.get('gapJunction')
+            if connParam.has_key('threshold'): params['threshold'] = connParam.get('threshold')    
+            if connParam.has_key('shape'): params['shape'] = connParam.get('shape')    
+            if connParam.has_key('plast'): params['plast'] = connParam.get('plast')    
+            if connParam.has_key('gapJunction'): params['gapJunction'] = connParam.get('gapJunction')
 
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
-
+            
             postCell.addConn(params=params)
 
 

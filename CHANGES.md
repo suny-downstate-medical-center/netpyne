@@ -20,6 +20,8 @@
 
 - Removed 'plast' and 'shape' from conns when not used (issue #177)
 
+- Added option to center soma at origin when importing cell 
+
 - Now using noiseFromRandom123() for NetStims() (issue #89)
 
 - Fixed bug in readCmdLineArgs() 

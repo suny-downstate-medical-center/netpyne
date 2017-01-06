@@ -322,17 +322,28 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False):
         if cellArgs is None: cellArgs = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        
+        # adjust cell 3d points so that soma is at location 0,0,0 
+        if somaAtOrigin:
+            soma3d = cellRule['secs']['soma']['geom']['pt3d']
+            midpoint = int(len(soma3d)/2)
+            somaX, somaY, somaZ = soma3d[midpoint][0:3]
+            for sec in cellRule['secs'].values():
+                for i,pt3d in enumerate(sec['geom']['pt3d']):
+                    sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
             for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+
 
         return self.cellParams[label]
 

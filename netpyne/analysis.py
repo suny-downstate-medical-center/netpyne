@@ -983,7 +983,7 @@ def _roundFigures(x, n):
 ## Plot connectivity
 ######################################################################################################################################################
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
-            graphType = 'matrix', synOrConn = 'syn', saveData = None, saveFig = None, showFig = True): 
+            graphType = 'matrix', synOrConn = 'syn', synMech = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -996,6 +996,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
         - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
         - figSize ((width, height)): Size of figure (default: (10,10))
+        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
         - saveFig (None|True|'fileName'): File name where to save the figure; 
@@ -1018,6 +1019,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     else:
         cellsPost, cellGidsPost, netStimPopsPost = getCellsInclude(includePost) 
 
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
+    
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
         if feature in ['weight', 'delay', 'numConns']: 
@@ -1060,6 +1063,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                 cellConns = cell['conns'] # include all synapses 
             else:
                 cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
 
             for conn in cellConns:
                 if conn['preGid'] != 'NetStim' and conn['preGid'] in cellIndsPre:
@@ -1129,6 +1135,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                 cellConns = cell['conns'] # include all synapses 
             else:
                 cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
 
             for conn in cellConns:
                 if conn['preGid'] == 'NetStim':
@@ -1209,6 +1218,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                 cellConns = cell['conns'] # include all synapses 
             else:
                 cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
 
             for conn in cellConns:
                 if conn['preGid'] == 'NetStim':

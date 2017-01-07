@@ -14,7 +14,7 @@
 
 - analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
 
-- analysis.plotConn() option to plot stacked bar graph, select different pre and post pops, and syns vs conns
+- analysis.plotConn() option to plot stacked bar graph, select different pre and post pops, synMech and syns vs conns
 
 - Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerconn)
 

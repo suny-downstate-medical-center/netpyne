@@ -75,16 +75,13 @@ def _saveFigData(figData, fileName=None, type=''):
     if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
-    fileName = fileName.split('.')
-    ext = fileName[-1] if len(fileName) > 1 else 'pkl'
-
-    if ext == 'pkl': # save to pickle
+    if fileName.endswith('.pkl'): # save to pickle
         import pickle
         print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
         with open(fileName[0]+'.pkl', 'wb') as fileObj:
             pickle.dump(figData, fileObj)
 
-    elif ext == 'json':  # save to json
+    elif fileName.endswith('.json'):  # save to json
         import json
         print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
         with open(fileName[0]+'.json', 'w') as fileObj:

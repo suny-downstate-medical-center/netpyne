@@ -351,6 +351,36 @@ class NetParams (object):
         utils.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
         return self.cellParams
 
+
+    def addCellParamsSecList(self, label, secListName, somaDist):
+        import numpy as np
+
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding secList: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if not isinstance(somaDist, list) or len(somaDist) != 2:
+            print 'Error adding secList: somaDist should be a list with 2 elements'
+            return
+
+        secList = []
+        for secName, sec in cellRule.secs.iteritems():
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                midpoint = int(len(pt3d)/2)
+                x,y,z = pt3d[midpoint][0:3]
+                distSec = np.linalg.norm(np.array([x,y,z]))
+                if distSec >= somaDist[0] and distSec <= somaDist[1]:
+                    secList.append(secName)
+
+            else:
+                print 'Error adding secList: Sections do not contain 3d points' 
+                return
+
+        cellRule.secLists[secListName] = list(secList)
+
     def todict(self):
         from sim import replaceDictODict
         return replaceDictODict(self.__dict__)

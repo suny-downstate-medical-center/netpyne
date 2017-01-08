@@ -16,7 +16,9 @@
 
 - analysis.plotConn() option to plot stacked bar graph, select different pre and post pops, synMech and syns vs conns
 
-- Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerconn)
+- Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerConn)
+
+- New function netParams.addCellParamsSecList to create list of sections based on distance from soma
 
 - Removed 'plast' and 'shape' from conns when not used (issue #177)
 

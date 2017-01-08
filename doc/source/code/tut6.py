@@ -6,7 +6,6 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
 netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['background'] = {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}  												# cell rule dict

@@ -18,7 +18,7 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 
 # Population parameters
 netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop 
-netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
+#netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 # Cell parameters
 
@@ -33,14 +33,13 @@ netParams.cellParams['PYR'] = cellRule  # add dict to list of cell properties
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80}
 
+
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'popLabel': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
+
  
 # Connectivity parameters
-netParams.connParams['bg->hop'] = {
-    'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
-    'weight': 0.1,                    # fixed weight of 0.1
-    'synMech': 'exc',                 # target exc synapse
-    'delay': 1}                       # uniformly distributed delays between 1-5ms
-
 netParams.connParams['hop->hop'] = {
     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
     'weight': 0.0,                      # weight of each connection
@@ -79,6 +78,7 @@ sim.initialize(                     # create network object and set cfg and net 
 sim.net.createPops()                # instantiate network populations
 sim.net.createCells()               # instantiate network cells based on defined populations
 sim.net.connectCells()              # create connections between cells based on params
+sim.net.addStims()                  # add stimulation
 sim.setupRecording()                # setup variables to record for each cell (spikes, V traces, etc)
 sim.runSim()                        # run parallel Neuron simulation  
 sim.gatherData()                    # gather spiking data and cell info from each node
@@ -104,8 +104,8 @@ sim.net.modifyCells({'conds': {'popLabel': 'hop'},
 
 sim.simulate()
 
-from netpyne import gui
-if gui:
+from netpyne import __gui__
+if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
 

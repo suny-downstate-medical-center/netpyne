@@ -9,11 +9,10 @@ netParams.popParams['HH3D_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel'
 netParams.popParams['Traub_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Traub'}
 netParams.popParams['Mainen_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Mainen'}
 netParams.popParams['Friesen_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Friesen'}
-netParams.popParams['Izhi03a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003a'}
-netParams.popParams['Izhi03b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2003b'} 
-netParams.popParams['Izhi07a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007a'} 
-netParams.popParams['Izhi07b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izhi2007b'} 
-netParams.popParams['background'] = {'rate': 50, 'noise': 0.5, 'cellModel': 'NetStim'}
+netParams.popParams['Izhi03a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izh2003a'}
+netParams.popParams['Izhi03b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izh2003b'} 
+netParams.popParams['Izhi07a_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izh2007a'} 
+netParams.popParams['Izhi07b_pop'] = {'cellType': 'PYR', 'numCells': 5, 'cellModel': 'Izh2007b'} 
 
 
 ### HH
@@ -44,22 +43,22 @@ cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType
 cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 
 ### Izhi2003a (independent voltage)
-cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
+cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2003a'},
 	fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
 cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
 
 ### Izhi2003b (section voltage)
-netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003b'},
+netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2003b'},
 		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
 
 ### Izhi2007a (independent voltage)
-cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007a'}, 
+cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2007a'}, 
 	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 
 ### Izhi2007b (section voltage)
-netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007b'},
+netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2007b'},
 	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
 
 
@@ -67,22 +66,15 @@ netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', '
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # soma NMDA synapse
  
 
-## Connectivity params
-netParams.connParams['bg1'] = {
-	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izhi2003b', 'Izhi2007b']}, # background -> PYR (weight=0.1)
-	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
-	'weight': 0.1, 			# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'sec': 'soma'}		
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
+netParams.stimTargetParams['bg1'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': ['Traub', 'HH', 'HH3D', 'Mainen', 'Izh2003b', 'Izh2007b']}, 
+									'weight': 0.1, 'delay': 5, 'sec': 'soma'}
+netParams.stimTargetParams['bg2'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izh2003a', 'Izh2007a']}, 
+									'weight': 5, 'delay': 5, 'sec': 'soma'}
 
-netParams.connParams['bg2'] = {
-	'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': 'PYR', 'cellModel': ['Friesen','Izhi2003a', 'Izhi2007a']}, # background -> PYR (weight = 10)
-	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
-	'weight': 5, 				# synaptic weight 
-	'delay': 5,					# transmission delay (ms) 
-	'synMech':'AMPA',
-	'sec': 'soma'}				
 
+## Connectivity params		
 netParams.connParams['recurrent'] = {
 	'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},  #  PYR -> PYR random
 	'connFunc': 'convConn', 	# connectivity function (random)

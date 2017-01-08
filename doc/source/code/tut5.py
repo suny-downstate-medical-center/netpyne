@@ -17,7 +17,6 @@ netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600
 netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
 netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['background'] = {'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'}
 
 
 ## Cell property rules
@@ -37,15 +36,14 @@ netParams.cellParams['Irule'] = cellRule                          # add dict to 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
- 
+
+
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, gauss(5,2))', 'synMech': 'exc'}
+
 
 ## Cell connectivity rules
-netParams.connParams['bg->all'] = {
-  'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
-  'weight': 0.01,                     # synaptic weight 
-  'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
-  'synMech': 'exc'}                   # synaptic mechanism 
-
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
   'probability': 0.1 ,                  # probability of connection

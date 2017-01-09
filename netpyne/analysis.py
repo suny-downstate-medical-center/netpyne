@@ -25,6 +25,10 @@ warnings.filterwarnings("ignore")
 colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
+            [0.71,0.82,0.41], [0.0,0.2,0.5],
+            [0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
+            [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
+            [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
 ######################################################################################################################################################
@@ -67,20 +71,17 @@ def _showFigure():
 ######################################################################################################################################################
 ## Save figure data
 ######################################################################################################################################################
-def _saveFigData(figData, fileName, type=''):
-    if not isinstance(fileName, basestring):
+def _saveFigData(figData, fileName=None, type=''):
+    if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
-    fileName = fileName.split('.')
-    ext = fileName[1] if len(fileName) > 1 else 'pkl'
-
-    if ext == 'pkl': # save to pickle
+    if fileName.endswith('.pkl'): # save to pickle
         import pickle
         print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
         with open(fileName[0]+'.pkl', 'wb') as fileObj:
             pickle.dump(figData, fileObj)
 
-    elif ext == 'json':  # save to json
+    elif fileName.endswith('.json'):  # save to json
         import json
         print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
         with open(fileName[0]+'.json', 'w') as fileObj:
@@ -979,7 +980,7 @@ def _roundFigures(x, n):
 ## Plot connectivity
 ######################################################################################################################################################
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
-            graphType = 'matrix', saveData = None, saveFig = None, showFig = True): 
+            graphType = 'matrix', synOrConn = 'syn', synMech = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -990,7 +991,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
         - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
         - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
+        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
         - figSize ((width, height)): Size of figure (default: (10,10))
+        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
         - saveFig (None|True|'fileName'): File name where to save the figure; 
@@ -1001,6 +1004,11 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     '''
 
     print('Plotting connectivity matrix...')
+
+    def list_of_dict_unique_by_key(seq, key):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
     
     cellsPre, cellGidsPre, netStimPopsPre = getCellsInclude(includePre)
     if includePre == includePost:
@@ -1008,6 +1016,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     else:
         cellsPost, cellGidsPost, netStimPopsPost = getCellsInclude(includePost) 
 
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
+    
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
         if feature in ['weight', 'delay', 'numConns']: 
@@ -1045,7 +1055,16 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+
+            for conn in cellConns:
                 if conn['preGid'] != 'NetStim' and conn['preGid'] in cellIndsPre:
                     if feature in ['weight', 'delay']: 
                         if conn['preGid'] in cellIndsPre:
@@ -1108,7 +1127,16 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+
+            for conn in cellConns:
                 if conn['preGid'] == 'NetStim':
                     prePopLabel = conn['preLabel']
                 else:
@@ -1183,7 +1211,15 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
-            for conn in cell['conns']:
+            if synOrConn=='syn':
+                cellConns = cell['conns'] # include all synapses 
+            else:
+                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+
+            if synMech:
+                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+
+            for conn in cellConns:
                 if conn['preGid'] == 'NetStim':
                     prePopLabel = -1  # maybe add in future
                 else:
@@ -1325,7 +1361,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'conn.png'
+            filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
         savefig(filename)
 
     # show fig 

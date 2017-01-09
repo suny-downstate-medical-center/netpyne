@@ -92,7 +92,7 @@ class Dict(dict):
             return x
 
     def __missing__(self, key):
-        if not key.startswith('_ipython'):
+        if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
             return value
 
@@ -322,23 +322,64 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False):
         if cellArgs is None: cellArgs = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
         secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        
+        # adjust cell 3d points so that soma is at location 0,0,0 
+        if somaAtOrigin:
+            soma3d = cellRule['secs']['soma']['geom']['pt3d']
+            midpoint = int(len(soma3d)/2)
+            somaX, somaY, somaZ = soma3d[midpoint][0:3]
+            for sec in cellRule['secs'].values():
+                for i,pt3d in enumerate(sec['geom']['pt3d']):
+                    sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
             for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+
 
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
         utils.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
         return self.cellParams
+
+
+    def addCellParamsSecList(self, label, secListName, somaDist):
+        import numpy as np
+
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding secList: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if not isinstance(somaDist, list) or len(somaDist) != 2:
+            print 'Error adding secList: somaDist should be a list with 2 elements'
+            return
+
+        secList = []
+        for secName, sec in cellRule.secs.iteritems():
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                midpoint = int(len(pt3d)/2)
+                x,y,z = pt3d[midpoint][0:3]
+                distSec = np.linalg.norm(np.array([x,y,z]))
+                if distSec >= somaDist[0] and distSec <= somaDist[1]:
+                    secList.append(secName)
+
+            else:
+                print 'Error adding secList: Sections do not contain 3d points' 
+                return
+
+        cellRule.secLists[secListName] = list(secList)
 
     def todict(self):
         from sim import replaceDictODict

@@ -313,7 +313,7 @@ class CompartCell (Cell):
                 sec['vinit'] = sectParams['vinit']
 
         # add sectionLists
-        if prop.get('secLists'):
+        if 'secLists' in prop:
             self.secLists.update(prop['secLists'])  # diction of section lists
 
 
@@ -329,7 +329,7 @@ class CompartCell (Cell):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if not self.secs[sectName].get('hSec'): 
+            if 'hSec' not in self.secs[sectName]: 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
@@ -905,9 +905,9 @@ class CompartCell (Cell):
                 'delay': params.get('delay'),
                 'synsPerConn': params.get('synsPerConn')}
 
-            if params.get('threshold'): connParams['threshold'] = params.get('threshold')    
-            if params.get('shape'): connParams['shape'] = params.get('shape')    
-            if params.get('plast'): connParams['plast'] = params.get('plast')    
+            if 'threshold' in params: connParams['threshold'] = params.get('threshold')    
+            if 'shape' in params: connParams['shape'] = params.get('shape')    
+            if 'plast' in params: connParams['plast'] = params.get('plast')    
 
             netStimParams = {'source': params['source'],
                 'type': params['type'],

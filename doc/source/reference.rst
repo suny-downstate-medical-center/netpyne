@@ -139,7 +139,7 @@ The ``addPopParams(label, params)`` method of the class ``netParams`` can be use
 	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
-It is also possible to create a special type of population consisting of NetStims (NEURON's artificial spike generator), which can be used to provide background inputs or artificial stimulation to cells. The actual NetStim objects will only be created if the population is connected to some cells, in which case, one NetStim will be created per postsynaptic cell. The NetStim population contains the following fields:
+It is also possible to create populations of artificial cells, i.e. point processes that generate spike events but don't have sections (e.g. NetStim, VecStim or IntFire2). In this case the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require to define separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
 * **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
@@ -153,10 +153,11 @@ It is also possible to create a special type of population consisting of NetStim
 
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
+* **numCells** - Number of cells
 
 Example of NetStim population::
 	
-	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5}  # background inputs
+	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'numCells': 100}  # background inputs
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
@@ -437,7 +438,6 @@ Example of connectivity rules:
 	    'delay': [5, 10],		# different delays for each of 3 synapses per synMech 
 	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]}           # different locations for each of the 6 synapses
 
-.. note:: NetStim populations can only serve as presynaptic source of a connection. Additionally, only the ``fullConn`` (default) and ``probConn`` (using ``probability`` parameter) connectivity functions can be used to connect NetStims. NetStims are created *on the fly* during the implementation of the connectivity rules, instantiating one NetStim per postsynaptic cell.
 
 .. _function_string:
 

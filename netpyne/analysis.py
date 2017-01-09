@@ -77,17 +77,17 @@ def _saveFigData(figData, fileName=None, type=''):
 
     if fileName.endswith('.pkl'): # save to pickle
         import pickle
-        print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
-        with open(fileName[0]+'.pkl', 'wb') as fileObj:
+        print('Saving figure data as %s ... ' % (fileName))
+        with open(fileName, 'wb') as fileObj:
             pickle.dump(figData, fileObj)
 
     elif fileName.endswith('.json'):  # save to json
         import json
-        print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
-        with open(fileName[0]+'.json', 'w') as fileObj:
+        print('Saving figure data as %s ... ' % (fileName))
+        with open(fileName, 'w') as fileObj:
             json.dump(figData, fileObj)
     else: 
-        print 'File extension to save figure data not recognized: %s'%(ext)
+        print 'File extension to save figure data not recognized'
 
 
 import numpy

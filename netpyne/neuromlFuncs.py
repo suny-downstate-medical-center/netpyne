@@ -963,7 +963,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #
-        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection"):
+        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None):
 
 
             self.log.info("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
@@ -1000,7 +1000,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleInputList(self, inputListId, population_id, component, size):
+        def handleInputList(self, inputListId, population_id, component, size, input_comp_obj=None):
             DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
             
             

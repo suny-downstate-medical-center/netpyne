@@ -1,3 +1,14 @@
+# Version 0.6.6
+
+- Added 'weightNorm' param to sections so can normalize weight based on location
+
+- Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
+
+- Fixed bug in saveData option of figure plots
+
+- Fixed bug passing figSize param to figures
+
+
 # Version 0.6.5
 
 - Added support for artificial cells (without sections) (issue #44)

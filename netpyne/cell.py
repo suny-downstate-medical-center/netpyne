@@ -312,6 +312,9 @@ class CompartCell (Cell):
             if 'vinit' in sectParams:
                 sec['vinit'] = sectParams['vinit']
 
+            if 'weightNorm' in sectParams:
+                sec['weightNorm'] = sectParams['weightNorm']
+
         # add sectionLists
         if 'secLists' in prop:
             self.secLists.update(prop['secLists'])  # diction of section lists
@@ -625,7 +628,7 @@ class CompartCell (Cell):
         if secLabels == -1: return  # if no section available exit func 
 
         # Weight
-        weights = self._setConnWeights(params, netStimParams)
+        weights = self._setConnWeights(params, netStimParams, secLabels)
         weightIndex = 0  # set default weight matrix index   
 
         # Delays
@@ -642,6 +645,12 @@ class CompartCell (Cell):
         if not pointp: # check not a point process
             synMechs, synMechSecs, synMechLocs = self._setConnSynMechs(params, secLabels)
             if synMechs == -1: return
+
+        # Adapt weight based on section weightNorm (normalization based on section location)
+        for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
+            if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                nseg = self.secs[sec]['geom']['nseg']
+                weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
 
         # Create connections
         for i in range(params['synsPerConn']):
@@ -997,7 +1006,7 @@ class CompartCell (Cell):
         return secLabels
 
 
-    def _setConnWeights (self, params, netStimParams):
+    def _setConnWeights (self, params, netStimParams, secLabels):
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:

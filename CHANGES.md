@@ -1,5 +1,7 @@
 # Version 0.6.6
 
+- Batch parameters can now be list or dict items
+
 - Added 'weightNorm' param to sections so can normalize weight based on location
 
 - Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
@@ -7,6 +9,8 @@
 - Fixed bug in saveData option of figure plots
 
 - Fixed bug passing figSize param to figures
+
+- Fixed bug where gid only updated if cellParam rules were applied to the cell
 
 
 # Version 0.6.5

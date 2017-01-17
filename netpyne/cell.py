@@ -195,7 +195,16 @@ class CompartCell (Cell):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
-                if self.tags[condKey] != condVal: 
+                if isinstance(condVal, list): 
+                    if isinstance(condVal[0], Number):
+                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif isinstance(condVal[0], basestring):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
+                elif self.tags[condKey] != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -217,14 +226,15 @@ class CompartCell (Cell):
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
                     break
-            elif isinstance(condVal, list) and isinstance(condVal[0], Number):
-                if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                    conditionsMet = 0
-                    break
-            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                if self.tags[condKey] not in condVal:
-                    conditionsMet = 0
-                    break 
+            elif isinstance(condVal, list): 
+                if isinstance(condVal[0], Number):
+                    if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                        conditionsMet = 0
+                        break
+                elif isinstance(condVal[0], basestring):
+                    if self.tags[condKey] not in condVal:
+                        conditionsMet = 0
+                        break 
             elif self.tags[condKey] != condVal: 
                 conditionsMet = 0
                 break
@@ -510,8 +520,8 @@ class CompartCell (Cell):
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
                 del nc # discard netcon
-            sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
-            sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
+        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
 
 
     def addSynMech (self, synLabel, secLabel, loc):

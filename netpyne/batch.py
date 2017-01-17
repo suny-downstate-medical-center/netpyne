@@ -99,8 +99,12 @@ class Batch(object):
             for iComb, pComb in zip(indexCombinations, valueCombinations):
                 for i, paramVal in enumerate(pComb):
                     paramLabel = labelList[i]
-                    setattr(self.cfg, paramLabel, paramVal) # set simConfig params
-                    print paramLabel+' = '+str(paramVal)
+                    if isinstance(paramLabel, tuple):
+                        container = getattr(self.cfg, paramLabel[0])
+                        container[paramLabel[1]] = paramVal
+                    else:
+                        setattr(self.cfg, paramLabel, paramVal) # set simConfig params
+                    print str(paramLabel)+' = '+str(paramVal)
                     
                 # save simConfig json to saveFolder
                 simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])

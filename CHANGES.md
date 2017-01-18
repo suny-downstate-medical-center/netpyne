@@ -12,6 +12,7 @@
 
 - Fixed bug where gid only updated if cellParam rules were applied to the cell
 
+- Fixed bug in importCell by deleting imported modules from sys.modules
 
 # Version 0.6.5
 

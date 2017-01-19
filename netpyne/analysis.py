@@ -77,17 +77,17 @@ def _saveFigData(figData, fileName=None, type=''):
 
     if fileName.endswith('.pkl'): # save to pickle
         import pickle
-        print('Saving figure data as %s ... ' % (fileName[0]+'.pkl'))
-        with open(fileName[0]+'.pkl', 'wb') as fileObj:
+        print('Saving figure data as %s ... ' % (fileName))
+        with open(fileName, 'wb') as fileObj:
             pickle.dump(figData, fileObj)
 
     elif fileName.endswith('.json'):  # save to json
         import json
-        print('Saving figure data as %s ... ' % (fileName[0]+'.json '))
-        with open(fileName[0]+'.json', 'w') as fileObj:
+        print('Saving figure data as %s ... ' % (fileName))
+        with open(fileName, 'w') as fileObj:
             json.dump(figData, fileObj)
     else: 
-        print 'File extension to save figure data not recognized: %s'%(ext)
+        print 'File extension to save figure data not recognized'
 
 
 import numpy
@@ -788,7 +788,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
-            figs['_trace_'+str(trace)] = figure() # Open a new figure
+            figs['_trace_'+str(trace)] = figure(figsize=figSize) # Open a new figure
             fontsiz = 12
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -812,7 +812,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # Plot one fig per cell
     if oneFigPer == 'cell':
         for gid in cellGids:
-            figs['_gid_'+str(gid)] = figure() # Open a new figure
+            figs['_gid_'+str(gid)] = figure(figsize=figSize) # Open a new figure
             fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:

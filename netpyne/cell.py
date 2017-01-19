@@ -195,7 +195,16 @@ class CompartCell (Cell):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
-                if self.tags[condKey] != condVal: 
+                if isinstance(condVal, list): 
+                    if isinstance(condVal[0], Number):
+                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif isinstance(condVal[0], basestring):
+                        if self.tags[condKey] not in condVal:
+                            conditionsMet = 0
+                            break 
+                elif self.tags[condKey] != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -217,14 +226,15 @@ class CompartCell (Cell):
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
                     break
-            elif isinstance(condVal, list) and isinstance(condVal[0], Number):
-                if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                    conditionsMet = 0
-                    break
-            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                if self.tags[condKey] not in condVal:
-                    conditionsMet = 0
-                    break 
+            elif isinstance(condVal, list): 
+                if isinstance(condVal[0], Number):
+                    if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                        conditionsMet = 0
+                        break
+                elif isinstance(condVal[0], basestring):
+                    if self.tags[condKey] not in condVal:
+                        conditionsMet = 0
+                        break 
             elif self.tags[condKey] != condVal: 
                 conditionsMet = 0
                 break
@@ -311,6 +321,9 @@ class CompartCell (Cell):
 
             if 'vinit' in sectParams:
                 sec['vinit'] = sectParams['vinit']
+
+            if 'weightNorm' in sectParams:
+                sec['weightNorm'] = sectParams['weightNorm']
 
         # add sectionLists
         if 'secLists' in prop:
@@ -507,8 +520,8 @@ class CompartCell (Cell):
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
                 del nc # discard netcon
-            sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
-            sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
+        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
 
 
     def addSynMech (self, synLabel, secLabel, loc):
@@ -625,7 +638,7 @@ class CompartCell (Cell):
         if secLabels == -1: return  # if no section available exit func 
 
         # Weight
-        weights = self._setConnWeights(params, netStimParams)
+        weights = self._setConnWeights(params, netStimParams, secLabels)
         weightIndex = 0  # set default weight matrix index   
 
         # Delays
@@ -642,6 +655,12 @@ class CompartCell (Cell):
         if not pointp: # check not a point process
             synMechs, synMechSecs, synMechLocs = self._setConnSynMechs(params, secLabels)
             if synMechs == -1: return
+
+        # Adapt weight based on section weightNorm (normalization based on section location)
+        for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
+            if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                nseg = self.secs[sec]['geom']['nseg']
+                weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
 
         # Create connections
         for i in range(params['synsPerConn']):
@@ -997,7 +1016,7 @@ class CompartCell (Cell):
         return secLabels
 
 
-    def _setConnWeights (self, params, netStimParams):
+    def _setConnWeights (self, params, netStimParams, secLabels):
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:

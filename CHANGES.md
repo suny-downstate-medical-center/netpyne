@@ -1,8 +1,8 @@
 # Version 0.6.6
 
-- Batch parameters can now be list or dict items
+- Batch parameters can now include list or dict items
 
-- Added 'weightNorm' param to sections so can normalize weight based on location
+- Added 'weightNorm' param to sections so can normalize weight based on dendritic location
 
 - Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
 
@@ -13,6 +13,9 @@
 - Fixed bug where gid only updated if cellParam rules were applied to the cell
 
 - Fixed bug in importCell by deleting imported modules from sys.modules
+
+- Fixed bug that prevented NetStim random noise generator from being initialized
+
 
 # Version 0.6.5
 

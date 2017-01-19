@@ -25,7 +25,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -81,8 +81,8 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 
 # Analysis and plotting 
 simConfig.analysis['plotRaster'] = True  # Plot raster
-simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
-simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
+#simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+#simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
 
 

@@ -731,10 +731,9 @@ def preRun():
             #cell.hRandom.Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
             #cell.hRandom.negexp(1)
         for stim in cell.stims:
-            if 'hRandom' in stim:
-                stim['hNetStim'].noiseFromRandom123(cell.gid, sim.id32('%d'%(stim['seed'])))
-                #stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
-                #stim['hRandom'].negexp(1)
+            stim['hNetStim'].noiseFromRandom123(cell.gid, sim.id32('%d'%(stim['seed'])))
+            #stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
+            #stim['hRandom'].negexp(1)
 
 
 ###############################################################################
@@ -1084,7 +1083,7 @@ def saveData (include = None):
                 os.mkdir(targetFolder)
             except OSError:
                 if not os.path.exists(targetFolder):
-                    print ' Could not create', targetFolder
+                    print ' Could not create target folder: %s' % (targetFolder)
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
@@ -1099,7 +1098,7 @@ def saveData (include = None):
             try:
                 os.mkdir(targetFolder)
             except OSError:
-                print ' Could not create', targetFolder
+                print ' Could not create target folder: %s' % (targetFolder)
 
         # saving data
         if not include: include = sim.cfg.saveDataInclude

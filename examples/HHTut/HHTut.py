@@ -81,8 +81,8 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 
 # Analysis and plotting 
 simConfig.analysis['plotRaster'] = True  # Plot raster
-#simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
-#simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
+simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
 
 

@@ -81,6 +81,20 @@ def _equal_dicts (d1, d2, ignore_keys):
     return True
 
 
+def _delete_module(modname):
+    from sys import modules
+    try:
+        thismod = modules[modname]
+        del modules[modname]
+    except KeyError:
+        pass
+
+    for mod in modules.values():
+        try:
+            delattr(mod, modname)
+        except AttributeError:
+            pass
+
 def importCell (fileName, cellName, cellArgs = None):
     h.initnrn()
 
@@ -98,6 +112,7 @@ def importCell (fileName, cellName, cellArgs = None):
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
+        if 'CSTR6' in sys.modules: print sys.modules['CSTR6']
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
         modulePointer = tempModule
         if isinstance(cellArgs, dict):
@@ -110,6 +125,10 @@ def importCell (fileName, cellName, cellArgs = None):
         return
 
     secDic, secListDic, synMechs = getCellParams(cell)
+    _delete_module(moduleName)
+    _delete_module('tempModule')
+    del modulePointer
+
     return secDic, secListDic, synMechs
 
 

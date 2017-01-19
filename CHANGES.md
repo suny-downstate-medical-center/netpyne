@@ -1,3 +1,24 @@
+# Version 0.6.6
+
+- Batch parameters can now include list or dict items
+
+- Added 'weightNorm' param to sections so can normalize weight based on dendritic location
+
+- Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
+
+- Go back to using NetStim.noiseFromRandom, since noiseFromRandom123() only available in very recent versions
+
+- Fixed bug in saveData option of figure plots
+
+- Fixed bug passing figSize param to figures
+
+- Fixed bug where gid only updated if cellParam rules were applied to the cell
+
+- Fixed bug in importCell by deleting imported modules from sys.modules
+
+- Fixed bug that prevented NetStim random noise generator from being initialized
+
+
 # Version 0.6.5
 
 - Added support for artificial cells (without sections) (issue #44)

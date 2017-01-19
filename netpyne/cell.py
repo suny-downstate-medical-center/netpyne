@@ -92,6 +92,9 @@ class Cell (object):
             if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
         
         if sim.cfg.createNEURONObj:
+            rand = h.Random()
+            stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
+
             if isinstance(params['rate'], basestring):
                 if params['rate'] == 'variable':
                     try:
@@ -105,8 +108,9 @@ class Cell (object):
             else:
                 netstim = h.NetStim() 
                 netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
-                netstim.noise = params['noise'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
+                netstim.noise = params['noise'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
                 netstim.start = params['start']
+            netstim.noiseFromRandom(rand)  # use random number generator 
             netstim.number = params['number']   
                 
             stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
@@ -1183,7 +1187,7 @@ class PointCell (Cell):
                 params['number'] = 1e9 
                 setattr(self.hPointp, 'number', params['number']) 
             if 'seed' not in self.params: 
-                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom123() from sim.preRun()
+                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
         
 
         # VecStim - generate spike vector based on params

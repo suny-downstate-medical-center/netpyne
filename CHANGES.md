@@ -6,6 +6,8 @@
 
 - Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
 
+- Go back to using NetStim.noiseFromRandom, since noiseFromRandom123() only available in very recent versions
+
 - Fixed bug in saveData option of figure plots
 
 - Fixed bug passing figSize param to figures

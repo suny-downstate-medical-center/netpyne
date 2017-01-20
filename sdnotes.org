@@ -2793,6 +2793,7 @@ if (isCellOnNode("SampleCellGroup", 0)) {
 ** Claustrum network (Jing, George Augustine)
 ** Sensorimotor network + arm (Cliff, Kerr lab)
 ** Hippocampus model (Ernie, Neurosim)
+** OSB/NeuroML (Padraig UCL)
 ** V1 load/save model (Allen Brain Institute)
 ** Basal Ganglia (Lucas, UCD)
 http://www.neuromuscularsystemsucd.info/research-areas
@@ -2809,6 +2810,7 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
+** Learning (Birgit Kriener, Einevoll lab, University of Oslo)
 * Related tools
 ** NEURON
 Multiscale simulator

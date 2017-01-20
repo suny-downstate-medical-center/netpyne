@@ -332,7 +332,9 @@ class NetParams (object):
         
         # adjust cell 3d points so that soma is at location 0,0,0 
         if somaAtOrigin:
-            soma3d = cellRule['secs']['soma']['geom']['pt3d']
+            somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
+            if not somaSec: return
+            soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
             midpoint = int(len(soma3d)/2)
             somaX, somaY, somaZ = soma3d[midpoint][0:3]
             for sec in cellRule['secs'].values():

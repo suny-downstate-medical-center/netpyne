@@ -727,14 +727,12 @@ def preRun():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags['cellModel'] == 'NetStim':
-            cell.hPointp.noiseFromRandom123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
-            #cell.hRandom.Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
-            #cell.hRandom.negexp(1)
+            cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
+            cell.hRandom.negexp(1)
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hNetStim'].noiseFromRandom123(cell.gid, sim.id32('%d'%(stim['seed'])))
-                #stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
-                #stim['hRandom'].negexp(1)
+                stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
+                stim['hRandom'].negexp(1)
 
 
 ###############################################################################
@@ -1084,7 +1082,7 @@ def saveData (include = None):
                 os.mkdir(targetFolder)
             except OSError:
                 if not os.path.exists(targetFolder):
-                    print ' Could not create', targetFolder
+                    print ' Could not create target folder: %s' % (targetFolder)
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
@@ -1095,11 +1093,11 @@ def saveData (include = None):
 
         # create folder if missing
         targetFolder = os.path.dirname(sim.cfg.filename)
-        if not os.path.exists(targetFolder):
+        if targetFolder and not os.path.exists(targetFolder):
             try:
                 os.mkdir(targetFolder)
             except OSError:
-                print ' Could not create', targetFolder
+                print ' Could not create target folder: %s' % (targetFolder)
 
         # saving data
         if not include: include = sim.cfg.saveDataInclude

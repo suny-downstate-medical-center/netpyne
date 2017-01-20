@@ -676,6 +676,14 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
+        def handleNetwork(self, network_id, notes, temperature=None):
+            if temperature:
+                self.log.warn("\n****************\n   Need to set temperature to %s!!!\n********************"%temperature)
+
+
+        #
+        #  Overridden from DefaultNetworkHandler
+        #    
         def handlePopulation(self, population_id, component, size, component_obj):
 
             self.log.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
@@ -965,8 +973,7 @@ if neuromlExists:
         #
         def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None):
 
-
-            self.log.info("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
+            self.log.debug("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
@@ -987,9 +994,9 @@ if neuromlExists:
             pre_seg_name, pre_fract = self._convert_to_nrn_section_location(prePop,preSegId,preFract)
             post_seg_name, post_fract = self._convert_to_nrn_section_location(postPop,postSegId,postFract)
 
-            self.log.info("A connection "+str(id)+" of: "+projName+": "+prePop+"["+str(preCellId)+"]."+pre_seg_name+"("+str(pre_fract)+")" \
-                                  +" -> "+postPop+"["+str(postCellId)+"]."+post_seg_name+"("+str(post_fract)+")"+", syn: "+ str(synapseType) \
-                                  +", weight: "+str(weight)+", delay: "+str(delay))
+            #self.log.debug("A connection "+str(id)+" of: "+projName+": "+prePop+"["+str(preCellId)+"]."+pre_seg_name+"("+str(pre_fract)+")" \
+            #                      +" -> "+postPop+"["+str(postCellId)+"]."+post_seg_name+"("+str(post_fract)+")"+", syn: "+ str(synapseType) \
+            #                      +", weight: "+str(weight)+", delay: "+str(delay))
                                   
             self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,pre_fract, \
                                                 self.gids[postPop][postCellId], post_seg_name, post_fract, \
@@ -1063,13 +1070,31 @@ if neuromlExists:
         if fileName.endswith(".nml"):
 
             import logging
-            logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
+            logging.basicConfig(level=logging.INFO, format="%(name)-19s %(levelname)-5s - %(message)s")
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
             nmlHandler = NetPyNEBuilder(netParams)     
 
             currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+            currParser.parse(fileName)
+
+            nmlHandler.finalise()
+
+            print('Finished import: %s'%nmlHandler.gids)
+            #print('Connections: %s'%nmlHandler.connections)
+
+        if fileName.endswith(".h5"):
+
+            import logging
+            logging.basicConfig(level=logging.INFO, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+            from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
+
+            nmlHandler = NetPyNEBuilder(netParams)     
+
+            currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
             currParser.parse(fileName)
 

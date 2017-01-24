@@ -1070,7 +1070,7 @@ if neuromlExists:
         if fileName.endswith(".nml"):
 
             import logging
-            logging.basicConfig(level=logging.INFO, format="%(name)-19s %(levelname)-5s - %(message)s")
+            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
@@ -1088,7 +1088,7 @@ if neuromlExists:
         if fileName.endswith(".h5"):
 
             import logging
-            logging.basicConfig(level=logging.INFO, format="%(name)-19s %(levelname)-5s - %(message)s")
+            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
 
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 

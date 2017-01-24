@@ -383,6 +383,40 @@ class NetParams (object):
 
         cellRule.secLists[secListName] = list(secList)
 
+
+    def addCellParamsWeightNorm(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
+            return
+
+        with open(fileName, 'r') as fileObj: 
+            weightNorm = pickle.load(fileObj)
+        for sec, wnorm in weightNorm.iteritems():
+            if sec in cellRule['secs']:  
+                cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
+
+
+    def saveCellParamsRule(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error saving: netParams.cellParams does not contain %s' % (label)
+            return
+        with open(fileName, 'w') as fileObj:  
+            pickle.dump(cellRule, fileObj)
+
+
+    def loadCellParamsRule(self, label, fileName):
+        with open('cells/IT_full_BS1579_cellParams.pkl', 'r') as fileObj: 
+            cellRule = pickle.load(fileObj)
+        self.cellParams[label] = cellRule
+
+
+
     def todict(self):
         from sim import replaceDictODict
         return replaceDictODict(self.__dict__)

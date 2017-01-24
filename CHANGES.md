@@ -1,3 +1,8 @@
+# Version 0.6.7
+
+- Added netParams functions: addCellParamsWeightNorm(), saveCellParamsRule() and loadCellParamsRule()
+
+
 # Version 0.6.6
 
 - Batch parameters can now include list or dict items

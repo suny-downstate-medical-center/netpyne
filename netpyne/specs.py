@@ -322,12 +322,12 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False):
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
-        secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
+        secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs, cellInstance)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
         
         # adjust cell 3d points so that soma is at location 0,0,0 

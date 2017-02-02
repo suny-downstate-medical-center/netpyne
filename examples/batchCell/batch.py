@@ -37,14 +37,14 @@ def batchNa():
 
 def batchNMDA():
 	b = createBatch({'tau1NMDA': [10, 15, 20, 25],  
-	  		('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)})
+	  				('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)})
 	runBatch(b, 'batchNMDA')
 
 
 # Main code
 if __name__ == '__main__':
-	# batchNa() 
-	batchNMDA()
+	batchNa() 
+	# batchNMDA()
 
 
 

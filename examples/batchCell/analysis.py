@@ -1,7 +1,8 @@
 """
-ITcell.py 
+analysis.py 
 
-Code to test the reduced f-I curve of cell models
+Functions to read and plot figures from the batch simulation results. 
+Can call readPlotNa() or readPlotNMDA() from __main__() or import analysis and call interactively.  
 
 Contributors: salvadordura@gmail.com
 """

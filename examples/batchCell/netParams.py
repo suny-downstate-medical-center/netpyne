@@ -27,7 +27,7 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 ###############################################################################
 
 # PT cell params (6-comp)
-cellRule = netParams.importCellParams(label='PT_6comp',conds={'cellType': 'PT', 'cellModel': 'HH_reduced'},
+cellRule = netParams.importCellParams(label='PT_6comp', conds={'cellType': 'PT', 'cellModel': 'HH_reduced'},
   fileName='cells/SPI6.py', cellName='SPI6')
 
 cellRule['secLists']['alldend'] = ['Bdend', 'Adend1', 'Adend2', 'Adend3']  # define section lists

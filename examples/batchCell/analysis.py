@@ -96,6 +96,6 @@ def readPlotNMDA():
 
 # Main code
 if __name__ == '__main__':
-    readPlotNa()
-    # readPlotNMDA()
+    #readPlotNa()
+    readPlotNMDA()
     

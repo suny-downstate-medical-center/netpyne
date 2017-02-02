@@ -43,8 +43,8 @@ def batchNMDA():
 
 # Main code
 if __name__ == '__main__':
-	batchNa() 
-	# batchNMDA()
+	# batchNa() 
+	batchNMDA()
 
 
 

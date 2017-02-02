@@ -51,7 +51,7 @@ cfg.saveDataInclude = ['simData', 'simConfig', 'netParams', 'net']
 # Analysis and plotting 
 ###############################################################################
 cfg.analysis['plotTraces'] = {'include': ['PT5B'], 'oneFigPer': 'cell', 'saveFig': True, 
-							  'showFig': True, 'figSize': (10,8), 'timeRange': [0,cfg.duration]}
+							  'showFig': False, 'figSize': (10,8), 'timeRange': [0,cfg.duration]}
 
 
 ###############################################################################

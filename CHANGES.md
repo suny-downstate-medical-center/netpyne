@@ -1,5 +1,7 @@
 # Version 0.6.7
 
+- Added gridSpacing option to create populations with cells placed in grid with fixed spacing
+
 - Added netParams functions: addCellParamsWeightNorm(), saveCellParamsRule() and loadCellParamsRule()
 
 - Added option to importCell based on instantiated cell (not just tempalate or class)

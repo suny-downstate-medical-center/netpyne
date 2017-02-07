@@ -208,8 +208,7 @@ def getCellParams(cell):
         # create new section dict with name of section
         secName = getSecName(sec, dirCellSecNames)
 
-        if len(secs) == 1:
-            secName = 'soma' # if just one section rename to 'soma'
+        # if len(secs) == 1: secName = 'soma' # if just one section rename to 'soma' -- REMOVED, doesn't always apply
         secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}}  # create dictionary to store sec info
 
         # store geometry properties

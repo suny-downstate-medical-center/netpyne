@@ -95,7 +95,7 @@ def _delete_module(modname):
         except AttributeError:
             pass
 
-def importCell (fileName, cellName, cellArgs = None):
+def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
@@ -103,16 +103,18 @@ def importCell (fileName, cellName, cellArgs = None):
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc'):
         h.load_file(fileName)
-        if isinstance(cellArgs, dict):
-            cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+        if not cellInstance:
+            if isinstance(cellArgs, dict):
+                cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+            else:
+                cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
         else:
-            cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
+            cell = getattr(h, cellName)
     elif fileName.endswith('.py'):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-        if 'CSTR6' in sys.modules: print sys.modules['CSTR6']
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
         modulePointer = tempModule
         if isinstance(cellArgs, dict):
@@ -125,9 +127,10 @@ def importCell (fileName, cellName, cellArgs = None):
         return
 
     secDic, secListDic, synMechs = getCellParams(cell)
-    _delete_module(moduleName)
-    _delete_module('tempModule')
-    del modulePointer
+    if fileName.endswith('.py'):
+        _delete_module(moduleName)
+        _delete_module('tempModule')
+        del modulePointer
 
     return secDic, secListDic, synMechs
 

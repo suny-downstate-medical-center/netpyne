@@ -1,0 +1,72 @@
+:DEFAULT clampex
+DEFAULT misc
+DEFAULT stats
+DEFAULT infot
+
+DEFAULT vecst
+DEFAULT nstim
+DEFAULT samnutils
+
+DEFAULT MyExp2SynBB
+DEFAULT MyExp2SynNMDABB
+DEFAULT izhi2007a
+DEFAULT izhi2007b
+ 
+: Ben Suter ion channels
+DEFAULT h_BS
+DEFAULT kap_BS
+DEFAULT kdmc_BS
+DEFAULT kdr_BS
+DEFAULT nax_BS
+
+: Mainen/Sej cell ion channels
+DEFAULT naz
+DEFAULT km
+DEFAULT kv
+DEFAULT kca
+DEFAULT Nca
+DEFAULT cadad
+
+: mig ion channels
+DEFAULT cat_mig
+DEFAULT can_mig
+DEFAULT cal_mig
+
+: calcium activated k channel
+DEFAULT cagk
+
+: k channel with ca and voltage dependence - responsible for fast part of AHP
+DEFAULT IC
+
+: from Ben
+DEFAULT savedist
+
+: Harnett 2015 H channel
+DEFAULT h_harnett
+
+: Kole 2006 H channel
+DEFAULT h_kole
+
+: BK channel with ca and voltage dependence
+DEFAULT kBK
+
+: ih used for basket cells
+DEFAULT HCN1
+
+: channels for LTS1
+DEFAULT na2_mh
+: ar is HCN - anomalous rectifier
+DEFAULT ar_traub
+DEFAULT cat_traub
+DEFAULT cal_mh
+
+: persistent sodium channel
+DEFAULT nap_sidi
+: ican (calcium dependent cation non-specific channel)
+DEFAULT ican_sidi
+
+: based on destexhe
+DEFAULT gabab
+
+: homeostatic synapse
+DEFAULT hsyn

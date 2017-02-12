@@ -92,7 +92,7 @@ def _delete_module(modname):
     for mod in modules.values():
         try:
             delattr(mod, modname)
-        except AttributeError:
+        except:
             pass
 
 def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
@@ -132,6 +132,10 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         _delete_module('tempModule')
         del modulePointer
 
+    _delete_module(h)
+    
+    from neuron import load_mechanisms
+    load_mechanisms(filePath)
     return secDic, secListDic, synMechs
 
 

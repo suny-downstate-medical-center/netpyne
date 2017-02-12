@@ -6,7 +6,10 @@
 
 - Added option to importCell based on instantiated cell (not just tempalate or class)
 
+- Added method to save cellParams rule
+
 - Fixed bug during import that set section name to 'soma' if only 1 section
+
 
 # Version 0.6.6
 

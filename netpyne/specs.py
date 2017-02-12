@@ -333,7 +333,9 @@ class NetParams (object):
         # adjust cell 3d points so that soma is at location 0,0,0 
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
-            if not somaSec: return
+            if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
+                print 'Warning: cannot place soma at origin because soma does not exist or does not contain pt3d'
+                return
             soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
             midpoint = int(len(soma3d)/2)
             somaX, somaY, somaZ = soma3d[midpoint][0:3]
@@ -411,7 +413,8 @@ class NetParams (object):
 
 
     def loadCellParamsRule(self, label, fileName):
-        with open('cells/IT_full_BS1579_cellParams.pkl', 'r') as fileObj: 
+        import pickle
+        with open(fileName, 'r') as fileObj: 
             cellRule = pickle.load(fileObj)
         self.cellParams[label] = cellRule
 

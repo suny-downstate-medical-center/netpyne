@@ -836,9 +836,9 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     xlim(timeRange)
                     if itrace==0: title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if overlay: 
-                        maxLabelLen = 10
-                        subplots_adjust(right=(0.9-0.012*maxLabelLen))
-                        legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                        #maxLabelLen = 10
+                        #subplots_adjust(right=(0.9-0.012*maxLabelLen))
+                        legend()#fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
     # Plot one fig per trace
     elif oneFigPer == 'trace':

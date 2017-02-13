@@ -1028,7 +1028,7 @@ Population class methods
 * **pop.createCellsList()**
 
 
-Population class methods 
+Cell class methods 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * **cell.create()**

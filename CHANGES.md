@@ -4,9 +4,7 @@
 
 - Added netParams functions: addCellParamsWeightNorm(), saveCellParamsRule() and loadCellParamsRule()
 
-- Added option to importCell based on instantiated cell (not just tempalate or class)
-
-- Added method to save cellParams rule
+- Added option to importCell based on instantiated cell (not just template or class)
 
 - Modified importCellParams to store mod mechanism global variables in cellRule['globs']
 

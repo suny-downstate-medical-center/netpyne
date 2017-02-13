@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 
 import datetime
-from itertools import product
+from itertools import izip, product
 from popen2 import popen2
 from time import sleep
 import imp
@@ -59,6 +59,7 @@ class Batch(object):
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
+
     def run(self):
         if self.method in ['grid','list']:
             # create saveFolder
@@ -86,88 +87,101 @@ class Batch(object):
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
             self.cfg = cfgModule.cfg
 
+            # iterate over all param combinations
             if self.method == 'grid':
-                # iterate over all param combinations
-                labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params])
-                valueCombinations = product(*(valuesList))
-                indexCombinations = product(*[range(len(x)) for x in valuesList])
-            elif self.method == 'list':
-                pass
+                for p in self.params: 
+                    if 'group' not in p: p['group'] = False # by default set linear to False
+
+                labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
+                valueCombinations = list(product(*(valuesList)))
+                indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
+
+                # labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
+                # valueCombGroups = izip(*(valuesListGroup))
+                # indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
 
             # if using pc bulletin board, initialize all workers
             if self.runCfg.get('type', None) == 'mpi':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
-            
-            for iComb, pComb in zip(indexCombinations, valueCombinations):
-                for i, paramVal in enumerate(pComb):
-                    paramLabel = labelList[i]
-                    if isinstance(paramLabel, tuple):
-                        container = getattr(self.cfg, paramLabel[0])
-                        container[paramLabel[1]] = paramVal
+
+            if 1:
+                for iComb, pComb in zip(indexCombinations, valueCombinations):
+            # for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+            #     for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+            #         iComb = iCombG+iCombNG
+            #         pComb = pCombG+pCombNG
+            #         print iComb, pComb
+            #         continue
+
+                    for i, paramVal in enumerate(pComb):
+                        paramLabel = labelList[i]
+                        if isinstance(paramLabel, tuple):
+                            container = getattr(self.cfg, paramLabel[0])
+                            container[paramLabel[1]] = paramVal
+                        else:
+                            setattr(self.cfg, paramLabel, paramVal) # set simConfig params
+                        print str(paramLabel)+' = '+str(paramVal)
+                        
+                    # save simConfig json to saveFolder
+                    simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+                    self.cfg.simLabel = simLabel
+                    self.cfg.saveFolder = self.saveFolder
+                    cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
+                    self.cfg.save(cfgSavePath)
+
+
+                    # skip if output file already exists
+                    jobName = self.saveFolder+'/'+simLabel  
+                    if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+                        print 'Skipping job %s since output file already exists...' % (jobName)
                     else:
-                        setattr(self.cfg, paramLabel, paramVal) # set simConfig params
-                    print str(paramLabel)+' = '+str(paramVal)
-                    
-                # save simConfig json to saveFolder
-                simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-                self.cfg.simLabel = simLabel
-                self.cfg.saveFolder = self.saveFolder
-                cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
-                self.cfg.save(cfgSavePath)
+                        # hpc torque job submission
+                        if self.runCfg.get('type',None) == 'hpc_torque':
 
+                            # read params or set defaults
+                            sleepInterval = self.runCfg.get('sleepInterval', 1)
+                            sleep(sleepInterval)
+                            
+                            numproc = self.runCfg.get('numproc', 1)
+                            script = self.runCfg.get('script', 'init.py')
+                            walltime = self.runCfg.get('walltime', '00:30:00')
+                            queueName = self.runCfg.get('queueName', 'default')
+                            nodesppn = 'nodes=1:ppn=%d'%(numproc)
+                            
+                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
 
-                # skip if output file already exists
-                jobName = self.saveFolder+'/'+simLabel  
-                if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
-                    print 'Skipping job %s since output file already exists...' % (jobName)
-                else:
-                    # hpc torque job submission
-                    if self.runCfg.get('type',None) == 'hpc_torque':
+                            output, input = popen2('qsub') # Open a pipe to the qsub command.
 
-                        # read params or set defaults
-                        sleepInterval = self.runCfg.get('sleepInterval', 1)
-                        sleep(sleepInterval)
-                        
-                        numproc = self.runCfg.get('numproc', 1)
-                        script = self.runCfg.get('script', 'init.py')
-                        walltime = self.runCfg.get('walltime', '00:30:00')
-                        queueName = self.runCfg.get('queueName', 'default')
-                        nodesppn = 'nodes=1:ppn=%d'%(numproc)
-                        
-                        command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            jobString = """#!/bin/bash 
+                            #PBS -N %s
+                            #PBS -l walltime=%s
+                            #PBS -q %s
+                            #PBS -l %s
+                            #PBS -o %s.run
+                            #PBS -e %s.err
+                            cd $PBS_O_WORKDIR
+                            echo $PBS_O_WORKDIR
+                            %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
 
-                        output, input = popen2('qsub') # Open a pipe to the qsub command.
+                            # Send job_string to qsub
+                            input.write(jobString)
+                            print jobString+'\n'
+                            input.close()
 
-                        jobString = """#!/bin/bash 
-                        #PBS -N %s
-                        #PBS -l walltime=%s
-                        #PBS -q %s
-                        #PBS -l %s
-                        #PBS -o %s.run
-                        #PBS -e %s.err
-                        cd $PBS_O_WORKDIR
-                        echo $PBS_O_WORKDIR
-                        %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
-
-                        # Send job_string to qsub
-                        input.write(jobString)
-                        print jobString+'\n'
-                        input.close()
-
-                    # pc bulletin board job submission (master/slave) via mpi
-                    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-                    elif self.runCfg.get('type',None) == 'mpi':
-                        jobName = self.saveFolder+'/'+simLabel     
-                        print 'Submitting job ',jobName
-                        # master/slave bulletin board schedulling of jobs
-                        pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
-                        
+                        # pc bulletin board job submission (master/slave) via mpi
+                        # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
+                        elif self.runCfg.get('type',None) == 'mpi':
+                            jobName = self.saveFolder+'/'+simLabel     
+                            print 'Submitting job ',jobName
+                            # master/slave bulletin board schedulling of jobs
+                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
+                            
             # wait for pc bulletin board jobs to finish
             try:
                 while pc.working():
                     sleep(1)
-                pc.done()
+                #pc.done()
             except:
                 pass
 

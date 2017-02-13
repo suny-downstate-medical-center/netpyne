@@ -691,7 +691,7 @@ def setGlobals ():
                     print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
             elif k in cellGlobs and cellGlobs[k] != v:
                 print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
-                exit(0) 
+                sys.exit() 
 
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0: 

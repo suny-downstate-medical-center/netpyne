@@ -10,6 +10,8 @@
 
 - Modified importCellParams to store mod mechanism global variables in cellRule['globs']
 
+- Added support to export gap junctions to NeuroML
+
 - Fixed bug during import that set section name to 'soma' if only 1 section
 
 

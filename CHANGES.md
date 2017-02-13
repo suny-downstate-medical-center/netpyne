@@ -8,6 +8,8 @@
 
 - Added method to save cellParams rule
 
+- Modified importCellParams to store mod mechanism global variables in cellRule['globs']
+
 - Fixed bug during import that set section name to 'soma' if only 1 section
 
 

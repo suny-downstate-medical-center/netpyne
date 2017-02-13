@@ -714,7 +714,7 @@ class CompartCell (Cell):
                 if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
                     synMechs[i]['hSyn'].weight = weights[i]
                     sourceVar = self.secs[synMechSecs[i]]['hSec'](synMechLocs[i])._ref_v
-                    targetVar = synMechs[i]['hSyn']._ref_vgap  # assumes variable is vgap -- make a parameter
+                    targetVar = synMechs[i]['hSyn']._ref_vpeer  # assumes variable is vpeer -- make a parameter
                     sec = self.secs[synMechSecs[i]]
                     sim.pc.target_var(targetVar, connParams['gapId'])
                     self.secs[synMechSecs[i]]['hSec'].push()

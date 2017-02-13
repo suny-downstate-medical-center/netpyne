@@ -836,6 +836,12 @@ def gatherData ():
     if sim.rank==0: 
         print('\nGathering data...')
 
+    # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
+    if not sim.cfg.saveCellSecs:  
+        for cell in sim.net.cells:
+            cell.secs = None
+            cell.secLists = None
+
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}

@@ -470,6 +470,7 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file 
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
 
         # Analysis and plotting 
         self.analysis = ODict()

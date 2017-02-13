@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
@@ -301,7 +301,7 @@ def _loadFile (filename):
 ###############################################################################
 # Clear all sim objects in memory
 ###############################################################################
-def clearAll():
+def clearAll ():
     # clean up
     sim.pc.barrier() 
     sim.pc.gid_clear()                    # clear previous gid settings
@@ -535,7 +535,7 @@ def _dict2utf8 (obj):
 ###############################################################################
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
-def cellByGid(gid):
+def cellByGid (gid):
     cell = next((c for c in sim.net.cells if c.gid==gid), None)
     return cell
 
@@ -543,7 +543,7 @@ def cellByGid(gid):
 ###############################################################################
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
-def readCmdLineArgs():
+def readCmdLineArgs ():
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -639,8 +639,7 @@ def setupRecording ():
 ###############################################################################
 ### Get cells list for recording based on set of conditions
 ###############################################################################
-def getCellsList(include):
-
+def getCellsList (include):
     if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
         allCellTags = sim._gatherAllCellTags()  
     else:
@@ -673,9 +672,42 @@ def getCellsList(include):
 
 
 ###############################################################################
+### Get cells list for recording based on set of conditions
+###############################################################################
+def setGlobals ():
+    hParams = sim.cfg.hParams
+    # iterate globals dic in each cellParams
+    cellGlobs = {k:v for k,v in hParams.iteritems()}
+    for cellRuleName, cellRule in sim.net.params.cellParams.iteritems():
+        for k,v in getattr(cellRule, 'globs', {}).iteritems():
+            if k not in cellGlobs:
+                cellGlobs[k] = v
+            elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception
+                if k == 'v_init':
+                    wrongVinit = [s['v_init'] for s in cellRule['secs'] if 'v_init' in s and s['v_init'] != v] # check if set inside secs
+                    if len(wrongVinit) > 0:
+                        print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
+                else: 
+                    print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
+            elif k in cellGlobs and cellGlobs[k] != v:
+                print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
+                exit(0) 
+
+    # h global params
+    if sim.cfg.verbose and len(cellGlobs) > 0: 
+        print '\nSetting h global variables ...'
+    for key,val in cellGlobs.iteritems(): 
+        try:
+            setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+            if sim.cfg.verbose: print('  h.%s = %s' % (key, str(val)))
+        except:
+            print '\nError: could not set global %s = %s' % (key, str(val))
+
+
+###############################################################################
 ### Commands required just before running simulation
 ###############################################################################
-def preRun():
+def preRun ():
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
@@ -696,16 +728,12 @@ def preRun():
     else:
         h.cvode.cache_efficient(0)
 
+    # set h global params
+    sim.setGlobals()  
+
     # time vars
     h.dt = sim.cfg.dt  
     h.tstop = sim.cfg.duration
-    
-    # h params
-    for key,val in sim.cfg.hParams.iteritems(): 
-        try:
-            setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
-        except:
-            print '\nError: could not set %s = %s' % (key, str(val))
     
     # parallelcontext vars
     sim.pc.set_maxstep(10)
@@ -975,7 +1003,7 @@ def gatherData ():
 ###############################################################################
 ### Calculate and print avg pop rates
 ###############################################################################
-def popAvgRates(trange = None, show = True):
+def popAvgRates (trange = None, show = True):
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
         print 'Error: sim.allSimData not available; please call sim.gatherData()'
         return None
@@ -1002,7 +1030,7 @@ def popAvgRates(trange = None, show = True):
 ###############################################################################
 ### Calculate and print load balance
 ###############################################################################
-def loadBalance():
+def loadBalance ():
     computation_time = sim.pc.step_time()
     max_comp_time = sim.pc.allreduce(computation_time, 2)
     min_comp_time = sim.pc.allreduce(computation_time, 3)
@@ -1223,7 +1251,7 @@ def timing (mode, processName):
 ###############################################################################
 ### Print netpyne version
 ###############################################################################
-def version(show=True):
+def version (show=True):
     from netpyne import __version__ 
     if show: 
         print(__version__)
@@ -1233,7 +1261,7 @@ def version(show=True):
 ###############################################################################
 ### Print github version
 ###############################################################################
-def gitversion():
+def gitversion ():
     import netpyne,os
     currentPath = os.getcwd()
     netpynePath = os.path.dirname(netpyne.__file__)
@@ -1243,7 +1271,7 @@ def gitversion():
 ###############################################################################
 ### Print github version
 ###############################################################################
-def checkMemory():
+def checkMemory ():
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:
         import resource

@@ -60,7 +60,7 @@ class Batch(object):
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
     def run(self):
-        if self.method == 'grid':
+        if self.method in ['grid','list']:
             # create saveFolder
             import os,glob
             try:
@@ -86,10 +86,13 @@ class Batch(object):
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
             self.cfg = cfgModule.cfg
 
-            # iterate over all param combinations
-            labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params])
-            valueCombinations = product(*(valuesList))
-            indexCombinations = product(*[range(len(x)) for x in valuesList])
+            if self.method == 'grid':
+                # iterate over all param combinations
+                labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params])
+                valueCombinations = product(*(valuesList))
+                indexCombinations = product(*[range(len(x)) for x in valuesList])
+            elif self.method == 'list':
+                pass
 
             # if using pc bulletin board, initialize all workers
             if self.runCfg.get('type', None) == 'mpi':

@@ -112,10 +112,12 @@ The value consists in turn of a dictionary with the parameters of the population
 * **cellType** - Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)
 
-* **numCells** or **density** - The total number of cells in this population or the density in neurons/mm3 (one or the other is required). 
+* **numCells**, **density** or **gridSpacing** - The total number of cells in this population, the density in neurons/mm3, or the fixed grid spacing (only one of the three is required). 
 	The volume occupied by each population can be customized (see ``xRange``, ``yRange`` and ``zRange``); otherwise the full network volume will be used (defined in ``netParams``: ``sizeX``, ``sizeY``, ``sizeZ``).
 	
 	``density`` can be expressed as a function of normalized location (``xnorm``, ``ynorm`` or ``znorm``), by providing a string with the variable and any common Python mathematical operators/functions. e.g. ``'1e5 * exp(-ynorm/2)'``.
+
+	``gridSpacing`` is the spacing between cells (in um). The total number of cells will be determined based on spacing and ``sizeX``, ``sizeY``, ``sizeZ``. e.g. ``10``.
 
 * **cellModel** - Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich 2007 point neuron model). 
@@ -1026,7 +1028,7 @@ Population class methods
 * **pop.createCellsList()**
 
 
-Population class methods 
+Cell class methods 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * **cell.create()**

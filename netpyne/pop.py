@@ -42,6 +42,10 @@ class Pop (object):
         elif 'density' in self.tags:
             cells = self.createCellsDensity()
 
+        # create cells based on density (optional ynorm-dep)
+        elif 'gridSpacing' in self.tags:
+            cells = self.createCellsGrid()
+
         # not enough tags to create cells
         else:
             self.tags['numCells'] = 1
@@ -242,9 +246,54 @@ class Pop (object):
         return cells
 
 
+    def createCellsGrid (self):
+        ''' Create population cells based on fixed number of cells'''
+        cells = []
+        seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['gridSpacing']+sim.net.lastGid)))
+        
+        rangeLocs = [[0, getattr(sim.net.params, 'size'+coord)] for coord in ['X','Y','Z']]
+        for icoord, coord in enumerate(['x', 'y', 'z']):
+            # constrain to range set by user
+            if coord+'normRange' in self.tags:  # if normalized range, convert to normalized
+                self.tags[coord+'Range'] = [float(point) * getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]                
+            if coord+'Range' in self.tags:  # if user provided absolute range, calculate range
+                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
+                rangeLocs[icoord] = [self.tags[coord+'Range'][0], self.tags[coord+'Range'][1]] 
+              
+        gridSpacing = self.tags['gridSpacing']
+        gridLocs = []
+        for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing):
+            for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing):
+                for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing):
+                    gridLocs.append((x, y, z))
+
+        numCells = len(gridLocs)
+
+        for i in xrange(int(sim.rank), numCells, sim.nhosts):
+            gid = sim.net.lastGid+i
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags['popLabel'] = self.tags['popLabel']
+            cellTags['xnorm'] = gridLocs[i][0] / sim.net.params.sizeX # set x location (um)
+            cellTags['ynorm'] = gridLocs[i][1] / sim.net.params.sizeY # set y location (um)
+            cellTags['znorm'] = gridLocs[i][2] / sim.net.params.sizeZ # set z location (um)
+            cellTags['x'] = gridLocs[i][0]   # set x location (um)
+            cellTags['y'] = gridLocs[i][1] # set y location (um)
+            cellTags['z'] = gridLocs[i][2] # set z location (um)
+            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['popLabel'], sim.rank))
+        sim.net.lastGid = sim.net.lastGid + numCells
+        return cells
+
+
+
     def _setCellClass (self):
         # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
         try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+        
+            # Make sure it's not a NeuroML2 based cell
+            assert(not ('originalFormat' in self.tags and self.tags['originalFormat'] == 'NeuroML2'))
+            
             tmp = getattr(h, self.tags['cellModel'])
             self.cellModelClass = sim.PointCell
             excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 

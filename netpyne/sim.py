@@ -15,12 +15,12 @@ if '-nogui' in sys.argv:
 
 # import all required modules
 from simFuncs import *
+from neuromlFuncs import *
 from wrappers import *
 import analysis
 from network import Network
 from cell import CompartCell, PointCell
 from pop import Pop 
 import utils
-import neuromlFuncs
 from neuron import h
 

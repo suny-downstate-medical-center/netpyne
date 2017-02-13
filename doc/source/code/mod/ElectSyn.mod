@@ -54,14 +54,14 @@ NEURON {
     RANGE g, i
     RANGE weight
     
-    RANGE vgap     : Using a RANGE variable as opposed to POINTER for parallel mode
+    RANGE vpeer     : Using a RANGE variable as opposed to POINTER for parallel mode
         
 
 }
 
 PARAMETER {
     v (millivolt)
-    vgap (millivolt)
+    vpeer (millivolt)
     g = 0.000049999999999999996 (microsiemens)
     weight = 1
 
@@ -73,5 +73,5 @@ ASSIGNED {
 }
 
 BREAKPOINT {
-    i = weight * g * (v - vgap)
+    i = weight * g * (v - vpeer)
 } 

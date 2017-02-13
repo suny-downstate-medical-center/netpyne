@@ -812,7 +812,7 @@ class Network (object):
             if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
 
             if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
-
+            
             postCell.addConn(params=params)
 
 

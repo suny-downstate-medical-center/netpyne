@@ -322,18 +322,20 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False):
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
-        secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
-        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        secs, secLists, synMechs, globs = utils.importCell(fileName, cellName, cellArgs, cellInstance)
+        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globs': globs}
         
         # adjust cell 3d points so that soma is at location 0,0,0 
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
-            if not somaSec: return
+            if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
+                print 'Warning: cannot place soma at origin because soma does not exist or does not contain pt3d'
+                return
             soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
             midpoint = int(len(soma3d)/2)
             somaX, somaY, somaZ = soma3d[midpoint][0:3]
@@ -382,6 +384,41 @@ class NetParams (object):
                 return
 
         cellRule.secLists[secListName] = list(secList)
+
+
+    def addCellParamsWeightNorm(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
+            return
+
+        with open(fileName, 'r') as fileObj: 
+            weightNorm = pickle.load(fileObj)
+        for sec, wnorm in weightNorm.iteritems():
+            if sec in cellRule['secs']:  
+                cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
+
+
+    def saveCellParamsRule(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error saving: netParams.cellParams does not contain %s' % (label)
+            return
+        with open(fileName, 'w') as fileObj:  
+            pickle.dump(cellRule, fileObj)
+
+
+    def loadCellParamsRule(self, label, fileName):
+        import pickle
+        with open(fileName, 'r') as fileObj: 
+            cellRule = pickle.load(fileObj)
+        self.cellParams[label] = cellRule
+
+
 
     def todict(self):
         from sim import replaceDictODict

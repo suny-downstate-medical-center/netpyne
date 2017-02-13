@@ -1,3 +1,18 @@
+# Version 0.6.7
+
+- Added gridSpacing option to create populations with cells placed in grid with fixed spacing
+
+- Added netParams functions: addCellParamsWeightNorm(), saveCellParamsRule() and loadCellParamsRule()
+
+- Added option to importCell based on instantiated cell (not just template or class)
+
+- Modified importCellParams to store mod mechanism global variables in cellRule['globs']
+
+- Added support to export gap junctions to NeuroML
+
+- Fixed bug during import that set section name to 'soma' if only 1 section
+
+
 # Version 0.6.6
 
 - Batch parameters can now include list or dict items

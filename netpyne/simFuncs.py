@@ -58,8 +58,6 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
-    sim.setGlobals()  # set h global params
-
     sim.timing('stop', 'initialTime')
 
 
@@ -696,9 +694,12 @@ def setGlobals ():
                 exit(0) 
 
     # h global params
+    if sim.cfg.verbose and len(cellGlobs) > 0: 
+        print '\nSetting h global variables ...'
     for key,val in cellGlobs.iteritems(): 
         try:
             setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+            if sim.cfg.verbose: print('  h.%s = %s' % (key, str(val)))
         except:
             print '\nError: could not set global %s = %s' % (key, str(val))
 
@@ -726,6 +727,9 @@ def preRun ():
         h.cvode.cache_efficient(1)
     else:
         h.cvode.cache_efficient(0)
+
+    # set h global params
+    sim.setGlobals()  
 
     # time vars
     h.dt = sim.cfg.dt  

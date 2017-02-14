@@ -205,10 +205,10 @@ class CompartCell (Cell):
                             conditionsMet = 0
                             break
                     elif isinstance(condVal[0], basestring):
-                        if self.tags[condKey] not in condVal:
+                        if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
-                elif self.tags[condKey] != condVal: 
+                elif self.tags.get(condKey) != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -236,10 +236,10 @@ class CompartCell (Cell):
                         conditionsMet = 0
                         break
                 elif isinstance(condVal[0], basestring):
-                    if self.tags[condKey] not in condVal:
+                    if self.tags.get(condKey) not in condVal:
                         conditionsMet = 0
                         break 
-            elif self.tags[condKey] != condVal: 
+            elif self.tags.get(condKey) != condVal: 
                 conditionsMet = 0
                 break
 
@@ -819,7 +819,7 @@ class CompartCell (Cell):
                             conditionsMet = 0
                             break
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if self.tags[condKey] not in condVal:
+                        if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
                     elif self.tags.get(condKey) != condVal: 

@@ -173,7 +173,7 @@ def syncMeasure ():
 ######################################################################################################################################################
 def getCellsInclude(include):
     allCells = sim.net.allCells
-    allNetStimPops = [popLabel for popLabel,pop in sim.net.allPops.iteritems() if pop['tags']['cellModel']=='NetStim']
+    allNetStimPops = [popLabel for popLabel,pop in sim.net.allPops.iteritems() if pop['tags'].get('cellModel')=='NetStim']
     cellGids = []
     cells = []
     netStimPops = []

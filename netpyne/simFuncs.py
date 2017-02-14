@@ -754,7 +754,7 @@ def preRun ():
 
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
-        if cell.tags['cellModel'] == 'NetStim':
+        if cell.tags.get('cellModel') == 'NetStim':
             cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
         for stim in cell.stims:

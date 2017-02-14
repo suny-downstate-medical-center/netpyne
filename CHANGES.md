@@ -6,6 +6,8 @@
 
 - Modified code so 'cellModel' tag is optional
 
+- Fixed small bugs when loading saved model
+
 # Version 0.6.7
 
 - Added gridSpacing option to create populations with cells placed in grid with fixed spacing

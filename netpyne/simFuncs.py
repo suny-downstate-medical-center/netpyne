@@ -143,8 +143,9 @@ def loadNet (filename, data=None, instantiate=True):
                     pop.cellGids = popLoad['cellGids']
                     sim.net.pops[popLoadLabel] = pop
                 for cellLoad in cellsNode:
-                    # create new Cell object and add attributes, but don't create sections or associate gid yet
-                    cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
+                    # create new CompartCell object and add attributes, but don't create sections or associate gid yet
+                    # TO DO: assumes CompartCell -- add condition to load PointCell
+                    cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
                     cell.secs = Dict(cellLoad['secs'])
                     cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     cell.stims = [Dict(stim) for stim in cellLoad['stims']]

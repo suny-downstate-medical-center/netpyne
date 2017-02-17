@@ -1,3 +1,13 @@
+# Version 0.6.8
+
+- Removed pc.done() at the end of Batch.run() method so can run multiple batches from same script
+
+- Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
+
+- Modified code so 'cellModel' tag is optional
+
+- Fixed small bugs when loading saved model
+
 # Version 0.6.7
 
 - Added gridSpacing option to create populations with cells placed in grid with fixed spacing

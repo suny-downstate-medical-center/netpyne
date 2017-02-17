@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
-__all__.extend(['runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
+__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
@@ -143,8 +143,9 @@ def loadNet (filename, data=None, instantiate=True):
                     pop.cellGids = popLoad['cellGids']
                     sim.net.pops[popLoadLabel] = pop
                 for cellLoad in cellsNode:
-                    # create new Cell object and add attributes, but don't create sections or associate gid yet
-                    cell = sim.Cell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
+                    # create new CompartCell object and add attributes, but don't create sections or associate gid yet
+                    # TO DO: assumes CompartCell -- add condition to load PointCell
+                    cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
                     cell.secs = Dict(cellLoad['secs'])
                     cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     cell.stims = [Dict(stim) for stim in cellLoad['stims']]
@@ -691,7 +692,7 @@ def setGlobals ():
                     print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
             elif k in cellGlobs and cellGlobs[k] != v:
                 print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
-                exit(0) 
+                sys.exit() 
 
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0: 
@@ -754,7 +755,7 @@ def preRun ():
 
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
-        if cell.tags['cellModel'] == 'NetStim':
+        if cell.tags.get('cellModel') == 'NetStim':
             cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
         for stim in cell.stims:
@@ -835,6 +836,12 @@ def gatherData ():
     ## Pack data from all hosts
     if sim.rank==0: 
         print('\nGathering data...')
+
+    # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
+    if not sim.cfg.saveCellSecs:  
+        for cell in sim.net.cells:
+            cell.secs = None
+            cell.secLists = None
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 

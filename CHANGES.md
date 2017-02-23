@@ -8,6 +8,8 @@
 
 - Modified code so 'cellModel' tag is optional
 
+- When importing cell global 'v_init' is stored as param for each section 
+
 - Fixed small bugs when loading saved model
 
 # Version 0.6.7

@@ -12,6 +12,7 @@ from itertools import izip, product
 from popen2 import popen2
 from time import sleep
 import imp
+from netpyne import specs
 from neuron import h
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -117,8 +118,13 @@ class Batch(object):
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
                         if isinstance(paramLabel, tuple):
-                            container = getattr(self.cfg, paramLabel[0])
-                            container[paramLabel[1]] = paramVal
+                            container = self.cfg
+                            for ip in range(len(paramLabel)-1):
+                                if isinstance(container, specs.SimConfig):
+                                    container = getattr(container, paramLabel[ip])
+                                else:
+                                    container = container[paramLabel[ip]]
+                            container[paramLabel[-1]] = paramVal
                         else:
                             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
                         print str(paramLabel)+' = '+str(paramVal)
@@ -129,7 +135,6 @@ class Batch(object):
                     self.cfg.saveFolder = self.saveFolder
                     cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                     self.cfg.save(cfgSavePath)
-
 
                     # skip if output file already exists
                     jobName = self.saveFolder+'/'+simLabel  

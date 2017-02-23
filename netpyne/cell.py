@@ -1418,3 +1418,41 @@ class PointCell (Cell):
 
     # def addSynMechsNEURONObj (self):
     #     print 'Error: Function not yet implemented for Point Neurons'
+
+
+###############################################################################
+#
+# NeuroML2 CELL CLASS 
+#
+###############################################################################
+
+class NML2Cell (CompartCell):
+    ''' Class for NeuroML2 neuron models: No different than CompartCell '''
+
+
+###############################################################################
+#
+# NeuroML2 SPIKE SOURCE CLASS 
+#
+###############################################################################
+
+class NML2SpikeSource (CompartCell):
+    ''' Class for NeuroML2 spiking neuron models: based on CompartCell,
+        but the NetCon connects to the mechanism on the one section whose NET_RECEIVE
+        block will emit events
+    '''
+        
+    def associateGid (self, threshold = 10.0):
+        print("associateGid... %s, %s"%(self.gid,self.tags))
+        
+        if sim.cfg.createNEURONObj: 
+            sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+         
+            nc = h.NetCon(self.secs['soma']['pointps'][self.tags['cellType']].hPointp, None)
+                
+            #### nc.threshold = threshold  # not used....
+            sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
+            del nc # discard netcon
+        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
+        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+    

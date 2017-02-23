@@ -430,7 +430,7 @@ if neuromlExists:
         for np_pop in net.pops.values(): 
             index = 0
             print("Adding population: %s"%np_pop.tags)
-            positioned = len(np_pop.cellGids)>0
+            
             type = 'populationList'
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 comp_id = populations_vs_components[np_pop.tags['popLabel']]
@@ -635,8 +635,9 @@ if neuromlExists:
         gids = OrderedDict()
         next_gid = 0
 
-        def __init__(self, netParams):
+        def __init__(self, netParams, verbose = False):
             self.netParams = netParams
+            self.verbose = verbose
 
         def finalise(self):
 
@@ -678,7 +679,7 @@ if neuromlExists:
         #    
         def handleNetwork(self, network_id, notes, temperature=None):
             if temperature:
-                self.log.warn("\n****************\n   Need to set temperature to %s!!!\n********************"%temperature)
+                print("\n****************\n   Need to set temperature to %s!!!\n********************"%temperature)
 
 
         #
@@ -686,7 +687,7 @@ if neuromlExists:
         #    
         def handlePopulation(self, population_id, component, size, component_obj):
 
-            self.log.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+            if self.verbose: print("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
             
             self.pop_ids_vs_components[population_id] = component_obj
 
@@ -695,14 +696,15 @@ if neuromlExists:
             popInfo=OrderedDict()
             popInfo['popLabel'] = population_id
             popInfo['cellModel'] = component
-            popInfo['cellType'] = component
-            popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from artificial cells
+            popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from abstract cells
             popInfo['cellsList'] = []
 
             self.popParams[population_id] = popInfo
 
-            from neuroml import Cell
+            from neuroml import Cell, BaseCell
             if isinstance(component_obj,Cell):
+                
+                popInfo['cellType'] = component
                 
                 cell = component_obj
                 cellRule = {'conds':{'cellType': component, 
@@ -889,7 +891,14 @@ if neuromlExists:
                 self.pop_ids_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
             else:
-
+                
+                popInfo['cellType'] = component
+                
+                if self.verbose: print("Abstract cell: %s"%(isinstance(component_obj,BaseCell)))
+                
+                if not isinstance(component_obj,BaseCell):
+                    popInfo['originalFormat'] = 'NeuroML2_SpikeSource' 
+                    
                 cellRule = {'label': component, 
                             'conds': {'cellType': component, 
                                       'cellModel': component},  
@@ -923,7 +932,7 @@ if neuromlExists:
                 soma['pointps'][component] = {'mod':component}
                 cellRule['secs'] = {'soma': soma}  # add sections to dict
                 self.cellParams[component] = cellRule
-
+              
             self.gids[population_id] = [-1]*size
 
 
@@ -973,7 +982,7 @@ if neuromlExists:
         #
         def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
 
-            self.log.debug("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
+            if self.verbose: print("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
@@ -1045,7 +1054,7 @@ if neuromlExists:
                         'conds': {'popLabel':pop_id, 'cellList': [cellId]}}
                         
             
-            print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))
+            if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))
             
             # TODO: build just one stimLists/stimSources entry for the inputList
             # Issue: how to specify the sec/loc per individual stim??
@@ -1066,6 +1075,8 @@ if neuromlExists:
         print("Importing NeuroML 2 network from: %s"%fileName)
 
         nmlHandler = None
+        
+        verbose = False
 
         if fileName.endswith(".nml"):
 
@@ -1074,7 +1085,7 @@ if neuromlExists:
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-            nmlHandler = NetPyNEBuilder(netParams)     
+            nmlHandler = NetPyNEBuilder(netParams, verbose=verbose)     
 
             currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
@@ -1092,7 +1103,7 @@ if neuromlExists:
 
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 
-            nmlHandler = NetPyNEBuilder(netParams)     
+            nmlHandler = NetPyNEBuilder(netParams, verbose=verbose)     
 
             currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 

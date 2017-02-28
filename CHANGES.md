@@ -18,6 +18,8 @@
 
 - Fixed bug in subcellConn groupedSynMechs
 
+- Fixed bug in subcellConn trying to add stims+conns to NetStims/VecStims
+
 
 # Version 0.6.7
 

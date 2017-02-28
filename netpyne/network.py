@@ -471,7 +471,8 @@ class Network (object):
             self.subcellularConn(allCellTags, allPopTags)
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
-            for cell in sim.net.cells:    
+            cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
+            for cell in cellsUpdate:
                 # Add synMechs, stim and conn NEURON objects
                 cell.addStimsNEURONObj()
                 #cell.addSynMechsNEURONObj()

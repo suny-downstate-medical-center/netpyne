@@ -496,7 +496,10 @@ if neuromlExists:
                     else:
                         ''' <electricalConnectionInstance id="0" preCell="../iafPop1/0/iaf" postCell="../iafPop2/0/iaf" preSegment="0" 
                            preFractionAlong="0.5" postSegment="0" postFractionAlong="0.5" synapse="gj1"/>'''
-        
+                        weight = conn['weight']
+                        if weight!=1:
+                            raise Exception('Cannot yet support inputs where weight !=1!')
+                        
                         connection = neuroml.ElectricalConnectionInstance(id=index, \
                                     pre_cell="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
                                     pre_segment=0, \
@@ -1038,10 +1041,12 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #   
-        def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5):
+        def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
             
             pop_id = self.popStimLists[inputListId]['conds']['popLabel']
             nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)
+            if weight!=1:
+                raise Exception('Cannot yet support inputs where weight !=1!')
             
             #seg_name = self.pop_ids_vs_seg_ids_vs_segs[pop_id][segId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
             
@@ -1161,11 +1166,14 @@ if neuromlExists:
                 connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
                 
                 if ptype == 'electricalProjection':
+
+                    if weight!=1:
+                        raise Exception('Cannot yet support inputs where weight !=1!')
                     connParam = {'synsPerConn': 1, 
                                  'sec': post_seg, 
                                  'loc': post_fract, 
                                  'gapJunction': True, 
-                                 'weight': 1}
+                                 'weight': weight}
                 else:
                     connParam = {'delay': delay,
                                  'weight': weight,

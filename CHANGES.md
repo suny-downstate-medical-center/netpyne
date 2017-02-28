@@ -8,7 +8,18 @@
 
 - Modified code so 'cellModel' tag is optional
 
+- Added renameCellParamsSec() method to netParams class  
+
+- When importing cell global 'v_init' is stored as param for each section 
+
 - Fixed small bugs when loading saved model
+
+- Fixed bug when calling internal method _findPrePostCellsCondition()
+
+- Fixed bug in subcellConn groupedSynMechs
+
+- Fixed bug in subcellConn trying to add stims+conns to NetStims/VecStims
+
 
 # Version 0.6.7
 

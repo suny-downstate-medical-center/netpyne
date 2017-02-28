@@ -23,7 +23,7 @@ def getSecName (sec, dirCellSecNames = None):
     if '[' in fullSecName:  # if section is array element
         secNameTemp = fullSecName.split('[')[0]
         secIndex = int(fullSecName.split('[')[1].split(']')[0])
-        secName = secNameTemp+'_'+str(secIndex) #(secNameTemp,secIndex)
+        secName = secNameTemp+'_'+str(secIndex) 
     else:
         secName = fullSecName
         secIndex = -1
@@ -394,6 +394,8 @@ def getCellParams(cell, varList, origGlob):
 
     # globals
     globs = getGlobals(varList['mechs'].keys()+varList['pointps'].keys(), origGlob=origGlob)
+    if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
+        for sec in secDic.values(): sec['vinit'] = globs['v_init']  
 
     # clean 
     h.initnrn()

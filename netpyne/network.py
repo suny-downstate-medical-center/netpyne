@@ -294,7 +294,7 @@ class Network (object):
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
-            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, subConnParam['preConds'], subConnParam['postConds'])
 
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
@@ -316,9 +316,12 @@ class Network (object):
                                     iConn = iConn + 1
                                     if conn['synMech'] in subConnParam['groupSynMechs']:
                                         for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
-                                            connGroup = next(c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc'])
-                                            connGroup['synMech'] = '__grouped__'+connGroup['synMech']
-                                            connsGroup[iConn] = connGroup
+                                            connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)
+                                            try:
+                                                connGroup['synMech'] = '__grouped__'+connGroup['synMech']
+                                                connsGroup[iConn] = connGroup
+                                            except:
+                                                print '  Warning: Grouped synMechs %s not found' % (str(connGroup))
                         else:
                             conns = allConns
 
@@ -468,7 +471,8 @@ class Network (object):
             self.subcellularConn(allCellTags, allPopTags)
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
-            for cell in sim.net.cells:    
+            cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
+            for cell in cellsUpdate:
                 # Add synMechs, stim and conn NEURON objects
                 cell.addStimsNEURONObj()
                 #cell.addSynMechsNEURONObj()

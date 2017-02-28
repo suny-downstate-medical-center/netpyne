@@ -386,6 +386,22 @@ class NetParams (object):
         cellRule.secLists[secListName] = list(secList)
 
 
+    def renameCellParamsSec(self, label, oldSec, newSec):
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error renaming section: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if oldSec not in cellRule['secs']:
+            print 'Error renaming section: cellRule does not contain section %s' % (label)
+            return
+
+        cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
+        for sec in cellRule['secs'].values():  # replace appearences in topol
+            if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
+
+
     def addCellParamsWeightNorm(self, label, fileName):
         import pickle
         if label in self.cellParams:

@@ -846,7 +846,7 @@ def gatherData ():
     # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
     if not sim.cfg.saveCellConns:  
         for cell in sim.net.cells:
-            cell.conns = None
+            cell.conns = []
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 

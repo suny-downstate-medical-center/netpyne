@@ -14,6 +14,9 @@
 
 - Fixed small bugs when loading saved model
 
+- Fixed bug when calling internal method _findPrePostCellsCondition()
+
+
 # Version 0.6.7
 
 - Added gridSpacing option to create populations with cells placed in grid with fixed spacing

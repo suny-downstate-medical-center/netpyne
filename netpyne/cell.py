@@ -427,7 +427,6 @@ class CompartCell (Cell):
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
-                    print sectParams['topol']
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
 

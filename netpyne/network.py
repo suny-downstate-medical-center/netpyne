@@ -294,7 +294,7 @@ class Network (object):
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
-            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, subConnParam['preConds'], subConnParam['postConds'])
 
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses

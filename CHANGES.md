@@ -6,6 +6,8 @@
 
 - Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
 
+- Added cfg.saveCellConns option to reduce save time and file size 
+
 - Modified code so 'cellModel' tag is optional
 
 - Added renameCellParamsSec() method to netParams class  

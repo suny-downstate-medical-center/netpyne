@@ -843,6 +843,11 @@ def gatherData ():
             cell.secs = None
             cell.secLists = None
 
+    # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    if not sim.cfg.saveCellConns:  
+        for cell in sim.net.cells:
+            cell.conns = None
+
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}

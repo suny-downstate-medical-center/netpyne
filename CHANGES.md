@@ -16,6 +16,8 @@
 
 - Fixed bug when calling internal method _findPrePostCellsCondition()
 
+- Fixed bug in subcellConn groupedSynMechs
+
 
 # Version 0.6.7
 

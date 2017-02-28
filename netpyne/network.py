@@ -316,9 +316,12 @@ class Network (object):
                                     iConn = iConn + 1
                                     if conn['synMech'] in subConnParam['groupSynMechs']:
                                         for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
-                                            connGroup = next(c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc'])
-                                            connGroup['synMech'] = '__grouped__'+connGroup['synMech']
-                                            connsGroup[iConn] = connGroup
+                                            connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)
+                                            try:
+                                                connGroup['synMech'] = '__grouped__'+connGroup['synMech']
+                                                connsGroup[iConn] = connGroup
+                                            except:
+                                                print '  Warning: Grouped synMechs %s not found' % (str(connGroup))
                         else:
                             conns = allConns
 

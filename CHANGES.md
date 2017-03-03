@@ -1,5 +1,7 @@
 # Version 0.6.8
 
+- Improved plotShape() to use matplotlib and use colormap to show num syns 
+
 - Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)
 
 - Removed pc.done() at the end of Batch.run() method so can run multiple batches from same script

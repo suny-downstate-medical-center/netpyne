@@ -341,7 +341,15 @@ class Network (object):
                             somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
                             if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                                 fixedSomaY = subConnParam['density'].get('fixedSomaY')
+                                # print somaY
+                                # print fixedSomaY
+                                # print 'BEFORE:'
+                                # print gridY
                                 gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
+                                # print 'AFTER:'
+                                # print gridY
+                                # print gridSigma
+                                
                             if subConnParam['density']['type'] == '2Dmap': # 2D    
                                 gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
                                 segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
@@ -370,6 +378,11 @@ class Network (object):
                                     sec = diffList[i][1]
                                     seg = diffList[i][2]
                                     segNumSyn[sec][seg] += 1
+
+                            # print segNumSyn
+                            # print totSyn
+                            # print scaleNumSyn
+                            # print totSynRescale
 
                             # convert to list so can serialize and save
                             subConnParam['density']['gridY'] = list(subConnParam['density']['gridY'])

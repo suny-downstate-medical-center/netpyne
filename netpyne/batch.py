@@ -31,15 +31,18 @@ def runJob(script, cfgSavePath):
 
 class Batch(object):
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py'):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.netParamsFile = netParamsFile
-        self.params = []
         self.saveFolder = '/'+self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
-
+        self.params = []
+        if params:
+            for k,v in params.iteritems():
+                self.params.append({'label': k, 'values': v})
+    
     def save(self, filename):
         import os
         basename = os.path.basename(filename)
@@ -168,6 +171,45 @@ class Batch(object):
                             cd $PBS_O_WORKDIR
                             echo $PBS_O_WORKDIR
                             %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+
+                            # Send job_string to qsub
+                            input.write(jobString)
+                            print jobString+'\n'
+                            input.close()
+
+                                                # hpc torque job submission
+                        elif self.runCfg.get('type',None) == 'hpc_slurm':
+
+                            # read params or set defaults
+                            sleepInterval = self.runCfg.get('sleepInterval', 1)
+                            sleep(sleepInterval)
+                            
+                            allocation = self.runCfg.get('allocation', 'csd403') # NSG account
+                            nodes = self.runCfg.get('nodes', 1)
+                            coresPerNode = self.runCfg.get('coresPerNode', 1)
+                            email = self.runCfg.get('email', 'a@b.c')
+                            folder = self.runCfg.get('folder', '.')
+                            script = self.runCfg.get('script', 'init.py')
+                            walltime = self.runCfg.get('walltime', '00:30:00')
+                            numproc = nodes*coresPerNode
+                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+
+                            output, input = popen2('sbatch') # Open a pipe to the qsub command.
+
+                            jobString = """#!/bin/bash 
+                            #SBATCH --job-name=%s           # job name
+                            #SBATCH -A %s                   # allocation
+                            #SBATCH -t walltime=%s          # walltime
+                            #SBATCH --nodes=%d              # num nodes
+                            #SBATCH --ntasks-per-node=%d    # cores per node
+                            #SBATCH -o %s.run               # output file
+                            #SBATCH -e %s.err               # error file
+                            #SBATCH --mail-user=%s          # email to send msg
+                            #SBATCH --mail-type=end         # type of email msg
+                            
+                            source ~/.bashrc
+                            cd %s
+                            %s""" % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             input.write(jobString)

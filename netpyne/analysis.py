@@ -944,7 +944,9 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
     # Plot shapeplot
     fig=plt.figure(figsize=(10,10))
     shapeax = plt.subplot(111, projection='3d')
-    shapeax.view_init(90,-90)
+    shapeax.elev=90 # 90 
+    shapeax.azim=-90 # -90
+    shapeax.dist=0.8*shapeax.dist
     plt.axis('equal')
     cmap=plt.cm.jet #YlOrBr_r
     morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)

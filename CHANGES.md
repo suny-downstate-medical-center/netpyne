@@ -1,5 +1,7 @@
 # Version 0.6.8
 
+- Added option to run batch on HPC SLURM system (eg. SDSC Comet)
+
 - Improved plotShape() to use matplotlib and use colormap to show num syns 
 
 - Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)

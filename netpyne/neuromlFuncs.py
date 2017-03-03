@@ -1137,7 +1137,7 @@ if neuromlExists:
             
         for proj_id in nmlHandler.projection_infos.keys():
             projName, prePop, postPop, synapse, ptype = nmlHandler.projection_infos[proj_id]
-            print("Creating connections for %s (%s): %s->%s via %s"%(projName, ptype, prePop, postPop, synapse))
+            if sim.cfg.verbose: print("Creating connections for %s (%s): %s->%s via %s"%(projName, ptype, prePop, postPop, synapse))
             
             preComp = nmlHandler.pop_ids_vs_components[prePop]
             

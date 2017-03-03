@@ -209,7 +209,8 @@ class Batch(object):
 
 source ~/.bashrc
 cd %s
-%s"""                       % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+%s
+wait"""                       % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             input.write(jobString)

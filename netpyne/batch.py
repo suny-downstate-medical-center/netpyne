@@ -199,7 +199,7 @@ class Batch(object):
                             jobString = """#!/bin/bash 
                             #SBATCH --job-name=%s           # job name
                             #SBATCH -A %s                   # allocation
-                            #SBATCH -t walltime=%s          # walltime
+                            #SBATCH -t %s          # walltime
                             #SBATCH --nodes=%d              # num nodes
                             #SBATCH --ntasks-per-node=%d    # cores per node
                             #SBATCH -o %s.run               # output file

@@ -197,19 +197,19 @@ class Batch(object):
                             output, input = popen2('sbatch') # Open a pipe to the qsub command.
 
                             jobString = """#!/bin/bash 
-                            #SBATCH --job-name=%s           # job name
-                            #SBATCH -A %s                   # allocation
-                            #SBATCH -t %s          # walltime
-                            #SBATCH --nodes=%d              # num nodes
-                            #SBATCH --ntasks-per-node=%d    # cores per node
-                            #SBATCH -o %s.run               # output file
-                            #SBATCH -e %s.err               # error file
-                            #SBATCH --mail-user=%s          # email to send msg
-                            #SBATCH --mail-type=end         # type of email msg
-                            
-                            source ~/.bashrc
-                            cd %s
-                            %s""" % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+#SBATCH --job-name=%s
+#SBATCH -A %s
+#SBATCH -t %s
+#SBATCH --nodes=%d
+#SBATCH --ntasks-per-node=%d
+#SBATCH -o %s.run
+#SBATCH -e %s.err
+#SBATCH --mail-user=%s
+#SBATCH --mail-type=end
+
+source ~/.bashrc
+cd %s
+%s"""                       % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             input.write(jobString)

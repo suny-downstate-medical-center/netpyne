@@ -342,7 +342,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplt.plot(gs[0])
     ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
-    ax1.set_plt.xlim(timeRange)
+    ax1.set_xlim(timeRange)
     
     # Plot stats
     gidPops = [cell['tags']['popLabel'] for cell in cells]
@@ -372,20 +372,20 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if spikeHist == 'overlay':
         ax2 = ax1.twinx()
         ax2.plot (histoT, histoCount, linewidth=0.5)
-        ax2.set_plt.ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
-        ax2.set_plt.xlim(timeRange)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
+        ax2.set_xlim(timeRange)
     elif spikeHist == 'subplot':
         ax2=plt.subplt.plot(gs[1])
         plot (histoT, histoCount, linewidth=1.0)
-        ax2.set_plt.xlabel('Time (ms)', fontsize=fontsiz)
-        ax2.set_plt.ylabel('Spike count', fontsize=fontsiz)
-        ax2.set_plt.xlim(timeRange)
+        ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz)
+        ax2.set_xlim(timeRange)
 
     # Axis
-    ax1.set_plt.xlabel('Time (ms)', fontsize=fontsiz)
-    ax1.set_plt.ylabel(ylabelText, fontsize=fontsiz)
-    ax1.set_plt.xlim(timeRange)
-    ax1.set_plt.ylim(-1, len(cells)+numNetStims+1)    
+    ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
+    ax1.set_ylabel(ylabelText, fontsize=fontsiz)
+    ax1.set_xlim(timeRange)
+    ax1.set_ylim(-1, len(cells)+numNetStims+1)    
 
     if orderInverse: plt.gca().invert_yaxis()
 

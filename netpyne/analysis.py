@@ -340,7 +340,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
-        ax1=plt.subplt.plot(gs[0])
+        ax1=plt.subplot(gs[0])
     ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
@@ -375,7 +375,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
         ax2.set_xlim(timeRange)
     elif spikeHist == 'subplot':
-        ax2=plt.subplt.plot(gs[1])
+        ax2=plt.subplot(gs[1])
         plot (histoT, histoCount, linewidth=1.0)
         ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
         ax2.set_ylabel('Spike count', fontsize=fontsiz)
@@ -538,7 +538,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         color = colorList[iplot%len(colorList)]
 
         if not overlay: 
-            plt.subplt.plot(len(include),1,iplot+1)  # if subplot, create new subplot
+            plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
             title (str(subset), fontsize=fontsiz)
             color = 'blue'
    
@@ -677,7 +677,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         color = colorList[iplot%len(colorList)]
 
         if not overlay: 
-            plt.subplt.plot(len(include),1,iplot+1)  # if subplot, create new subplot
+            plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
             title (str(subset), fontsize=fontsiz)
             color = 'blue'
         
@@ -797,7 +797,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList[igid%len(colorList)]
                     if not overlay:
-                        plt.subplt.plot(len(subGids),1,igid+1)
+                        plt.subplot(len(subGids),1,igid+1)
                         color = 'blue'
                         plt.ylabel(trace, fontsize=fontsiz)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
@@ -828,7 +828,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList[itrace%len(colorList)]
                     if not overlay:
-                        plt.subplt.plot(len(tracesList),1,itrace+1)
+                        plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
@@ -1405,7 +1405,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             SBG = stackedBarGraph.StackedBarGrapher()
     
             fig = plt.figure(figsize=figSize)
-            ax = fig.add_plt.subplt.plot(111)
+            ax = fig.add_plt.subplot(111)
             SBG.stackedBarplt.plot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
             title ('Connection '+feature+' stacked bar graph')
             plt.legend(popsPre)

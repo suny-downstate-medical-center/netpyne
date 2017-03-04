@@ -13,9 +13,9 @@ from popen2 import popen2
 from time import sleep
 import imp
 from netpyne import specs
-from neuron import h
-pc = h.ParallelContext() # use bulletin board master/slave
-if pc.id()==0: pc.master_works_on_jobs(0) 
+#from neuron import h
+#pc = h.ParallelContext() # use bulletin board master/slave
+#if pc.id()==0: pc.master_works_on_jobs(0) 
 
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # func needs to be outside of class
@@ -216,6 +216,18 @@ wait"""                       % (jobName, allocation, walltime, nodes, coresPerN
                             input.write(jobString)
                             print jobString+'\n'
                             input.close()
+
+
+    # batchfile = '%s/gen_%d.sbatch'%(simdatadir, ngen)
+    # with open(batchfile, 'w') as text_file:
+    #     text_file.write("%s" % job_string)
+    #     for comm in commandList:
+    #         text_file.write("\n%s\n" % comm)
+    #     text_file.write("\nwait \n")
+
+    # #subprocess.call
+    # output, pinput = popen2('sbatch '+batchfile) # Open a pipe to the qsub command.
+    # pinput.close()
 
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py

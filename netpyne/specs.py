@@ -454,6 +454,7 @@ class SimConfig (object):
         self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module 
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
+        self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.createNEURONObj = True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network

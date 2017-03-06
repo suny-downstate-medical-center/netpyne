@@ -892,7 +892,8 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], synStyle = '.', synSiz=3, cvar=None, cvals=None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], synStyle = '.', synSiz=3, cvar=None, cvals=None, interviews=False,
+                figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - showSyns (True|False): Show synaptic connections in 3D 
@@ -907,99 +908,100 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
     '''
 
     from neuron import h, gui
-    from mpl_toolkits.mplot3d import Axes3D
-    from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
-    
-    # create secList from include
-    cellsPreGids = [c.gid for c in sim.getCellsList(includePre)]
-    cellsPost = sim.getCellsList(includePost)
-    secs = None
 
-    # Set cvals and secs
-    if not cvals and cvar:
-        cvals = []
-        secs = []
-        # weighNorm
-        if cvar == 'weightNorm':
+    if not interviews: # plot using Python instead of interviews
+        from mpl_toolkits.mplot3d import Axes3D
+        from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
+        
+        # create secList from include
+        cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
+        cellsPost = sim.getCellsList(includePost)
+        secs = None
+
+        # Set cvals and secs
+        if not cvals and cvar:
+            cvals = []
+            secs = []
+            # weighNorm
+            if cvar == 'weightNorm':
+                for cellPost in cellsPost:
+                    for sec in cellPost.secs.values():
+                        if 'weightNorm' in sec:
+                            secs.append(sec['hSec'])
+                            cvals.extend(sec['weightNorm'])
+            # numSyns
+            elif cvar == 'numSyns':
+                for cellPost in cellsPost:
+                    for secLabel,sec in cellPost.secs.iteritems():
+                        nseg=sec['hSec'].nseg
+                        nsyns = [0] * nseg
+                        secs.append(sec['hSec'])
+                        conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
+                        for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
+                        cvals.extend(nsyns)
+
+            cvals = np.array(cvals)
+
+        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
+
+        # Plot shapeplot
+        fig=plt.figure(figsize=(10,10))
+        shapeax = plt.subplot(111, projection='3d')
+        shapeax.elev=90 # 90 
+        shapeax.azim=-90 # -90
+        shapeax.dist=0.8*shapeax.dist
+        plt.axis('equal')
+        cmap=plt.cm.jet #YlOrBr_r
+        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        if cvals and len(cvals)>0: 
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
+            sm._A = []  # fake up the array of the scalar mappable
+            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
+            cb.set_label('number of synapses', rotation=90)
+
+        if showSyns:
+            synColor='red'
             for cellPost in cellsPost:
                 for sec in cellPost.secs.values():
-                    if 'weightNorm' in sec:
-                        secs.append(sec['hSec'])
-                        cvals.extend(sec['weightNorm'])
-        # numSyns
-        elif cvar == 'numSyns':
-            for cellPost in cellsPost:
-                for secLabel,sec in cellPost.secs.iteritems():
-                    nseg=sec['hSec'].nseg
-                    nsyns = [0] * nseg
-                    secs.append(sec['hSec'])
-                    conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
-                    for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
-                    cvals.extend(nsyns)
+                    for synMech in sec['synMechs']:
+                        morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+                  
+        plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
 
-        cvals = np.array(cvals)
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_shape.png'
+            plt.savefig(filename)
 
-    if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
+        # show fig 
+        if showFig: _showFigure()
 
-    # Plot shapeplot
-    fig=plt.figure(figsize=(10,10))
-    shapeax = plt.subplot(111, projection='3d')
-    shapeax.elev=90 # 90 
-    shapeax.azim=-90 # -90
-    shapeax.dist=0.8*shapeax.dist
-    plt.axis('equal')
-    cmap=plt.cm.jet #YlOrBr_r
-    morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    if len(cvals)>0: 
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
-        sm._A = []  # fake up the array of the scalar mappable
-        cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-        cb.set_label('number of synapses', rotation=90)
+    else:  # Plot using Interviews
+        # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
+        fig = h.Shape()
+        secList = h.SectionList()
+        if showSyns:
+            color = 2 # red
+            for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
+                for sec in cell.secs.values():
+                    sec['hSec'].push()
+                    secList.append()
+                    h.pop_section()
+                    for synMech in sec['synMechs']:
+                        if synMech['hSyn']:
+                            # find pre pop using conn[preGid]
+                            # create dict with color for each pre pop; check if exists; increase color counter
+                            # colorsPre[prePop] = colorCounter
 
-    if showSyns:
-        synColor='red'
-        for cellPost in cellsPost:
-            for sec in cellPost.secs.values():
-                for synMech in sec['synMechs']:
-                    morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
-              
-    plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+                            # find synMech using conn['loc'], conn['sec'] and conn['synMech']
+                            fig.point_mark(synMech['hSyn'], color, style, siz) 
 
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_shape.png'
-        plt.savefig(filename)
-
-    # show fig 
-    if showFig: _showFigure()
-
-
-    # Using Interviews
-    # # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
-    # fig = h.Shape()
-    # secList = h.SectionList()
-    # if showSyns:
-    #     color = 2 # red
-    #     for cell in [c for c in sim.net.cells if c.tags['popLabel'] in include]:
-    #         for sec in cell.secs.values():
-    #             sec['hSec'].push()
-    #             secList.append()
-    #             h.pop_section()
-    #             for synMech in sec['synMechs']:
-    #                 if synMech['hSyn']:
-    #                     # find pre pop using conn[preGid]
-    #                     # create dict with color for each pre pop; check if exists; increase color counter
-    #                     # colorsPre[prePop] = colorCounter
-
-    #                     # find synMech using conn['loc'], conn['sec'] and conn['synMech']
-    #                     fig.point_mark(synMech['hSyn'], color, style, siz) 
-
-    # fig.observe(secList)
-    # fig.flush()
+        fig.observe(secList)
+        fig.flush()
 
 
     return fig

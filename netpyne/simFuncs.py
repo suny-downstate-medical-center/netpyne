@@ -729,6 +729,8 @@ def preRun ():
     else:
         h.cvode.cache_efficient(0)
 
+    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+
     # set h global params
     sim.setGlobals()  
 

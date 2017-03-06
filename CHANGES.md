@@ -2,6 +2,8 @@
 
 - Added option to run batch on HPC SLURM system (eg. SDSC Comet)
 
+- Added cvode_atol to cfg
+
 - Improved plotShape() to use matplotlib and use colormap to show num syns 
 
 - Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)

@@ -417,6 +417,9 @@ class Network (object):
 
 
                         for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
+                            # avoid locs at 0.0 or 1.0 - triggers hoc error if syn needs an ion (eg. ca_ion)
+                            if newLoc == 0.0: newLoc = 0.00001 
+                            elif newLoc == 1.0: newLoc = 0.99999   
                             conn['sec'] = newSec
                             conn['loc'] = newLoc
 

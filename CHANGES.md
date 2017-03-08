@@ -28,6 +28,8 @@
 
 - Fixed bug in subcellConn trying to add stims+conns to NetStims/VecStims
 
+- Fixed bug in subcellConn so syns are not placed at loc 0.0 or 1.0 (error if syn uses ion)
+
 
 # Version 0.6.7
 

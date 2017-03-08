@@ -892,8 +892,8 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], synStyle = '.', synSiz=3, cvar=None, cvals=None, interviews=False,
-                figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], synStyle = '.', synSiz=3, cvar=None, cvals=None, iv=False, ivprops=None,
+    includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - showSyns (True|False): Show synaptic connections in 3D 
@@ -909,7 +909,7 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
 
     from neuron import h, gui
 
-    if not interviews: # plot using Python instead of interviews
+    if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
         from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
         
@@ -943,6 +943,8 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
             cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
+        if not includeAxon:         
+            secs = [sec for sec in secs if 'axon' not in secs.hname()]
 
         # Plot shapeplot
         fig=plt.figure(figsize=(10,10))
@@ -984,13 +986,16 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
         # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
         fig = h.Shape()
         secList = h.SectionList()
-        if showSyns:
-            color = 2 # red
-            for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
-                for sec in cell.secs.values():
-                    sec['hSec'].push()
-                    secList.append()
-                    h.pop_section()
+        if not ivprops:
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
+        
+        for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
+            for sec in cell.secs.values():
+                if 'axon' in sec['hSec'].hname() and not includeAxon: continue
+                sec['hSec'].push()
+                secList.append()
+                h.pop_section()
+                if showSyns:
                     for synMech in sec['synMechs']:
                         if synMech['hSyn']:
                             # find pre pop using conn[preGid]
@@ -998,10 +1003,19 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                             # colorsPre[prePop] = colorCounter
 
                             # find synMech using conn['loc'], conn['sec'] and conn['synMech']
-                            fig.point_mark(synMech['hSyn'], color, style, siz) 
+                            fig.point_mark(synMech['hSyn'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
 
         fig.observe(secList)
+        fig.color_list(secList, ivprops['colorSecs'])
         fig.flush()
+            # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'shape.ps'
+            fig.printfile(filename)
+
 
 
     return fig

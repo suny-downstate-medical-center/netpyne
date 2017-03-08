@@ -214,7 +214,8 @@ wait
                             # Send job_string to qsub
                             # output, input = popen2('sbatch') # Open a pipe to the qsub command.
                             # input.write(jobString)
-                            # print jobString+'\n'
+                            print 'Submitting job ',jobName
+                            print jobString+'\n'
                             # input.close()
 
                             batchfile = '%s.sbatch'%(jobName)

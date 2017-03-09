@@ -143,6 +143,8 @@ class Batch(object):
                     jobName = self.saveFolder+'/'+simLabel  
                     if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
                         print 'Skipping job %s since output file already exists...' % (jobName)
+                    elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
+                        print 'Skipping job %s since cfg file already exists...' % (jobName)
                     else:
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':

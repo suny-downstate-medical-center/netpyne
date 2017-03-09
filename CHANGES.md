@@ -20,6 +20,8 @@
 
 - When importing cell global 'v_init' is stored as param for each section 
 
+- Added skipCfg option to batch
+
 - Fixed small bugs when loading saved model
 
 - Fixed bug when calling internal method _findPrePostCellsCondition()

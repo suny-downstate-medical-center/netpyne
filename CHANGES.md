@@ -1,3 +1,42 @@
+# Version 0.6.8
+
+- Keep track of last host after distributing cells of each pop (improves load balance) (issues #41 #196)
+
+- Added option to run batch on HPC SLURM system (eg. SDSC Comet)
+
+- Added cvode_atol option to cfg
+
+- Improved plotShape() to use matplotlib and use colormap to show num syns 
+
+- Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)
+
+- Batch params can now be grouped ('group':True) so values vary together not combinatorally
+
+- Removed pc.done() at the end of Batch.run() method so can run multiple batches from same script
+
+- Added skipCfg option to batch
+
+- Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
+
+- Added cfg.saveCellConns option to reduce save time and file size 
+
+- Modified code so 'cellModel' tag is optional
+
+- Added renameCellParamsSec() method to netParams class  
+
+- When importing cell global 'v_init' is stored as param for each section 
+
+- Fixed small bugs when loading saved model
+
+- Fixed bug when calling internal method _findPrePostCellsCondition()
+
+- Fixed bug in subcellConn groupedSynMechs
+
+- Fixed bug in subcellConn trying to add stims+conns to NetStims/VecStims
+
+- Fixed bug in subcellConn so syns are not placed at loc 0.0 or 1.0 (error if syn uses ion)
+
+
 # Version 0.6.7
 
 - Added gridSpacing option to create populations with cells placed in grid with fixed spacing

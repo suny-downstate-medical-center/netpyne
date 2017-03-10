@@ -75,6 +75,7 @@ Requires NEURON with Python and MPI support.
 * **netpyne/utils.py**: utility python methods (eg. to import cell parameters)
 
 
+Please cite as: "Salvador Dura-Bernal, Padraig Gleeson, Cliff C Kerr, Samuel Neymotin, William W Lytton. (2017). Neurosim-lab/NetPyNE: v0.6.7 [Data set]. Zenodo. http://doi.org/10.5281/zenodo.290623"
 
 For further information please contact: salvadordura@gmail.com 
 

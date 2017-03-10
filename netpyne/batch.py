@@ -59,6 +59,8 @@ class Batch(object):
         dataSave = {'batch': self.__dict__}
         if ext == 'json':
             import json
+            #from json import encoder
+            #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print('Saving batch to %s ... ' % (filename))
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
@@ -93,30 +95,43 @@ class Batch(object):
 
             # iterate over all param combinations
             if self.method == 'grid':
+                groupedParams = False
                 for p in self.params: 
-                    if 'group' not in p: p['group'] = False # by default set linear to False
+                    if 'group' not in p: 
+                        p['group'] = False # by default set linear to False
+                    elif 'group' == True: 
+                        groupedParams = True
 
                 labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
                 valueCombinations = list(product(*(valuesList)))
                 indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
 
-                # labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
-                # valueCombGroups = izip(*(valuesListGroup))
-                # indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                if groupedParams:
+                    labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
+                    valueCombGroups = izip(*(valuesListGroup))
+                    indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                else:
+                    valueCombGroups = [(0,)] # this is a hack -- improve!
+                    indexCombGroups = [(0,)]
 
             # if using pc bulletin board, initialize all workers
             if self.runCfg.get('type', None) == 'mpi':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            if 1:
-                for iComb, pComb in zip(indexCombinations, valueCombinations):
-            # for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
-            #     for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-            #         iComb = iCombG+iCombNG
-            #         pComb = pCombG+pCombNG
-            #         print iComb, pComb
-            #         continue
+            #if 1:
+                #for iComb, pComb in zip(indexCombinations, valueCombinations):
+
+            for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+                for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+                    if groupedParams: # temporary hack - improve
+                        iComb = iCombG+iCombNG
+                        pComb = pCombG+pCombNG
+                    else:
+                        iComb = iCombNG
+                        pComb = pCombNG
+                    
+                    print iComb, pComb
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
@@ -132,20 +147,22 @@ class Batch(object):
                             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
                         print str(paramLabel)+' = '+str(paramVal)
                         
-                    # save simConfig json to saveFolder
+                    # set simLabel and jobName
                     simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-                    self.cfg.simLabel = simLabel
-                    self.cfg.saveFolder = self.saveFolder
-                    cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
-                    self.cfg.save(cfgSavePath)
+                    jobName = self.saveFolder+'/'+simLabel  
 
                     # skip if output file already exists
-                    jobName = self.saveFolder+'/'+simLabel  
                     if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
                         print 'Skipping job %s since output file already exists...' % (jobName)
                     elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                         print 'Skipping job %s since cfg file already exists...' % (jobName)
                     else:
+                        # save simConfig json to saveFolder                        
+                        self.cfg.simLabel = simLabel
+                        self.cfg.saveFolder = self.saveFolder
+                        cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
+                        self.cfg.save(cfgSavePath)
+                        
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
 

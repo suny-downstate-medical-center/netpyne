@@ -2,13 +2,17 @@
 
 - Added option to run batch on HPC SLURM system (eg. SDSC Comet)
 
-- Added cvode_atol to cfg
+- Added cvode_atol option to cfg
 
 - Improved plotShape() to use matplotlib and use colormap to show num syns 
 
 - Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)
 
+- Batch params can now be grouped ('group':True) so values vary together not combinatorally
+
 - Removed pc.done() at the end of Batch.run() method so can run multiple batches from same script
+
+- Added skipCfg option to batch
 
 - Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
 
@@ -19,8 +23,6 @@
 - Added renameCellParamsSec() method to netParams class  
 
 - When importing cell global 'v_init' is stored as param for each section 
-
-- Added skipCfg option to batch
 
 - Fixed small bugs when loading saved model
 

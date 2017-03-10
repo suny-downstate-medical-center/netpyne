@@ -41,8 +41,8 @@ class Pop (object):
             if sim.nextHost>=sim.nhosts:
                 sim.nextHost=0
         
-        #if sim.cfg.verbose: 
-        print("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost))
+        if sim.cfg.verbose: 
+            print("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost))
         return hostCells
 
 

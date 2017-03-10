@@ -294,7 +294,7 @@ class Network (object):
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
-            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, allPopTags, subConnParam['preConds'], subConnParam['postConds'])
+            preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, subConnParam['preConds'], subConnParam['postConds'])
 
             if preCellsTags and postCellsTags:
                 # iterate over postsyn cells to redistribute synapses
@@ -316,9 +316,12 @@ class Network (object):
                                     iConn = iConn + 1
                                     if conn['synMech'] in subConnParam['groupSynMechs']:
                                         for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
-                                            connGroup = next(c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc'])
-                                            connGroup['synMech'] = '__grouped__'+connGroup['synMech']
-                                            connsGroup[iConn] = connGroup
+                                            connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)
+                                            try:
+                                                connGroup['synMech'] = '__grouped__'+connGroup['synMech']
+                                                connsGroup[iConn] = connGroup
+                                            except:
+                                                print '  Warning: Grouped synMechs %s not found' % (str(connGroup))
                         else:
                             conns = allConns
 
@@ -338,7 +341,15 @@ class Network (object):
                             somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
                             if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                                 fixedSomaY = subConnParam['density'].get('fixedSomaY')
+                                # print somaY
+                                # print fixedSomaY
+                                # print 'BEFORE:'
+                                # print gridY
                                 gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
+                                # print 'AFTER:'
+                                # print gridY
+                                # print gridSigma
+                                
                             if subConnParam['density']['type'] == '2Dmap': # 2D    
                                 gridX = [x - somaX for x in subConnParam['density']['gridX']] # center x at cell soma
                                 segNumSyn = self._interpolateSegmentSigma(postCell, secList, gridX, gridY, gridSigma) # move method to Cell!
@@ -367,6 +378,11 @@ class Network (object):
                                     sec = diffList[i][1]
                                     seg = diffList[i][2]
                                     segNumSyn[sec][seg] += 1
+
+                            # print segNumSyn
+                            # print totSyn
+                            # print scaleNumSyn
+                            # print totSynRescale
 
                             # convert to list so can serialize and save
                             subConnParam['density']['gridY'] = list(subConnParam['density']['gridY'])
@@ -401,6 +417,9 @@ class Network (object):
 
 
                         for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
+                            # avoid locs at 0.0 or 1.0 - triggers hoc error if syn needs an ion (eg. ca_ion)
+                            if newLoc == 0.0: newLoc = 0.00001 
+                            elif newLoc == 1.0: newLoc = 0.99999   
                             conn['sec'] = newSec
                             conn['loc'] = newLoc
 
@@ -468,7 +487,8 @@ class Network (object):
             self.subcellularConn(allCellTags, allPopTags)
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
-            for cell in sim.net.cells:    
+            cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
+            for cell in cellsUpdate:
                 # Add synMechs, stim and conn NEURON objects
                 cell.addStimsNEURONObj()
                 #cell.addSynMechsNEURONObj()

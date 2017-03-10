@@ -205,10 +205,10 @@ class CompartCell (Cell):
                             conditionsMet = 0
                             break
                     elif isinstance(condVal[0], basestring):
-                        if self.tags[condKey] not in condVal:
+                        if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
-                elif self.tags[condKey] != condVal: 
+                elif self.tags.get(condKey) != condVal: 
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -236,10 +236,10 @@ class CompartCell (Cell):
                         conditionsMet = 0
                         break
                 elif isinstance(condVal[0], basestring):
-                    if self.tags[condKey] not in condVal:
+                    if self.tags.get(condKey) not in condVal:
                         conditionsMet = 0
                         break 
-            elif self.tags[condKey] != condVal: 
+            elif self.tags.get(condKey) != condVal: 
                 conditionsMet = 0
                 break
 
@@ -346,7 +346,7 @@ class CompartCell (Cell):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName]: 
+            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] == None: 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
@@ -495,7 +495,7 @@ class CompartCell (Cell):
 
             netcon.weight[0] = conn['weight']
             netcon.delay = conn['delay']
-            netcon.threshold = conn['threshold']
+            netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
             conn['hNetcon'] = netcon
             
             # Add plasticity 
@@ -819,7 +819,7 @@ class CompartCell (Cell):
                             conditionsMet = 0
                             break
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if self.tags[condKey] not in condVal:
+                        if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
                     elif self.tags.get(condKey) != condVal: 

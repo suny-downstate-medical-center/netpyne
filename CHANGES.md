@@ -1,5 +1,7 @@
 # Version 0.6.8
 
+- Keep track of last host after distributing cells of each pop (improves load balance) (issues #41 #196)
+
 - Added option to run batch on HPC SLURM system (eg. SDSC Comet)
 
 - Added cvode_atol option to cfg

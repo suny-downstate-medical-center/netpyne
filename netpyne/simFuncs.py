@@ -41,6 +41,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
+    sim.nextHost = 0  # initialize next host 
     sim.timingData = Dict()  # dict to store timing
 
     sim.createParallelContext()  # iniitalize PC, nhosts and rank

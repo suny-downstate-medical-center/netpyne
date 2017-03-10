@@ -28,6 +28,24 @@ class Pop (object):
         self._setCellClass()
 
 
+    def _distributeCells(self, numCellsPop):
+            
+        hostCells = {}
+        for i in range(sim.nhosts):
+            hostCells[i] = []
+            
+        for i in range(numCellsPop):
+            hostCells[sim.nextHost].append(i)
+            
+            sim.nextHost+=1
+            if sim.nextHost>=sim.nhosts:
+                sim.nextHost=0
+        
+        #if sim.cfg.verbose: 
+        print("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost))
+        return hostCells
+
+
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
         # add individual cells
@@ -92,7 +110,7 @@ class Pop (object):
                 maxv = self.tags[coord+'normRange'][1] 
                 randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
 
-        for i in xrange(int(sim.rank), int(sim.net.params.scale * self.tags['numCells']), sim.nhosts):
+        for i in self._distributeCells(int(sim.net.params.scale * self.tags['numCells']))[sim.rank]:
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -202,7 +220,7 @@ class Pop (object):
 
         if sim.cfg.verbose and not funcLocs: print 'Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells'])
 
-        for i in xrange(int(sim.rank), self.tags['numCells'], sim.nhosts):
+        for i in self._distributeCells(self.tags['numCells'])[sim.rank]:
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -224,7 +242,7 @@ class Pop (object):
         ''' Create population cells based on list of individual cells'''
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
-        for i in xrange(int(sim.rank), len(self.tags['cellsList']), sim.nhosts):
+        for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
             #if 'cellModel' in self.tags['cellsList'][i]:
             #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid+i
@@ -269,7 +287,7 @@ class Pop (object):
 
         numCells = len(gridLocs)
 
-        for i in xrange(int(sim.rank), numCells, sim.nhosts):
+        for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific

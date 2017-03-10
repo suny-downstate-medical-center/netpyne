@@ -156,6 +156,8 @@ class Batch(object):
                         print 'Skipping job %s since output file already exists...' % (jobName)
                     elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                         print 'Skipping job %s since cfg file already exists...' % (jobName)
+                    elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
+                        print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
                     else:
                         # save simConfig json to saveFolder                        
                         self.cfg.simLabel = simLabel

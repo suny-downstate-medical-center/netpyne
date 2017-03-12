@@ -216,20 +216,20 @@ class Batch(object):
                             command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
 
                             jobString = """#!/bin/bash 
-                            #SBATCH --job-name=%s
-                            #SBATCH -A %s
-                            #SBATCH -t %s
-                            #SBATCH --nodes=%d
-                            #SBATCH --ntasks-per-node=%d
-                            #SBATCH -o %s.run
-                            #SBATCH -e %s.err
-                            #SBATCH --mail-user=%s
-                            #SBATCH --mail-type=end
+#SBATCH --job-name=%s
+#SBATCH -A %s
+#SBATCH -t %s
+#SBATCH --nodes=%d
+#SBATCH --ntasks-per-node=%d
+#SBATCH -o %s.run
+#SBATCH -e %s.err
+#SBATCH --mail-user=%s
+#SBATCH --mail-type=end
 
-                            source ~/.bashrc
-                            cd %s
-                            %s
-                            wait
+source ~/.bashrc
+cd %s
+%s
+wait
                             """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub

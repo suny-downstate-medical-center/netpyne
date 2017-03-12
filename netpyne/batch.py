@@ -19,11 +19,11 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # func needs to be outside of class
-def runJob(script, cfgSavePath):
+def runJob(script, cfgSavePath, netParamsSavePath):
     from subprocess import Popen, PIPE
 
     print '\nJob in rank id: ',pc.id()
-    command = 'nrniv %s simConfig=%s' % (script, cfgSavePath) 
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print command+'\n'
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
@@ -85,8 +85,8 @@ class Batch(object):
             os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
  
             # copy netParams source to folder
-            targetFile = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + targetFile) 
+            netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
 
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
@@ -178,7 +178,7 @@ class Batch(object):
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=1:ppn=%d'%(numproc)
                             
-                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  
 
                             output, input = popen2('qsub') # Open a pipe to the qsub command.
 
@@ -213,24 +213,24 @@ class Batch(object):
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             numproc = nodes*coresPerNode
-                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
 
                             jobString = """#!/bin/bash 
-#SBATCH --job-name=%s
-#SBATCH -A %s
-#SBATCH -t %s
-#SBATCH --nodes=%d
-#SBATCH --ntasks-per-node=%d
-#SBATCH -o %s.run
-#SBATCH -e %s.err
-#SBATCH --mail-user=%s
-#SBATCH --mail-type=end
+                            #SBATCH --job-name=%s
+                            #SBATCH -A %s
+                            #SBATCH -t %s
+                            #SBATCH --nodes=%d
+                            #SBATCH --ntasks-per-node=%d
+                            #SBATCH -o %s.run
+                            #SBATCH -e %s.err
+                            #SBATCH --mail-user=%s
+                            #SBATCH --mail-type=end
 
-source ~/.bashrc
-cd %s
-%s
-wait
-"""                       % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+                            source ~/.bashrc
+                            cd %s
+                            %s
+                            wait
+                            """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             # output, input = popen2('sbatch') # Open a pipe to the qsub command.
@@ -253,7 +253,7 @@ wait
                             jobName = self.saveFolder+'/'+simLabel     
                             print 'Submitting job ',jobName
                             # master/slave bulletin board schedulling of jobs
-                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
+                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
             # wait for pc bulletin board jobs to finish
             try:

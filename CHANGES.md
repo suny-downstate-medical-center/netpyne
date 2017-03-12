@@ -2,6 +2,8 @@
 
 - Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
 
+- Option to specify netParams .py file for batch 
+
 # Version 0.6.8
 
 - Keep track of last host after distributing cells of each pop (improves load balance) (issues #41 #196)

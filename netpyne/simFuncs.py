@@ -14,6 +14,7 @@ __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replac
 'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
 
 import sys
+import os
 from time import time
 from datetime import datetime
 import cPickle as pk
@@ -562,7 +563,12 @@ def readCmdLineArgs ():
             __main__.cfg = cfg
         elif arg.startswith('netParams='):  
             netParamsPath = arg.split('netParams=')[1]
-            netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+            if netParamsPath.endswith('.json'):
+                netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+            elif netParamsPath.endswith('py'):
+                netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
+                netParams = netParamsModule.netParams
+                print 'Importing netParams from %s' %(netParamsPath)
 
     if not cfgPath:
         try:

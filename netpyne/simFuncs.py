@@ -14,6 +14,7 @@ __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replac
 'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
 
 import sys
+import os
 from time import time
 from datetime import datetime
 import cPickle as pk
@@ -41,6 +42,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
+    sim.nextHost = 0  # initialize next host 
     sim.timingData = Dict()  # dict to store timing
 
     sim.createParallelContext()  # iniitalize PC, nhosts and rank
@@ -561,7 +563,12 @@ def readCmdLineArgs ():
             __main__.cfg = cfg
         elif arg.startswith('netParams='):  
             netParamsPath = arg.split('netParams=')[1]
-            netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+            if netParamsPath.endswith('.json'):
+                netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
+            elif netParamsPath.endswith('py'):
+                netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
+                netParams = netParamsModule.netParams
+                print 'Importing netParams from %s' %(netParamsPath)
 
     if not cfgPath:
         try:
@@ -729,6 +736,8 @@ def preRun ():
     else:
         h.cvode.cache_efficient(0)
 
+    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+
     # set h global params
     sim.setGlobals()  
 
@@ -842,6 +851,11 @@ def gatherData ():
         for cell in sim.net.cells:
             cell.secs = None
             cell.secLists = None
+
+    # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    if not sim.cfg.saveCellConns:  
+        for cell in sim.net.cells:
+            cell.conns = []
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 

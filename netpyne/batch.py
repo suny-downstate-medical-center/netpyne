@@ -19,11 +19,11 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # func needs to be outside of class
-def runJob(script, cfgSavePath):
+def runJob(script, cfgSavePath, netParamsSavePath):
     from subprocess import Popen, PIPE
 
     print '\nJob in rank id: ',pc.id()
-    command = 'nrniv %s simConfig=%s' % (script, cfgSavePath) 
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print command+'\n'
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
@@ -31,15 +31,18 @@ def runJob(script, cfgSavePath):
 
 class Batch(object):
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py'):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.netParamsFile = netParamsFile
-        self.params = []
         self.saveFolder = '/'+self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
-
+        self.params = []
+        if params:
+            for k,v in params.iteritems():
+                self.params.append({'label': k, 'values': v})
+    
     def save(self, filename):
         import os
         basename = os.path.basename(filename)
@@ -56,6 +59,8 @@ class Batch(object):
         dataSave = {'batch': self.__dict__}
         if ext == 'json':
             import json
+            #from json import encoder
+            #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print('Saving batch to %s ... ' % (filename))
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
@@ -80,8 +85,8 @@ class Batch(object):
             os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
  
             # copy netParams source to folder
-            targetFile = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + targetFile) 
+            netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
 
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
@@ -90,30 +95,43 @@ class Batch(object):
 
             # iterate over all param combinations
             if self.method == 'grid':
+                groupedParams = False
                 for p in self.params: 
-                    if 'group' not in p: p['group'] = False # by default set linear to False
+                    if 'group' not in p: 
+                        p['group'] = False # by default set linear to False
+                    elif 'group' == True: 
+                        groupedParams = True
 
                 labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
                 valueCombinations = list(product(*(valuesList)))
                 indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
 
-                # labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
-                # valueCombGroups = izip(*(valuesListGroup))
-                # indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                if groupedParams:
+                    labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
+                    valueCombGroups = izip(*(valuesListGroup))
+                    indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                else:
+                    valueCombGroups = [(0,)] # this is a hack -- improve!
+                    indexCombGroups = [(0,)]
 
             # if using pc bulletin board, initialize all workers
             if self.runCfg.get('type', None) == 'mpi':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            if 1:
-                for iComb, pComb in zip(indexCombinations, valueCombinations):
-            # for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
-            #     for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-            #         iComb = iCombG+iCombNG
-            #         pComb = pCombG+pCombNG
-            #         print iComb, pComb
-            #         continue
+            #if 1:
+                #for iComb, pComb in zip(indexCombinations, valueCombinations):
+
+            for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+                for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+                    if groupedParams: # temporary hack - improve
+                        iComb = iCombG+iCombNG
+                        pComb = pCombG+pCombNG
+                    else:
+                        iComb = iCombNG
+                        pComb = pCombNG
+                    
+                    print iComb, pComb
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
@@ -129,18 +147,24 @@ class Batch(object):
                             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
                         print str(paramLabel)+' = '+str(paramVal)
                         
-                    # save simConfig json to saveFolder
+                    # set simLabel and jobName
                     simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-                    self.cfg.simLabel = simLabel
-                    self.cfg.saveFolder = self.saveFolder
-                    cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
-                    self.cfg.save(cfgSavePath)
+                    jobName = self.saveFolder+'/'+simLabel  
 
                     # skip if output file already exists
-                    jobName = self.saveFolder+'/'+simLabel  
                     if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
                         print 'Skipping job %s since output file already exists...' % (jobName)
+                    elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
+                        print 'Skipping job %s since cfg file already exists...' % (jobName)
+                    elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
+                        print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
                     else:
+                        # save simConfig json to saveFolder                        
+                        self.cfg.simLabel = simLabel
+                        self.cfg.saveFolder = self.saveFolder
+                        cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
+                        self.cfg.save(cfgSavePath)
+                        
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
 
@@ -154,7 +178,7 @@ class Batch(object):
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=1:ppn=%d'%(numproc)
                             
-                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  
 
                             output, input = popen2('qsub') # Open a pipe to the qsub command.
 
@@ -174,13 +198,62 @@ class Batch(object):
                             print jobString+'\n'
                             input.close()
 
+                                                # hpc torque job submission
+                        elif self.runCfg.get('type',None) == 'hpc_slurm':
+
+                            # read params or set defaults
+                            sleepInterval = self.runCfg.get('sleepInterval', 1)
+                            sleep(sleepInterval)
+                            
+                            allocation = self.runCfg.get('allocation', 'csd403') # NSG account
+                            nodes = self.runCfg.get('nodes', 1)
+                            coresPerNode = self.runCfg.get('coresPerNode', 1)
+                            email = self.runCfg.get('email', 'a@b.c')
+                            folder = self.runCfg.get('folder', '.')
+                            script = self.runCfg.get('script', 'init.py')
+                            walltime = self.runCfg.get('walltime', '00:30:00')
+                            numproc = nodes*coresPerNode
+                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
+
+                            jobString = """#!/bin/bash 
+#SBATCH --job-name=%s
+#SBATCH -A %s
+#SBATCH -t %s
+#SBATCH --nodes=%d
+#SBATCH --ntasks-per-node=%d
+#SBATCH -o %s.run
+#SBATCH -e %s.err
+#SBATCH --mail-user=%s
+#SBATCH --mail-type=end
+
+source ~/.bashrc
+cd %s
+%s
+wait
+                            """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+
+                            # Send job_string to qsub
+                            # output, input = popen2('sbatch') # Open a pipe to the qsub command.
+                            # input.write(jobString)
+                            print 'Submitting job ',jobName
+                            print jobString+'\n'
+                            # input.close()
+
+                            batchfile = '%s.sbatch'%(jobName)
+                            with open(batchfile, 'w') as text_file:
+                                text_file.write("%s" % jobString)
+
+                            #subprocess.call
+                            output, pinput = popen2('sbatch '+batchfile) # Open a pipe to the qsub command.
+                            pinput.close()
+
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                         elif self.runCfg.get('type',None) == 'mpi':
                             jobName = self.saveFolder+'/'+simLabel     
                             print 'Submitting job ',jobName
                             # master/slave bulletin board schedulling of jobs
-                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
+                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
             # wait for pc bulletin board jobs to finish
             try:

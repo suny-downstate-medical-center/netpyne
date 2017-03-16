@@ -6,6 +6,8 @@
 
 - Modified hpc_torque batch to accept nodes and ppn
 
+- Fixed bug in plotConn bar graphs
+
 # Version 0.6.8
 
 - Keep track of last host after distributing cells of each pop (improves load balance) (issues #41 #196)

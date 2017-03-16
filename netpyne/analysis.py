@@ -1426,9 +1426,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             SBG = stackedBarGraph.StackedBarGrapher()
     
             fig = plt.figure(figsize=figSize)
-            ax = fig.add_plt.subplot(111)
-            SBG.stackedBarplt.plot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
-            title ('Connection '+feature+' stacked bar graph')
+            ax = fig.add_subplot(111)
+            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
+            plt.title ('Connection '+feature+' stacked bar graph')
             plt.legend(popsPre)
             plt.tight_layout()
 

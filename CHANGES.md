@@ -2,7 +2,9 @@
 
 - Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
 
-- Option to specify netParams .py file for batch 
+- Added option to specify netParams .py file for batch 
+
+- Modified hpc_torque batch to accept nodes and ppn
 
 # Version 0.6.8
 

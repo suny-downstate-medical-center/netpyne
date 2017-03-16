@@ -69,6 +69,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 def setNet (net):
     sim.net = net
 
+
 ###############################################################################
 # Set network params to use in simulation
 ###############################################################################

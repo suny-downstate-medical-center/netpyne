@@ -25,7 +25,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellmodel': 'HH', 'cellType': 'PYR', 'numCells': 100} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -49,7 +49,7 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel'
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
-    'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'preConds': {'popLabel': 'PYT'}, 'postConds': {'popLabel': 'PYR'},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold

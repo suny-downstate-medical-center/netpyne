@@ -929,6 +929,10 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                         if 'weightNorm' in sec:
                             secs.append(sec['hSec'])
                             cvals.extend(sec['weightNorm'])
+
+                cvals = np.array(cvals)
+                cvals = cvals/min(cvals)
+
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
@@ -940,13 +944,14 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
-            cvals = np.array(cvals)
+                cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
         if not includeAxon:         
-            secs = [sec for sec in secs if 'axon' not in secs.hname()]
+            secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
+        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
         fig=plt.figure(figsize=(10,10))
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
@@ -956,11 +961,11 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
         cmap=plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if cvals and len(cvals)>0: 
+        if not cvals==None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label('number of synapses', rotation=90)
+            cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'

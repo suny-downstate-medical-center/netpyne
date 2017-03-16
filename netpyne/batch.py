@@ -177,7 +177,7 @@ class Batch(object):
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
-                            nodesppn = 'nodes=$d:ppn=%d'%(nodes,ppn)
+                            nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                             numproc = nodes*ppn
                             
                             command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  

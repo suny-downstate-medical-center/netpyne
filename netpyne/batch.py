@@ -172,11 +172,13 @@ class Batch(object):
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
                             sleep(sleepInterval)
                             
-                            numproc = self.runCfg.get('numproc', 1)
+                            nodes = self.runCfg.get('nodes', 1)
+                            ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
-                            nodesppn = 'nodes=1:ppn=%d'%(numproc)
+                            nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
+                            numproc = nodes*ppn
                             
                             command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  
 

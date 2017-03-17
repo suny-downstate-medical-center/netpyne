@@ -25,11 +25,11 @@ warnings.filterwarnings("ignore")
 colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5],
+            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10],
             [0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]] 
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -929,6 +929,10 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                         if 'weightNorm' in sec:
                             secs.append(sec['hSec'])
                             cvals.extend(sec['weightNorm'])
+
+                cvals = np.array(cvals)
+                cvals = cvals/min(cvals)
+
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
@@ -940,13 +944,14 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
-            cvals = np.array(cvals)
+                cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
         if not includeAxon:         
-            secs = [sec for sec in secs if 'axon' not in secs.hname()]
+            secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
+        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
         fig=plt.figure(figsize=(10,10))
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
@@ -956,11 +961,11 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
         cmap=plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if cvals and len(cvals)>0: 
+        if not cvals==None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label('number of synapses', rotation=90)
+            cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'
@@ -1421,9 +1426,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             SBG = stackedBarGraph.StackedBarGrapher()
     
             fig = plt.figure(figsize=figSize)
-            ax = fig.add_plt.subplot(111)
-            SBG.stackedBarplt.plot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
-            title ('Connection '+feature+' stacked bar graph')
+            ax = fig.add_subplot(111)
+            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
+            plt.title ('Connection '+feature+' stacked bar graph')
             plt.legend(popsPre)
             plt.tight_layout()
 

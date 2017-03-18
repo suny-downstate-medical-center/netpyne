@@ -8,6 +8,8 @@
 
 - Fixed bug in plotConn bar graphs
 
+- Fixed bug: missing hRandom for NetStim populations
+
 
 # Version 0.6.8
 

@@ -1149,7 +1149,8 @@ class PointCell (Cell):
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
-        self.params = deepcopy(self.tags.pop('params'))
+        if 'params' in self.tags:
+            self.params = deepcopy(self.tags.pop('params'))
 
         if create and sim.cfg.createNEURONObj:
             self.createNEURONObj()  # create cell 
@@ -1181,8 +1182,10 @@ class PointCell (Cell):
             except:
                 pass
 
-        # set number and seed for NetStims
+        # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
+            rand = h.Random()
+            self.hRandom = rand 
             if 'number' not in self.params:
                 params['number'] = 1e9 
                 setattr(self.hPointp, 'number', params['number']) 

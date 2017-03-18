@@ -149,9 +149,21 @@ def loadNet (filename, data=None, instantiate=True):
                     # create new CompartCell object and add attributes, but don't create sections or associate gid yet
                     # TO DO: assumes CompartCell -- add condition to load PointCell
                     cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
-                    cell.secs = Dict(cellLoad['secs'])
-                    cell.conns = [Dict(conn) for conn in cellLoad['conns']]
-                    cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                    try:
+                        cell.secs = Dict(cellLoad['secs'])
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell secs' 
+
+                    try:
+                        cell.conns = [Dict(conn) for conn in cellLoad['conns']]
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell conns' 
+
+                    try:
+                        cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell stims' 
+
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))
                 print('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
@@ -168,8 +180,11 @@ def loadNet (filename, data=None, instantiate=True):
                     # create all NEURON Netcons, NetStims, etc
                     sim.pc.barrier()
                     for cell in sim.net.cells:
-                        cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
-                        cell.addConnsNEURONObj()
+                        try:
+                            cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                            cell.addConnsNEURONObj()
+                        except:
+                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims' 
 
                     print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
 

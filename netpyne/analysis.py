@@ -539,11 +539,11 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            title (str(subset), fontsize=fontsiz)
+            plt.title (str(subset), fontsize=fontsiz)
             color = 'blue'
    
         if graphType == 'line':
-            plot (histoT, histoCount, linewidth=1.0, color = color)
+            plt.plot (histoT, histoCount, linewidth=1.0, color = color)
         elif graphType == 'bar':
             plt.bar(histoT, histoCount, width = binSize, color = color)
 
@@ -956,7 +956,7 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
-        shapeax.dist=0.8*shapeax.dist
+        shapeax.dist=0.6*shapeax.dist
         plt.axis('equal')
         cmap=plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
@@ -974,7 +974,8 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
                   
-        plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+        #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+        shapeax.set_xticklabels([])
 
         # save figure
         if saveFig: 

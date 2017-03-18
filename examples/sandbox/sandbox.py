@@ -32,7 +32,7 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 1.0*1e3 # Duration of the simulation, in ms
+simConfig.duration = 1.5*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
@@ -42,7 +42,7 @@ simConfig.verbose = 0 #False  # show detailed messages
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
 
 # # Analysis and plotting 
-simConfig.analysis['plotRaster'] = {'figSize': (20,8)} #True
+#simConfig.analysis['plotRaster'] = {'figSize': (20,8)} #True
 #simConfig.analysis['plot2Dnet'] = True
 
 
@@ -60,12 +60,13 @@ netParams.sizeZ = 20
 # Population parameters
 #netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
 #netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
-netParams.popParams['artifVec'] = {'cellModel': 'NetStim', 'numCells': 100, 'interval': 100, 'noise': 0.5, 'start': 50}  # pop of NetStims
+netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 1, 'interval': 100, 'noise': 0.5, 'start': 50, 
+    'pulses':[{'start': 1000, 'end': 1400, 'rate': 100, 'noise': 0.5}]}  # pop of NetStims
 # netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
 #    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
 
 # Synaptic mechanism parameters
-netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+# netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 
 
 # Stimulation parameters
@@ -75,11 +76,11 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 # Cell parameters
 ## PYR cell properties
-cellParams = Dict()
-cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
-cellParams.conds = {'cellType': 'PYR'}
-netParams.cellParams['PYR'] = cellParams
+# cellParams = Dict()
+# cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+# cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+# cellParams.conds = {'cellType': 'PYR'}
+# netParams.cellParams['PYR'] = cellParams
 
 
 # # Connections
@@ -112,6 +113,8 @@ netParams.cellParams['PYR'] = cellParams
 ###############################################################################
 
 sim.createSimulateAnalyze()
+
+
 #sim.create()
 #sim.gatherData()
 

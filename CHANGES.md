@@ -10,6 +10,8 @@
 
 - Fixed bug: missing hRandom for NetStim populations
 
+- Fixed bug: VectStim generation spike generation now reproducible for different durations
+
 
 # Version 0.6.8
 

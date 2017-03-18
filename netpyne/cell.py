@@ -1211,6 +1211,9 @@ class PointCell (Cell):
 
             # fixed interval of duration (1 - noise)*interval 
             fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+            numSpks = len(fixedInterval)
+
+            maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
             # randomize the first spike so on average it occurs at start + noise*interval
             # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
@@ -1221,11 +1224,39 @@ class PointCell (Cell):
                 # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                 rand = h.Random()
                 rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
-                vec = h.Vector(len(fixedInterval))
-                rand.negexp(noise*interval)
-                vec.setrand(rand)
-                negexpInterval = np.array(vec) 
-                spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise)) 
+
+                # Method 1: vec length depends on duration -- not reproducible
+                # vec = h.Vector(numSpks)
+                # rand.negexp(noise*interval)
+                # vec.setrand(rand)
+                # negexpInterval= np.array(vec)                     
+                # #print negexpInterval
+                # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                if numSpks < 100:
+                    # Method 2: vec length=1, slower but reproducible
+                    vec = h.Vector(1) 
+                    rand.negexp(noise*interval)
+                    negexpInterval = []
+                    for i in range(numSpks):
+                        vec.setrand(rand)
+                        negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
+                    spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
+
+                elif numSpks < maxReproducibleSpks:
+                    # Method 3: vec length=maxReproducibleSpks, then select subset; slower but reproducible
+                    vec = h.Vector(maxReproducibleSpks)
+                    rand.negexp(noise*interval)
+                    vec.setrand(rand)
+                    negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
+                    spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                else:
+                    print '\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks)
+                    import sys
+                    sys.exit() 
+
+                print spkTimes
 
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
@@ -1251,6 +1282,7 @@ class PointCell (Cell):
 
                         # fixed interval of duration (1 - noise)*interval 
                         fixedInterval = np.full(((1+1.5*noise)*(end-start)/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                        numSpks = len(fixedInterval)
 
                         # randomize the first spike so on average it occurs at start + noise*interval
                         # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
@@ -1263,11 +1295,23 @@ class PointCell (Cell):
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
                             rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
-                            vec = h.Vector(len(fixedInterval))
+                            
+                            # Method 1: vec length depends on duration -- not reproducible
+                            # vec = h.Vector(len(fixedInterval))
+                            # rand.negexp(noise*interval)
+                            # vec.setrand(rand)
+                            # negexpInterval = np.array(vec) 
+                            # pulseSpikes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                            # Method 2: vec length=1, slower but reproducible
+                            vec = h.Vector(1) 
                             rand.negexp(noise*interval)
-                            vec.setrand(rand)
-                            negexpInterval = np.array(vec) 
-                            pulseSpikes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+                            negexpInterval = []
+                            for i in range(numSpks):
+                                vec.setrand(rand)
+                                negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                    
+                            pulseSpikes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
+     
                             pulseSpikes[pulseSpikes < start] = start
                             spkTimes = np.append(spkTimes, pulseSpikes[pulseSpikes <= end])
 

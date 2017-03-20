@@ -1256,8 +1256,6 @@ class PointCell (Cell):
                     import sys
                     sys.exit() 
 
-                print spkTimes
-
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
                 for pulse in self.params['pulses']:

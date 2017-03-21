@@ -12,6 +12,8 @@
 
 - Fixed bug: VectStim spike generation now reproducible for different durations
 
+- Fixed bug in batch grouped params
+
 
 # Version 0.6.8
 

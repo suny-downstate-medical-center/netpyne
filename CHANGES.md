@@ -14,6 +14,8 @@
 
 - Fixed bug in batch grouped params
 
+- Fixed bug: getCellsList() only checked for tuples but when load from json converted to list
+
 
 # Version 0.6.8
 

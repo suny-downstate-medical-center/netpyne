@@ -683,7 +683,7 @@ def getCellsList (include):
             cellGids.extend(list(sim.net.pops[condition].cellGids)) 
             #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         
-        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+        elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])

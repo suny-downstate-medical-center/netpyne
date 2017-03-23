@@ -503,7 +503,7 @@ class CompartCell (Cell):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
 
-    def associateGid (self, threshold = 10.0):
+    def associateGid (self, threshold = None):
         if self.secs:
             if sim.cfg.createNEURONObj: 
                 sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -521,6 +521,7 @@ class CompartCell (Cell):
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
                 del nc # discard netcon
@@ -1320,13 +1321,14 @@ class PointCell (Cell):
             self.hPointp.play(self.hSpkTimes.from_python(spkTimes))
 
 
-    def associateGid (self, threshold = 10.0):
+    def associateGid (self, threshold = None):
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
                 nc = h.NetCon(self.hPointp.__getattribute__('_ref_'+self.tags['vref']), None)
             else:
                 nc = h.NetCon(self.hPointp, None)
+            threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
             nc.threshold = threshold
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
             del nc # discard netcon

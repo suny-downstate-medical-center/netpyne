@@ -16,6 +16,7 @@
 
 - Fixed bug: getCellsList() only checked for tuples but when load from json converted to list
 
+- Fixed bug so cell treshold is set by default to sim.net.defaultThreshold
 
 # Version 0.6.8
 

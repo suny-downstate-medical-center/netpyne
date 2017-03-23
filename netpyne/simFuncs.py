@@ -652,7 +652,7 @@ def setupRecording ():
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
 
         #print cellsPlot
-        print [c.gid for c in cellsRecord]
+        #print [c.gid for c in cellsRecord]
 
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
@@ -671,6 +671,8 @@ def getCellsList (include):
     else:
         allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
 
+    print sim.rank, len(allCellTags), allCellTags.keys()[0], allCellTags.keys()[-1]
+     
     cellGids = []
     cells = []
     for condition in include:
@@ -688,7 +690,7 @@ def getCellsList (include):
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
             cellsPop.sort()
-            print sim.rank,condition[0],cellsPop[0], cellsPop[-1]
+            #print sim.rank,condition[0],cellsPop[0], cellsPop[-1]
 
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])

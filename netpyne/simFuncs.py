@@ -28,7 +28,6 @@ import sim, specs
 
 
 
-
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
@@ -652,6 +651,9 @@ def setupRecording ():
         # get actual cell objects to record from, both from recordCell and plotCell lists
         cellsRecord = getCellsList(sim.cfg.recordCells)+cellsPlot
 
+        #print cellsPlot
+        print [c.gid for c in cellsRecord]
+
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
     
@@ -685,6 +687,8 @@ def getCellsList (include):
         
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
+            #print sim.rank,condition[0],cellsPop
+
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):

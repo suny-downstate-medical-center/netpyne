@@ -687,7 +687,7 @@ def getCellsList (include):
         
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
-            #print sim.rank,condition[0],cellsPop
+            print sim.rank,condition[0],cellsPop[0], cellsPop[-1]
 
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])

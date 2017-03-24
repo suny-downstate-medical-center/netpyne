@@ -666,13 +666,13 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList (include):
-    if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
+    if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells 
         allCellTags = sim._gatherAllCellTags()  
     else:
         allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
 
     print sim.rank, len(allCellTags), allCellTags.keys()[0], allCellTags.keys()[-1]
-     
+
     cellGids = []
     cells = []
     for condition in include:

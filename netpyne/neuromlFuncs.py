@@ -637,6 +637,7 @@ if neuromlExists:
 
         gids = OrderedDict()
         next_gid = 0
+        stochastic_input_count = 0
 
         def __init__(self, netParams, verbose = False):
             self.netParams = netParams
@@ -701,6 +702,9 @@ if neuromlExists:
             popInfo['cellModel'] = component
             popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from abstract cells
             popInfo['cellsList'] = []
+            
+            if population_id=='pop':
+                print("\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors!\n*****************************\n\n")
 
             self.popParams[population_id] = popInfo
 
@@ -820,8 +824,6 @@ if neuromlExists:
                             cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
-                    raise Exception("<channelDensityNernst> not yet supported!")
-                
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
@@ -1022,10 +1024,19 @@ if neuromlExists:
         def handleInputList(self, inputListId, population_id, component, size, input_comp_obj=None):
             DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
             
+            import neuroml
             
-            self.popStimSources[inputListId] = {'label': inputListId, 'type': component}
+            format = 'NeuroML2'
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
+                format = 'NeuroML2_stochastic_input'
+            self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
                         'conds': {'popLabel':population_id}}
+                        
+            
+            if component=='IClamp':
+                print("\n\n*****************************\nReconsider calling your input 'IClamp' in NeuroML; it leads to some errors due to clash with native NEURON IClamp!\n*****************************\n\n")
+                exit()
             
             # TODO: build just one stimLists/stimSources entry for the inputList
             # Issue: how to specify the sec/loc per individual stim??
@@ -1052,7 +1063,13 @@ if neuromlExists:
             
             stimId = "%s_%s_%s_%s_%s_%s"%(inputListId, id,pop_id,cellId,nrn_sec,(str(fract)).replace('.','_'))
             
-            self.stimSources[stimId] = {'label': stimId, 'type': self.popStimSources[inputListId]['type']}
+            self.stimSources[stimId] = {'label': stimId, 
+                                        'type': self.popStimSources[inputListId]['type'], 
+                                        'originalFormat': self.popStimSources[inputListId]['originalFormat']}
+            if self.popStimSources[inputListId]['originalFormat'] == 'NeuroML2_stochastic_input':
+                self.stimSources[stimId]['stim_count'] = self.stochastic_input_count
+                self.stochastic_input_count +=1
+                
             self.stimLists[stimId] = {'source': stimId, 
                         'sec':nrn_sec, 
                         'loc': nrn_fract, 
@@ -1098,7 +1115,7 @@ if neuromlExists:
 
             nmlHandler.finalise()
 
-            print('Finished import: %s'%nmlHandler.gids)
+            print('Finished import of NeuroML2; populations vs gids NML has calculated: %s'%nmlHandler.gids)
             #print('Connections: %s'%nmlHandler.connections)
 
         if fileName.endswith(".h5"):
@@ -1124,16 +1141,15 @@ if neuromlExists:
 
         #pp.pprint(netParams)
         #pp.pprint(simConfig)
-
         sim.net.createPops()  
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
 
 
         # Check gids equal....
         for popLabel,pop in sim.net.pops.iteritems():
-            #print("%s: %s, %s"%(popLabel,pop, pop.cellGids))
+            if sim.cfg.verbose: print("gid: %s: %s, %s"%(popLabel,pop, pop.cellGids))
             for gid in pop.cellGids:
-                assert(gid in nmlHandler.gids[popLabel])
+                assert gid in nmlHandler.gids[popLabel]
             
         for proj_id in nmlHandler.projection_infos.keys():
             projName, prePop, postPop, synapse, ptype = nmlHandler.projection_infos[proj_id]

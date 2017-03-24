@@ -966,7 +966,7 @@ class CompartCell (Cell):
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
                 
         else:
-            if sim.cfg.verbose: print('Adding exotic stim (NeuroML2 based?): %s'% params['type'])   
+            if sim.cfg.verbose: print('Adding exotic stim (NeuroML 2 based?): %s'% params)   
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -975,6 +975,16 @@ class CompartCell (Cell):
                     print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
+                elif 'originalFormat' in params:
+                    if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
+                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                        rand = h.Random()
+                        rand.Random123(params['stim_count'], sim.id32('%d'%(sim.cfg.seeds['stim'])))
+                        rand.negexp(1)
+                        stim.noiseFromRandom(rand)
+                        self.stims.append(Dict())  # add new stim to Cell object
+                        randContainer = self.stims[-1]
+                        randContainer['NeuroML2_stochastic_input_rand'] = rand 
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
@@ -1443,7 +1453,6 @@ class NML2SpikeSource (CompartCell):
     '''
         
     def associateGid (self, threshold = 10.0):
-        print("associateGid... %s, %s"%(self.gid,self.tags))
         
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -1455,4 +1464,15 @@ class NML2SpikeSource (CompartCell):
             del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+        
+    def initRandom(self):
+        
+        rand = h.Random()
+        self.stims.append(Dict())  # add new stim to Cell object
+        randContainer = self.stims[-1]
+        randContainer['hRandom'] = rand 
+        seed = sim.cfg.seeds['stim']
+        randContainer['seed'] = seed 
+        self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

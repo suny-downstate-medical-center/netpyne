@@ -58,4 +58,4 @@ simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cel
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
-# import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

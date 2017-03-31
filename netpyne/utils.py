@@ -10,8 +10,12 @@ from numbers import Number
 from neuron import h
 h.load_file("stdrun.hoc") 
 
-
+# get section name
 def getSecName (sec, dirCellSecNames = None):
+    ''' Function: Get Section name. NAme could be delimited by >, ., or listed as an array.
+    Input: section, dirCellSecNames (optional)
+    output: section name'''
+    
     if dirCellSecNames is None: dirCellSecNames = {}
 
     if '>.' in sec.name():
@@ -31,7 +35,9 @@ def getSecName (sec, dirCellSecNames = None):
         secName = dirCellSecNames[secName]
     return secName
 
+# import cell params
 def importCellParams (fileName, labels, values, key = None):
+    ''' Funtion: Import cell paraemter module dynamically'''
     params = {}
     if fileName.endswith('.py'):
         try:
@@ -226,6 +232,26 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
 
 
 def getCellParams(cell, varList, origGlob):
+    
+    ''' Gets the cell parameters.
+    
+    This methods gets all the cell parameters and 
+
+    input: cell 
+           varlist
+           origGlob
+    
+    output: secDic - Dictionary of sections
+            secListDic - Dictionary of section lists
+            synMechs
+            globs
+        
+    example: 
+
+    TODO:Refactor code to make it smaller.
+    NOTE:  
+    '''      
+    
     dirCell = dir(cell)
 
     if 'all_sec' in dirCell:

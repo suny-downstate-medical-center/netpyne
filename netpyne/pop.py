@@ -20,7 +20,9 @@ import sim
 ###############################################################################
 
 class Pop (object):
+
     ''' Python class used to instantiate the network population '''
+
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['popLabel'] = label
@@ -29,7 +31,18 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
+        
+        ''' Private method for distributing cells in hosts. 
+        
+        input: numCellsPop - number of cells in population 
+        
+        output: 
             
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''                     
         hostCells = {}
         for i in range(sim.nhosts):
             hostCells[i] = []
@@ -48,6 +61,19 @@ class Pop (object):
 
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
+        
+        ''' Function to instantiate Cell objects based on the characteristics of this population
+        This method creates cells based on fixed number of cells (if numCells in tags), or creates cells based on density (if density in tags) or on gridspacing.
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''                     
+        
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -72,9 +98,30 @@ class Pop (object):
 
         return cells
 
-
     def createCellsFixedNum (self):
-        ''' Create population cells based on fixed number of cells'''
+        
+        ''' Create population cells based on fixed number of cells
+        
+        Cells are created based on geometry specified. 
+        If cylinder use the x,z random values: 
+            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
+        If ellipsoid use the x,y,z random values 
+            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
+            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
+        
+        If user provided absolute range, convert to normalized, if normalized range, rescale random locations. Cells are distributed in the grid. Copy all pop tags to cell tags, except those that are pop-specific.
+        
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''
         cells = []
         seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
         randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
@@ -128,7 +175,30 @@ class Pop (object):
 
                 
     def createCellsDensity (self):
-        ''' Create population cells based on density'''
+
+        ''' Create population cells based on fixed number of cells
+        
+        Cells are created based on geometry specified. 
+        If cylinder use the x,z random values: 
+            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
+        If ellipsoid use the x,y,z random values 
+            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
+            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
+        
+        If user provided absolute range, convert to normalized, if normalized range, rescale random locations. Cells are distributed in the grid. Copy all pop tags to cell tags, except those that are pop-specific.
+        
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''
+        
         cells = []
         shape = sim.net.params.shape
         sizeX = sim.net.params.sizeX

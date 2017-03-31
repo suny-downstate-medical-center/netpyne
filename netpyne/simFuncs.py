@@ -27,12 +27,19 @@ from neuron import h, init # Import NEURON
 import sim, specs
 
 
-
-
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
+    '''
+    Initialize the network and simulation config params.
+    This method also creates parallel context, sets network.
+    Input: netParams - network parameters, optional
+           simParams - simulation parameters, optional
+           .
+           net
+    Output: None
+    '''
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
@@ -129,6 +136,22 @@ def loadNetParams (filename, data=None, setLoaded=True):
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
 def loadNet (filename, data=None, instantiate=True):
+    
+    ''' Method to load the cells and populations from file and create the NEURON objects.
+    
+    This method loads the net from a config file. It also calculates cells to instantiate in a node if instantiate = true. It also creates new CompartCell objects and add attributes. The method creates NEURON objs, if there is Python struc (fix so minimal Python struct is created). Aubsequently, the mehod creates NEURON sections, mechs, syns, etc; and associate gid and creates all NEURON Netcons, NetStims, etc.
+    
+    input: fileName - name of input file
+           figData - figure data
+           instantiate - boolean, whether cells are to be instantiated in the node. 
+    output: None.
+        
+    example: loadNet(fileName = 'netData.json', data = None) to load network from a JSON file. 
+
+    TODO: assumes CompartCell -- add condition to load PointCell PyStruct is created only if requested. 
+    NOTE: 
+    '''  
+    
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         if sim.rank == 0:
@@ -183,6 +206,21 @@ def loadNet (filename, data=None, instantiate=True):
 # Load simulation config from file
 ###############################################################################
 def loadSimCfg (filename, data=None, setLoaded=True):
+    
+    ''' Method to load the cells and populations from file and create the NEURON objects.
+    
+    This method loads the net from a config file. It also calculates cells to instantiate in a node if instantiate = true. It also creates new CompartCell objects and add attributes. The method creates NEURON objs, if there is Python struc (fix so minimal Python struct is created). Aubsequently, the mehod creates NEURON sections, mechs, syns, etc; and associate gid and creates all NEURON Netcons, NetStims, etc.
+    
+    input: fileName - name of input file
+           data - figure data
+           setLoaded - boolean, whether to set the sim vonfig to loaded. 
+                   
+    example:  
+
+    TODO: assumes CompartCell -- add condition to load PointCell PyStruct is created only if requested. 
+    NOTE: 
+    '''  
+    
     if not data: data = _loadFile(filename)
     print('Loading simConfig...')
     if 'simConfig' in data:
@@ -199,6 +237,22 @@ def loadSimCfg (filename, data=None, setLoaded=True):
 # Load netParams from cell
 ###############################################################################
 def loadSimData (filename, data=None):
+    
+    ''' Method to load the net params from cell 
+
+    If the data does not exist, the method first loads the data from file and then sets the sim data.
+    
+    input: fileName - name of input file
+           data - 
+
+    output: None.
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''  
+    
     if not data: data = _loadFile(filename)
     print('Loading simData...')
     if 'simData' in data:
@@ -213,6 +267,21 @@ def loadSimData (filename, data=None):
 # Load all data in file
 ###############################################################################
 def loadAll (filename, data=None):
+    
+    ''' Method to load all data 
+
+    This method invokes all teh individual load routines.
+    
+    input: fileName - name of input file
+           data - 
+
+    output: None.
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''    
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
@@ -224,6 +293,22 @@ def loadAll (filename, data=None):
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
+    
+    ''' Private method to load the data from file. 
+    
+    This method infers the output type from the file extension. It loads the data if the file is in pickle format or .dpk - gzip format or json format by invoking the corresponding load routines.
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''
+    
     import os
 
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
@@ -305,6 +390,18 @@ def _loadFile (filename):
 # Clear all sim objects in memory
 ###############################################################################
 def clearAll ():
+    ''' Clear all sim objects in memory. 
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''    
     # clean up
     sim.pc.barrier() 
     sim.pc.gid_clear()                    # clear previous gid settings
@@ -547,6 +644,19 @@ def cellByGid (gid):
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
 def readCmdLineArgs ():
+    
+    ''' Clear all sim objects in memory. 
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''       
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -594,6 +704,20 @@ def readCmdLineArgs ():
 ### Setup Recording
 ###############################################################################
 def setupRecording ():
+    
+    ''' Clear all sim objects in memory. 
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''       
+    
     timing('start', 'setrecordTime')
 
     # spike recording
@@ -648,6 +772,18 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList (include):
+    ''' Get cells list for recording based on set of conditions. 
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''       
     if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
         allCellTags = sim._gatherAllCellTags()  
     else:
@@ -683,6 +819,7 @@ def getCellsList (include):
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def setGlobals ():
+    
     hParams = sim.cfg.hParams
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
@@ -716,6 +853,18 @@ def setGlobals ():
 ### Commands required just before running simulation
 ###############################################################################
 def preRun ():
+    ''' Get cells list for recording based on set of conditions. 
+    
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''      
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
@@ -777,6 +926,19 @@ def preRun ():
 ### Run Simulation
 ###############################################################################
 def runSim ():
+
+    ''' Run simulation. 
+    
+    input: 
+    
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE:  
+    '''
+    
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
@@ -796,6 +958,19 @@ def runSim ():
 ### Run Simulation
 ###############################################################################
 def runSimWithIntervalFunc (interval, func):
+    
+    ''' Run simulation with interval function. 
+    
+    input: 
+    
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE:  
+    '''
+    
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
@@ -817,6 +992,18 @@ def runSimWithIntervalFunc (interval, func):
 ### Gather tags from cells
 ###############################################################################
 def _gatherAllCellTags ():
+    
+    ''' Private method. Sends and gathers cell tags from other nodes.
+    
+    input: 
+    
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE:  
+    '''    
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()
@@ -841,6 +1028,28 @@ def _gatherAllCellTags ():
 ### Gather data from nodes
 ###############################################################################
 def gatherData ():
+    
+    ''' Gathers cell tags from other nodes.
+    
+    This method intiailly sets some flags for optimisation. 
+    
+    Sets flag: 
+    sim.cfg.saveCellSecs : flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate) 
+    
+    sim.cfg.saveCellConns : flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    
+    The methods gathers data if > 1 nodes. Elses it saves data from a single node in multiple node format. When gathering data from multiple nodes, depending on a flag, it gathers only the simulation data, or the cell, pops and simulation data. When gathering simulation data, it first it initialises all the keys of the sim data dict. Then it fills in allSimData taking into account if data is dict of h.Vector. 
+    
+    input: 
+    
+    output: 
+        
+    example: 
+
+    TODO:Refactor code to make it smaller.
+    NOTE:  
+    '''     
+    
     timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0: 

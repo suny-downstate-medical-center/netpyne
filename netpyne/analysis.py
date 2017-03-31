@@ -35,6 +35,20 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
 ## Wrapper to run analysis functions in simConfig
 ######################################################################################################################################################
 def plotData ():
+    ''' Plot data in simconfig.
+    
+    This method plots the data by invoking the function and parameters specified by the user. The time required for 
+    plotting is printed out if < 1.2 * total time for simulation of individual components. 
+
+    input:
+        
+    output:
+        
+    example:
+
+    TODO: 
+    NOTE: 
+    '''
     ## Plotting
     if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
@@ -62,6 +76,18 @@ def plotData ():
 ## show figure
 ######################################################################################################################################################
 def _showFigure():
+    
+    ''' Private method that shows plot figure. By defaults tried to set block=false.
+    
+    input:
+        
+    output:
+        
+    example:
+
+    TODO: 
+    NOTE: 
+    '''
     try:
         plt.show(block=False)
     except:
@@ -72,6 +98,20 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName=None, type=''):
+    
+    ''' Private method that saves figure data.
+    
+    The filename suffix is used to determine the type of file ( pickle or json) and the data is dumped accordingly.
+    
+    input: figData, fileName
+        
+    output:
+        
+    example:
+
+    TODO: 
+    NOTE: 
+    '''     
     if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
@@ -158,6 +198,7 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Synchrony measure
 ######################################################################################################################################################
 def syncMeasure ():
+    
     t0=-1 
     width=1 
     cnt=0

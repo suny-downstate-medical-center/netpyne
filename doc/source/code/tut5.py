@@ -77,4 +77,4 @@ simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
-# import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

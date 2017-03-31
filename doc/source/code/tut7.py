@@ -109,6 +109,8 @@ if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
 
+import pylab;
+pylab.show()  # this line is only necessary in certain systems where figures appear empty
 
 
 

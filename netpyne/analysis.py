@@ -305,6 +305,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             for i in range(len(spktsNew)): 
                 spkgidColors.append(popColors['NetStims'])
             numNetStims += 1
+        else:
+            pass
+            #print netStimLabel+' produced no spikes'
     if len(cellGids)>0 and numNetStims: 
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
@@ -948,7 +951,8 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    for sec in cellPost.secs.values():
+                    cellSecs = cellPost.secs.values() if includeAxon else [s for s in cellPost.secs.values() if 'axon' not in s['hSec'].hname()] 
+                    for sec in cellSecs:
                         if 'weightNorm' in sec:
                             secs.append(sec['hSec'])
                             cvals.extend(sec['weightNorm'])
@@ -959,7 +963,8 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    for secLabel,sec in cellPost.secs.iteritems():
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.iteritems() if 'axon' not in s['hSec'].hname()}
+                    for secLabel,sec in cellSecs.iteritems():
                         nseg=sec['hSec'].nseg
                         nsyns = [0] * nseg
                         secs.append(sec['hSec'])
@@ -967,11 +972,13 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
+                        print secLabel, nsyns
+
                 cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
-        if not includeAxon:         
-            secs = [sec for sec in secs if 'axon' not in sec.hname()]
+        # if not includeAxon:         
+        #     secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
         cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}

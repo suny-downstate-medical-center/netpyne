@@ -422,6 +422,7 @@ class Network (object):
                             elif newLoc == 1.0: newLoc = 0.99999   
                             conn['sec'] = newSec
                             conn['loc'] = newLoc
+                            print newSec,newLoc
 
                             # find grouped conns 
                             if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:

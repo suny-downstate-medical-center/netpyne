@@ -24,6 +24,8 @@
 
 - Fixed bug plotting overlayed spikeHist over raster plot
 
+- Fixed bug in plotShape when includeAxon=False
+
 
 # Version 0.6.8
 

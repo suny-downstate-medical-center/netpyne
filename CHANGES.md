@@ -12,6 +12,8 @@
 
 - Fixed bug: missing hRandom for NetStim populations
 
+- Fixed bug: use Random123() instead of netstim.noiseFromRandom for NetStim stims
+
 - Fixed bug: VectStim spike generation now reproducible for different durations
 
 - Fixed bug in batch grouped params
@@ -21,6 +23,7 @@
 - Fixed bug so cell treshold is set by default to sim.net.defaultThreshold
 
 - Fixed bug plotting overlayed spikeHist over raster plot
+
 
 # Version 0.6.8
 

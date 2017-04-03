@@ -149,7 +149,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
-    if fileName.endswith('.hoc'):
+    if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
         if not cellInstance:
             if isinstance(cellArgs, dict):
@@ -189,7 +189,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
     h.initnrn()
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
-    if fileName.endswith('.hoc'):
+    if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print 'Importing from .hoc network not yet supported'
         return
         # h.load_file(fileName)

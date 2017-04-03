@@ -59,15 +59,15 @@ netParams.sizeZ = 20
 
 
 # Population parameters
-netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
-#netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
-netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 1, 'interval': 100, 'noise': 0.5, 'start': 50, 
-    'pulses':[{'start': 1000, 'end': 1400, 'rate': 100, 'noise': 0.5}]}  # pop of NetStims
+netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
+#netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 1, 'interval': 100, 'noise': 0.5, 'start': 50, 
+#    'pulses':[{'start': 1000, 'end': 1400, 'rate': 100, 'noise': 0.5}]}  # pop of NetStims
 # netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
 #    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
 
 # Synaptic mechanism parameters
-# netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 
 
 # Stimulation parameters
@@ -85,20 +85,27 @@ netParams.cellParams['PYR'] = cellParams
 
 
 # Connections
-netParams.connParams['artif1->PYR1'] = {
-    'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
-    'convergence': 4,
-    'weight': 0.005,                    
-    'synMech': 'AMPA',                
-    'delay': 'uniform(1,5)',
-    'synsPerConn': 1}          
-
-# netParams.connParams['PYR2->PYR1'] = {
-#     'preConds': {'popLabel': 'PYR2'}, 'postConds': {'popLabel': 'PYR1'},
-#     'probability': 0.1,
-#     'weight': 0.2,                     
+# netParams.connParams['artif1->PYR1'] = {
+#     'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
+#     'convergence': 4,
+#     'weight': 0.005,                    
+#     'synMech': 'AMPA',                
 #     'delay': 'uniform(1,5)',
-#     'synsPerConn': 1}     
+#     'synsPerConn': 1}          
+
+netParams.connParams['PYR1->PYR2_1'] = {
+    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
+    'probability': 0.1,
+    'weight': 0.2,                     
+    'delay': 'uniform(1,5)',
+    'synsPerConn': 1}     
+
+netParams.connParams['PYR1->PYR2_2'] = {
+    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
+    'probability': 0.1,
+    'weight': 0.4,                     
+    'delay': 'uniform(1,5)',
+    'synsPerConn': 1} 
 
 # netParams.addConnParams('artif1->PYR2',
 #     {'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR2'}, 

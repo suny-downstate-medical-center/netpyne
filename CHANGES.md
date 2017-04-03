@@ -6,6 +6,8 @@
 
 - Modified hpc_torque batch to accept nodes and ppn
 
+- Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
+
 - Fixed bug in plotConn bar graphs
 
 - Fixed bug: missing hRandom for NetStim populations
@@ -17,6 +19,8 @@
 - Fixed bug: getCellsList() only checked for tuples but when load from json converted to list
 
 - Fixed bug so cell treshold is set by default to sim.net.defaultThreshold
+
+- Fixed bug plotting overlayed spikeHist over raster plot
 
 # Version 0.6.8
 

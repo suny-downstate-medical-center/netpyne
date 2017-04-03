@@ -618,9 +618,9 @@ def setupRecording ():
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
         if isinstance(sim.cfg.analysis['plotRaster'],dict) and 'include' in sim.cfg.analysis['plotRaster']:
-            netStimPops = [popLabel for popLabel,pop in sim.net.pops.iteritems() if pop.tags['cellModel']=='NetStim']+['allNetStims']
+            netStimLabels = sim.net.params.stimSourceParams.keys()+['allNetStims']
             for item in sim.cfg.analysis['plotRaster']['include']:
-                if item in netStimPops: 
+                if item in netStimLabels: 
                     sim.cfg.recordStim = True
                     break
 
@@ -629,9 +629,9 @@ def setupRecording ():
             sim.cfg.recordStim = True
 
         elif (isinstance(sim.cfg.analysis['plotSpikeHist'],dict) and 'include' in sim.cfg.analysis['plotSpikeHist']) :
-            netStimPops = [popLabel for popLabel,pop in sim.net.pops.iteritems() if pop.tags['cellModel']=='NetStim']+['allNetStims', 'eachPop']
+            netStimLabels = sim.net.params.stimSourceParams.keys()+['allNetStims','eachPop']
             for item in sim.cfg.analysis['plotSpikeHist']['include']:
-                if item in netStimPops: 
+                if item in netStimLabels: 
                     sim.cfg.recordStim = True
                     break
                   

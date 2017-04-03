@@ -2810,7 +2810,8 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-** Learning (Birgit Kriener, Einevoll lab, University of Oslo)
+** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 * Related tools
 ** NEURON
 Multiscale simulator

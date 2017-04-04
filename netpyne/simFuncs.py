@@ -80,6 +80,17 @@ def setNet (net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams (params):
+    '''
+    Initialize the network params to be used in simulation.
+    
+    Input: params 
+    
+    Output: None
+    
+    TODO:
+    Example:
+    Note:
+    '''
     if params and isinstance(params, specs.NetParams):
         sim.net.params = params
     elif params and isinstance(params, dict):
@@ -91,6 +102,19 @@ def setNetParams (params):
 # Set simulation config
 ###############################################################################
 def setSimCfg (cfg):
+
+    '''
+    Set simulation configuration.
+    
+    Input: cfg 
+    
+    Output: None
+    
+    TODO:
+    Example:
+    Note:
+    '''
+
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set 
     elif cfg and isinstance(cfg, dict):
@@ -106,6 +130,19 @@ def setSimCfg (cfg):
 # Create parallel context
 ###############################################################################
 def createParallelContext ():
+    '''
+    Create parallel context.
+    
+    Initialize the parallel context class. Set the number of hosts in the simulation, and the master node ( the node with node number 0).
+    
+    Input: params 
+    
+    Output: None
+    
+    TODO:
+    Example:
+    Note:
+    '''
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     sim.pc.done()
     sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
@@ -119,6 +156,19 @@ def createParallelContext ():
 # Load netParams from cell
 ###############################################################################
 def loadNetParams (filename, data=None, setLoaded=True):
+    '''
+    Load net parameters.
+    
+    Input: filename: file to load data from if data is None.
+           data: dict, default is None
+           setLoaded: boolean flag, default True. If set to False, sets net params only in Specs and returns it.
+    
+    Output: specs.NetParams ( if setLoaded = False)
+    
+    TODO:
+    Example:
+    Note:
+    '''
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
@@ -446,6 +496,21 @@ def id32 (obj):
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
 def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
+    
+    '''
+    Replace item with specific key from dict or list (used to remove h objects)
+    
+    Input: obj - object to copy from
+           keystart - start of key
+           newval - new value
+           objCopy :location to start copying from in tree, default 'ROOT'
+    
+    Output: specs.NetParams ( if setLoaded = False)
+    
+    TODO:
+    Example:
+    Note:
+    '''    
     if type(obj) == list:
         if objCopy=='ROOT': 
             objCopy = []

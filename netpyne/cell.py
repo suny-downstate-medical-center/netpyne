@@ -42,7 +42,27 @@ class Cell (object):
 
 
     # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
-    def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
+    def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):        
+        
+        ''' Private method for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
+        
+        This method first creates event times, at a time resolution = 1 ms = 500 Hz.
+          
+        Input: 
+             isi: inter stimulus interval (default = 1)
+             variation : 
+             width : 
+             weight : 
+             start : stimulus start time
+             finish : stimulus start time
+             stimshape : stimulus shape (default gaussian)       
+
+        Output: stimVecs - vector or stimulations
+        Example:
+        TODO:
+        NOTE:        
+        '''    
+                
         from pylab import r_, convolve, shape, exp, zeros, hstack, array, rand
         
         # Create event times
@@ -85,6 +105,29 @@ class Cell (object):
 
 
     def addNetStim (self, params, stimContainer=None):
+   
+        ''' Add network stimulus.
+        
+        This method first creates the network stimulus object
+        The interval is set to: params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+        The noise is set to: params['noise'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
+        The start is set to: params['start']
+
+        Input: 
+        
+             params: inter stimulus interval (default = 1)
+             stimContainer : default - None
+             
+                netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
+                netstim.noise = params['noise'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
+                netstim.start = params['start']
+            netstim.noiseFromRandom(rand)  # use r             
+
+        Output: stimContainer['hNetStim'] (netstim object)
+        Example:
+        TODO:
+        NOTE:        
+        '''            
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
@@ -126,7 +169,17 @@ class Cell (object):
 
 
     def recordTraces (self):
-        # set up voltagse recording; recdict will be taken from global context
+        # set up voltage recording; recdict will be taken from global context
+        ''' set up voltage recording; recdict will be taken from global context.
+        
+       Input: 
+
+        Output: 
+        Example:
+        TODO:
+        NOTE:        
+        '''            
+
         for key, params in sim.cfg.recordTraces.iteritems():
             try:
                 ptr = None
@@ -985,6 +1038,18 @@ class CompartCell (Cell):
 
 
     def _setConnSections (self, params):
+        ''' Private method to set synaptic connection weights.
+            
+        Input: params - 
+               netStimParams - 
+               secLabels - section labels.
+               
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''          
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
@@ -1021,6 +1086,19 @@ class CompartCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams, secLabels):
+        
+        ''' Private method to set synaptic connection weights.
+            
+        Input: params - 
+               netStimParams - 
+               secLabels - section labels.
+               
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1037,6 +1115,22 @@ class CompartCell (Cell):
 
 
     def _setConnPointP(self, params, secLabels, weightIndex):
+        
+        ''' Private method to set synaptic mechanisms for point cells.
+        
+            Only one synaptic connection is allowed for a point cell.n.
+            
+        Input: params - 
+               section labels - 
+               weightIndex - weights for connections.
+               
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''          
+        
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if len(secLabels)==1 and 'pointps' in self.secs[secLabels[0]]:  #  check if point processes with 'vref' (artificial cell)
@@ -1056,8 +1150,25 @@ class CompartCell (Cell):
 
         return pointp, weightIndex
 
-
     def _setConnSynMechs (self, params, secLabels):
+        
+        ''' Private method to set synaptic mechanisms.
+        
+            Synapses are created in the sections using the distribution -
+            
+            i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
+
+            where synsPerConn is the number of synapses per connection.
+            
+        Input: params
+               section labels
+               
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
@@ -1089,6 +1200,19 @@ class CompartCell (Cell):
 
 
     def _distributeSynsUniformly (self, secList, numSyns):
+        
+        ''' Private method to distribute synapses uniformly.
+        
+            Synapses are distributed uniformly if sections are available. Duringthe distribution process, the cumulative lenghts are calculated and sections are then distributed correspondingly.
+            
+        Input: secList: List of sections, number of synapses.
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        ''' 
         from numpy import cumsum
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
@@ -1112,6 +1236,21 @@ class CompartCell (Cell):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
+        
+        ''' Private method to create connection plasticity.
+        
+            This method creates the NEURON object. First point processes are added if possible. If rate is list with 2 items generate random value from uniform distribution. Point process params are set - for PointCells these are stored in self.params. The number and seed for NetStims is set. If spike vector is specified in parameters, then that is added. Randomize the first spike so on average it occurs at start + noise*interval.
+            invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
+                
+        Input: 
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''     
+        
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
@@ -1157,6 +1296,19 @@ class PointCell (Cell):
 
 
     def createNEURONObj (self):
+        ''' Create NEURON obj.
+        
+            This method creates the NEURON object. First point processes are added if possible. If rate is list with 2 items generate random value from uniform distribution. Point process params are set - for PointCells these are stored in self.params. The number and seed for NetStims is set. If spike vector is specified in parameters, then that is added. Randomize the first spike so on average it occurs at start + noise*interval.
+            invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
+                
+        Input: 
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''          
         # add point processes
         try:
             self.hPointp = getattr(h, self.tags['cellModel'])()
@@ -1276,6 +1428,19 @@ class PointCell (Cell):
 
 
     def associateGid (self, threshold = 10.0):
+
+        ''' Assign cell gid to a particular node.
+                
+        Input: 
+          threshold - optional, default set to 10.0.
+          
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''         
+
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
@@ -1290,6 +1455,17 @@ class PointCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams):
+        ''' Private methods to set the connection weights.
+                
+        Input: 
+          params - threshold, weight, delay and other paramters.
+          netStimParams - Stimulation parameters, default is None.
+          
+        Output:
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1306,6 +1482,19 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
+        ''' This methods creates the connections in the network.
+        
+        Depending on the user parameters, a Python structure or a NEURON object is created. For each connection, the threshold, weight and delay are specified.
+        
+        Input: 
+          params - threshold, weight, delay and other paramters.
+          netStimParams - Stimulation parameters, default is None.
+          
+        Output:
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default

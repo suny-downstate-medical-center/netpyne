@@ -62,7 +62,7 @@ class Pop (object):
     # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
         
-        ''' Function to instantiate Cell objects based on the characteristics of this population
+        ''' Function to instantiate cell objects based on the characteristics of this population
         This method creates cells based on fixed number of cells (if numCells in tags), or creates cells based on density (if density in tags) or on gridspacing.
         input:      
         
@@ -176,9 +176,13 @@ class Pop (object):
                 
     def createCellsDensity (self):
 
-        ''' Create population cells based on fixed number of cells
+        ''' Create population cells based on density
         
-        Cells are created based on geometry specified. 
+        Cells are created based on shape of the volume specified. Only cuboids allow density to be given as a lambda function.
+        
+        A random list of locations are generated in the volumne, and normalized density for each location value is calculated. This is used to prune the cells, whether or not the cell should be included. Only a subset of cells (yfuncLocs) are kept after pruning.
+        
+        When calculating locations - 
         If cylinder use the x,z random values: 
             rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
             phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
@@ -186,8 +190,6 @@ class Pop (object):
             rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
             phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
             costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
-        
-        If user provided absolute range, convert to normalized, if normalized range, rescale random locations. Cells are distributed in the grid. Copy all pop tags to cell tags, except those that are pop-specific.
         
         input:      
         
@@ -309,7 +311,31 @@ class Pop (object):
 
 
     def createCellsList (self):
-        ''' Create population cells based on list of individual cells'''
+        
+        ''' Create population cells based on list of individual cells
+        
+        Cells are created based on shape of the volume specified. Only cuboids allow density to be given as a lambda function.
+        
+        A random list of locations are generated in the volumne, and normalized density for each location value is calculated. This is used to prune the cells, whether or not the cell should be included. Only a subset of cells (yfuncLocs) are kept after pruning.
+        
+        When calculating locations - 
+        If cylinder use the x,z random values: 
+            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi) 
+        If ellipsoid use the x,y,z random values 
+            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi) 
+            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist 
+        
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''        
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
@@ -335,7 +361,18 @@ class Pop (object):
 
 
     def createCellsGrid (self):
-        ''' Create population cells based on fixed number of cells'''
+        
+        ''' Create population cells based on grid
+
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''             
         cells = []
         seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['gridSpacing']+sim.net.lastGid)))
         
@@ -373,10 +410,21 @@ class Pop (object):
         sim.net.lastGid = sim.net.lastGid + numCells
         return cells
 
-
-
     def _setCellClass (self):
-        # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
+
+        ''' Private method to set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
+        
+         Before setting the class, check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+        
+        input:      
+        
+        output: 
+            
+        example: 
+    
+        TODO:
+        NOTE:  
+        '''          
         try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
         
             # Make sure it's not a NeuroML2 based cell

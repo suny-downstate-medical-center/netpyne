@@ -545,6 +545,18 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 ### Recursively remove items of an object (used to avoid mem leaks)
 ###############################################################################
 def clearObj (obj):
+    
+    ''' Recursively remove items of an object (used to avoid mem leaks)
+        
+    Input: obj - object
+    
+    Output: obj
+    
+    Example:
+    TODO:
+    NOTE:        
+    '''          
+    
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict, Dict, ODict]:
@@ -563,6 +575,18 @@ def clearObj (obj):
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
 def replaceItemObj (obj, keystart, newval):
+    
+    ''' Recursively replace item with specific key from dict or list (used to remove h objects)
+        
+    Input: obj - object
+    
+    Output: obj
+    
+    Example:
+    TODO:
+    NOTE:        
+    '''          
+    
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -581,6 +605,17 @@ def replaceItemObj (obj, keystart, newval):
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
 def replaceFuncObj (obj):
+    
+    ''' Recursively replace functions from dict or list with function string (so can be pickled)  
+        
+    Input: obj - object
+    
+    Output: obj
+    
+    Example:
+    TODO:
+    NOTE:        
+    '''        
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -599,6 +634,17 @@ def replaceFuncObj (obj):
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
 def replaceNoneObj (obj):
+    
+    ''' Recursively replace None from dict or list with [](so can be saved to .mat)  
+        
+    Input: obj - object
+    
+    Output: obj
+    
+    Example:
+    TODO:
+    NOTE:        
+    '''    
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
             if type(item) in [list, dict, Dict, ODict]:
@@ -619,6 +665,18 @@ def replaceNoneObj (obj):
 ### Replace Dict with dict and Odict with OrderedDict
 ###############################################################################
 def replaceDictODict (obj):
+    
+    ''' Recursively replace Dict with dict and Odict with OrderedDict
+        
+    Input: obj - object
+    
+    Output: obj
+    
+    Example:
+    TODO:
+    NOTE:        
+    '''    
+    
     if type(obj) == list:
         for item in obj:
             if type(item) == Dict:
@@ -884,7 +942,18 @@ def getCellsList (include):
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def setGlobals ():
+    ''' Set global variables. Iterate over globals dict in each cell params.
     
+    input: fileName - name of input file
+           data - 
+
+    output: 
+        
+    example: 
+
+    TODO:  
+    NOTE: 
+    '''       
     hParams = sim.cfg.hParams
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
@@ -1299,6 +1368,26 @@ def gatherData ():
 ### Calculate and print avg pop rates
 ###############################################################################
 def popAvgRates (trange = None, show = True):
+    ''' Calculate and print avg pop rates.
+    
+    This method intiailly sets some flags for optimisation. 
+    
+    Sets flag: 
+    sim.cfg.saveCellSecs : flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate) 
+    
+    sim.cfg.saveCellConns : flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    
+    The methods gathers data if > 1 nodes. Elses it saves data from a single node in multiple node format. When gathering data from multiple nodes, depending on a flag, it gathers only the simulation data, or the cell, pops and simulation data. When gathering simulation data, it first it initialises all the keys of the sim data dict. Then it fills in allSimData taking into account if data is dict of h.Vector. 
+    
+    input: 
+    
+    output: 
+        
+    example: 
+
+    TODO:Refactor code to make it smaller.
+    NOTE:  
+    '''       
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
         print 'Error: sim.allSimData not available; please call sim.gatherData()'
         return None

@@ -170,7 +170,9 @@ class Cell (object):
 
     def recordTraces (self):
         # set up voltage recording; recdict will be taken from global context
-        ''' set up voltage recording; recdict will be taken from global context.
+        ''' Set up voltage recording; recdict will be taken from global context. 
+        
+           Check params to see which traces are requested 
         
        Input: 
 
@@ -249,6 +251,17 @@ class CompartCell (Cell):
 
 
     def create (self):
+        ''' Create compartmental cell class. 
+        
+           For each set of cell properties, check if all conditions are met. If so, then set values for the cell. Create neuron object if the conditions are met. 
+        
+       Input: 
+
+        Output: 
+        Example:
+        TODO:
+        NOTE:        
+        '''             
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
@@ -277,6 +290,17 @@ class CompartCell (Cell):
 
 
     def modify (self, prop):
+        ''' Modify compartmental cell class. 
+        
+           For each set of cell properties, check if all conditions are met. If so, then set values for the cell. Create neuron object if the conditions are met. 
+        
+       Input: 
+
+        Output: 
+        Example:
+        TODO:
+        NOTE:        
+        '''           
         conditionsMet = 1
         for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
             if condKey=='label':
@@ -305,6 +329,17 @@ class CompartCell (Cell):
 
     def createPyStruct (self, prop):
         # set params for all sections
+        ''' Create Python Struct for the compartmental cell class. 
+        
+           For each section, add distributed mechanisms, ion info, syn mechs. 
+        
+       Input: 
+
+        Output: 
+        Example:
+        TODO:
+        NOTE:        
+        '''           
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
             if sectName not in self.secs:
@@ -675,10 +710,21 @@ class CompartCell (Cell):
                                 except:
                                     print 'Error setting %s=%s on synMech' % (synParamName, str(synParamValue))
     
-
-
-
     def addConn (self, params, netStimParams = None):
+        
+        ''' Add connections. Set defaults for threshold, weight, delay, loc and synapses per conenction if not specified.
+            For each connection, create PyStruct and NEURONobj, if specified.
+            
+        Input: params
+               netStimParams - network stiumation parameters, default None.
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''          
+
         threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
@@ -840,6 +886,16 @@ class CompartCell (Cell):
 
 
     def modifyConns (self, params):
+        ''' Modify connections. 
+            
+        Input: params
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''          
         for conn in self.conns:
             conditionsMet = 1
             
@@ -898,6 +954,16 @@ class CompartCell (Cell):
 
 
     def modifyStims (self, params):
+        ''' Modify stimulus. 
+            
+        Input: params
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
@@ -955,6 +1021,16 @@ class CompartCell (Cell):
 
 
     def addStim (self, params):
+        ''' Add stimulus.
+            
+        Input: params
+        
+        Output:
+        
+        Example:
+        TODO:
+        NOTE:        
+        '''         
         if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, self.secs.keys(),params)
             if 'soma' in self.secs:  
@@ -1200,7 +1276,6 @@ class CompartCell (Cell):
 
 
     def _distributeSynsUniformly (self, secList, numSyns):
-        
         ''' Private method to distribute synapses uniformly.
         
             Synapses are distributed uniformly if sections are available. Duringthe distribution process, the cumulative lenghts are calculated and sections are then distributed correspondingly.

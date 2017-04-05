@@ -32,11 +32,11 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 0.5*1e3 # Duration of the simulation, in ms
+simConfig.duration = 1.0*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = 1 #False  # show detailed messages 
+simConfig.verbose = 0 #False  # show detailed messages 
 
 # Recording 
 simConfig.recordCells = [('PYR1',5), 8]
@@ -59,8 +59,8 @@ netParams.sizeZ = 20
 
 
 # Population parameters
-netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
-netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
+netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
 #netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 1, 'interval': 100, 'noise': 0.5, 'start': 50, 
 #    'pulses':[{'start': 1000, 'end': 1400, 'rate': 100, 'noise': 0.5}]}  # pop of NetStims
 # netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
@@ -71,8 +71,8 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 
 # Stimulation parameters
-#netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 100, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-#netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
+netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 20, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
 
 
 # Cell parameters
@@ -119,6 +119,8 @@ netParams.connParams['PYR1->PYR2_2'] = {
 ###############################################################################
 # RUN SIM
 ###############################################################################
+simConfig.analysis['plotRaster'] = {'saveFig': True, 'showFig':True, 'labels': 'overlay', 'popRates': True, 
+                                    'orderInverse': True, 'figSize': (12,10), 'lw': 0.6, 'marker': '|'} 
 
 sim.createSimulateAnalyze()
 

@@ -383,8 +383,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     else:
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
 
-    if orderInverse: plt.gca().invert_yaxis()
-
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
     ax1.set_ylabel(ylabelText, fontsize=fontsiz)
@@ -435,6 +433,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
         ax2.set_ylabel('Spike count', fontsize=fontsiz)
         ax2.set_xlim(timeRange)
+
+    if orderInverse: plt.gca().invert_yaxis()
 
     # save figure data
     if saveData:
@@ -971,8 +971,6 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
-
-                        print secLabel, nsyns
 
                 cvals = np.array(cvals)
 

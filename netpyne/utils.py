@@ -6,6 +6,7 @@ Useful functions
 Contributors: salvador dura@gmail.com
 """
 import os, sys
+from numbers import Number
 from neuron import h
 h.load_file("stdrun.hoc") 
 
@@ -22,7 +23,7 @@ def getSecName (sec, dirCellSecNames = None):
     if '[' in fullSecName:  # if section is array element
         secNameTemp = fullSecName.split('[')[0]
         secIndex = int(fullSecName.split('[')[1].split(']')[0])
-        secName = secNameTemp+'_'+str(secIndex) #(secNameTemp,secIndex)
+        secName = secNameTemp+'_'+str(secIndex) 
     else:
         secName = fullSecName
         secIndex = -1
@@ -70,6 +71,51 @@ def mechVarList ():
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
 
+
+# def getAllGlobals (origGlob={}):
+#     exclude = ['nseg', 'nrn_shape_changed_', 'Ra', 'L', 'cm', 'rallbranch', 'tstop']  # don't check these because crashes
+#     glob = {}
+#     # compare with original
+#     for k in [x for x in dir(h) if x not in exclude]:
+#         try:
+#             v = getattr(h,k)
+#             if isinstance(v, Number):     # store float and int globals 
+#                 if k not in origGlob or origGlob[k] != v:
+#                     glob[k] = v
+#         except:
+#             pass
+#     return glob
+
+
+def getGlobals (mechNames, origGlob={}):
+    includeGlobs = ['celsius', 'v_init', 'clamp_resist']
+    endings = tuple(['_' + name for name in mechNames])
+    glob = {}
+    # compare with original
+    for k in dir(h):
+        if k.endswith(endings) or k in includeGlobs:
+            try:
+                v = float(h.__getattribute__(k))
+                if k not in origGlob or origGlob[k] != v:
+                    glob[k] = float(v)
+            except:
+                pass
+    return glob
+
+
+def setGlobals (glob):
+    for k,v in glob.iteritems():
+        setattr(h, k, v)
+
+    # # remove vars are not in glob ?
+    # for k in [x for x in dir(h) if x not in exclude]:
+    #     if k not in glob:
+    #         try:
+    #             setattr(h, k, None) 
+    #         except:
+    #             print k
+
+
 def _equal_dicts (d1, d2, ignore_keys):
     ignored = set(ignore_keys)
     for k1, v1 in d1.iteritems():
@@ -81,18 +127,37 @@ def _equal_dicts (d1, d2, ignore_keys):
     return True
 
 
-def importCell (fileName, cellName, cellArgs = None):
+def _delete_module(modname):
+    from sys import modules
+    try:
+        thismod = modules[modname]
+        del modules[modname]
+    except KeyError:
+        pass
+
+    for mod in modules.values():
+        try:
+            delattr(mod, modname)
+        except:
+            pass
+
+def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
+    varList = mechVarList()  # list of properties for all density mechanisms and point processes
+    origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
-    if fileName.endswith('.hoc'):
+    if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
-        if isinstance(cellArgs, dict):
-            cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+        if not cellInstance:
+            if isinstance(cellArgs, dict):
+                cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+            else:
+                cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
         else:
-            cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
+            cell = getattr(h, cellName)
     elif fileName.endswith('.py'):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
@@ -109,15 +174,22 @@ def importCell (fileName, cellName, cellArgs = None):
         print "File name should be either .hoc or .py file"
         return
 
-    secDic, secListDic, synMechs = getCellParams(cell)
-    return secDic, secListDic, synMechs
+    secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
+    if fileName.endswith('.py'):
+        _delete_module(moduleName)
+        _delete_module('tempModule')
+        del modulePointer
+
+    setGlobals(origGlob)  # restore original globals
+
+    return secDic, secListDic, synMechs, globs
 
 
 def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
     h.initnrn()
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
-    if fileName.endswith('.hoc'):
+    if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print 'Importing from .hoc network not yet supported'
         return
         # h.load_file(fileName)
@@ -153,7 +225,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
             for synMech in synMechs: netParams.addSynMechParams(synMech.pop('label'), synMech)
 
 
-def getCellParams(cell):
+def getCellParams(cell, varList, origGlob):
     dirCell = dir(cell)
 
     if 'all_sec' in dirCell:
@@ -186,8 +258,7 @@ def getCellParams(cell):
         # create new section dict with name of section
         secName = getSecName(sec, dirCellSecNames)
 
-        if len(secs) == 1:
-            secName = 'soma' # if just one section rename to 'soma'
+        # if len(secs) == 1: secName = 'soma' # if just one section rename to 'soma' -- REMOVED, doesn't always apply
         secDic[secName] = {'geom': {}, 'topol': {}, 'mechs': {}}  # create dictionary to store sec info
 
         # store geometry properties
@@ -214,7 +285,7 @@ def getCellParams(cell):
             secDic[secName]['geom']['pt3d'] = points
 
         # store mechanisms
-        varList = mechVarList()  # list of properties for all density mechanisms and point processes
+        #varList = mechVarList()  # list of properties for all density mechanisms and point processes
         ignoreMechs = ['dist']  # dist only used during cell creation 
         ignoreVars = []  # 
         mechDic = {}
@@ -321,21 +392,17 @@ def getCellParams(cell):
     else:
         secListDic = {}
 
-    # celsius warning
-    if hasattr(h, 'celsius'):
-        if h.celsius != 6.3:  # if not default value
-            print "Warning: h.celsius=%.4g in imported file -- you can set this value in simConfig['hParams']['celsius']"%(h.celsius)
+    # globals
+    globs = getGlobals(varList['mechs'].keys()+varList['pointps'].keys(), origGlob=origGlob)
+    if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
+        for sec in secDic.values(): sec['vinit'] = globs['v_init']  
 
     # clean 
     h.initnrn()
     del(cell) # delete cell
     import gc; gc.collect()
 
-    return secDic, secListDic, synMechs
-
-    # cellRule['secs'] = secDic
-    # if secListDic:
-    #     cellRule['secLists'] = secListDic
+    return secDic, secListDic, synMechs, globs
 
 
 

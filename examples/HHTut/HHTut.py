@@ -25,12 +25,20 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'yRange': [300, 500], 'color': 'red'} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR2', 'numCells': 100} # add dict with params for this pop 
 
 
 # Cell parameters
 ## PYR cell properties
-cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYT'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR'] = cellRule  												# add dict to list of cell params
+
+cellRule = {'conds': {'color': 'red'},  'secs': {}} 	# cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism

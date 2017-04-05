@@ -92,7 +92,7 @@ class Dict(dict):
             return x
 
     def __missing__(self, key):
-        if not key.startswith('_ipython'):
+        if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
             return value
 
@@ -322,23 +322,119 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False):
+    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label: 
             label = int(self._labelid)
             self._labelid += 1
-        secs, secLists, synMechs = utils.importCell(fileName, cellName, cellArgs)
-        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
+        secs, secLists, synMechs, globs = utils.importCell(fileName, cellName, cellArgs, cellInstance)
+        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globs': globs}
+        
+        # adjust cell 3d points so that soma is at location 0,0,0 
+        if somaAtOrigin:
+            somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
+            if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
+                print 'Warning: cannot place soma at origin because soma does not exist or does not contain pt3d'
+                return
+            soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
+            midpoint = int(len(soma3d)/2)
+            somaX, somaY, somaZ = soma3d[midpoint][0:3]
+            for sec in cellRule['secs'].values():
+                for i,pt3d in enumerate(sec['geom']['pt3d']):
+                    sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
             for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+
 
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
         utils.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
         return self.cellParams
+
+
+    def addCellParamsSecList(self, label, secListName, somaDist):
+        import numpy as np
+
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding secList: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if not isinstance(somaDist, list) or len(somaDist) != 2:
+            print 'Error adding secList: somaDist should be a list with 2 elements'
+            return
+
+        secList = []
+        for secName, sec in cellRule.secs.iteritems():
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                midpoint = int(len(pt3d)/2)
+                x,y,z = pt3d[midpoint][0:3]
+                distSec = np.linalg.norm(np.array([x,y,z]))
+                if distSec >= somaDist[0] and distSec <= somaDist[1]:
+                    secList.append(secName)
+
+            else:
+                print 'Error adding secList: Sections do not contain 3d points' 
+                return
+
+        cellRule.secLists[secListName] = list(secList)
+
+
+    def renameCellParamsSec(self, label, oldSec, newSec):
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error renaming section: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if oldSec not in cellRule['secs']:
+            print 'Error renaming section: cellRule does not contain section %s' % (label)
+            return
+
+        cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
+        for sec in cellRule['secs'].values():  # replace appearences in topol
+            if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
+
+
+    def addCellParamsWeightNorm(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
+            return
+
+        with open(fileName, 'r') as fileObj: 
+            weightNorm = pickle.load(fileObj)
+        for sec, wnorm in weightNorm.iteritems():
+            if sec in cellRule['secs']:  
+                cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
+
+
+    def saveCellParamsRule(self, label, fileName):
+        import pickle
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error saving: netParams.cellParams does not contain %s' % (label)
+            return
+        with open(fileName, 'w') as fileObj:  
+            pickle.dump(cellRule, fileObj)
+
+
+    def loadCellParamsRule(self, label, fileName):
+        import pickle
+        with open(fileName, 'r') as fileObj: 
+            cellRule = pickle.load(fileObj)
+        self.cellParams[label] = cellRule
+
+
 
     def todict(self):
         from sim import replaceDictODict
@@ -358,6 +454,7 @@ class SimConfig (object):
         self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module 
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
+        self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.createNEURONObj = True  # create HOC objects when instantiating network
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
@@ -390,6 +487,9 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file 
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
+        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
+
 
         # Analysis and plotting 
         self.analysis = ODict()

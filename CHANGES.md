@@ -1,3 +1,107 @@
+# Version 0.6.9
+
+- Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
+
+- Added option to specify netParams .py file for batch 
+
+- Modified hpc_torque batch to accept nodes and ppn
+
+- Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
+
+- Fixed bug in plotConn bar graphs
+
+- Fixed bug: missing hRandom for NetStim populations
+
+- Fixed bug: use Random123() instead of netstim.noiseFromRandom for NetStim stims
+
+- Fixed bug: VectStim spike generation now reproducible for different durations
+
+- Fixed bug in batch grouped params
+
+- Fixed bug: getCellsList() only checked for tuples but when load from json converted to list
+
+- Fixed bug so cell treshold is set by default to sim.net.defaultThreshold
+
+- Fixed bug plotting overlayed spikeHist over raster plot
+
+- Fixed bug in plotShape when includeAxon=False
+
+
+# Version 0.6.8
+
+- Keep track of last host after distributing cells of each pop (improves load balance) (issues #41 #196)
+
+- Added option to run batch on HPC SLURM system (eg. SDSC Comet)
+
+- Added cvode_atol option to cfg
+
+- Improved plotShape() to use matplotlib and use colormap to show num syns 
+
+- Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)
+
+- Batch params can now be grouped ('group':True) so values vary together not combinatorally
+
+- Removed pc.done() at the end of Batch.run() method so can run multiple batches from same script
+
+- Added skipCfg option to batch
+
+- Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
+
+- Added cfg.saveCellConns option to reduce save time and file size 
+
+- Modified code so 'cellModel' tag is optional
+
+- Added renameCellParamsSec() method to netParams class  
+
+- When importing cell global 'v_init' is stored as param for each section 
+
+- Fixed small bugs when loading saved model
+
+- Fixed bug when calling internal method _findPrePostCellsCondition()
+
+- Fixed bug in subcellConn groupedSynMechs
+
+- Fixed bug in subcellConn trying to add stims+conns to NetStims/VecStims
+
+- Fixed bug in subcellConn so syns are not placed at loc 0.0 or 1.0 (error if syn uses ion)
+
+
+# Version 0.6.7
+
+- Added gridSpacing option to create populations with cells placed in grid with fixed spacing
+
+- Added netParams functions: addCellParamsWeightNorm(), saveCellParamsRule() and loadCellParamsRule()
+
+- Added option to importCell based on instantiated cell (not just template or class)
+
+- Modified importCellParams to store mod mechanism global variables in cellRule['globs']
+
+- Added support to export gap junctions to NeuroML
+
+- Fixed bug during import that set section name to 'soma' if only 1 section
+
+
+# Version 0.6.6
+
+- Batch parameters can now include list or dict items
+
+- Added 'weightNorm' param to sections so can normalize weight based on dendritic location
+
+- Import cell function now has somaAtOrigin option to place the cell soma at coords 0,0,0
+
+- Go back to using NetStim.noiseFromRandom, since noiseFromRandom123() only available in very recent versions
+
+- Fixed bug in saveData option of figure plots
+
+- Fixed bug passing figSize param to figures
+
+- Fixed bug where gid only updated if cellParam rules were applied to the cell
+
+- Fixed bug in importCell by deleting imported modules from sys.modules
+
+- Fixed bug that prevented NetStim random noise generator from being initialized
+
+
 # Version 0.6.5
 
 - Added support for artificial cells (without sections) (issue #44)
@@ -14,11 +118,22 @@
 
 - analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
 
+- analysis.plotConn() option to plot stacked bar graph, select different pre and post pops, synMech and syns vs conns
+
+- Made distinction between number of connections and synaptic contacts (eg. can have 5 synsPerConn)
+
+- New function netParams.addCellParamsSecList to create list of sections based on distance from soma
+
 - Removed 'plast' and 'shape' from conns when not used (issue #177)
+
+- Added option to center soma at origin when importing cell 
 
 - Now using noiseFromRandom123() for NetStims() (issue #89)
 
 - Fixed bug in readCmdLineArgs() 
+
+- Fixed bug in saveData option of figure plots
+
 
 
 # Version 0.6.4

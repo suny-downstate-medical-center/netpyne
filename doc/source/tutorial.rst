@@ -139,9 +139,6 @@ We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor
 
 During execution, this will tell NetPyNE to create 40 ``Cell`` objects, each of which will include the attributes or tags of its population, i.e. 'cellType': 'PYR', etc. These tags can later be used to define the properties of the cells, or connectivity rules.
 
-Let's now add a special type of population used to provide background driving inputs to the cells, labeled ``background``. In this case the cell model will be ``NetStim`` (NEURON's artificial spike generator), and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
-
-	netParams.popParams['background'] = {'rate': 10, 'noise': 0.5, 'cellModel': 'NetStim'}
 
 To get a better intuition of the data structure, you can ``print netParams.popParams`` to see all the populations parameters, or print ``print netParams.popParams['M']`` to see the parameters of population 'M'.
 
@@ -196,6 +193,19 @@ Synaptic mechanisms will be added to cells as required during the connection pha
 	## Synaptic mechanism parameters
 	netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
 
+
+Stimulation
+^^^^^^^^^^^^^^^^^^^^^^
+
+Let's now add a some background stimulation to the cells using ``NetStim`` (NEURON's artificial spike generator). We will create a source of stimulation labeled ``bkg`` and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
+
+	# Stimulation parameters
+	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5,}
+
+Next we will specify what cells will be targeted by this stimulation. In this case we want all pyramidal cells so we set the conditions to ``{'cellType': 'PYR'}``. Finally we want the NetStims to be connected with a weight of 0.01, a delay of 5 ms, and to target the ``exc`` synaptic mechanism::
+
+	netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
+
  
 Connectivity rules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -214,7 +224,7 @@ Finally, we need to specify how to connect the cells, by adding items (connectiv
 
 * ``probability`` or ``convergence`` or ``divergence`` - optional parameter to specify the probability of connection (0 to 1), convergence (number of presyn cells per postsyn cell), or divergence (number of postsyn cells per presyn cell), respectively. If omitted, all-to-all connectivity is implemented.
 
-We will first add a rule to randomly connect the sensory to the motor population with a 50% probability::
+We will add a rule to randomly connect the sensory to the motor population with a 50% probability::
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
@@ -224,15 +234,6 @@ We will first add a rule to randomly connect the sensory to the motor population
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
 		'synMech': 'exc'})   		# synaptic mechanism 
-
-Next we will connect background inputs (NetStims) to all cells of both populations::
-
-	netParams.connParams['bg->PYR'] = { # background -> PYR label
-		'preConds': {'popLabel': 'background'}, 
-		'postConds': {'cellType': 'PYR'}, 
-		'weight': 0.01, 				# synaptic weight 
-		'delay': 5, 				# transmission delay (ms) 
-		'synMech': 'exc'})  		# synaptic mechanism 
 
 
 Simulation configuration options
@@ -395,7 +396,6 @@ Next we can create our background input population and the 6 cortical population
 	netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'} 
 	netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'} 
 	netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'} 
-	netParams.popParams['background'] = {'rate': 20, 'noise': 0.3, 'cellModel': 'NetStim'}
 
 
 Next we define the cell properties of each type of cell ('E' for excitatory and 'I' for inhibitory). We have made minor random modifications of some cell parameters just to illustrate that different cell types can have different properties::
@@ -420,15 +420,12 @@ As in previous examples we also add the parameters of the excitatory and inhibit
 	netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
 
-In terms of connectivity, we'll start by adding background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, gauss(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background inputs looks like this::
+In terms of stimulation, we'll add background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, gauss(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background stimulation looks like this::
 
+	# Stimulation parameters
+	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
+	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, gauss(5,2))', 'synMech': 'exc'}
 
-	## Cell connectivity rules
-	netParams.connParams['bg->all'] = { 
-	  'preConds': {'popLabel': 'background'}, 'postConds': {'cellType': ['E', 'I']}, # background -> all
-	  'weight': 0.01,                     # synaptic weight 
-	  'delay': 'max(1, gauss(5,2))',      # transmission delay (ms) 
-	  'synMech': 'exc'}                  # synaptic mechanism 
 
 We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``{'include': [('E2',0), ('E4', 0), ('E5', 5)]})``), plot the raster ordered based on cell cortical depth (``{'orderBy': 'y', 'orderInverse': True})``), show a 2D visualization of cell positions and connections, and plot the connectivity matrix::
 
@@ -526,7 +523,7 @@ Now we can map or apply any of the above stimulation sources to any subset of ce
 
 .. note:: The stimTargetParams of NetStims require connection parameters (e.g. weight and delay), since a new connection will be created to map/apply the NetStim to each target cell. 
 
-.. note:: NetStims can be added both using the above method (as stims), or by creating a special type of population with ``'cellModel': 'NetStim'`` and adding the appropriate connections.
+.. note:: NetStims can be added both using the above method (as stims), or by creating a population with ``'cellModel': 'NetStim'`` and adding the appropriate connections.
 
 
 Running the above network with different types of stimulation should produce the following raster::
@@ -555,7 +552,6 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 
 	# Population parameters
 	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50} # add dict with params for this pop 
-	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 	# Cell parameters
 
@@ -570,14 +566,12 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 	netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': -80}
 
-	 
-	# Connectivity parameters
-	netParams.connParams['bg->hop'] = {
-	    'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'hop'}, # background -> PYR
-	    'weight': 0.1,                    # fixed weight of 0.1
-	    'synMech': 'exc',                 # target exc synapse
-	    'delay': 1})                      # uniformly distributed delays between 1-5ms
+	# Stimulation parameters
+	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
+	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'popLabel': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
+
+	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
 	    'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
 	    'weight': 0.0,                      # weight of each connection

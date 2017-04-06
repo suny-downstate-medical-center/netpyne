@@ -1042,6 +1042,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
         fig.observe(secList)
         fig.color_list(secList, ivprops['colorSecs'])
         fig.flush()
+        fig.show(0) # show real diam
             # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):

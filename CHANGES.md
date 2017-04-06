@@ -6,6 +6,10 @@
 
 - Modified hpc_torque batch to accept nodes and ppn
 
+- New option to import cell with sections not inside an object 
+
+- plotShape now shows real diameters in interviews by default
+
 - Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
 
 - Fixed bug in plotConn bar graphs
@@ -25,6 +29,7 @@
 - Fixed bug plotting overlayed spikeHist over raster plot
 
 - Fixed bug in plotShape when includeAxon=False
+
 
 
 # Version 0.6.8

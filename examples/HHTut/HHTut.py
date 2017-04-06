@@ -26,7 +26,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 
 # Population parameters
 netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'yRange': [300, 500], 'color': 'red'} # add dict with params for this pop 
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR2', 'numCells': 100} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'NetStim', 'cellType': 'PYR2', 'numCells': 100} # add dict with params for this pop 
 
 
 # Cell parameters

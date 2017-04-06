@@ -2785,6 +2785,32 @@ if (isCellOnNode("SampleCellGroup", 0)) {
 - cant check if rules exist for particular cellModel, since could be applied based on other features (eg. yfrac); so have to
   make condition of point process make prioritary: 1st check if cellModel==point process -> PointCell; otherwise CompartCell
 
+* 17Apr05 Error checking
+** populationParams
+- cellModel: required, arbitrary value or pointprocess; 
+-- if arbitrary then create compartCell() and use cellParams
+-- if pointtprocess then create pointCell() and don't need cellParams
+
+- cellType: not required, but recommended; arbitrary value; used to associate population with cellParam rules
+
+- numCells, density or gridSpacing - at least 1 required
+-- numCells: fixed number of cells (integer)
+-- density: num cells per mm3 (float)
+-- gridSpacing: fixed spacing between cells (um)
+
+- xRange, yRange, zRange: optional, absolute allowed range to place cells; check within network size
+- xnormRange, ynormRange, znormRange: optional, normalized allowed range to place cells; check within 0,1
+
+- for NetStims:
+rate - Firing rate in Hz (note this is the inverse of the NetStim interval property).
+noise - Fraction of noise in NetStim (0 = deterministic; 1 = completely random).
+number - Max number of spikes generated (default = 1e12)
+seed - Seed for randomizer (optional; defaults to value set in simConfig.seeds[‘stim’])
+
+- check netParams network dimensions:
+-- netParams.sizeX, sizeY, sizeZ - net dimensions in um; check not 0 or negative
+-- shape - check either 'cuboid', 'cylinder' or 'ellipsoid'
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

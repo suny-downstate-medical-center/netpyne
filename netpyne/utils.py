@@ -157,7 +157,10 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             else:
                 cell = getattr(h, cellName)(*cellArgs) # create cell using template, passing list with args
         else:
-            cell = getattr(h, cellName)
+            try:
+                cell = getattr(h, cellName)
+            except:
+                cell = None
     elif fileName.endswith('.py'):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)

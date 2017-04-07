@@ -420,7 +420,6 @@ class NetParams (object):
         for sec, wnorm in weightNorm.iteritems():
             if sec in cellRule['secs']:  
                 wnorm = [min(wn,threshold*somaWeightNorm) for wn in wnorm]
-                print wnorm
                 cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
 
 

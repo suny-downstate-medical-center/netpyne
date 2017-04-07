@@ -402,7 +402,7 @@ class NetParams (object):
             if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
 
 
-    def addCellParamsWeightNorm(self, label, fileName):
+    def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
         import pickle
         if label in self.cellParams:
             cellRule = self.cellParams[label]
@@ -412,8 +412,15 @@ class NetParams (object):
 
         with open(fileName, 'r') as fileObj: 
             weightNorm = pickle.load(fileObj)
+        try:
+            somaWeightNorm = weightNorm['soma'][0]
+        except:
+            print 'Error setting weightNorm: no soma section available to set threshold'
+            return
         for sec, wnorm in weightNorm.iteritems():
             if sec in cellRule['secs']:  
+                wnorm = [min(wn,threshold*somaWeightNorm) for wn in wnorm]
+                print wnorm
                 cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
 
 

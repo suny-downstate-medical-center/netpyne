@@ -10,6 +10,8 @@
 
 - plotShape now shows real diameters in interviews by default
 
+- Added option to set threshold when loading weightNorm
+
 - Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
 
 - Fixed bug in plotConn bar graphs

@@ -2812,11 +2812,38 @@ seed - Seed for randomizer (optional; defaults to value set in simConfig.seeds[â
 -- shape - check either 'cuboid', 'cylinder' or 'ellipsoid'
 
 * 17Apr07 GUI
-** gantt chart comments
+** gantt chart
 - start before sept
 - have minor demo (pics) by Oct so can include in grant -- maybe move standalone to later
 - import cells should be together with netPArams UI
 - should all fit within avail budget -- if not, give us tasks that we can do
+
+** gantt chart
+*** infrastructure
+- improv design - required 
+- migrate to npm - started, dependencies managed, needs to happen and easier to maintain, required
+- update to latest jupyter - doesn't need to happen
+- improve interaction - need to understand
+- sync mechs - almost 0
+- decouple components - postpone until see if required, maybe refactor in future
+- refactor + bug fixing - cell builder issue
+*** standalone application - nice to have
+*** transition - will become smaller
+*** NetPyNE UI
+netPAramsUI + simConfigUI - for chickens
+*** Network support
+- map geppetoo - required
+- performance to load bigger models - 10k
+- visualization - simplify 3 different levels
+- advance - remove 
+- ability to simulate large nets
+- visualize results - focus on netpyne/matplotlib, and use Neuron-UI voltage trace
+*** Support for parallel simulation
+- run from commandline 
+- maybe don't need - just use to sketch out
+*** embed python UI into Geppetto
+- nice to have, but not essential
+*** bug fixing
 
 
 * Netpyne Models/Users

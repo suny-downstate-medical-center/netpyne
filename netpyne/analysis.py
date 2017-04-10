@@ -378,7 +378,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Plot synchrony lines 
     if syncLines: 
         for spkt in spkts:
-            ax1.plt.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
+            ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
@@ -1384,9 +1384,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     if graphType == 'matrix':
         # Create plot
         fig = plt.figure(figsize=figSize)
-        fig.plt.subplots_adjust(right=0.98) # Less space on right
-        fig.plt.subplots_adjust(top=0.96) # Less space on top
-        fig.plt.subplots_adjust(bottom=0.02) # Less space on bottom
+        fig.subplots_adjust(right=0.98) # Less space on right
+        fig.subplots_adjust(top=0.96) # Less space on top
+        fig.subplots_adjust(bottom=0.02) # Less space on bottom
         h = plt.axes()
 
         plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
@@ -1830,12 +1830,12 @@ def plotWeightChanges():
     if sim.usestdp:
         # create plot
         figh = plt.figure(figsize=(1.2*8,1.2*6))
-        figh.plt.subplots_adjust(left=0.02) # Less space on left
-        figh.plt.subplots_adjust(right=0.98) # Less space on right
-        figh.plt.subplots_adjust(top=0.96) # Less space on bottom
-        figh.plt.subplots_adjust(bottom=0.02) # Less space on bottom
-        figh.plt.subplots_adjust(wspace=0) # More space between
-        figh.plt.subplots_adjust(hspace=0) # More space between
+        figh.subplots_adjust(left=0.02) # Less space on left
+        figh.subplots_adjust(right=0.98) # Less space on right
+        figh.subplots_adjust(top=0.96) # Less space on bottom
+        figh.subplots_adjust(bottom=0.02) # Less space on bottom
+        figh.subplots_adjust(wspace=0) # More space between
+        figh.subplots_adjust(hspace=0) # More space between
         h = plt.axes()
 
         # create data matrix

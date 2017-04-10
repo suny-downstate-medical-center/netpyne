@@ -412,8 +412,10 @@ class NetParams (object):
 
         with open(fileName, 'r') as fileObj: 
             weightNorm = pickle.load(fileObj)
+
         try:
-            somaWeightNorm = weightNorm['soma'][0]
+            somaSec = next((k for k in weightNorm.keys() if k.startswith('soma')),None)
+            somaWeightNorm = weightNorm[somaSec][0]
         except:
             print 'Error setting weightNorm: no soma section available to set threshold'
             return

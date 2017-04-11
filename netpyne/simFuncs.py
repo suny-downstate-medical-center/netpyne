@@ -28,7 +28,6 @@ import sim, specs
 
 
 
-
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
@@ -149,9 +148,21 @@ def loadNet (filename, data=None, instantiate=True):
                     # create new CompartCell object and add attributes, but don't create sections or associate gid yet
                     # TO DO: assumes CompartCell -- add condition to load PointCell
                     cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)  
-                    cell.secs = Dict(cellLoad['secs'])
-                    cell.conns = [Dict(conn) for conn in cellLoad['conns']]
-                    cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                    try:
+                        cell.secs = Dict(cellLoad['secs'])
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell secs' 
+
+                    try:
+                        cell.conns = [Dict(conn) for conn in cellLoad['conns']]
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell conns' 
+
+                    try:
+                        cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                    except:
+                        if sim.cfg.verbose: ' Unable to load cell stims' 
+
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))
                 print('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
@@ -168,8 +179,11 @@ def loadNet (filename, data=None, instantiate=True):
                     # create all NEURON Netcons, NetStims, etc
                     sim.pc.barrier()
                     for cell in sim.net.cells:
-                        cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
-                        cell.addConnsNEURONObj()
+                        try:
+                            cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                            cell.addConnsNEURONObj()
+                        except:
+                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims' 
 
                     print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
 
@@ -604,9 +618,9 @@ def setupRecording ():
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
         if isinstance(sim.cfg.analysis['plotRaster'],dict) and 'include' in sim.cfg.analysis['plotRaster']:
-            netStimPops = [popLabel for popLabel,pop in sim.net.pops.iteritems() if pop.tags['cellModel']=='NetStim']+['allNetStims']
+            netStimLabels = sim.net.params.stimSourceParams.keys()+['allNetStims']
             for item in sim.cfg.analysis['plotRaster']['include']:
-                if item in netStimPops: 
+                if item in netStimLabels: 
                     sim.cfg.recordStim = True
                     break
 
@@ -615,9 +629,9 @@ def setupRecording ():
             sim.cfg.recordStim = True
 
         elif (isinstance(sim.cfg.analysis['plotSpikeHist'],dict) and 'include' in sim.cfg.analysis['plotSpikeHist']) :
-            netStimPops = [popLabel for popLabel,pop in sim.net.pops.iteritems() if pop.tags['cellModel']=='NetStim']+['allNetStims', 'eachPop']
+            netStimLabels = sim.net.params.stimSourceParams.keys()+['allNetStims','eachPop']
             for item in sim.cfg.analysis['plotSpikeHist']['include']:
-                if item in netStimPops: 
+                if item in netStimLabels: 
                     sim.cfg.recordStim = True
                     break
                   
@@ -660,7 +674,7 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList (include):
-    if sim.nhosts > 1 and any(isinstance(cond, tuple) for cond in include): # Gather tags from all cells 
+    if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells 
         allCellTags = sim._gatherAllCellTags()  
     else:
         allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
@@ -677,10 +691,10 @@ def getCellsList (include):
         
         elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids)) 
-            #[c.gid for c in sim.net.cells if c.tags['popLabel']==condition])
         
-        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+        elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
+
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):

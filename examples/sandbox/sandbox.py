@@ -28,6 +28,27 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 
 
 ###############################################################################
+# SIMULATION PARAMETERS
+###############################################################################
+
+# Simulation parameters
+simConfig.duration = 1.0*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.1 # Internal integration timestep to use
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = 0 #False  # show detailed messages 
+
+# Recording 
+simConfig.recordCells = [('PYR1',5), 8]
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+
+# # Analysis and plotting 
+#simConfig.analysis['plotRaster'] = {'figSize': (20,8)} #True
+#simConfig.analysis['plot2Dnet'] = True
+
+
+
+###############################################################################
 # NETWORK PARAMETERS
 ###############################################################################
 
@@ -38,9 +59,10 @@ netParams.sizeZ = 20
 
 
 # Population parameters
-netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
-netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
-#netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 10000, 'interval': 100, 'noise': 0.5, 'start': 50}  # pop of NetStims
+netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
+#netParams.popParams['artifVec'] = {'cellModel': 'VecStim', 'numCells': 1, 'interval': 100, 'noise': 0.5, 'start': 50, 
+#    'pulses':[{'start': 1000, 'end': 1400, 'rate': 100, 'noise': 0.5}]}  # pop of NetStims
 # netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
 #    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
 
@@ -49,8 +71,8 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 
 # Stimulation parameters
-# netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 100, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-# netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
+netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 20, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
 
 
 # Cell parameters
@@ -63,53 +85,46 @@ netParams.cellParams['PYR'] = cellParams
 
 
 # Connections
-netParams.connParams['artif1->PYR1'] = {
-    'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
-    'convergence': 4,
-    'weight': 0.005,                    
-    'synMech': 'AMPA',                
-    'delay': 'uniform(1,5)',
-    'synsPerConn': 1}          
+# netParams.connParams['artif1->PYR1'] = {
+#     'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
+#     'convergence': 4,
+#     'weight': 0.005,                    
+#     'synMech': 'AMPA',                
+#     'delay': 'uniform(1,5)',
+#     'synsPerConn': 1}          
 
-netParams.connParams['PYR2->PYR1'] = {
-    'preConds': {'popLabel': 'PYR2'}, 'postConds': {'popLabel': 'PYR1'},
+netParams.connParams['PYR1->PYR2_1'] = {
+    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
     'probability': 0.1,
     'weight': 0.2,                     
     'delay': 'uniform(1,5)',
     'synsPerConn': 1}     
 
-netParams.addConnParams('artif1->PYR2',
-    {'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR2'}, 
-    'divergence': 3,
-    'weight': 0.05,              
-    'delay': 3,
-    'synsPerConn': 1})        
+netParams.connParams['PYR1->PYR2_2'] = {
+    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
+    'probability': 0.1,
+    'weight': 0.4,                     
+    'delay': 'uniform(1,5)',
+    'synsPerConn': 1} 
 
+# netParams.addConnParams('artif1->PYR2',
+#     {'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR2'}, 
+#     'divergence': 3,
+#     'weight': 0.05,              
+#     'delay': 3,
+#     'synsPerConn': 1})        
 
-###############################################################################
-# SIMULATION PARAMETERS
-###############################################################################
-
-# Simulation parameters
-simConfig.duration = 0.1*1e3 # Duration of the simulation, in ms
-simConfig.dt = 0.1 # Internal integration timestep to use
-simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
-simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = 0 #False  # show detailed messages 
-
-# Recording 
-simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
-
-# # Analysis and plotting 
-simConfig.analysis['plotRaster'] = True
-simConfig.analysis['plot2Dnet'] = True
 
 
 ###############################################################################
 # RUN SIM
 ###############################################################################
+simConfig.analysis['plotRaster'] = {'saveFig': True, 'showFig':True, 'labels': 'overlay', 'popRates': True, 
+                                    'orderInverse': True, 'figSize': (12,10), 'lw': 0.6, 'marker': '|'} 
 
 sim.createSimulateAnalyze()
+
+
 #sim.create()
 #sim.gatherData()
 

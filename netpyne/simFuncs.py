@@ -639,6 +639,17 @@ def setupRecording ():
 
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+        
+        cat = 0
+        total = 0
+        for key in sim.simData:
+            if sim.cfg.verbose: print("   Recording: %s:"%key)
+            if len(sim.simData[key])>0: cat+=1
+            for k2 in sim.simData[key]:
+                if sim.cfg.verbose: print("      %s"%k2)
+                total+=1
+        print("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
+                
     
     timing('stop', 'setrecordTime')
 
@@ -787,7 +798,7 @@ def runSim ():
     preRun()
     init()
 
-    if sim.rank == 0: print('\nRunning...')
+    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
     
     sim.pc.barrier() # Wait for all hosts to get to this point

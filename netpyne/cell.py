@@ -128,50 +128,77 @@ class Cell (object):
     def recordTraces (self):
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.iteritems():
-            try:
-                ptr = None
-                if 'loc' in params:
-                    if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                        ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
-                    elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
-                        sec = self.secs[params['sec']]
-                        synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                        ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
-                    else:  # eg. soma(0.5)._ref_v
-                        ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__('_ref_'+params['var'])
-                elif 'synMech' in params:  # special case where want to record from multiple synMechs
-                    if 'sec' in params:
-                        sec = self.secs[params['sec']]
-                        synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                        ptr = [synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs]
-                        secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
-                    else: 
-                        ptr = []
-                        secLocs = []
-                        for secName,sec in self.secs.iteritems():
-                            synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr.extend([synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs])
-                            secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
-
-                else:
-                    if 'pointp' in params: # eg. soma.izh._ref_u
-                        if params['pointp'] in self.secs[params['sec']]['pointps']:
-                            ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
-                    elif 'var' in params: # point process cell eg. cell._ref_v
-                        ptr = self.hPointp.__getattribute__('_ref_'+params['var'])
-
-                if ptr:  # if pointer has been created, then setup recording
-                    if isinstance(ptr, list):
-                        sim.simData[key]['cell_'+str(self.gid)] = {}
-                        for ptrItem,secLoc in zip(ptr, secLocs):
-                            sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                            sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
+            
+            conditionsMet = 1
+            
+            if 'conds' in params:
+                for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
+                    # choose what to comapare to 
+                    if condKey in ['postGid']:
+                        compareTo = self.gid
                     else:
-                        sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                        sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
-                    if sim.cfg.verbose: print '  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
-            except:
-                if sim.cfg.verbose: print '  Cannot record ', key, 'from cell ', self.gid
+                        compareTo = self.tags[condKey]
+
+                    # check if conditions met
+                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
+                        if compareTo < condVal[0] or compareTo > condVal[1]:
+                            conditionsMet = 0
+                            break
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
+                        if compareTo not in condVal:
+                            conditionsMet = 0
+                            break 
+                    elif compareTo != condVal: 
+                        conditionsMet = 0
+                        break
+                        
+            if conditionsMet:
+                try:
+                    ptr = None
+                    if 'loc' in params:
+                        if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
+                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                        elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
+                            sec = self.secs[params['sec']]
+                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
+                            ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
+                        else:  # eg. soma(0.5)._ref_v
+                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__('_ref_'+params['var'])
+                    elif 'synMech' in params:  # special case where want to record from multiple synMechs
+                        if 'sec' in params:
+                            sec = self.secs[params['sec']]
+                            synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
+                            ptr = [synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs]
+                            secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
+                        else: 
+                            ptr = []
+                            secLocs = []
+                            for secName,sec in self.secs.iteritems():
+                                synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
+                                ptr.extend([synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs])
+                                secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
+
+                    else:
+                        if 'pointp' in params: # eg. soma.izh._ref_u
+                            if params['pointp'] in self.secs[params['sec']]['pointps']:
+                                ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
+                        elif 'var' in params: # point process cell eg. cell._ref_v
+                            ptr = self.hPointp.__getattribute__('_ref_'+params['var'])
+
+                    if ptr:  # if pointer has been created, then setup recording
+                        if isinstance(ptr, list):
+                            sim.simData[key]['cell_'+str(self.gid)] = {}
+                            for ptrItem,secLoc in zip(ptr, secLocs):
+                                sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                                sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
+                        else:
+                            sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                            sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
+                        if sim.cfg.verbose: print '  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
+                except:
+                    if sim.cfg.verbose: print '  Cannot record ', key, 'from cell ', self.gid
+            else:
+                if sim.cfg.verbose: print '  Conditions preclude recording ', key, ' from cell ', self.gid
         #else:
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 

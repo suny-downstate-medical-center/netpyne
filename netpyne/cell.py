@@ -1022,8 +1022,32 @@ class CompartCell (Cell):
 
     def addStim (self, params):
         ''' Add stimulus.
+        
+        If no valid sec specified for stim on cell gid, use first section available.
             
-        Input: params
+        Input: 
+              params:
+                    sec: section
+                    type : NetStim ( predefined) or cell model
+                    start : default start time
+                    number : number
+                    
+
+            connParams = {'preGid': params['type'], 
+                'sec': params.get('sec'), 
+                'loc': params.get('loc'), 
+                'synMech': params.get('synMech'), 
+                'weight': params.get('weight'),
+                'delay': params.get('delay'),
+                'synsPerConn': params.get('synsPerConn')}
+                
+            netStimParams = {'source': params['source'],
+                'type': params['type'],
+                'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
+                'noise': params['noise'],
+                'number': params['number'],
+                'start': params['start'],
+                'seed': params['seed'] if 'seed' in params else sim.cfg.seeds['stim']}
         
         Output:
         
@@ -1116,7 +1140,7 @@ class CompartCell (Cell):
     def _setConnSections (self, params):
         ''' Private method to set synaptic connection weights.
             
-        Input: params - 
+        Input: params : sec - section for conenction to cell. Use soma if it existd, else use first section available.  
                netStimParams - 
                secLabels - section labels.
                
@@ -1564,6 +1588,19 @@ class PointCell (Cell):
         Input: 
           params - threshold, weight, delay and other paramters.
           netStimParams - Stimulation parameters, default is None.
+          Params: 
+          
+          threshold: threshold for stimulation. If no threshold specified, set default
+          weight: Weight of conenction. If no weight specified, set default
+          delay: Delay in stimulus. If no delay, set default
+          synsPerConn: Synapses per connections. If no synsPerConn, set default
+          preGid: ID for cell. Check to avoid self conenction.
+
+           Pulse related parameters:
+           
+           pulsetype : params['shape']['pulseType'] default to 'square'
+           pulsewidth : params['shape']['pulseWidth'] default to 100.0
+           pulseperiod : params['shape']['pulsePeriod'] default to 100.0
           
         Output:
         Example:

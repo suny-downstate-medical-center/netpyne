@@ -455,7 +455,6 @@ class Network (object):
             sim.cfg.createNEURONObj = False
             sim.cfg.addSynMechs = False
 
-
         for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
             connParam['label'] = connParamLabel

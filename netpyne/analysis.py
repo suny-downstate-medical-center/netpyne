@@ -25,11 +25,11 @@ warnings.filterwarnings("ignore")
 colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5],
+            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10],
             [0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]] 
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -173,30 +173,30 @@ def syncMeasure ():
 ######################################################################################################################################################
 def getCellsInclude(include):
     allCells = sim.net.allCells
-    allNetStimPops = [popLabel for popLabel,pop in sim.net.allPops.iteritems() if pop['tags'].get('cellModel')=='NetStim']
+    allNetStimLabels = sim.net.params.stimSourceParams.keys()
     cellGids = []
     cells = []
-    netStimPops = []
+    netStimLabels = []
     for condition in include:
         if condition == 'all':  # all cells + Netstims 
             cellGids = [c['gid'] for c in allCells]
             cells = list(allCells)
-            netStimPops = list(allNetStimPops)
-            return cells, cellGids, netStimPops
+            netStimLabels = list(allNetStimLabels)
+            return cells, cellGids, netStimLabels
 
         elif condition == 'allCells':  # all cells 
             cellGids = [c['gid'] for c in allCells]
             cells = list(allCells)
 
         elif condition == 'allNetStims':  # all cells + Netstims 
-            netStimPops = list(allNetStimPops)
+            netStimLabels = list(allNetStimLabels)
 
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
         elif isinstance(condition, basestring):  # entire pop
-            if condition in allNetStimPops:
-                netStimPops.append(condition)
+            if condition in allNetStimLabels:
+                netStimLabels.append(condition)
             else:
                 cellGids.extend([c['gid'] for c in allCells if c['tags']['popLabel']==condition])
         
@@ -211,7 +211,7 @@ def getCellsInclude(include):
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])
 
-    return cells, cellGids, netStimPops
+    return cells, cellGids, netStimLabels
 
 
 ######################################################################################################################################################
@@ -252,17 +252,17 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
     # Select cells to include
-    cells, cellGids, netStimPops = getCellsInclude(include)
-    selectedPops = [cell['tags']['popLabel'] for cell in cells]+netStimPops
+    cells, cellGids, netStimLabels = getCellsInclude(include)
+    selectedPops = [cell['tags']['popLabel'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+    if netStimLabels: popLabels.append('NetStims')
     popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
         try:
             spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
         except:
-            print 'No spikes available to plot raster'
-            return None
+            spkgids, spkts = [], []
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
 
     # Order by
@@ -291,22 +291,31 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Add NetStim spikes
     spkts,spkgidColors = list(spkts), list(spkgidColors)
+    numCellSpks = len(spkts)
     numNetStims = 0
-    for netStimPop in netStimPops:
-        cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
-        if len(cellStims) > 0:
+    for netStimLabel in netStimLabels:
+        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+            for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+        if len(netStimSpks) > 0:
             lastInd = max(spkinds) if len(spkinds)>0 else 0
-            spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
-            spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+            spktsNew = netStimSpks 
+            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
             spkts.extend(spktsNew)
             spkinds.extend(spkindsNew)
             for i in range(len(spktsNew)): 
-                spkgidColors.append(popColors[netStimPop])
-            numNetStims += len(cellStims)
+                spkgidColors.append(popColors['NetStims'])
+            numNetStims += 1
+        else:
+            pass
+            #print netStimLabel+' produced no spikes'
     if len(cellGids)>0 and numNetStims: 
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
+
+    if numCellSpks+numNetStims == 0:
+        print 'No spikes available to plot raster'
+        return None
 
     # Time Range
     if timeRange == [0,sim.cfg.duration]:
@@ -327,7 +336,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkgidColors = spkgidColors[:maxSpikes]
         timeRange[1] =  max(spkts)
 
-
     # Calculate spike histogram 
     if spikeHist:
         histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
@@ -341,45 +349,39 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
+ 
     ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats
     gidPops = [cell['tags']['popLabel'] for cell in cells]
-    popNumCells = [float(gidPops.count(pop)) for pop in popLabels]
+    popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
     totalSpikes = len(spkts)   
     totalConnections = sum([len(cell['conns']) for cell in cells])   
-    numCells = len(cells)
-    firingRate = float(totalSpikes)/numCells/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate 
+    numCells = len(cells) 
+    firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate 
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
 
     if popRates:
         avgRates = {}
-        for pop, popNum in zip(popLabels, popNumCells):
-            if numCells > 0:
-                tsecs = (timeRange[1]-timeRange[0])/1e3 
-                avgRates[pop] = len([spkid for spkid in spkinds if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/popNum/tsecs
-    
+        tsecs = (timeRange[1]-timeRange[0])/1e3 
+        for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
+            if numCells > 0 and pop != 'NetStims':
+                if numCellSpks == 0:
+                    avgRates[pop] = 0
+                else:
+                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/popNum/tsecs
+        if numNetStims:
+            popNumCells[-1] = numNetStims
+            avgRates['NetStims'] = len([spkid for spkid in spkinds[numCellSpks:]])/numNetStims/tsecs 
+
     # Plot synchrony lines 
     if syncLines: 
         for spkt in spkts:
-            ax1.plt.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
+            ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
-
-    # Plot spike hist
-    if spikeHist == 'overlay':
-        ax2 = ax1.twinx()
-        ax2.plot (histoT, histoCount, linewidth=0.5)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
-        ax2.set_xlim(timeRange)
-    elif spikeHist == 'subplot':
-        ax2=plt.subplot(gs[1])
-        plot (histoT, histoCount, linewidth=1.0)
-        ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz)
-        ax2.set_xlim(timeRange)
 
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
@@ -387,11 +389,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
     ax1.set_ylim(-1, len(cells)+numNetStims+1)    
 
-    if orderInverse: plt.gca().invert_yaxis()
-
     # Add legend
     if popRates:
-        popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels]
+        popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
     if labels == 'legend':
         for ipop,popLabel in enumerate(popLabels):
@@ -407,7 +407,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         color = 'k'
         tx = 1.01
         margin = 1.0/numCells/2
-        tys = [(popLen/numCells)*(1-2*margin) for popLen in popNumCells]
+        tys = [(float(popLen)/numCells)*(1-2*margin) for popLen in popNumCells]
         tysOffset = list(cumsum(tys))[:-1]
         tysOffset.insert(0, 0)
         labels = popLabelRates if popRates else popLabels
@@ -421,6 +421,20 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         maxLabelLen = max([len(l) for l in labels])
         plt.subplots_adjust(right=(1.0-0.011*maxLabelLen))
 
+    # Plot spike hist
+    if spikeHist == 'overlay':
+        ax2 = ax1.twinx()
+        ax2.plot (histoT, histoCount, linewidth=0.5)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
+        ax2.set_xlim(timeRange)
+    elif spikeHist == 'subplot':
+        ax2=plt.subplot(gs[1])
+        ax2.plot (histoT, histoCount, linewidth=1.0)
+        ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
+        ax2.set_ylabel('Spike count', fontsize=fontsiz)
+        ax2.set_xlim(timeRange)
+
+    if orderInverse: plt.gca().invert_yaxis()
 
     # save figure data
     if saveData:
@@ -500,7 +514,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
-        cells, cellGids, netStimPops = getCellsInclude([subset])
+        cells, cellGids, netStimLabels = getCellsInclude([subset])
         numNetStims = 0
 
         # Select cells to include
@@ -512,20 +526,20 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         else: 
             spkinds,spkts = [],[]
 
-
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
-        for netStimPop in netStimPops:
-            if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
-                if len(cellStims) > 0:
+        if 'stims' in sim.allSimData:
+            for netStimLabel in netStimLabels:
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+                for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                if len(netStimSpks) > 0:
                     lastInd = max(spkinds) if len(spkinds)>0 else 0
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
-                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spktsNew = netStimSpks 
+                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
                     spkts.extend(spktsNew)
                     spkinds.extend(spkindsNew)
-                    numNetStims += len(cellStims)
+                    numNetStims += 1
 
         histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
@@ -539,11 +553,11 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            title (str(subset), fontsize=fontsiz)
+            plt.title (str(subset), fontsize=fontsiz)
             color = 'blue'
    
         if graphType == 'line':
-            plot (histoT, histoCount, linewidth=1.0, color = color)
+            plt.plot (histoT, histoCount, linewidth=1.0, color = color)
         elif graphType == 'bar':
             plt.bar(histoT, histoCount, width = binSize, color = color)
 
@@ -640,7 +654,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
-        cells, cellGids, netStimPops = getCellsInclude([subset])
+        cells, cellGids, netStimLabels = getCellsInclude([subset])
         numNetStims = 0
 
         # Select cells to include
@@ -656,16 +670,17 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
-        for netStimPop in netStimPops:
-            if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
-                if len(cellStims) > 0:
+        if 'stims' in sim.allSimData:
+            for netStimLabel in netStimLabels:
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+                    for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                if len(netStimSpks) > 0:
                     lastInd = max(spkinds) if len(spkinds)>0 else 0
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
-                    spkindsNew = [lastInd+1+i for i,cellStim in enumerate(cellStims) for spkt in cellStim[netStimPop]]
+                    spktsNew = netStimSpks 
+                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
                     spkts.extend(spktsNew)
                     spkinds.extend(spkindsNew)
-                    numNetStims += len(cellStims)
+                    numNetStims += 1
 
         histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
@@ -892,10 +907,21 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], synStyle = '.', synSiz=3, cvar=None, cvals=None, iv=False, ivprops=None,
+def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
+        - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
+        when plotting connections (default: ['all'])
+        - includePost: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells to show shape of (default: ['all'])
+        - synStyle: Style of marker to show synapses (default: '.') 
+        - dist: 3D distance (like zoom) (default: 0.6)
+        - synSize: Size of marker to show synapses (default: 3)
+        - cvar: ('numSyns'|'weightNorm') Variable to represent in shape plot (default: None)
+        - cvals: List of values to represent in shape plot; must be same as num segments (default: None)
+        - iv: Use NEURON Interviews (instead of matplotlib) to show shape plot (default: None)
+        - ivprops: Dict of properties to plot using Interviews (default: None)
+        - includeAxon: Include axon in shape plot (default: True)
         - showSyns (True|False): Show synaptic connections in 3D 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
@@ -925,14 +951,20 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    for sec in cellPost.secs.values():
+                    cellSecs = cellPost.secs.values() if includeAxon else [s for s in cellPost.secs.values() if 'axon' not in s['hSec'].hname()] 
+                    for sec in cellSecs:
                         if 'weightNorm' in sec:
                             secs.append(sec['hSec'])
                             cvals.extend(sec['weightNorm'])
+
+                cvals = np.array(cvals)
+                cvals = cvals/min(cvals)
+
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    for secLabel,sec in cellPost.secs.iteritems():
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.iteritems() if 'axon' not in s['hSec'].hname()}
+                    for secLabel,sec in cellSecs.iteritems():
                         nseg=sec['hSec'].nseg
                         nsyns = [0] * nseg
                         secs.append(sec['hSec'])
@@ -940,27 +972,28 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
-            cvals = np.array(cvals)
+                cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
-        if not includeAxon:         
-            secs = [sec for sec in secs if 'axon' not in secs.hname()]
+        # if not includeAxon:         
+        #     secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
+        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
         fig=plt.figure(figsize=(10,10))
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
-        shapeax.dist=0.8*shapeax.dist
+        shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
         cmap=plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if cvals and len(cvals)>0: 
+        if not cvals==None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label('number of synapses', rotation=90)
+            cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'
@@ -969,7 +1002,8 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
                   
-        plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+        #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+        shapeax.set_xticklabels([])
 
         # save figure
         if saveFig: 
@@ -1008,6 +1042,7 @@ def plotShape (showSyns = False, includePre = ['all'], includePost = ['all'], sy
         fig.observe(secList)
         fig.color_list(secList, ivprops['colorSecs'])
         fig.flush()
+        fig.show(0) # show real diam
             # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
@@ -1349,9 +1384,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     if graphType == 'matrix':
         # Create plot
         fig = plt.figure(figsize=figSize)
-        fig.plt.subplots_adjust(right=0.98) # Less space on right
-        fig.plt.subplots_adjust(top=0.96) # Less space on top
-        fig.plt.subplots_adjust(bottom=0.02) # Less space on bottom
+        fig.subplots_adjust(right=0.98) # Less space on right
+        fig.subplots_adjust(top=0.96) # Less space on top
+        fig.subplots_adjust(bottom=0.02) # Less space on bottom
         h = plt.axes()
 
         plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
@@ -1421,9 +1456,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             SBG = stackedBarGraph.StackedBarGrapher()
     
             fig = plt.figure(figsize=figSize)
-            ax = fig.add_plt.subplot(111)
-            SBG.stackedBarplt.plot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
-            title ('Connection '+feature+' stacked bar graph')
+            ax = fig.add_subplot(111)
+            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
+            plt.title ('Connection '+feature+' stacked bar graph')
             plt.legend(popsPre)
             plt.tight_layout()
 
@@ -1795,12 +1830,12 @@ def plotWeightChanges():
     if sim.usestdp:
         # create plot
         figh = plt.figure(figsize=(1.2*8,1.2*6))
-        figh.plt.subplots_adjust(left=0.02) # Less space on left
-        figh.plt.subplots_adjust(right=0.98) # Less space on right
-        figh.plt.subplots_adjust(top=0.96) # Less space on bottom
-        figh.plt.subplots_adjust(bottom=0.02) # Less space on bottom
-        figh.plt.subplots_adjust(wspace=0) # More space between
-        figh.plt.subplots_adjust(hspace=0) # More space between
+        figh.subplots_adjust(left=0.02) # Less space on left
+        figh.subplots_adjust(right=0.98) # Less space on right
+        figh.subplots_adjust(top=0.96) # Less space on bottom
+        figh.subplots_adjust(bottom=0.02) # Less space on bottom
+        figh.subplots_adjust(wspace=0) # More space between
+        figh.subplots_adjust(hspace=0) # More space between
         h = plt.axes()
 
         # create data matrix

@@ -2785,6 +2785,67 @@ if (isCellOnNode("SampleCellGroup", 0)) {
 - cant check if rules exist for particular cellModel, since could be applied based on other features (eg. yfrac); so have to
   make condition of point process make prioritary: 1st check if cellModel==point process -> PointCell; otherwise CompartCell
 
+* 17Apr05 Error checking
+** populationParams
+- cellModel: required, arbitrary value or pointprocess; 
+-- if arbitrary then create compartCell() and use cellParams
+-- if pointtprocess then create pointCell() and don't need cellParams
+
+- cellType: not required, but recommended; arbitrary value; used to associate population with cellParam rules
+
+- numCells, density or gridSpacing - at least 1 required
+-- numCells: fixed number of cells (integer)
+-- density: num cells per mm3 (float)
+-- gridSpacing: fixed spacing between cells (um)
+
+- xRange, yRange, zRange: optional, absolute allowed range to place cells; check within network size
+- xnormRange, ynormRange, znormRange: optional, normalized allowed range to place cells; check within 0,1
+
+- for NetStims:
+rate - Firing rate in Hz (note this is the inverse of the NetStim interval property).
+noise - Fraction of noise in NetStim (0 = deterministic; 1 = completely random).
+number - Max number of spikes generated (default = 1e12)
+seed - Seed for randomizer (optional; defaults to value set in simConfig.seeds[‘stim’])
+
+- check netParams network dimensions:
+-- netParams.sizeX, sizeY, sizeZ - net dimensions in um; check not 0 or negative
+-- shape - check either 'cuboid', 'cylinder' or 'ellipsoid'
+
+* 17Apr07 GUI
+** gantt chart
+- start before sept
+- have minor demo (pics) by Oct so can include in grant -- maybe move standalone to later
+- import cells should be together with netPArams UI
+- should all fit within avail budget -- if not, give us tasks that we can do
+
+** gantt chart
+*** infrastructure
+- improv design - required 
+- migrate to npm - started, dependencies managed, needs to happen and easier to maintain, required
+- update to latest jupyter - doesn't need to happen
+- improve interaction - need to understand
+- sync mechs - almost 0
+- decouple components - postpone until see if required, maybe refactor in future
+- refactor + bug fixing - cell builder issue
+*** standalone application - nice to have
+*** transition - will become smaller
+*** NetPyNE UI
+netPAramsUI + simConfigUI - for chickens
+*** Network support
+- map geppetoo - required
+- performance to load bigger models - 10k
+- visualization - simplify 3 different levels
+- advance - remove 
+- ability to simulate large nets
+- visualize results - focus on netpyne/matplotlib, and use Neuron-UI voltage trace
+*** Support for parallel simulation
+- run from commandline 
+- maybe don't need - just use to sketch out
+*** embed python UI into Geppetto
+- nice to have, but not essential
+*** bug fixing
+
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -2810,7 +2871,8 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-** Learning (Birgit Kriener, Einevoll lab, University of Oslo)
+** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 * Related tools
 ** NEURON
 Multiscale simulator

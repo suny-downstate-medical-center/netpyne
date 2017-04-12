@@ -19,11 +19,11 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # func needs to be outside of class
-def runJob(script, cfgSavePath):
+def runJob(script, cfgSavePath, netParamsSavePath):
     from subprocess import Popen, PIPE
 
     print '\nJob in rank id: ',pc.id()
-    command = 'nrniv %s simConfig=%s' % (script, cfgSavePath) 
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print command+'\n'
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
@@ -85,8 +85,8 @@ class Batch(object):
             os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
  
             # copy netParams source to folder
-            targetFile = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + targetFile) 
+            netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
 
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
@@ -96,10 +96,10 @@ class Batch(object):
             # iterate over all param combinations
             if self.method == 'grid':
                 groupedParams = False
-                for p in self.params: 
+                for p in self.params:
                     if 'group' not in p: 
                         p['group'] = False # by default set linear to False
-                    elif 'group' == True: 
+                    elif p['group'] == True: 
                         groupedParams = True
 
                 labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
@@ -110,6 +110,7 @@ class Batch(object):
                     labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
                     valueCombGroups = izip(*(valuesListGroup))
                     indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                    labelList = labelListGroup+labelList
                 else:
                     valueCombGroups = [(0,)] # this is a hack -- improve!
                     indexCombGroups = [(0,)]
@@ -127,6 +128,7 @@ class Batch(object):
                     if groupedParams: # temporary hack - improve
                         iComb = iCombG+iCombNG
                         pComb = pCombG+pCombNG
+
                     else:
                         iComb = iCombNG
                         pComb = pCombNG
@@ -156,6 +158,8 @@ class Batch(object):
                         print 'Skipping job %s since output file already exists...' % (jobName)
                     elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                         print 'Skipping job %s since cfg file already exists...' % (jobName)
+                    elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
+                        print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
                     else:
                         # save simConfig json to saveFolder                        
                         self.cfg.simLabel = simLabel
@@ -170,13 +174,15 @@ class Batch(object):
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
                             sleep(sleepInterval)
                             
-                            numproc = self.runCfg.get('numproc', 1)
+                            nodes = self.runCfg.get('nodes', 1)
+                            ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
-                            nodesppn = 'nodes=1:ppn=%d'%(numproc)
+                            nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
+                            numproc = nodes*ppn
                             
-                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  
 
                             output, input = popen2('qsub') # Open a pipe to the qsub command.
 
@@ -211,7 +217,7 @@ class Batch(object):
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             numproc = nodes*coresPerNode
-                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s' % (numproc, script, cfgSavePath) 
+                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
 
                             jobString = """#!/bin/bash 
 #SBATCH --job-name=%s
@@ -228,7 +234,7 @@ source ~/.bashrc
 cd %s
 %s
 wait
-"""                       % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+                            """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             # output, input = popen2('sbatch') # Open a pipe to the qsub command.
@@ -251,7 +257,7 @@ wait
                             jobName = self.saveFolder+'/'+simLabel     
                             print 'Submitting job ',jobName
                             # master/slave bulletin board schedulling of jobs
-                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath)
+                            pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
             # wait for pc bulletin board jobs to finish
             try:

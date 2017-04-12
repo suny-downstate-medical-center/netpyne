@@ -19,7 +19,7 @@ from neuromlFuncs import *
 from wrappers import *
 import analysis
 from network import Network
-from cell import CompartCell, PointCell
+from cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
 from pop import Pop 
 import utils
 from neuron import h

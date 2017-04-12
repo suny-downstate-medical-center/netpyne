@@ -306,23 +306,29 @@ class Pop (object):
 
 
     def _setCellClass (self):
-        # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
-        try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
         
-            # Make sure it's not a NeuroML2 based cell
-            assert(not ('originalFormat' in self.tags and self.tags['originalFormat'] == 'NeuroML2'))
-            
-            tmp = getattr(h, self.tags['cellModel'])
-            self.cellModelClass = sim.PointCell
-            excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
-                        'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
-            params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
-            self.tags['params'] = params
-            for k in self.tags['params']: self.tags.pop(k)
-            sim.net.params.popTagsCopiedToCells.append('params')
-        except:
-            self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
-            # print "Error: cellModel=%s not a key in netParam.cellParams or a point process mechanism (eg. NetStim or IntFire1)" % (self.tags['cellModel'])
+        # Check whether it's a NeuroML2 based cell
+        if 'originalFormat' in self.tags:
+            if self.tags['originalFormat'] == 'NeuroML2':
+                self.cellModelClass = sim.NML2Cell
+            if self.tags['originalFormat'] == 'NeuroML2_SpikeSource':
+                self.cellModelClass = sim.NML2SpikeSource
+
+        else:
+            # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
+            try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+
+                    tmp = getattr(h, self.tags['cellModel'])
+                    self.cellModelClass = sim.PointCell
+                    excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
+                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
+                    params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
+                    self.tags['params'] = params
+                    for k in self.tags['params']: self.tags.pop(k)
+                    sim.net.params.popTagsCopiedToCells.append('params')
+            except:
+                self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
+                # print "Error: cellModel=%s not a key in netParam.cellParams or a point process mechanism (eg. NetStim or IntFire1)" % (self.tags['cellModel'])
 
 
     def __getstate__ (self): 

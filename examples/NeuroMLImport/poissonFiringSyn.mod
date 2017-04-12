@@ -26,7 +26,9 @@ NEURON {
     RANGE syn0_g                            : exposure
     
     RANGE syn0_i                            : exposure
-    
+    : Based on netstim.mod
+    THREADSAFE : only true if every instance has its own distinct Random
+    POINTER donotuse
 }
 
 UNITS {
@@ -70,7 +72,7 @@ ASSIGNED {
     rate_tsince (ms/ms)
     rate_syn0_A (/ms)
     rate_syn0_B (/ms)
-    
+    donotuse
 }
 
 STATE {
@@ -164,10 +166,67 @@ PROCEDURE rates() {
 }
 
 
-: Returns a float between 0 and max
+: Returns a float between 0 and max; implementation of random() as used in LEMS
 FUNCTION random_float(max) {
     
-    random_float = scop_random()*max
+    : This is not ideal, getting an exponential dist random number and then turning back to uniform
+    : However this is the easiest what to ensure mod files with random methods fit into NEURON's
+    : internal framework for managing internal number generation.
+    random_float = exp(-1*erand())*max
     
 }
+
+:****************************************************
+: Methods copied from netstim.mod in NEURON source
+
+ 
+PROCEDURE seed(x) {
+	set_seed(x)
+}
+
+VERBATIM
+double nrn_random_pick(void* r);
+void* nrn_random_arg(int argpos);
+ENDVERBATIM
+
+
+FUNCTION erand() {
+VERBATIM
+	if (_p_donotuse) {
+		/*
+		:Supports separate independent but reproducible streams for
+		: each instance. However, the corresponding hoc Random
+		: distribution MUST be set to Random.negexp(1)
+		*/
+		_lerand = nrn_random_pick(_p_donotuse);
+	}else{
+		/* only can be used in main thread */
+		if (_nt != nrn_threads) {
+           hoc_execerror("multithread random in NetStim"," only via hoc Random");
+		}
+ENDVERBATIM
+		: the old standby. Cannot use if reproducible parallel sim
+		: independent of nhost or which host this instance is on
+		: is desired, since each instance on this cpu draws from
+		: the same stream
+		erand = exprand(1)
+VERBATIM
+	}
+ENDVERBATIM
+}
+
+PROCEDURE noiseFromRandom() {
+VERBATIM
+ {
+	void** pv = (void**)(&_p_donotuse);
+	if (ifarg(1)) {
+		*pv = nrn_random_arg(1);
+	}else{
+		*pv = (void*)0;
+	}
+ }
+ENDVERBATIM
+}
+
+: End of methods copied from netstim.mod in NEURON source:****************************************************
 

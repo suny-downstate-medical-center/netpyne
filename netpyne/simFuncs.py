@@ -653,6 +653,17 @@ def setupRecording ():
 
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+        
+        cat = 0
+        total = 0
+        for key in sim.simData:
+            if sim.cfg.verbose: print("   Recording: %s:"%key)
+            if len(sim.simData[key])>0: cat+=1
+            for k2 in sim.simData[key]:
+                if sim.cfg.verbose: print("      %s"%k2)
+                total+=1
+        print("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
+                
     
     timing('stop', 'setrecordTime')
 
@@ -782,6 +793,10 @@ def preRun ():
         if cell.tags.get('cellModel') == 'NetStim':
             cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
+        pop = sim.net.pops[cell.tags['popLabel']]
+        if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
+            if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
+            cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
                 stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
@@ -797,7 +812,7 @@ def runSim ():
     preRun()
     init()
 
-    if sim.rank == 0: print('\nRunning...')
+    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
     
     sim.pc.barrier() # Wait for all hosts to get to this point
@@ -871,7 +886,7 @@ def gatherData ():
     if not sim.cfg.saveCellConns:  
         for cell in sim.net.cells:
             cell.conns = []
-
+            
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes 
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
@@ -961,7 +976,7 @@ def gatherData ():
                     pop['cellGids'] = sorted(allPopsCellGids[popLabel])
                 sim.net.allPops = allPops
         
-
+        
         # clean to avoid mem leaks
         for node in gather: 
             if node:
@@ -971,7 +986,7 @@ def gatherData ():
             if item: 
                 item.clear()
                 del item
-
+                
     else:  # if single node, save data in same format as for multiple nodes for consistency
         if sim.cfg.createNEURONObj:
             sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]

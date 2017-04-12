@@ -1,5 +1,7 @@
 # Version 0.6.9
 
+- Improved support for NeuroML export
+
 - Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
 
 - Added option to specify netParams .py file for batch 
@@ -11,6 +13,8 @@
 - plotShape now shows real diameters in interviews by default
 
 - Added option to set threshold when loading weightNorm
+
+- Added support for conditions on recordTraces
 
 - Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
 

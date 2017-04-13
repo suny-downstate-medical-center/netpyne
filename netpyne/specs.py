@@ -66,18 +66,18 @@ class Dict(dict):
 
     def fromdict(self, d):
         d = self.dotify(d) 
-        for k,v in d.iteritems():
+        for k,v in d.items():
             self[k] = v
     
     def __repr__(self):
-        keys = self.keys()
+        keys = list(self.keys())
         args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
         return '{%s}' % (args)
     
 
     def dotify(self, x):
         if isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
+            return Dict( (k, self.dotify(v)) for k,v in x.items() )
         elif isinstance(x, (list, tuple)):
             return type(x)( self.dotify(v) for v in x )
         else:
@@ -85,7 +85,7 @@ class Dict(dict):
 
     def undotify(self, x): 
         if isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
+            return dict( (k, self.undotify(v)) for k,v in x.items() )
         elif isinstance(x, (list, tuple)):
             return type(x)( self.undotify(v) for v in x )
         else:
@@ -166,20 +166,20 @@ class ODict(OrderedDict):
 
     def fromOrderedDict(self, d):
         d = self.dotify(d) 
-        for k,v in d.iteritems():
+        for k,v in d.items():
             self[k] = v
     
     def __repr__(self):
-        keys = self.keys()
+        keys = list(self.keys())
         args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
         return '{%s}' % (args)
     
 
     def dotify(self, x):
         if isinstance(x, OrderedDict):
-            return ODict( (k, self.dotify(v)) for k,v in x.iteritems() )
+            return ODict( (k, self.dotify(v)) for k,v in x.items() )
         elif isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
+            return Dict( (k, self.dotify(v)) for k,v in x.items() )
         elif isinstance(x, (list, tuple)):
             return type(x)( self.dotify(v) for v in x )
         else:
@@ -187,9 +187,9 @@ class ODict(OrderedDict):
 
     def undotify(self, x):  
         if isinstance(x, OrderedDict):
-            return OrderedDict( (k, self.undotify(v)) for k,v in x.iteritems() ) 
+            return OrderedDict( (k, self.undotify(v)) for k,v in x.items() ) 
         elif isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
+            return dict( (k, self.undotify(v)) for k,v in x.items() )
         elif isinstance(x, (list, tuple)):
             return type(x)( self.undotify(v) for v in x )
         else:
@@ -249,7 +249,7 @@ class NetParams (object):
 
         # fill in params from dict passed as argument
         if netParamsDict:
-            for k,v in netParamsDict.iteritems(): 
+            for k,v in netParamsDict.items(): 
                 if isinstance(v, OrderedDict):
                     setattr(self, k, ODict(v))
                 elif isinstance(v, dict):
@@ -268,14 +268,14 @@ class NetParams (object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print ' Could not create', folder
+                print(' Could not create', folder)
 
         dataSave = {'netParams': self.__dict__}
         
         # Save to json file
         if ext == 'json':
             import json
-            print('Saving netParams to %s ... ' % (filename))
+            print(('Saving netParams to %s ... ' % (filename)))
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
@@ -334,12 +334,12 @@ class NetParams (object):
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
-                print 'Warning: cannot place soma at origin because soma does not exist or does not contain pt3d'
+                print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
                 return
             soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
             midpoint = int(len(soma3d)/2)
             somaX, somaY, somaZ = soma3d[midpoint][0:3]
-            for sec in cellRule['secs'].values():
+            for sec in list(cellRule['secs'].values()):
                 for i,pt3d in enumerate(sec['geom']['pt3d']):
                     sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
@@ -362,15 +362,15 @@ class NetParams (object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print 'Error adding secList: netParams.cellParams does not contain %s' % (label)
+            print('Error adding secList: netParams.cellParams does not contain %s' % (label))
             return
 
         if not isinstance(somaDist, list) or len(somaDist) != 2:
-            print 'Error adding secList: somaDist should be a list with 2 elements'
+            print('Error adding secList: somaDist should be a list with 2 elements')
             return
 
         secList = []
-        for secName, sec in cellRule.secs.iteritems():
+        for secName, sec in cellRule.secs.items():
             if 'pt3d' in sec['geom']:
                 pt3d = sec['geom']['pt3d']
                 midpoint = int(len(pt3d)/2)
@@ -380,7 +380,7 @@ class NetParams (object):
                     secList.append(secName)
 
             else:
-                print 'Error adding secList: Sections do not contain 3d points' 
+                print('Error adding secList: Sections do not contain 3d points') 
                 return
 
         cellRule.secLists[secListName] = list(secList)
@@ -390,15 +390,15 @@ class NetParams (object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print 'Error renaming section: netParams.cellParams does not contain %s' % (label)
+            print('Error renaming section: netParams.cellParams does not contain %s' % (label))
             return
 
         if oldSec not in cellRule['secs']:
-            print 'Error renaming section: cellRule does not contain section %s' % (label)
+            print('Error renaming section: cellRule does not contain section %s' % (label))
             return
 
         cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
-        for sec in cellRule['secs'].values():  # replace appearences in topol
+        for sec in list(cellRule['secs'].values()):  # replace appearences in topol
             if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
 
 
@@ -407,19 +407,19 @@ class NetParams (object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
+            print('Error adding weightNorm: netParams.cellParams does not contain %s' % (label))
             return
 
         with open(fileName, 'r') as fileObj: 
             weightNorm = pickle.load(fileObj)
 
         try:
-            somaSec = next((k for k in weightNorm.keys() if k.startswith('soma')),None)
+            somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')),None)
             somaWeightNorm = weightNorm[somaSec][0]
         except:
-            print 'Error setting weightNorm: no soma section available to set threshold'
+            print('Error setting weightNorm: no soma section available to set threshold')
             return
-        for sec, wnorm in weightNorm.iteritems():
+        for sec, wnorm in weightNorm.items():
             if sec in cellRule['secs']:  
                 wnorm = [min(wn,threshold*somaWeightNorm) for wn in wnorm]
                 cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
@@ -430,7 +430,7 @@ class NetParams (object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print 'Error saving: netParams.cellParams does not contain %s' % (label)
+            print('Error saving: netParams.cellParams does not contain %s' % (label))
             return
         with open(fileName, 'w') as fileObj:  
             pickle.dump(cellRule, fileObj)
@@ -445,7 +445,7 @@ class NetParams (object):
 
 
     def todict(self):
-        from sim import replaceDictODict
+        from .sim import replaceDictODict
         return replaceDictODict(self.__dict__)
 
 
@@ -504,7 +504,7 @@ class SimConfig (object):
 
         # fill in params from dict passed as argument
         if simConfigDict:
-            for k,v in simConfigDict.iteritems():
+            for k,v in simConfigDict.items():
                 if isinstance(v, OrderedDict):
                     setattr(self, k, ODict(v)) 
                 elif isinstance(v, dict):
@@ -523,14 +523,14 @@ class SimConfig (object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print ' Could not create', folder
+                print(' Could not create', folder)
 
         dataSave = {'simConfig': self.__dict__}
         
         # Save to json file
         if ext == 'json':
             import json
-            print('Saving simConfig to %s ... ' % (filename))
+            print(('Saving simConfig to %s ... ' % (filename)))
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
@@ -538,6 +538,6 @@ class SimConfig (object):
         self.analysis[func] =  params
 
     def todict(self):
-        from sim import replaceDictODict
+        from .sim import replaceDictODict
         return replaceDictODict(self.__dict__)
 

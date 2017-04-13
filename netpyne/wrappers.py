@@ -11,14 +11,13 @@ __all__ = []
 __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimulateAnalyze', 'load', 'loadSimulate', 'loadSimulateAnalyze', \
 'createExportNeuroML2','importNeuroML2SimulateAnalyze'])  # wrappers
 
-import sim
-
 ###############################################################################
 # Wrapper to create network
 ###############################################################################
 def create (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands to create network '''
     import __main__ as top
+    from . import sim
     if not netParams: netParams = top.netParams
     if not simConfig: simConfig = top.simConfig
 
@@ -36,6 +35,7 @@ def create (netParams=None, simConfig=None, output=False):
 # Wrapper to simulate network
 ###############################################################################
 def simulate ():
+    from . import sim
     ''' Sequence of commands to simulate network '''
     sim.runSim()                      # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
@@ -45,6 +45,7 @@ def simulate ():
 # Wrapper to simulate network
 ###############################################################################
 def analyze ():
+    from . import sim
     ''' Sequence of commands to simulate network '''
     sim.saveData()                      # run parallel Neuron simulation  
     sim.analysis.plotData()                  # gather spiking data and cell info from each node
@@ -54,6 +55,7 @@ def analyze ():
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createSimulate (netParams=None, simConfig=None, output=False):
+    from . import sim
     ''' Sequence of commands create, simulate and analyse network '''
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
@@ -65,6 +67,7 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
+    from . import sim
     ''' Sequence of commands create, simulate and analyse network '''
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
@@ -77,6 +80,7 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 # Wrapper to load all, ready for simulation
 ###############################################################################
 def load (filename, simConfig=None, output=False):
+    from . import sim
     ''' Sequence of commands load, simulate and analyse network '''
     sim.initialize()  # create network object and set cfg and net params
     sim.loadAll(filename)
@@ -98,6 +102,7 @@ def load (filename, simConfig=None, output=False):
 # Wrapper to load net and simulate
 ###############################################################################
 def loadSimulate (filename, simConfig=None, output=False):
+    from . import sim
     sim.load(filename, simConfig)
     sim.simulate()
 
@@ -108,6 +113,7 @@ def loadSimulate (filename, simConfig=None, output=False):
 # Wrapper to load net and simulate
 ###############################################################################
 def loadSimulateAnalyze (filename, simConfig=None, output=False):
+    from . import sim
     sim.load(filename, simConfig)
     sim.simulate()
     sim.analyze()
@@ -119,6 +125,7 @@ def loadSimulateAnalyze (filename, simConfig=None, output=False):
 # Wrapper to create and export network to NeuroML2
 ###############################################################################
 def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
+    from . import sim
     ''' Sequence of commands to create and export network to NeuroML2 '''
     import __main__ as top
     if not netParams: netParams = top.netParams
@@ -139,5 +146,6 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
 # Wrapper to import network from NeuroML2
 ###############################################################################
 def importNeuroML2SimulateAnalyze(fileName, simConfig):
+    from . import sim
         
     return sim.importNeuroML2(fileName, simConfig)

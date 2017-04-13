@@ -95,7 +95,7 @@ def ckchol(M):
     try: # First, try the Cholesky decomposition
         output=linalg.cholesky(M)
     except: # If not, just return garbage
-        print 'WARNING: Cholesky failed, so returning (invalid) identity matrix!'    
+        print('WARNING: Cholesky failed, so returning (invalid) identity matrix!')    
         output=matrix(eye(size(M,0)))
     
     return output
@@ -234,7 +234,7 @@ def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the fre
     [L,N] = shape(x); #L is the number of channels, N is the total points in every channel 
      
     if freq==0: F=timefreq(x[0,:],fs) # Define the frequency points
-    else: F=array(range(0,freq+1)) # Or just pick them
+    else: F=array(list(range(0,freq+1))) # Or just pick them
     npts=size(F,0)
     # Initialize arrays
     maxindex=np.sum(arange(1,L))
@@ -298,11 +298,11 @@ def granger(vec1,vec2,order=10,rate=200,maxfreq=0):
     
     Version: 2011jul18
     """
-    from bsmart import timefreq, pwcausalr
+    from .bsmart import timefreq, pwcausalr
     from scipy import array, size
     
     if maxfreq==0: F=timefreq(vec1,rate) # Define the frequency points
-    else: F=array(range(0,maxfreq+1)) # Or just pick them
+    else: F=array(list(range(0,maxfreq+1))) # Or just pick them
     npts=size(F,0)
     
     data=array([vec1,vec2])

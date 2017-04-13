@@ -17,8 +17,6 @@ from scipy import array, cumsum
 from numbers import Number
 import math
 
-import sim
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -35,12 +33,13 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
 ## Wrapper to run analysis functions in simConfig
 ######################################################################################################################################################
 def plotData ():
+    from . import sim
     ## Plotting
     if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
 
         # Call analysis functions specified by user
-        for funcName, kwargs in sim.cfg.analysis.iteritems():
+        for funcName, kwargs in sim.cfg.analysis.items():
             if kwargs == True: kwargs = {}
             elif kwargs == False: continue
             func = getattr(sim.analysis, funcName)  # get pointer to function
@@ -50,12 +49,12 @@ def plotData ():
         if sim.cfg.timing:
             
             sim.timing('stop', 'plotTime')
-            print('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
+            print(('  Done; plotting time = %0.2f s' % sim.timingData['plotTime']))
             
             sim.timing('stop', 'totalTime')
-            sumTime = sum([t for k,t in sim.timingData.iteritems() if k not in ['totalTime']])
+            sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
             if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)         
-                print('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
+                print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
 
 
 ######################################################################################################################################################
@@ -72,22 +71,23 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName=None, type=''):
-    if not fileName or not isinstance(fileName, basestring):
+    from . import sim
+    if not fileName or not isinstance(fileName, str):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     if fileName.endswith('.pkl'): # save to pickle
         import pickle
-        print('Saving figure data as %s ... ' % (fileName))
+        print(('Saving figure data as %s ... ' % (fileName)))
         with open(fileName, 'wb') as fileObj:
             pickle.dump(figData, fileObj)
 
     elif fileName.endswith('.json'):  # save to json
         import json
-        print('Saving figure data as %s ... ' % (fileName))
+        print(('Saving figure data as %s ... ' % (fileName)))
         with open(fileName, 'w') as fileObj:
             json.dump(figData, fileObj)
     else: 
-        print 'File extension to save figure data not recognized'
+        print('File extension to save figure data not recognized')
 
 
 import numpy
@@ -129,10 +129,10 @@ def _smooth1d(x,window_len=11,window='hanning'):
     """
 
     if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
+        raise ValueError("smooth only accepts 1 dimension arrays.")
 
     if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
+        raise ValueError("Input vector needs to be bigger than window size.")
 
 
     if window_len<3:
@@ -140,7 +140,7 @@ def _smooth1d(x,window_len=11,window='hanning'):
 
 
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
 
     s=numpy.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
@@ -158,6 +158,8 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Synchrony measure
 ######################################################################################################################################################
 def syncMeasure ():
+    from . import sim
+
     t0=-1 
     width=1 
     cnt=0
@@ -172,8 +174,10 @@ def syncMeasure ():
 ## Get subset of cells and netstims indicated by include list
 ######################################################################################################################################################
 def getCellsInclude(include):
+    from . import sim
+
     allCells = sim.net.allCells
-    allNetStimLabels = sim.net.params.stimSourceParams.keys()
+    allNetStimLabels = list(sim.net.params.stimSourceParams.keys())
     cellGids = []
     cells = []
     netStimLabels = []
@@ -194,7 +198,7 @@ def getCellsInclude(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, basestring):  # entire pop
+        elif isinstance(condition, str):  # entire pop
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
@@ -242,7 +246,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
-
+    from . import sim
 
     print('Plotting raster...')
 
@@ -260,7 +264,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
         try:
-            spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            spkgids,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
         except:
             spkgids, spkts = [], []
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
@@ -294,8 +298,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     numCellSpks = len(spkts)
     numNetStims = 0
     for netStimLabel in netStimLabels:
-        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
-            for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+            for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
         if len(netStimSpks) > 0:
             lastInd = max(spkinds) if len(spkinds)>0 else 0
             spktsNew = netStimSpks 
@@ -314,7 +318,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ylabelText = ylabelText + 'NetStims'
 
     if numCellSpks+numNetStims == 0:
-        print 'No spikes available to plot raster'
+        print('No spikes available to plot raster')
         return None
 
     # Time Range
@@ -323,14 +327,14 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     elif timeRange is None:
         timeRange = [0,sim.cfg.duration]
     else:
-        spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors) 
-        if timeRange[0] <= spkt <= timeRange[1]])
+        spkinds,spkts,spkgidColors = list(zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors) 
+        if timeRange[0] <= spkt <= timeRange[1]]))
 
     # Limit to maxSpikes
     if (len(spkts)>maxSpikes):
-        print('  Showing only the first %i out of %i spikes' % (maxSpikes, len(spkts))) # Limit num of spikes
+        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(spkts)))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
-            spkts, spkinds, spkgidColors = zip(*sorted(zip(spkts, spkinds, spkgidColors)))
+            spkts, spkinds, spkgidColors = list(zip(*sorted(zip(spkts, spkinds, spkgidColors))))
         spkts = spkts[:maxSpikes]
         spkinds = spkinds[:maxSpikes]
         spkgidColors = spkgidColors[:maxSpikes]
@@ -446,7 +450,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
@@ -481,6 +485,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         - Returns figure handle
     '''
+    from . import sim
 
     print('Plotting spike histogram...')
 
@@ -499,7 +504,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     if yaxis == 'rate': yaxisLabel = 'Avg cell firing rate (Hz)'
     elif yaxis == 'count': yaxisLabel = 'Spike count'
     else:
-        print 'Invalid yaxis value %s', (yaxis)
+        print('Invalid yaxis value %s', (yaxis))
         return
 
     # time range
@@ -520,7 +525,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
             except:
                 spkinds,spkts = [],[]
         else: 
@@ -531,8 +536,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         numNetStims = 0
         if 'stims' in sim.allSimData:
             for netStimLabel in netStimLabels:
-                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
-                for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
                 if len(netStimSpks) > 0:
                     lastInd = max(spkinds) if len(spkinds)>0 else 0
                     spktsNew = netStimSpks 
@@ -590,7 +595,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikeHist.png'
@@ -629,6 +634,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - Returns figure handle
     '''
 
+    from . import sim
+
     print('Plotting firing rate power spectral density (PSD) ...')
 
     # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
@@ -660,7 +667,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
             except:
                 spkinds,spkts = [],[]
         else: 
@@ -672,8 +679,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         numNetStims = 0
         if 'stims' in sim.allSimData:
             for netStimLabel in netStimLabels:
-                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
-                    for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                    for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
                 if len(netStimSpks) > 0:
                     lastInd = max(spkinds) if len(spkinds)>0 else 0
                     spktsNew = netStimSpks 
@@ -736,7 +743,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikePSD.png'
@@ -773,6 +780,8 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - Returns figure handles
     '''
 
+    from . import sim
+
     print('Plotting recorded cell traces ...')
 
     if include is None: include = [] # If not defined, initialize as empty list
@@ -786,7 +795,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         sim.setupRecording()
         sim.simulate()
 
-    tracesList = sim.cfg.recordTraces.keys()
+    tracesList = list(sim.cfg.recordTraces.keys())
     tracesList.sort()
     cells, cellGids, _ = getCellsInclude(include)
     gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
@@ -802,6 +811,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
+        from . import sim
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
             fontsiz = 12
@@ -833,7 +843,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
                     if isinstance(fullTrace, dict):
-                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in fullTrace.keys()]
+                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
                         lenData = len(data[0])
                         data = np.transpose(array(data))
                     else:
@@ -862,7 +872,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # Plot one fig per trace for each population
     elif oneFigPer == 'popTrace':
         allPopGids = invertDictMapping(gidPops)
-        for popLabel, popGids in allPopGids.iteritems():
+        for popLabel, popGids in allPopGids.items():
             plotFigPerTrace(popGids)
 
     try:
@@ -879,12 +889,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
         if len(figs) > 1:
-            for figLabel, figObj in figs.iteritems():
+            for figLabel, figObj in figs.items():
                 plt.figure(figObj.number)
                 plt.savefig(filename[:-4]+figLabel+filename[-4:])
         else:
@@ -896,9 +906,10 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     return figs
 
 def invertDictMapping(d):
+    from . import sim
     """ Invert mapping of dictionary (i.e. map values to list of keys) """
     inv_map = {}
-    for k, v in d.iteritems():
+    for k, v in d.items():
         inv_map[v] = inv_map.get(v, [])
         inv_map[v].append(k)
     return inv_map
@@ -932,6 +943,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
 
         - Returns figure handles
     '''
+    from . import sim
 
     from neuron import h, gui
 
@@ -951,7 +963,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs.values() if includeAxon else [s for s in cellPost.secs.values() if 'axon' not in s['hSec'].hname()] 
+                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hSec'].hname()] 
                     for sec in cellSecs:
                         if 'weightNorm' in sec:
                             secs.append(sec['hSec'])
@@ -963,8 +975,8 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.iteritems() if 'axon' not in s['hSec'].hname()}
-                    for secLabel,sec in cellSecs.iteritems():
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hSec'].hname()}
+                    for secLabel,sec in cellSecs.items():
                         nseg=sec['hSec'].nseg
                         nsyns = [0] * nseg
                         secs.append(sec['hSec'])
@@ -974,7 +986,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
 
                 cvals = np.array(cvals)
 
-        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
+        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
         # if not includeAxon:         
         #     secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
@@ -998,7 +1010,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
         if showSyns:
             synColor='red'
             for cellPost in cellsPost:
-                for sec in cellPost.secs.values():
+                for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
                   
@@ -1007,7 +1019,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
@@ -1024,7 +1036,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
         
         for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
-            for sec in cell.secs.values():
+            for sec in list(cell.secs.values()):
                 if 'axon' in sec['hSec'].hname() and not includeAxon: continue
                 sec['hSec'].push()
                 secList.append()
@@ -1045,7 +1057,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
         fig.show(0) # show real diam
             # save figure
         if saveFig: 
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'shape.ps'
@@ -1060,6 +1072,8 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 def plotLFP ():
+    from . import sim
+
     print('Plotting LFP power spectral density...')
 
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
@@ -1093,6 +1107,7 @@ def plotLFP ():
     plt.show()
 
 def _roundFigures(x, n):
+    from . import sim
     """Returns x rounded to n significant figures."""
     return round(x, int(n - math.ceil(math.np.log10(abs(x)))))
 
@@ -1123,9 +1138,12 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         - Returns figure handles
     '''
 
+    from . import sim
+
     print('Plotting connectivity matrix...')
 
     def list_of_dict_unique_by_key(seq, key):
+        from . import sim
         seen = set()
         seen_add = seen.add
         return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
@@ -1136,7 +1154,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     else:
         cellsPost, cellGidsPost, netStimPopsPost = getCellsInclude(includePost) 
 
-    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
+    if isinstance(synMech, str): synMech = [synMech]  # make sure synMech is a list
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
@@ -1144,7 +1162,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             connMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
             countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
         else: 
-            print 'Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"'
+            print('Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
             return fig
         cellIndsPre = {cell['gid']: ind for ind,cell in enumerate(cellsPre)}
         cellIndsPost = {cell['gid']: ind for ind,cell in enumerate(cellsPost)}
@@ -1273,7 +1291,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
         if not isinstance(groupByInterval, Number):
-            print 'groupByInterval not specified'
+            print('groupByInterval not specified')
             return
   
         # group cells by 'groupBy' feature (eg. 'y') in intervals of 'groupByInterval')
@@ -1294,7 +1312,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
 
         if len(groupsPre) < 2 or len(groupsPost) < 2: 
-            print 'groupBy %s with groupByInterval %s results in <2 groups'%(str(groupBy), str(groupByInterval))
+            print('groupBy %s with groupByInterval %s results in <2 groups'%(str(groupBy), str(groupByInterval)))
             return
         groupIndsPre = {group: ind for ind,group in enumerate(groupsPre)}
         groupIndsPost = {group: ind for ind,group in enumerate(groupsPost)}
@@ -1361,7 +1379,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
     # no valid groupBy
     else:  
-        print 'groupBy (%s) is not valid'%(str(groupBy))
+        print('groupBy (%s) is not valid'%(str(groupBy)))
         return
 
     if groupBy != 'cell':
@@ -1418,8 +1436,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                 plt.plot(array([ipop,ipop])-0.5,array([0,len(popsPost)])-0.5,'-',c=(0.7,0.7,0.7))
 
             # Make pretty
-            h.set_xticks(range(len(popsPost)))
-            h.set_yticks(range(len(popsPre)))
+            h.set_xticks(list(range(len(popsPost))))
+            h.set_yticks(list(range(len(popsPre))))
             h.set_xticklabels(popsPost)
             h.set_yticklabels(popsPre)
             h.xaxis.set_ticks_position('top')
@@ -1463,10 +1481,10 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             plt.tight_layout()
 
         elif groupBy == 'cell':
-            print 'Error: plotConn graphType="bar" with groupBy="cell" not implemented'
+            print('Error: plotConn graphType="bar" with groupBy="cell" not implemented')
 
     elif graphType == 'pie':
-        print 'Error: plotConn graphType="pie" not yet implemented'
+        print('Error: plotConn graphType="pie" not yet implemented')
 
 
     #save figure data
@@ -1478,7 +1496,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
@@ -1509,6 +1527,8 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
         - Returns figure handles
     '''
 
+    from . import sim
+
     print('Plotting 2D representation of network cell locations and connections...')
 
     fig = plt.figure(figsize=figSize)
@@ -1536,7 +1556,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     if showConns:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
+                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
                     color='red'
@@ -1566,7 +1586,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'2Dnet.png'
@@ -1595,6 +1615,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
         - Returns nTE (float): normalized transfer entropy 
     '''
 
+    from . import sim
     from neuron import h
     import netpyne
     import os
@@ -1603,13 +1624,13 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
     
     if 'nte' not in dir(h): 
         try: 
-            print ' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root)
+            print(' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root))
             os.system('cd ' + root + '; nrnivmodl support')
             from neuron import load_mechanisms
             load_mechanisms(root)
-            print ' Compilation of support folder mod files successful'
+            print(' Compilation of support folder mod files successful')
         except:
-            print ' Error compiling support folder mod files'
+            print(' Error compiling support folder mod files')
             return
 
     h.load_file(root+'/support/nte.hoc') # nTE code (also requires support/net.mod)
@@ -1632,7 +1653,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
                     spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
                     spkts.extend(spktsNew)
@@ -1658,7 +1679,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
                     spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
                     spkts.extend(spktsNew)
@@ -1716,6 +1737,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
             fig: Figure handle 
     '''
     
+    from . import sim
     import numpy as np
     from netpyne.support.bsmart import pwcausalr
 
@@ -1737,7 +1759,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
                     spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
                     spkts.extend(spktsNew)
@@ -1763,7 +1785,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].iteritems() if netStimPop in cellStim]
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
                     spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
                     spkts.extend(spktsNew)
@@ -1808,7 +1830,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
      
         # save figure
         if saveFig: 
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'2Dnet.png'
@@ -1825,6 +1847,9 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ## Plot weight changes
 ######################################################################################################################################################
 def plotWeightChanges():
+
+    from . import sim
+    
     print('Plotting weight changes...')
 
     if sim.usestdp:
@@ -1841,7 +1866,7 @@ def plotWeightChanges():
         # create data matrix
         wcs = [x[-1][-1] for x in sim.allweightchanges] # absolute final weight
         wcs = [x[-1][-1]-x[0][-1] for x in sim.allweightchanges] # absolute weight change
-        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in sim.allstdpconndata])
+        pre,post,recep = list(zip(*[(x[0],x[1],x[2]) for x in sim.allstdpconndata]))
         ncells = int(max(max(pre),max(post))+1)
         wcmat = np.zeros([ncells, ncells])
 
@@ -1869,14 +1894,14 @@ def plotWeightChanges():
 ## Create colormap
 ######################################################################################################################################################
 def _bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
-   from matplotlib.colors import LinearSegmentedColormap as makecolormap
-   
-   mng=mingreen; # Minimum amount of green to add into the colors
-   mix=redbluemix; # How much red to mix with the blue an vice versa
-   eps=epsilon; # How much of the center of the colormap to make gray
-   omg=1-gap # omg = one minus gap
-   
-   cdict = {'red': ((0.00000, 0.0, 0.0),
+    from matplotlib.colors import LinearSegmentedColormap as makecolormap
+
+    mng=mingreen; # Minimum amount of green to add into the colors
+    mix=redbluemix; # How much red to mix with the blue an vice versa
+    eps=epsilon; # How much of the center of the colormap to make gray
+    omg=1-gap # omg = one minus gap
+
+    cdict = {'red': ((0.00000, 0.0, 0.0),
                     (0.5-eps, mix, omg),
                     (0.50000, omg, omg),
                     (0.5+eps, omg, 1.0),
@@ -1893,6 +1918,6 @@ def _bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
                     (0.50000, omg, omg),
                     (0.5+eps, omg, mix),
                     (1.00000, 0.0, 0.0))}
-   cmap = makecolormap('bicolormap',cdict,256)
+    cmap = makecolormap('bicolormap',cdict,256)
 
-   return cmap
+    return cmap

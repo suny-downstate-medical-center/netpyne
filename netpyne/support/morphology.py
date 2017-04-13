@@ -1,6 +1,6 @@
 # Code adapted from https://github.com/ahwillia/PyNeuron-Toolbox under MIT license
 
-from __future__ import division
+
 import numpy as np
 import pylab as plt
 from matplotlib.pyplot import cm
@@ -80,7 +80,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
 
     # get a list of the swc section objects
     swc_secs = i3d.swc.sections
-    swc_secs = [swc_secs.object(i) for i in xrange(int(swc_secs.count()))]
+    swc_secs = [swc_secs.object(i) for i in range(int(swc_secs.count()))]
 
     # initialize the lists of sections
     sec_list = {1: cell.soma, 2: cell.axon, 3: cell.dend, 4: cell.apic}
@@ -113,7 +113,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
                         swc_sec.raw.getval(2, 0), sec=sec)
 
         j = swc_sec.first
-        xx, yy, zz = [swc_sec.raw.getrow(i).c(j) for i in xrange(3)]
+        xx, yy, zz = [swc_sec.raw.getrow(i).c(j) for i in range(3)]
         dd = swc_sec.d.c(j)
         if swc_sec.iscontour_:
             # never happens in SWC files, but can happen in other formats supported
@@ -554,10 +554,10 @@ def morphology_to_dict(sections, outfile=None):
             'section_orientation': h.section_orientation(sec=sec),
             'parent': my_parent,
             'parent_loc': my_parent_loc,
-            'x': [h.x3d(i, sec=sec) for i in xrange(n3d)],
-            'y': [h.y3d(i, sec=sec) for i in xrange(n3d)],
-            'z': [h.z3d(i, sec=sec) for i in xrange(n3d)],
-            'diam': [h.diam3d(i, sec=sec) for i in xrange(n3d)],
+            'x': [h.x3d(i, sec=sec) for i in range(n3d)],
+            'y': [h.y3d(i, sec=sec) for i in range(n3d)],
+            'z': [h.z3d(i, sec=sec) for i in range(n3d)],
+            'diam': [h.diam3d(i, sec=sec) for i in range(n3d)],
             'name': sec.hname()           
         })
 

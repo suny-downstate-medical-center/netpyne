@@ -39,18 +39,18 @@ def importCellParams (fileName, labels, values, key = None):
             if filePath not in sys.path:  # add to path if not there (need to import module)
                 sys.path.insert(0, filePath)
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-            exec('import '+ moduleName + ' as tempModule') in locals() # import module dynamically
+            exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
             modulePointer = tempModule
             paramLabels = getattr(modulePointer, labels) # tuple with labels
             paramValues = getattr(modulePointer, values)  # variable with paramValues
             if key:  # if paramValues = dict
                 paramValues = paramValues[key]
-            params = dict(zip(paramLabels, paramValues))
+            params = dict(list(zip(paramLabels, paramValues)))
             sys.path.remove(filePath)
         except:
-            print "Error loading cell parameter values from " + fileName
+            print("Error loading cell parameter values from " + fileName)
     else:
-        print "Trying to import izhi params from a file without the .py extension"
+        print("Trying to import izhi params from a file without the .py extension")
     return params
 
 
@@ -60,13 +60,13 @@ def mechVarList ():
     for i, mechtype in enumerate(['mechs','pointps']):
         mt = h.MechanismType(i)  # either distributed mechs (0) or point process (1)
         varList[mechtype] = {}
-        for j in xrange(int(mt.count())):
+        for j in range(int(mt.count())):
             mt.select(j)
             mt.selected(msname)
             ms = h.MechanismStandard(msname[0], 1) # PARAMETER (modifiable)
             varList[mechtype][msname[0]] = []
             propName = h.ref('')
-            for var in xrange(int(ms.count())):
+            for var in range(int(ms.count())):
                 k = ms.name(propName, var)
                 varList[mechtype][msname[0]].append(propName[0])
     return varList
@@ -104,7 +104,7 @@ def getGlobals (mechNames, origGlob={}):
 
 
 def setGlobals (glob):
-    for k,v in glob.iteritems():
+    for k,v in glob.items():
         setattr(h, k, v)
 
     # # remove vars are not in glob ?
@@ -118,10 +118,10 @@ def setGlobals (glob):
 
 def _equal_dicts (d1, d2, ignore_keys):
     ignored = set(ignore_keys)
-    for k1, v1 in d1.iteritems():
+    for k1, v1 in d1.items():
         if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
             return False
-    for k2, v2 in d2.iteritems():
+    for k2, v2 in d2.items():
         if k2 not in ignored and k2 not in d1:
             return False
     return True
@@ -135,7 +135,7 @@ def _delete_module(modname):
     except KeyError:
         pass
 
-    for mod in modules.values():
+    for mod in list(modules.values()):
         try:
             delattr(mod, modname)
         except:
@@ -144,7 +144,7 @@ def _delete_module(modname):
 def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
-    origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
+    origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
@@ -166,7 +166,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-        exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+        exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
         modulePointer = tempModule
         if isinstance(cellArgs, dict):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
@@ -174,7 +174,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
         sys.path.remove(filePath)
     else:
-        print "File name should be either .hoc or .py file"
+        print("File name should be either .hoc or .py file")
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
@@ -193,7 +193,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
 
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
-        print 'Importing from .hoc network not yet supported'
+        print('Importing from .hoc network not yet supported')
         return
         # h.load_file(fileName)
         # for cellName in cellNames:
@@ -207,18 +207,18 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
-        print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
+        print('\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName))
         from neuron import load_mechanisms
         load_mechanisms(filePath)
-        exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+        exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
         modulePointer = tempModule
         sys.path.remove(filePath)
     else:
-        print "File name should be either .hoc or .py file"
+        print("File name should be either .hoc or .py file")
         return
 
     for label, conds, cellName in zip(labelList, condsList, cellNamesList):
-        print '\nImporting %s from %s ...'%(cellName, fileName)
+        print('\nImporting %s from %s ...'%(cellName, fileName))
         exec('cell = tempModule' + '.' + cellName)
         #cell = getattr(modulePointer, cellName) # get cell object
         secs, secLists, synMechs = getCellParams(cell)
@@ -253,7 +253,7 @@ def getCellParams(cell, varList, origGlob):
     # create dict with dir(cell) name corresponding to each hname 
     dirCellSecNames = {} 
     for sec in secs:
-        dirCellSecNames.update({hname: name for hname,name in dirCellHnames.iteritems() if hname == sec.hname()})
+        dirCellSecNames.update({hname: name for hname,name in dirCellHnames.items() if hname == sec.hname()})
 
     secDic = {}
     synMechs = []
@@ -352,7 +352,7 @@ def getCellParams(cell, varList, origGlob):
                         try:
                             synMech[varName] = point.__getattribute__(varName)
                         except:
-                            print 'Could not read variable %s from synapse %s'%(varName,synMech['label'])
+                            print('Could not read variable %s from synapse %s'%(varName,synMech['label']))
 
                     if not [_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]:
                         synMechs.append(synMech)
@@ -368,7 +368,7 @@ def getCellParams(cell, varList, origGlob):
                             # special condition for Izhi model, to set vinit=vr
                             # if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName) 
                         except:
-                            print 'Could not read %s variable from point process %s'%(varName,pointpName)
+                            print('Could not read %s variable from point process %s'%(varName,pointpName))
 
         if pointps: secDic[secName]['pointps'] = pointps
 
@@ -385,7 +385,7 @@ def getCellParams(cell, varList, origGlob):
     secLists = h.List('SectionList')
     if int(secLists.count()): 
         secListDic = {}
-        for i in xrange(int(secLists.count())):  # loop over section lists
+        for i in range(int(secLists.count())):  # loop over section lists
             hname = secLists.o(i).hname()
             if hname in dirCellHnames:  # use python variable name
                 secListName = dirCellHnames[hname]
@@ -396,9 +396,9 @@ def getCellParams(cell, varList, origGlob):
         secListDic = {}
 
     # globals
-    globs = getGlobals(varList['mechs'].keys()+varList['pointps'].keys(), origGlob=origGlob)
+    globs = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()), origGlob=origGlob)
     if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
-        for sec in secDic.values(): sec['vinit'] = globs['v_init']  
+        for sec in list(secDic.values()): sec['vinit'] = globs['v_init']  
 
     # clean 
     h.initnrn()
@@ -435,7 +435,7 @@ def importConnFromExcel (fileName, sheetName):
         f.write(connText)  # write starting text
         for row in range(1,numRows+1):
             if sheet.cell(row=row, column=colProb).value:  # if not empty row
-                print 'Creating conn rule for row ' + str(row)
+                print('Creating conn rule for row ' + str(row))
                 # read row values
                 pre = sheet.cell(row=row, column=colPreTags).value
                 post = sheet.cell(row=row, column=colPostTags).value

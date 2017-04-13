@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 
 import datetime
-from itertools import izip, product
+from itertools import product
 from popen2 import popen2
 from time import sleep
 import imp
@@ -22,11 +22,11 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 def runJob(script, cfgSavePath, netParamsSavePath):
     from subprocess import Popen, PIPE
 
-    print '\nJob in rank id: ',pc.id()
+    print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
-    print command+'\n'
+    print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print proc.stdout.read()
+    print(proc.stdout.read())
 
 
 class Batch(object):
@@ -40,7 +40,7 @@ class Batch(object):
         self.runCfg = {}
         self.params = []
         if params:
-            for k,v in params.iteritems():
+            for k,v in params.items():
                 self.params.append({'label': k, 'values': v})
     
     def save(self, filename):
@@ -54,14 +54,14 @@ class Batch(object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print ' Could not create', folder
+                print(' Could not create', folder)
 
         dataSave = {'batch': self.__dict__}
         if ext == 'json':
             import json
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
-            print('Saving batch to %s ... ' % (filename))
+            print(('Saving batch to %s ... ' % (filename)))
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
@@ -74,7 +74,7 @@ class Batch(object):
                 os.mkdir(self.saveFolder)
             except OSError:
                 if not os.path.exists(self.saveFolder):
-                    print ' Could not create', self.saveFolder
+                    print(' Could not create', self.saveFolder)
 
             # save Batch dict as json
             targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
@@ -102,14 +102,14 @@ class Batch(object):
                     elif p['group'] == True: 
                         groupedParams = True
 
-                labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
+                labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False]))
                 valueCombinations = list(product(*(valuesList)))
-                indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
+                indexCombinations = list(product(*[list(range(len(x))) for x in valuesList]))
 
                 if groupedParams:
-                    labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
-                    valueCombGroups = izip(*(valuesListGroup))
-                    indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                    labelListGroup, valuesListGroup = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True]))
+                    valueCombGroups = zip(*(valuesListGroup))
+                    indexCombGroups = zip(*[list(range(len(x))) for x in valuesListGroup])
                     labelList = labelListGroup+labelList
                 else:
                     valueCombGroups = [(0,)] # this is a hack -- improve!
@@ -133,7 +133,7 @@ class Batch(object):
                         iComb = iCombNG
                         pComb = pCombNG
                     
-                    print iComb, pComb
+                    print(iComb, pComb)
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
@@ -147,7 +147,7 @@ class Batch(object):
                             container[paramLabel[-1]] = paramVal
                         else:
                             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
-                        print str(paramLabel)+' = '+str(paramVal)
+                        print(str(paramLabel)+' = '+str(paramVal))
                         
                     # set simLabel and jobName
                     simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
@@ -155,11 +155,11 @@ class Batch(object):
 
                     # skip if output file already exists
                     if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
-                        print 'Skipping job %s since output file already exists...' % (jobName)
+                        print('Skipping job %s since output file already exists...' % (jobName))
                     elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
-                        print 'Skipping job %s since cfg file already exists...' % (jobName)
+                        print('Skipping job %s since cfg file already exists...' % (jobName))
                     elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
-                        print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
+                        print('Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom']))
                     else:
                         # save simConfig json to saveFolder                        
                         self.cfg.simLabel = simLabel
@@ -199,7 +199,7 @@ class Batch(object):
 
                             # Send job_string to qsub
                             input.write(jobString)
-                            print jobString+'\n'
+                            print(jobString+'\n')
                             input.close()
 
                                                 # hpc torque job submission
@@ -239,8 +239,8 @@ wait
                             # Send job_string to qsub
                             # output, input = popen2('sbatch') # Open a pipe to the qsub command.
                             # input.write(jobString)
-                            print 'Submitting job ',jobName
-                            print jobString+'\n'
+                            print('Submitting job ',jobName)
+                            print(jobString+'\n')
                             # input.close()
 
                             batchfile = '%s.sbatch'%(jobName)
@@ -255,7 +255,7 @@ wait
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                         elif self.runCfg.get('type',None) == 'mpi':
                             jobName = self.saveFolder+'/'+simLabel     
-                            print 'Submitting job ',jobName
+                            print('Submitting job ',jobName)
                             # master/slave bulletin board schedulling of jobs
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             

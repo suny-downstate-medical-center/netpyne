@@ -12,9 +12,8 @@ from random import seed, random, randint, sample, uniform, triangular, gauss, be
 from time import time, sleep
 from numbers import Number
 from copy import copy
-from specs import ODict
+from .specs import ODict
 from neuron import h  # import NEURON
-import sim
 
 
 class Network (object):
@@ -51,7 +50,8 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops (self):
-        for popLabel, popParam in self.params.popParams.iteritems(): # for each set of population paramseters 
+        from . import sim
+        for popLabel, popParam in self.params.popParams.items(): # for each set of population paramseters 
             self.pops[popLabel] = sim.Pop(popLabel, popParam)  # instantiate a new object of class Pop and add to list pop
         return self.pops
 
@@ -60,20 +60,21 @@ class Network (object):
     # Create Cells
     ###############################################################################
     def createCells (self):
+        from . import sim
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
-            print("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)) 
+            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts))) 
         
-        for ipop in self.pops.values(): # For each pop instantiate the network cells (objects of class 'Cell')
+        for ipop in list(self.pops.values()): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
-        print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
+            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel'])))    
+        print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime']))
 
         return self.cells
     
@@ -81,6 +82,7 @@ class Network (object):
     #  Add stims
     ###############################################################################
     def addStims (self):
+        from . import sim
         sim.timing('start', 'stimsTime')
         if self.params.stimSourceParams and self.params.stimTargetParams:
             if sim.rank==0: 
@@ -94,28 +96,28 @@ class Network (object):
 
             sources = self.params.stimSourceParams
 
-            for targetLabel, target in self.params.stimTargetParams.iteritems():  # for each target parameter set
+            for targetLabel, target in self.params.stimTargetParams.items():  # for each target parameter set
                 if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
                 if 'loc' not in target: target['loc'] = None  # if location not specified, make None 
                 
                 source = sources.get(target['source'])
 
                 postCellsTags = allCellTags
-                for condKey,condValue in target['conds'].iteritems():  # Find subset of cells that match postsyn criteria
+                for condKey,condValue in target['conds'].items():  # Find subset of cells that match postsyn criteria
                     if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                     elif condKey == 'cellList':
                         pass
                     elif isinstance(condValue, list): 
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
                     else:
-                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
+                        postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
                 
                 # subset of cells from selected pops (by relative indices)                     
                 if 'cellList' in target['conds']:
                     orderedPostGids = sorted(postCellsTags.keys())
                     gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if gid in gidList}
 
                 # calculate params if string-based funcs
                 strParams = self._stimStrToFunc(postCellsTags, source, target)
@@ -143,10 +145,10 @@ class Network (object):
 
                         postCell.addStim(params)  # call cell method to add connections
 
-        print('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
+        print(('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells]))))
         sim.pc.barrier()
         sim.timing('stop', 'stimsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime']))
 
         return [cell.stims for cell in self.cells]
 
@@ -156,6 +158,7 @@ class Network (object):
     # Convert stim param string to function
     ###############################################################################
     def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
+        from . import sim
         # list of params that have a function passed in as a string
         #params = sourceParams+targetParams
         params = sourceParams.copy()
@@ -173,7 +176,7 @@ class Network (object):
         dictVars['post_znorm']  = lambda postConds: postConds['znorm'] 
          
         # add netParams variables
-        for k,v in self.params.__dict__.iteritems():
+        for k,v in self.params.__dict__.items():
             if isinstance(v, Number):
                 dictVars[k] = v
 
@@ -181,7 +184,7 @@ class Network (object):
         strParams = {}
         for paramStrFunc in paramsStrFunc:
             strFunc = params[paramStrFunc]  # string containing function
-            strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
+            strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
 
@@ -190,11 +193,11 @@ class Network (object):
             params[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
  
             # initialize randomizer in case used in function
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellsTags.keys()[0])))
+            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+list(postCellsTags.keys())[0])))
 
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].iteritems()})  
-                    for postGid,postCellTags in postCellsTags.iteritems()}
+            strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].items()})  
+                    for postGid,postCellTags in postCellsTags.items()}
 
         return strParams
 
@@ -218,7 +221,7 @@ class Network (object):
             if h.arc3d(ii) >= s:
                 b = ii
                 break
-        if b == -1: print "an error occurred in pointFromLoc, SOMETHING IS NOT RIGHT"
+        if b == -1: print("an error occurred in pointFromLoc, SOMETHING IS NOT RIGHT")
 
         if h.arc3d(b) == s:  # shortcut
             x, y, z = h.x3d(b), h.y3d(b), h.z3d(b)
@@ -256,7 +259,7 @@ class Network (object):
                     sigma_x2_y2 = gridSigma[i2][j2]
 
                     if x1 == x2 or y1 == y2: 
-                        print "ERROR in closest grid points: ", secName, x1, x2, y1, y2
+                        print("ERROR in closest grid points: ", secName, x1, x2, y1, y2)
                     else:
                        # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
                        sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
@@ -272,7 +275,7 @@ class Network (object):
                     sigma_y2 = gridSigma[j2]
 
                     if y1 == y2: 
-                        print "ERROR in closest grid points: ", secName, y1, y2
+                        print("ERROR in closest grid points: ", secName, y1, y2)
                     else:
                        # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
                        sigma = ((sigma_y1*abs(y2-y) + sigma_y2*abs(y-y1)) / abs(y2-y1))
@@ -287,10 +290,11 @@ class Network (object):
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
+        from . import sim
         sim.timing('start', 'subConnectTime')
         print('  Distributing synapses based on subcellular connectivity rules...')
 
-        for subConnParamTemp in self.params.subConnParams.values():  # for each conn rule or parameter set
+        for subConnParamTemp in list(self.params.subConnParams.values()):  # for each conn rule or parameter set
             subConnParam = subConnParamTemp.copy()
 
             # find list of pre and post cell
@@ -302,7 +306,7 @@ class Network (object):
                     if postCellGid in self.lid2gid:
                         postCell = self.cells[self.gid2lid[postCellGid]] 
                         allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
-                        if 'NetStim' in [x['cellModel'] for x in preCellsTags.values()]: # temporary fix to include netstim conns 
+                        if 'NetStim' in [x['cellModel'] for x in list(preCellsTags.values())]: # temporary fix to include netstim conns 
                             allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                         # group synMechs so they are not distributed separately
@@ -321,7 +325,7 @@ class Network (object):
                                                 connGroup['synMech'] = '__grouped__'+connGroup['synMech']
                                                 connsGroup[iConn] = connGroup
                                             except:
-                                                print '  Warning: Grouped synMechs %s not found' % (str(connGroup))
+                                                print('  Warning: Grouped synMechs %s not found' % (str(connGroup)))
                         else:
                             conns = allConns
 
@@ -356,7 +360,7 @@ class Network (object):
                             elif subConnParam['density']['type'] == '1Dmap': # 1D
                                 segNumSyn = self._interpolateSegmentSigma(postCell, secList, None, gridY, gridSigma) # move method to Cell!
 
-                            totSyn = sum([sum(nsyn) for nsyn in segNumSyn.values()])  # summed density
+                            totSyn = sum([sum(nsyn) for nsyn in list(segNumSyn.values())])  # summed density
                             scaleNumSyn = float(len(conns))/float(totSyn) if totSyn>0 else 0.0  
                             diffList = []
                             for sec in segNumSyn: 
@@ -368,7 +372,7 @@ class Network (object):
                                     if diff > 0:
                                         diffList.append([diff,sec,seg])
 
-                            totSynRescale = sum([sum(nsyn) for nsyn in segNumSyn.values()])
+                            totSynRescale = sum([sum(nsyn) for nsyn in list(segNumSyn.values())])
 
                             # if missing syns due to rescaling to 0, find top values which were rounded to 0 and make 1
                             if totSynRescale < len(conns):  
@@ -389,7 +393,7 @@ class Network (object):
                             subConnParam['density']['gridValues'] = list(subConnParam['density']['gridValues']) 
 
                             newSecs, newLocs = [], []
-                            for sec, nsyns in segNumSyn.iteritems():
+                            for sec, nsyns in segNumSyn.items():
                                 for i, seg in enumerate(postCell.secs[sec]['hSec']):
                                     for isyn in range(nsyns[i]):
                                         newSecs.append(sec)
@@ -401,10 +405,10 @@ class Network (object):
                             # find origin section 
                             if 'soma' in postCell.secs: 
                                 secOrig = 'soma' 
-                            elif any([secName.startswith('som') for secName in postCell.secs.keys()]):
-                                secOrig = next(secName for secName in postCell.secs.keys() if secName.startswith('soma'))
+                            elif any([secName.startswith('som') for secName in list(postCell.secs.keys())]):
+                                secOrig = next(secName for secName in list(postCell.secs.keys()) if secName.startswith('soma'))
                             else: 
-                                secOrig = postCell.secs.keys()[0]
+                                secOrig = list(postCell.secs.keys())[0]
 
                             #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
 
@@ -438,6 +442,7 @@ class Network (object):
     # Connect Cells
     ###############################################################################
     def connectCells (self):
+        from . import sim
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'connectTime')
         if sim.rank==0: 
@@ -455,7 +460,7 @@ class Network (object):
             sim.cfg.createNEURONObj = False
             sim.cfg.addSynMechs = False
 
-        for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
+        for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
             connParam['label'] = connParamLabel
 
@@ -496,12 +501,12 @@ class Network (object):
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
         nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
 
-        print('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections))
+        print(('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections)))
         if nodeSynapses != nodeConnections:
-            print('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses))
+            print(('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses)))
         sim.pc.barrier()
         sim.timing('stop', 'connectTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime']))
 
         return [cell.conns for cell in self.cells]
 
@@ -512,17 +517,17 @@ class Network (object):
     def _findCellsCondition(self, allCellTags, conds):
         try: 
             cellsTags = dict(allCellTags)
-            for condKey,condValue in conds.iteritems():  # Find subset of cells that match presyn criteria
+            for condKey,condValue in conds.items():  # Find subset of cells that match presyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
+                    cellsTags = {gid: tags for (gid,tags) in cellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
                     prePops = {}
                 else:
                     if isinstance(condValue, list): 
-                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
-                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.items() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.items() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
                     else:
-                        cellsTags = {gid: tags for (gid,tags) in cellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
-                        prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
+                        cellsTags = {gid: tags for (gid,tags) in cellsTags.items() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
+                        prePops = {i: tags for (i,tags) in prePops.items() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
         except: 
             return None
 
@@ -537,16 +542,16 @@ class Network (object):
         preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
         postCellsTags = None
 
-        for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
+        for condKey,condValue in preConds.items():  # Find subset of cells that match presyn criteria
             if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
+                preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
                 #prePops = {}
             else:
                 if isinstance(condValue, list): 
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
                     #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
                 else:
-                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
+                    preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
                     #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
 
         # if not preCellsTags: # if no presyn cells, check if netstim
@@ -558,13 +563,13 @@ class Network (object):
 
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
-            for condKey,condValue in postConds.iteritems():  # Find subset of cells that match postsyn criteria
+            for condKey,condValue in postConds.items():  # Find subset of cells that match postsyn criteria
                 if condKey in ['x','y','z','xnorm','ynorm','znorm']:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                 elif isinstance(condValue, list): 
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
                 else:
-                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
+                    postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
         #except:
         #   return None, None
 
@@ -575,6 +580,7 @@ class Network (object):
     # Convert connection param string to function
     ###############################################################################
     def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         # list of params that have a function passed in as a string
         paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
@@ -610,14 +616,14 @@ class Network (object):
                                 sqrt(preConds['znorm'] - postConds['znorm']))
         
         # add netParams variables
-        for k,v in self.params.__dict__.iteritems():
+        for k,v in self.params.__dict__.items():
             if isinstance(v, Number):
                 dictVars[k] = v
 
         # for each parameter containing a function, calculate lambda function and arguments
         for paramStrFunc in paramsStrFunc:
             strFunc = connParam[paramStrFunc]  # string containing function
-            strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
+            strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
        
@@ -628,19 +634,19 @@ class Network (object):
                 # replace function with dict of values derived from function (one per pre+post cell)
                 connParam[paramStrFunc+'Func'] = {(preGid,postGid): lambdaFunc(
                     **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, postCellTags) for strVar in strVars})  
-                    for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
+                    for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
 
             elif paramStrFunc in ['convergence']:
                 # replace function with dict of values derived from function (one per post cell)
                 connParam[paramStrFunc+'Func'] = {postGid: lambdaFunc(
                     **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellTags) for strVar in strVars}) 
-                    for postGid,postCellTags in postCellsTags.iteritems()}
+                    for postGid,postCellTags in postCellsTags.items()}
 
             elif paramStrFunc in ['divergence']:
                 # replace function with dict of values derived from function (one per post cell)
                 connParam[paramStrFunc+'Func'] = {preGid: lambdaFunc(
                     **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, None) for strVar in strVars}) 
-                    for preGid, preCellTags in preCellsTags.iteritems()}
+                    for preGid, preCellTags in preCellsTags.items()}
 
             else:
                 # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
@@ -652,21 +658,22 @@ class Network (object):
     ### Full connectivity
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         ''' Generates connections between all pre and post-syn cells '''
-        if sim.cfg.verbose: print 'Generating set of all-to-all connections (rule: %s) ...' % (connParam['label'])
+        if sim.cfg.verbose: print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
 
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
-            connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
-                for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
+            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+list(preCellsTags.keys())[0]+list(postCellsTags.keys())[0])))
+            connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
+                for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
         
         for postCellGid in postCellsTags:  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
-                for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
+                for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -674,22 +681,23 @@ class Network (object):
     ### Probabilistic connectivity 
     ###############################################################################
     def probConn (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
+        if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
-        seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellsTags.keys()[-1]+postCellsTags.keys()[-1])))  
+        seed(sim.id32('%d'%(sim.cfg.seeds['conn']+list(preCellsTags.keys())[-1]+list(postCellsTags.keys())[-1])))  
         allRands = {(preGid,postGid): random() for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
-        for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
+        for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
-                for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
+                for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
                     
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
                   
                     if probability >= allRands[preCellGid,postCellGid]:      
                         seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
@@ -700,23 +708,24 @@ class Network (object):
     ### Convergent connectivity 
     ###############################################################################
     def convConn (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of convergent connections (rule: %s) ...' % (connParam['label'])
+        if sim.cfg.verbose: print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
                
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
-        for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
+        for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
                 seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid)))  
-                preCellsSample = sample(preCellsTags.keys(), convergence)  # selected gids of presyn cells
-                preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
-                for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
+                preCellsSample = sample(list(preCellsTags.keys()), convergence)  # selected gids of presyn cells
+                preCellsConv = {k:v for k,v in preCellsTags.items() if k in preCellsSample}  # dict of selected presyn cells tags
+                for preCellGid, preCellTags in preCellsConv.items():  # for each presyn cell
              
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
         
                     seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
@@ -727,22 +736,23 @@ class Network (object):
     ### Divergent connectivity 
     ###############################################################################
     def divConn (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         ''' Generates connections between all pre and post-syn cells based on probability values'''
-        if sim.cfg.verbose: print 'Generating set of divergent connections (rule: %s) ...' % (connParam['label'])
+        if sim.cfg.verbose: print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
          
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
-        for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
+        for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellGid)))  
             postCellsSample = sample(postCellsTags, divergence)  # selected gids of postsyn cells
-            postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
-            for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
+            postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+            for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                    connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                    connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
  
                 seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
                 if preCellGid != postCellGid: # if not self-connection
@@ -753,16 +763,17 @@ class Network (object):
     ### From list connectivity 
     ###############################################################################
     def fromListConn (self, preCellsTags, postCellsTags, connParam):
+        from . import sim
         ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
-        if sim.cfg.verbose: print 'Generating set of connections from list (rule: %s) ...' % (connParam['label'])
+        if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
         # list of params that can have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
         for paramStrFunc in paramsStrFunc:
             # replace lambda function (with args as dict of lambda funcs) with list of values
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+preCellsTags.keys()[0]+postCellsTags.keys()[0])))
-            connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
-                    for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
+            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+list(preCellsTags.keys())[0]+list(postCellsTags.keys())[0])))
+            connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
+                    for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
 
         if isinstance(connParam['weight'], list): connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
         if isinstance(connParam['delay'], list): connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
@@ -787,6 +798,7 @@ class Network (object):
     ### Set parameters and create connection
     ###############################################################################
     def _addCellConn (self, connParam, preCellGid, postCellGid):
+        from . import sim
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
@@ -839,6 +851,7 @@ class Network (object):
     ### Modify cell params
     ###############################################################################
     def modifyCells (self, params, updateMasterAllCells=False):
+        from . import sim
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyCellsTime')
         if sim.rank==0: 
@@ -851,13 +864,14 @@ class Network (object):
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyCellsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime']))
 
 
     ###############################################################################
     ### Modify synMech params
     ###############################################################################
     def modifySynMechs (self, params, updateMasterAllCells=False):
+        from . import sim
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifySynMechsTime')
         if sim.rank==0: 
@@ -870,7 +884,7 @@ class Network (object):
              sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifySynMechsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime']))
 
 
 
@@ -878,6 +892,7 @@ class Network (object):
     ### Modify conn params
     ###############################################################################
     def modifyConns (self, params, updateMasterAllCells=False):
+        from . import sim
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyConnsTime')
         if sim.rank==0: 
@@ -890,13 +905,14 @@ class Network (object):
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyConnsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime']))
 
 
     ###############################################################################
     ### Modify stim source params
     ###############################################################################
     def modifyStims (self, params, updateMasterAllCells=False):
+        from . import sim
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyStimsTime')
         if sim.rank==0: 
@@ -909,7 +925,7 @@ class Network (object):
             sim._gatherCells()  # update allCells
 
         sim.timing('stop', 'modifyStimsTime')
-        if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
+        if sim.rank == 0 and sim.cfg.timing: print(('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime']))
 
 
 

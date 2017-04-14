@@ -676,7 +676,8 @@ class CompartCell (Cell):
 
         # Get list of section labels
         secLabels = self._setConnSections(params)
-        if secLabels == -1: return  # if no section available exit func 
+        if secLabels == -1: 
+            return  # if no section available exit func 
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
@@ -705,7 +706,6 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -772,7 +772,7 @@ class CompartCell (Cell):
                         netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                     else:
                         netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                    
+
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
                     netcon.threshold = threshold  # set Netcon threshold

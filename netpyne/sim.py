@@ -15,7 +15,7 @@ if '-nogui' in sys.argv:
 
 # import all required modules
 from .simFuncs import *
-import neuromlFuncs
+from .neuromlFuncs import *
 from .wrappers import *
 import analysis
 from .network import Network

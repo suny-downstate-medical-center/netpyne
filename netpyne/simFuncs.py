@@ -368,7 +368,7 @@ def clearAll ():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj): 
-    return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+    return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
     
 
 ###############################################################################

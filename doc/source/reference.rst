@@ -283,13 +283,13 @@ The rationale for using connectivity rules is that you can create connections be
 
 Each item of the ``connParams`` ordered dictionary consists of a key and value. The key is an arbitrary label used as reference for this connectivity rule. The value contains a dictionary that defines the connectivity rule parameters and includes the following fields:
 
-* **preTags** - Set of conditions for the presynaptic cells. 
+* **preConds** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
 
 	Values can be lists, e.g. ``{'popLabel': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
 
-* **postTags** - Set of conditions for the postynaptic cells. 
-	Same format as ``preTags`` (above).
+* **postConds** - Set of conditions for the postynaptic cells. 
+	Same format as ``preConds`` (above).
 
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.

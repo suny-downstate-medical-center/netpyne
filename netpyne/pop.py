@@ -145,7 +145,7 @@ class Pop (object):
 
         for coord in ['x', 'y', 'z']:
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [point / sim.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
+                self.tags[coord+'normRange'] = [point / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
             if coord+'normRange' in self.tags:  # if normalized range, rescale volume
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 

@@ -1,3 +1,7 @@
+# Version 0.7.0
+
+- Fixed bug setting pop density with absoulute location ranges
+
 # Version 0.6.9
 
 - Improved support for NeuroML export

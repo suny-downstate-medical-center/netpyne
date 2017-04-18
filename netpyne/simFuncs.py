@@ -791,16 +791,18 @@ def preRun ():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
+            cell.hRandom.Random123(sim.id32('%d'%(cell.params['seed']+cell.gid)))
             cell.hRandom.negexp(1)
+            cell.hPointp.noiseFromRandom(cell.hRandom) 
         pop = sim.net.pops[cell.tags['popLabel']]
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
+                stim['hRandom'].Random123(sim.id32('%d'%(stim['seed']+cell.gid)))
                 stim['hRandom'].negexp(1)
+                stim['hNetStim'].noiseFromRandom(stim['hRandom']) 
 
 
 ###############################################################################

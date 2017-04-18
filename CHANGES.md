@@ -1,5 +1,7 @@
 # Version 0.7.0
 
+- Fixed bug: missing call to noiseFromRandom() for NetStims
+
 - Fixed bug setting pop density with absoulute location ranges
 
 - Fixed missing NeuroML message so only appears in master node

@@ -2,6 +2,8 @@
 
 - Fixed bug setting pop density with absoulute location ranges
 
+- Fixed missing NeuroML message so only appears in master node
+
 # Version 0.6.9
 
 - Improved support for NeuroML export

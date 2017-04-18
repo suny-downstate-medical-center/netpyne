@@ -42,7 +42,7 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 
 # Stimulation parameters
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 1.0, 'start': 1}
 netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
 
 
@@ -65,7 +65,7 @@ simConfig.dt = 0.025 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = False  # show detailed messages 
+simConfig.verbose = 1#False  # show detailed messages 
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from

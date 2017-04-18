@@ -133,6 +133,8 @@ We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor
 
 ::
 
+::
+
 	## Population parameters
 	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
 	netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 

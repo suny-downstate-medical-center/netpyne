@@ -2911,6 +2911,16 @@ netPAramsUI + simConfigUI - for chickens
 - nice to have, but not essential
 *** bug fixing
 
+** new proposal
+hourly rate: $75/hr - gross 
+days = estimate at 4.5hr/day
+managing - 15%
+
+- simulate large nets + visualize nets - related to mpi, reduce 
+- transition from high -> instantite - room for simplification
+- project - 55
+- design - linear
+
 * 17Apr13 convert to python3
 ** doc
 https://docs.python.org/2/library/2to3.html

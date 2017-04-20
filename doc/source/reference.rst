@@ -571,18 +571,19 @@ Each item of the ``stimTargetParams`` specifies how to map a source of stimulati
 		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
 
 	* **sec** (optional) - Target section (default: 'soma')
-		Can be defined as a function (see :ref:`function_string`)
 
 	* **loc** (optional) - Target location (default: 0.5)
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **weight** (optional; only for NetStims) - (default: 1)
+	* **synMech** (optional; only for NetStims) - Synaptic mechanism label to connect NetStim to 
+
+	* **weight** (optional; only for NetStims) - Weight of connection between NetStim and cell 
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **delay** (optional; only for NetStims) - (default: 1)
+	* **delay** (optional; only for NetStims) -  Delay of connection between NetStim and cell (default: 1)
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **synsPerConn** (optional; only for NetStims) - (default: 1)
+	* **synsPerConn** (optional; only for NetStims) - Number of synapses of connection between NetStim and cell (default: 1)
 		Can be defined as a function (see :ref:`function_string`)
 
 

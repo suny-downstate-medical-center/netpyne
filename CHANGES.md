@@ -8,6 +8,8 @@
 
 - Fixed missing NeuroML message so only appears in master node
 
+- Fixed bug in plotConn
+
 # Version 0.6.9
 
 - Improved support for NeuroML export

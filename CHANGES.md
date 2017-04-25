@@ -1,5 +1,7 @@
 # Version 0.7.0
 
+- Can now add arbitrary set of spike times to VecStim pop 
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

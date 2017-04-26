@@ -1300,6 +1300,7 @@ class PointCell (Cell):
                 if type(spkTimes) not in (list,tuple,np.array):
                     print '\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array'
                     return
+                spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
             
             # missing params

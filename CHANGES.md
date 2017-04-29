@@ -1,5 +1,7 @@
 # Version 0.7.0
 
+- Enabled use of VecStim spkTimes pops with individual list of cells
+
 - Can now add arbitrary set of spike times to VecStim pop 
 
 - Fixed bug: missing call to noiseFromRandom() for NetStims
@@ -9,6 +11,7 @@
 - Fixed missing NeuroML message so only appears in master node
 
 - Fixed bug in plotConn
+
 
 # Version 0.6.9
 

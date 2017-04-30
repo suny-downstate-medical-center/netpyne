@@ -218,7 +218,12 @@ class CompartCell (Cell):
         self.secLists = Dict()  # dict of sectionLists
 
         if create: self.create()  # create cell 
-        if associateGid: self.associateGid() # register cell for this node
+        if associateGid: 
+            threshold = 10.0
+            try: 
+                threshold = float(self.tags['threshold'])
+            except: pass
+            self.associateGid(threshold = threshold) # register cell for this node
 
 
     def create (self):

@@ -1242,17 +1242,16 @@ class PointCell (Cell):
 
             # if interval
             if 'interval' in self.params:
+                # set interval, start and noise params
                 interval = self.params['interval'] 
+                start = self.params['start'] if 'start' in self.params else 0.0
+                noise = self.params['noise'] if 'noise' in self.params else 0.0
+
+                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
                 # fixed interval of duration (1 - noise)*interval 
                 fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
-
-                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
-            
-                # set start and noise params
-                start = self.params['start'] if 'start' in self.params else 0.0
-                noise = self.params['noise'] if 'noise' in self.params else 0.0
 
                 # randomize the first spike so on average it occurs at start + noise*interval
                 # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)    

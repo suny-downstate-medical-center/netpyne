@@ -96,6 +96,22 @@ class Batch(object):
             # iterate over all param combinations
             if self.method == 'grid':
                 groupedParams = False
+<<<<<<< HEAD
+                ungroupedParams = False
+                for p in self.params:
+                    if 'group' not in p: 
+                        p['group'] = False # by default set linear to False
+                        ungroupedParams = True
+                    elif p['group'] == True: 
+                        groupedParams = True
+
+                if ungroupedParams:
+                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
+                else:
+                    labelList = ()
+                    valuesList = ()
+
+=======
                 for p in self.params:
                     if 'group' not in p: 
                         p['group'] = False # by default set linear to False
@@ -103,6 +119,7 @@ class Batch(object):
                         groupedParams = True
 
                 labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
+>>>>>>> upstream/development
                 valueCombinations = list(product(*(valuesList)))
                 indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
 

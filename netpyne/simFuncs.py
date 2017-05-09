@@ -25,14 +25,18 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-
-
+import tests
 
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-    if netParams is None: netParams = {} # If not specified, initialize as empty dict
+    if netParams is None:
+        netParams = {} # If not specified, initialize as empty dict
+    else:
+        netPyneTestObj = NetPyneTestObj(verboseFlag = True)
+        netPyneTestObj.netParams = netParams
+        netPyneTestObj.runTests()
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')

@@ -80,14 +80,14 @@ class TestTypeObj(object):
         try:
             assert (val in params), val + " must be specified."
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testExistsInList(self, val,params):
         try:
             assert any([x in params for x in val]), " At least one of " + str(val) + " must be specified in " + str(params) + "."
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsValidRange(self, val,params): # TEST_TYPE_IS_VALID_RANGE
@@ -97,108 +97,108 @@ class TestTypeObj(object):
                 assert (len(params[val]) == 2) # chk if len is 2 ( is range)
                 assert ( params[val][0] < params[val][1]) # check if lower < upper value in range
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testInRange(self, val,range, params): # TEST_TYPE_IN_RANGE
         try:
             if val in params:
-                print ( "************* BEFORE !!!!!!!")
+            #     print ( "************* BEFORE !!!!!!!")
                 assert (params[val][0] >= range[0] and params[val][1] <= range[1])
         except AssertionError as e:
-            print ( "************* IN ERROR !!!!!!!")
-            e.args += ('val',)
+            # print ( "************* IN ERROR !!!!!!!")
+            e.args += (val,)
             raise
 
     def testEquals(self, val,compareVal):
         try:
             assert (val == compareVal)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testGt(self, val,compareVal): # TEST_TYPE_GT
         try:
             assert (val > compareVal)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testGte(self, val,compareVal): # TEST_TYPE_GTE
         try:
             assert (val >= compareVal)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testGteZero(self, val): # TEST_TYPE_GTE
         try:
             assert (val >= 0)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testGtZero(self, val): # TEST_TYPE_GT
         try:
             assert (val > 0)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testLt(self, val,compareVal): # TEST_TYPE_LT
         try:
             assert (val < compareVal)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testLte(self,val,compareVal): # TEST_TYPE_LTE
         try:
             assert (val <= compareVal)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testLteZero(self, val): # TEST_TYPE_LTE
         try:
             assert (val <= 0)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testLtZero(self,val): # TEST_TYPE_LTE
         try:
             assert (val < 0)
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsDict(self,val): # TEST_TYPE_IS_DICT
         try:
             assert (isinstance (val,dict))
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsNumeric(self,val): # TEST_TYPE_IS_DICT
         try:
             assert (isinstance (val,numbers.Number))
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsFloat(self,val): # TEST_TYPE_IS_FLOAT
         try:
             assert (isinstance (val,float))
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsInt(self,val): # TEST_TYPE_IS_INT
         try:
             assert (isinstance (val,int))
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsCharacter(self,val): # TEST_TYPE_IS_CHARACTER
@@ -206,14 +206,14 @@ class TestTypeObj(object):
             isascii = lambda s: len(s) == len(s.encode())
             assert (isascii (val))
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
     def testIsValueList(self,val, valList): # TEST_TYPE_VALUE_LIST
         try:
             assert (val in valList), val + " must be in list " + (",").join()
         except AssertionError as e:
-            e.args += ('val',)
+            e.args += (val,)
             raise
 
 # Tests that are defined for each set of parameters
@@ -243,6 +243,18 @@ class TestObj(object):
     def __unicode__(self):
         return str(self.testName)
 
+# Tests that are defined for each set of parameters
+class ErrorMessageObj(object):
+
+    def __init__(self):
+
+        self.messageText = '' # text
+        self.errorMessageLevel = '' # info, warn, error
+        self.errorMessageValue = '' # value
+
+    def __unicode__(self):
+        return str(self.messageText)
+
 class NetPyneTestObj(object):
 
     def __init__(self, verboseFlag = False):
@@ -253,6 +265,7 @@ class NetPyneTestObj(object):
         self.netParams = ''
         self.testTypeObj = TestTypeObj()
         self.verboseFlag = verboseFlag
+        self.errorMessageObjList = []
         self.loadTests()
 
     def loadTests(self):
@@ -268,20 +281,20 @@ class NetPyneTestObj(object):
 
     def runTests(self):
 
-        if self.verboseFlag:
-            print (" *** Running tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
         self.runCellTests() # run cell tests
         self.runConnTests() # run conn tests
 
-        if self.verboseFlag:
-            print (" *** Finished running tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished running tests *** ")
 
     def loadPopTests(self):
 
-        if self.verboseFlag:
-            print (" *** Loading pop tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading pop tests *** ")
 
         # initialiase list of test objs
         self.testParamsMap["pop"] = {}
@@ -315,7 +328,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "xnormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["pop"]["xNormRangeTest"] = testObj
 
         # ynormrange test
@@ -325,7 +340,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "ynormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["pop"]["yNormRangeTest"] = testObj
 
         # znormrange test
@@ -335,7 +352,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "znormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["pop"]["zNormRangeTest"] = testObj
 
         # xrange test
@@ -345,7 +364,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "xRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["xRange invalid.","XRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
+
         self.testParamsMap["pop"]["xRangeTest"] = testObj
 
         # yrange test
@@ -355,7 +376,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "yRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeY]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["yRange invalid.", "YRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["pop"]["yRangeTest"] = testObj
 
         # zrange test
@@ -365,16 +388,18 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "zRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.messageText = ["zRange invalid.", "ZRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["pop"]["zRangeTest"] = testObj
 
-        if self.verboseFlag:
-            print (" *** Finished loading pop tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading pop tests *** ")
 
     def loadNetTests(self):
 
-        if self.verboseFlag:
-            print (" *** Loading net tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading net tests *** ")
 
         self.testParamsMap["net"] = {}
 
@@ -384,7 +409,8 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeX"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["net"]["sizeXTest"] = testObj
 
         # sizeY test
@@ -393,7 +419,8 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeY"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["net"]["sizeYTest"] = testObj
 
         # sizeZ test
@@ -402,7 +429,8 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeZ"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["net"]["sizeZTest"] = testObj
 
         # shape test
@@ -412,16 +440,17 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "self.netParams.shape"
         testObj.testTypes = [TEST_TYPE_VALUE_LIST]
         testObj.testValueList = VALID_SHAPES
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["net"]["shapeTest"] = testObj
 
-        if self.verboseFlag:
-            print (" *** Finished loading net tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading net tests *** ")
 
     def loadCellTests(self):
 
-        if self.verboseFlag:
-            print (" *** Loading cell tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading cell tests *** ")
 
         self.testParamsMap["cell"] = {}
 
@@ -431,16 +460,17 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["cell"]["condsTest"] = testObj
 
-        if self.verboseFlag:
-            print (" *** Finished loading cell tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading cell tests *** ")
 
     def loadCellTests(self):
 
-        if self.verboseFlag:
-            print (" *** Loading conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading conn tests *** ")
 
         self.testParamsMap["cell"] = {}
 
@@ -450,16 +480,17 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["cell"]["condsTest"] = testObj
 
-        if self.verboseFlag:
-            print (" *** Finished loading cell tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading cell tests *** ")
 
     def loadConnTests(self):
 
-        if self.verboseFlag:
-            print (" *** Loading conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading conn tests *** ")
 
         self.testParamsMap["conn"] = {}
 
@@ -469,7 +500,8 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["conn"]["preCondsTest"] = testObj
 
         # condsTest test
@@ -478,101 +510,131 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
         self.testParamsMap["conn"]["postCondsTest"] = testObj
 
-        if self.verboseFlag:
-            print (" *** Finished loading conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading conn tests *** ")
 
     def runPopTests(self):
 
-        if self.verboseFlag:
-            print (" *** Running pop tests *** ")
+        # if self.verboseFlag:
+        #     print ( " ::: flag is " + str(self.verboseFlag))
+
+            # print (" *** Running pop tests *** ")
 
         popParams = self.netParams.popParams
         for testName, popTestObj in self.testParamsMap["pop"].items():
             self.execRunTests(popTestObj, popParams)
 
-        if self.verboseFlag:
-            print (" *** Finished running pop tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished running pop tests *** ")
 
     def runNetTests(self):
 
-        if self.verboseFlag:
-            print (" *** Running net tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Running net tests *** ")
 
         netParams = self.netParams
-        print (self.testParamsMap)
         for testName, netTestObj in self.testParamsMap["net"].items():
             self.execRunTests(netTestObj, netParams)
 
-        if self.verboseFlag:
-            print (" *** Finished running net tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished running net tests *** ")
 
     def runCellTests(self):
 
-        if self.verboseFlag:
-            print (" *** Running cell tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Running cell tests *** ")
 
         cellParams = self.netParams.cellParams
         for testName, cellTestObj in self.testParamsMap["cell"].items():
             self.execRunTests(cellTestObj, cellParams)
 
-        if self.verboseFlag:
-            print (" *** Finished running cell tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished running cell tests *** ")
 
     def runConnTests(self):
 
-        if self.verboseFlag:
-            print (" *** Running conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Running conn tests *** ")
 
         connParams = self.netParams.connParams
         for testName, connTestObj in self.testParamsMap["conn"].items():
             self.execRunTests(connTestObj, connParams)
 
-        if self.verboseFlag:
-            print (" *** Finished running conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished running conn tests *** ")
 
     def execRunTests(self, testObj, params):
 
-        if self.verboseFlag:
-            print (" *** executing individual tests *** ")
+        # if self.verboseFlag:
+        #     print ( " ::: flag is " + str(self.verboseFlag))
+        #
+        #     print (" *** executing individual tests *** ")
 
-        for testType in testObj.testTypes:
-            if self.verboseFlag:
-                print ( " !!! testType = " + str(testType))
+        for testIndex, testType in enumerate(testObj.testTypes):
 
             if testType == TEST_TYPE_EXISTS:
 
                 if isinstance(params, dict):
+
                     for paramLabel, paramValues in params.items():
+
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
                 else:
-                        print ( " ***** running for parameter " + str(params))
-                        self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
+
+                        if self.verboseFlag:
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+
+                        try:
+                            self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_EXISTS_IN_LIST:
 
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
+
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
                 else:
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(params))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IN_RANGE:
 
@@ -580,18 +642,27 @@ class NetPyneTestObj(object):
 
                     for paramLabel, paramValues in params.items():
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType) + " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
                 else:
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(params))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IS_VALID_RANGE:
 
@@ -599,21 +670,27 @@ class NetPyneTestObj(object):
 
                     for paramLabel, paramValues in params.items():
                         if self.verboseFlag:
-
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
                         if self.verboseFlag:
-
-                            print ( " ***** running for parameter " + str(params))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IS_INT:
 
@@ -621,23 +698,30 @@ class NetPyneTestObj(object):
 
                     for paramLabel, paramValues in params.items():
                         if self.verboseFlag:
-
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                         try:
                             self.testTypeObj.testIsInt(testObj.testParameterValue, paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
-                        if self.verboseFlag:
-
-                            print ( " ***** running for parameter " + str(params))
 
                         try:
                             paramName = eval(testObj.testParameterValue)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
+
                             self.testTypeObj.testIsInt(paramName)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_GTE_ZERO:
 
@@ -645,17 +729,26 @@ class NetPyneTestObj(object):
 
                     for paramLabel, paramValues in params.items():
                         if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(paramLabel))
+                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                         try:
                             self.testTypeObj.testGteZero(testObj.testParameterValue, paramValues)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
-                        if self.verboseFlag:
-                            print ( " ***** running for parameter " + str(params))
                         try:
                             paramName = eval(testObj.testParameterValue)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
+
                             self.testTypeObj.testGteZero(paramName)
+                            if self.verboseFlag:
+                                print ( "PASSED" )
+
                         except Exception as e:
-                            print str(e)
+                            if self.verboseFlag:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])

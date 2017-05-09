@@ -23,13 +23,13 @@ class RunNetPyneTests():
 
         def __init__ (self):
             self.paramsMap = {}
-            self.netPyneTestObj = NetPyneTestObj()
+            self.netPyneTestObj = NetPyneTestObj(verboseFlag = True)
             self.loadTestsWithParams()
             self.runTestsWithParams()
 
         def loadTestsWithParams(self):
 
-            print ( " loading tests ")
+            # print ( " loading tests ")
             self.paramsMap["pop"] = {}
             self.paramsMap["net"] = {}
             self.paramsMap["conn"] = {}

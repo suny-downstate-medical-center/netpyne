@@ -80,168 +80,141 @@ class TestTypeObj(object):
         try:
             assert (val in params), val + " must be specified."
         except AssertionError as e:
-            # if self.verboseFlag:
-            #     traceback.print_exc(file=sys.stdout)
             e.args += ('val',)
             raise
 
     def testExistsInList(self, val,params):
-        # print ( " !!!! in exists test !!!! ")
-        # print ( " val = " + str(type(val)) + " params = " + str(params))
         try:
             assert any([x in params for x in val]), " At least one of " + str(val) + " must be specified in " + str(params) + "."
-            # print (" **^^^^*** Test passed !!!")
-        except:
-            # print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsValidRange(self, val,params): # TEST_TYPE_IS_VALID_RANGE
-        # print ( " !!!! in valid range test !!!! ")
-        # print ( " val = " + str(val) + " params = " + str(params))
-        # print ( " $$$ params[val] = " + str(params[val]))
-        #+ " len = " + str(len(params[val])) )
         try:
             if val in params:
                 assert (isinstance(params[val], list)) # chk if list
                 assert (len(params[val]) == 2) # chk if len is 2 ( is range)
                 assert ( params[val][0] < params[val][1]) # check if lower < upper value in range
-            # print (" **^^^^*** Test passed !!!")
-        except:
-            # print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testInRange(self, val,range, params): # TEST_TYPE_IN_RANGE
-        print ( " !!!! in -- range test !!!! ")
-        print ( " val = " + str(val) + " range = " + str(range) + " params = " + str(params))
         try:
             if val in params:
-                print ( " $$$ params[val] = " + str(params[val])  + " type = " + str(type(params[val]))  )
+                print ( "************* BEFORE !!!!!!!")
                 assert (params[val][0] >= range[0] and params[val][1] <= range[1])
-                # print (" **^^^^*** Test passed !!!")
-        except:
-            # print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            print ( "************* IN ERROR !!!!!!!")
+            e.args += ('val',)
+            raise
 
     def testEquals(self, val,compareVal):
         try:
             assert (val == compareVal)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testGt(self, val,compareVal): # TEST_TYPE_GT
         try:
             assert (val > compareVal)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testGte(self, val,compareVal): # TEST_TYPE_GTE
         try:
             assert (val >= compareVal)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testGteZero(self, val): # TEST_TYPE_GTE
         try:
             assert (val >= 0)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testGtZero(self, val): # TEST_TYPE_GT
         try:
             assert (val > 0)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testLt(self, val,compareVal): # TEST_TYPE_LT
         try:
             assert (val < compareVal)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testLte(self,val,compareVal): # TEST_TYPE_LTE
         try:
             assert (val <= compareVal)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testLteZero(self, val): # TEST_TYPE_LTE
         try:
             assert (val <= 0)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testLtZero(self,val): # TEST_TYPE_LTE
         try:
             assert (val < 0)
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsDict(self,val): # TEST_TYPE_IS_DICT
         try:
             assert (isinstance (val,dict))
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsNumeric(self,val): # TEST_TYPE_IS_DICT
         try:
             assert (isinstance (val,numbers.Number))
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsFloat(self,val): # TEST_TYPE_IS_FLOAT
         try:
             assert (isinstance (val,float))
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsInt(self,val): # TEST_TYPE_IS_INT
         try:
             assert (isinstance (val,int))
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsCharacter(self,val): # TEST_TYPE_IS_CHARACTER
         try:
             isascii = lambda s: len(s) == len(s.encode())
             assert (isascii (val))
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
     def testIsValueList(self,val, valList): # TEST_TYPE_VALUE_LIST
         try:
             assert (val in valList), val + " must be in list " + (",").join()
-            print (" **^^^^*** Test passed !!!")
-        except:
-            print (" ***###*** Test failed !!!")
-            traceback.print_exc(file=sys.stdout)
+        except AssertionError as e:
+            e.args += ('val',)
+            raise
 
 # Tests that are defined for each set of parameters
 class TestObj(object):
@@ -279,8 +252,8 @@ class NetPyneTestObj(object):
         self.simConfig = ''  # object of class SimConfig to store simulation configuration
         self.netParams = ''
         self.testTypeObj = TestTypeObj()
-        self.loadTests()
         self.verboseFlag = verboseFlag
+        self.loadTests()
 
     def loadTests(self):
 
@@ -450,7 +423,7 @@ class NetPyneTestObj(object):
         if self.verboseFlag:
             print (" *** Loading cell tests *** ")
 
-        self.testParamsMap["net"] = {}
+        self.testParamsMap["cell"] = {}
 
         # condsTest test
         testObj = TestObj()
@@ -459,7 +432,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_IS_DICT]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        self.testParamsMap["net"]["condsTest"] = testObj
+        self.testParamsMap["cell"]["condsTest"] = testObj
 
         if self.verboseFlag:
             print (" *** Finished loading cell tests *** ")
@@ -469,7 +442,7 @@ class NetPyneTestObj(object):
         if self.verboseFlag:
             print (" *** Loading conn tests *** ")
 
-        self.testParamsMap["net"] = {}
+        self.testParamsMap["cell"] = {}
 
         # condsTest test
         testObj = TestObj()
@@ -587,64 +560,102 @@ class NetPyneTestObj(object):
 
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
-                        print ( " ***** running for parameter " + str(paramLabel))
-                        self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(paramLabel))
+                        try:
+                            self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                        except Exception as e:
+                            print str(e)
                 else:
-                        print ( " ***** running for parameter " + str(params))
-                        self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(params))
+                        try:
+                            self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
+                        except Exception as e:
+                            print str(e)
 
             elif testType == TEST_TYPE_IN_RANGE:
 
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        print ( " ***** running for parameter " + str(paramLabel))
-                        self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(paramLabel))
+                        try:
+                            self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                        except Exception as e:
+                            print str(e)
                 else:
-                        print ( " ***** running for parameter " + str(params))
-                        self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(params))
+                        try:
+                            self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                        except Exception as e:
+                            print str(e)
 
             elif testType == TEST_TYPE_IS_VALID_RANGE:
 
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        print ( " ***** running for parameter " + str(paramLabel))
-                        self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                        if self.verboseFlag:
+
+                            print ( " ***** running for parameter " + str(paramLabel))
+                        try:
+                            self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                        except Exception as e:
+                            print str(e)
+
                 else:
-                        print ( " ***** running for parameter " + str(params))
-                        self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                        if self.verboseFlag:
+
+                            print ( " ***** running for parameter " + str(params))
+                        try:
+                            self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
+                        except Exception as e:
+                            print str(e)
 
             elif testType == TEST_TYPE_IS_INT:
 
                 if isinstance(params, dict):
 
-                    print ( str ( type ( params )))
                     for paramLabel, paramValues in params.items():
-                        print ( " ***** running for parameter " + str(paramLabel))
-                        self.testTypeObj.testIsInt(testObj.testParameterValue, paramValues)
+                        if self.verboseFlag:
+
+                            print ( " ***** running for parameter " + str(paramLabel))
+                        try:
+                            self.testTypeObj.testIsInt(testObj.testParameterValue, paramValues)
+                        except Exception as e:
+                            print str(e)
+
                 else:
-                        print ( " ***** running for parameter " + str(params))
+                        if self.verboseFlag:
 
-                        paramName = eval(testObj.testParameterValue)
-                        print ( " ***** running for parameter name " + str(paramName))
+                            print ( " ***** running for parameter " + str(params))
 
-#                        paramValue = params.paramName
-
-                        #print ( " ***** running for parameter value " + str(paramValue))
-                        self.testTypeObj.testIsInt(paramName)
+                        try:
+                            paramName = eval(testObj.testParameterValue)
+                            self.testTypeObj.testIsInt(paramName)
+                        except Exception as e:
+                            print str(e)
 
             elif testType == TEST_TYPE_GTE_ZERO:
 
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        print ( " ***** running for parameter " + str(paramLabel))
-                        self.testTypeObj.testGteZero(testObj.testParameterValue, paramValues)
-                else:
-                        print ( " ***** running for parameter " + str(params))
-                        paramName = eval(testObj.testParameterValue)
-                        #paramValue = eval(params.paramName)
-                        print ( " ***** running for parameter value " + str(paramName))
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(paramLabel))
+                        try:
+                            self.testTypeObj.testGteZero(testObj.testParameterValue, paramValues)
+                        except Exception as e:
+                            print str(e)
 
-                        self.testTypeObj.testGteZero(paramName)
+                else:
+                        if self.verboseFlag:
+                            print ( " ***** running for parameter " + str(params))
+                        try:
+                            paramName = eval(testObj.testParameterValue)
+                            self.testTypeObj.testGteZero(paramName)
+                        except Exception as e:
+                            print str(e)

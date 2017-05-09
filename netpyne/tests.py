@@ -274,8 +274,8 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
-        self.loadCellTests() # load cell tests
-        self.loadConnTests() # load conn tests
+        # self.loadCellTests() # load cell tests
+        # self.loadConnTests() # load conn tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -285,8 +285,8 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        self.runCellTests() # run cell tests
-        self.runConnTests() # run conn tests
+        # self.runCellTests() # run cell tests
+        # self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
         #     print (" *** Finished running tests *** ")

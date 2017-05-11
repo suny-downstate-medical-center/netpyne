@@ -31,6 +31,7 @@ from tests import *
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
+    print ( " init ^^^^^^ ")
     if netParams is None:
         netParams = {} # If not specified, initialize as empty dict
     else:

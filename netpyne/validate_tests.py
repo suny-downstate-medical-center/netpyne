@@ -13,6 +13,7 @@ class ParamsObj():
         """Set of possible parameters"""
 
         def __init__ (self):
+            
 
             self.simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
             self.netParams = specs.NetParams()  # object of class NetParams to store the network parameters

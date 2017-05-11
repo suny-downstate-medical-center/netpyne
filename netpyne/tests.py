@@ -274,7 +274,7 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
-        # self.loadCellTests() # load cell tests
+        self.loadCellTests() # load cell tests
         # self.loadConnTests() # load conn tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
@@ -285,7 +285,7 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        # self.runCellTests() # run cell tests
+        self.runCellTests() # run cell tests
         # self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
@@ -340,7 +340,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "ynormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
+        testObj.messageText = ["yNormRange invalid.","YNormRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yNormRangeTest"] = testObj
@@ -464,58 +464,281 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"]["condsTest"] = testObj
 
-        # if self.verboseFlag:
-        #     print (" *** Finished loading cell tests *** ")
+        # # cellTypes test
+        # testObj = TestObj()
+        # testObj.testName = "cellTypeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellType"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["cellTypeTest"] = testObj
 
-    def loadCellTests(self):
-
-        # if self.verboseFlag:
-        #     print (" *** Loading conn tests *** ")
-
-        self.testParamsMap["cell"] = {}
-
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "condsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["condsTest"] = testObj
-
-        # if self.verboseFlag:
-        #     print (" *** Finished loading cell tests *** ")
-
-    def loadConnTests(self):
-
-        # if self.verboseFlag:
-        #     print (" *** Loading conn tests *** ")
-
-        self.testParamsMap["conn"] = {}
-
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "preCondsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["conn"]["preCondsTest"] = testObj
-
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "postCondsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["conn"]["postCondsTest"] = testObj
-
-        # if self.verboseFlag:
-        #     print (" *** Finished loading conn tests *** ")
+        # # cellModel test
+        # testObj = TestObj()
+        # testObj.testName = "cellModelTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellModel"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["cellModelTest"] = testObj
+        #
+        # # cellModel test
+        # testObj = TestObj()
+        # testObj.testName = "cellModelTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellModel"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["cellModelTest"] = testObj
+    #     # geom test
+    #     testObj = TestObj(testName = "geomExistTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "geom",
+    #                       testTypes = [TEST_TYPE_EXISTS],
+    #
+    #                       compareValueString = "cellParams.cellModel"
+    #                       compareValueDataType = "dict"
+    #                       compareValueType = "eval"
+    #
+    #                       messageText = ["Geom is not specified."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_WARN"]
+    #                       )
+    #
+    #     # geom test
+    #     testObj = TestObj(testName = "geomValidTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "geom",
+    #                       testTypes = [TEST_TYPE_VALUE_LIST],
+    #                       testValueList = VALID_GEOMETRIES,
+    #                       messageText = ["Geom is not valid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_WARN"]
+    #                       )
+    #
+    #     testParamsMap["cell"].append(testObj)
+    #
+    #     # topol test
+    #     testObj = TestObj(testName = "toplogyTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "topol",
+    #                       testTypes = [TEST_TYPE_SPECIAL],
+    #                       testTypeSpecialString = "checkCellTopology"
+    #                       messageText = ["Topology is not valid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["cell"].append(testObj)
+    #
+    #     # mechs test
+    #
+    #     # -- mechs: not required, check mech and properties exist using utils.mechVarList()
+    #     # -- ions: not required, check mech and properties exist using utils.mechVarList()
+    #     # -- pointps: not required;
+    #     # -- required key 'mod' wiht pointp label; check exists using utils.mechVarlist()
+    #     # -- 'loc' also required; has to be between 0 and 1
+    #     # -- 'vref' and 'synList' optional
+    #     # - spikeGenLoc: not rquired; between 0 and 1
+    #
+    #     testObj = TestObj(testName = "mechsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "mechs",
+    #                       testTypes = [TEST_TYPE_SPECIAL],
+    #                       testTypeSpecialString = "mechVarListTest"
+    #                       messageText = ["Incorrect parameter for mechanisms."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["cell"].append(testObj)
+    #     #ions
+    #     testObj = TestObj(testName = "ionsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "ions",
+    #                       testTypes = [TEST_TYPE_SPECIAL],
+    #                       testTypeSpecialString = "mechVarListTest"
+    #                       messageText = ["Incorrect parameter for mechanisms."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #     #pointps
+    #     testObj = TestObj(testName = "ionsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "ions",
+    #                       testTypes = [TEST_TYPE_SPECIAL],
+    #                       testTypeSpecialString = "mechVarListTest"
+    #                       messageText = ["Incorrect parameter for mechanisms."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["cell"].append(testObj)
+    # # conn tests
+    # def loadConnTests(self):
+    #     # conn tests
+    #     # preconds test
+    #     testObj = TestObj(testName = "preCondsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "preConds",
+    #                       testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_EXISTS ],
+    #                       messageText = ["preConds is not a dict","preConds needs to be specified."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # postconds test
+    #     testObj = TestObj(testName = "postCondsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "postConds",
+    #                       testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_EXISTS ],
+    #                       messageText = ["postConds is not a dict","postConds needs to be specified."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # secs test
+    #     testObj = TestObj(testName = "connsSecsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "secs",
+    #                       testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ],
+    #                       messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_WARN", "MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     # locs test
+    #     testObj = TestObj(testName = "locsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "locs",
+    #                       testTypes = [TEST_TYPE_SPECIAL ],
+    #                       testTypeSpecialString = "connsLocTest"
+    #                       messageText = ["Locs is invalid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # weight test
+    #     testObj = TestObj(testName = "postCondsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "weight",
+    #                       testTypeSpecialString = "connsWeightTest"
+    #                       testTypes = [TEST_TYPE_SPECIAL ],
+    #                       messageText = ["Weight is invalid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # delay test
+    #     testObj = TestObj(testName = "postCondsTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "delay",
+    #                       testTypeSpecialString = "connsDelayTest"
+    #                       testTypes = [TEST_TYPE_SPECIAL ],
+    #                       messageText = ["Delay is invalid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # synMech
+    #     testObj = TestObj(testName = "synMechTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "synMech",
+    #                       testTypeSpecialString = "synMechsTest"
+    #                       testTypes = [TEST_TYPE_SPECIAL ],
+    #                       messageText = ["Syn Mech is invalid."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # synsPerConn
+    #     #- synsPerConn: optional, defaults to 1; has to be >=1
+    #
+    #     testObj = TestObj(testName = "synsPerConnTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "synsPerConn",
+    #                       testTypeSpecialString = "synMechsTest"
+    #                       testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ],
+    #                       compareValueString = "1"
+    #                       compareValueType = "int"
+    #                       messageText = ["Syns Per Conn must be >= 1."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # probability: optional; [0,1]
+    #
+    #     testObj = TestObj(testName = "probabilityTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "probability",
+    #                       testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ],
+    #                       compareValueString = "1"
+    #                       compareValueType = "int"
+    #                       messageText = ["Probability needs to be between 0 and 1."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # convergence  optional; positive integer
+    #
+    #     testObj = TestObj(testName = "convergenceTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "convergence",
+    #                       testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ],
+    #                       messageText = ["Convergence, is specified, needs to be a positive integer."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    #     # divergence  optional; positive integer
+    #
+    #     testObj = TestObj(testName = "divergenceTest",
+    #                       testParameterType = "string",
+    #                       testParameterValue = "divergence",
+    #                       testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ],
+    #                       messageText = ["Divergence, is specified, needs to be a positive integer."],
+    #                       errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+    #                       )
+    #
+    #     testParamsMap["conn"].append(testObj)
+    #
+    # def loadConnTests(self):
+    #
+    #     # if self.verboseFlag:
+    #     #     print (" *** Loading conn tests *** ")
+    #
+    #     self.testParamsMap["conn"] = {}
+    #
+    #     # condsTest test
+    #     testObj = TestObj()
+    #     testObj.testName = "preCondsTest"
+    #     testObj.testParameterType = "string"
+    #     testObj.testParameterValue = "conds"
+    #     testObj.testTypes = [TEST_TYPE_EXISTS]
+    #     testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+    #
+    #     self.testParamsMap["conn"]["preCondsTest"] = testObj
+    #
+    #     # condsTest test
+    #     testObj = TestObj()
+    #     testObj.testName = "postCondsTest"
+    #     testObj.testParameterType = "string"
+    #     testObj.testParameterValue = "conds"
+    #     testObj.testTypes = [TEST_TYPE_EXISTS]
+    #     testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+    #
+    #     self.testParamsMap["conn"]["postCondsTest"] = testObj
+    #
+    #     # if self.verboseFlag:
+    #     #     print (" *** Finished loading conn tests *** ")
 
     def runPopTests(self):
 

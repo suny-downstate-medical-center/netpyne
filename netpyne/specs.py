@@ -475,7 +475,7 @@ class SimConfig (object):
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages
         self.checkErrors = True # run error checkErrors
-        self.checkErrorsVerbose = False # give
+        self.checkErrorsVerbose = False # print errors
         # Recording
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record

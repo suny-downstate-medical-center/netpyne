@@ -286,8 +286,13 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
+<<<<<<< HEAD
         # self.loadCellTests() # load cell tests
         # # self.loadConnTests() # load conn tests
+=======
+        self.loadCellTests() # load cell tests
+        # self.loadConnTests() # load conn tests
+>>>>>>> error check
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -297,7 +302,7 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        # self.runCellTests() # run cell tests
+        self.runCellTests() # run cell tests
         # self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
@@ -352,7 +357,11 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "ynormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
+<<<<<<< HEAD
         testObj.messageText = ["yNormRange invalid.","yNormRange not in range."]
+=======
+        testObj.messageText = ["yNormRange invalid.","YNormRange not in range."]
+>>>>>>> error check
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yNormRangeTest"] = testObj

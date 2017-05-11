@@ -286,13 +286,8 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
-<<<<<<< HEAD
         # self.loadCellTests() # load cell tests
         # # self.loadConnTests() # load conn tests
-=======
-        self.loadCellTests() # load cell tests
-        # self.loadConnTests() # load conn tests
->>>>>>> error check
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 

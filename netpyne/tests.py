@@ -286,8 +286,13 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
+<<<<<<< HEAD
         # self.loadCellTests() # load cell tests
         # # self.loadConnTests() # load conn tests
+=======
+        self.loadCellTests() # load cell tests
+        # self.loadConnTests() # load conn tests
+>>>>>>> error check
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -297,7 +302,7 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        # self.runCellTests() # run cell tests
+        self.runCellTests() # run cell tests
         # self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
@@ -593,147 +598,147 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"]["pointpsTest"] = testObj
 
-        def loadConnTests(self):
+    def loadConnTests(self):
 
-            # if self.verboseFlag:
-            #     print (" *** Loading conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Loading conn tests *** ")
 
-            self.testParamsMap["conn"] = {}
+        self.testParamsMap["conn"] = {}
 
-            # condsTest test
-            testObj = TestObj()
-            testObj.testName = "preCondsTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "conds"
-            testObj.testTypes = [TEST_TYPE_EXISTS]
-            testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # condsTest test
+        testObj = TestObj()
+        testObj.testName = "preCondsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testTypes = [TEST_TYPE_EXISTS]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-            self.testParamsMap["conn"]["preCondsTest"] = testObj
+        self.testParamsMap["conn"]["preCondsTest"] = testObj
 
-            # condsTest test
-            testObj = TestObj()
-            testObj.testName = "postCondsTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "conds"
-            testObj.testTypes = [TEST_TYPE_EXISTS]
-            testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # condsTest test
+        testObj = TestObj()
+        testObj.testName = "postCondsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testTypes = [TEST_TYPE_EXISTS]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-            self.testParamsMap["conn"]["postCondsTest"] = testObj
+        self.testParamsMap["conn"]["postCondsTest"] = testObj
 
-            # if self.verboseFlag:
-            #     print (" *** Finished loading conn tests *** ")
+        # if self.verboseFlag:
+        #     print (" *** Finished loading conn tests *** ")
 
-            # secs test
-            testObj = TestObj()
-            testObj.testName = "connsSecsTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "secs"
-            testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
-            testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_WARN", "MESSAGE_TYPE_ERROR"]
+        # secs test
+        testObj = TestObj()
+        testObj.testName = "connsSecsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
+        testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_WARN", "MESSAGE_TYPE_ERROR"]
 
-            self.testParamsMap["conn"]["connsSecsTest"] = testObj
+        self.testParamsMap["conn"]["connsSecsTest"] = testObj
 
-            # locs test
-            testObj = TestObj()
-            testObj.testName = "locsTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "locs"
-            testObj.testTypes = [TEST_TYPE_SPECIAL ]
-            testObj.testTypeSpecialString = "connsLocTest"
-            testObj.messageText = ["Locs is invalid."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # locs test
+        testObj = TestObj()
+        testObj.testName = "locsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "locs"
+        testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        testObj.testTypeSpecialString = "connsLocTest"
+        testObj.messageText = ["Locs is invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            self.testParamsMap["conn"]["locsTest"] = testObj
+        self.testParamsMap["conn"]["locsTest"] = testObj
 
-            # weight test
-            testObj = TestObj()
-            testObj.testName = "weightsTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "weight"
-            testObj.testTypeSpecialString = "connsWeightTest"
-            testObj.testTypes = [TEST_TYPE_SPECIAL ]
-            testObj.messageText = ["Weight is invalid."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # weight test
+        testObj = TestObj()
+        testObj.testName = "weightsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "weight"
+        testObj.testTypeSpecialString = "connsWeightTest"
+        testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        testObj.messageText = ["Weight is invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["weightsTest"] = testObj
+        testParamsMap["conn"]["weightsTest"] = testObj
 
-            # delay test
-            testObj = TestObj()
-            testObj.testName = "delayTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "delay"
-            testObj.testTypeSpecialString = "connsDelayTest"
-            testObj.testTypes = [TEST_TYPE_SPECIAL ]
-            testObj.messageText = ["Delay is invalid."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # delay test
+        testObj = TestObj()
+        testObj.testName = "delayTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "delay"
+        testObj.testTypeSpecialString = "connsDelayTest"
+        testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        testObj.messageText = ["Delay is invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["delayTest"] = testObj
+        testParamsMap["conn"]["delayTest"] = testObj
 
-            # synMech
-            testObj = TestObj()
-            testObj.testName = "synMechTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "synMech"
-            testObj.testTypeSpecialString = "synMechsTest"
-            testObj.testTypes = [TEST_TYPE_SPECIAL ]
-            testObj.messageText = ["Syn Mech is invalid."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # synMech
+        testObj = TestObj()
+        testObj.testName = "synMechTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "synMech"
+        testObj.testTypeSpecialString = "synMechsTest"
+        testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        testObj.messageText = ["Syn Mech is invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["synMechTest"] = testObj
+        testParamsMap["conn"]["synMechTest"] = testObj
 
-            # synsPerConn
-            #- synsPerConn: optional, defaults to 1; has to be >=1
+        # synsPerConn
+        #- synsPerConn: optional, defaults to 1; has to be >=1
 
-            testObj = TestObj()
-            testObj.testName = "synsPerConnTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "synsPerConn"
-            testObj.testTypeSpecialString = "synMechsTest"
-            testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
-            testObj.compareValueString = "1"
-            testObj.compareValueType = "int"
-            testObj.messageText = ["Syns Per Conn must be >= 1."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj = TestObj()
+        testObj.testName = "synsPerConnTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "synsPerConn"
+        testObj.testTypeSpecialString = "synMechsTest"
+        testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
+        testObj.compareValueString = "1"
+        testObj.compareValueType = "int"
+        testObj.messageText = ["Syns Per Conn must be >= 1."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["synsPerConnTest"] = testObj
+        testParamsMap["conn"]["synsPerConnTest"] = testObj
 
-            # probability: optional; [0,1]
-            testObj = TestObj()
-            testObj.testName = "probabilityTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "probability"
-            testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ]
-            testObj.compareValueString = "1"
-            testObj.compareValueType = "int"
-            testObj.messageText = ["Probability needs to be between 0 and 1."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # probability: optional; [0,1]
+        testObj = TestObj()
+        testObj.testName = "probabilityTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "probability"
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ]
+        testObj.compareValueString = "1"
+        testObj.compareValueType = "int"
+        testObj.messageText = ["Probability needs to be between 0 and 1."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["probabilityTest"] = testObj
+        testParamsMap["conn"]["probabilityTest"] = testObj
 
-            # convergence  optional; positive integer
+        # convergence  optional; positive integer
 
-            testObj = TestObj()
-            testObj.testName = "convergenceTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "convergence"
-            testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
-            testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj = TestObj()
+        testObj.testName = "convergenceTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "convergence"
+        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["convergenceTest"] = testObj
+        testParamsMap["conn"]["convergenceTest"] = testObj
 
-            # divergence  optional; positive integer
+        # divergence  optional; positive integer
 
-            testObj = TestObj()
-            testObj.testName = "divergenceTest"
-            testObj.testParameterType = "string"
-            testObj.testParameterValue = "divergence"
-            testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
-            testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
-            testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj = TestObj()
+        testObj.testName = "divergenceTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "divergence"
+        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
-            testParamsMap["conn"]["divergenceTest"] = testObj
+        testParamsMap["conn"]["divergenceTest"] = testObj
 
     def runPopTests(self):
 

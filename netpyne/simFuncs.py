@@ -35,7 +35,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     if netParams is None:
         netParams = {} # If not specified, initialize as empty dict
     else:
-        netPyneTestObj = NetPyneTestObj(verboseFlag = True)
+        netPyneTestObj = NetPyneTestObj(verboseFlag = False)
         netPyneTestObj.netParams = netParams
         #netPyneTestObj.runTests()
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict

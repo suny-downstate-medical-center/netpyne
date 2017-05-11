@@ -31,7 +31,7 @@ from tests import *
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-    if netParams is None: netParams = {} # If not specified, initialize as empty dict
+    if netParams is None: netParams = {} # If not specified, initialize as empty dic
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')

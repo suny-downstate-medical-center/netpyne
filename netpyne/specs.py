@@ -476,6 +476,7 @@ class SimConfig (object):
         self.verbose = False  # show detailed messages
         self.checkErrors = True # run error checkErrors
         self.checkErrorsVerbose = False # give
+
         # Recording
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record

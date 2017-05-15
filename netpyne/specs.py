@@ -474,8 +474,8 @@ class SimConfig (object):
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages
-        self.checkErrors = True # run error checkErrors
-        self.checkErrorsVerbose = False # print errors
+        self.checkErrors = True # check for errors in input params
+        self.checkErrorsVerbose = False # give error messages when checking input params for errors
         # Recording
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record

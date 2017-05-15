@@ -258,8 +258,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     if netStimLabels: popLabels.append('NetStims')
-    if not popColors:
-        popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if popColors: popColorsTmp.update(popColors)
+    popColors = popColorsTmp
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
         try:
@@ -1526,8 +1527,9 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     cells, cellGids, _ = getCellsInclude(include)           
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
-    if not popColors:
-        popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if popColors: popColorsTmp.update(popColors)
+    popColors = popColorsTmp
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
 
     # front view

@@ -704,7 +704,8 @@ if neuromlExists:
             popInfo['cellsList'] = []
             
             if population_id=='pop':
-                print("\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors!\n*****************************\n\n")
+                print("\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors in NetPyNE!\nGiving up...\n*****************************\n\n")
+                quit()
 
             self.popParams[population_id] = popInfo
 

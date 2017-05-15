@@ -125,11 +125,11 @@ NET_RECEIVE(flag) {
         : This child is a synapse; defining weight
         weight = 1
     
-        : paramMappings: {poissonFiringSyn={averageRate=averageRate, i=i, tsince=tsince, isi=isi, averageIsi=averageIsi}, syn0={A=syn0_A, tauRise=syn0_tauRise, gbase=syn0_gbase, erev=syn0_erev, B=syn0_B, peakTime=syn0_peakTime, g=syn0_g, i=syn0_i, tauDecay=syn0_tauDecay, waveformFactor=syn0_waveformFactor}}
+        : paramMappings: {poissonFiringSyn={averageRate=averageRate, i=i, tsince=tsince, isi=isi, averageIsi=averageIsi}, syn0={A=syn0_A, tauRise=syn0_tauRise, gbase=syn0_gbase, erev=syn0_erev, B=syn0_B, peakTime=syn0_peakTime, g=syn0_g, i=syn0_i, tauDecay=syn0_tauDecay, wav...
     ?    state_discontinuity(syn0_A, syn0_A  + (weight *  syn0_waveformFactor ))
         syn0_A = syn0_A  + (weight *  syn0_waveformFactor )
     
-        : paramMappings: {poissonFiringSyn={averageRate=averageRate, i=i, tsince=tsince, isi=isi, averageIsi=averageIsi}, syn0={A=syn0_A, tauRise=syn0_tauRise, gbase=syn0_gbase, erev=syn0_erev, B=syn0_B, peakTime=syn0_peakTime, g=syn0_g, i=syn0_i, tauDecay=syn0_tauDecay, waveformFactor=syn0_waveformFactor}}
+        : paramMappings: {poissonFiringSyn={averageRate=averageRate, i=i, tsince=tsince, isi=isi, averageIsi=averageIsi}, syn0={A=syn0_A, tauRise=syn0_tauRise, gbase=syn0_gbase, erev=syn0_erev, B=syn0_B, peakTime=syn0_peakTime, g=syn0_g, i=syn0_i, tauDecay=syn0_tauDecay, wav...
     ?    state_discontinuity(syn0_B, syn0_B  + (weight *  syn0_waveformFactor ))
         syn0_B = syn0_B  + (weight *  syn0_waveformFactor )
     

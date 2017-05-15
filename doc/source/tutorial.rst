@@ -233,7 +233,7 @@ We will add a rule to randomly connect the sensory to the motor population with 
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
-		'synMech': 'exc'})   		# synaptic mechanism 
+		'synMech': 'exc'}   		# synaptic mechanism 
 
 
 Simulation configuration options

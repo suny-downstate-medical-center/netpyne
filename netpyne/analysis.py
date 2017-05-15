@@ -218,7 +218,8 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), saveData = None, saveFig = None, 
+        showFig = True): 
     ''' 
     Raster plot of network cells 
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -233,6 +234,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - lw (integer): Line width for each spike (default: 2)
         - marker (char): Marker for each spike (default: '|')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -256,7 +258,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     if netStimLabels: popLabels.append('NetStims')
-    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if not popColors:
+        popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
         try:
@@ -462,7 +465,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ## Plot spike histogram
 ######################################################################################################################################################
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
-    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -472,6 +475,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): TO DO!
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
@@ -1493,13 +1497,14 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 ######################################################################################################################################################
 ## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
-def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True): 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
         - showConns (True|False): Whether to show connections or not (default: True)
         - figSize ((width, height)): Size of figure (default: (12,12))
         - view ('xy', 'xz'): Perspective view: front ('xy') or top-down ('xz')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
         - saveFig (None|'fileName'): File name where to save the figure;
             if set to True uses filename from simConfig (default: None)(default: None)
@@ -1521,7 +1526,8 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     cells, cellGids, _ = getCellsInclude(include)           
     selectedPops = [cell['tags']['popLabel'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
-    popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if not popColors:
+        popColors = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
 
     # front view

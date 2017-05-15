@@ -4,6 +4,8 @@
 
 - Can now add arbitrary set of spike times to VecStim pop 
 
+- Dict with popColors can be passed to plotRaster() and plot2Dnet()
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

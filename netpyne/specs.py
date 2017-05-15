@@ -475,7 +475,7 @@ class SimConfig (object):
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.verbose = False  # show detailed messages
         self.checkErrors = True # run error checkErrors
-        self.checkErrorsVerbose = False # give 
+        self.checkErrorsVerbose = False # give
         # Recording
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
@@ -502,6 +502,10 @@ class SimConfig (object):
 
         # Analysis and plotting
         self.analysis = ODict()
+
+        # error checking
+        self.checkErrors = True # whether to validate the input parameters
+        self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
 
         # fill in params from dict passed as argument
         if simConfigDict:

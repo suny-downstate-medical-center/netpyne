@@ -286,7 +286,7 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         self.loadPopTests() # load pop tests
         self.loadNetTests() # load net tests
-        # self.loadCellTests() # load cell tests
+        self.loadCellTests() # load cell tests
         # # self.loadConnTests() # load conn tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
@@ -476,78 +476,68 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"]["condsTest"] = testObj
 
-        # cellTypes test
-        testObj = TestObj()
-        testObj.testName = "cellTypeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "cellType"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        testObj.compareDict = {}
-        testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."],
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # # cellTypes test
+        # testObj = TestObj()
+        # testObj.testName = "cellTypeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellType"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.compareDict = "self.netParams.popParams"
+        # testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        #
+        # self.testParamsMap["cell"]["cellTypeTest"] = testObj
+        #
+        # # cellModel test
+        # testObj = TestObj()
+        # testObj.testName = "cellModelTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellModel"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.compareDict = "self.netParams.popParams"
+        # testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        #
+        # self.testParamsMap["cell"]["cellModelTest"] = testObj
+        #
+        # # geom test
+        # testObj = TestObj()
+        # testObj.testName = "geomExistTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "geom"
+        # testObj.testTypes = [TEST_TYPE_EXISTS]
+        # testObj.messageText = ["Geom is not specified."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # self.testParamsMap["cell"]["geomExistTest"] = testObj
+        #
+        # # geom test
+        # testObj = TestObj()
+        # testObj.testName = "geomValidTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "geom",
+        # testObj.testTypes = [TEST_TYPE_VALUE_LIST],
+        # testObj.testValueList = VALID_GEOMETRIES,
+        # testObj.messageText = ["Geom is not valid."],
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["geomValidTest"] = testObj
+        #
+        # # topol test
+        # testObj = TestObj()
+        # testObj.testName = "toplogyTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "topol"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL]
+        # testObj.testTypeSpecialString = "checkCellTopology"
+        # testObj.messageText = ["Topology is not valid."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["toplogyTest"] = testObj
 
-        self.testParamsMap["cell"]["cellTypeTest"] = testObj
-
-        # cellModel test
-        testObj = TestObj()
-        testObj.testName = "cellModelTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "cellModel"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["cellModelTest"] = testObj
-
-        # cellModel test
-        testObj = TestObj()
-        testObj.testName = "cellModelTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "cellModel"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["cellModelTest"] = testObj
-
-        # geom test
-        testObj = TestObj()
-        testObj.testName = "geomExistTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "geom"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-
-        testObj.compareValueString = "cellParams.cellModel"
-        testObj.compareValueDataType = "dict"
-        testObj.compareValueType = "eval"
-
-        testObj.messageText = ["Geom is not specified."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARN]
-        self.testParamsMap["cell"]["geomExistTest"] = testObj
-
-        # geom test
-        testObj = TestObj()
-        testObj.testName = "geomValidTest",
-        testObj.testParameterType = "string",
-        testObj.testParameterValue = "geom",
-        testObj.testTypes = [TEST_TYPE_VALUE_LIST],
-        testObj.testValueList = VALID_GEOMETRIES,
-        testObj.messageText = ["Geom is not valid."],
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_WARN"]
-
-        self.testParamsMap["cell"]["geomValidTest"] = testObj
-
-        # topol test
-        testObj = TestObj()
-        testObj.testName = "toplogyTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "topol"
-        testObj.testTypes = [TEST_TYPE_SPECIAL]
-        testObj.testTypeSpecialString = "checkCellTopology"
-        testObj.messageText = ["Topology is not valid."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["cell"]["toplogyTest"] = testObj
+        # -- topol: required if len(secs)>1; has to be dict; with 3 keys:
+        # --- parentSec: string which should be in keys of secs
+        # --- parentX: 0-1
+        # --- childX: 0-1
 
         # mechs test
 
@@ -559,39 +549,39 @@ class NetPyneTestObj(object):
         # -- 'vref' and 'synList' optional
         # - spikeGenLoc: not rquired; between 0 and 1
 
-        testObj = TestObj()
-        testObj.testName = "mechsTest",
-        testObj.testParameterType = "string",
-        testObj.testParameterValue = "mechs",
-        testObj.testTypes = [TEST_TYPE_SPECIAL],
-        testObj.testTypeSpecialString = "mechVarListTest"
-        testObj.messageText = ["Incorrect parameter for mechanisms."],
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["cell"]["mechsTest"] = testObj
-        #ions
-        testObj = TestObj()
-        testObj.testName = "ionsTest",
-        testObj.testParameterType = "string",
-        testObj.testParameterValue = "mechs",
-        testObj.testTypes = [TEST_TYPE_SPECIAL],
-        testObj.testTypeSpecialString = "mechVarListTest"
-        testObj.messageText = ["Incorrect parameter for mechanisms."],
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["cell"]["ionsTest"] = testObj
-
-        #pointps
-        testObj = TestObj()
-        testName = "pointpsTest",
-        testObj.testParameterType = "string",
-        testObj.testParameterValue = "ions",
-        testObj.testTypes = [TEST_TYPE_SPECIAL],
-        testObj.testTypeSpecialString = "mechVarListTest"
-        testObj.messageText = ["Incorrect parameter for mechanisms."],
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["cell"]["pointpsTest"] = testObj
+        # testObj = TestObj()
+        # testObj.testName = "mechsTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "mechs",
+        # testObj.testTypes = [TEST_TYPE_SPECIAL],
+        # testObj.testTypeSpecialString = "mechVarListTest"
+        # testObj.messageText = ["Incorrect parameter for mechanisms."],
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["cell"]["mechsTest"] = testObj
+        # #ions
+        # testObj = TestObj()
+        # testObj.testName = "ionsTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "mechs",
+        # testObj.testTypes = [TEST_TYPE_SPECIAL],
+        # testObj.testTypeSpecialString = "mechVarListTest"
+        # testObj.messageText = ["Incorrect parameter for mechanisms."],
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["cell"]["ionsTest"] = testObj
+        #
+        # #pointps
+        # testObj = TestObj()
+        # testName = "pointpsTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "ions",
+        # testObj.testTypes = [TEST_TYPE_SPECIAL],
+        # testObj.testTypeSpecialString = "mechVarListTest"
+        # testObj.messageText = ["Incorrect parameter for mechanisms."],
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["cell"]["pointpsTest"] = testObj
 
     def loadConnTests(self):
 
@@ -793,7 +783,6 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
         self.testParamsMap["cell"]["pointpsTest"] = testObj
->>>>>>> ca2ef49a9c562e3911d7049c0df17be875223760
 
     def loadConnTests(self):
 

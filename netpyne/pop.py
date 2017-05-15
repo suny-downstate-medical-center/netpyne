@@ -145,7 +145,7 @@ class Pop (object):
 
         for coord in ['x', 'y', 'z']:
             if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [point / sim.net.params['size'+coord.upper()] for point in self.tags[coord+'Range']]
+                self.tags[coord+'normRange'] = [point / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
             if coord+'normRange' in self.tags:  # if normalized range, rescale volume
                 minv = self.tags[coord+'normRange'][0] 
                 maxv = self.tags[coord+'normRange'][1] 
@@ -242,14 +242,14 @@ class Pop (object):
         ''' Create population cells based on list of individual cells'''
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
-        for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
+        for listIndex, i in enumerate(self._distributeCells(len(self.tags['cellsList']))[sim.rank]):
             #if 'cellModel' in self.tags['cellsList'][i]:
             #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['popLabel'] = self.tags['popLabel']
-            cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
+            cellTags.update(self.tags['cellsList'][listIndex])  # add tags specific to this cells
             for coord in ['x','y','z']:
                 if coord in cellTags:  # if absolute coord exists
                     cellTags[coord+'norm'] = cellTags[coord]/getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
@@ -258,6 +258,8 @@ class Pop (object):
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
             if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
+            if 'params' in cellTags:  # if VecStim, copy spike times to params
+                cellTags['params']['spkTimes'] = self.tags['cellsList'][listIndex]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank))
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
@@ -320,7 +322,7 @@ class Pop (object):
 
                     tmp = getattr(h, self.tags['cellModel'])
                     self.cellModelClass = sim.PointCell
-                    excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
+                    excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
                                 'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
                     params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
                     self.tags['params'] = params

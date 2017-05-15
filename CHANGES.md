@@ -1,4 +1,21 @@
+# Version 0.7.0
+
+- Enabled use of VecStim spkTimes pops with individual list of cells
+
+- Can now add arbitrary set of spike times to VecStim pop 
+
+- Fixed bug: missing call to noiseFromRandom() for NetStims
+
+- Fixed bug setting pop density with absoulute location ranges
+
+- Fixed missing NeuroML message so only appears in master node
+
+- Fixed bug in plotConn
+
+
 # Version 0.6.9
+
+- Improved support for NeuroML export
 
 - Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
 
@@ -11,6 +28,8 @@
 - plotShape now shows real diameters in interviews by default
 
 - Added option to set threshold when loading weightNorm
+
+- Added support for conditions on recordTraces
 
 - Fixed bug plotting NetStims (created as stims) in raster, spikeHist and ratePSD  
 

@@ -11,7 +11,10 @@ try:
     from pyneuroml import pynml
     neuromlExists = True
 except:
-    print('\n*******\n  Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  Install the pyNeuroML & libNeuroML Python packages: https://www.neuroml.org/getneuroml\n*******\n')
+    from neuron import h
+    pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    if int(pc.id()) == 0:  # only print for master node
+        print('\n*******\n  Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  Install the pyNeuroML & libNeuroML Python packages: https://www.neuroml.org/getneuroml\n*******\n')
     neuromlExists = False
 
 import pprint; pp = pprint.PrettyPrinter(depth=6)

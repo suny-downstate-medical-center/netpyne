@@ -823,11 +823,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
-                    plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.title(trace)
             if overlay:
-                maxLabelLen = 10
-                plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
-                plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                #maxLabelLen = 10
+                #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                plt.legend()
 
     # Plot one fig per cell
     if oneFigPer == 'cell':
@@ -1826,6 +1827,74 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         if showFig: _showFigure()
 
     return F, Fx2y[0],Fy2x[0], Fxy[0], fig
+
+
+
+######################################################################################################################################################
+## EPSPs amplitude
+######################################################################################################################################################
+def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', saveFig=False, showFig=True):
+
+    print('Plotting EPSP amplitudes...')
+
+    if include is None: include = [] # If not defined, initialize as empty list
+
+    cells, cellGids, _ = getCellsInclude(include)
+    gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
+
+    if not trace: 
+        print 'Error: Missing trace to to plot EPSP amplitudes'
+        return
+    step = sim.cfg.recordStep
+
+    peaksAbs = np.zeros((number, len(cellGids)))
+    peaksRel = np.zeros((number, len(cellGids)))
+    for icell, gid in enumerate(cellGids):
+        vsoma = sim.allSimData[trace]['cell_'+str(gid)]
+        for ipeak in range(number):
+            peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+            peakRel = peakAbs - vsoma[int((start-1)/step)]
+            peaksAbs[ipeak,icell] = peakAbs
+            peaksRel[ipeak,icell] = peakRel
+
+    if amp == 'absolute':
+        peaks = peaksAbs
+        ylabel = 'EPSP peak V (mV)'
+    elif amp == 'relative':
+        peaks = peaksRel
+        ylabel = 'EPSP amplitude (mV)'
+    elif amp == 'ratio':
+        peaks = np.zeros((number, len(cellGids)))
+        for icell in range(len(cellGids)):
+            peaks[:, icell] = peaksRel[:, icell] / peaksRel[0, icell]
+        ylabel = 'EPSP amplitude ratio'
+        
+    xlabel = 'EPSP number'
+
+    # plot
+    fig = plt.figure()
+    plt.plot(peaks, marker='o')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    h = plt.axes()
+    ylim=list(h.get_ylim())
+    h.set_ylim(ylim[0], ylim[1]+(0.15*abs(ylim[1]-ylim[0])))
+    h.set_xticks(range(number))
+    h.set_xticklabels(range(1, number+1))
+    plt.legend(gidPops.values())
+
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'EPSPamp_'+amp+'.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return peaks, fig
 
 
 

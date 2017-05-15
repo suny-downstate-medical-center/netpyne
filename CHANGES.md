@@ -6,6 +6,8 @@
 
 - Dict with popColors can be passed to plotRaster() and plot2Dnet()
 
+- Added analysis.plotEPSPAmp()
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

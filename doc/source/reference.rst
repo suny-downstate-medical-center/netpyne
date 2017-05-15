@@ -283,13 +283,13 @@ The rationale for using connectivity rules is that you can create connections be
 
 Each item of the ``connParams`` ordered dictionary consists of a key and value. The key is an arbitrary label used as reference for this connectivity rule. The value contains a dictionary that defines the connectivity rule parameters and includes the following fields:
 
-* **preTags** - Set of conditions for the presynaptic cells. 
+* **preConds** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
 
 	Values can be lists, e.g. ``{'popLabel': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
 
-* **postTags** - Set of conditions for the postynaptic cells. 
-	Same format as ``preTags`` (above).
+* **postConds** - Set of conditions for the postynaptic cells. 
+	Same format as ``preConds`` (above).
 
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.
@@ -571,18 +571,19 @@ Each item of the ``stimTargetParams`` specifies how to map a source of stimulati
 		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
 
 	* **sec** (optional) - Target section (default: 'soma')
-		Can be defined as a function (see :ref:`function_string`)
 
 	* **loc** (optional) - Target location (default: 0.5)
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **weight** (optional; only for NetStims) - (default: 1)
+	* **synMech** (optional; only for NetStims) - Synaptic mechanism label to connect NetStim to 
+
+	* **weight** (optional; only for NetStims) - Weight of connection between NetStim and cell 
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **delay** (optional; only for NetStims) - (default: 1)
+	* **delay** (optional; only for NetStims) -  Delay of connection between NetStim and cell (default: 1)
 		Can be defined as a function (see :ref:`function_string`)
 
-	* **synsPerConn** (optional; only for NetStims) - (default: 1)
+	* **synsPerConn** (optional; only for NetStims) - Number of synapses of connection between NetStim and cell (default: 1)
 		Can be defined as a function (see :ref:`function_string`)
 
 

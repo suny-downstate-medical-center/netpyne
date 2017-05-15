@@ -1447,7 +1447,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         plt.xlabel('post')
         h.xaxis.set_label_coords(0.5, 1.06)
         plt.ylabel('pre')
-        title ('Connection '+feature+' matrix', y=1.08)
+        plt.title ('Connection '+feature+' matrix', y=1.08)
 
     # stacked bar graph
     elif graphType == 'bar':

@@ -297,7 +297,7 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        self.runCellTests() # run cell tests
+        # self.runCellTests() # run cell tests
         # self.runConnTests() # run conn tests
 
         # if self.verboseFlag:

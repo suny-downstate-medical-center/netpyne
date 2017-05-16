@@ -2876,6 +2876,17 @@ seed - Seed for randomizer (optional; defaults to value set in simConfig.seeds[â
 - string-based functions - see valid expressions in documentation
 
 
+** todo
+*** flags
+cfg.checkErrors - true or false (affects simFuncs initialize())
+cfg.checkErrorsVerbose 
+- True - prints evrything, passed and failed
+- False - only failed, including warnings (nothing for passed)
+*** add extra tests for numeric values eg. numCells
+*** error messages not capitalized
+XNormRange -> xnormRange etc
+*** stop if an error happens
+sys.exit
 
 * 17Apr07 GUI
 ** gantt chart

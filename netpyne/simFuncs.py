@@ -36,7 +36,7 @@ def initialize (netParams = None, simConfig = None, net = None):
     else:
         netPyneTestObj = NetPyneTestObj(verboseFlag = True)
         netPyneTestObj.netParams = netParams
-        netPyneTestObj.runTests()
+        #netPyneTestObj.runTests()
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
@@ -795,7 +795,7 @@ def preRun ():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            cell.hRandom.Random123(sim.id32('%d'%(cell.params['seed']+cell.gid)))
+            cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
         pop = sim.net.pops[cell.tags['popLabel']]
@@ -804,7 +804,7 @@ def preRun ():
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(sim.id32('%d'%(stim['seed']+cell.gid)))
+                stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
                 stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 

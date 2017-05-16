@@ -316,7 +316,7 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "list"
         testObj.testParameterValueList = ['density','numCells','gridSpacing']
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        testObj.messageText = ["One of the following must be specified in parameters:"]
+        testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["volumeParamsTest"] = testObj
@@ -364,7 +364,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "xRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["xRange invalid.","XRange not in range."]
+        testObj.messageText = ["xRange invalid.","xRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
 
         self.testParamsMap["pop"]["xRangeTest"] = testObj
@@ -376,7 +376,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "yRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeY]"
-        testObj.messageText = ["yRange invalid.", "YRange not in range."]
+        testObj.messageText = ["yRange invalid.", "yRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yRangeTest"] = testObj
@@ -388,7 +388,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "zRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["zRange invalid.", "ZRange not in range."]
+        testObj.messageText = ["zRange invalid.", "zRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["zRangeTest"] = testObj

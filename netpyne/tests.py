@@ -467,26 +467,6 @@ class NetPyneTestObj(object):
         # if self.verboseFlag:
         #     print (" *** Finished loading cell tests *** ")
 
-    def loadCellTests(self):
-
-        # if self.verboseFlag:
-        #     print (" *** Loading conn tests *** ")
-
-        self.testParamsMap["cell"] = {}
-
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "condsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["condsTest"] = testObj
-
-        # if self.verboseFlag:
-        #     print (" *** Finished loading cell tests *** ")
-
     def loadConnTests(self):
 
         # if self.verboseFlag:

@@ -757,7 +757,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False,
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -768,6 +768,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
             or per trace (showing multiple cells) (default: 'cell')
         - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
+        - colors (list): List of normalized RGB colors to use for traces
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -781,6 +782,10 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     print('Plotting recorded cell traces ...')
 
     if include is None: include = [] # If not defined, initialize as empty list
+    if isinstance(colors, list): 
+        colorList = colors
+    else: 
+        global colorList
 
     # rerun simulation so new include cells get recorded from
     if rerun: 

@@ -806,7 +806,9 @@ def preRun ():
             if 'hRandom' in stim:
                 stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
                 stim['hRandom'].negexp(1)
-                stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################

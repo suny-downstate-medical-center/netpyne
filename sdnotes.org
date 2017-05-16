@@ -6980,6 +6980,8 @@ Ohio Wesleyan University
 ** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 
+** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
+** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
 * Related tools
 ** NEURON
 Multiscale simulator

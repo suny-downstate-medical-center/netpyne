@@ -16,6 +16,7 @@
 
 - Fixed bug in plotConn
 
+- Fixed bug - stimTargetParams now accepts a list of secs for 'sec' param
 
 # Version 0.6.9
 

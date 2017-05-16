@@ -31,16 +31,17 @@ from tests import *
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-    if netParams is None:
-        netParams = {} # If not specified, initialize as empty dict
-    else:
-        netPyneTestObj = NetPyneTestObj(verboseFlag = True)
-        netPyneTestObj.netParams = netParams
-        #netPyneTestObj.runTests()
+    if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
+
+    # if sim config
+    if simConfig.checkErrors: # whether to validate the input parameters
+        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
+        netPyneTestObj.netParams = netParams
+        netPyneTestObj.runTests()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers

@@ -99,7 +99,7 @@ class Batch(object):
                 ungroupedParams = False
                 for p in self.params:
                     if 'group' not in p: 
-                        p['group'] = False # by default set linear to False
+                        p['group'] = False
                         ungroupedParams = True
                     elif p['group'] == True: 
                         groupedParams = True

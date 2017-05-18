@@ -218,7 +218,7 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), saveData = None, saveFig = None, 
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None, 
         showFig = True): 
     ''' 
     Raster plot of network cells 
@@ -236,6 +236,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - marker (char): Marker for each spike (default: '|')
         - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
+        - dpi (int): Dots per inch to save fig (default: 100)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
         - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
@@ -454,7 +455,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
 
     # show fig 
     if showFig: _showFigure()

@@ -8,6 +8,8 @@
 
 - Added analysis.plotEPSPAmp()
 
+- readCmdLineArgs() now accepts default paths for cfg and netParams
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

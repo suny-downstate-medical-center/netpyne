@@ -565,7 +565,7 @@ def cellByGid (gid):
 ###############################################################################
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
-def readCmdLineArgs ():
+def readCmdLineArgs (simConfigPath='cfg.py', netParamsPath='netParams.py'):
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -591,7 +591,7 @@ def readCmdLineArgs ():
 
     if not cfgPath:
         try:
-            cfgModule = imp.load_source('cfg', 'cfg.py')
+            cfgModule = imp.load_source('cfg', simConfigPath)
             cfg = cfgModule.cfg
             __main__.cfg = cfg
         except:
@@ -600,7 +600,7 @@ def readCmdLineArgs ():
 
     if not netParamsPath:
         try:
-            netParamsModule = imp.load_source('netParams', 'netParams.py')
+            netParamsModule = imp.load_source('netParams', netParamsPath)
             netParams = netParamsModule.netParams
         except:
             print '\nWarning: Could not load netParams from command line path or from default netParams.py'

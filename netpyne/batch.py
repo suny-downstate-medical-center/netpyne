@@ -185,6 +185,7 @@ class Batch(object):
                             nodes = self.runCfg.get('nodes', 1)
                             ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
+                            command = self.runCfg.get('command', 'mpirun')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
@@ -225,7 +226,7 @@ class Batch(object):
                             script = self.runCfg.get('script', 'init.py')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             numproc = nodes*coresPerNode
-                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
+                            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (command, numproc, script, cfgSavePath, netParamsSavePath) 
 
                             jobString = """#!/bin/bash 
 #SBATCH --job-name=%s

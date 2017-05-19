@@ -10,6 +10,10 @@
 
 - readCmdLineArgs() now accepts default paths for cfg and netParams
 
+- Added option to customize command in batch hpc runs (e.g. 'mpirun' vs 'ibrun')
+
+- Added dpi param to plotRaster()
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

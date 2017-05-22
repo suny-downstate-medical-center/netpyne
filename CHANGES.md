@@ -14,6 +14,8 @@
 
 - Added dpi param to plotRaster()
 
+- Fixed bug: subConn rules now update weight if different weightNorm 
+
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
 - Fixed bug setting pop density with absoulute location ranges

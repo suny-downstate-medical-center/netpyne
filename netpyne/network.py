@@ -335,7 +335,7 @@ class Network (object):
                             
                         # 2D map and 1D map (radial)
                         elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
-                            
+
                             gridY = subConnParam['density']['gridY']
                             gridSigma = subConnParam['density']['gridValues']
                             somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
@@ -374,7 +374,7 @@ class Network (object):
                             if totSynRescale < len(conns):  
                                 extraSyns = len(conns)-totSynRescale
                                 diffList = sorted(diffList, key=lambda l:l[0], reverse=True)
-                                for i in range(extraSyns):
+                                for i in range(min(extraSyns, len(diffList))):
                                     sec = diffList[i][1]
                                     seg = diffList[i][2]
                                     segNumSyn[sec][seg] += 1
@@ -417,9 +417,20 @@ class Network (object):
 
 
                         for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
+
+                            # update weight if weightNorm present
+                            if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
+                                oldNseg = postCell.secs[conn['sec']]['geom']['nseg']
+                                oldWeightNorm = postCell.secs[conn['sec']]['weightNorm'][int(round(conn['loc']*oldNseg))-1]
+                                newNseg = postCell.secs[newSec]['geom']['nseg']
+                                newWeightNorm = postCell.secs[sec]['weightNorm'][int(round(newLoc*newNseg))-1] if 'weightNorm' in postCell.secs[newSec] else 1.0
+                                conn['weight'] = conn['weight'] / oldWeightNorm * newWeightNorm
+
                             # avoid locs at 0.0 or 1.0 - triggers hoc error if syn needs an ion (eg. ca_ion)
                             if newLoc == 0.0: newLoc = 0.00001 
-                            elif newLoc == 1.0: newLoc = 0.99999   
+                            elif newLoc == 1.0: newLoc = 0.99999  
+                            
+                            # updade sec and loc
                             conn['sec'] = newSec
                             conn['loc'] = newLoc
 
@@ -430,6 +441,8 @@ class Network (object):
 
                                 connGroup['sec'] = newSec
                                 connGroup['loc'] = newLoc
+                                if newWeightNorm: connGroup['weight'] = connGroup['weight'] / oldWeightNorm * newWeightNorm
+
                                     
             sim.pc.barrier()
 

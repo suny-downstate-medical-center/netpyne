@@ -423,7 +423,7 @@ class Network (object):
                                 oldNseg = postCell.secs[conn['sec']]['geom']['nseg']
                                 oldWeightNorm = postCell.secs[conn['sec']]['weightNorm'][int(round(conn['loc']*oldNseg))-1]
                                 newNseg = postCell.secs[newSec]['geom']['nseg']
-                                newWeightNorm = postCell.secs[sec]['weightNorm'][int(round(newLoc*newNseg))-1] if 'weightNorm' in postCell.secs[newSec] else 1.0
+                                newWeightNorm = postCell.secs[newSec]['weightNorm'][int(round(newLoc*newNseg))-1] if 'weightNorm' in postCell.secs[newSec] else 1.0
                                 conn['weight'] = conn['weight'] / oldWeightNorm * newWeightNorm
 
                             # avoid locs at 0.0 or 1.0 - triggers hoc error if syn needs an ion (eg. ca_ion)

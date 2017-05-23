@@ -1888,6 +1888,8 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     h.set_xticks(range(number))
     h.set_xticklabels(range(1, number+1))
     plt.legend(gidPops.values())
+    if amp == 'ratio':
+        plt.plot((0, number-1), (1.0, 1.0), ':', color= 'gray')
 
     # save figure
     if saveFig: 

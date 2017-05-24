@@ -938,6 +938,8 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
+                
+        sec = self.secs[params['sec']]
 
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
@@ -969,7 +971,6 @@ class CompartCell (Cell):
        
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
-            sec = self.secs[params['sec']]
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''

@@ -78,10 +78,13 @@ def setNet (net):
 ###############################################################################
 def setNetParams (params):
     if params and isinstance(params, specs.NetParams):
-        replaceKeys(params.__dict__, 'popLabel', 'pop')  # for backward compatibility
-        sim.net.params = params
+        paramsDict,replaced = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
+        if replaced: 
+            sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
+        else:
+            sim.net.params = params  # if didn't need to replace, use orig params
     elif params and isinstance(params, dict):
-        replaceKeys(params, 'popLabel', 'pop')  # for backward compatibility
+        params = replaceKeys(params, 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(params)
     else:
         sim.net.params = specs.NetParams()
@@ -441,18 +444,21 @@ def replaceItemObj (obj, keystart, newval):
 ### Recursivele replace dict keys
 ###############################################################################
 def replaceKeys (obj, oldkey, newkey):
+    replaced = False
     if type(obj) == list:
         for item in obj:
-            if type(item) in [list, dict, Dict, ODict]:
-                replaceItemObj(item, keystart, newval)
+            if type(item) in [list, dict, Dict, ODict, OrderedDict]:
+                replaceKeys(item, oldkey, newkey)
 
-    elif type(obj) == dict:
-        for key,val in obj.iteritems():
-            if type(val) in [list, dict, Dict, ODict]:
-                replaceItemObj(val, keystart, newval)
+    elif type(obj) in [dict, Dict, ODict, OrderedDict]:
+        for key in obj.keys():
+            val = obj[key]
+            if type(val) in [list, dict, Dict, ODict, OrderedDict]:
+                replaceKeys(val, oldkey, newkey)
             if key == oldkey:
                 obj[newkey] = obj.pop(oldkey)
-    return obj
+                replaced = True
+    return obj, replaced
 
     
 ###############################################################################

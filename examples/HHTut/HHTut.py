@@ -48,7 +48,7 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PY
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
-    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': 'PYR'},
+    'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold

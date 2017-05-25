@@ -105,7 +105,7 @@ Other arbitrary entries to the ``netParams`` dict can be added and used in the c
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``popLabel``, and can be used as condition to apply specific connectivtiy rules.
+Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``pop``, and can be used as condition to apply specific connectivtiy rules.
 
 The value consists in turn of a dictionary with the parameters of the population, an includes the following fields:
 
@@ -143,7 +143,7 @@ The ``addPopParams(label, params)`` method of the class ``netParams`` can be use
 
 It is also possible to create populations of artificial cells, i.e. point processes that generate spike events but don't have sections (e.g. NetStim, VecStim or IntFire2). In this case the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require to define separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
-* **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
+* **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
 * **cellModel** - Needs to be set to ``NetStim``.
 
@@ -1088,7 +1088,7 @@ Examples of accessing NetPyNE structures via dot notation:
 
 	* ``sim.net.cells[0].secs.soma.hSec(0.5).gbar_nap = 0.1``
 
-	* ``sim.net.allCells[5].tags.popLabel``
+	* ``sim.net.allCells[5].tags.pop``
 
 	* ``sim.net.cells[0].conns[1].weight``
 

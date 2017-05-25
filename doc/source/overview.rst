@@ -29,6 +29,13 @@ Using the high-level network specifications, NetPyNE instantiates the full model
 
 NetPyNE has been used to develop a variety of multiscale models: primary motor cortex with cortical depth-dependent connectivity; the claustrum; and sensorimotor cortex that learns to control a virtual arm. The package is easily installed via pip, and includes comprehensive online documentation, a step-by-step tutorial and example networks.
 
+NetPyNE structure
+-----------------
+
+.. image:: figs/structure.png
+	:width: 80%	
+	:align: center
+
 Major Features
 --------------
 
@@ -68,6 +75,8 @@ Major Features
 	* Local field potential (LFP) calculation and plots (time-resolved and power spectra)
 	* Connectivity matrix at cell or population level (weights, num connections, efficiency, probability, ...)
 	* 2D representation of network cell locations and connections
+ 	* 3D shape plot with option to include color-coded variables (eg, num of synapses) 
+ 	* Normalized transfer entropy and spectral Granger Causality
 
 * Facilitates data sharing: 
 	* Can save/load high-level specs, network instance, simulation configuration and simulation results.
@@ -75,6 +84,9 @@ Major Features
 	* Can export/import to/from NeuroML, the standard format for neural models.
 
 * Batch simulations:
+	* Easy specification of parameters and range of values to explore in batch simulations.
+	* Pre-defined, configurable setups to automatically submit jobs in multicore machines (Bulletin board) or supercomputers (SLURM or PBS Torque)
+	* Analysis and visualization of multidimensional batch simulation results.
 
 
 Questions, suggestions and contributions
@@ -108,6 +120,7 @@ About NetPyNE
 
 Using NetPyNE
 ^^^^^^^^^^^^^^^^^^
+
 
 - Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 

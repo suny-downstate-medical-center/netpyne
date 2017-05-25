@@ -11,11 +11,12 @@ For a more detailed overview of NetPyNE see:
 
 - `SLIDES for Computational Neuroscience conference CNS17 <http://neurosimlab.org/salvadord/netpyne.pdf>`_
 
-- `POSTER at the Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ 
+- `POSTER for Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ 
 
+|
 
 .. image:: figs/overview.png
-	:width: 80%	
+	:width: 70%	
 	:align: center
 
 What can I do with NetPyNE?

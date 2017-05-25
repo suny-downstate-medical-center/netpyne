@@ -78,11 +78,8 @@ def setNet (net):
 ###############################################################################
 def setNetParams (params):
     if params and isinstance(params, specs.NetParams):
-        paramsDict,replaced = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
-        if replaced: 
-            sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
-        else:
-            sim.net.params = params  # if didn't need to replace, use orig params
+        paramsDict = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
+        sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
     elif params and isinstance(params, dict):
         params = replaceKeys(params, 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(params)
@@ -444,7 +441,6 @@ def replaceItemObj (obj, keystart, newval):
 ### Recursivele replace dict keys
 ###############################################################################
 def replaceKeys (obj, oldkey, newkey):
-    replaced = False
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict, Dict, ODict, OrderedDict]:
@@ -457,8 +453,7 @@ def replaceKeys (obj, oldkey, newkey):
                 replaceKeys(val, oldkey, newkey)
             if key == oldkey:
                 obj[newkey] = obj.pop(oldkey)
-                replaced = True
-    return obj, replaced
+    return obj
 
     
 ###############################################################################

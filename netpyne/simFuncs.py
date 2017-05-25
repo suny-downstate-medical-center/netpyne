@@ -659,6 +659,12 @@ def setupRecording ():
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
 
+        # record h.t
+        if len(sim.simData) > 0:
+            sim.simData['t'] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+            sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
+
+        # print recorded traces
         cat = 0
         total = 0
         for key in sim.simData:
@@ -894,7 +900,7 @@ def gatherData ():
         for cell in sim.net.cells:
             cell.conns = []
 
-    simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+    simDataVecs = ['t','spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
 

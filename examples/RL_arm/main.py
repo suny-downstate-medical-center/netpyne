@@ -34,8 +34,8 @@ sim.targetDist = 0.15 # target distance from center (15 cm)
 
 # Propriocpetive encoding
 allCellTags = sim._gatherAllCellTags()
-sim.pop_sh = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel'] == 'Psh']
-sim.pop_el = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel'] == 'Pel']
+sim.pop_sh = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'Psh']
+sim.pop_el = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'Pel']
 sim.minPval = radians(-30) 
 sim.maxPval = radians(135)
 sim.minPrate = 0.01
@@ -43,7 +43,7 @@ sim.maxPrate = 100
 
 # Motor encoding
 sim.nMuscles = 4 # number of muscles
-motorGids = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel'] == 'EM']
+motorGids = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'EM']
 cellsPerMuscle = len(motorGids) / sim.nMuscles
 sim.motorCmdCellRange = [motorGids[i:i+cellsPerMuscle] for i in xrange(0, len(motorGids), cellsPerMuscle)]  # cell gids of motor output to each muscle
 sim.cmdmaxrate = 120  # value to normalize motor command num spikes

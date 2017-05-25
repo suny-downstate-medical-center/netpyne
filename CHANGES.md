@@ -2,6 +2,8 @@
 
 - Enabled use of VecStim spkTimes pops with individual list of cells
 
+- Replaced 'pop' with 'popLabel' (added fix for backward compatibility) (issue #213)
+
 - Can now add arbitrary set of spike times to VecStim pop 
 
 - Dict with popColors can be passed to plotRaster() and plot2Dnet()

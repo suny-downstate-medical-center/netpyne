@@ -95,7 +95,7 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **scaleConnWeightModels**: Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})
 
-* **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['popLabel', 'cellModel', 'cellType'])
+* **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
@@ -286,7 +286,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 * **preConds** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
 
-	Values can be lists, e.g. ``{'popLabel': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
+	Values can be lists, e.g. ``{'pop': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
 
 * **postConds** - Set of conditions for the postynaptic cells. 
 	Same format as ``preConds`` (above).
@@ -416,8 +416,8 @@ Example of connectivity rules:
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = {
-		'preConds': {'popLabel': 'S'}, 
-		'postConds': {'popLabel': 'M'},  #  S -> M
+		'preConds': {'pop': 'S'}, 
+		'postConds': {'pop': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
 		'synMech': 'AMPA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
@@ -425,7 +425,7 @@ Example of connectivity rules:
 		'probability': 0.5}				# probability of connection		
 
 	netParams.connParams['bg->all'] = {
-		'preConds': {'popLabel': 'background'}, 
+		'preConds': {'pop': 'background'}, 
 		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
@@ -608,7 +608,7 @@ The code below shows an example of how to create different types of stimulation 
 	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
+	    'conds': {'pop':'PYR', 'cellList': range(8)}})
 
 	netParams.stimTargetParams['Input3->Basket'] = {
 	    'source': 'Input_3', 
@@ -622,7 +622,7 @@ The code below shows an example of how to create different types of stimulation 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
 	    'delay': 1,
-		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+		'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
 
 
 
@@ -979,7 +979,7 @@ Methods to modify network
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the synMechs to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
 
@@ -995,7 +995,7 @@ Methods to modify network
 
 	- 'postConds': dictionary of conditions to select postsynaptic cells that will contain the connections to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
@@ -1011,7 +1011,7 @@ Methods to modify network
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
 
@@ -1146,7 +1146,7 @@ Cell class
 
 - tags (Dict)
 	- 'label'
-	- 'popLabel'
+	- 'pop'
 	- 'cellModel'
 	- 'cellType'
 	- 'x', 'y', 'z'

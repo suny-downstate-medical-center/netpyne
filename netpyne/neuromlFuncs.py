@@ -242,7 +242,7 @@ if neuromlExists:
                 else:
                     cell_id = 'CELL_%s_%s'%(cell_param_set['conds']['cellModel'],cell_param_set['conds']['cellType'])
 
-                populations_vs_components[np_pop.tags['popLabel']]=cell_id
+                populations_vs_components[np_pop.tags['pop']]=cell_id
                 
                 
             if not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
@@ -436,13 +436,13 @@ if neuromlExists:
             
             type = 'populationList'
             if not np_pop.tags['cellModel'] ==  'NetStim':
-                comp_id = populations_vs_components[np_pop.tags['popLabel']]
-                pop = neuroml.Population(id=np_pop.tags['popLabel'],component=comp_id, type=type)
+                comp_id = populations_vs_components[np_pop.tags['pop']]
+                pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
                 nml_net.populations.append(pop)
 
                 for cell in net.cells:
                     if cell.gid in np_pop.cellGids:
-                        gids_vs_pop_indices[cell.gid] = (np_pop.tags['popLabel'],index)
+                        gids_vs_pop_indices[cell.gid] = (np_pop.tags['pop'],index)
                         inst = neuroml.Instance(id=index)
                         index+=1
                         pop.instances.append(inst)
@@ -701,7 +701,7 @@ if neuromlExists:
             assert(component==component_obj.id)
 
             popInfo=OrderedDict()
-            popInfo['popLabel'] = population_id
+            popInfo['pop'] = population_id
             popInfo['cellModel'] = component
             popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from abstract cells
             popInfo['cellsList'] = []
@@ -1034,7 +1034,7 @@ if neuromlExists:
                 format = 'NeuroML2_stochastic_input'
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
-                        'conds': {'popLabel':population_id}}
+                        'conds': {'pop':population_id}}
                         
             
             if component=='IClamp':
@@ -1049,7 +1049,7 @@ if neuromlExists:
                         'source': inputListId, 
                         'sec':'soma', 
                         'loc': 0.5, 
-                        'conds': {'popLabel':population_id, 'cellList': []}}'''
+                        'conds': {'pop':population_id, 'cellList': []}}'''
 
 
         #
@@ -1057,7 +1057,7 @@ if neuromlExists:
         #   
         def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
             
-            pop_id = self.popStimLists[inputListId]['conds']['popLabel']
+            pop_id = self.popStimLists[inputListId]['conds']['pop']
             nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)
             if weight!=1:
                 raise Exception('Cannot yet support inputs where weight !=1!')
@@ -1076,7 +1076,7 @@ if neuromlExists:
             self.stimLists[stimId] = {'source': stimId, 
                         'sec':nrn_sec, 
                         'loc': nrn_fract, 
-                        'conds': {'popLabel':pop_id, 'cellList': [cellId]}}
+                        'conds': {'pop':pop_id, 'cellList': [cellId]}}
                         
             
             if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))

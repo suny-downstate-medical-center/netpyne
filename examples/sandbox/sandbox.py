@@ -72,7 +72,7 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 # Stimulation parameters
 netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 20, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'popLabel': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'pop': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
 
 
 # Cell parameters
@@ -86,7 +86,7 @@ netParams.cellParams['PYR'] = cellParams
 
 # Connections
 # netParams.connParams['artif1->PYR1'] = {
-#     'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR1'},
+#     'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR1'},
 #     'convergence': 4,
 #     'weight': 0.005,                    
 #     'synMech': 'AMPA',                
@@ -94,21 +94,21 @@ netParams.cellParams['PYR'] = cellParams
 #     'synsPerConn': 1}          
 
 netParams.connParams['PYR1->PYR2_1'] = {
-    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
+    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
     'probability': 0.1,
     'weight': 0.2,                     
     'delay': 'uniform(1,5)',
     'synsPerConn': 1}     
 
 netParams.connParams['PYR1->PYR2_2'] = {
-    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'},
+    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
     'probability': 0.1,
     'weight': 0.4,                     
     'delay': 'uniform(1,5)',
     'synsPerConn': 1} 
 
 # netParams.addConnParams('artif1->PYR2',
-#     {'preConds': {'popLabel': 'artif1'}, 'postConds': {'popLabel': 'PYR2'}, 
+#     {'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR2'}, 
 #     'divergence': 3,
 #     'weight': 0.05,              
 #     'delay': 3,

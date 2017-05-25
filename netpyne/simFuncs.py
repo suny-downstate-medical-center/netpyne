@@ -78,8 +78,10 @@ def setNet (net):
 ###############################################################################
 def setNetParams (params):
     if params and isinstance(params, specs.NetParams):
+        replaceKeys(params.__dict__, 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = params
     elif params and isinstance(params, dict):
+        replaceKeys(params, 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(params)
     else:
         sim.net.params = specs.NetParams()
@@ -436,6 +438,24 @@ def replaceItemObj (obj, keystart, newval):
 
 
 ###############################################################################
+### Recursivele replace dict keys
+###############################################################################
+def replaceKeys (obj, oldkey, newkey):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict, Dict, ODict]:
+                replaceItemObj(item, keystart, newval)
+
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict, Dict, ODict]:
+                replaceItemObj(val, keystart, newval)
+            if key == oldkey:
+                obj[newkey] = obj.pop(oldkey)
+    return obj
+
+    
+###############################################################################
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
 def replaceFuncObj (obj):
@@ -704,7 +724,7 @@ def getCellsList (include):
             cellGids.extend(list(sim.net.pops[condition].cellGids))
 
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
-            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
+            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['pop']==condition[0]]
 
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
@@ -805,7 +825,7 @@ def preRun ():
             cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
-        pop = sim.net.pops[cell.tags['popLabel']]
+        pop = sim.net.pops[cell.tags['pop']]
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
@@ -1085,7 +1105,7 @@ def popAvgRates (trange = None, show = True):
         numCells = float(len(sim.net.allPops[pop]['cellGids']))
         if numCells > 0:
             tsecs = float((trange[1]-trange[0]))/1000.0
-            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
+            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
             print '   %s : %.3f Hz'%(pop, avgRates[pop])
 
     return avgRates

@@ -60,8 +60,8 @@ netParams.connParams['PYR->PYR'] = {
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 1*1e3 # Duration of the simulation, in ms
-simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.duration = 0.3*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network

@@ -683,7 +683,7 @@ def setupRecording ():
         # record h.t
         if len(sim.simData) > 0:
             sim.simData['t'] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-            sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
+            sim.simData['t'].record(h._ref_t)
 
         # print recorded traces
         cat = 0

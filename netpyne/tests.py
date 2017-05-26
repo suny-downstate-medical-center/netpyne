@@ -3,18 +3,22 @@ test_validate.py
 
 Testing code for Validation class
 
-Contributors: mitra.sidddhartha@gmail.com
+Contributors: mitra.siddhartha@gmail.com
 """
 import unittest
 import numbers
 import sys
 import os
 import traceback
+import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
 POP_NUMCELLS_PARAMS = ['Density','NumCells','GridSpacing']
+VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d']
+PT_3D = 'pt3d'
+VALID_TOPOLOGY_PARAMS = ['parentSec', 'parentX','childX']
 
-MESSAGE_TYPE_WARN = "WARNING"
+MESSAGE_TYPE_WARNING = "WARNING"
 MESSAGE_TYPE_ERROR = "ERROR"
 MESSAGE_TYPE_INFO = "INFO"
 
@@ -44,7 +48,15 @@ TEST_TYPE_IS_FLOAT = "Is Float" # must be float
 TEST_TYPE_IS_INT = "Is Integer" # must be integer
 TEST_TYPE_IS_CHARACTER = "Is Character" # must be char [a-z][A-Z]
 TEST_TYPE_VALUE_LIST = "Value List" # must be in valid values list
+TEST_TYPE_EXISTS_IN_DICT = "Exists in Dict" # input param must exist in dict
+TEST_TYPE_EXISTS_IN_NESTED_DICT = "Exists in nested dict" # input param must exist in nested dict
 TEST_TYPE_SPECIAL = "Special" # special method, method name provided
+TEST_TYPE_EXISTS_IN_ALL_DICTS = "Exists in all dicts"
+
+TEST_TYPE_VALID_GEOMETRIES = "Valid geometries"
+TEST_TYPE_VALID_TOPOLOGIES = "Valid topologies"
+TEST_TYPE_VALID_MECHS = "Valid mechs"
+TEST_TYPE_VALID_POINTPS = "Valid pointps"
 
 testFunctionsMap = {}
 
@@ -63,7 +75,15 @@ testFunctionsMap [TEST_TYPE_LTE] = "testGte"
 testFunctionsMap [TEST_TYPE_LTE_ZERO] = "testGteZero"
 
 testFunctionsMap [TEST_TYPE_VALUE_LIST] = "testExists"
+
 testFunctionsMap [TEST_TYPE_EXISTS_IN_LIST] = "testExistsInList"
+testFunctionsMap [TEST_TYPE_EXISTS_IN_DICT] = "testExistsInDict"
+testFunctionsMap [TEST_TYPE_EXISTS_IN_ALL_DICTS] = "testExistsInAllDicts"
+
+testFunctionsMap [TEST_TYPE_VALID_GEOMETRIES] = "testValidGeometries"
+testFunctionsMap [TEST_TYPE_VALID_TOPOLOGIES] = "testValidTopologies"
+
+testFunctionsMap [TEST_TYPE_VALID_MECHS] = "testTypeValidMechs"
 
 class TestTypeObj(object):
 
@@ -78,6 +98,7 @@ class TestTypeObj(object):
 
     def testExists(self, val,params):
         try:
+            # print ( " val = " + str(val ) + " -- " + str(params))
             assert (val in params), val + " must be specified."
         except AssertionError as e:
             e.args += (val,)
@@ -90,6 +111,42 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
+    def testExistsInDict(self, val,paramDict, dictKey):
+        try:
+            existsInDict = False
+            for key, valueDict in paramDict.items():
+                if val == valueDict[dictKey]:
+                    existsInDict = True
+                    break
+            assert existsInDict is True, " Value " + str(val) + "exists in dictionary " + str(params) + "."
+        except AssertionError as e:
+            e.args += (val,)
+            raise
+
+    def testExistsInAllDicts(self, paramValues,paramKey, dictKey):
+        try:
+            existsInDict = True
+            for key, valueDict in paramValues[paramKey].items():
+                if dictKey not in valueDict:
+                    existsInDict = False
+                    break
+            assert existsInDict is True, " Value " + str(paramKey) + "exists in dictionary " + str(paramValues) + "."
+        except AssertionError as e:
+            e.args += (val,)
+            raise
+
+    # def testValidGeometries(self, paramValues,paramKey, dictKey):
+    #     try:
+    #         validParameters = True
+    #         for key, valueDict in paramValues[paramKey].items():
+    #             if dictKey not in valueDict:
+    #                 existsInDict = False
+    #                 break
+    #         assert existsInDict is True, " Value " + str(paramKey) + "exists in dictionary " + str(paramValues) + "."
+    #     except AssertionError as e:
+    #         e.args += (val,)
+    #         raise
+    #
     def testIsValidRange(self, val,params): # TEST_TYPE_IS_VALID_RANGE
         try:
             if val in params:
@@ -180,7 +237,7 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
-    def testIsNumeric(self,val): # TEST_TYPE_IS_DICT
+    def testIsNumeric(self,val): # TEST_TYPE_IS_NUMERIC
         try:
             assert (isinstance (val,numbers.Number))
         except AssertionError as e:
@@ -216,6 +273,120 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
+    def testValidGeometries(self,paramValues): # TEST_TYPE_VALUE_LIST
+        try:
+            if 'secs' in paramValues:
+                for key, values in paramValues['secs'].items():
+                    if 'geom' in values:
+                        assert len(values['geom']) > 0, " Geom parameters must be specified"
+                        for key1, values1 in values['geom'].items():
+                            assert key1 in VALID_GEOMETRIES, str(key1) + " must be in " + (",").join(VALID_GEOMETRIES)
+                            if PT_3D in values['geom']:
+                                # print ( " values = " + str(values['geom']))
+                                assert isinstance ( values['geom'][PT_3D] , list ) , "pt3D must be an array with each array element being a 4lenght 4 array of floats."
+                                for elem in values['geom'][PT_3D]:
+                                    assert isinstance ( elem , list ) , "Type error. pt3D must be an array with each array element being a 4lenght 4 array of floats."
+                                    assert len(elem) == 4 , "Length error. pt3D must be an array with each array element being a 4lenght 4 array of floats."
+                                    for elem2 in elem:
+                                        assert isinstance ( elem2, numbers.Real ) , "Float error. pt3D must be an array with each array element being a 4lenght 4 array of floats." + str(elem2)
+
+        except AssertionError as e:
+            #e.args += (values1,)
+            raise
+
+    def testValidTopologies(self,paramValues): # TEST_TYPE_VALUE_LIST
+        try:
+            topolValid = False
+            topolNeeded = False
+            if 'secs' in paramValues:
+                if len(paramValues['secs']) > 0 :
+                    topolNeeded = True
+                    for key, value in paramValues['secs'].items():
+                        if 'topol' in value:
+                            topolValid = True
+                            # print ( " **** past 1 ")
+                            if len(value['topol']) < 3:
+                                topolValid = False
+                                # print ( " **** past 2 ")
+                            elif not any([x in value['topol'] for x in VALID_TOPOLOGY_PARAMS ]):
+                                topolValid = False
+                                # print ( " **** past 3 ")
+                            elif value['topol']['parentSec'] not in paramValues['secs']:
+                                # print (" ::: secs are " + str(paramValues['secs']) )
+                                topolValid = False
+                                # print ( " **** past 4 ")
+                            elif not isinstance ( value['topol']['parentX'] , numbers.Real ) :
+                                topolValid = False
+                                # print ( " **** past 5 ")
+                            elif not isinstance ( value['topol']['childX'] , numbers.Real ) :
+                                topolValid = False
+                                # print ( " **** past 6 ")
+                            elif value['topol']['parentX'] < 0 or value['topol']['parentX'] >1 :
+                                topolValid = False
+                                # print ( " **** past 7 ")
+                            elif value['topol']['childX'] < 0 or value['topol']['childX'] >1 :
+                                topolValid = False
+                                # print ( " **** past 8 ")
+
+            if topolNeeded:
+                assert topolValid is True, "Topology must be specified if more than one section is listed."
+
+        except AssertionError as e:
+            #e.args += (values1,)
+            raise
+
+    def testValidMechs(self,paramValues): # TEST_TYPE_VALID_MECHS
+        try:
+            mechsValid = True
+            mechs = utils.mechVarList()["mechs"]
+            #print ( " paramValues = " + str(paramValues) )
+            #print ( " mechs = " + str(mechs) )
+
+            if 'secs' in paramValues:
+                for key, value in paramValues['secs'].items():
+                    #print ( " key = " + str(key) )
+                    #print ( " value = " + str(value) )
+                    if 'mechs' in value:
+                        for key1, values1 in paramValues['secs'][key].items():
+                            #print ( " key1 = " + str(key1) )
+                            #print ( " values1 = " + str(values1) )
+                            if key1 == "mechs":
+                                for key2, values2 in paramValues['secs'][key][key1].items():
+                                    keys_suffixed = [x + "_" + key2 for x in values2.keys()]
+                                    if not any([x + "_" + str(key2) in mechs[key2] for x in values2.keys() ]):
+                                        # print ( " !!!!!!!! setting invalid 1 ")
+                                        mechsValid = False
+                                    elif not all([x in keys_suffixed for x in mechs[key2] ]):
+                                        # print ( " !!!!!!!! setting invalid 2 ")
+                                        mechsValid = False
+
+            assert mechsValid is True, " Must be a valid mech as specified in utils.mechVarList."
+
+        except AssertionError as e:
+            e.args += ()
+            raise
+
+    def testValidPointps(self,paramValues): # TEST_TYPE_VALID_POINTPS
+        try:
+            pointpsValid = True
+            mechs = utils.mechVarList()["mechs"]
+
+            if 'secs' in paramValues:
+                for key, value in paramValues['secs'].items():
+                    if 'pointps' in value:
+                        for key1, values1 in paramValues['secs'][key].items():
+                            if key1 == "pointps":
+                                for key2, values2 in paramValues['secs'][key][key1].items():
+                                    #print (" ** keys2, values2 = " + str(key2) + " :: " + str(values2))
+                                    if 'mod' not in values2.keys():
+                                        pointpsValid = False
+
+            assert pointpsValid is True, " Mod must be specified for pointps."
+
+        except AssertionError as e:
+            e.args += ()
+            raise
+
 # Tests that are defined for each set of parameters
 class TestObj(object):
 
@@ -225,6 +396,7 @@ class TestObj(object):
 
         self.testParameterType = '' # test parameter, type string, list
         self.testParameterValue = '' # test parameter value, like 'shape'
+        self.testParameterValue1 = '' # test parameter value, like 'shape'. Used for nested dicts like cellParams['conds']['cellType']
         self.testParameterValueList = '' # test parameter value list, like ['density', 'numCells','gridSpacing']
         self.testParameterDictString = '' # for nested dicts like ['shape']['geom']
 
@@ -272,10 +444,11 @@ class NetPyneTestObj(object):
 
         if self.verboseFlag:
             print (" *** Loading tests *** ")
-        self.loadPopTests() # load pop tests
-        self.loadNetTests() # load net tests
-        # self.loadCellTests() # load cell tests
-        # self.loadConnTests() # load conn tests
+        # self.loadPopTests() # load pop tests
+        # self.loadNetTests() # load net tests
+        self.loadCellTests() # load cell tests
+        #print (str (self.testParamsMap))
+        #self.loadConnTests() # load conn tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -283,10 +456,10 @@ class NetPyneTestObj(object):
 
         # if self.verboseFlag:
         #     print (" *** Running tests *** ")
-        self.runPopTests() # run pop tests
-        self.runNetTests() # run net tests
-        # self.runCellTests() # run cell tests
-        # self.runConnTests() # run conn tests
+        # self.runPopTests() # run pop tests
+        # self.runNetTests() # run net tests
+        self.runCellTests() # run cell tests
+        #self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
         #     print (" *** Finished running tests *** ")
@@ -316,7 +489,7 @@ class NetPyneTestObj(object):
         testObj.testParameterType = "list"
         testObj.testParameterValueList = ['density','numCells','gridSpacing']
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        testObj.messageText = ["One of the following must be specified in parameters:"]
+        testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["volumeParamsTest"] = testObj
@@ -364,7 +537,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "xRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["xRange invalid.","XRange not in range."]
+        testObj.messageText = ["xRange invalid.","xRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
 
         self.testParamsMap["pop"]["xRangeTest"] = testObj
@@ -376,7 +549,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "yRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeY]"
-        testObj.messageText = ["yRange invalid.", "YRange not in range."]
+        testObj.messageText = ["yRange invalid.", "yRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yRangeTest"] = testObj
@@ -388,7 +561,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "zRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["zRange invalid.", "ZRange not in range."]
+        testObj.messageText = ["zRange invalid.", "zRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["zRangeTest"] = testObj
@@ -459,30 +632,137 @@ class NetPyneTestObj(object):
         testObj.testName = "condsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
         self.testParamsMap["cell"]["condsTest"] = testObj
 
-        # if self.verboseFlag:
-        #     print (" *** Finished loading cell tests *** ")
-
-    def loadCellTests(self):
-
-        # if self.verboseFlag:
-        #     print (" *** Loading conn tests *** ")
-
-        self.testParamsMap["cell"] = {}
-
-        # condsTest test
+        # secs test
         testObj = TestObj()
-        testObj.testName = "condsTest"
+        testObj.testName = "secsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Secs is not a dict."]
+        self.testParamsMap["cell"]["secsTest"] = testObj
+
+        # cellTypes test
+        testObj = TestObj()
+        testObj.testName = "cellTypesTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.testParameterValue1 = "cellType"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        testObj.compareDict = "self.netParams.popParams"
+        testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."],
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+
+        self.testParamsMap["cell"]["cellTypeTest"] = testObj
+
+        # cellModel test
+        testObj = TestObj()
+        testObj.testName = "cellModelTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testParameterValue1 = "cellModel"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        testObj.compareDict = "self.netParams.popParams"
+        testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+
+        self.testParamsMap["cell"]["cellModelTest"] = testObj
+
+        #geom test
+        testObj = TestObj()
+        testObj.testName = "geomExistTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testParameterDictString = "geom"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
+        testObj.messageText = ["Geom is not specified in section "]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        self.testParamsMap["cell"]["geomExistTest"] = testObj
+
+        # geom test
+        testObj = TestObj()
+        testObj.testName = "geomValidTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "geom"
+        testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
+        #testObj.testValueList = VALID_GEOMETRIES,
+        testObj.messageText = ["Geom is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        self.testParamsMap["cell"]["condsTest"] = testObj
+        self.testParamsMap["cell"]["geomValidTest"] = testObj
+
+        # topol test
+        testObj = TestObj()
+        testObj.testName = "topologyTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "topol"
+        testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
+        testObj.messageText = ["Topology is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["toplogyValidTest"] = testObj
+
+        #
+        # mechs test
+        #
+        # -- mechs: not required, check mech and properties exist using utils.mechVarList()
+        # -- ions: not required, check mech and properties exist using utils.mechVarList()
+        # -- pointps: not required;
+        # -- required key 'mod' wiht pointp label; check exists using utils.mechVarlist()
+        # -- 'loc' also required; has to be between 0 and 1
+        # -- 'vref' and 'synList' optional
+        # - spikeGenLoc: not rquired; between 0 and 1
+
+        # mechs test
+        testObj = TestObj()
+        testObj.testName = "mechsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "mechs"
+        testObj.testTypes = [TEST_TYPE_VALID_MECHS]
+        testObj.messageText = ["Mechs are not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["mechsValidTest"] = testObj
+
+        # pointps test
+        testObj = TestObj()
+        testObj.testName = "pointpsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "pointps"
+        testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
+        testObj.messageText = ["Pointps are not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["pointpsValidTest"] = testObj
+
+        # #ions
+        # testObj = TestObj()
+        # testObj.testName = "ionsTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "mechs",
+        # testObj.testTypes = [TEST_TYPE_SPECIAL],
+        # testObj.testTypeSpecialString = "mechVarListTest"
+        # testObj.messageText = ["Incorrect parameter for mechanisms."],
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["cell"]["ionsTest"] = testObj
+        #
+        # #pointps
+        # testObj = TestObj()
+        # testName = "pointpsTest",
+        # testObj.testParameterType = "string",
+        # testObj.testParameterValue = "ions",
+        # testObj.testTypes = [TEST_TYPE_SPECIAL],
+        # testObj.testTypeSpecialString = "mechVarListTest"
+        # testObj.messageText = ["Incorrect parameter for mechanisms."],
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["cell"]["pointpsTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading cell tests *** ")
@@ -498,21 +778,245 @@ class NetPyneTestObj(object):
         testObj = TestObj()
         testObj.testName = "preCondsTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
+        testObj.testParameterValue = "preConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
         self.testParamsMap["conn"]["preCondsTest"] = testObj
 
         # condsTest test
         testObj = TestObj()
         testObj.testName = "postCondsTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
+        testObj.testParameterValue = "postConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
         self.testParamsMap["conn"]["postCondsTest"] = testObj
+        #
+        # # secs test
+        # testObj = TestObj()
+        # testObj.testName = "connsSecsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
+        # testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["connsSecsTest"] = testObj
+        #
+        # # locs test
+        # testObj = TestObj()
+        # testObj.testName = "locsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "locs"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.testTypeSpecialString = "connsLocTest"
+        # testObj.messageText = ["Locs is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["locsTest"] = testObj
+        #
+        # # weight test
+        # testObj = TestObj()
+        # testObj.testName = "weightsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "weight"
+        # testObj.testTypeSpecialString = "connsWeightTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Weight is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["weightsTest"] = testObj
+        #
+        # # delay test
+        # testObj = TestObj()
+        # testObj.testName = "delayTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "delay"
+        # testObj.testTypeSpecialString = "connsDelayTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Delay is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["delayTest"] = testObj
+        #
+        # # synMech
+        # testObj = TestObj()
+        # testObj.testName = "synMechTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "synMech"
+        # testObj.testTypeSpecialString = "synMechsTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Syn Mech is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["synMechTest"] = testObj
+        #
+        # # synsPerConn
+        # #- synsPerConn: optional, defaults to 1; has to be >=1
+        #
+        # testObj = TestObj()
+        # testObj.testName = "synsPerConnTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "synsPerConn"
+        # testObj.testTypeSpecialString = "synMechsTest"
+        # testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
+        # testObj.compareValueString = "1"
+        # testObj.compareValueType = "int"
+        # testObj.messageText = ["Syns Per Conn must be >= 1."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["synsPerConnTest"] = testObj
+        #
+        # # probability: optional; [0,1]
+        # testObj = TestObj()
+        # testObj.testName = "probabilityTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "probability"
+        # testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ]
+        # testObj.compareValueString = "1"
+        # testObj.compareValueType = "int"
+        # testObj.messageText = ["Probability needs to be between 0 and 1."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["probabilityTest"] = testObj
+        #
+        # # convergence  optional; positive integer
+        #
+        # testObj = TestObj()
+        # testObj.testName = "convergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "convergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        # testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["convergenceTest"] = testObj
+        #
+        # # divergence  optional; positive integer
+        #
+        # testObj = TestObj()
+        # testObj.testName = "divergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "divergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        # testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["divergenceTest"] = testObj
+        #
+        # # secs test
+        # testObj = TestObj()
+        # testObj.testName = "connsSecsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
+        # testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["connsSecsTest"] = testObj
+        #
+        # # locs test
+        # testObj = TestObj()
+        # testObj.testName = "locsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "locs"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.testTypeSpecialString = "connsLocTest"
+        # testObj.messageText = ["Locs is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["locsTest"] = testObj
+        #
+        # # weight test
+        # testObj = TestObj()
+        # testObj.testName = "weightsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "weight"
+        # testObj.testTypeSpecialString = "connsWeightTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Weight is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["weightsTest"] = testObj
+        #
+        # # delay test
+        # testObj = TestObj()
+        # testObj.testName = "delayTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "delay"
+        # testObj.testTypeSpecialString = "connsDelayTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Delay is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["delayTest"] = testObj
+        #
+        # # synMech
+        # testObj = TestObj()
+        # testObj.testName = "synMechTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "synMech"
+        # testObj.testTypeSpecialString = "synMechsTest"
+        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        # testObj.messageText = ["Syn Mech is invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["synMechTest"] = testObj
+        #
+        # # synsPerConn
+        # #- synsPerConn: optional, defaults to 1; has to be >=1
+        #
+        # testObj = TestObj()
+        # testObj.testName = "synsPerConnTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "synsPerConn"
+        # testObj.testTypeSpecialString = "synMechsTest"
+        # testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
+        # testObj.compareValueString = "1"
+        # testObj.compareValueType = "int"
+        # testObj.messageText = ["Syns Per Conn must be >= 1."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["synsPerConnTest"] = testObj
+        #
+        # # probability: optional; [0,1]
+        # testObj = TestObj()
+        # testObj.testName = "probabilityTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "probability"
+        # testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ]
+        # testObj.compareValueString = "1"
+        # testObj.compareValueType = "int"
+        # testObj.messageText = ["Probability needs to be between 0 and 1."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["probabilityTest"] = testObj
+        #
+        # # convergence  optional; positive integer
+        #
+        # testObj = TestObj()
+        # testObj.testName = "convergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "convergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        # testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["convergenceTest"] = testObj
+        #
+        # # divergence  optional; positive integer
+        #
+        # testObj = TestObj()
+        # testObj.testName = "divergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "divergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
+        # testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # testParamsMap["conn"]["divergenceTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading conn tests *** ")
@@ -549,7 +1053,9 @@ class NetPyneTestObj(object):
         #     print (" *** Running cell tests *** ")
 
         cellParams = self.netParams.cellParams
+        #print ( " *** in run cell tests " + str(cellParams))
         for testName, cellTestObj in self.testParamsMap["cell"].items():
+            # print ( " ^^^ running test " + testName)
             self.execRunTests(cellTestObj, cellParams)
 
         # if self.verboseFlag:
@@ -569,11 +1075,6 @@ class NetPyneTestObj(object):
 
     def execRunTests(self, testObj, params):
 
-        # if self.verboseFlag:
-        #     print ( " ::: flag is " + str(self.verboseFlag))
-        #
-        #     print (" *** executing individual tests *** ")
-
         for testIndex, testType in enumerate(testObj.testTypes):
 
             if testType == TEST_TYPE_EXISTS:
@@ -582,86 +1083,105 @@ class NetPyneTestObj(object):
 
                     for paramLabel, paramValues in params.items():
 
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-
                         try:
                             self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
                 else:
 
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
-
                         try:
                             self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_EXISTS_IN_LIST:
 
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
 
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
                 else:
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
 
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_EXISTS_IN_DICT:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+
+                            if paramValues[testObj.testParameterValue] and paramValues[testObj.testParameterValue][testObj.testParameterValue1]:
+                                self.testTypeObj.testExistsInDict (  paramValues[testObj.testParameterValue][testObj.testParameterValue1],  eval(testObj.compareDict), testObj.testParameterValue1)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(paramValues[testObj.testParameterValue][testObj.testParameterValue1]) + " for : " + str(testType)+ " value : " + str(eval(testObj.compareDict)) )
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag :
+                                print ( "Test " + testObj.testParameterValue + " for : " + str(testType)+ " value : " + str(eval(testObj.compareDict)))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IN_RANGE:
 
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType) + " value : " + str(paramValues))
 
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType) + " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType) + " value : " + str(paramValues))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
                 else:
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IS_VALID_RANGE:
@@ -669,58 +1189,61 @@ class NetPyneTestObj(object):
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IS_INT:
 
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testIsInt(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
 
                         try:
                             paramName = eval(testObj.testParameterValue)
-                            if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
 
                             self.testTypeObj.testIsInt(paramName)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_GTE_ZERO:
@@ -728,27 +1251,135 @@ class NetPyneTestObj(object):
                 if isinstance(params, dict):
 
                     for paramLabel, paramValues in params.items():
-                        if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+
                         try:
                             self.testTypeObj.testGteZero(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                                 print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
                         try:
                             paramName = eval(testObj.testParameterValue)
-                            if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
-
                             self.testTypeObj.testGteZero(paramName)
                             if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_IS_DICT:
+
+                if isinstance(params, dict):
+
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+                            if testObj.testParameterValue in paramValues:
+                                self.testTypeObj.testIsDict(paramValues[testObj.testParameterValue])
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_EXISTS_IN_ALL_DICTS:
+
+                if isinstance(params, dict):
+
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+                            self.testTypeObj.testExistsInAllDicts(
+                                            paramValues,
+                                            testObj.testParameterValue,
+                                            testObj.testParameterDictString
+                                            )
+
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_VALID_GEOMETRIES:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidGeometries(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid geometry in cell")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid geometry in cell")
+                            #print (str(MESSAGE_TYPE_ERROR) + " : Geometry is invalid. ")
+                            print (str(MESSAGE_TYPE_ERROR) + " : Geometry is invalid. Must be one of 'dia','L','Ra','cm' or an array of pt3d where each element of the array is a length 4 float array.")
+
+            elif testType == TEST_TYPE_VALID_TOPOLOGIES:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidTopologies(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid topology in cell")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid topology in cell")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Topology is invalid. Must be specified if more than one section specified. For each topology, parentSec and parentX and childX must be defined. ParentSec needs to be a valid section, and both parentX and childX needs to be in range [0,1].")
+
+            elif testType == TEST_TYPE_VALID_MECHS:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidMechs(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid mechanisms in cell")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid mechanisms in cell")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")
+
+            elif testType == TEST_TYPE_VALID_POINTPS:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidPointps(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid pointps in cell params.")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid pointps in cell params.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")

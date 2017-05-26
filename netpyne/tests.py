@@ -15,6 +15,7 @@ VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
 POP_NUMCELLS_PARAMS = ['Density','NumCells','GridSpacing']
 VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d']
 PT_3D = 'pt3d'
+VALID_TOPOLOGY_PARAMS = ['parentSec', 'parentX','childX']
 
 MESSAGE_TYPE_WARNING = "WARNING"
 MESSAGE_TYPE_ERROR = "ERROR"
@@ -53,6 +54,7 @@ TEST_TYPE_EXISTS_IN_ALL_DICTS = "Exists in all dicts"
 
 TEST_TYPE_VALID_GEOMETRIES = "Valid geometries"
 TEST_TYPE_VALID_TOPOLOGIES = "Valid topologies"
+TEST_TYPE_VALID_MECHS = "Valid mechs"
 
 testFunctionsMap = {}
 
@@ -71,11 +73,15 @@ testFunctionsMap [TEST_TYPE_LTE] = "testGte"
 testFunctionsMap [TEST_TYPE_LTE_ZERO] = "testGteZero"
 
 testFunctionsMap [TEST_TYPE_VALUE_LIST] = "testExists"
+
 testFunctionsMap [TEST_TYPE_EXISTS_IN_LIST] = "testExistsInList"
 testFunctionsMap [TEST_TYPE_EXISTS_IN_DICT] = "testExistsInDict"
 testFunctionsMap [TEST_TYPE_EXISTS_IN_ALL_DICTS] = "testExistsInAllDicts"
+
 testFunctionsMap [TEST_TYPE_VALID_GEOMETRIES] = "testValidGeometries"
 testFunctionsMap [TEST_TYPE_VALID_TOPOLOGIES] = "testValidTopologies"
+
+testFunctionsMap [TEST_TYPE_VALID_MECHS] = "testTypeValidMechs"
 
 class TestTypeObj(object):
 
@@ -274,7 +280,7 @@ class TestTypeObj(object):
                         for key1, values1 in values['geom'].items():
                             assert key1 in VALID_GEOMETRIES, str(key1) + " must be in " + (",").join(VALID_GEOMETRIES)
                             if PT_3D in values['geom']:
-                                print ( " values = " + str(values['geom']))
+                                # print ( " values = " + str(values['geom']))
                                 assert isinstance ( values['geom'][PT_3D] , list ) , "pt3D must be an array with each array element being a 4lenght 4 array of floats."
                                 for elem in values['geom'][PT_3D]:
                                     assert isinstance ( elem , list ) , "Type error. pt3D must be an array with each array element being a 4lenght 4 array of floats."
@@ -288,12 +294,50 @@ class TestTypeObj(object):
 
     def testValidTopologies(self,paramValues): # TEST_TYPE_VALUE_LIST
         try:
+            topolValid = False
+            topolNeeded = False
             if 'secs' in paramValues:
                 if len(paramValues['secs']) > 0 :
-                    assert 'topol' in paramValues, "Toplogy must be specified if secs is specfierd"
+                    topolNeeded = True
+                    for key, value in paramValues['secs'].items():
+                        if 'topol' in value:
+                            topolValid = True
+                            # print ( " **** past 1 ")
+                            if len(value['topol']) < 3:
+                                topolValid = False
+                                # print ( " **** past 2 ")
+                            elif not any([x in value['topol'] for x in VALID_TOPOLOGY_PARAMS ]):
+                                topolValid = False
+                                # print ( " **** past 3 ")
+                            elif value['topol']['parentSec'] not in paramValues['secs']:
+                                # print (" ::: secs are " + str(paramValues['secs']) )
+                                topolValid = False
+                                # print ( " **** past 4 ")
+                            elif not isinstance ( value['topol']['parentX'] , numbers.Real ) :
+                                topolValid = False
+                                # print ( " **** past 5 ")
+                            elif not isinstance ( value['topol']['childX'] , numbers.Real ) :
+                                topolValid = False
+                                # print ( " **** past 6 ")
+                            elif value['topol']['parentX'] < 0 or value['topol']['parentX'] >1 :
+                                topolValid = False
+                                # print ( " **** past 7 ")
+                            elif value['topol']['childX'] < 0 or value['topol']['childX'] >1 :
+                                topolValid = False
+                                # print ( " **** past 8 ")
+
+            if topolNeeded:
+                assert topolValid is True, "Topology must be specified if more than one section is listed."
 
         except AssertionError as e:
             #e.args += (values1,)
+            raise
+
+    def testTypeValidMechs(self,paramValues): # TEST_TYPE_VALID_MECHS
+        try:
+            assert (val in valList), val + " must be in list " + (",").join()
+        except AssertionError as e:
+            e.args += (val,)
             raise
 
 # Tests that are defined for each set of parameters
@@ -593,34 +637,29 @@ class NetPyneTestObj(object):
         # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         # self.testParamsMap["cell"]["geomExistTest"] = testObj
 
-        # geom test
-        testObj = TestObj()
-        testObj.testName = "geomValidTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "geom"
-        testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
-        #testObj.testValueList = VALID_GEOMETRIES,
-        testObj.messageText = ["Geom is not valid."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["geomValidTest"] = testObj
-        #
-        # # topol test
+        # # geom test
         # testObj = TestObj()
-        # testObj.testName = "toplogyTest"
+        # testObj.testName = "geomValidTest"
         # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "topol"
-        # testObj.testTypes = [TEST_TYPE_SPECIAL]
-        # testObj.testTypeSpecialString = "checkCellTopology"
-        # testObj.messageText = ["Topology is not valid."]
+        # testObj.testParameterValue = "geom"
+        # testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
+        # #testObj.testValueList = VALID_GEOMETRIES,
+        # testObj.messageText = ["Geom is not valid."]
         # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         #
-        # self.testParamsMap["cell"]["toplogyTest"] = testObj
-        #
-        # # -- topol: required if len(secs)>1; has to be dict; with 3 keys:
-        # # --- parentSec: string which should be in keys of secs
-        # # --- parentX: 0-1
-        # # --- childX: 0-1
+        # self.testParamsMap["cell"]["geomValidTest"] = testObj
+
+        # topol test
+        testObj = TestObj()
+        testObj.testName = "toplogyTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "topol"
+        testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
+        testObj.messageText = ["Topology is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["toplogyExistsTest"] = testObj
+
         # #
         # # mechs test
         # #
@@ -1248,4 +1287,22 @@ class NetPyneTestObj(object):
                             #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid topology in cell")
-                            print (str(MESSAGE_TYPE_ERROR) + " : Topology is invalid. Must be specified if more than one section specified, and parentSec must be defined. ")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Topology is invalid. Must be specified if more than one section specified. For each topology, parentSec and parentX and childX must be defined. ParentSec needs to be a valid section, and both parentX and childX needs to be in range [0,1].")
+
+            elif testType == TEST_TYPE_VALID_MECHS:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidMechs(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid mechanisms in cell")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid mechanisms in cell")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")

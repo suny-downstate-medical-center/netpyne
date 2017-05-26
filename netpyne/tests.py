@@ -1093,6 +1093,7 @@ class NetPyneTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
                 else:
 
                         try:
@@ -1115,7 +1116,7 @@ class NetPyneTestObj(object):
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-                            print ( "PASSED" )
+                                print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -1128,7 +1129,7 @@ class NetPyneTestObj(object):
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
-                            print ( "PASSED" )
+                                print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -1168,7 +1169,8 @@ class NetPyneTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType) + " value : " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
                 else:
 
                         try:
@@ -1180,7 +1182,7 @@ class NetPyneTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_IS_VALID_RANGE:
 
@@ -1197,7 +1199,7 @@ class NetPyneTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
 
@@ -1205,7 +1207,7 @@ class NetPyneTestObj(object):
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-                            print ( "PASSED" )
+                                print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -1242,7 +1244,7 @@ class NetPyneTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
             elif testType == TEST_TYPE_GTE_ZERO:
 
@@ -1259,12 +1261,11 @@ class NetPyneTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
                 else:
                         try:
                             paramName = eval(testObj.testParameterValue)
-
                             self.testTypeObj.testGteZero(paramName)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))

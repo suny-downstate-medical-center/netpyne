@@ -18,6 +18,8 @@
 
 - Added recording of h.t to simData
 
+- Replaced 'globs' with 'globals'
+
 - Fixed bug: subConn rules now update weight if different weightNorm 
 
 - Fixed bug: missing call to noiseFromRandom() for NetStims
@@ -117,7 +119,7 @@
 
 - Added option to importCell based on instantiated cell (not just template or class)
 
-- Modified importCellParams to store mod mechanism global variables in cellRule['globs']
+- Modified importCellParams to store mod mechanism global variables in cellRule['globals']
 
 - Added support to export gap junctions to NeuroML
 

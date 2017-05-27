@@ -328,7 +328,7 @@ class NetParams (object):
             label = int(self._labelid)
             self._labelid += 1
         secs, secLists, synMechs, globs = utils.importCell(fileName, cellName, cellArgs, cellInstance)
-        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globs': globs}
+        cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globals': globs}
         
         # adjust cell 3d points so that soma is at location 0,0,0 
         if somaAtOrigin:

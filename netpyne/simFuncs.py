@@ -745,7 +745,7 @@ def setGlobals ():
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
     for cellRuleName, cellRule in sim.net.params.cellParams.iteritems():
-        for k,v in getattr(cellRule, 'globs', {}).iteritems():
+        for k,v in getattr(cellRule, 'globals', {}).iteritems():
             if k not in cellGlobs:
                 cellGlobs[k] = v
             elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception

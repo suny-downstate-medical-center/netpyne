@@ -20,6 +20,8 @@
 
 - Replaced 'globs' with 'globals'
 
+- Fixed bug when setting wrong num of weights or locs for synsPerConn>1
+
 - Fixed bug: subConn rules now update weight if different weightNorm 
 
 - Fixed bug: missing call to noiseFromRandom() for NetStims

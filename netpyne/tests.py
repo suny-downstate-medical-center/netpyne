@@ -56,7 +56,10 @@ TEST_TYPE_EXISTS_IN_ALL_DICTS = "Exists in all dicts"
 TEST_TYPE_VALID_GEOMETRIES = "Valid geometries"
 TEST_TYPE_VALID_TOPOLOGIES = "Valid topologies"
 TEST_TYPE_VALID_MECHS = "Valid mechs"
+TEST_TYPE_VALID_IONS = "Valid ions"
 TEST_TYPE_VALID_POINTPS = "Valid pointps"
+
+TEST_TYPE_VALID_SYNC_MECHS = "Valid sync mechanisms"
 
 testFunctionsMap = {}
 
@@ -84,6 +87,9 @@ testFunctionsMap [TEST_TYPE_VALID_GEOMETRIES] = "testValidGeometries"
 testFunctionsMap [TEST_TYPE_VALID_TOPOLOGIES] = "testValidTopologies"
 
 testFunctionsMap [TEST_TYPE_VALID_MECHS] = "testTypeValidMechs"
+testFunctionsMap [TEST_TYPE_VALID_IONS] = "testTypeValidIons"
+testFunctionsMap [TEST_TYPE_VALID_POINTPS] = "testTypeValidPointps"
+testFunctionsMap [TEST_TYPE_VALID_SYNC_MECHS] = "testTypeValidSyncMechs"
 
 class TestTypeObj(object):
 
@@ -284,6 +290,7 @@ class TestTypeObj(object):
                             if PT_3D in values['geom']:
                                 # print ( " values = " + str(values['geom']))
                                 assert isinstance ( values['geom'][PT_3D] , list ) , "pt3D must be an array with each array element being a 4lenght 4 array of floats."
+                                assert len(values['geom'][PT_3D]) == 0 , "At least one element must be provided for pt3D."
                                 for elem in values['geom'][PT_3D]:
                                     assert isinstance ( elem , list ) , "Type error. pt3D must be an array with each array element being a 4lenght 4 array of floats."
                                     assert len(elem) == 4 , "Length error. pt3D must be an array with each array element being a 4lenght 4 array of floats."
@@ -352,13 +359,27 @@ class TestTypeObj(object):
                             #print ( " values1 = " + str(values1) )
                             if key1 == "mechs":
                                 for key2, values2 in paramValues['secs'][key][key1].items():
-                                    keys_suffixed = [x + "_" + key2 for x in values2.keys()]
-                                    if not any([x + "_" + str(key2) in mechs[key2] for x in values2.keys() ]):
-                                        # print ( " !!!!!!!! setting invalid 1 ")
-                                        mechsValid = False
-                                    elif not all([x in keys_suffixed for x in mechs[key2] ]):
-                                        # print ( " !!!!!!!! setting invalid 2 ")
-                                        mechsValid = False
+                                    if key2 not in ["k_ion", "na_ion", "pas", "hh", "fastpas"]:
+                                        continue
+                                    keys_suffixed = []
+                                    if key2 == "k_ion" or key2 == "na_ion":
+                                        ionName = key2.split('_ion')[0]
+                                        mechs[key2] = [x.replace(ionName, "") for x in mechs[key2] ]
+                                        keys_suffixed = [x for x in values2.keys()]
+                                        if not any([x in mechs[key2] for x in values2.keys() ]):
+                                            # print ( " !!!!!!!! setting invalid 1 " + str(mechs[key2]) + " :: " + str(values2.keys()))
+                                            mechsValid = False
+                                        # elif not all([x in keys_suffixed for x in mechs[key2] ]):
+                                        #     print ( " !!!!!!!! setting invalid 2 ")
+                                        #     mechsValid = False
+                                    else:
+                                        keys_suffixed = [x + "_" + key2 for x in values2.keys()]
+                                        if not any([x + "_" + str(key2) in mechs[key2] for x in values2.keys() ]):
+                                            # print ( " !!!!!!!! setting invalid 1 "  + str(mechs[key2]) + " :: " + str(values2.keys()))
+                                            mechsValid = False
+                                        elif not all([x in keys_suffixed for x in mechs[key2] ]):
+                                            print ( " !!!!!!!! setting invalid 2 ")
+                                            mechsValid = False
 
             assert mechsValid is True, " Must be a valid mech as specified in utils.mechVarList."
 
@@ -380,11 +401,99 @@ class TestTypeObj(object):
                                     #print (" ** keys2, values2 = " + str(key2) + " :: " + str(values2))
                                     if 'mod' not in values2.keys():
                                         pointpsValid = False
+                                    elif 'loc' in values2.keys():
+                                        assert isinstance(loc, numbers.Real ), " Loc must be a float."
+                                        assert loc >= 0 and loc <= 1, " Loc must be between 0 and 1."
+                                    elif 'synList' in values2.keys():
+                                        assert isinstance(synList, list ), "SynList must be a list."
 
             assert pointpsValid is True, " Mod must be specified for pointps."
 
         except AssertionError as e:
             e.args += ()
+            raise
+
+    def testValidSyncMechs(self,paramValues): # TEST_TYPE_VALID_SYNC_MECHS
+
+        errorMessage = ''
+
+        try:
+            synMechsValid = True
+
+            synsPerConn = 1
+            synMechs = ''
+
+            dimSynMechs = 1
+            dimLocs = 1
+            dimWeights = 1
+            dimDelays = 1
+
+            if paramValues['synMechs']:
+                synMechs = paramValues['synMechs']
+                if isinstance(synMechs, list):
+                    dimSynMechs = len(synMechs)
+                else:
+                    dimSynMechs = 1
+
+            if paramValues['synsPerConn']:
+                synsPerConn = paramValues ['synsPerConn']
+
+            if paramValues['loc']:
+                loc = paramValues ['loc']
+                dimLocs = numpy.array(loc).ndim
+
+            if paramValues['weight']:
+                weight = paramValues ['weight']
+                dimWeights = numpy.array(loc).ndim
+
+            if paramValues['delay']:
+                delay = paramValues ['delay']
+                dimDelays = numpy.array(loc).ndim
+
+            # If omitted, defaults to netParams.defaultWeight = 1.
+            # If have list of synMechs, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: [0.1, 0.01]).
+            # If have synsPerConn > 1, can have single weight for all, or list of weights (one per synapse, e.g. if synsPerConn = 3: [0.2, 0.3, 0.4])
+            # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]])
+
+            if dimSynMechs == 1:
+                if synsPerConn != 1:
+                    if dimLocs not in [0,1]:
+                        errorMessage = "Locs can only be a number or 1d list if only one 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimLocs == 1 and len(locs) != synsPerConn:
+                        errorMessage = "Dimension of locs array must be same as synsPerConn."
+                        synMechsValid = False
+                else: # only 1 synsPerConn
+                    if dimLocs !=0:
+                        errorMessage = "Locs can only be a number if 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+            else: # more than 1 synMech
+                if synsPerConn != 1:
+                    if dimLocs not in [0,1,2]:
+                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimLocs == 1 and len(locs) != synsPerConn:
+                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimLocs == 2:
+                        if numpy.array(a).shape[0] != synsPerConn:
+                            errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                            synMechsValid = False
+                        elif numpy.array(a).shape[1] != dimSynMechs:
+                            errorMessage = "Invalid locs for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
+                            synMechsValid = False
+                else: # only 1 synsPerConn
+                    if dimLocs not in [0,1]:
+                        errorMessage = "Locs can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+                    elif dimLocs == 1 and len(locs) != synsPerConn:
+                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+
+            assert synMechsValid is True, " Must be a valid syncMechs."
+
+        except AssertionError as e:
+            e.args += (errorMessage, )
             raise
 
 # Tests that are defined for each set of parameters
@@ -627,85 +736,85 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"] = {}
 
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "condsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
-        self.testParamsMap["cell"]["condsTest"] = testObj
-
-        # secs test
-        testObj = TestObj()
-        testObj.testName = "secsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "secs"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Secs is not a dict."]
-        self.testParamsMap["cell"]["secsTest"] = testObj
-
-        # cellTypes test
-        testObj = TestObj()
-        testObj.testName = "cellTypesTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testParameterValue1 = "cellType"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        testObj.compareDict = "self.netParams.popParams"
-        testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."],
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-
-        self.testParamsMap["cell"]["cellTypeTest"] = testObj
-
-        # cellModel test
-        testObj = TestObj()
-        testObj.testName = "cellModelTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "conds"
-        testObj.testParameterValue1 = "cellModel"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        testObj.compareDict = "self.netParams.popParams"
-        testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."],
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-
-        self.testParamsMap["cell"]["cellModelTest"] = testObj
-
-        #geom test
-        testObj = TestObj()
-        testObj.testName = "geomExistTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "secs"
-        testObj.testParameterDictString = "geom"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
-        testObj.messageText = ["Geom is not specified in section "]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        self.testParamsMap["cell"]["geomExistTest"] = testObj
-
-        # geom test
-        testObj = TestObj()
-        testObj.testName = "geomValidTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "geom"
-        testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
-        #testObj.testValueList = VALID_GEOMETRIES,
-        testObj.messageText = ["Geom is not valid."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["geomValidTest"] = testObj
-
-        # topol test
-        testObj = TestObj()
-        testObj.testName = "topologyTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "topol"
-        testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
-        testObj.messageText = ["Topology is not valid."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["toplogyValidTest"] = testObj
+        # # condsTest test
+        # testObj = TestObj()
+        # testObj.testName = "condsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "conds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        # testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
+        # self.testParamsMap["cell"]["condsTest"] = testObj
+        #
+        # # secs test
+        # testObj = TestObj()
+        # testObj.testName = "secsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_IS_DICT]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # testObj.messageText = ["Secs is not a dict."]
+        # self.testParamsMap["cell"]["secsTest"] = testObj
+        #
+        # # cellTypes test
+        # testObj = TestObj()
+        # testObj.testName = "cellTypesTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "conds"
+        # testObj.testParameterValue1 = "cellType"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.compareDict = "self.netParams.popParams"
+        # testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        #
+        # self.testParamsMap["cell"]["cellTypeTest"] = testObj
+        #
+        # # cellModel test
+        # testObj = TestObj()
+        # testObj.testName = "cellModelTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "conds"
+        # testObj.testParameterValue1 = "cellModel"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        # testObj.compareDict = "self.netParams.popParams"
+        # testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        #
+        # self.testParamsMap["cell"]["cellModelTest"] = testObj
+        #
+        # #geom test
+        # testObj = TestObj()
+        # testObj.testName = "geomExistTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testParameterDictString = "geom"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
+        # testObj.messageText = ["Geom is not specified in section "]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # self.testParamsMap["cell"]["geomExistTest"] = testObj
+        #
+        # # geom test
+        # testObj = TestObj()
+        # testObj.testName = "geomValidTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "geom"
+        # testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
+        # #testObj.testValueList = VALID_GEOMETRIES,
+        # testObj.messageText = ["Geom is not valid."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["geomValidTest"] = testObj
+        #
+        # # topol test
+        # testObj = TestObj()
+        # testObj.testName = "topologyTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "topol"
+        # testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
+        # testObj.messageText = ["Topology is not valid."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["cell"]["toplogyValidTest"] = testObj
 
         #
         # mechs test
@@ -729,40 +838,27 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"]["mechsValidTest"] = testObj
 
-        # pointps test
-        testObj = TestObj()
-        testObj.testName = "pointpsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "pointps"
-        testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
-        testObj.messageText = ["Pointps are not valid."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["cell"]["pointpsValidTest"] = testObj
-
-        # #ions
+        # # pointps test
         # testObj = TestObj()
-        # testObj.testName = "ionsTest",
-        # testObj.testParameterType = "string",
-        # testObj.testParameterValue = "mechs",
-        # testObj.testTypes = [TEST_TYPE_SPECIAL],
-        # testObj.testTypeSpecialString = "mechVarListTest"
-        # testObj.messageText = ["Incorrect parameter for mechanisms."],
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # testObj.testName = "pointpsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "pointps"
+        # testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
+        # testObj.messageText = ["Pointps are not valid."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         #
-        # self.testParamsMap["cell"]["ionsTest"] = testObj
+        # self.testParamsMap["cell"]["pointpsValidTest"] = testObj
         #
-        # #pointps
+        # # ions test
         # testObj = TestObj()
-        # testName = "pointpsTest",
-        # testObj.testParameterType = "string",
-        # testObj.testParameterValue = "ions",
-        # testObj.testTypes = [TEST_TYPE_SPECIAL],
-        # testObj.testTypeSpecialString = "mechVarListTest"
-        # testObj.messageText = ["Incorrect parameter for mechanisms."],
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        # testObj.testName = "ionsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "ions"
+        # testObj.testTypes = [TEST_TYPE_VALID_IONS]
+        # testObj.messageText = ["Ions are not valid."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         #
-        # self.testParamsMap["cell"]["pointpsTest"] = testObj
+        # self.testParamsMap["cell"]["pointpsValidTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading cell tests *** ")
@@ -774,25 +870,25 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["conn"] = {}
 
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "preCondsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "preConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
-        self.testParamsMap["conn"]["preCondsTest"] = testObj
-
-        # condsTest test
-        testObj = TestObj()
-        testObj.testName = "postCondsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "postConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
-        self.testParamsMap["conn"]["postCondsTest"] = testObj
+        # # condsTest test
+        # testObj = TestObj()
+        # testObj.testName = "preCondsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "preConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        # testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
+        # self.testParamsMap["conn"]["preCondsTest"] = testObj
+        #
+        # # condsTest test
+        # testObj = TestObj()
+        # testObj.testName = "postCondsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "postConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        # testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
+        # self.testParamsMap["conn"]["postCondsTest"] = testObj
         #
         # # secs test
         # testObj = TestObj()
@@ -805,17 +901,17 @@ class NetPyneTestObj(object):
         #
         # self.testParamsMap["conn"]["connsSecsTest"] = testObj
         #
-        # # locs test
-        # testObj = TestObj()
-        # testObj.testName = "locsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "locs"
-        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
-        # testObj.testTypeSpecialString = "connsLocTest"
-        # testObj.messageText = ["Locs is invalid."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["locsTest"] = testObj
+        # locs test
+        testObj = TestObj()
+        testObj.testName = "locsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "locs"
+        testObj.testTypes = [TEST_TYPE_SPECIAL ]
+        testObj.testTypeSpecialString = "connsLocTest"
+        testObj.messageText = ["Locs is invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["locsTest"] = testObj
         #
         # # weight test
         # testObj = TestObj()
@@ -1360,11 +1456,10 @@ class NetPyneTestObj(object):
                                 print ( "PASSED" )
 
                         except Exception as e:
-                            #traceback.print_exc(file=sys.stdout)
+                            # traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid mechanisms in cell")
-                            #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist." + str(paramValues))
 
             elif testType == TEST_TYPE_VALID_POINTPS:
 
@@ -1372,6 +1467,23 @@ class NetPyneTestObj(object):
                     for paramLabel, paramValues in params.items():
                         try:
                             self.testTypeObj.testValidPointps(paramValues)
+                            if self.verboseFlag:
+                                print ( "Test: for valid pointps in cell params.")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            #traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid pointps in cell params.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")
+
+            elif testType == TEST_TYPE_VALID_SYNC_MECHS:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+                            self.testTypeObj.testValidSyncMechs(paramValues)
                             if self.verboseFlag:
                                 print ( "Test: for valid pointps in cell params.")
                                 print ( "PASSED" )

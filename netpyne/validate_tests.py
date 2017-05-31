@@ -180,329 +180,412 @@ class RunNetPyneTests():
             params = ParamsObj()
             params.netParams.shape = "sphere"   # max size for network
             self.paramsMap["net"]["shapeTest"].append(params)
-
-            # cell params test
-            self.paramsMap["cell"]["condsTest"] = []
-
-            # valid cell conds rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellType': 'E2', 'cellModel': 'simple'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validConds'] = cellRule # add dict with params for this pop
-            #print ( str(cellRule["conds"]) )
-            self.paramsMap["cell"]["condsTest"].append(params)
-
-            # valid cell conds rule
-            params = ParamsObj()
-            cellRule = {'conds': 'test',  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['inValidConds1'] = cellRule # add dict with params for this pop
-            #print ( str(cellRule["conds"]) )
-            self.paramsMap["cell"]["condsTest"].append(params)
-
-            # invalid cell conds rule
-            params = ParamsObj()
-            cellRule = { 'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['inValidConds2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["condsTest"].append(params)
-
-            # cell params test
-            self.paramsMap["cell"]["secsTest"] = []
-
-            # invalid sec type rule
-            params = ParamsObj()
-            cellRule = { 'secs': 'test'}                        # cell rule dict
-            params.netParams.cellParams['inValidSecs1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["secsTest"].append(params)
-
-            # cell types test
-            self.paramsMap["cell"]["cellTypesTest"] = []
-
-            # valid cell type rule
-            params = ParamsObj()
-            params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
-            cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validCellTypes'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["cellTypesTest"].append(params)
-
-            # invalid cell type rule
-            params = ParamsObj()
-            params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
-            cellRule = { 'conds': {'cellType': 'PY1'}, 'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['inValidCellTypes'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["cellTypesTest"].append(params)
-
-            # cell params test
-            self.paramsMap["cell"]["cellModelsTest"] = []
-
-            # valid cell model rule
-            params = ParamsObj()
-            params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validCellModel'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["cellModelsTest"].append(params)
-
-            # invalid cell model rule
-            params = ParamsObj()
-            params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
-            cellRule = { 'conds': {'cellModel': 'H1' }, 'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['inValidCellModel'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["cellModelsTest"].append(params)
-
-            # geom test
-            self.paramsMap["cell"]["geomTest"] = []
-
-            # valid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validGeom'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = { 'conds': {'cellModel': 'H1' }, 'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = { 'mechs': {}}                                                # soma params dict
-            params.netParams.cellParams['inValidGeom'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            #valid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validGeom1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # valid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d' : [] }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # valid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d' : [] }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validGeom3'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # valid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d' : [[1,2,3,4],[3,4,5,6]] }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['validGeom4'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d' : 2.3 }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam' : 2.3 }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'xy' : 2.3 }                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d':[2,3,4]}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4],[3,4,5]]}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # invalid geom rule
-            params = ParamsObj()
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4,4],[3,4,"a",3]]}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["geomTest"].append(params)
-
-            # topology test
-            self.paramsMap["cell"]["topologyTest"] = []
-
-            # valid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['validTopology1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology3'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma1', 'parentX': 1.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology4'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 2.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology5'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
-            # invalid topology rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 2.0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-
-            params.netParams.cellParams['invalidTopology6'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["topologyTest"].append(params)
-
+            #
+            # # cell params test
+            # self.paramsMap["cell"]["condsTest"] = []
+            #
+            # # valid cell conds rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellType': 'E2', 'cellModel': 'simple'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validConds'] = cellRule # add dict with params for this pop
+            # #print ( str(cellRule["conds"]) )
+            # self.paramsMap["cell"]["condsTest"].append(params)
+            #
+            # # valid cell conds rule
+            # params = ParamsObj()
+            # cellRule = {'conds': 'test',  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['inValidConds1'] = cellRule # add dict with params for this pop
+            # #print ( str(cellRule["conds"]) )
+            # self.paramsMap["cell"]["condsTest"].append(params)
+            #
+            # # invalid cell conds rule
+            # params = ParamsObj()
+            # cellRule = { 'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['inValidConds2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["condsTest"].append(params)
+            #
+            # # cell params test
+            # self.paramsMap["cell"]["secsTest"] = []
+            #
+            # # invalid sec type rule
+            # params = ParamsObj()
+            # cellRule = { 'secs': 'test'}                        # cell rule dict
+            # params.netParams.cellParams['inValidSecs1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["secsTest"].append(params)
+            #
+            # # cell types test
+            # self.paramsMap["cell"]["cellTypesTest"] = []
+            #
+            # # valid cell type rule
+            # params = ParamsObj()
+            # params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+            # cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validCellTypes'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["cellTypesTest"].append(params)
+            #
+            # # invalid cell type rule
+            # params = ParamsObj()
+            # params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+            # cellRule = { 'conds': {'cellType': 'PY1'}, 'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['inValidCellTypes'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["cellTypesTest"].append(params)
+            #
+            # # cell params test
+            # self.paramsMap["cell"]["cellModelsTest"] = []
+            #
+            # # valid cell model rule
+            # params = ParamsObj()
+            # params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validCellModel'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["cellModelsTest"].append(params)
+            #
+            # # invalid cell model rule
+            # params = ParamsObj()
+            # params.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+            # cellRule = { 'conds': {'cellModel': 'H1' }, 'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['inValidCellModel'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["cellModelsTest"].append(params)
+            #
+            # # geom test
+            # self.paramsMap["cell"]["geomTest"] = []
+            #
+            # # valid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validGeom'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = { 'conds': {'cellModel': 'H1' }, 'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = { 'mechs': {}}                                                # soma params dict
+            # params.netParams.cellParams['inValidGeom'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # #valid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validGeom1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # valid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d' : [] }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # valid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d' : [] }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validGeom3'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # valid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d' : [[1,2,3,4],[3,4,5,6]] }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['validGeom4'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d' : 2.3 }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam' : 2.3 }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'xy' : 2.3 }                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d':[2,3,4]}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4],[3,4,5]]}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # invalid geom rule
+            # params = ParamsObj()
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4,4],[3,4,"a",3]]}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["geomTest"].append(params)
+            #
+            # # topology test
+            # self.paramsMap["cell"]["topologyTest"] = []
+            #
+            # # valid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['validTopology1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology3'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma1', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology4'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 2.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology5'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
+            # # invalid topology rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 2.0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidTopology6'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["topologyTest"].append(params)
+            #
             # mechs test
             self.paramsMap["cell"]["mechsTest"] = []
 
-            # valid mechs rule
+            # # valid mechs rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['validMechs1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["mechsTest"].append(params)
+            #
+            # # invalid mechs rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidMechs1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["mechsTest"].append(params)
+            #
+            # # invalid mechs rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidMechs2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["mechsTest"].append(params)
+            #
+            # # invalid mechs rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl1': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidMechs3'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["mechsTest"].append(params)
+            #
+            # # invalid mechs rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e1': -70} 										# dend mechanisms
+            #
+            # params.netParams.cellParams['invalidMechs4'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["mechsTest"].append(params)
+
+            # ions test
+            self.paramsMap["cell"]["ionsTest"] = []
+
+            # valid ions rule
             params = ParamsObj()
 
             cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
@@ -510,21 +593,27 @@ class RunNetPyneTests():
             cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
             cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 
+            cellRule['secs']['soma']['mechs']['k_ion'] = {'i':10,'e':20,'o':30} # potassium ions
+            cellRule['secs']['soma']['mechs']['na_ion'] = {'o':3,'i':4,'e':5} # sodium ions
+
             cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
             cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
             cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
             cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
 
-            params.netParams.cellParams['validMechs1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["mechsTest"].append(params)
+            params.netParams.cellParams['validIons1'] = cellRule # add dict with params for this pop
+            self.paramsMap["cell"]["ionsTest"].append(params)
 
-            # invalid mechs rule
+            # invalid ions rule
             params = ParamsObj()
 
             cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
             cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
             cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+
+            cellRule['secs']['soma']['mechs']['k_ion'] = {'x':10} # potassium ions
+            cellRule['secs']['soma']['mechs']['na_ion'] = {'y':3} # sodium ions
 
             cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
             cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
@@ -542,13 +631,16 @@ class RunNetPyneTests():
             cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
             cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 
+            cellRule['secs']['soma']['mechs']['k_ion'] = {'i':10} # potassium ions
+            cellRule['secs']['soma']['mechs']['na_ion'] = {'o':3} # sodium ions
+
             cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
             cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
             cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357} 										# dend mechanisms
+            cellRule['secs']['dend']['mechs']['pas'] = {'x': 0.0000357} 										# dend mechanisms
 
-            params.netParams.cellParams['invalidMechs2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["mechsTest"].append(params)
+            params.netParams.cellParams['invalidIons2'] = cellRule # add dict with params for this pop
+            self.paramsMap["cell"]["ionsTest"].append(params)
 
             # invalid mechs rule
             params = ParamsObj()
@@ -557,6 +649,8 @@ class RunNetPyneTests():
             cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
             cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl1': 0.003, 'el': -70}  # soma hh mechanism
+
+            cellRule['secs']['soma']['mechs']['mg_ion'] = {'mg1':10} # mg ions
 
             cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
             cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
@@ -579,13 +673,13 @@ class RunNetPyneTests():
             cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
             cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e1': -70} 										# dend mechanisms
 
-            params.netParams.cellParams['invalidMechs4'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["mechsTest"].append(params)
+            params.netParams.cellParams['invalidIons4'] = cellRule # add dict with params for this pop
+            self.paramsMap["cell"]["ionsTest"].append(params)
 
             # pointps test
             self.paramsMap["cell"]["pointpsTest"] = []
 
-            # valid mechs rule
+            # valid pointps rule
             params = ParamsObj()
 
             cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
@@ -596,7 +690,7 @@ class RunNetPyneTests():
             params.netParams.cellParams['validPointPs1'] = cellRule # add dict with params for this pop
             self.paramsMap["cell"]["pointpsTest"].append(params)
 
-            # valid mechs rule
+            # invalid pointps rule
             params = ParamsObj()
 
             cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
@@ -607,65 +701,23 @@ class RunNetPyneTests():
             params.netParams.cellParams['invalidPointPs1'] = cellRule # add dict with params for this pop
             self.paramsMap["cell"]["pointpsTest"].append(params)
 
-            # conn test
-            self.paramsMap["conn"]["preCondsTest"] = []
-
-            # valid mechs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'delay': 5}                         # delay
-
-            params.netParams.connParams['validPreConds1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["preCondsTest"].append(params)
-
-            # valid mechs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': 2.3 , 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'delay': 5}                         # delay
-
-            params.netParams.connParams['invalidPreConds1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["preCondsTest"].append(params)
-
-            # conn test
-            self.paramsMap["conn"]["postCondsTest"] = []
-
-            # valid mechs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'delay': 5}                         # delay
-
-            params.netParams.connParams['validPostConds1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["postCondsTest"].append(params)
-
-            # valid mechs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': 2.3,
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'delay': 5}                         # delay
-
-            params.netParams.connParams['invalidPostConds1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["postCondsTest"].append(params)
-
+            # # conn test
+            # self.paramsMap["conn"]["preCondsTest"] = []
+            #
             # # valid mechs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['validPreConds1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["preCondsTest"].append(params)
+            #
+            # # invalid conds rule
             # params = ParamsObj()
             #
             # # Connectivity parameters
@@ -677,13 +729,141 @@ class RunNetPyneTests():
             #
             # params.netParams.connParams['invalidPreConds1'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["preCondsTest"].append(params)
+            #
+            # # conn test
+            # self.paramsMap["conn"]["postCondsTest"] = []
+            #
+            # # invalid conds rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['validPostConds1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["postCondsTest"].append(params)
+            #
+            # # invalid conds rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': 2.3,
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['invalidPostConds1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["postCondsTest"].append(params)
+
+            # loc (optional) - Location of target synaptic mechanism (e.g. 0.3)
+            # If omitted, defaults to 0.5.
+            # If have list of synMechs, can have single loc for all, or list of locs (one per synMech, e.g. for 2 synMechs: [0.4, 0.7]).
+            # If have synsPerConn > 1, can have single loc for all, or list of locs (one per synapse, e.g. if synsPerConn = 3: [0.4, 0.5, 0.7])
+            # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]])
+
+            # conn test
+            self.paramsMap["conn"]["connsLocTest"] = []
+
+            # valid locs rule
+            params = ParamsObj()
+
+            # Connectivity parameters
+            connRule = {
+                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+                'loc' : 1,
+                'weight': 0.0,                      # weight of each connection
+                'synMech': 'inh',                   # target inh synapse
+                'synsPerConn': 1,
+                'delay': 5}                         # delay
+
+            params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
+            self.paramsMap["conn"]["connsLocTest"].append(params)
+
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [0.5,0.7],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['invalidConnsLoc1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['invalidConnsLoc2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # invalid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : 1.5,
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['invalidConnsLoc3'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
 
         def runTestsWithParams(self):
 
             #self.runPopTestsWithParams()
             #self.runNetTestsWithParams()
-            self.runCellTestsWithParams()
-            #self.runConnTestsWithParams()
+            #self.runCellTestsWithParams()
+            self.runConnTestsWithParams()
 
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]

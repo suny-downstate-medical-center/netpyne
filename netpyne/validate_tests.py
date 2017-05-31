@@ -768,20 +768,20 @@ class RunNetPyneTests():
             # conn test
             self.paramsMap["conn"]["connsLocTest"] = []
 
-            # valid locs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'loc' : 1,
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5}                         # delay
-
-            params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsLocTest"].append(params)
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : 1,
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
 
             # # valid locs rule
             # params = ParamsObj()
@@ -812,21 +812,21 @@ class RunNetPyneTests():
             #
             # params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["connsLocTest"].append(params)
-            #
-            # # valid locs rule
-            # params = ParamsObj()
-            #
-            # # Connectivity parameters
-            # connRule = {
-            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
-            #     'weight': 0.0,                      # weight of each connection
-            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
-            #     'synsPerConn': 1,
-            #     'delay': 5}                         # delay
-            #
-            # params.netParams.connParams['invalidConnsLoc1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            
+            # valid locs rule
+            params = ParamsObj()
+
+            # Connectivity parameters
+            connRule = {
+                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+                'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+                'weight': 0.0,                      # weight of each connection
+                'synMech': ['AMPA','NMDA'],                   # target inh synapse
+                'synsPerConn': 1,
+                'delay': 5}                         # delay
+
+            params.netParams.connParams['invalidConnsLoc1'] = connRule # add dict with params for this pop
+            self.paramsMap["conn"]["connsLocTest"].append(params)
             #
             # # valid locs rule
             # params = ParamsObj()

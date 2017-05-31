@@ -80,6 +80,7 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'po
 cellParams = Dict()
 cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+cellRule['secs']['soma']['ions']['na'] = {'e': 0.12, 'i': 37, 'o': 180}
 cellParams.conds = {'cellType': 'PYR'}
 netParams.cellParams['PYR'] = cellParams
 
@@ -93,19 +94,19 @@ netParams.cellParams['PYR'] = cellParams
 #     'delay': 'uniform(1,5)',
 #     'synsPerConn': 1}          
 
-netParams.connParams['PYR1->PYR2_1'] = {
-    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
-    'probability': 0.1,
-    'weight': 0.2,                     
-    'delay': 'uniform(1,5)',
-    'synsPerConn': 1}     
+# netParams.connParams['PYR1->PYR2_1'] = {
+#     'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
+#     'probability': 0.1,
+#     'weight': 0.2,                     
+#     'delay': 'uniform(1,5)',
+#     'synsPerConn': 1}     
 
-netParams.connParams['PYR1->PYR2_2'] = {
-    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
-    'probability': 0.1,
-    'weight': 0.4,                     
-    'delay': 'uniform(1,5)',
-    'synsPerConn': 1} 
+# netParams.connParams['PYR1->PYR2_2'] = {
+#     'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
+#     'probability': 0.1,
+#     'weight': 0.4,                     
+#     'delay': 'uniform(1,5)',
+#     'synsPerConn': 1} 
 
 # netParams.addConnParams('artif1->PYR2',
 #     {'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR2'}, 

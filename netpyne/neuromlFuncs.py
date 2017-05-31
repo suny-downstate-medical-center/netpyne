@@ -885,8 +885,8 @@ if neuromlExists:
                     
                     group = 'all' if not specie.segment_groups else specie.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        cellRule['secs'][section_name]['ions'][specie.ion]['init_ext_conc'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
-                        cellRule['secs'][section_name]['ions'][specie.ion]['init_int_conc'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                        cellRule['secs'][section_name]['ions'][specie.ion]['o'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
+                        cellRule['secs'][section_name]['ions'][specie.ion]['i'] = pynml.convert_to_units(specie.initial_concentration,'mM')
                         
                         cellRule['secs'][section_name]['mechs'][specie.concentration_model] = {}
                         

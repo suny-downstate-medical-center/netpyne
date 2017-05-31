@@ -18,6 +18,8 @@
 
 - Added recording of h.t to simData
 
+- Replaced ions 'init_ext_conc' and 'init_int_conc' with 'o' and 'i' (issue #151)
+
 - Replaced 'globs' with 'globals'
 
 - Fixed bug when setting wrong num of weights or locs for synsPerConn>1

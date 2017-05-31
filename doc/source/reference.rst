@@ -193,7 +193,7 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 
 	* **ions**: Dictionary of ions.
-		The key contains the name of the ion (e.g. ``na`` or ``na``)
+		The key contains the name of the ion (e.g. ``na`` or ``k``)
 		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 

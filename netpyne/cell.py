@@ -418,10 +418,10 @@ class CompartCell (Cell):
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
                                 seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
-                            elif ionParamName == 'init_ext_conc':
+                            elif ionParamName == 'o':
                                 seg.__setattr__('%so'%ionName,ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
-                            elif ionParamName == 'init_int_conc':
+                            elif ionParamName == 'i':
                                 seg.__setattr__('%si'%ionName,ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 

@@ -1006,7 +1006,7 @@ class CompartCell (Cell):
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
                     if params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
-                        rand.Random123(params['stim_count'], sim.id32('%d'%(sim.cfg.seeds['stim'])))
+                        rand.Random123(sim.id32('stim_exotic'), params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
                         self.stims.append(Dict())  # add new stim to Cell object
@@ -1266,7 +1266,7 @@ class PointCell (Cell):
                 else:
                     # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                     rand = h.Random()
-                    rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+                    rand.Random123(sim.id32('vecstim_spkt'), self.gid, self.params['seed'])
 
                     # Method 1: vec length depends on duration -- not reproducible
                     # vec = h.Vector(numSpks)
@@ -1348,7 +1348,7 @@ class PointCell (Cell):
                         else:
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
-                            rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+                            rand.Random123(sim.id32('vecstim_pulse'), self.gid, self.params['seed'])
                             
                             # Method 1: vec length depends on duration -- not reproducible
                             # vec = h.Vector(len(fixedInterval))

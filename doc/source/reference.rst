@@ -457,7 +457,7 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 * Python random number generation functions: 'random', 'randint', 'sample', 'uniform', 'triangular', 'gauss', 'betavariate', 'expovariate', 'gammavariate' (see https://docs.python.org/2/library/math.html for details)
 
 * Cell location variables:
-	* 'pre_x', 'pre_y', 'pre_z': post-synaptic cell x, y or z location.
+	* 'pre_x', 'pre_y', 'pre_z': pre-synaptic cell x, y or z location.
 
 	* 'pre_ynorm', 'pre_ynorm', 'pre_znorm': normalized pre-synaptic cell x, y or z location.
 	

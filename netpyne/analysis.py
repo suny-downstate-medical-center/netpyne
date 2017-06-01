@@ -829,7 +829,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
-                    plt.title(trace)
+                    plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 

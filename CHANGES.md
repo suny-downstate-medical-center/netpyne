@@ -22,6 +22,10 @@
 
 - Replaced 'globs' with 'globals'
 
+- Fixed bug in import of ion concentrations
+
+- Fixed bug in title of plotTraces()
+
 - Fixed bug when setting wrong num of weights or locs for synsPerConn>1
 
 - Fixed bug: subConn rules now update weight if different weightNorm 

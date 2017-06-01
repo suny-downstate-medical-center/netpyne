@@ -60,7 +60,8 @@ TEST_TYPE_VALID_MECHS = "Valid mechs"
 TEST_TYPE_VALID_IONS = "Valid ions"
 TEST_TYPE_VALID_POINTPS = "Valid pointps"
 
-TEST_TYPE_VALID_SYNC_MECHS = "Valid sync mechanisms"
+TEST_TYPE_VALID_SYN_MECHS = "Valid synaptic mechanisms"
+TEST_TYPE_ARRAY_IN_RANGE = "Array elements in range"
 
 testFunctionsMap = {}
 
@@ -90,7 +91,8 @@ testFunctionsMap [TEST_TYPE_VALID_TOPOLOGIES] = "testValidTopologies"
 testFunctionsMap [TEST_TYPE_VALID_MECHS] = "testTypeValidMechs"
 testFunctionsMap [TEST_TYPE_VALID_IONS] = "testTypeValidIons"
 testFunctionsMap [TEST_TYPE_VALID_POINTPS] = "testTypeValidPointps"
-testFunctionsMap [TEST_TYPE_VALID_SYNC_MECHS] = "testTypeValidSyncMechs"
+testFunctionsMap [TEST_TYPE_VALID_SYN_MECHS] = "testTypeValidSynMechs"
+testFunctionsMap [TEST_TYPE_ARRAY_IN_RANGE] = "testArrayInRange"
 
 class TestTypeObj(object):
 
@@ -142,18 +144,6 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
-    # def testValidGeometries(self, paramValues,paramKey, dictKey):
-    #     try:
-    #         validParameters = True
-    #         for key, valueDict in paramValues[paramKey].items():
-    #             if dictKey not in valueDict:
-    #                 existsInDict = False
-    #                 break
-    #         assert existsInDict is True, " Value " + str(paramKey) + "exists in dictionary " + str(paramValues) + "."
-    #     except AssertionError as e:
-    #         e.args += (val,)
-    #         raise
-    #
     def testIsValidRange(self, val,params): # TEST_TYPE_IS_VALID_RANGE
         try:
             if val in params:
@@ -344,12 +334,14 @@ class TestTypeObj(object):
             raise
 
     def testValidMechs(self,paramValues): # TEST_TYPE_VALID_MECHS
+        errorMessage = ''
+        mechsValid = True
+        mechsWarning = False
         try:
             mechsValid = True
             mechs = utils.mechVarList()["mechs"]
             #print ( " paramValues = " + str(paramValues) )
             #print ( " mechs = " + str(mechs) )
-
             if 'secs' in paramValues:
                 for key, value in paramValues['secs'].items():
                     #print ( " key = " + str(key) )
@@ -359,34 +351,39 @@ class TestTypeObj(object):
                             #print ( " key1 = " + str(key1) )
                             #print ( " values1 = " + str(values1) )
                             if key1 == "mechs":
+                                errorMessage = str(paramValues['secs'][key][key1])
                                 for key2, values2 in paramValues['secs'][key][key1].items():
-                                    if key2 not in ["k_ion", "na_ion", "pas", "hh", "fastpas"]:
-                                        continue
+                                    # if key2 not in ["k_ion", "na_ion", "pas", "hh", "fastpas"]:
+                                    #     continue
                                     keys_suffixed = []
-                                    if key2 == "k_ion" or key2 == "na_ion":
+                                    if key2.find("_ion") != -1:
                                         ionName = key2.split('_ion')[0]
                                         mechs[key2] = [x.replace(ionName, "") for x in mechs[key2] ]
                                         keys_suffixed = [x for x in values2.keys()]
                                         if not any([x in mechs[key2] for x in values2.keys() ]):
                                             # print ( " !!!!!!!! setting invalid 1 " + str(mechs[key2]) + " :: " + str(values2.keys()))
+                                            mechsWarning = True
+                                        elif not all([x in values2.keys() for x in mechs[key2] ]):
+                                            #print ( " !!!!!!!! setting invalid 2 ")
                                             mechsValid = False
-                                        # elif not all([x in keys_suffixed for x in mechs[key2] ]):
-                                        #     print ( " !!!!!!!! setting invalid 2 ")
-                                        #     mechsValid = False
                                     else:
                                         keys_suffixed = [x + "_" + key2 for x in values2.keys()]
                                         if not any([x + "_" + str(key2) in mechs[key2] for x in values2.keys() ]):
                                             # print ( " !!!!!!!! setting invalid 1 "  + str(mechs[key2]) + " :: " + str(values2.keys()))
                                             mechsValid = False
                                         elif not all([x in keys_suffixed for x in mechs[key2] ]):
-                                            print ( " !!!!!!!! setting invalid 2 ")
+                                            #print ( " !!!!!!!! setting invalid 2 ")
                                             mechsValid = False
 
-            assert mechsValid is True, " Must be a valid mech as specified in utils.mechVarList."
+            #assert mechsValid is True, " Must be a valid mech as specified in utils.mechVarList."
+            # return errorMessage
 
-        except AssertionError as e:
-            e.args += ()
-            raise
+        except:
+            #e.args += (errorMessage)
+            #raise
+            pass
+
+        return errorMessage, mechsValid, mechsWarning
 
     def testValidPointps(self,paramValues): # TEST_TYPE_VALID_POINTPS
         try:
@@ -414,9 +411,112 @@ class TestTypeObj(object):
             e.args += ()
             raise
 
-    def testValidSyncMechs(self,paramValues): # TEST_TYPE_VALID_SYNC_MECHS
+    def testArrayInRange(self, val,range, params): # TEST_TYPE_IN_RANGE
+        try:
+            if val in params:
+            #     print ( "************* BEFORE !!!!!!!")
+                if isinstance (params[val], list):
+                    flattenedList = numpy.ravel(params[val])
+                    #print (" flag list " + str(flattenedList))
+                    for x in flattenedList:
+                        assert (x >= range[0] and x <= range[1])
+                elif isinstance (params[val], float):
+                    assert (params[val] >= range[0] and params[val] <= range[1])
+        except AssertionError as e:
+            # print ( "************* IN ERROR !!!!!!!")
+            e.args += (e,)
+            raise
 
-        print ( " synch mechs "  + str(paramValues))
+    def checkSyncMechs(self,paramValue, values, dimValues, dimSynMechs, synsPerConn): # check syncMechs
+
+        #print ( " paramValue = " + str(paramValue) + " values = " + str(values) + " dimValues = " + str(dimValues) + " dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
+
+        errorMessage = ''
+        synMechsValid = True
+
+        try:
+
+            if dimSynMechs == 1:
+                # print ( " in check 1 synsPerConn 333 " + str(dimLocs) + " :: " + str(synsPerConn))
+                if synsPerConn != 1:
+                    # print ( " in check 1 synsPerConn 444 " + str(dimLocs) + " :: " + str(synsPerConn))
+                    if dimValues not in [0,1]:
+                        errorMessage = str(paramValue) + " can only be a number or 1d list if only one 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimValues == 1 and len(values) != synsPerConn:
+                        errorMessage = "Dimension of " + str(paramValue) + " locs array must be same as synsPerConn."
+                        synMechsValid = False
+
+                else: # only 1 synsPerConn
+                    if dimValues !=0:
+                        errorMessage = str(paramValue) + " can only be a number if 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+            else: # more than 1 synMech
+                if synsPerConn != 1:
+                    # print ( " in check 1 synsPerConn 333 dimlocs = " + str(dimLocs) + " synsPerConn = " + str(synsPerConn) + " dimSynMechs = " + str(dimSynMechs))
+                    if dimValues not in [0,1,2]:
+                        errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimValues == 1 and len(values) != dimSynMechs:
+                        # print ( " in check 1 synsPerConn 555 ")
+                        errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                        synMechsValid = False
+                    elif dimValues == 2:
+                        if numpy.array(locs).shape[1] != synsPerConn:
+                            # print ( " in check 1 synsPerConn 666 " )
+                            errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                            synMechsValid = False
+                        elif numpy.array(values).shape[0] != dimSynMechs:
+                            errorMessage = "Invalid " + str(paramValue) + " for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
+                            synMechsValid = False
+                else: # only 1 synsPerConn
+                    # print ( " in check 1 synsPerConn ")
+                    if dimValues not in [0,1]:
+                        errorMessage = str(paramValue) + " can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+                    elif dimValues == 1 and len(values) != dimSynMechs:
+                        # print ( " in check 1 synsPerConn " + str(len(locs)))
+                        errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
+                        synMechsValid = False
+        except Exception as e:
+            return errorMessage, synMechsValid
+
+        return errorMessage, synMechsValid
+
+    def checkValidSyncMechs(self, synMechs, netParams):
+
+        errorMessage = ''
+
+        synMechsValid = True
+
+        #print ( " syn mech params = " + str(netParams.synMechParams))
+        try:
+            if isinstance(synMechs, list):
+                for synMech in synMechs:
+                    assert synMech in netParams.synMechParams, "Synaptic mechanism not valid."
+            else:
+                assert synMechs in netParams.synMechParams, "Synaptic mechanism not valid."
+
+        except AssertionError as e:
+
+            synMechParamsString = ''
+
+            if netParams.synMechParams and isinstance ( netParams.synMechParams, dict):
+                synMechParamsString = ",".join(netParams.synMechParams.keys())
+
+            errorMessage = "Synaptic mechanism specified " + str(synMechs) + " in connectivity params not valid, needs to be present in netParams (" + synMechParamsString + ")."
+            synMechsValid = False
+
+        return errorMessage, synMechsValid
+
+    def testValidSynMechs(self,parameterName, paramValues, netParams): # TEST_TYPE_VALID_SYN_MECHS
+
+        # If omitted, defaults to netParams.defaultWeight = 1.
+        # If have list of synMechs, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: [0.1, 0.01]).
+        # If have synsPerConn > 1, can have single weight for all, or list of weights (one per synapse, e.g. if synsPerConn = 3: [0.2, 0.3, 0.4])
+        # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]])
+
+        #print ( " parameterName "  + str(parameterName))
 
         errorMessage = ''
 
@@ -427,14 +527,12 @@ class TestTypeObj(object):
             synMechs = ''
 
             dimSynMechs = 1
-            dimLocs = 1
-            dimWeights = 1
-            dimDelays = 1
-            locs = []
+            values = []
+            dimValues = 1
 
             if 'synMech' in paramValues:
                 synMechs = paramValues['synMech']
-                print (" *** synmechs " + str(synMechs))
+                # print (" *** synmechs " + str(synMechs))
                 if isinstance(synMechs, list):
                     dimSynMechs = len(synMechs)
                 else:
@@ -443,68 +541,24 @@ class TestTypeObj(object):
             if 'synsPerConn' in paramValues:
                 synsPerConn = paramValues ['synsPerConn']
 
-            if 'loc' in paramValues:
-                locs = paramValues ['loc']
-                dimLocs = numpy.array(locs).ndim
+            if parameterName in paramValues:
+                values = paramValues [parameterName]
+                dimValues = numpy.array(values).ndim
 
-            if 'weight' in paramValues:
-                weights = paramValues ['weight']
-                dimWeights = numpy.array(weights).ndim
+            # print ( " in check 1 synsPerConn 222 dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
+            errorMessage, synMechsValid = self.checkValidSyncMechs(synMechs, netParams)
 
-            if 'delay' in paramValues:
-                delays = paramValues ['delay']
-                dimDelays = numpy.array(delays).ndim
-
-            # If omitted, defaults to netParams.defaultWeight = 1.
-            # If have list of synMechs, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: [0.1, 0.01]).
-            # If have synsPerConn > 1, can have single weight for all, or list of weights (one per synapse, e.g. if synsPerConn = 3: [0.2, 0.3, 0.4])
-            # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]])
-
-            print ( " in check 1 synsPerConn 222 dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
-
-            if dimSynMechs == 1:
-                print ( " in check 1 synsPerConn 333 " + str(dimLocs) + " :: " + str(synsPerConn))
-                if synsPerConn != 1:
-                    print ( " in check 1 synsPerConn 444 " + str(dimLocs) + " :: " + str(synsPerConn))
-                    if dimLocs not in [0,1]:
-                        errorMessage = "Locs can only be a number or 1d list if only one 1 synMech and synsPerConn > 1."
-                        synMechsValid = False
-                    elif dimLocs == 1 and len(locs) != synsPerConn:
-                        errorMessage = "Dimension of locs array must be same as synsPerConn."
-                        synMechsValid = False
-                else: # only 1 synsPerConn
-                    if dimLocs !=0:
-                        errorMessage = "Locs can only be a number if 1 synMech and synsPerConn = 1."
-                        synMechsValid = False
-            else: # more than 1 synMech
-                if synsPerConn != 1:
-                    print ( " in check 1 synsPerConn 333 dimlocs = " + str(dimLocs) + " synsPerConn = " + str(synsPerConn) + " dimSynMechs = " + str(dimSynMechs))
-                    if dimLocs not in [0,1,2]:
-                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
-                        synMechsValid = False
-                    elif dimLocs == 1 and len(locs) != dimSynMechs:
-                        print ( " in check 1 synsPerConn 555 ")
-                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
-                        synMechsValid = False
-                    elif dimLocs == 2:
-                        if numpy.array(locs).shape[1] != synsPerConn:
-                            print ( " in check 1 synsPerConn 666 " ) 
-                            errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
-                            synMechsValid = False
-                        elif numpy.array(locs).shape[0] != dimSynMechs:
-                            errorMessage = "Invalid locs for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
-                            synMechsValid = False
-                else: # only 1 synsPerConn
-                    print ( " in check 1 synsPerConn ")
-                    if dimLocs not in [0,1]:
-                        errorMessage = "Locs can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
-                        synMechsValid = False
-                    elif dimLocs == 1 and len(locs) != dimSynMechs:
-                        print ( " in check 1 synsPerConn " + str(len(locs)))
-                        errorMessage = "Locs can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
-                        synMechsValid = False
+            errorMessage += "Supplied values are: " + str(parameterName) + " = " + str(values) + " synMech = " + str(synMechs) + " synPerConn = " + str(synsPerConn) + "."
 
             assert synMechsValid is True, " Must be a valid syncMechs."
+
+            # print ( " in check 1 synsPerConn 222 dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
+            errorMessage, synMechsValid = self.checkSyncMechs(parameterName, values, dimValues, dimSynMechs, synsPerConn)
+
+            errorMessage += "Supplied values are: " + str(parameterName) + " = " + str(values) + " synMech = " + str(synMechs) + " synPerConn = " + str(synsPerConn) + "."
+
+            assert synMechsValid is True, " Must be a valid syncMechs."
+            # return errorMessage
 
         except AssertionError as e:
             e.args += (errorMessage, )
@@ -569,9 +623,9 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         # self.loadPopTests() # load pop tests
         # self.loadNetTests() # load net tests
-        #self.loadCellTests() # load cell tests
+        self.loadCellTests() # load cell tests
         #print (str (self.testParamsMap))
-        self.loadConnTests() # load conn tests
+        #self.loadConnTests() # load conn tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -581,8 +635,8 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         # self.runPopTests() # run pop tests
         # self.runNetTests() # run net tests
-        #self.runCellTests() # run cell tests
-        self.runConnTests() # run conn tests
+        self.runCellTests() # run cell tests
+        #self.runConnTests() # run conn tests
 
         # if self.verboseFlag:
         #     print (" *** Finished running tests *** ")
@@ -915,18 +969,30 @@ class NetPyneTestObj(object):
         #
         # self.testParamsMap["conn"]["connsSecsTest"] = testObj
         #
-        # locs test
+
+        # #locs test
+        # testObj = TestObj()
+        # testObj.testName = "connLocsRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "loc"
+        # testObj.testTypes = [TEST_TYPE_ARRAY_IN_RANGE]
+        # testObj.testValueRange = "[0,1]"
+        # testObj.messageText = ["Loc is not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["conn"]["locsRangeTest"] = testObj
+
+        # locs synMechs test
         testObj = TestObj()
-        testObj.testName = "locsTest"
+        testObj.testName = "connLocsSynMechTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "locs"
-        testObj.testTypes = [TEST_TYPE_VALID_SYNC_MECHS]
-        testObj.testTypeSpecialString = "connsLocTest"
-        testObj.messageText = ["Locs is invalid."]
+        testObj.testParameterValue = "loc"
+        testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        testObj.messageText = ["Syn Mechs are invalid."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
 
         self.testParamsMap["conn"]["locsTest"] = testObj
-        #
+
         # # weight test
         # testObj = TestObj()
         # testObj.testName = "weightsTest"
@@ -1292,6 +1358,28 @@ class NetPyneTestObj(object):
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
                             print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
 
+            elif testType == TEST_TYPE_ARRAY_IN_RANGE:
+
+                    if isinstance(params, dict):
+
+                        for paramLabel, paramValues in params.items():
+
+                            try:
+                                testParamValue = self.testTypeObj.testArrayInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+                                    print ( "PASSED" )
+
+                            except Exception as e:
+
+                                #traceback.print_exc(file=sys.stdout)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
+                                paramValue = ''
+                                if testObj.testParameterValue in paramValues:
+                                    paramValue = paramValues[testObj.testParameterValue]
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex] + " Value = " + str(paramValue))
+
             elif testType == TEST_TYPE_IS_VALID_RANGE:
 
                 if isinstance(params, dict):
@@ -1461,19 +1549,45 @@ class NetPyneTestObj(object):
 
             elif testType == TEST_TYPE_VALID_MECHS:
 
+                errorMessage = ''
+                mechsValid = True
+                mechsWarning = False
+
+                mechVarListString = ''
+
+                if 'mechs' in utils.mechVarList():
+                    mechVarListString = str(utils.mechVarList()['mechs'])
+
                 if isinstance(params, dict):
+
                     for paramLabel, paramValues in params.items():
                         try:
-                            self.testTypeObj.testValidMechs(paramValues)
-                            if self.verboseFlag:
-                                print ( "Test: for valid mechanisms in cell")
-                                print ( "PASSED" )
+                            errorMessage, mechsValid, mechsWarning = self.testTypeObj.testValidMechs(paramValues)
+
+                            if mechsValid:
+                                if not mechsWarning:
+                                    if self.verboseFlag:
+
+                                        print ( "Test: for valid mechanisms in cell")
+                                        print ( "PASSED" )
+                                else:
+
+                                        print ( "Test: for valid mechanisms in cell")
+                                        print ( MESSAGE_TYPE_WARNING + ":  The ion parameters specified (" + errorMessage + ") are incomplete. The full set of parameters are as : " + str(mechVarListString))
+
+                            else:
+
+                                if self.verboseFlag:
+                                    print ( "Test: for valid mechanisms in cell")
+
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified (" + errorMessage + ") is invalid. Please check against allowed values:. " + str(mechVarListString))
 
                         except Exception as e:
                             # traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid mechanisms in cell")
-                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist." + str(paramValues))
+
+                            print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified (" + errorMessage + ") is invalid. Please check against allowed values:. " + str(mechVarListString))
 
             elif testType == TEST_TYPE_VALID_POINTPS:
 
@@ -1492,19 +1606,19 @@ class NetPyneTestObj(object):
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + " : Mechanism specified is invalid. Please check against utils.mechVarlist.")
 
-            elif testType == TEST_TYPE_VALID_SYNC_MECHS:
+            elif testType == TEST_TYPE_VALID_SYN_MECHS:
 
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
                         try:
-                            self.testTypeObj.testValidSyncMechs(paramValues)
+                            self.testTypeObj.testValidSynMechs(testObj.testParameterValue, paramValues, self.netParams)
                             if self.verboseFlag:
                                 print ( "Test: for valid parameters in conn params.")
                                 print ( "PASSED" )
 
                         except Exception as e:
-                            traceback.print_exc(file=sys.stdout)
+                            #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid parameters in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ". Parameters supplied were: " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")

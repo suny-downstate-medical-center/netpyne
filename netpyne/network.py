@@ -8,7 +8,6 @@ Contributors: salvadordura@gmail.com
 """
 
 from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil, copy
-from random import seed, random, randint, sample, uniform, triangular, gauss, betavariate, expovariate, gammavariate
 from time import time, sleep
 from numbers import Number
 from copy import copy

@@ -1209,8 +1209,9 @@ class PointCell (Cell):
 
         # if rate is list with 2 items generate random value from uniform distribution
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+self.gid)))  # initialize randomizer 
-            self.params['rate'] = uniform(self.params['rate'][0], self.params['rate'][1])
+            rand = h.Random()
+            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['conn']) # initialize randomizer 
+            self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
  
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.iteritems()}

@@ -12,7 +12,6 @@ from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import numpy as np
-from random import seed, uniform
 import sim
 
 

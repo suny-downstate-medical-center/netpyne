@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, rand, dstack, unravel_index, argsort, zeros, ceil, copy
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
 from time import time, sleep
 from numbers import Number
 from copy import copy
@@ -30,6 +30,10 @@ class Network (object):
         # params that can be expressed using string-based functions in stims
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
+
+        # list of h.Random() methods allowed in string-based functions (both for conns and stims)
+        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 
+        'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
@@ -188,8 +192,8 @@ class Network (object):
             params[paramStrFunc+'Func'] = lambdaFunc
             params[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
  
-            # initialize randomizer in case used in function
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellsTags.keys()[0])))
+            # initialize randomizer in case used in string function
+            seed(int('%d%d'%(sim.cfg.seeds['stim'], sum(postCellsTags.keys()))))
 
             # replace lambda function (with args as dict of lambda funcs) with list of values
             strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].iteritems()})  
@@ -552,21 +556,11 @@ class Network (object):
         for condKey,condValue in preConds.iteritems():  # Find subset of cells that match presyn criteria
             if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                 preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
-                #prePops = {}
             else:
                 if isinstance(condValue, list): 
                     preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
-                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) in condValue)}
                 else:
                     preCellsTags = {gid: tags for (gid,tags) in preCellsTags.iteritems() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
-                    #prePops = {i: tags for (i,tags) in prePops.iteritems() if (condKey in tags) and (tags.get(condKey, None) == condValue)}
-
-        # if not preCellsTags: # if no presyn cells, check if netstim
-        #     if any (prePopTags['cellModel'] == 'NetStim' for prePopTags in prePops.values()):
-        #         for prePop in prePops.values():
-        #             if not 'start' in prePop: prePop['start'] = 1  # add default start time
-        #             if not 'number' in prePop: prePop['number'] = 1e9  # add default number 
-        #         preCellsTags = prePops
 
         if preCellsTags:  # only check post if there are pre
             postCellsTags = allCellTags
@@ -629,12 +623,20 @@ class Network (object):
         # for each parameter containing a function, calculate lambda function and arguments
         for paramStrFunc in paramsStrFunc:
             strFunc = connParam[paramStrFunc]  # string containing function
+            randRequired = False
+            for rmeth in self.stringFuncRandMethods:
+                if rmeth in strFunc:
+                    strFunc = strFunc.replace(rmeth, 'rand.'+rmeth) # append rand. to h.Random() methods
+                    randRequired = True
             strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
        
-            # initialize randomizer in case used in function
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn'])))
+            # initialize randomizer in case used in string-based function
+            #seed(int('%d%d%d'%(sim.cfg.seeds['conn'], sum(postCellsTags.keys()), sum(postCellsTags.keys()))))
+            if randRequired:
+                rand = h.Random()
+                rand.Random123(sim.id32(paramStrFunc), sim.id32('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags)), sim.cfg.seeds['conn']))
 
             if paramStrFunc in ['probability']:
                 # replace function with dict of values derived from function (one per pre+post cell)

@@ -452,9 +452,9 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 
 * All Python mathematical operators: '+', '-', '*', '/', '%', '**' (exponent), etc.
 
-* Python mathematical functions: 'sin', 'cos', 'tan', 'exp', 'sqrt', 'mean', 'inf'
+* Python mathematical functions: 'sin', 'cos', 'tan', 'exp', 'sqrt', 'mean', 'inf' (see https://docs.python.org/2/library/math.html for details)
 
-* Python random number generation functions: 'random', 'randint', 'sample', 'uniform', 'triangular', 'gauss', 'betavariate', 'expovariate', 'gammavariate' (see https://docs.python.org/2/library/math.html for details)
+* NEURON h.Random() methods: 'binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull' (see https://www.neuron.yale.edu/neuron/static/py_doc/programming/math/random.html)
 
 * Cell location variables:
 	* 'pre_x', 'pre_y', 'pre_z': pre-synaptic cell x, y or z location.

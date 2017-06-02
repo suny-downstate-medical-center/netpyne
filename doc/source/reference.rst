@@ -351,6 +351,10 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``)
 
+* **threshold** (optional) - Threshold (in mV) to detect spike in source.
+
+	If omitted, defaults to ``netParams.defaultDelay = 1``
+
 * **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
 
 	Can be defined as a function (see :ref:`function_string`).

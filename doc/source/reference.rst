@@ -353,7 +353,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 * **threshold** (optional) - Threshold (in mV) to detect spike in source.
 
-	If omitted, defaults to ``netParams.defaultDelay = 1``
+	If omitted, defaults to ``netParams.defaultThreshold = 0``
 
 * **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
 

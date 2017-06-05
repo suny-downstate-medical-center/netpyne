@@ -122,7 +122,7 @@ class Network (object):
 
                 # initialize randomizer in case used in string-based function (see issue #89 for more details)
                 rand = h.Random()
-                rand.Random123(sim.id32(source['type']), sim.id32('%d%d'%( len(postCellsTags), sum(postCellsTags)), sim.cfg.seeds['stim']))
+                rand.Random123(sim.id32('stim_'+source['type']), sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags)), sim.cfg.seeds['stim']))
 
                 # calculate params if string-based funcs
                 strParams = self._stimStrToFunc(postCellsTags, source, target, rand)
@@ -480,7 +480,7 @@ class Network (object):
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
             rand = h.Random()
-            rand.Random123(sim.id32(connParam['connFunc']), 
+            rand.Random123(sim.id32('conn_'+connParam['connFunc']), 
                            sim.id32('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags)), 
                            sim.cfg.seeds['conn']))
 

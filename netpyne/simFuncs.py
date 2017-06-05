@@ -823,7 +823,7 @@ def preRun ():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
+            cell.hRandom.Random123(sim.id32('cell_netstim'), cell.gid, cell.params['seed'])
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
         pop = sim.net.pops[cell.tags['pop']]
@@ -832,7 +832,7 @@ def preRun ():
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
+                stim['hRandom'].Random123(sim.id32('stim_netstim'), cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
                 stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 

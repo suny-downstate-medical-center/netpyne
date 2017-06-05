@@ -178,6 +178,7 @@ class Network (object):
         dictVars['post_xnorm']  = lambda postConds: postConds['xnorm'] 
         dictVars['post_ynorm']  = lambda postConds: postConds['ynorm'] 
         dictVars['post_znorm']  = lambda postConds: postConds['znorm'] 
+        dictVars['rand']        = lambda unused1: self.rand
          
         # add netParams variables
         for k,v in self.params.__dict__.iteritems():
@@ -625,12 +626,6 @@ class Network (object):
             strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
-
-            print lambdaStr
-            print lambdaFunc
-            print self.rand
-            print {strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellsTags.values()[0]) for strVar in strVars}
-
        
             if paramStrFunc in ['probability']:
                 # replace function with dict of values derived from function (one per pre+post cell)

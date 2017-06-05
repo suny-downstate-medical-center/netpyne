@@ -372,7 +372,7 @@ prob = lambda(*d): d[3]*0.5
 prob = 'pre_ynorm*0.5'
 prob = 'post_xyznorm*0.5
 prob = 'uniform()'
-prob = 'gauss(10,5)'
+prob = 'normal(10,5)'
 prob = 'uniform(1,5)'
 - functions allow all of python random functions 
 - internal implementation:

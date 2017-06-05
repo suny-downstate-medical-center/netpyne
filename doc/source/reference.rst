@@ -499,7 +499,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	.. code-block:: python
 
 		netParams.connParams[...] = {
-			'delay': '0.2 + gauss(13.0,1.4)',
+			'delay': '0.2 + normal(13.0,1.4)',
 		# ...
 
 * Same as above but using variables defined in the ``netParams`` dict:
@@ -513,7 +513,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 		netParams.connParams[...] = {
-			'delay': 'delayMin + gauss(delayMean, delayVar)',
+			'delay': 'delayMin + normal(delayMean, delayVar)',
 		# ...
 
 * Connection delay set to minimum ``defaultDelay`` value plus 3D distance-dependent delay based on propagation velocity (``propVelocity``):
@@ -620,7 +620,7 @@ The code below shows an example of how to create different types of stimulation 
 		'source': 'Input_4', 
 		'sec':'soma', 
 		'loc': 0.5, 
-	    'weight': '0.1+gauss(0.2,0.05)',
+	    'weight': '0.1+normal(0.2,0.05)',
 	    'delay': 1,
 		'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
 

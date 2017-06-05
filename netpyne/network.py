@@ -15,7 +15,6 @@ from specs import ODict
 from neuron import h  # import NEURON
 import sim
 
-
 class Network (object):
 
     ###############################################################################
@@ -34,6 +33,8 @@ class Network (object):
         # list of h.Random() methods allowed in string-based functions (both for conns and stims)
         self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 
         'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
+
+        self.rand = h.Random()  # random number generator
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
@@ -121,11 +122,10 @@ class Network (object):
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.iteritems() if gid in gidList}
 
                 # initialize randomizer in case used in string-based function (see issue #89 for more details)
-                rand = h.Random()
-                rand.Random123(sim.id32('stim_'+source['type']), sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), sim.cfg.seeds['stim'])
+                self.rand.Random123(sim.id32('stim_'+source['type']), sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), sim.cfg.seeds['stim'])
 
                 # calculate params if string-based funcs
-                strParams = self._stimStrToFunc(postCellsTags, source, target, rand)
+                strParams = self._stimStrToFunc(postCellsTags, source, target)
 
                 # loop over postCells and add stim target
                 for postCellGid in postCellsTags:  # for each postsyn cell
@@ -162,7 +162,7 @@ class Network (object):
     ###############################################################################
     # Convert stim param string to function
     ###############################################################################
-    def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams, rand):
+    def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
         # list of params that have a function passed in as a string
         #params = sourceParams+targetParams
         params = sourceParams.copy()
@@ -479,15 +479,14 @@ class Network (object):
             connFunc = getattr(self, connParam['connFunc'])  # get function name from params
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            rand = h.Random()
-            rand.Random123(sim.id32('conn_'+connParam['connFunc']), 
+            self.rand.Random123(sim.id32('conn_'+connParam['connFunc']), 
                            sim.id32('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags))), 
                            sim.cfg.seeds['conn'])
 
             # process string-based funcs and call conn function
             if preCellsTags and postCellsTags:
-                self._connStrToFunc(preCellsTags, postCellsTags, connParam, rand)  # convert strings to functions (for the delay, and probability params)
-                connFunc(preCellsTags, postCellsTags, connParam, rand)  # call specific conn function
+                self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
+                connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
         for preGapParams in getattr(sim.net, 'preGapJunctions', []):
@@ -578,7 +577,7 @@ class Network (object):
     ###############################################################################
     # Convert connection param string to function
     ###############################################################################
-    def _connStrToFunc (self, preCellsTags, postCellsTags, connParam, rand):
+    def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
         paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
 
@@ -612,6 +611,7 @@ class Network (object):
                                 sqrt(preConds['znorm'] - postConds['znorm']))
         dictVars['dist_norm2D'] = lambda preConds,postConds: sqrt((preConds['xnorm'] - postConds['xnorm'])**2 +
                                 sqrt(preConds['znorm'] - postConds['znorm']))
+        dictVars['rand'] = lambda unused1,unused2: self.rand
         
         # add netParams variables
         for k,v in self.params.__dict__.iteritems():
@@ -625,6 +625,12 @@ class Network (object):
             strVars = [var for var in dictVars.keys() if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
             lambdaFunc = eval(lambdaStr)
+
+            print lambdaStr
+            print lambdaFunc
+            print self.rand
+            print {strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellsTags.values()[0]) for strVar in strVars}
+
        
             if paramStrFunc in ['probability']:
                 # replace function with dict of values derived from function (one per pre+post cell)
@@ -634,6 +640,7 @@ class Network (object):
 
             elif paramStrFunc in ['convergence']:
                 # replace function with dict of values derived from function (one per post cell)
+
                 connParam[paramStrFunc+'Func'] = {postGid: lambdaFunc(
                     **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellTags) for strVar in strVars}) 
                     for postGid,postCellTags in postCellsTags.iteritems()}
@@ -653,7 +660,7 @@ class Network (object):
     ###############################################################################
     ### Full connectivity
     ###############################################################################
-    def fullConn (self, preCellsTags, postCellsTags, connParam, rand):
+    def fullConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells '''
         if sim.cfg.verbose: print 'Generating set of all-to-all connections (rule: %s) ...' % (connParam['label'])
 
@@ -674,11 +681,11 @@ class Network (object):
     ###############################################################################
     ### Probabilistic connectivity 
     ###############################################################################
-    def probConn (self, preCellsTags, postCellsTags, connParam, rand):
+    def probConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
 
-        allRands = {(preGid,postGid): rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
+        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
 
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
@@ -699,7 +706,7 @@ class Network (object):
     ###############################################################################
     ### Convergent connectivity 
     ###############################################################################
-    def convConn (self, preCellsTags, postCellsTags, connParam, rand):
+    def convConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of convergent connections (rule: %s) ...' % (connParam['label'])
                
@@ -710,9 +717,9 @@ class Network (object):
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
-                rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
-                randSample = list(set([rand.uniform(0,len(preCellsTags)-1) for i in range(2*convergence)])) # generate twice and find unique list (to avoid duplicates)
-                preCellsSample = [preCellsTags.keys()[i] for i in randSample[0:len(preCellsTags)]]  # selected gids of presyn cells
+                self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
+                randSample = list(set([self.rand.uniform(0,len(preCellsTags)-1) for i in range(2*convergence)])) # generate twice and find unique list (to avoid duplicates)
+                preCellsSample = [preCellsTags.keys()[int(i)] for i in randSample[0:len(preCellsTags)]]  # selected gids of presyn cells
                 preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
              
@@ -721,13 +728,13 @@ class Network (object):
         
                     #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
-                        self._addCellConn(connParam, preCellGid, postCellGid, rand) # add connection
+                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
     ### Divergent connectivity 
     ###############################################################################
-    def divConn (self, preCellsTags, postCellsTags, connParam, rand):
+    def divConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of divergent connections (rule: %s) ...' % (connParam['label'])
          
@@ -737,9 +744,9 @@ class Network (object):
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
-            rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
-            randSample = list(set([rand.uniform(0,len(postCellsTags)-1) for i in range(2*divergence)])) # generate twice and find unique list (to avoid duplicates)
-            postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:len(postCellsTags)]]  # selected gids of postsyn cells
+            self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
+            randSample = list(set([self.rand.uniform(0,len(postCellsTags)-1) for i in range(2*divergence)])) # generate twice and find unique list (to avoid duplicates)
+            postCellsSample = [postCellsTags.keys()[int(i)] for i in randSample[0:len(postCellsTags)]]  # selected gids of postsyn cells
             postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
                 
@@ -748,13 +755,13 @@ class Network (object):
  
                 #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
                 if preCellGid != postCellGid: # if not self-connection
-                    self._addCellConn(connParam, preCellGid, postCellGid, rand) # add connection
+                    self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
                     
     ###############################################################################
     ### From list connectivity 
     ###############################################################################
-    def fromListConn (self, preCellsTags, postCellsTags, connParam, rand):
+    def fromListConn (self, preCellsTags, postCellsTags, connParam):
         ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
         if sim.cfg.verbose: print 'Generating set of connections from list (rule: %s) ...' % (connParam['label'])
 
@@ -781,13 +788,13 @@ class Network (object):
                 if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
         
                 if preCellGid != postCellGid: # if not self-connection
-                    self._addCellConn(connParam, preCellGid, postCellGid, rand) # add connection
+                    self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################
     ### Set parameters and create connection
     ###############################################################################
-    def _addCellConn (self, connParam, preCellGid, postCellGid, rand):
+    def _addCellConn (self, connParam, preCellGid, postCellGid):
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}

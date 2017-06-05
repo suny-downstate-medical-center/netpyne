@@ -832,7 +832,7 @@ def preRun ():
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(sim.id32('stim_netstim'), cell.gid, stim['seed'])
+                stim['hRandom'].Random123(sim.id32('stim_'+stim['source']), cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
                 stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 

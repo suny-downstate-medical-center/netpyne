@@ -1209,7 +1209,7 @@ class PointCell (Cell):
         # if rate is list with 2 items generate random value from uniform distribution
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
-            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['conn']) # initialize randomizer 
+            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
             self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
  
         # set pointp params - for PointCells these are stored in self.params
@@ -1232,7 +1232,7 @@ class PointCell (Cell):
                 params['number'] = 1e9 
                 setattr(self.hPointp, 'number', params['number']) 
             if 'seed' not in self.params: 
-                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
+                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized from sim.preRun()
         
 
         # VecStim - generate spike vector based on params
@@ -1314,7 +1314,7 @@ class PointCell (Cell):
 
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
-                for pulse in self.params['pulses']:
+                for ipulse, pulse in enumerate(self.params['pulses']):
                     
                     # check interval or rate params
                     if 'interval' in pulse:
@@ -1348,7 +1348,7 @@ class PointCell (Cell):
                         else:
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
-                            rand.Random123(sim.id32('vecstim_pulse'), self.gid, self.params['seed'])
+                            rand.Random123(ipulse, self.gid, self.params['seed'])
                             
                             # Method 1: vec length depends on duration -- not reproducible
                             # vec = h.Vector(len(fixedInterval))

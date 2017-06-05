@@ -45,7 +45,9 @@ cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 ### Izhi2003a (independent voltage)
 cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2003a'},
 	fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+netParams.renameCellParamsSec('PYR_Izhi03a_rule', 'sec', 'soma')  # rename imported section 'sec' to 'soma'
 cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
+
 
 ### Izhi2003b (section voltage)
 netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2003b'},
@@ -54,6 +56,7 @@ netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', '
 ### Izhi2007a (independent voltage)
 cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izh2007a'}, 
 	fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
+netParams.renameCellParamsSec('PYR_Izhi07a_rule', 'sec', 'soma')  # rename imported section 'sec' to 'soma'
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
 cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 

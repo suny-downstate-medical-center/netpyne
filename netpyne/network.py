@@ -479,13 +479,12 @@ class Network (object):
                 else: connParam['connFunc'] = 'fullConn'  # convergence function
             connFunc = getattr(self, connParam['connFunc'])  # get function name from params
 
-            # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.id32('conn_'+connParam['connFunc']), 
-                           sim.id32('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags))), 
-                           sim.cfg.seeds['conn'])
-
             # process string-based funcs and call conn function
             if preCellsTags and postCellsTags:
+                # initialize randomizer in case used in string-based function (see issue #89 for more details)
+                self.rand.Random123(sim.id32('conn_'+connParam['connFunc']), 
+                                    sim.id32('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags))), 
+                                    sim.cfg.seeds['conn'])
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
@@ -695,7 +694,7 @@ class Network (object):
                   
                     if probability >= allRands[preCellGid,postCellGid]:      
                         #rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
-                        self._addCellConn(connParam, preCellGid, postCellGid, rand) # add connection
+                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################

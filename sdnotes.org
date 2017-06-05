@@ -6950,6 +6950,20 @@ SyntaxError: Missing parentheses in call to 'print'
 
 sam: need to recompile Neuron and specify python3
 
+* 17Jun05 Debugging netpyne (forum q)
+** Steps
+1) netParams.py (error checking)
+2) init.py 
+-- error msgs (understand conceptual implementation)
+-- verbose
+-- inspect instanced net
+-- results
+
+** Possible causes
+- netParams syntax,format,typo - error check should help
+- netParams conceptual (eg. label doesn't exist) - error check
+- netpyne bug
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

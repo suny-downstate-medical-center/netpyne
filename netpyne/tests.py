@@ -67,6 +67,7 @@ TEST_TYPE_ARRAY_IN_RANGE = "Array elements in range"
 
 TEST_TYPE_EXISTS_IN_POP_LABELS = "Exists in pop labels"
 TEST_TYPE_VALID_SEC_LIST = "Valid sec list for conn"
+TEST_TYPE_CONN_PARM_HIERARCHY = "Check for parameter hierarchy"
 
 testFunctionsMap = {}
 
@@ -103,6 +104,7 @@ testFunctionsMap [TEST_TYPE_EXISTS_IN_POP_LABELS] = "testExistsInPopLabels"
 testFunctionsMap [TEST_TYPE_VALID_SEC_LIST] = "testValidSecLists"
 
 testFunctionsMap [TEST_TYPE_VALID_CONN_LIST] = "testValidConnList"
+testFunctionsMap [TEST_TYPE_CONN_PARM_HIERARCHY] = "testTypeHierarchy"
 
 class TestTypeObj(object):
 
@@ -537,12 +539,24 @@ class TestTypeObj(object):
 
         try:
 
+            if not isinstance (values, list):
+                errorMessage = "ConnList must be a list."
+                synMechsValid = False
+            return errorMessage, synMechsValid
+
+             if not isinstance (values, list):
+                 flattenedList = numpy.ravel(values)
+                 if not all([isinstance(x,float) for x in flattenedList]):
+                    errorMessage = "ConnList can only contain floats."
+                    synMechsValid = False
+             return errorMessage, synMechsValid
+
             if dimSynMechs == 1:
                 # print ( " in check 1 synsPerConn 333 " + str(dimLocs) + " :: " + str(synsPerConn))
                 if synsPerConn != 1:
                     # print ( " in check 1 synsPerConn 444 " + str(dimLocs) + " :: " + str(synsPerConn))
-                    if dimValues not in [0,1]:
-                        errorMessage = str(paramValue) + " can only be a number or 1d list if only one 1 synMech and synsPerConn > 1."
+                    if dimValues not in [1,2]:
+                        errorMessage = str(paramValue) + " can only be a 1D or 2d list if only one 1 synMech and synsPerConn > 1."
                         synMechsValid = False
                     elif dimValues == 1 and len(values) != synsPerConn:
                         errorMessage = "Dimension of " + str(paramValue) + " locs array must be same as synsPerConn."
@@ -550,29 +564,29 @@ class TestTypeObj(object):
 
                 else: # only 1 synsPerConn
                     if dimValues !=0:
-                        errorMessage = str(paramValue) + " can only be a number if 1 synMech and synsPerConn = 1."
+                        errorMessage = str(paramValue) + " can only be a list if 1 synMech and synsPerConn = 1."
                         synMechsValid = False
             else: # more than 1 synMech
                 if synsPerConn != 1:
                     # print ( " in check 1 synsPerConn 333 dimlocs = " + str(dimLocs) + " synsPerConn = " + str(synsPerConn) + " dimSynMechs = " + str(dimSynMechs))
-                    if dimValues not in [0,1,2]:
-                        errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                    if dimValues not in [1,2,3]:
+                        errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
                         synMechsValid = False
-                    elif dimValues == 1 and len(values) != dimSynMechs:
+                    elif dimValues == 2 and len(values) != dimSynMechs:
                         # print ( " in check 1 synsPerConn 555 ")
-                        errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                        errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
                         synMechsValid = False
-                    elif dimValues == 2:
-                        if numpy.array(locs).shape[1] != synsPerConn:
+                    elif dimValues == 3:
+                        if numpy.array(locs).shape[2] != synsPerConn:
                             # print ( " in check 1 synsPerConn 666 " )
-                            errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
+                            errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
                             synMechsValid = False
-                        elif numpy.array(values).shape[0] != dimSynMechs:
+                        elif numpy.array(values).shape[2] != dimSynMechs:
                             errorMessage = "Invalid " + str(paramValue) + " for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
                             synMechsValid = False
                 else: # only 1 synsPerConn
                     # print ( " in check 1 synsPerConn ")
-                    if dimValues not in [0,1]:
+                    if dimValues not in [1,2]:
                         errorMessage = str(paramValue) + " can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
                         synMechsValid = False
                     elif dimValues == 1 and len(values) != dimSynMechs:
@@ -672,7 +686,6 @@ class TestTypeObj(object):
         errorMessage = ''
 
         try:
-            connListValid = True
 
             synsPerConn = 1
             synMechs = ''
@@ -697,16 +710,12 @@ class TestTypeObj(object):
                 dimValues = numpy.array(values).ndim
 
             # print ( " in check 1 synsPerConn 222 dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
-            errorMessage, connListValid = self.checkConnList(parameterName, values, dimValues, dimSynMechs, synsPerConn)
+            errorMessage = self.checkConnList(parameterName, values, dimValues, dimSynMechs, synsPerConn)
 
-            errorMessage += "Supplied values are: " + str(parameterName) + " = " + str(values) + " synMech = " + str(synMechs) + " synPerConn = " + str(synsPerConn) + "."
-
-            assert connListValid is True, " Must be a valid syncMechs."
-            # return errorMessage
-
-        except AssertionError as e:
-            e.args += (errorMessage, )
+        except Exception as e:
+            e.args += (e, )
             raise
+        return errorMessage
 
     def testValidSecLists(self,paramValues, netParams): # TEST_TYPE_VALID_SEC_LIST
 
@@ -743,6 +752,40 @@ class TestTypeObj(object):
                             errorMessage = "Number of sections specified needs to match synsPerConn if synsPerConn > 1."
                         elif len(validSections) > 0 and any ([x not in validSections for x in sec]):
                             errorMessage = "Sections specified in secList must be specified in cell params."
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            e.args += (errorMessage, )
+            raise
+        return errorMessage
+
+    def testTypeHierarchy(self,paramValues): # TEST_TYPE_CONN_PARM_HIERARCHY
+
+        # probability > convergence > divergenece > connList
+
+        errorMessage = ''
+
+        try:
+
+            probability = ''
+            convergence = ''
+            divergence = ''
+            connList = ''
+
+            probability = paramValues['probability']
+            convergence = paramValues['convergence']
+            divergence = paramValues['divergence']
+            connList = paramValues['connList']
+
+            if probability != '':
+                if convergence != '' or divergence != '' or connList != '':
+                    errorMessage = "If probability is specified, then convergence and divergence and connList parameters will be ignored."
+            elif convergence != '':
+                if divergence != '' or connList != '':
+                    errorMessage = "If convergence is specified, then divergence and connList parameters will be ignored."
+            elif divergence != '':
+                if connList != '':
+                    errorMessage = "If divergence is specified, then connList parameters will be ignored."
+
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             e.args += (errorMessage, )
@@ -1208,29 +1251,28 @@ class NetPyneTestObj(object):
         #
         # self.testParamsMap["conn"]["synMechsTest"] = testObj
 
-        # # weight test
+        # # weights synMechs test
         # testObj = TestObj()
-        # testObj.testName = "weightsTest"
+        # testObj.testName = "connWeightSynMechTest"
         # testObj.testParameterType = "string"
         # testObj.testParameterValue = "weight"
-        # testObj.testTypeSpecialString = "connsWeightTest"
-        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
-        # testObj.messageText = ["Weight is invalid."]
+        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        # testObj.messageText = ["Syn Mechs are invalid."]
         # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
         #
-        # testParamsMap["conn"]["weightsTest"] = testObj
-        #
-        # # delay test
+        # self.testParamsMap["conn"]["weightsMechsTest"] = testObj
+
+        # # delay synMechs test
         # testObj = TestObj()
-        # testObj.testName = "delayTest"
+        # testObj.testName = "connDelaySynMechTest"
         # testObj.testParameterType = "string"
         # testObj.testParameterValue = "delay"
-        # testObj.testTypeSpecialString = "connsDelayTest"
-        # testObj.testTypes = [TEST_TYPE_SPECIAL ]
-        # testObj.messageText = ["Delay is invalid."]
+        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        # testObj.messageText = ["Syn Mechs are invalid."]
         # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
         #
-        # testParamsMap["conn"]["delayTest"] = testObj
+        # self.testParamsMap["conn"]["delayMechsTest"] = testObj
+
         #
         # # synsPerConn
         # #- synsPerConn: optional, defaults to 1; has to be >=1
@@ -1306,6 +1348,28 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["connsSecsListTest"] = testObj
+
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "connsListTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_VALID_CONN_LIST ]
+        testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["conn"]["connsListTest"] = testObj
+
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "hierarchyTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["conn"]["connHierarchyTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading conn tests *** ")
@@ -1669,10 +1733,17 @@ class NetPyneTestObj(object):
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
                         try:
-                            self.testTypeObj.testValidConnList(paramValues)
-                            if self.verboseFlag:
-                                print ( "Test: for valid conn list in cell")
-                                print ( "PASSED" )
+
+                            errorMessage = self.testTypeObj.testValidConnList(paramValues)
+
+                            if errorMessage == '':
+                                if self.verboseFlag:
+                                    print ( "Test: for valid connList in cell")
+                                    print ( "PASSED" )
+                            else:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid connList in cell")
+                                print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
 
                         except Exception as e:
                             #traceback.print_exc(file=sys.stdout)
@@ -1808,3 +1879,28 @@ class NetPyneTestObj(object):
                                 print ( "Test: for valid sec list in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+
+            elif testType == TEST_TYPE_CONN_PARM_HIERARCHY:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+
+                            errorMessage = self.testTypeObj.testConnParmHierarchy(paramValues)
+
+                            if errorMessage != '':
+
+                                    if self.verboseFlag:
+                                        print ( "Test: for valid hierarchy in conn params.")
+                                    print ( MESSAGE_TYPE_WARNING + ": " + errorMessage)
+
+                            elif self.verboseFlag:
+                                print ( "Test: for valid shierarchy in conn params.")
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid hierarchy in conn params.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_WARNING) + ": " + str(e) + ".")

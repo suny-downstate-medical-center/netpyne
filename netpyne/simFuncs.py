@@ -25,7 +25,7 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-from tests import *
+from tests.tests import *
 
 ###############################################################################
 # initialize variables and MPI
@@ -362,7 +362,7 @@ def clearAll ():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj):
-    #return hash(obj) & 0xffffffff  # hash func 
+    #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 

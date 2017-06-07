@@ -112,6 +112,10 @@ testFunctionsMap [TEST_TYPE_VALID_CONN_LIST] = "testValidConnList"
 testFunctionsMap [TEST_TYPE_CONN_PARM_HIERARCHY] = "testTypeHierarchy"
 testFunctionsMap [TEST_TYPE_CONN_SHAPE] = "testValidConnShape"
 testFunctionsMap [TEST_TYPE_CONN_PLASTICITY] = "testValidConnPlasticity"
+
+testFunctionsMap [TEST_TYPE_STIM_SOURCE_TEST] = "testValidStimSource"
+testFunctionsMap [TEST_TYPE_STIM_TARGET_TEST] = "testValidStimTarget"
+
 class TestTypeObj(object):
 
     def __init__(self):
@@ -587,6 +591,7 @@ class TestTypeObj(object):
                     elif dimValues == 1 and len(values) != dimSynMechs:
                         # print ( " in check 1 synsPerConn " + str(len(locs)))
                         errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
+
         except Exception as e:
             return errorMessage
 
@@ -711,7 +716,7 @@ class TestTypeObj(object):
             raise
         return errorMessage
 
-    def testValidSecLists(self,paramValues, netParams): # TEST_TYPE_VALID_SEC_LIST
+    def testValidSecLists(self,paramValues): # TEST_TYPE_VALID_SEC_LIST
 
         errorMessage = ''
 
@@ -720,32 +725,26 @@ class TestTypeObj(object):
             cellParams = ''
             validSections = []
 
-            if netParams and netParams.cellParams:
-                cellParams = netParams.cellParams
-                #print (" cellParams = " + str(cellParams))
-                if isinstance ( cellParams , dict):
-                    for k, v in cellParams.items():
-                        if 'secs' in v and isinstance(v['secs'], dict):
-                            validSections.extend ( v['secs'].keys())
+            secList = ''
 
-            #print ( " @@@@ valid sections = " + str(validSections))
+            if isinstance ( cellParams , dict):
+                for key, value in cellParams.items():
+                    if key == 'secs' and isinstance(value, dict):
+                        validSections.extend ( value.keys())
 
-            synsPerConn = 1
+            print ( " @@@@ valid sections = " + str(validSections))
 
-            if 'synsPerConn' in paramValues:
-                synsPerConn = paramValues['synsPerConn']
+            if secList in cellParams:
+                secList = cellParams['secList']
+                if not isinstance (secList, dict):
+                    errorMessage = "Seclist must be a dict."
+                else:
+                    for key, value in secList.items():
+                        if not isinstance (secList, dict):
+                            errorMessage = "Each element of seclist must be a list."
+                        if any ([x not in validSections for x in value]):
+                            errorMessage = "Sections specified in secList keys must be specified in cells."
 
-            if 'sec' in paramValues:
-                sec = paramValues ['sec']
-                if isinstance (sec, list):
-                    #print ( " ---- in list ----" + str(sec))
-                    if synsPerConn == 1 and len(sec) > 1:
-                        errorMessage = "Cannot specify more than one sec if synsPerConn = 1."
-                    if synsPerConn > 1:
-                        if len(sec) != synsPerConn:
-                            errorMessage = "Number of sections specified needs to match synsPerConn if synsPerConn > 1."
-                        elif len(validSections) > 0 and any ([x not in validSections for x in sec]):
-                            errorMessage = "Sections specified in secList must be specified in cell params."
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             e.args += (errorMessage, )
@@ -830,7 +829,7 @@ class TestTypeObj(object):
                     errorMessages.append(errorMessage)
 
             if pulseType != '':
-                if pulseType != 'square' and pulseType != 'gaussian' :
+                if pulseType not in ['square', 'gaussian'] :
                     errorMessage = "Pulse type, if specified, can only be square or gaussian."
                     errorMessages.append(errorMessage)
 
@@ -863,14 +862,14 @@ class TestTypeObj(object):
                 errorMessages.append(errorMessage)
                 return errorMessages
 
-            if 'mechs' not in plasticity:
-                errorMessage = "Mechs must be specified in plasticity."
+            if 'mech' not in plasticity:
+                errorMessage = "'mech' must be specified in plasticity in connParams with label."
                 errorMessages.append(errorMessage)
             if 'params' not in plasticity:
-                errorMessage = "Params must be specified in plasticity."
+                errorMessage = "'params' must be specified in plasticity."
                 errorMessages.append(errorMessage)
             elif not isinstance (params, dict):
-                errorMessage = "Params for plasticity must be a dict."
+                errorMessage = "'params' for plasticity must be a dict."
                 errorMessages.append(errorMessage)
 
         except Exception as e:
@@ -938,9 +937,10 @@ class NetPyneTestObj(object):
             print (" *** Loading tests *** ")
         # self.loadPopTests() # load pop tests
         # self.loadNetTests() # load net tests
-        #self.loadCellTests() # load cell tests
-        #print (str (self.testParamsMap))
-        self.loadConnTests() # load conn tests
+        self.loadCellTests() # load cell tests
+        #self.loadConnTests() # load conn tests
+        #self.loadStimTargetTests() # load stimTarget tests
+        #self.loadStimSourceTests() # load stimSource tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -950,11 +950,51 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         # self.runPopTests() # run pop tests
         # self.runNetTests() # run net tests
-        #self.runCellTests() # run cell tests
-        self.runConnTests() # run conn tests
+        self.runCellTests() # run cell tests
+        #self.runConnTests() # run conn tests
+        #self.runStimTargetTests() # load stimTarget tests
+        #self.runStimSourceTests() # load stimSource tests
 
         # if self.verboseFlag:
         #     print (" *** Finished running tests *** ")
+
+    def loadStimSourceTests(self):
+
+        # if self.verboseFlag:
+        #     print (" *** Loading pop tests *** ")
+
+        # initialiase list of test objs
+        self.testParamsMap["stimSource"] = {}
+
+        ##cell model test
+        testObj = TestObj()
+        testObj.testName = "stimSourceTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_STIM_SOURCE_TEST]
+        testObj.messageText = ["Invalid stim source specified."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["stimSource"]["stimSourceTest"] = testObj
+
+    def loadStimTargetTests(self):
+
+        # if self.verboseFlag:
+        #     print (" *** Loading pop tests *** ")
+
+        # initialiase list of test objs
+        self.testParamsMap["stimTarget"] = {}
+
+        ##cell model test
+        testObj = TestObj()
+        testObj.testName = "stimTargetTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_STIM_TARGET_TEST]
+        testObj.messageText = ["Invalid stim target specified."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["stimTarget"]["stimTargetTest"] = testObj
 
     def loadPopTests(self):
 
@@ -1232,16 +1272,28 @@ class NetPyneTestObj(object):
         #
         # self.testParamsMap["cell"]["pointpsValidTest"] = testObj
 
-        # # ions test
-        # testObj = TestObj()
-        # testObj.testName = "ionsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "ions"
-        # testObj.testTypes = [TEST_TYPE_VALID_IONS]
-        # testObj.messageText = ["Ions are not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["ionsValidTest"] = testObj
+        # secList test
+        testObj = TestObj()
+        testObj.testName = "secListTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secList"
+        testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST]
+        testObj.messageText = ["SecList is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["secListTest"] = testObj
+
+        # secList test
+        testObj = TestObj()
+        testObj.testName = "spikeGenLocTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "spikeGenLoc"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE]
+        testObj.testValueRange = "[0,1]"
+        testObj.messageText = ["range specified for spikeGenLoc is invalid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["cell"]["secListTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading cell tests *** ")
@@ -1424,39 +1476,39 @@ class NetPyneTestObj(object):
         # testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
         #
         # self.testParamsMap["conn"]["connsSecsTest"] = testObj
-
-        # secs test
-        testObj = TestObj()
-        testObj.testName = "connsSecsListTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "secs"
-        testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST ]
-        testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["conn"]["connsSecsListTest"] = testObj
-
-        # conn list test
-        testObj = TestObj()
-        testObj.testName = "connsListTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "secs"
-        testObj.testTypes = [TEST_TYPE_VALID_CONN_LIST ]
-        testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["conn"]["connsListTest"] = testObj
-
-        # conn list test
-        testObj = TestObj()
-        testObj.testName = "hierarchyTest"
-        testObj.testParameterType = "string"
-        #testObj.testParameterValue = "secs"
-        testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
-        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["conn"]["connHierarchyTest"] = testObj
+        #
+        # # secs test
+        # testObj = TestObj()
+        # testObj.testName = "connsSecsListTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST ]
+        # testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["conn"]["connsSecsListTest"] = testObj
+        #
+        # # conn list test
+        # testObj = TestObj()
+        # testObj.testName = "connsListTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_VALID_CONN_LIST ]
+        # testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["conn"]["connsListTest"] = testObj
+        #
+        # # conn list test
+        # testObj = TestObj()
+        # testObj.testName = "hierarchyTest"
+        # testObj.testParameterType = "string"
+        # #testObj.testParameterValue = "secs"
+        # testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
+        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["conn"]["connHierarchyTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading conn tests *** ")
@@ -1515,7 +1567,7 @@ class NetPyneTestObj(object):
 
     def execRunTests(self, testObj, params):
 
-        print ( " !!!!!!!! for test " + str(testObj.testTypes))
+        #print ( " !!!!!!!! for test " + str(testObj.testTypes))
 
         for testIndex, testType in enumerate(testObj.testTypes):
 
@@ -1948,7 +2000,7 @@ class NetPyneTestObj(object):
                     for paramLabel, paramValues in params.items():
                         try:
 
-                            errorMessage = self.testTypeObj.testValidSecLists(paramValues, self.netParams)
+                            errorMessage = self.testTypeObj.testValidSecLists(paramValues)
 
                             if errorMessage != '':
 

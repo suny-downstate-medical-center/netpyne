@@ -1183,7 +1183,7 @@ class RunNetPyneTests():
             # # Connectivity parameters
             # connRule = {
             #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [[[0.1,0.2], [0.1,0.3], [0.1,0.5]], [[0.5,0.1], [0.1,0.6], [0.1,0.7]]],
+            #     'connList' : [[[0.1,0.2], [0.1,0.3], [0.1,0.5]], [[0.5,0.1], [0.1,0.6], [0.1,0.7]]],
             #     'weight': 0.0,                      # weight of each connection
             #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
             #     'synsPerConn': 3,
@@ -1204,7 +1204,7 @@ class RunNetPyneTests():
             # # Connectivity parameters
             # connRule = {
             #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [0.1,0.2],
+            #     'connList' : [0.1,0.2],
             #     'weight': 0.0,                      # weight of each connection
             #     'synMech': 'AMPA',                   # target inh synapse
             #     'synsPerConn': 1,
@@ -1225,7 +1225,7 @@ class RunNetPyneTests():
             # # Connectivity parameters
             # connRule = {
             #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [[[0.1,0.2], [0.1,0.3], [0.1,0.5]], [[0.5,0.1], [0.1,0.6], [0.1,0.7]]],
+            #     'connList' : [[[0.1,0.2], [0.1,0.3], [0.1,0.5]], [[0.5,0.1], [0.1,0.6], [0.1,0.7]]],
             #     'weight': 0.0,                      # weight of each connection
             #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
             #     'synsPerConn': 1,
@@ -1246,7 +1246,7 @@ class RunNetPyneTests():
             # # Connectivity parameters
             # connRule = {
             #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [[0.1,0.2], [0.1,0.3]],
+            #     'connList' : [[0.1,0.2], [0.1,0.3]],
             #     'weight': 0.0,                      # weight of each connection
             #     'synMech': 'AMPA',                   # target inh synapse
             #     'synsPerConn': 1,
@@ -1260,134 +1260,134 @@ class RunNetPyneTests():
             #
             # params.netParams.connParams['invalidConnsLoc2'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["connsLocTest"].append(params)
-
-            self.paramsMap["conn"]["connsHierarchyTest"] = []
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'probability':0.5,
-                'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
-                }
-
-            params.netParams.connParams['validHierarchy1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsHierarchyTest"].append(params)
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'probability':0.5,
-                'convergence': 0.5,
-                }
-
-            params.netParams.connParams['invalidHierarchy1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsHierarchyTest"].append(params)
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'convergence': 0.5,
-                'divergence':0.5,
-                }
-
-            params.netParams.connParams['invalidHierarchy2'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsHierarchyTest"].append(params)
-
-            self.paramsMap["conn"]["connsShapeTest"] = []
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
-                }
-
-            params.netParams.connParams['validShape1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsShapeTest"].append(params)
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'shape': {'switchOnOff': 200, 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
-                }
-
-            params.netParams.connParams['invalidShape1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsShapeTest"].append(params)
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'shape': {'switchOnOff': ['200','300'], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
-                }
-
-            params.netParams.connParams['invalidShape2'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsShapeTest"].append(params)
-
-            self.paramsMap["conn"]["connsPlasticityTest"] = []
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'plasticity': {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
-                }
-
-            params.netParams.connParams['validPlasticity1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsPlasticityTest"].append(params)
-
-            params = ParamsObj()
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'AMPA',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5,
-                'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
-                }
-
-            params.netParams.connParams['invalidPlasticity1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsPlasticityTest"].append(params)
+            #
+            # self.paramsMap["conn"]["connsHierarchyTest"] = []
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'probability':0.5,
+            #     'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
+            #     }
+            #
+            # params.netParams.connParams['validHierarchy1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsHierarchyTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'probability':0.5,
+            #     'convergence': 0.5,
+            #     }
+            #
+            # params.netParams.connParams['invalidHierarchy1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsHierarchyTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'convergence': 0.5,
+            #     'divergence':0.5,
+            #     }
+            #
+            # params.netParams.connParams['invalidHierarchy2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsHierarchyTest"].append(params)
+            #
+            # self.paramsMap["conn"]["connsShapeTest"] = []
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
+            #     }
+            #
+            # params.netParams.connParams['validShape1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsShapeTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'shape': {'switchOnOff': 200, 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
+            #     }
+            #
+            # params.netParams.connParams['invalidShape1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsShapeTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'shape': {'switchOnOff': ['200','300'], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50},
+            #     }
+            #
+            # params.netParams.connParams['invalidShape2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsShapeTest"].append(params)
+            #
+            # self.paramsMap["conn"]["connsPlasticityTest"] = []
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # params.netParams.connParams['validPlasticity1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsPlasticityTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # params.netParams.connParams['invalidPlasticity1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsPlasticityTest"].append(params)
 
         def runTestsWithParams(self):
 
             #self.runPopTestsWithParams()
             #self.runNetTestsWithParams()
-            #self.runCellTestsWithParams()
-            self.runConnTestsWithParams()
+            self.runCellTestsWithParams()
+            #self.runConnTestsWithParams()
 
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]

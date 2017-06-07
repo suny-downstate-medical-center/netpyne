@@ -1382,12 +1382,208 @@ class RunNetPyneTests():
             # params.netParams.connParams['invalidPlasticity1'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["connsPlasticityTest"].append(params)
 
+            # self.paramsMap["stimSource"]["stimSourceTest"] = []
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_1',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
+            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['validStimSource1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # netParams.stimSourceParams['Input_1'] =  {'type': 'XYClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_1',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
+            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['invalidStimSource1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            #
+            # self.paramsMap["stimSource"]["stimSourceTest"] = []
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_1',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
+            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['validStimSource1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_1',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
+            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['validStimTarget1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["stimTargetTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_11',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
+            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['invalidStimTarget1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["stimTargetTest"].append(params)
+
         def runTestsWithParams(self):
 
             #self.runPopTestsWithParams()
             #self.runNetTestsWithParams()
             self.runCellTestsWithParams()
             #self.runConnTestsWithParams()
+            #self.runStimSourceTestsWithParams()
+            #self.runStimTargetTestsWithParams()
 
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]
@@ -1421,6 +1617,26 @@ class RunNetPyneTests():
             connParamsMap = self.paramsMap["conn"]
             # run the different tests for conn
             for testName, paramObjList in connParamsMap.items():
+                for paramsObj in paramObjList:
+                    print ( " calling tests")
+                    self.netPyneTestObj.netParams = paramsObj.netParams
+                    self.netPyneTestObj.runTests()
+
+        def runStimSourceTestsWithParams(self):
+            print ( " running conn tests " )
+            stimSourceParamsMap = self.paramsMap["stimSource"]
+            # run the different tests for conn
+            for testName, paramObjList in stimSourceParamsMap.items():
+                for paramsObj in paramObjList:
+                    print ( " calling tests")
+                    self.netPyneTestObj.netParams = paramsObj.netParams
+                    self.netPyneTestObj.runTests()
+
+        def runStimTargetTestsWithParams(self):
+            print ( " running conn tests " )
+            stimTargetParamsMap = self.paramsMap["stimTarget"]
+            # run the different tests for conn
+            for testName, paramObjList in stimTargetParamsMap.items():
                 for paramsObj in paramObjList:
                     print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams

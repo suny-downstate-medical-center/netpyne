@@ -73,6 +73,8 @@ TEST_TYPE_VALID_SEC_LIST = "Valid sec list for conn"
 TEST_TYPE_CONN_PARM_HIERARCHY = "Check for parameter hierarchy"
 TEST_TYPE_CONN_SHAPE = "Check for shape in conn params"
 TEST_TYPE_CONN_PLASTICITY = "Check for shape in conn plasticity"
+TEST_TYPE_STIM_SOURCE_TEST = "Stim target test"
+TEST_TYPE_STIM_TARGET_TEST = "Stim source test"
 
 testFunctionsMap = {}
 
@@ -293,7 +295,7 @@ class TestTypeObj(object):
 
     def testIsFloat(self,val): # TEST_TYPE_IS_FLOAT
         try:
-            assert (isinstance (val,float))
+            assert (isinstance (val,numbers.Real))
         except AssertionError as e:
             e.args += (val,)
             raise
@@ -477,7 +479,7 @@ class TestTypeObj(object):
                     #print (" flag list " + str(flattenedList))
                     for x in flattenedList:
                         assert (x >= range[0] and x <= range[1])
-                elif isinstance (params[val], float):
+                elif isinstance (params[val], numbers.Real):
                     assert (params[val] >= range[0] and params[val] <= range[1])
         except AssertionError as e:
             # print ( "************* IN ERROR !!!!!!!")
@@ -554,7 +556,7 @@ class TestTypeObj(object):
 
             if not isinstance (values, list):
                  flattenedList = numpy.ravel(values)
-                 if not all([isinstance(x,float) for x in flattenedList]):
+                 if not all([isinstance(x,numbers.Real) for x in flattenedList]):
                     errorMessage = "ConnList can only contain floats."
             return errorMessage
 
@@ -871,6 +873,58 @@ class TestTypeObj(object):
             elif not isinstance (params, dict):
                 errorMessage = "'params' for plasticity must be a dict."
                 errorMessages.append(errorMessage)
+
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            e.args += ( )
+            raise
+        return errorMessages
+
+    def testValidStimSource(self,paramValues): # TEST_TYPE_STIM_SOURCE_TEST
+
+        errorMessages = ''
+
+        try:
+
+            simType = paramValues['type']
+            mechVarList = utils.mechVarList()
+            allKeys = simType.keys()
+            allkeys.remove('type')
+
+            if 'pointps' in mechVarList:
+                validTypes = mechVarList['pointps'].keys()
+
+            if simType not in validTypes:
+                errorMessage = "Invalid simtype."
+                errorMessages.append(errorMessage)
+            else:
+                allowedValues = mechVarList['pointps'][simType]
+                if any([x not in allowedValues for x in allKeys]):
+                    errorMessage = "Invalid parameter specified."
+                    errorMessages.append(errorMessage)
+
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            e.args += ( )
+            raise
+        return errorMessages
+
+    def testValidStimTarget(self,paramValues, netParams): # TEST_TYPE_STIM_TARGET_TEST
+
+        errorMessages = ''
+
+        stimSourceParams = netParams['stimSourceParams']
+        sources = stimSourceParams['sources']
+
+        try:
+            if 'source' not in paramValues:
+                errorMessage = "Source must be specified in stimTargetParams."
+                errorMessages.append(errorMessage)
+                return errorMessages
+            elif paramValues['source'] not in sources:
+                    errorMessage = "StimTargetParams > " + str(paramValues['source'] ) + ": Invalid source specified in stimTargetParams. The source must exist in stimSourceParams."
+                    errorMessages.append(errorMessage)
+                    return errorMessages
 
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
@@ -1513,6 +1567,23 @@ class NetPyneTestObj(object):
         # if self.verboseFlag:
         #     print (" *** Finished loading conn tests *** ")
 
+    def loadStimSourceTests(self):
+
+        # if self.verboseFlag:
+        #     print (" *** Loading conn tests *** ")
+
+        self.testParamsMap["stimSource"] = {}
+
+        # pop Labels test
+        testObj = TestObj()
+        testObj.testName = "stimSourceTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "stimSource"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
+        testObj.messageText = ["Pop label specified for preConds not listed in pop parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
+
     def runPopTests(self):
 
         # if self.verboseFlag:
@@ -2091,5 +2162,55 @@ class NetPyneTestObj(object):
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid plasticity in conn params.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+
+            elif testType == TEST_TYPE_STIM_SOURCE_TEST:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+
+                            errorMessages = self.testTypeObj.testValidStimSource(paramValues)
+
+                            if len(errorMessage) == 0:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim source.")
+                                    print ( "PASSED" )
+                            else:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim source.")
+                                for errorMessage in errorMessages:
+                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid stim source.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+
+            elif testType == TEST_TYPE_STIM_TARGET_TEST:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+
+                            errorMessages = self.testTypeObj.testValidStimTarget(paramValues)
+
+                            if len(errorMessage) == 0:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim target.")
+                                    print ( "PASSED" )
+                            else:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim target.")
+                                for errorMessage in errorMessages:
+                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid stim target.")
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")

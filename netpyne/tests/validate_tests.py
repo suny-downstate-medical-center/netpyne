@@ -35,6 +35,8 @@ class RunNetPyneTests():
             self.paramsMap["net"] = {}
             self.paramsMap["conn"] = {}
             self.paramsMap["cell"] = {}
+            self.paramsMap["stimSource"] = {}
+            self.paramsMap["stimTarget"] = {}
 
             self.paramsMap["pop"]["cellModelTest"] = []
 
@@ -500,9 +502,9 @@ class RunNetPyneTests():
             # params.netParams.cellParams['invalidTopology6'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["topologyTest"].append(params)
             #
-            # mechs test
-            self.paramsMap["cell"]["mechsTest"] = []
-
+            # # mechs test
+            # self.paramsMap["cell"]["mechsTest"] = []
+            #
             # # valid mechs rule
             # params = ParamsObj()
             #
@@ -658,8 +660,8 @@ class RunNetPyneTests():
             # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
             # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
             #
-            # params.netParams.cellParams['invalidMechs3'] = cellRule # add dict with params for this pop
-            # self.paramsMap["cell"]["mechsTest"].append(params)
+            # params.netParams.cellParams['invalidIons3'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["ionsTest"].append(params)
             #
             # # invalid mechs rule
             # params = ParamsObj()
@@ -701,9 +703,88 @@ class RunNetPyneTests():
             #
             # params.netParams.cellParams['invalidPointPs1'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["pointpsTest"].append(params)
+            #
+            # # invalid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1,'synList' :'q'}
+            #
+            # params.netParams.cellParams['invalidPointPs2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["pointpsTest"].append(params)
+            #
+            # # invalid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1,'loc' :4}
+            #
+            # params.netParams.cellParams['invalidPointPs2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["pointpsTest"].append(params)
+
+            # # secList test
+            # self.paramsMap["cell"]["secListTest"] = []
+            #
+            # # valid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+            #
+            # cellRule['secList'] = {'apicdend': ['soma','dend'], 'basaldend':['dend']}
+            #
+            # params.netParams.cellParams['validSecList'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["secListTest"].append(params)
+            #
+            # # valid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+            #
+            # cellRule['secList'] = {'apicdend': ['somax','dend'], 'basaldend':['dend']}
+            #
+            # params.netParams.cellParams['invalidSecList1'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["secListTest"].append(params)
+            #
+            # # valid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+            #
+            # cellRule['secList'] = {'apicdend': 'soma', 'basaldend':['dend']}
+            #
+            # params.netParams.cellParams['invalidSecList2'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["secListTest"].append(params)
 
             # secList test
-            self.paramsMap["cell"]["secListTest"] = []
+            self.paramsMap["cell"]["spikeGenLocTest"] = []
 
             # valid pointps rule
             params = ParamsObj()
@@ -718,28 +799,15 @@ class RunNetPyneTests():
             cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
             cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 
-            cellRule['secList'] = {'apicdend': ['soma','dend'], 'basaldend':['dend']}
+            cellRule['secs']['axon'] = {'geom': {}, 'topol': {}, 'mechs': {}}
+            cellRule['secs']['axon']['spikeGenLoc'] = 0.7
 
-            params.netParams.cellParams['validSecList'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["secListTest"].append(params)
+            params.netParams.cellParams['validSpikeGneLoc'] = cellRule # add dict with params for this pop
+            self.paramsMap["cell"]["spikeGenLocTest"].append(params)
 
-            # valid pointps rule
-            params = ParamsObj()
 
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
-
-            cellRule['secList'] = {'apicdend': ['somax','dend'], 'basaldend':['dend']}
-
-            params.netParams.cellParams['invalidSecList1'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["secListTest"].append(params)
+            # secList test
+            self.paramsMap["cell"]["spikeGenLocTest"] = []
 
             # valid pointps rule
             params = ParamsObj()
@@ -754,11 +822,13 @@ class RunNetPyneTests():
             cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
             cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 
-            cellRule['secList'] = {'apicdend': 'soma', 'basaldend':['dend']}
+            cellRule['secs']['axon'] = {'geom': {}, 'topol': {}, 'mechs': {}}
+            cellRule['secs']['axon']['spikeGenLoc'] = 1.7
 
-            params.netParams.cellParams['invalidSecList2'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["secListTest"].append(params)
+            params.netParams.cellParams['invalidSpikeGneLoc'] = cellRule # add dict with params for this pop
+            self.paramsMap["cell"]["spikeGenLocTest"].append(params)
 
+            #
             # # conn test
             # self.paramsMap["conn"]["preCondsTest"] = []
             #
@@ -816,79 +886,79 @@ class RunNetPyneTests():
             #
             # params.netParams.connParams['invalidPostConds1'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["postCondsTest"].append(params)
-            #
-            # # loc (optional) - Location of target synaptic mechanism (e.g. 0.3)
-            # # If omitted, defaults to 0.5.
-            # # If have list of synMechs, can have single loc for all, or list of locs (one per synMech, e.g. for 2 synMechs: [0.4, 0.7]).
-            # # If have synsPerConn > 1, can have single loc for all, or list of locs (one per synapse, e.g. if synsPerConn = 3: [0.4, 0.5, 0.7])
-            # # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]])
-            #
-            # # conn test
-            # self.paramsMap["conn"]["connsLocTest"] = []
-            #
-            # # valid locs rule
-            # params = ParamsObj()
-            #
-            # # Connectivity parameters
-            # connRule = {
-            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : 1,
-            #     'weight': 0.0,                      # weight of each connection
-            #     'synMech': 'inh',                   # target inh synapse
-            #     'synsPerConn': 1,
-            #     'delay': 5}                         # delay
-            #
-            # # Synaptic mechanism parameters
-            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-            #
-            # params.netParams.connParams['validConnsLoc0'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["connsLocTest"].append(params)
-            #
-            # # valid locs rule
-            # params = ParamsObj()
-            #
-            # # Connectivity parameters
-            # connRule = {
-            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [0.5,0.7],
-            #     'weight': 0.0,                      # weight of each connection
-            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
-            #     'synsPerConn': 1,
-            #     'delay': 5}                         # delay
-            #
-            # # Synaptic mechanism parameters
-            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-            #
-            # params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["connsLocTest"].append(params)
-            #
-            # # valid locs rule
-            # params = ParamsObj()
-            #
-            # # Connectivity parameters
-            # connRule = {
-            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
-            #     'weight': 0.0,                      # weight of each connection
-            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
-            #     'synsPerConn': 3,
-            #     'delay': 5}                         # delay
-            #
-            # # Synaptic mechanism parameters
-            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-            #
-            # params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["connsLocTest"].append(params)
-            #
+
+            # loc (optional) - Location of target synaptic mechanism (e.g. 0.3)
+            # If omitted, defaults to 0.5.
+            # If have list of synMechs, can have single loc for all, or list of locs (one per synMech, e.g. for 2 synMechs: [0.4, 0.7]).
+            # If have synsPerConn > 1, can have single loc for all, or list of locs (one per synapse, e.g. if synsPerConn = 3: [0.4, 0.5, 0.7])
+            # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]])
+
+            # conn test
+            self.paramsMap["conn"]["connsLocTest"] = []
+
+            # valid locs rule
+            params = ParamsObj()
+
+            # Connectivity parameters
+            connRule = {
+                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+                'loc' : 1,
+                'weight': 0.0,                      # weight of each connection
+                'synMech': 'inh',                   # target inh synapse
+                'synsPerConn': 1,
+                'delay': 5}                         # delay
+
+            # Synaptic mechanism parameters
+            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+
+            params.netParams.connParams['validConnsLoc0'] = connRule # add dict with params for this pop
+            self.paramsMap["conn"]["connsLocTest"].append(params)
+
+            # valid locs rule
+            params = ParamsObj()
+
+            # Connectivity parameters
+            connRule = {
+                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+                'loc' : [0.5,0.7],
+                'weight': 0.0,                      # weight of each connection
+                'synMech': ['AMPA','NMDA'],                   # target inh synapse
+                'synsPerConn': 1,
+                'delay': 5}                         # delay
+
+            # Synaptic mechanism parameters
+            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+
+            params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
+            self.paramsMap["conn"]["connsLocTest"].append(params)
+
+            # valid locs rule
+            params = ParamsObj()
+
+            # Connectivity parameters
+            connRule = {
+                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+                'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+                'weight': 0.0,                      # weight of each connection
+                'synMech': ['AMPA','NMDA'],                   # target inh synapse
+                'synsPerConn': 3,
+                'delay': 5}                         # delay
+
+            # Synaptic mechanism parameters
+            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+
+            params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
+            self.paramsMap["conn"]["connsLocTest"].append(params)
+
             # # valid locs rule
             # params = ParamsObj()
             #
@@ -1395,23 +1465,23 @@ class RunNetPyneTests():
             #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
             #     }
             #
-            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
-            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
-            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
-            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            # params.netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # params.netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # params.netParams.stimSourceParams['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # params.netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
             #
             # # Stimulation mapping parameters
-            # netParams.stimTargetParams['Input1->PYR'] = {
+            # params.netParams.stimTargetParams['Input1->PYR'] = {
             #     'source': 'Input_1',
             #     'sec':'soma',
             #     'loc': 0.5,
-            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
-            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}}
+            # params.netParams.stimTargetParams['Input3->Basket'] = {
             #     'source': 'Input_3',
             #     'sec':'soma',
             #     'loc': 0.5,
             #     'conds': {'cellType':'Basket'}}
-            # netParams.stimTargetParams['Input4->PYR3'] = {
+            # params.netParams.stimTargetParams['Input4->PYR3'] = {
             #         'source': 'Input_4',
             #         'sec':'soma',
             #         'loc': 0.5,
@@ -1420,7 +1490,7 @@ class RunNetPyneTests():
             #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
             #
             # params.netParams.connParams['validStimSource1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            # self.paramsMap["stimSource"]["stimSourceTest"].append(params)
             #
             # params = ParamsObj()
             # # Connectivity parameters
@@ -1433,23 +1503,23 @@ class RunNetPyneTests():
             #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
             #     }
             #
-            # netParams.stimSourceParams['Input_1'] =  {'type': 'XYClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
-            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
-            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
-            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            # params.netParams.stimSourceParams['Input_1'] =  {'type': 'XYClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # params.netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # params.netParams.stimSourceParams['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # params.netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
             #
             # # Stimulation mapping parameters
-            # netParams.stimTargetParams['Input1->PYR'] = {
+            # params.netParams.stimTargetParams['Input1->PYR'] = {
             #     'source': 'Input_1',
             #     'sec':'soma',
             #     'loc': 0.5,
-            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
-            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}}
+            # params.netParams.stimTargetParams['Input3->Basket'] = {
             #     'source': 'Input_3',
             #     'sec':'soma',
             #     'loc': 0.5,
             #     'conds': {'cellType':'Basket'}}
-            # netParams.stimTargetParams['Input4->PYR3'] = {
+            # params.netParams.stimTargetParams['Input4->PYR3'] = {
             #         'source': 'Input_4',
             #         'sec':'soma',
             #         'loc': 0.5,
@@ -1458,47 +1528,9 @@ class RunNetPyneTests():
             #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
             #
             # params.netParams.connParams['invalidStimSource1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            # self.paramsMap["stimSource"]["stimSourceTest"].append(params)
             #
-            # self.paramsMap["stimSource"]["stimSourceTest"] = []
-            #
-            # params = ParamsObj()
-            # # Connectivity parameters
-            # connRule = {
-            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-            #     'weight': 0.0,                      # weight of each connection
-            #     'synMech': 'AMPA',                   # target inh synapse
-            #     'synsPerConn': 1,
-            #     'delay': 5,
-            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
-            #     }
-            #
-            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
-            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
-            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
-            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
-            #
-            # # Stimulation mapping parameters
-            # netParams.stimTargetParams['Input1->PYR'] = {
-            #     'source': 'Input_1',
-            #     'sec':'soma',
-            #     'loc': 0.5,
-            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
-            # netParams.stimTargetParams['Input3->Basket'] = {
-            #     'source': 'Input_3',
-            #     'sec':'soma',
-            #     'loc': 0.5,
-            #     'conds': {'cellType':'Basket'}}
-            # netParams.stimTargetParams['Input4->PYR3'] = {
-            #         'source': 'Input_4',
-            #         'sec':'soma',
-            #         'loc': 0.5,
-            #     'weight': '0.1+gauss(0.2,0.05)',
-            #     'delay': 1,
-            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
-            #
-            # params.netParams.connParams['validStimSource1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["stimSourceTest"].append(params)
+            # self.paramsMap["stimTarget"]["stimTargetTest"] = []
             #
             # params = ParamsObj()
             # # Connectivity parameters
@@ -1511,23 +1543,23 @@ class RunNetPyneTests():
             #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
             #     }
             #
-            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
-            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
-            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
-            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            # params.netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # params.netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # params.netParams.stimSourceParams['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # params.netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
             #
             # # Stimulation mapping parameters
-            # netParams.stimTargetParams['Input1->PYR'] = {
+            # params.netParams.stimTargetParams['Input1->PYR'] = {
             #     'source': 'Input_1',
             #     'sec':'soma',
             #     'loc': 0.5,
-            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
-            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}}
+            # params.netParams.stimTargetParams['Input3->Basket'] = {
             #     'source': 'Input_3',
             #     'sec':'soma',
             #     'loc': 0.5,
             #     'conds': {'cellType':'Basket'}}
-            # netParams.stimTargetParams['Input4->PYR3'] = {
+            # params.netParams.stimTargetParams['Input4->PYR3'] = {
             #         'source': 'Input_4',
             #         'sec':'soma',
             #         'loc': 0.5,
@@ -1536,7 +1568,7 @@ class RunNetPyneTests():
             #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
             #
             # params.netParams.connParams['validStimTarget1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["stimTargetTest"].append(params)
+            # self.paramsMap["stimTarget"]["stimTargetTest"].append(params)
             #
             # params = ParamsObj()
             # # Connectivity parameters
@@ -1549,23 +1581,61 @@ class RunNetPyneTests():
             #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
             #     }
             #
-            # netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
-            # netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
-            # netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
-            # netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            # params.netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # params.netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # params.netParams.stimSourceParams['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # params.netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
             #
             # # Stimulation mapping parameters
-            # netParams.stimTargetParams['Input1->PYR'] = {
-            #     'source': 'Input_11',
+            # params.netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_1',
             #     'sec':'soma',
             #     'loc': 0.5,
-            #     'conds': {'pop':'PYR', 'cellList': range(8)}})
-            # netParams.stimTargetParams['Input3->Basket'] = {
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}}
+            # params.netParams.stimTargetParams['Input3->Basket'] = {
             #     'source': 'Input_3',
             #     'sec':'soma',
             #     'loc': 0.5,
             #     'conds': {'cellType':'Basket'}}
-            # netParams.stimTargetParams['Input4->PYR3'] = {
+            # params.netParams.stimTargetParams['Input4->PYR3'] = {
+            #         'source': 'Input_4',
+            #         'sec':'soma',
+            #         'loc': 0.5,
+            #     'weight': '0.1+gauss(0.2,0.05)',
+            #     'delay': 1,
+            #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+            #
+            # params.netParams.connParams['validStimTarget1'] = connRule # add dict with params for this pop
+            # self.paramsMap["stimTarget"]["stimTargetTest"].append(params)
+            #
+            # params = ParamsObj()
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5,
+            #     'plasticity': { 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 ,'tauhebb': 10}},
+            #     }
+            #
+            # params.netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+            # params.netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+            # params.netParams.stimSourceParams['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+            # params.netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+            #
+            # # Stimulation mapping parameters
+            # params.netParams.stimTargetParams['Input1->PYR'] = {
+            #     'source': 'Input_11',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'pop':'PYR', 'cellList': range(8)}}
+            # params.netParams.stimTargetParams['Input3->Basket'] = {
+            #     'source': 'Input_3',
+            #     'sec':'soma',
+            #     'loc': 0.5,
+            #     'conds': {'cellType':'Basket'}}
+            # params.netParams.stimTargetParams['Input4->PYR3'] = {
             #         'source': 'Input_4',
             #         'sec':'soma',
             #         'loc': 0.5,
@@ -1574,7 +1644,7 @@ class RunNetPyneTests():
             #         'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
             #
             # params.netParams.connParams['invalidStimTarget1'] = connRule # add dict with params for this pop
-            # self.paramsMap["conn"]["stimTargetTest"].append(params)
+            # self.paramsMap["stimTarget"]["stimTargetTest"].append(params)
 
         def runTestsWithParams(self):
 
@@ -1582,8 +1652,8 @@ class RunNetPyneTests():
             #self.runNetTestsWithParams()
             self.runCellTestsWithParams()
             #self.runConnTestsWithParams()
-            #self.runStimSourceTestsWithParams()
-            #self.runStimTargetTestsWithParams()
+            #self.runStimSourceTests()
+            #self.runStimTargetTests()
 
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]
@@ -1618,27 +1688,27 @@ class RunNetPyneTests():
             # run the different tests for conn
             for testName, paramObjList in connParamsMap.items():
                 for paramsObj in paramObjList:
-                    print ( " calling tests")
+                    #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
                     self.netPyneTestObj.runTests()
 
-        def runStimSourceTestsWithParams(self):
-            print ( " running conn tests " )
+        def runStimSourceTests(self):
+            #print ( " running conn tests " )
             stimSourceParamsMap = self.paramsMap["stimSource"]
             # run the different tests for conn
             for testName, paramObjList in stimSourceParamsMap.items():
                 for paramsObj in paramObjList:
-                    print ( " calling tests")
+                    #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
                     self.netPyneTestObj.runTests()
 
-        def runStimTargetTestsWithParams(self):
-            print ( " running conn tests " )
+        def runStimTargetTests(self):
+            #print ( " running conn tests " )
             stimTargetParamsMap = self.paramsMap["stimTarget"]
             # run the different tests for conn
             for testName, paramObjList in stimTargetParamsMap.items():
                 for paramsObj in paramObjList:
-                    print ( " calling tests")
+                    #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
                     self.netPyneTestObj.runTests()
 

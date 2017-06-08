@@ -95,7 +95,7 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **scaleConnWeightModels**: Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})
 
-* **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['popLabel', 'cellModel', 'cellType'])
+* **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])
 
 Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
 
@@ -105,7 +105,7 @@ Other arbitrary entries to the ``netParams`` dict can be added and used in the c
 Population parameters 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``popLabel``, and can be used as condition to apply specific connectivtiy rules.
+Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``pop``, and can be used as condition to apply specific connectivtiy rules.
 
 The value consists in turn of a dictionary with the parameters of the population, an includes the following fields:
 
@@ -143,23 +143,46 @@ The ``addPopParams(label, params)`` method of the class ``netParams`` can be use
 
 It is also possible to create populations of artificial cells, i.e. point processes that generate spike events but don't have sections (e.g. NetStim, VecStim or IntFire2). In this case the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require to define separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
-* **popLabel** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
+* **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
-* **cellModel** - Needs to be set to ``NetStim``.
+* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` o ``VecStim``).
+
+* **numCells** - Number of cells
+
+* **parameters of artificial cell** - Specific to each point process artificial cell (e.g. ``IntFire2`` includes 'taum', 'taus', 'ib')
+
+When ``cellModel`` is 'NetStim' or 'VecStim' the following parameters are allowed:
+
+* **interval** - Spike interval in ms.
 
 * **rate** - Firing rate in Hz (note this is the inverse of the NetStim interval property).
 
 * **noise** - Fraction of noise in NetStim (0 = deterministic; 1 = completely random).
 
+* **start** - Time of first spike in ms (default = 0).
+
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
+* **seed** - Seed for randomizer (optional; defaults to value set in ``simConfig.seeds['stim']``)
 
-* **numCells** - Number of cells
+* **spkTimes** (only for 'VecStim') - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list) 
 
-Example of NetStim population::
+* **pulses** (only for 'VecStim') - List of spiking pulses; each item includes the ``start`` (ms), ``end`` (ms), ``rate`` (Hz), and ``noise`` (0 to 1) pulse parameters. See example below.
+
+Example of point process artificial cell populations::
+
+	netParams.popParams['artif1'] = {'cellModel': 'IntFire2', 'taum': 100, 'noise': 0.5, 'numCells': 100}  # Intfire2
+
+	netParams.popParams['artif2'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'numCells': 100}  # NetsStim
 	
-	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'numCells': 100}  # background inputs
+	# create custom list of spike times
+	spkTimes = range(0,1000,20) + [138, 155,270]  
+	
+	# create list of pulses (each item is a dict with pulse params) 
+	pulses = [{'start': 10, 'end': 100, 'rate': 200, 'noise': 0.5},
+		{'start': 400, 'end': 500, 'rate': 1, 'noise': 0.0})] 
+
+	netParams.popParams['artif3'] = {'cellModel': 'VecStim', 'numCells': 100, 'spkTimes': spkTimes, 'pulses': pulses}  # VecStim with spike times
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
@@ -193,7 +216,7 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 
 	* **ions**: Dictionary of ions.
-		The key contains the name of the ion (e.g. ``na`` or ``na``)
+		The key contains the name of the ion (e.g. ``na`` or ``k``)
 		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
@@ -286,7 +309,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 * **preConds** - Set of conditions for the presynaptic cells. 
 	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
 
-	Values can be lists, e.g. ``{'popLabel': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
+	Values can be lists, e.g. ``{'pop': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
 
 * **postConds** - Set of conditions for the postynaptic cells. 
 	Same format as ``preConds`` (above).
@@ -350,6 +373,10 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 	If have ``synsPerConn`` > 1, can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[4, 5, 6]``)
 
 	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``)
+
+* **threshold** (optional) - Threshold (in mV) to detect spike in source.
+
+	If omitted, defaults to ``netParams.defaultThreshold = 0``
 
 * **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
 
@@ -416,8 +443,8 @@ Example of connectivity rules:
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = {
-		'preConds': {'popLabel': 'S'}, 
-		'postConds': {'popLabel': 'M'},  #  S -> M
+		'preConds': {'pop': 'S'}, 
+		'postConds': {'pop': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
 		'synMech': 'AMPA',					# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
@@ -425,7 +452,7 @@ Example of connectivity rules:
 		'probability': 0.5}				# probability of connection		
 
 	netParams.connParams['bg->all'] = {
-		'preConds': {'popLabel': 'background'}, 
+		'preConds': {'pop': 'background'}, 
 		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
@@ -457,7 +484,7 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 * Python random number generation functions: 'random', 'randint', 'sample', 'uniform', 'triangular', 'gauss', 'betavariate', 'expovariate', 'gammavariate' (see https://docs.python.org/2/library/math.html for details)
 
 * Cell location variables:
-	* 'pre_x', 'pre_y', 'pre_z': post-synaptic cell x, y or z location.
+	* 'pre_x', 'pre_y', 'pre_z': pre-synaptic cell x, y or z location.
 
 	* 'pre_ynorm', 'pre_ynorm', 'pre_znorm': normalized pre-synaptic cell x, y or z location.
 	
@@ -608,7 +635,7 @@ The code below shows an example of how to create different types of stimulation 
 	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conds': {'popLabel':'PYR', 'cellList': range(8)}})
+	    'conds': {'pop':'PYR', 'cellList': range(8)}}
 
 	netParams.stimTargetParams['Input3->Basket'] = {
 	    'source': 'Input_3', 
@@ -622,7 +649,7 @@ The code below shows an example of how to create different types of stimulation 
 		'loc': 0.5, 
 	    'weight': '0.1+gauss(0.2,0.05)',
 	    'delay': 1,
-		'conds': {'popLabel':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
+		'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
 
 
 
@@ -979,7 +1006,7 @@ Methods to modify network
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the synMechs to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[synMech property]' (e.g. 'tau1' or 'e'): New value for stim property (note that properties depend on the type of synMech). Can include several synMech properties to modify.
 
@@ -995,7 +1022,7 @@ Methods to modify network
 
 	- 'postConds': dictionary of conditions to select postsynaptic cells that will contain the connections to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- 'weight' | 'threshold': New value for connection weight or threshold. Can include both.
 
@@ -1011,7 +1038,7 @@ Methods to modify network
 
 	- 'cellConds': dictionary of conditions to select target cells that will contain the stims to be modified, with each item containing a cell tag (see list of tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
 
-		e.g. ``{'popLabel': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
+		e.g. ``{'pop': 'PYR', 'ynorm': [0.1, 0.6]}`` targets connections of cells from the 'PYR' population with normalized depth within 0.1 and 0.6.
 
 	- '[stim property]' (e.g. 'dur', 'amp' or 'delay'): New value for stim property (note that properties depend on the type of stim). Can include several stim properties to modify.
 
@@ -1088,7 +1115,7 @@ Examples of accessing NetPyNE structures via dot notation:
 
 	* ``sim.net.cells[0].secs.soma.hSec(0.5).gbar_nap = 0.1``
 
-	* ``sim.net.allCells[5].tags.popLabel``
+	* ``sim.net.allCells[5].tags.pop``
 
 	* ``sim.net.cells[0].conns[1].weight``
 
@@ -1146,7 +1173,7 @@ Cell class
 
 - tags (Dict)
 	- 'label'
-	- 'popLabel'
+	- 'pop'
 	- 'cellModel'
 	- 'cellType'
 	- 'x', 'y', 'z'

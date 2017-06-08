@@ -418,10 +418,10 @@ class CompartCell (Cell):
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
                                 seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
-                            elif ionParamName == 'init_ext_conc':
+                            elif ionParamName == 'o':
                                 seg.__setattr__('%so'%ionName,ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
-                            elif ionParamName == 'init_int_conc':
+                            elif ionParamName == 'i':
                                 seg.__setattr__('%si'%ionName,ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
@@ -938,9 +938,9 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
-
+                
         sec = self.secs[params['sec']]
-        
+
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
         if params['type'] == 'NetStim':
@@ -1067,6 +1067,7 @@ class CompartCell (Cell):
 
         if isinstance(params['weight'],list):
             weights = [scaleFactor * w for w in params['weight']]
+            if len(weights) == 1: weights = [weights[0]] * params['synsPerConn']
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
         
@@ -1110,7 +1111,11 @@ class CompartCell (Cell):
             if len(secLabels) == 1:  # if single section, create all syns there
                 synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
                 if isinstance(params['loc'], list):
-                    if len(params['loc']) == synsPerConn: synMechLocs = params['loc']
+                    if len(params['loc']) == synsPerConn: 
+                        synMechLocs = params['loc']
+                    else:
+                        print "Error: The length of the list of locations does not match synsPerConn (distributing uniformly)"
+                        synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns

@@ -228,8 +228,8 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
-		'preConds': {'popLabel': 'S'}, # conditions of presyn cells
-		'postConds': {'popLabel': 'M'}, # conditions of postsyn cells
+		'preConds': {'pop': 'S'}, # conditions of presyn cells
+		'postConds': {'pop': 'M'}, # conditions of postsyn cells
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
@@ -317,7 +317,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams.connParams['S->M'] = {'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
+	netParams.connParams['S->M'] = {'preConds': {'pop': 'S'}, 'postConds': {'pop': 'M'},  #  S -> M
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
@@ -476,12 +476,12 @@ Running the model now shows excitatory connections in red, and how cells in the 
 	:align: center
 
 
-Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
+Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``pop`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
 To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 	netParams.connParams['I->E'] = {
-	 'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
+	 'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
 	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
 	  'weight': 0.001,                                     # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
@@ -513,11 +513,11 @@ Below we add four typical NEURON sources of stimulation, each of a different typ
 	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1}
 
 
-Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'popLabel', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
+Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
 
-	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'popLabel':'S', 'cellList': range(15)}}
-	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'S', 'ynorm': [0,0.5]}}
-	netParams.stimTargetParams['Input_3->M1'] = {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'popLabel':'M', 'cellList': [2,4,5,8,10,15,19]}}
+	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'pop':'S', 'cellList': range(15)}}
+	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'S', 'ynorm': [0,0.5]}}
+	netParams.stimTargetParams['Input_3->M1'] = {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'pop':'M', 'cellList': [2,4,5,8,10,15,19]}}
 	netParams.stimTargetParams['Input_4->PYR'] = {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+gauss(0.2,0.05)','delay': 1, 'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}}
 
 
@@ -568,12 +568,12 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 
 	# Stimulation parameters
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
-	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'popLabel': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
+	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
 
 	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
-	    'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+	    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
 	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5}       				    # delay 
@@ -673,7 +673,7 @@ Additionally, we could also modify some of the cell properties to observe how th
 
 
 	# modify cells geometry
-	sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+	sim.net.modifyCells({'conds': {'pop': 'hop'}, 
 	                    'secs': {'soma': {'geom': {'L': 160}}}})
 
 	sim.simulate()

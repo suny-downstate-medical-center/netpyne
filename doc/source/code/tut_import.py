@@ -84,14 +84,14 @@ netParams.connParams['recurrent'] = {
 	'sec': 'soma'}				# section to connect to
 
 netParams.connParams['HH->izhi07a'] = {
-	'preConds': {'popLabel': 'HH_pop'}, 'postConds': {'popLabel': 'Izhi07a_pop'}, # background -> PYR (weight=0.1)
+	'preConds': {'pop': 'HH_pop'}, 'postConds': {'pop': 'Izhi07a_pop'}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 5, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 
 	'sec': 'soma'}		
 
 netParams.connParams['izhi07a->HH'] = {
-	'preConds': {'popLabel': 'Izhi07a_pop'}, 'postConds': {'popLabel': 'HH_pop'}, # background -> PYR (weight=0.1)
+	'preConds': {'pop': 'Izhi07a_pop'}, 'postConds': {'pop': 'HH_pop'}, # background -> PYR (weight=0.1)
 	'connFunc': 'fullConn', 	# connectivity function (all-to-all)
 	'weight': 0.1, 			# synaptic weight 
 	'delay': 5,					# transmission delay (ms) 

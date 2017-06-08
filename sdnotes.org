@@ -1740,7 +1740,7 @@ simConfig['analysis'].append({'func': 'plotRaster',
  'maxSpikes':3e8, 
  'overlaySpikeHist': True,
  'syncLines': True, 
- 'orderBy':'ynorm'|'y'|'popLabel'|'cellType',
+ 'orderBy':'ynorm'|'y'|'pop'|'cellType',
  'figId': 1,  # figs with same figId will be converted to subplots
  'saveData': 'data2.pkl',
  'saveName': 'fig1.png'})
@@ -1770,7 +1770,7 @@ simConfig['analysis']['plotRaster']={
  'maxSpikes':3e8, 
  'overlaySpikeHist': True,
  'syncLines': True, 
- 'orderBy':'ynorm'|'y'|'popLabel'|'cellType',
+ 'orderBy':'ynorm'|'y'|'pop'|'cellType',
  'figId': 1,  # figs with same figId will be converted to subplots
  'saveData': 'data2.pkl',
  'saveName': 'fig1.png'})
@@ -2812,7 +2812,7 @@ seed - Seed for randomizer (optional; defaults to value set in simConfig.seeds[â
 -- shape - check either 'cuboid', 'cylinder' or 'ellipsoid'
 
 ** cellParams
-- conds: required and needs to be a dict eg. ('conds': {'popLabel': ['PYR2','PYR3'], 'x':[100,200]})
+- conds: required and needs to be a dict eg. ('conds': {'pop': ['PYR2','PYR3'], 'x':[100,200]})
 
 -- keys: attributes/tags of cell (cell.tags)
 --- declared in popParams: eg. cellType, cellModel, any arbitrary 
@@ -3053,7 +3053,7 @@ RefactoringTool: Refactored netpyne/analysis.py
              else:
 @@ -260,7 +260,7 @@
      if len(cellGids) > 0:
-         gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
+         gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
          try:
 -            spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
 +            spkgids,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
@@ -3183,7 +3183,7 @@ RefactoringTool: Refactored netpyne/analysis.py
 +    tracesList = list(sim.cfg.recordTraces.keys())
      tracesList.sort()
      cells, cellGids, _ = getCellsInclude(include)
-     gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
+     gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
 @@ -833,7 +833,7 @@
                  if 'cell_'+str(gid) in sim.allSimData[trace]:
                      fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
@@ -3276,7 +3276,7 @@ RefactoringTool: Refactored netpyne/analysis.py
 @@ -1024,7 +1024,7 @@
              ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
          
-         for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
+         for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
 -            for sec in cell.secs.values():
 +            for sec in list(cell.secs.values()):
                  if 'axon' in sec['hSec'].hname() and not includeAxon: continue
@@ -4434,9 +4434,9 @@ RefactoringTool: Refactored netpyne/network.py
              newCells = ipop.createCells() # create cells for this pop using Pop method
              self.cells.extend(newCells)  # add to list of cells
              sim.pc.barrier()
--            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel']))    
+-            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))    
 -        print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
-+            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['popLabel'])))    
++            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))    
 +        print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))) 
          sim.pc.barrier()
          sim.timing('stop', 'createTime')
@@ -5324,7 +5324,7 @@ RefactoringTool: Refactored netpyne/neuromlFuncs.py
              self.connections[projName] = []
  
 @@ -1076,7 +1076,7 @@
-                         'conds': {'popLabel':pop_id, 'cellList': [cellId]}}
+                         'conds': {'pop':pop_id, 'cellList': [cellId]}}
                          
              
 -            if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))
@@ -5413,8 +5413,8 @@ RefactoringTool: Refactored netpyne/pop.py
          # not enough tags to create cells
          else:
              self.tags['numCells'] = 1
--            print 'Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['popLabel'])
-+            print('Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['popLabel']))
+-            print 'Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['pop'])
++            print('Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['pop']))
              cells = self.createCellsFixedNum()
  
          return cells
@@ -5424,15 +5424,15 @@ RefactoringTool: Refactored netpyne/pop.py
              self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
 -            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
 +            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-             cellTags['popLabel'] = self.tags['popLabel']
+             cellTags['pop'] = self.tags['pop']
              cellTags['xnorm'] = randLocs[i,0] # set x location (um)
              cellTags['ynorm'] = randLocs[i,1] # set y location (um)
 @@ -122,7 +122,7 @@
              cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
              cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
              cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
--            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['popLabel'], sim.rank))
-+            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['popLabel'], sim.rank)))
+-            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank))
++            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
          sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
          return cells
  
@@ -5440,8 +5440,8 @@ RefactoringTool: Refactored netpyne/pop.py
                  strFunc = self.tags['density']  # string containing function
                  strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used 
                  if not len(strVars) == 1:
--                    print 'Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['popLabel'])
-+                    print('Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['popLabel']))
+-                    print 'Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['pop'])
++                    print('Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['pop']))
                      return
                  coordFunc = strVars[0] 
                  lambdaStr = 'lambda ' + coordFunc +': ' + strFunc # convert to lambda function 
@@ -5482,15 +5482,15 @@ RefactoringTool: Refactored netpyne/pop.py
              self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
 -            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
 +            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-             cellTags['popLabel'] = self.tags['popLabel']
+             cellTags['pop'] = self.tags['pop']
              cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
              cellTags['ynorm'] = randLocs[i,1]  # calculate y location (um)
 @@ -233,7 +233,7 @@
              cellTags['z'] = sizeZ * randLocs[i,2]  # calculate z location (um)
              cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
              if sim.cfg.verbose: 
--                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
-+                print(('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['popLabel'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank)))
+-                print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
++                print(('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank)))
          sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
          return cells
  
@@ -5500,7 +5500,7 @@ RefactoringTool: Refactored netpyne/pop.py
              self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
 -            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
 +            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-             cellTags['popLabel'] = self.tags['popLabel']
+             cellTags['pop'] = self.tags['pop']
              cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
              for coord in ['x','y','z']:
 @@ -259,7 +259,7 @@
@@ -5518,21 +5518,21 @@ RefactoringTool: Refactored netpyne/pop.py
              self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
 -            cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
 +            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-             cellTags['popLabel'] = self.tags['popLabel']
+             cellTags['pop'] = self.tags['pop']
              cellTags['xnorm'] = gridLocs[i][0] / sim.net.params.sizeX # set x location (um)
              cellTags['ynorm'] = gridLocs[i][1] / sim.net.params.sizeY # set y location (um)
 @@ -299,7 +299,7 @@
              cellTags['y'] = gridLocs[i][1] # set y location (um)
              cellTags['z'] = gridLocs[i][2] # set z location (um)
              cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
--            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['popLabel'], sim.rank))
-+            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['popLabel'], sim.rank)))
+-            if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank))
++            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank)))
          sim.net.lastGid = sim.net.lastGid + numCells
          return cells
  
 @@ -322,7 +322,7 @@
                      self.cellModelClass = sim.PointCell
-                     excludeTags = ['popLabel', 'cellModel', 'cellType', 'numCells', 'density', 
+                     excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 
                                  'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
 -                    params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
 +                    params = {k: v for k,v in self.tags.items() if k not in excludeTags}
@@ -5919,8 +5919,8 @@ RefactoringTool: Refactored netpyne/simFuncs.py
              cellGids.extend(list(sim.net.pops[condition].cellGids)) 
          
          elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
--            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
-+            cellsPop = [gid for gid,tags in allCellTags.items() if tags['popLabel']==condition[0]]
+-            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['pop']==condition[0]]
++            cellsPop = [gid for gid,tags in allCellTags.items() if tags['pop']==condition[0]]
  
              if isinstance(condition[1], list):
                  cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
@@ -5930,10 +5930,10 @@ RefactoringTool: Refactored netpyne/simFuncs.py
      # iterate globals dic in each cellParams
 -    cellGlobs = {k:v for k,v in hParams.iteritems()}
 -    for cellRuleName, cellRule in sim.net.params.cellParams.iteritems():
--        for k,v in getattr(cellRule, 'globs', {}).iteritems():
+-        for k,v in getattr(cellRule, 'globals', {}).iteritems():
 +    cellGlobs = {k:v for k,v in hParams.items()}
 +    for cellRuleName, cellRule in sim.net.params.cellParams.items():
-+        for k,v in getattr(cellRule, 'globs', {}).items():
++        for k,v in getattr(cellRule, 'globals', {}).items():
              if k not in cellGlobs:
                  cellGlobs[k] = v
              elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception
@@ -6192,7 +6192,7 @@ RefactoringTool: Refactored netpyne/simFuncs.py
 @@ -1073,7 +1073,7 @@
          if numCells > 0:
              tsecs = float((trange[1]-trange[0]))/1000.0
-             avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
+             avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
 -            print '   %s : %.3f Hz'%(pop, avgRates[pop])
 +            print('   %s : %.3f Hz'%(pop, avgRates[pop]))
  
@@ -6980,6 +6980,36 @@ Ohio Wesleyan University
 ** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 
+** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
+** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
+** EMAIL LIST
+salvadordura@gmail.com
+billl@neurosim.downstate.edu
+samnemo@gmail.com
+cliff@thekerrlab.com
+btessler92@gmail.com
+joe.w.graham@gmail.com	
+james.chen@downstate.edu
+ahseidenstein@gmail.com
+andrew.knox@cchmc.org
+penggao.1987@gmail.com
+ramazan.tekin@batman.edu.tr
+sergio.angulo@gmail.com
+siddharthamitra2_pbw@indeedemail.com
+adrianquintana@gmail.com
+matteo.cantarelli@gmail.com
+foxy1987@gmail.com
+christoph.metzner@googlemail.com
+mdistasio@gmail.com
+caggiano@gmail.com
+jing.lim.12@ucl.ac.uk
+davidkedz@hotmail.com
+p.gleeson@ucl.ac.uk
+anat.buchin@gmail.com
+lucas.koelman@ucdconnect.ie
+cgfink@owu.edu
+birgit.kriener@medisin.uio.no
+
 * Related tools
 ** NEURON
 Multiscale simulator
@@ -7637,7 +7667,7 @@ netParams['stimParams']['stimList'].append({
 	'source': 'Input_1', 
 	'sec':'soma', 
 	'loc': 0.5, 
-	'conditions': {'popLabel':'PYR', 'cellList': [0,5]}})
+	'conditions': {'pop':'PYR', 'cellList': [0,5]}})
 
 
 

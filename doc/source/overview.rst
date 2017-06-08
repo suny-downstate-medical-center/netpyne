@@ -5,13 +5,18 @@ What is NetPyNE?
 ----------------
 
 NetPyNE (Network development Python package for NEURON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
-Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for experimentalists.  NetPyNe is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
+Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
-See our recent `poster at the Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ for a nice overview!
+For a more detailed overview of NetPyNE see:
 
+- `SLIDES for Computational Neuroscience conference CNS17 <http://neurosimlab.org/salvadord/netpyne.pdf>`_
+
+- `POSTER for Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ 
+
+|
 
 .. image:: figs/overview.png
-	:width: 80%	
+	:width: 70%	
 	:align: center
 
 What can I do with NetPyNE?
@@ -24,6 +29,13 @@ NetPyNE provides a flexible format to specify connectivity, with rules based on 
 Using the high-level network specifications, NetPyNE instantiates the full model (all cells and connections) as a hierarchical Python structure including the NEURON objects necessary for simulation. Based on a set of simulation options (*e.g.,* duration, integration step), NetPyNE runs the model in parallel using MPI, eliminating the burdensome task of manually distributing the workload and gathering data across computing nodes. Optionally NetPyNE plots output data, such as spike raster plots, LFP power spectra, connectivity matrix, or intrinsic time-varying variables (*e.g.,* voltage) of any subset of cells. To facilitate data sharing, the package saves and loads the high-level specifications, instantiated network, and simulation results using common file formats (Pickle, Matlab, JSON or HDF5). NetPyNE can convert instantiated networks to and from NeuroML, a standard data format for exchanging models in computational neuroscience.
 
 NetPyNE has been used to develop a variety of multiscale models: primary motor cortex with cortical depth-dependent connectivity; the claustrum; and sensorimotor cortex that learns to control a virtual arm. The package is easily installed via pip, and includes comprehensive online documentation, a step-by-step tutorial and example networks.
+
+NetPyNE structure
+-----------------
+
+.. image:: figs/structure.png
+	:width: 80%	
+	:align: center
 
 Major Features
 --------------
@@ -64,11 +76,18 @@ Major Features
 	* Local field potential (LFP) calculation and plots (time-resolved and power spectra)
 	* Connectivity matrix at cell or population level (weights, num connections, efficiency, probability, ...)
 	* 2D representation of network cell locations and connections
+ 	* 3D shape plot with option to include color-coded variables (eg, num of synapses) 
+ 	* Normalized transfer entropy and spectral Granger Causality
 
 * Facilitates data sharing: 
 	* Can save/load high-level specs, network instance, simulation configuration and simulation results.
 	* Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
 	* Can export/import to/from NeuroML, the standard format for neural models.
+
+* Batch simulations:
+	* Easy specification of parameters and range of values to explore in batch simulations.
+	* Pre-defined, configurable setups to automatically submit jobs in multicore machines (Bulletin board) or supercomputers (SLURM or PBS Torque)
+	* Analysis and visualization of multidimensional batch simulation results.
 
 
 Questions, suggestions and contributions
@@ -78,7 +97,7 @@ NetPyNE is currently being developed and supported by the Neurosim lab (http://n
 
 NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
 
-For questions or suggestions please add an Issue to github. 
+For questions or suggestions please use the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
 For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes.
 
@@ -102,6 +121,7 @@ About NetPyNE
 
 Using NetPyNE
 ^^^^^^^^^^^^^^^^^^
+
 
 - Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 

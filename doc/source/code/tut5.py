@@ -52,7 +52,7 @@ netParams.connParams['E->all'] = {
   'synMech': 'exc'}                     # synaptic mechanism 
 
 netParams.connParams['I->E'] = {
-  'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
+  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
   'weight': 0.001,                                      # synaptic weight 
   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 

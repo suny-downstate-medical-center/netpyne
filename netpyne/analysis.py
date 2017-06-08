@@ -198,10 +198,10 @@ def getCellsInclude(include):
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
-                cellGids.extend([c['gid'] for c in allCells if c['tags']['popLabel']==condition])
+                cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==condition])
         
         elif isinstance(condition, tuple):  # subset of a pop with relative indices
-            cellsPop = [c['gid'] for c in allCells if c['tags']['popLabel']==condition[0]]
+            cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
@@ -218,7 +218,7 @@ def getCellsInclude(include):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), saveData = None, saveFig = None, 
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None, 
         showFig = True): 
     ''' 
     Raster plot of network cells 
@@ -236,6 +236,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - marker (char): Marker for each spike (default: '|')
         - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
+        - dpi (int): Dots per inch to save fig (default: 100)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
         - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
@@ -255,14 +256,14 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
-    selectedPops = [cell['tags']['popLabel'] for cell in cells]
+    selectedPops = [cell['tags']['pop'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     if netStimLabels: popLabels.append('NetStims')
     popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if popColors: popColorsTmp.update(popColors)
     popColors = popColorsTmp
     if len(cellGids) > 0:
-        gidColors = {cell['gid']: popColors[cell['tags']['popLabel']] for cell in cells}  # dict with color for each gid
+        gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
             spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
         except:
@@ -358,7 +359,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
     
     # Plot stats
-    gidPops = [cell['tags']['popLabel'] for cell in cells]
+    gidPops = [cell['tags']['pop'] for cell in cells]
     popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
     totalSpikes = len(spkts)   
     totalConnections = sum([len(cell['conns']) for cell in cells])   
@@ -374,7 +375,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
                 if numCellSpks == 0:
                     avgRates[pop] = 0
                 else:
-                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/popNum/tsecs
+                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/popNum/tsecs
         if numNetStims:
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in spkinds[numCellSpks:]])/numNetStims/tsecs 
@@ -454,7 +455,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
 
     # show fig 
     if showFig: _showFigure()
@@ -799,7 +800,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     tracesList = sim.cfg.recordTraces.keys()
     tracesList.sort()
     cells, cellGids, _ = getCellsInclude(include)
-    gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
+    gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
 
     # time range
     if timeRange is None:
@@ -828,7 +829,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
-                    plt.title(trace)
+                    plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
@@ -1034,7 +1035,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
         if not ivprops:
             ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
         
-        for cell in [c for c in sim.net.cells if c.tags['popLabel'] in includePost]:
+        for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
             for sec in cell.secs.values():
                 if 'axon' in sec['hSec'].hname() and not includeAxon: continue
                 sec['hSec'].push()
@@ -1209,7 +1210,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     elif groupBy == 'pop': 
         
         # get list of pops
-        popsTempPre = list(set([cell['tags']['popLabel'] for cell in cellsPre]))
+        popsTempPre = list(set([cell['tags']['pop'] for cell in cellsPre]))
         popsPre = [pop for pop in sim.net.allPops if pop in popsTempPre]+netStimPopsPre
         popIndsPre = {pop: ind for ind,pop in enumerate(popsPre)}
 
@@ -1217,7 +1218,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             popsPost = popsPre
             popIndsPost = popIndsPre
         else:
-            popsTempPost = list(set([cell['tags']['popLabel'] for cell in cellsPost]))
+            popsTempPost = list(set([cell['tags']['pop'] for cell in cellsPost]))
             popsPost = [pop for pop in sim.net.allPops if pop in popsTempPost]+netStimPopsPost
             popIndsPost = {pop: ind for ind,pop in enumerate(popsPost)}
         
@@ -1234,7 +1235,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             if pop in netStimPopsPre:
                 numCellsPopPre[pop] = -1
             else:
-                numCellsPopPre[pop] = len([cell for cell in cellsPre if cell['tags']['popLabel']==pop])
+                numCellsPopPre[pop] = len([cell for cell in cellsPre if cell['tags']['pop']==pop])
 
         if includePre == includePost:
             numCellsPopPost = numCellsPopPre
@@ -1244,7 +1245,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                 if pop in netStimPopsPost:
                     numCellsPopPost[pop] = -1
                 else:
-                    numCellsPopPost[pop] = len([cell for cell in cellsPost if cell['tags']['popLabel']==pop])
+                    numCellsPopPost[pop] = len([cell for cell in cellsPost if cell['tags']['pop']==pop])
 
         maxConnMatrix = np.zeros((len(popsPre), len(popsPost)))
         if feature == 'convergence': maxPostConnMatrix = np.zeros((len(popsPre), len(popsPost)))
@@ -1272,14 +1273,14 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
                     prePopLabel = conn['preLabel']
                 else:
                     preCell = next((cell for cell in cellsPre if cell['gid']==conn['preGid']), None)
-                    prePopLabel = preCell['tags']['popLabel'] if preCell else None
+                    prePopLabel = preCell['tags']['pop'] if preCell else None
                 
                 if prePopLabel in popIndsPre:
                     if feature in ['weight', 'strength']: 
-                        weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['popLabel']]] += conn['weight']
+                        weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn['weight']
                     elif feature == 'delay': 
-                        delayMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['popLabel']]] += conn['delay'] 
-                    countMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['popLabel']]] += 1    
+                        delayMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn['delay'] 
+                    countMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += 1    
     
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
@@ -1531,12 +1532,12 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
     cells, cellGids, _ = getCellsInclude(include)           
-    selectedPops = [cell['tags']['popLabel'] for cell in cells]
+    selectedPops = [cell['tags']['pop'] for cell in cells]
     popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if popColors: popColorsTmp.update(popColors)
     popColors = popColorsTmp
-    cellColors = [popColors[cell['tags']['popLabel']] for cell in cells]
+    cellColors = [popColors[cell['tags']['pop']] for cell in cells]
 
     # front view
     if view == 'xy':
@@ -1845,7 +1846,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     if include is None: include = [] # If not defined, initialize as empty list
 
     cells, cellGids, _ = getCellsInclude(include)
-    gidPops = {cell['gid']: cell['tags']['popLabel'] for cell in cells}
+    gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
 
     if not trace: 
         print 'Error: Missing trace to to plot EPSP amplitudes'
@@ -1887,6 +1888,8 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     h.set_xticks(range(number))
     h.set_xticklabels(range(1, number+1))
     plt.legend(gidPops.values())
+    if amp == 'ratio':
+        plt.plot((0, number-1), (1.0, 1.0), ':', color= 'gray')
 
     # save figure
     if saveFig: 

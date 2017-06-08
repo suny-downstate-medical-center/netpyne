@@ -43,12 +43,12 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
-netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'popLabel': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
 
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
-    'preConds': {'popLabel': 'PYR'}, 'postConds': {'popLabel': 'PYR'},
+    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': 'PYR'},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -60,8 +60,8 @@ netParams.connParams['PYR->PYR'] = {
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 1*1e3 # Duration of the simulation, in ms
-simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.duration = 0.1#*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.1 #0.025 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network

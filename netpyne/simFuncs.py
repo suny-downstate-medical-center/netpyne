@@ -78,8 +78,10 @@ def setNet (net):
 ###############################################################################
 def setNetParams (params):
     if params and isinstance(params, specs.NetParams):
-        sim.net.params = params
+        paramsDict = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
+        sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
     elif params and isinstance(params, dict):
+        params = replaceKeys(params, 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(params)
     else:
         sim.net.params = specs.NetParams()
@@ -361,6 +363,7 @@ def clearAll ():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj):
+    #return hash(obj) & 0xffffffff  # hash func 
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
@@ -434,6 +437,25 @@ def replaceItemObj (obj, keystart, newval):
     return obj
 
 
+###############################################################################
+### Recursivele replace dict keys
+###############################################################################
+def replaceKeys (obj, oldkey, newkey):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict, Dict, ODict, OrderedDict]:
+                replaceKeys(item, oldkey, newkey)
+
+    elif type(obj) in [dict, Dict, ODict, OrderedDict]:
+        for key in obj.keys():
+            val = obj[key]
+            if type(val) in [list, dict, Dict, ODict, OrderedDict]:
+                replaceKeys(val, oldkey, newkey)
+            if key == oldkey:
+                obj[newkey] = obj.pop(oldkey)
+    return obj
+
+    
 ###############################################################################
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
@@ -565,7 +587,7 @@ def cellByGid (gid):
 ###############################################################################
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
-def readCmdLineArgs ():
+def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -591,7 +613,7 @@ def readCmdLineArgs ():
 
     if not cfgPath:
         try:
-            cfgModule = imp.load_source('cfg', 'cfg.py')
+            cfgModule = imp.load_source('cfg', simConfigDefault)
             cfg = cfgModule.cfg
             __main__.cfg = cfg
         except:
@@ -600,7 +622,7 @@ def readCmdLineArgs ():
 
     if not netParamsPath:
         try:
-            netParamsModule = imp.load_source('netParams', 'netParams.py')
+            netParamsModule = imp.load_source('netParams', netParamsDefault)
             netParams = netParamsModule.netParams
         except:
             print '\nWarning: Could not load netParams from command line path or from default netParams.py'
@@ -658,6 +680,12 @@ def setupRecording ():
         for key in sim.cfg.recordTraces.keys(): sim.simData[key] = Dict()  # create dict to store traces
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
 
+        # record h.t
+        if len(sim.simData) > 0:
+            sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+            sim.simData['t'].record(h._ref_t)
+
+        # print recorded traces
         cat = 0
         total = 0
         for key in sim.simData:
@@ -697,7 +725,7 @@ def getCellsList (include):
             cellGids.extend(list(sim.net.pops[condition].cellGids))
 
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
-            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['popLabel']==condition[0]]
+            cellsPop = [gid for gid,tags in allCellTags.iteritems() if tags['pop']==condition[0]]
 
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
@@ -717,7 +745,7 @@ def setGlobals ():
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
     for cellRuleName, cellRule in sim.net.params.cellParams.iteritems():
-        for k,v in getattr(cellRule, 'globs', {}).iteritems():
+        for k,v in getattr(cellRule, 'globals', {}).iteritems():
             if k not in cellGlobs:
                 cellGlobs[k] = v
             elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception
@@ -798,7 +826,7 @@ def preRun ():
             cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
-        pop = sim.net.pops[cell.tags['popLabel']]
+        pop = sim.net.pops[cell.tags['pop']]
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
@@ -895,7 +923,7 @@ def gatherData ():
         for cell in sim.net.cells:
             cell.conns = []
 
-    simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+    simDataVecs = ['t','spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
 
@@ -1080,7 +1108,7 @@ def popAvgRates (trange = None, show = True):
         numCells = float(len(sim.net.allPops[pop]['cellGids']))
         if numCells > 0:
             tsecs = float((trange[1]-trange[0]))/1000.0
-            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['popLabel']==pop])/numCells/tsecs
+            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
             print '   %s : %.3f Hz'%(pop, avgRates[pop])
 
     return avgRates

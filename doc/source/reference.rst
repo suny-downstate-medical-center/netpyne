@@ -163,11 +163,11 @@ When ``cellModel`` is 'NetStim' or 'VecStim' the following parameters are allowe
 
 * **number** - Max number of spikes generated (default = 1e12)
 
-* **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
+* **seed** - Seed for randomizer (optional; defaults to value set in ``simConfig.seeds['stim']``)
 
-* **spkTimes** (only for 'VecStim') - List of spike times (e.g. ``[1, 10, 40, 50]``, ``range(1,500,10)``, or any variable containing a Python list) 
+* **spkTimes** (only for 'VecStim') - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list) 
 
-* **pulses** (only for 'VecStim') - List of spiking pulses; each item includes the 'start' (ms), 'end' (ms), 'rate' (Hz), and 'noise' (0 to 1) pulse parameters. See example below.
+* **pulses** (only for 'VecStim') - List of spiking pulses; each item includes the ``start`` (ms), ``end`` (ms), ``rate`` (Hz), and ``noise`` (0 to 1) pulse parameters. See example below.
 
 Example of point process artificial cell populations::
 
@@ -635,7 +635,7 @@ The code below shows an example of how to create different types of stimulation 
 	    'source': 'Input_1', 
 	    'sec':'soma', 
 	    'loc': 0.5, 
-	    'conds': {'pop':'PYR', 'cellList': range(8)}})
+	    'conds': {'pop':'PYR', 'cellList': range(8)}}
 
 	netParams.stimTargetParams['Input3->Basket'] = {
 	    'source': 'Input_3', 

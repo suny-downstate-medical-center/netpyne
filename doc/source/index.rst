@@ -13,7 +13,7 @@ Table of Contents
 ------------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
    overview
    install

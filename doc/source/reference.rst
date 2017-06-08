@@ -180,7 +180,7 @@ Example of point process artificial cell populations::
 	
 	# create list of pulses (each item is a dict with pulse params) 
 	pulses = [{'start': 10, 'end': 100, 'rate': 200, 'noise': 0.5},
-			{'start': 400, 'end': 500, 'rate': 1, 'noise': 0.0})] 
+		{'start': 400, 'end': 500, 'rate': 1, 'noise': 0.0})] 
 
 	netParams.popParams['artif3'] = {'cellModel': 'VecStim', 'numCells': 100, 'spkTimes': spkTimes, 'pulses': pulses}  # VecStim with spike times
 

@@ -235,8 +235,8 @@ The full code to import all cell models above and create a network with them is 
 .. ------------------------------------------------------------
 
 
-Create population as list of individual cells 
-------------------------------------------------
+.. Create population as list of individual cells 
+.. ------------------------------------------------
 .. (eg. measured experimentally)
 
 

@@ -145,21 +145,44 @@ It is also possible to create populations of artificial cells, i.e. point proces
 
 * **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
-* **cellModel** - Needs to be set to ``NetStim``.
+* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` o ``VecStim``).
+
+* **numCells** - Number of cells
+
+* **parameters of artificial cell** - Specific to each point process artificial cell (e.g. ``IntFire2`` includes 'taum', 'taus', 'ib')
+
+When ``cellModel`` is 'NetStim' or 'VecStim' the following parameters are allowed:
+
+* **interval** - Spike interval in ms.
 
 * **rate** - Firing rate in Hz (note this is the inverse of the NetStim interval property).
 
 * **noise** - Fraction of noise in NetStim (0 = deterministic; 1 = completely random).
 
+* **start** - Time of first spike in ms (default = 0).
+
 * **number** - Max number of spikes generated (default = 1e12)
 
 * **seed** - Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])
 
-* **numCells** - Number of cells
+* **spkTimes** (only for 'VecStim') - List of spike times (e.g. ``[1, 10, 40, 50]``, ``range(1,500,10)``, or any variable containing a Python list) 
 
-Example of NetStim population::
+* **pulses** (only for 'VecStim') - List of spiking pulses; each item includes the 'start' (ms), 'end' (ms), 'rate' (Hz), and 'noise' (0 to 1) pulse parameters. See example below.
+
+Example of point process artificial cell populations::
+
+	netParams.popParams['artif1'] = {'cellModel': 'IntFire2', 'taum': 100, 'noise': 0.5, 'numCells': 100}  # Intfire2
+
+	netParams.popParams['artif2'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'numCells': 100}  # NetsStim
 	
-	netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 100, 'noise': 0.5, 'numCells': 100}  # background inputs
+	# create custom list of spike times
+	spkTimes = range(0,1000,20) + [138, 155,270]  
+	
+	# create list of pulses (each item is a dict with pulse params) 
+	pulses = [{'start': 10, 'end': 100, 'rate': 200, 'noise': 0.5},
+			{'start': 400, 'end': 500, 'rate': 1, 'noise': 0.0})] 
+
+	netParams.popParams['artif3'] = {'cellModel': 'VecStim', 'numCells': 100, 'spkTimes': spkTimes, 'pulses': pulses}  # VecStim with spike times
 
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 

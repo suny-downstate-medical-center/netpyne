@@ -820,12 +820,13 @@ if neuromlExists:
                         
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
                         
-                        if cm.ion and cm.ion == 'non_specific':
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
                             mech['e'] = erev
                         else:
-                            if not cellRule['secs'][section_name]['ions'].has_key(cm.ion):
-                                cellRule['secs'][section_name]['ions'][cm.ion] = {}
-                            cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
+                            if not cellRule['secs'][section_name]['ions'].has_key(ion):
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+                            cellRule['secs'][section_name]['ions'][ion]['e'] = erev
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
@@ -840,13 +841,14 @@ if neuromlExists:
                         
                         #TODO: erev!!
                         
-                        if cm.ion and cm.ion == 'non_specific':
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
                             pass
                             ##mech['e'] = erev
                         else:
-                            if not cellRule['secs'][section_name]['ions'].has_key(cm.ion):
-                                cellRule['secs'][section_name]['ions'][cm.ion] = {}
-                            ##cellRule['secs'][section_name]['ions'][cm.ion]['e'] = erev
+                            if not cellRule['secs'][section_name]['ions'].has_key(ion):
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+                            ##cellRule['secs'][section_name]['ions'][ion]['e'] = erev
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
                     raise Exception("<channelDensityGHK> not yet supported!")
@@ -944,6 +946,18 @@ if neuromlExists:
               
             self.gids[population_id] = [-1]*size
 
+        def _determine_ion(self, channel_density):
+            ion = channel_density.ion
+            if not ion:
+                if 'na' in channel_density.ion_channel.lower():
+                    ion = 'na'
+                elif 'k' in channel_density.ion_channel.lower():
+                    ion = 'k'
+                elif 'ca' in channel_density.ion_channel.lower():
+                    ion = 'ca'
+                else:
+                    ion = 'non_specific'
+            return ion
 
         def _convert_to_nrn_section_location(self, population_id, seg_id, fract_along):
             

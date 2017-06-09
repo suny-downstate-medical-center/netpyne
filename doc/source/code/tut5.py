@@ -43,7 +43,7 @@ netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3
 netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
 
-# Cell connectivity rules
+## Cell connectivity rules
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
   'probability': 0.1 ,                  # probability of connection
@@ -69,10 +69,10 @@ simConfig.recordStep = 1             # Step size in ms to save data (eg. V trace
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig': 'tut5_raster_3.png', 'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'saveFig': 'tut5_traces_3.png', 'include': [('E2',0)]}#, ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig': 'tut5_net_3.png'}# True            # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotConn'] = {'saveFig': 'tut5_conn_3.png'}#True             # plot connectivity matrix
+simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

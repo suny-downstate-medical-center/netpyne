@@ -513,11 +513,6 @@ To make the probability of connection decay exponentiall as a function of distan
 
 Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.
 
-.. image:: figs/tut5_3.png
-	:width: 95%
-	:align: center
-
-
 .. image:: figs/tut5_conn_3.png
 	:width: 17%
 
@@ -567,7 +562,7 @@ Running the above network with different types of stimulation should produce the
 
 The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
-.. image:: figs/tut6.png
+.. image:: figs/tut6_raster.png
 	:width: 50%
 	:align: center
 

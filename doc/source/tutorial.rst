@@ -487,10 +487,6 @@ Finally, we can specify the delay based on the distance between the cells (``dis
 
 Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells:
 
-.. image:: figs/tut5_2.png
-	:width: 95%
-	:align: center
-
 .. image:: figs/tut5_conn_2.png
 	:width: 17%
 
@@ -520,6 +516,19 @@ Notice that the 2D network diagram now shows inhibitory connections in blue, and
 .. image:: figs/tut5_3.png
 	:width: 95%
 	:align: center
+
+
+.. image:: figs/tut5_conn_3.png
+	:width: 17%
+
+.. image:: figs/tut5_net_3.png
+	:width: 17%
+
+.. image:: figs/tut5_raster_3.png
+	:width: 35%
+
+.. image:: figs/tut5_traces_3.png
+	:width: 30%
 
 
 The full tutorial code for this example is available here: :download:`tut5.py <code/tut5.py>`.

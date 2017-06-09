@@ -51,12 +51,12 @@ netParams.connParams['E->all'] = {
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'}                     # synaptic mechanism 
 
-# netParams.connParams['I->E'] = {
-#   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
-#   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-#   'weight': 0.001,                                      # synaptic weight 
-#   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-#   'synMech': 'inh'}                                     # synaptic mechanism 
+netParams.connParams['I->E'] = {
+  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
+  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+  'weight': 0.001,                                      # synaptic weight 
+  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
+  'synMech': 'inh'}                                     # synaptic mechanism 
 
 
 # Simulation options
@@ -69,10 +69,10 @@ simConfig.recordStep = 1             # Step size in ms to save data (eg. V trace
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig': 'tut5_raster_2.png', 'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'saveFig': 'tut5_traces_2.png', 'include': [('E2',0)]}#, ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig': 'tut5_net_2.png'}# True            # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotConn'] = {'saveFig': 'tut5_conn_2.png'}#True             # plot connectivity matrix
+simConfig.analysis['plotRaster'] = {'saveFig': 'tut5_raster_3.png', 'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'saveFig': 'tut5_traces_3.png', 'include': [('E2',0)]}#, ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'saveFig': 'tut5_net_3.png'}# True            # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotConn'] = {'saveFig': 'tut5_conn_3.png'}#True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

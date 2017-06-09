@@ -368,6 +368,13 @@ def id32 (obj):
 
 
 ###############################################################################
+# Initialize the stim randomizer
+###############################################################################
+def _init_stim_randomizer(rand, stimType, gid, seed):
+    rand.Random123(sim.id32(stimType), gid, seed)
+
+
+###############################################################################
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
 def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
@@ -826,7 +833,8 @@ def preRun ():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            cell.hRandom.Random123(sim.id32('cell_netstim'), cell.gid, cell.params['seed'])
+            #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
+            _init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
         pop = sim.net.pops[cell.tags['pop']]
@@ -835,7 +843,8 @@ def preRun ():
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(sim.id32('stim_'+stim['source']), cell.gid, stim['seed'])
+                #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+                _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
                 stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 

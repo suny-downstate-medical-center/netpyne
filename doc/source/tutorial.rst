@@ -172,8 +172,8 @@ Take a moment to examine the nested dictionary structure used to define the cell
 	netParams.cellParams['PYRrule'] = {		# cell rule label
 		'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
 		'secs': {'soma':					# sections 
-					{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-					'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
+			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
+			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
 
 
 All methods are equally valid as long as the resulting structure looks like this (order of elements doesn't matter in dictionaries)::
@@ -181,7 +181,7 @@ All methods are equally valid as long as the resulting structure looks like this
 	>>> netParams.cellParams['PYRrule']
 	{'conds': {'cellType': 'PYR'},
  	'secs': {'soma': {'geom': {'L': 18.8, 'Ra': 123.0, 'diam': 18.8},
-    'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
+    	'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
 
 
 Synaptic mechanisms parameters
@@ -205,7 +205,7 @@ Stimulation
 Let's now add a some background stimulation to the cells using ``NetStim`` (NEURON's artificial spike generator). We will create a source of stimulation labeled ``bkg`` and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
 
 	# Stimulation parameters
-	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5,}
+	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
 
 Next we will specify what cells will be targeted by this stimulation. In this case we want all pyramidal cells so we set the conditions to ``{'cellType': 'PYR'}``. Finally we want the NetStims to be connected with a weight of 0.01, a delay of 5 ms, and to target the ``exc`` synaptic mechanism::
 
@@ -299,6 +299,14 @@ You should get the raster plot and voltage trace figures shown below. Notice how
 	:width: 100%
 	:align: center
 
+.. image:: figs/tut2_net.png
+	:width: 30%
+
+.. image:: figs/tut2_raster.png
+	:width: 33%
+
+.. image:: figs/tut2_traces.png
+	:width: 33%
 
 Feel free to explore the effect of changing any of the model parameters, e.g. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 

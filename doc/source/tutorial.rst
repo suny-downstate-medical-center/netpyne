@@ -463,16 +463,16 @@ If we run the model at this point we will see the cells are distributed into thr
 	:width: 95%
 	:align: center
 
-.. image:: figs/tut5_conn1.png
+.. image:: figs/tut5_conn_1.png
 	:width: 19%
 
-.. image:: figs/tut5_net1.png
+.. image:: figs/tut5_net_1.png
 	:width: 19%
 
-.. image:: figs/tut5_raster.png
+.. image:: figs/tut5_raster_1.png
 	:width: 30%
 
-.. image:: figs/tut5_traces.png
+.. image:: figs/tut5_traces_1.png
 	:width: 30%
 
 Let's now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First, let's  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 

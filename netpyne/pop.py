@@ -77,7 +77,6 @@ class Pop (object):
     def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
         cells = []
-        #seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
         self.rand.uniform(0, 1)
         vec = h.Vector(self.tags['numCells']*3)
@@ -174,7 +173,6 @@ class Pop (object):
                 maxDensity = max(map(densityFunc, (np.arange(minRange, maxRange, interval))))  # max cell density 
                 maxCells = volume * maxDensity  # max number of cells based on max value of density func 
                 
-                # seed(sim.id32('%d' % sim.cfg.seeds['loc']+sim.net.lastGid))  # reset random number generator
                 self.rand.Random123(int(maxDensity), sim.net.lastGid, sim.cfg.seeds['loc'])
                 locsAll = minRange + ((maxRange-minRange)) * np.array([self.rand.uniform(0, 1) for i in range(int(maxCells))])  # random location values 
                 locsProb = np.array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)

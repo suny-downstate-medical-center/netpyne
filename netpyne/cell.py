@@ -418,10 +418,10 @@ class CompartCell (Cell):
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
                                 seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
-                            elif ionParamName == 'init_ext_conc':
+                            elif ionParamName == 'o':
                                 seg.__setattr__('%so'%ionName,ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
-                            elif ionParamName == 'init_int_conc':
+                            elif ionParamName == 'i':
                                 seg.__setattr__('%si'%ionName,ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
@@ -938,9 +938,9 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
-
+                
         sec = self.secs[params['sec']]
-        
+
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
         if params['type'] == 'NetStim':
@@ -1067,6 +1067,7 @@ class CompartCell (Cell):
 
         if isinstance(params['weight'],list):
             weights = [scaleFactor * w for w in params['weight']]
+            if len(weights) == 1: weights = [weights[0]] * params['synsPerConn']
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
         
@@ -1110,7 +1111,11 @@ class CompartCell (Cell):
             if len(secLabels) == 1:  # if single section, create all syns there
                 synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
                 if isinstance(params['loc'], list):
-                    if len(params['loc']) == synsPerConn: synMechLocs = params['loc']
+                    if len(params['loc']) == synsPerConn: 
+                        synMechLocs = params['loc']
+                    else:
+                        print "Error: The length of the list of locations does not match synsPerConn (distributing uniformly)"
+                        synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
@@ -1236,62 +1241,76 @@ class PointCell (Cell):
             if 'seed' not in self.params: 
                 self.params['seed'] = sim.cfg.seeds['stim']
 
-            # interval
+            # convert rate to interval
+            if 'rate' in self.params:
+                self.params['interval'] = 1000.0/self.params['rate'] 
+
+            # if interval
             if 'interval' in self.params:
+                # set interval, start and noise params
                 interval = self.params['interval'] 
-            else:
-                return
+                start = self.params['start'] if 'start' in self.params else 0.0
+                noise = self.params['noise'] if 'noise' in self.params else 0.0
 
-            # set start and noise params
-            start = self.params['start'] if 'start' in self.params else 0.0
-            noise = self.params['noise'] if 'noise' in self.params else 0.0
+                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
-            # fixed interval of duration (1 - noise)*interval 
-            fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
-            numSpks = len(fixedInterval)
+                # fixed interval of duration (1 - noise)*interval 
+                fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                numSpks = len(fixedInterval)
 
-            maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
-
-            # randomize the first spike so on average it occurs at start + noise*interval
-            # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
-            if noise == 0.0:
-                vec = h.Vector(len(fixedInterval))
-                spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
-            else:
-                # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
-                rand = h.Random()
-                rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
-
-                # Method 1: vec length depends on duration -- not reproducible
-                # vec = h.Vector(numSpks)
-                # rand.negexp(noise*interval)
-                # vec.setrand(rand)
-                # negexpInterval= np.array(vec)                     
-                # #print negexpInterval
-                # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
-
-                if numSpks < 100:
-                    # Method 2: vec length=1, slower but reproducible
-                    vec = h.Vector(1) 
-                    rand.negexp(noise*interval)
-                    negexpInterval = []
-                    for i in range(numSpks):
-                        vec.setrand(rand)
-                        negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
-                    spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
-
-                elif numSpks < maxReproducibleSpks:
-                    # Method 3: vec length=maxReproducibleSpks, then select subset; slower but reproducible
-                    vec = h.Vector(maxReproducibleSpks)
-                    rand.negexp(noise*interval)
-                    vec.setrand(rand)
-                    negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
-                    spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
-
+                # randomize the first spike so on average it occurs at start + noise*interval
+                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)    
+                if noise == 0.0:
+                    vec = h.Vector(len(fixedInterval))
+                    spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
                 else:
-                    print '\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks)
-                    import sys
-                    sys.exit() 
+                    # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
+                    rand = h.Random()
+                    rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+
+                    # Method 1: vec length depends on duration -- not reproducible
+                    # vec = h.Vector(numSpks)
+                    # rand.negexp(noise*interval)
+                    # vec.setrand(rand)
+                    # negexpInterval= np.array(vec)                     
+                    # #print negexpInterval
+                    # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                    if numSpks < 100:
+                        # Method 2: vec length=1, slower but reproducible
+                        vec = h.Vector(1) 
+                        rand.negexp(noise*interval)
+                        negexpInterval = []
+                        for i in range(numSpks):
+                            vec.setrand(rand)
+                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
+                        spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
+
+                    elif numSpks < maxReproducibleSpks:
+                        # Method 3: vec length=maxReproducibleSpks, then select subset; slower but reproducible
+                        vec = h.Vector(maxReproducibleSpks)
+                        rand.negexp(noise*interval)
+                        vec.setrand(rand)
+                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
+                        spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                    else:
+                        print '\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks)
+                        return
+
+            # if spkTimess
+            elif 'spkTimes' in self.params:
+                spkTimes = self.params['spkTimes']
+                if type(spkTimes) not in (list,tuple,np.array):
+                    print '\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array'
+                    return
+                spkTimes = np.array(spkTimes)
+                vec = h.Vector(len(spkTimes))
+            
+            # missing params
+            else:
+                print '\nError: VecStim requires interval, rate or spkTimes'
+                return
 
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:

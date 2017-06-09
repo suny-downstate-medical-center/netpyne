@@ -36,12 +36,12 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'popLabel': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
  
 # Connectivity parameters
 netParams.connParams['hop->hop'] = {
-    'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
     'delay': 5}                         # delay 
@@ -99,7 +99,7 @@ sim.saveData()                        # save params, cell info and sim output to
 sim.analysis.plotData()                   # plot spike raster
 
 # modify cells geometry
-sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+sim.net.modifyCells({'conds': {'pop': 'hop'}, 
                     'secs': {'soma': {'geom': {'L': 160}}}})
 
 sim.simulate()

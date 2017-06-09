@@ -63,7 +63,7 @@ if cfg.addIClamp:
 		
 		# connect stim source to target
 		netParams.stimTargetParams[iclabel+'_'+ic['pop']] = \
-			{'source': iclabel, 'conds': {'popLabel': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
+			{'source': iclabel, 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
 
 
 ###############################################################################
@@ -79,5 +79,5 @@ if cfg.addNetStim:
 
 		# connect stim source to target
 		netParams.stimTargetParams[nslabel+'_'+ns['pop']] = \
-			{'source': nslabel, 'conds': {'popLabel': ns['pop']}, 'sec': ns['sec'], 'loc': ns['loc'],
+			{'source': nslabel, 'conds': {'pop': ns['pop']}, 'sec': ns['sec'], 'loc': ns['loc'],
 			 'synMech': ns['synMech'], 'weight': ns['weight'], 'delay': ns['delay']}

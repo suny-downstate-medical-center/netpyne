@@ -1,3 +1,45 @@
+# Version 0.7.0
+
+- Enabled use of VecStim spkTimes pops with individual list of cells
+
+- Replaced 'pop' with 'popLabel' (added fix for backward compatibility) (issue #213)
+
+- Can now add arbitrary set of spike times to VecStim pop 
+
+- Dict with popColors can be passed to plotRaster() and plot2Dnet()
+
+- Added analysis.plotEPSPAmp()
+
+- readCmdLineArgs() now accepts default paths for cfg and netParams
+
+- Added option to customize command in batch hpc runs (e.g. 'mpirun' vs 'ibrun')
+
+- Added dpi param to plotRaster()
+
+- Added recording of h.t to simData
+
+- Replaced ions 'init_ext_conc' and 'init_int_conc' with 'o' and 'i' (issue #151)
+
+- Replaced 'globs' with 'globals'
+
+- Fixed bug in import of ion concentrations
+
+- Fixed bug in title of plotTraces()
+
+- Fixed bug when setting wrong num of weights or locs for synsPerConn>1
+
+- Fixed bug: subConn rules now update weight if different weightNorm 
+
+- Fixed bug: missing call to noiseFromRandom() for NetStims
+
+- Fixed bug setting pop density with absoulute location ranges
+
+- Fixed missing NeuroML message so only appears in master node
+
+- Fixed bug in plotConn
+
+- Fixed bug - stimTargetParams now accepts a list of secs for 'sec' param
+
 # Version 0.6.9
 
 - Improved support for NeuroML export
@@ -85,7 +127,7 @@
 
 - Added option to importCell based on instantiated cell (not just template or class)
 
-- Modified importCellParams to store mod mechanism global variables in cellRule['globs']
+- Modified importCellParams to store mod mechanism global variables in cellRule['globals']
 
 - Added support to export gap junctions to NeuroML
 

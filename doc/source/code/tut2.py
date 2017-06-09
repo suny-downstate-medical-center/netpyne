@@ -23,8 +23,8 @@ netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType':
 
 ## Cell connectivity rules
 netParams.connParams['S->M'] = { 	#  S -> M label
-	'preConds': {'popLabel': 'S'}, 	# conditions of presyn cells
-	'postConds': {'popLabel': 'M'}, # conditions of postsyn cells
+	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
+	'postConds': {'pop': 'M'}, # conditions of postsyn cells
 	'probability': 0.5, 			# probability of connection
 	'weight': 0.01, 				# synaptic weight 
 	'delay': 5,						# transmission delay (ms) 

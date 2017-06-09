@@ -8,7 +8,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 
 # Network and connections
 netParams.addPopParams('hop', {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 1})
-netParams.addConnParams('hop->hop', {'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5})
+netParams.addConnParams('hop->hop', {'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'}, 'weight': 0.0, 'synMech': 'inh', 'delay': 5})
 netParams.addStimSourceParams('bg', {'type': 'IClamp', 'delay': 10, 'dur': int(1000), 'amp': 0.5})
 
 # cells
@@ -18,7 +18,7 @@ netParams.addCellParams('hh_PYR',
                          'mechs':  {'hh' : {'gnabar': 0.10, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
 netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0})
 netParams.addSynMechParams('inh', {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80})
-netParams.addStimTargetParams('bg->hop', {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'hop'}})
+netParams.addStimTargetParams('bg->hop', {'source': 'bg', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'hop'}})
 
 # Simulation parameters
 simConfig.duration = 500     # Duration of the simulation, in ms

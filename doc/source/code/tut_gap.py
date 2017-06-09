@@ -34,13 +34,13 @@ netParams.cellParams['PYR'] = cellParams
 
 # Connections
 netParams.connParams['bg->PYR1'] = {
-    'preConds': {'popLabel': 'background'}, 'postConds': {'popLabel': 'PYR1'}, # background -> PYR
+    'preConds': {'pop': 'background'}, 'postConds': {'pop': 'PYR1'}, # background -> PYR
     'weight': 0.1,                    # fixed weight of 0.08
     'synMech': 'AMPA',                     # target NMDA synapse
     'delay': 'uniform(1,5)'}           # uniformly distributed delays between 1-5ms
 
 netParams.connParams['PYR1->PYR2'] = {
-    'preConds': {'popLabel': 'PYR1'}, 'postConds': {'popLabel': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
+    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
     'weight': 200.0,              
     'synMech': 'esyn',                   
     'gapJunction': True,

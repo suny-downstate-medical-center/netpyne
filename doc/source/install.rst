@@ -21,9 +21,9 @@ Note: It is possible to use the NetPyNE package without NEURON, to convert model
 Install via pip
 ----------------
 
-To install the the package run ``pip install netpyne``
+To install the the package run ``pip install netpyne`` (Linux or Mac OS) or ``python -m pip install netpyne`` (Windows)
 
-To upgrade to a new version run ``pip install netpyne -U`
+To upgrade to a new version run ``pip install netpyne -U`` (Linux or Mac OS) or ``python -m pip install -U pip`` (Windows)
 
 If you need to install ``pip`` go to `this link <https://pip.pypa.io/en/stable/installing/>`_
 

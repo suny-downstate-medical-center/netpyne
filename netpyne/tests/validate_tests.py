@@ -271,8 +271,8 @@ class RunNetPyneTests():
             # params.netParams.cellParams['inValidCellModel'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["cellModelsTest"].append(params)
             #
-            # # geom test
-            # self.paramsMap["cell"]["geomTest"] = []
+            # geom test
+            self.paramsMap["cell"]["geomTest"] = []
             #
             # # valid geom rule
             # params = ParamsObj()
@@ -343,14 +343,14 @@ class RunNetPyneTests():
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
             # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
-            #
+
             # # invalid geom rule
             # params = ParamsObj()
             # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
             # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             # cellRule['secs']['soma']['geom'] = {'xy' : 2.3 }                           # soma geometry
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # params.netParams.cellParams['invalidGeom3'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
             #
             # # invalid geom rule
@@ -359,7 +359,7 @@ class RunNetPyneTests():
             # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             # cellRule['secs']['soma']['geom'] = {}                           # soma geometry
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # params.netParams.cellParams['invalidGeom4'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
             #
             # # invalid geom rule
@@ -368,7 +368,7 @@ class RunNetPyneTests():
             # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             # cellRule['secs']['soma']['geom'] = {'pt3d':[2,3,4]}                           # soma geometry
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # params.netParams.cellParams['invalidGeom5'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
             #
             # # invalid geom rule
@@ -377,7 +377,7 @@ class RunNetPyneTests():
             # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             # cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4],[3,4,5]]}                           # soma geometry
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # params.netParams.cellParams['invalidGeom6'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
             #
             # # invalid geom rule
@@ -386,9 +386,9 @@ class RunNetPyneTests():
             # cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
             # cellRule['secs']['soma']['geom'] = {'pt3d':[[2,3,4,4],[3,4,"a",3]]}                           # soma geometry
             # cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-            # params.netParams.cellParams['invalidGeom2'] = cellRule # add dict with params for this pop
+            # params.netParams.cellParams['invalidGeom7'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["geomTest"].append(params)
-            #
+
             # # topology test
             # self.paramsMap["cell"]["topologyTest"] = []
             #
@@ -584,7 +584,7 @@ class RunNetPyneTests():
             #
             # params.netParams.cellParams['invalidMechs4'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["mechsTest"].append(params)
-
+            #
             # # ions test
             # self.paramsMap["cell"]["ionsTest"] = []
             #
@@ -678,7 +678,7 @@ class RunNetPyneTests():
             #
             # params.netParams.cellParams['invalidIons4'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["ionsTest"].append(params)
-
+            #
             # # pointps test
             # self.paramsMap["cell"]["pointpsTest"] = []
             #
@@ -725,7 +725,7 @@ class RunNetPyneTests():
             #
             # params.netParams.cellParams['invalidPointPs2'] = cellRule # add dict with params for this pop
             # self.paramsMap["cell"]["pointpsTest"].append(params)
-
+            #
             # # secList test
             # self.paramsMap["cell"]["secListTest"] = []
             #
@@ -786,28 +786,24 @@ class RunNetPyneTests():
             # secList test
             self.paramsMap["cell"]["spikeGenLocTest"] = []
 
-            # valid pointps rule
-            params = ParamsObj()
-
-            cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
-            cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
-            cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
-            cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-
-            cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-            cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-            cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
-            cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
-
-            cellRule['secs']['axon'] = {'geom': {}, 'topol': {}, 'mechs': {}}
-            cellRule['secs']['axon']['spikeGenLoc'] = 0.7
-
-            params.netParams.cellParams['validSpikeGneLoc'] = cellRule # add dict with params for this pop
-            self.paramsMap["cell"]["spikeGenLocTest"].append(params)
-
-
-            # secList test
-            self.paramsMap["cell"]["spikeGenLocTest"] = []
+            # # valid pointps rule
+            # params = ParamsObj()
+            #
+            # cellRule = {'conds': {'cellModel': 'HH'},  'secs': {}}                        # cell rule dict
+            # cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}                                                # soma params dict
+            # cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+            # cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+            #
+            # cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+            # cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+            # cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology
+            # cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+            #
+            # cellRule['secs']['axon'] = {'geom': {}, 'topol': {}, 'mechs': {}}
+            # cellRule['secs']['axon']['spikeGenLoc'] = 0.7
+            #
+            # params.netParams.cellParams['validSpikeGneLoc'] = cellRule # add dict with params for this pop
+            # self.paramsMap["cell"]["spikeGenLocTest"].append(params)
 
             # valid pointps rule
             params = ParamsObj()
@@ -827,7 +823,7 @@ class RunNetPyneTests():
 
             params.netParams.cellParams['invalidSpikeGneLoc'] = cellRule # add dict with params for this pop
             self.paramsMap["cell"]["spikeGenLocTest"].append(params)
-
+            #
             #
             # # conn test
             # self.paramsMap["conn"]["preCondsTest"] = []
@@ -893,71 +889,71 @@ class RunNetPyneTests():
             # If have synsPerConn > 1, can have single loc for all, or list of locs (one per synapse, e.g. if synsPerConn = 3: [0.4, 0.5, 0.7])
             # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]])
 
-            # conn test
-            self.paramsMap["conn"]["connsLocTest"] = []
-
-            # valid locs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'loc' : 1,
-                'weight': 0.0,                      # weight of each connection
-                'synMech': 'inh',                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5}                         # delay
-
-            # Synaptic mechanism parameters
-            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-
-            params.netParams.connParams['validConnsLoc0'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsLocTest"].append(params)
-
-            # valid locs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'loc' : [0.5,0.7],
-                'weight': 0.0,                      # weight of each connection
-                'synMech': ['AMPA','NMDA'],                   # target inh synapse
-                'synsPerConn': 1,
-                'delay': 5}                         # delay
-
-            # Synaptic mechanism parameters
-            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-
-            params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsLocTest"].append(params)
-
-            # valid locs rule
-            params = ParamsObj()
-
-            # Connectivity parameters
-            connRule = {
-                'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
-                'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
-                'weight': 0.0,                      # weight of each connection
-                'synMech': ['AMPA','NMDA'],                   # target inh synapse
-                'synsPerConn': 3,
-                'delay': 5}                         # delay
-
-            # Synaptic mechanism parameters
-            params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
-            params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
-            params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
-            params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
-
-            params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
-            self.paramsMap["conn"]["connsLocTest"].append(params)
+            # # conn test
+            # self.paramsMap["conn"]["connsLocTest"] = []
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : 1,
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsLoc0'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [0.5,0.7],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsLoc1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'loc' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'weight': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsLoc2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsLocTest"].append(params)
 
             # # valid locs rule
             # params = ParamsObj()
@@ -1021,6 +1017,264 @@ class RunNetPyneTests():
             #
             # params.netParams.connParams['invalidConnsLoc3'] = connRule # add dict with params for this pop
             # self.paramsMap["conn"]["connsLocTest"].append(params)
+
+            # # conn test
+            # self.paramsMap["conn"]["connsWeightTest"] = []
+            #
+            # # valid weights rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : 1,
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsWeight0'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : [0.5,0.7],
+            #     'loc': 1.0,
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsWeight1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validConnsWeight2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidConnsWeight1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidConnsWeight2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            #
+            # # invalid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'weight' : 1.5,
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     'delay': 5}                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidConnsWeight3'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsWeightTest"].append(params)
+            # # conn test
+            # self.paramsMap["conn"]["connsDelayTest"] = []
+            #
+            # # valid weights rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : 1,
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validconnsDelay0'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : [0.5,0.7],
+            #     'loc': 1.0,
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validconnsDelay1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # delay of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['validconnsDelay2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # delay of each connection
+            #     'synMech': ['AMPA','NMDA'],                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidconnsDelay1'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+            #
+            # # valid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : [[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]],
+            #     'loc': 0.0,                      # delay of each connection
+            #     'synMech': 'AMPA',                   # target inh synapse
+            #     'synsPerConn': 3,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidconnsDelay2'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+            #
+            # # invalid locs rule
+            # params = ParamsObj()
+            #
+            # # Connectivity parameters
+            # connRule = {
+            #     'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+            #     'delay' : 1.5,
+            #     'loc': 0.0,                      # weight of each connection
+            #     'synMech': 'inh',                   # target inh synapse
+            #     'synsPerConn': 1,
+            #     }                         # delay
+            #
+            # # Synaptic mechanism parameters
+            # params.netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA
+            # params.netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.15, 'tau2': 15, 'e': 0}  # NMDA
+            # params.netParams.synMechParams['GABAA'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAA
+            # params.netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1, 'e': -80}  # GABAB
+            #
+            # params.netParams.connParams['invalidconnsDelay3'] = connRule # add dict with params for this pop
+            # self.paramsMap["conn"]["connsDelayTest"].append(params)
+
             #
             # # conn test
             # self.paramsMap["conn"]["synMechsTest"] = []
@@ -1649,8 +1903,8 @@ class RunNetPyneTests():
         def runTestsWithParams(self):
 
             #self.runPopTestsWithParams()
-            #self.runNetTestsWithParams()
-            self.runCellTestsWithParams()
+            self.runNetTestsWithParams()
+            #self.runCellTestsWithParams()
             #self.runConnTestsWithParams()
             #self.runStimSourceTests()
             #self.runStimTargetTests()
@@ -1683,8 +1937,9 @@ class RunNetPyneTests():
                     self.netPyneTestObj.runTests()
 
         def runConnTestsWithParams(self):
-            print ( " running conn tests " )
+            #print ( " #### running conn tests " )
             connParamsMap = self.paramsMap["conn"]
+            print (" connParamsMap = " + str(connParamsMap))
             # run the different tests for conn
             for testName, paramObjList in connParamsMap.items():
                 for paramsObj in paramObjList:

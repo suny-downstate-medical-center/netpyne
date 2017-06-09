@@ -78,10 +78,10 @@ simConfig.filename = 'HHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
-
-simConfig.analysis['plotRaster'] = {'saveFig': 'tut1_raster.png'} #True 			# Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [2], 'saveFig': 'tut1_traces.png'} 			# Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig': 'tut1_net.png'} #True           # plot 2D visualization of cell positions and connections
+# Analysis and plotting 
+simConfig.analysis['plotRaster'] = True  # Plot raster
+simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
 
 

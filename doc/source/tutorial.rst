@@ -56,10 +56,6 @@ If you want to avoid typing that long line every time, you can download this sim
 
 Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
 
-.. image:: figs/tut1.png
-	:width: 100%
-	:align: center
-
 .. image:: figs/tut1_net.png
 	:width: 30%
 

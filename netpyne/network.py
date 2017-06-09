@@ -713,7 +713,7 @@ class Network (object):
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
                 self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
                 randSample = list(set([self.rand.uniform(0,len(preCellsTags)-1) for i in range(2*convergence)])) # generate twice and find unique list (to avoid duplicates)
-                preCellsSample = [preCellsTags.keys()[int(i)] for i in randSample[0:len(preCellsTags)]]  # selected gids of presyn cells
+                preCellsSample = [preCellsTags.keys()[int(i)] for i in randSample[0:convergence]]  # selected gids of presyn cells
                 preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
              
@@ -740,7 +740,7 @@ class Network (object):
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = list(set([self.rand.uniform(0,len(postCellsTags)-1) for i in range(2*divergence)])) # generate twice and find unique list (to avoid duplicates)
-            postCellsSample = [postCellsTags.keys()[int(i)] for i in randSample[0:len(postCellsTags)]]  # selected gids of postsyn cells
+            postCellsSample = [postCellsTags.keys()[int(i)] for i in randSample[0:divergence]]  # selected gids of postsyn cells
             postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
                 

@@ -25,6 +25,7 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
+import tests
 from tests import *
 
 ###############################################################################
@@ -39,7 +40,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     # if sim config
     if simConfig.checkErrors: # whether to validate the input parameters
-        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
+        netPyneTestObj = tests.NetPyneTestObj(simConfig.checkErrorsVerbose)
         netPyneTestObj.netParams = netParams
         netPyneTestObj.runTests()
 

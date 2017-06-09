@@ -464,13 +464,13 @@ If we run the model at this point we will see the cells are distributed into thr
 	:align: center
 
 .. image:: figs/tut5_conn_1.png
-	:width: 19%
+	:width: 17%
 
 .. image:: figs/tut5_net_1.png
-	:width: 19%
+	:width: 17%
 
 .. image:: figs/tut5_raster_1.png
-	:width: 30%
+	:width: 35%
 
 .. image:: figs/tut5_traces_1.png
 	:width: 30%

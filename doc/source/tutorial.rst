@@ -65,7 +65,7 @@ Whatever method you use, you should get a 2D representation of the cells and con
 	:align: center
 
 .. image:: figs/tut1_raster.png
-	:width: 33%
+	:width: 32%
 	:align: center
 
 .. image:: figs/tut1_traces.png

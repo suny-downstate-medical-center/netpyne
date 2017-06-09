@@ -79,9 +79,9 @@ simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = {'saveFig': 'tut1_raster.png'} #True  # Plot raster
-simConfig.analysis['plotTraces'] = {'include': [2], 'saveFig': 'tut1_traces.png'}  # Plot raster
-simConfig.analysis['plot2Dnet'] = {'saveFig': 'tut1_net.png'}#True  # Plot 2D net cells and connections
+simConfig.analysis['plotRaster'] = True  # Plot raster
+simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
 
 

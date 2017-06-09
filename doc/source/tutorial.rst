@@ -62,12 +62,15 @@ Whatever method you use, you should get a 2D representation of the cells and con
 
 .. image:: figs/tut1_net.png
 	:width: 30%
+	:align: center
 
 .. image:: figs/tut1_raster.png
-	:width: 32%
+	:width: 33%
+	:align: center
 
 .. image:: figs/tut1_traces.png
-	:width: 32%
+	:width: 33%
+	:align: center
 
 
 Congratulations! You have created and simulated a biological neuronal network in NEURON! 

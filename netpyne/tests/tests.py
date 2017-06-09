@@ -13,8 +13,8 @@ import os
 import traceback
 import numpy
 
-sys.path.append('../')
-import utils
+##sys.path.append('../')
+#import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
 POP_NUMCELLS_PARAMS = ['Density','NumCells','GridSpacing']

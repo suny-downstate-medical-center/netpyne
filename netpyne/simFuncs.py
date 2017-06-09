@@ -26,8 +26,7 @@ from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
 import tests
-from tests import *
-
+from tests.tests import *
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################

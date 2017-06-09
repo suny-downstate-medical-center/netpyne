@@ -1163,8 +1163,8 @@ class NetPyneTestObj(object):
 
     def loadStimSourceTests(self):
 
-        # if self.verboseFlag:
-        #     print (" *** Loading pop tests *** ")
+        if self.verboseFlag:
+            print (" *** Loading source tests *** ")
 
         # initialiase list of test objs
         self.testParamsMap["stimSource"] = {}
@@ -1180,10 +1180,13 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["stimSource"]["stimSourceTest"] = testObj
 
+        if self.verboseFlag:
+            print (" *** Finished loading stim source tests *** ")
+
     def loadStimTargetTests(self):
 
-        # if self.verboseFlag:
-        #     print (" *** Loading pop tests *** ")
+        if self.verboseFlag:
+            print (" *** Loading stim target tests *** ")
 
         # initialiase list of test objs
         self.testParamsMap["stimTarget"] = {}
@@ -1199,10 +1202,13 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["stimTarget"]["stimTargetTest"] = testObj
 
+        if self.verboseFlag:
+            print (" *** Finished loading stim target tests *** ")
+
     def loadPopTests(self):
 
-        # if self.verboseFlag:
-        #     print (" *** Loading pop tests *** ")
+        if self.verboseFlag:
+            print (" *** Loading pop tests *** ")
 
         # initialiase list of test objs
         self.testParamsMap["pop"] = {}
@@ -1492,31 +1498,31 @@ class NetPyneTestObj(object):
 
     def loadConnTests(self):
 
-        # if self.verboseFlag:
-        #     print (" *** Loading conn tests *** ")
+        if self.verboseFlag:
+            print (" *** Loading conn tests *** ")
 
         self.testParamsMap["conn"] = {}
 
-        # # pop Labels test
-        # testObj = TestObj()
-        # testObj.testName = "popLabelsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "preConds"
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
-        # testObj.messageText = ["Pop label specified for preConds not listed in pop parameters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        # self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
-        #
-        # # pop Labels test
-        # testObj = TestObj()
-        # testObj.testName = "popLabelsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "postConds"
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
-        # testObj.messageText = ["Pop label specified for postConds not listed in pop parameters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        # self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
+        # pop Labels test
+        testObj = TestObj()
+        testObj.testName = "popLabelsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "preConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
+        testObj.messageText = ["Pop label specified for preConds not listed in pop parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
 
+        # pop Labels test
+        testObj = TestObj()
+        testObj.testName = "popLabelsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "postConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
+        testObj.messageText = ["Pop label specified for postConds not listed in pop parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
+        #
         # # condsTest test
         # testObj = TestObj()
         # testObj.testName = "popLabelsTest"
@@ -1527,98 +1533,98 @@ class NetPyneTestObj(object):
         # testObj.messageText = ["Pop label specified in conn parameters."]
         # self.testParamsMap["conn"]["popLabelsTest"] = testObj
 
-        # # condsTest test
-        # testObj = TestObj()
-        # testObj.testName = "preCondsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "preConds"
-        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        # testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
-        # self.testParamsMap["conn"]["preCondsTest"] = testObj
-        #
-        # # condsTest test
-        # testObj = TestObj()
-        # testObj.testName = "postCondsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "postConds"
-        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        # testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
-        # self.testParamsMap["conn"]["postCondsTest"] = testObj
-        #
-        # # secs test
-        # testObj = TestObj()
-        # testObj.testName = "connsSecsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
-        # testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["connsSecsTest"] = testObj
-        #
-        # #locs test
-        # testObj = TestObj()
-        # testObj.testName = "connLocsRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "loc"
-        # testObj.testTypes = [TEST_TYPE_ARRAY_IN_RANGE]
-        # testObj.testValueRange = "[0,1]"
-        # testObj.messageText = ["Loc is not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["conn"]["locsRangeTest"] = testObj
-        #
-        # # locs synMechs test
-        # testObj = TestObj()
-        # testObj.testName = "connLocsSynMechTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "loc"
-        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
-        # testObj.messageText = ["Syn Mechs are invalid."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["synMechsTest"] = testObj
-        #
-        # # weights synMechs test
-        # testObj = TestObj()
-        # testObj.testName = "connWeightSynMechTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "weight"
-        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
-        # testObj.messageText = ["Syn Mechs are invalid."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["weightsMechsTest"] = testObj
+        # condsTest test
+        testObj = TestObj()
+        testObj.testName = "preCondsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "preConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
+        self.testParamsMap["conn"]["preCondsTest"] = testObj
 
-        # # delay synMechs test
-        # testObj = TestObj()
-        # testObj.testName = "connDelaySynMechTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "delay"
-        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
-        # testObj.messageText = ["Syn Mechs are invalid."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["delayMechsTest"] = testObj
+        # condsTest test
+        testObj = TestObj()
+        testObj.testName = "postCondsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "postConds"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
+        self.testParamsMap["conn"]["postCondsTest"] = testObj
 
-        #
-        # # synsPerConn
-        # #- synsPerConn: optional, defaults to 1; has to be >=1
-        #
-        # testObj = TestObj()
-        # testObj.testName = "synsPerConnTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "synsPerConn"
-        # testObj.testTypeSpecialString = "synMechsTest"
-        # testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
-        # testObj.compareValueString = "1"
-        # testObj.compareValueType = "int"
-        # testObj.messageText = ["Syns Per Conn must be >= 1."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # testParamsMap["conn"]["synsPerConnTest"] = testObj
+        # secs test
+        testObj = TestObj()
+        testObj.testName = "connsSecsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
+        testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["connsSecsTest"] = testObj
+
+        #locs test
+        testObj = TestObj()
+        testObj.testName = "connLocsRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "loc"
+        testObj.testTypes = [TEST_TYPE_ARRAY_IN_RANGE]
+        testObj.testValueRange = "[0,1]"
+        testObj.messageText = ["Loc is not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["conn"]["locsRangeTest"] = testObj
+
+        # locs synMechs test
+        testObj = TestObj()
+        testObj.testName = "connLocsSynMechTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "loc"
+        testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        testObj.messageText = ["Syn Mechs are invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["synMechsTest"] = testObj
+
+        # weights synMechs test
+        testObj = TestObj()
+        testObj.testName = "connWeightSynMechTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "weight"
+        testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        testObj.messageText = ["Syn Mechs are invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["weightsMechsTest"] = testObj
+
+        # delay synMechs test
+        testObj = TestObj()
+        testObj.testName = "connDelaySynMechTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "delay"
+        testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        testObj.messageText = ["Syn Mechs are invalid."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["delayMechsTest"] = testObj
+
+
+        # synsPerConn
+        #- synsPerConn: optional, defaults to 1; has to be >=1
+
+        testObj = TestObj()
+        testObj.testName = "synsPerConnTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "synsPerConn"
+        testObj.testTypeSpecialString = "synMechsTest"
+        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE ]
+        testObj.compareValueString = "1"
+        testObj.compareValueType = "int"
+        testObj.messageText = ["Syns Per Conn must be >= 1."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["synsPerConnTest"] = testObj
         #
         # # probability: optional; [0,1]
         # testObj = TestObj()
@@ -1657,27 +1663,27 @@ class NetPyneTestObj(object):
         #
         # testParamsMap["conn"]["divergenceTest"] = testObj
 
-        # # secs test
-        # testObj = TestObj()
-        # testObj.testName = "connsSecsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
-        # testObj.messageText = ["Secs, if specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["connsSecsTest"] = testObj
-        #
-        # # secs test
-        # testObj = TestObj()
-        # testObj.testName = "connsSecsListTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST ]
-        # testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["conn"]["connsSecsListTest"] = testObj
+        # secs test
+        testObj = TestObj()
+        testObj.testName = "connsSecsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
+        testObj.messageText = ["Secs, if specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
+
+        self.testParamsMap["conn"]["connsSecsTest"] = testObj
+
+        # secs test
+        testObj = TestObj()
+        testObj.testName = "connsSecsListTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST ]
+        testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["conn"]["connsSecsListTest"] = testObj
         #
         # # conn list test
         # testObj = TestObj()
@@ -1690,41 +1696,41 @@ class NetPyneTestObj(object):
         #
         # self.testParamsMap["conn"]["connsListTest"] = testObj
 
-        # # conn list test
-        # testObj = TestObj()
-        # testObj.testName = "hierarchyTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["conn"]["connHierarchyTest"] = testObj
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "hierarchyTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        # # conn list test
-        # testObj = TestObj()
-        # testObj.testName = "shapeTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_SHAPE ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # #
-        # self.testParamsMap["conn"]["connShapeTest"] = testObj
-        #
-        # # conn list test
-        # testObj = TestObj()
-        # testObj.testName = "shapeTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_PLASTICITY ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # #
-        # self.testParamsMap["conn"]["connPlasticityTest"] = testObj
+        self.testParamsMap["conn"]["connHierarchyTest"] = testObj
 
-        # if self.verboseFlag:
-        #     print (" *** Finished loading conn tests *** ")
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "shapeTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_SHAPE ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        self.testParamsMap["conn"]["connShapeTest"] = testObj
+
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "shapeTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_PLASTICITY ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        self.testParamsMap["conn"]["connPlasticityTest"] = testObj
+
+        if self.verboseFlag:
+            print (" *** Finished loading conn tests *** ")
 
     def runPopTests(self):
 

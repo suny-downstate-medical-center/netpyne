@@ -192,7 +192,7 @@ class Pop (object):
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
         self.rand.uniform(0, 1)
         vec = h.Vector(self.tags['numCells']*3)
-        vec.setrand()
+        vec.setrand(self.rand)
         randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
 
         if sim.net.params.shape == 'cylinder':

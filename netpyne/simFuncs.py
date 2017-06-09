@@ -40,7 +40,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     # if sim config
     if simConfig.checkErrors: # whether to validate the input parameters
-        netPyneTestObj = tests.NetPyneTestObj(simConfig.checkErrorsVerbose)
+        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
         netPyneTestObj.netParams = netParams
         netPyneTestObj.runTests()
 

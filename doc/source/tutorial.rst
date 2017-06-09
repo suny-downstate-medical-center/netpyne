@@ -459,10 +459,6 @@ We can now add the standard simulation configuration options and the code to cre
 	   
 If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input:
 
-.. image:: figs/tut5_1.png
-	:width: 95%
-	:align: center
-
 .. image:: figs/tut5_conn_1.png
 	:width: 17%
 
@@ -494,6 +490,18 @@ Running the model now shows excitatory connections in red, and how cells in the 
 .. image:: figs/tut5_2.png
 	:width: 95%
 	:align: center
+
+.. image:: figs/tut5_conn_2.png
+	:width: 17%
+
+.. image:: figs/tut5_net_2.png
+	:width: 17%
+
+.. image:: figs/tut5_raster_2.png
+	:width: 35%
+
+.. image:: figs/tut5_traces_2.png
+	:width: 30%
 
 
 Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``pop`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 

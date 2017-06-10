@@ -653,7 +653,7 @@ Finally, we add the code to create the network and run the simulation, but for i
 	sim.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.26 (vertical red lines illustrate poor synchrony):
 
 .. image:: figs/tut7_net_1.png
 	:width: 30%
@@ -700,15 +700,11 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 
 .. note:: that for the condition we have used the `hop->hop` label, which makes reference to the set of recurrent connections previously created.
 
-The resulting plots show that the increased mutual inhibition synchronizes the network activity, increasing the synchrony measure to 0.70:
+The resulting plots show that the increased mutual inhibition synchronizes the network activity, increasing the synchrony measure to 0.69:
 
 .. image:: figs/tut7_2.png
 	:width: 70%
 	:align: center
-
-
-.. image:: figs/tut7_net_2.png
-	:width: 30%
 
 .. image:: figs/tut7_raster_2.png
 	:width: 33%
@@ -737,9 +733,6 @@ The resulting plot shows decreased firing rate and increased synchrony due to th
 .. image:: figs/tut7_3.png
 	:width: 70%
 	:align: center
-
-.. image:: figs/tut7_net_3.png
-	:width: 30%
 
 .. image:: figs/tut7_raster_3.png
 	:width: 33%

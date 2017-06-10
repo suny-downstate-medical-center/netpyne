@@ -659,6 +659,16 @@ If we run the above code, the resulting network 2D map shows the inhibitory conn
 	:width: 100%
 	:align: center
 
+.. image:: figs/tut7_net_1.png
+	:width: 30%
+
+.. image:: figs/tut7_raster_1.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_1.png
+	:width: 32%
+
+
 .. note:: We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``sim`` object contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells``. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). NEURON objects are contained within this python hierarchical structure. See :ref:`data_model` for details.
 
 .. note:: A list of population objects is available via ``sim.net.pops``; each object will contain a list ``cellGids`` with all gids of cells belonging to this populations, and a dictionary ``tags`` with population properties.

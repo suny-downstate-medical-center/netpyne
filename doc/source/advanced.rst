@@ -30,7 +30,7 @@ Below we show example of importing 9 different cell models from external files. 
 
 Additionally, we provide an example NetPyNE file (:download:`tut_import.py <code/tut_import.py>`) which imports all 9 cell models, creates a population of each type, provide background inputs and randomly connects all cells. To run the example you also need to download all the files where cells models are defined and the mod files (see below). The resulting raster is shown below:
 
-.. image:: figs/tut_import_raster.png 
+.. image:: figs/tut_import_raster.png  
 	:width: 50%
 	:align: center
 

@@ -1153,8 +1153,8 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        self.runCellTests() # run cell tests
-        self.runConnTests() # run conn tests
+        #self.runCellTests() # run cell tests
+        #self.runConnTests() # run conn tests
         self.runStimSourceTests() # load stimSource tests
         self.runStimTargetTests() # load stimTarget tests
 

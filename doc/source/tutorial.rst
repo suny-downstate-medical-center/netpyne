@@ -655,10 +655,6 @@ Finally, we add the code to create the network and run the simulation, but for i
 
 If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
 
-.. image:: figs/tut7_1.png
-	:width: 100%
-	:align: center
-
 .. image:: figs/tut7_net_1.png
 	:width: 30%
 
@@ -711,6 +707,16 @@ The resulting plots show that the increased mutual inhibition synchronizes the n
 	:align: center
 
 
+.. image:: figs/tut7_net_2.png
+	:width: 30%
+
+.. image:: figs/tut7_raster_2.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_2.png
+	:width: 32%
+
+
 Additionally, we could also modify some of the cell properties to observe how this affects synchrony. The code below modifies the soma length of all cells in the 'hop' population to 160 um::
 
 
@@ -731,6 +737,15 @@ The resulting plot shows decreased firing rate and increased synchrony due to th
 .. image:: figs/tut7_3.png
 	:width: 70%
 	:align: center
+
+.. image:: figs/tut7_net_3.png
+	:width: 30%
+
+.. image:: figs/tut7_raster_3.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_3.png
+	:width: 32%
 
 
 The full tutorial code for this example is available here: :download:`tut7.py <code/tut7.py>`.

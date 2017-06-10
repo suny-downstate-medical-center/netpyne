@@ -61,9 +61,9 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'model_output' # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig':'tut7_raster_1.png', 'syncLines': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'saveFig':'tut7_traces_1.png', 'include': [1]}         # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig':'tut7_net_1.png'} #True                      # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotRaster'] = {'saveFig':'tut7_raster_2.png', 'syncLines': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'saveFig':'tut7_traces_2.png', 'include': [1]}         # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'saveFig':'tut7_net_2.png'} #True                      # plot 2D visualization of cell positions and connections
 
 
 ###############################################################################
@@ -86,17 +86,17 @@ sim.saveData()                      # save params, cell info and sim output to f
 sim.analysis.plotData()             # plot spike raster
 
 
-# ###############################################################################
-# # INTERACTING WITH INSTANTIATED NETWORK
-# ###############################################################################
+###############################################################################
+# INTERACTING WITH INSTANTIATED NETWORK
+###############################################################################
 
-# # modify conn weights
-# sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
+# modify conn weights
+sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 
-# sim.runSim()                          # run parallel Neuron simulation  
-# sim.gatherData()                      # gather spiking data and cell info from each node
-# sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-# sim.analysis.plotData()                   # plot spike raster
+sim.runSim()                          # run parallel Neuron simulation  
+sim.gatherData()                      # gather spiking data and cell info from each node
+sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
+sim.analysis.plotData()                   # plot spike raster
 
 # # modify cells geometry
 # sim.net.modifyCells({'conds': {'pop': 'hop'}, 

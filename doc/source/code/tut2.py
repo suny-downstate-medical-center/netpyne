@@ -4,8 +4,8 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
@@ -16,7 +16,7 @@ netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of ce
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
- 
+
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
 netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
@@ -26,9 +26,9 @@ netParams.connParams['S->M'] = { 	#  S -> M label
 	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
 	'postConds': {'pop': 'M'}, # conditions of postsyn cells
 	'probability': 0.5, 			# probability of connection
-	'weight': 0.01, 				# synaptic weight 
-	'delay': 5,						# transmission delay (ms) 
-	'synMech': 'exc'}   			# synaptic mechanism 
+	'weight': 0.01, 				# synaptic weight
+	'delay': 5,						# transmission delay (ms)
+	'synMech': 'exc'}   			# synaptic mechanism
 
 
 # Simulation options
@@ -36,7 +36,7 @@ simConfig = specs.SimConfig()		# object of class SimConfig to store simulation c
 
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
-simConfig.verbose = False  			# Show detailed messages 
+simConfig.verbose = False  			# Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
@@ -46,8 +46,9 @@ simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 
+simConfig.checkErrors = 1
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
-   
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
+
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

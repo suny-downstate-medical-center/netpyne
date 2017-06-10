@@ -25,22 +25,23 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-from tests import *
-
+import tests
+from tests.tests import *
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-    if netParams is None:
-        netParams = {} # If not specified, initialize as empty dict
-    else:
-        netPyneTestObj = NetPyneTestObj(verboseFlag = True)
-        netPyneTestObj.netParams = netParams
-        #netPyneTestObj.runTests()
+    if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
+
+    # if sim config
+    if simConfig.checkErrors: # whether to validate the input parameters
+        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
+        netPyneTestObj.netParams = netParams
+        netPyneTestObj.runTests()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
@@ -363,7 +364,7 @@ def clearAll ():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj):
-    #return hash(obj) & 0xffffffff  # hash func 
+    #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
@@ -462,7 +463,7 @@ def replaceKeys (obj, oldkey, newkey):
                 obj[newkey] = obj.pop(oldkey)
     return obj
 
-    
+
 ###############################################################################
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################

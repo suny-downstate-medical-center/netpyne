@@ -1784,7 +1784,6 @@ class NetPyneTestObj(object):
         #     print (" *** Running stim source tests *** ")
 
         stimSourceParams = self.netParams.stimSourceParams
-        print (str(self.testParamsMap.keys()))
         for testName, stimSourceTestObj in self.testParamsMap["stimSource"].items():
             self.execRunTests(stimSourceTestObj, stimSourceParams)
 
@@ -1843,7 +1842,7 @@ class NetPyneTestObj(object):
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
-                            print ( "PASSED" )
+                                print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -1856,7 +1855,7 @@ class NetPyneTestObj(object):
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(testObj.testParameterValue))
-                            print ( "PASSED" )
+                                print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:

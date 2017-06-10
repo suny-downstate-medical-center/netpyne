@@ -47,6 +47,7 @@ simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces fo
 simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 
 simConfig.checkErrors = 1
+
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    

@@ -1153,8 +1153,8 @@ class NetPyneTestObj(object):
         #     print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
-        #self.runCellTests() # run cell tests
-        #self.runConnTests() # run conn tests
+        self.runCellTests() # run cell tests
+        self.runConnTests() # run conn tests
         self.runStimSourceTests() # load stimSource tests
         self.runStimTargetTests() # load stimTarget tests
 
@@ -1371,7 +1371,7 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
         testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
         self.testParamsMap["cell"]["condsTest"] = testObj
-        
+
         # secs test
         testObj = TestObj()
         testObj.testName = "secsTest"
@@ -1381,7 +1381,7 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         testObj.messageText = ["Secs is not a dict."]
         self.testParamsMap["cell"]["secsTest"] = testObj
-        
+
         # cellTypes test
         testObj = TestObj()
         testObj.testName = "cellTypesTest"
@@ -1392,9 +1392,9 @@ class NetPyneTestObj(object):
         testObj.compareDict = "self.netParams.popParams"
         testObj.messageText = ["cellType does not match the cellType specified in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        
+
         self.testParamsMap["cell"]["cellTypeTest"] = testObj
-        
+
         # cellModel test
         testObj = TestObj()
         testObj.testName = "cellModelTest"
@@ -1405,9 +1405,9 @@ class NetPyneTestObj(object):
         testObj.compareDict = "self.netParams.popParams"
         testObj.messageText = ["cellModel does not match the cellModel specified in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        
+
         self.testParamsMap["cell"]["cellModelTest"] = testObj
-        
+
         #geom test
         testObj = TestObj()
         testObj.testName = "geomExistTest"
@@ -1418,7 +1418,7 @@ class NetPyneTestObj(object):
         testObj.messageText = ["Geom is not specified in section "]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         self.testParamsMap["cell"]["geomExistTest"] = testObj
-        
+
         # geom test
         testObj = TestObj()
         testObj.testName = "geomValidTest"
@@ -1428,7 +1428,7 @@ class NetPyneTestObj(object):
         #testObj.testValueList = VALID_GEOMETRIES,
         testObj.messageText = ["Geom is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["cell"]["geomValidTest"] = testObj
 
         # topol test
@@ -1439,9 +1439,9 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
         testObj.messageText = ["Topology is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["cell"]["toplogyValidTest"] = testObj
-        
+
         # mechs test
         testObj = TestObj()
         testObj.testName = "mechsTest"
@@ -1450,7 +1450,7 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_MECHS]
         testObj.messageText = ["Mechs are not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["cell"]["mechsValidTest"] = testObj
 
         # pointps test
@@ -1461,7 +1461,7 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
         testObj.messageText = ["Pointps are not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["cell"]["pointpsValidTest"] = testObj
 
         # secList test
@@ -1472,7 +1472,7 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST]
         testObj.messageText = ["SecList is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["cell"]["secListTest"] = testObj
 
         # secList test
@@ -1506,7 +1506,7 @@ class NetPyneTestObj(object):
         testObj.messageText = ["Pop label specified for preConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
-        
+
         # pop Labels test
         testObj = TestObj()
         testObj.testName = "popLabelsTest"
@@ -1536,7 +1536,7 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
         testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
         self.testParamsMap["conn"]["preCondsTest"] = testObj
-        
+
         # condsTest test
         testObj = TestObj()
         testObj.testName = "postCondsTest"
@@ -1546,7 +1546,7 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
         testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
         self.testParamsMap["conn"]["postCondsTest"] = testObj
-        
+
         # secs test
         testObj = TestObj()
         testObj.testName = "connsSecsTest"
@@ -1555,9 +1555,9 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
         testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
-        
+
         #locs test
         testObj = TestObj()
         testObj.testName = "connLocsRangeTest"
@@ -1567,9 +1567,9 @@ class NetPyneTestObj(object):
         testObj.testValueRange = "[0,1]"
         testObj.messageText = ["Loc is not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["conn"]["locsRangeTest"] = testObj
-        
+
         # locs synMechs test
         testObj = TestObj()
         testObj.testName = "connLocsSynMechTest"
@@ -1578,9 +1578,9 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
         testObj.messageText = ["Syn Mechs are invalid."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["synMechsTest"] = testObj
-        
+
         # weights synMechs test
         testObj = TestObj()
         testObj.testName = "connWeightSynMechTest"
@@ -1589,7 +1589,7 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
         testObj.messageText = ["Syn Mechs are invalid."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["weightsMechsTest"] = testObj
 
         # delay synMechs test
@@ -1600,13 +1600,13 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
         testObj.messageText = ["Syn Mechs are invalid."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["delayMechsTest"] = testObj
 
-        
+
         # synsPerConn
         #- synsPerConn: optional, defaults to 1; has to be >=1
-        
+
         # testObj = TestObj()
         # testObj.testName = "synsPerConnTest"
         # testObj.testParameterType = "string"
@@ -1617,45 +1617,45 @@ class NetPyneTestObj(object):
         # testObj.compareValueType = "int"
         # testObj.messageText = ["Syns Per Conn must be >= 1."]
         # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
+
         # self.testParamsMap["conn"]["synsPerConnTest"] = testObj
-        
+
         # probability: optional; [0,1]
         testObj = TestObj()
         testObj.testName = "probabilityTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "probability"
-        testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GTE_ZERO, TEST_TYPE_LTE ]
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT ]
         testObj.compareValueString = "1"
         testObj.compareValueType = "int"
         testObj.messageText = ["Probability needs to be between 0 and 1."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["probabilityTest"] = testObj
-        
+
         # convergence  optional; positive integer
-        
-        testObj = TestObj()
-        testObj.testName = "convergenceTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "convergence"
-        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
-        testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
-        self.testParamsMap["conn"]["convergenceTest"] = testObj
-        
-        # divergence  optional; positive integer
-        
-        testObj = TestObj()
-        testObj.testName = "divergenceTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "divergence"
-        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GTE_ZERO ]
-        testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        
-        self.testParamsMap["conn"]["divergenceTest"] = testObj
+        # 
+        # testObj = TestObj()
+        # testObj.testName = "convergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "convergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT ]
+        # testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["convergenceTest"] = testObj
+        #
+        # # divergence  optional; positive integer
+        #
+        # testObj = TestObj()
+        # testObj.testName = "divergenceTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "divergence"
+        # testObj.testTypes = [TEST_TYPE_IS_INT ]
+        # testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["divergenceTest"] = testObj
 
         # secs test
         testObj = TestObj()
@@ -1665,9 +1665,9 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
         testObj.messageText = ["Secs, if specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
-        
+
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
-        
+
         # secs test
         testObj = TestObj()
         testObj.testName = "connsSecsListTest"
@@ -1676,9 +1676,9 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST ]
         testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["conn"]["connsSecsListTest"] = testObj
-        
+
         # conn list test
         testObj = TestObj()
         testObj.testName = "connsListTest"
@@ -1687,7 +1687,7 @@ class NetPyneTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALID_CONN_LIST ]
         testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         self.testParamsMap["conn"]["connsListTest"] = testObj
 
         # # conn list test
@@ -1698,7 +1698,7 @@ class NetPyneTestObj(object):
         # testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
         # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
         # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        
+
         # self.testParamsMap["conn"]["connHierarchyTest"] = testObj
 
         # # conn list test
@@ -1711,7 +1711,7 @@ class NetPyneTestObj(object):
         # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         # #
         # self.testParamsMap["conn"]["connShapeTest"] = testObj
-        
+
         # # conn list test
         # testObj = TestObj()
         # testObj.testName = "shapeTest"

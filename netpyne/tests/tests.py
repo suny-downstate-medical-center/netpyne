@@ -389,11 +389,12 @@ class TestTypeObj(object):
 
             if 'secs' in paramValues:
                 if len(paramValues['secs']) > 0 :
-                    topolNeeded = True
+                    if len(paramValues['secs']) > 1: topolNeeded = True
                     for key, value in paramValues['secs'].items():
                         if 'topol' not in value:
-                            topolValid = False
-                            errorMessage = "CellParams -> secs ('" + str(paramValues['secs'].keys()) + "'): Topology needs to be specified if more than one section."
+                            if topolNeeded:
+                                topolValid = False
+                                errorMessage = "CellParams -> secs ('" + str(paramValues['secs'].keys()) + "'): Topology needs to be specified if more than one section."
                         else:
                             topolValid = True
                             #print ( " **** past 1 " + str(  len(value['topol'].keys())) )
@@ -1168,7 +1169,7 @@ class NetPyneTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["stimSource"] = {}
 
-        ##cell model test
+        ##cellModel test
         testObj = TestObj()
         testObj.testName = "stimSourceTest"
         testObj.testParameterType = "string"
@@ -1187,7 +1188,7 @@ class NetPyneTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["stimTarget"] = {}
 
-        ##cell model test
+        ##cellModel test
         testObj = TestObj()
         testObj.testName = "stimTargetTest"
         testObj.testParameterType = "string"
@@ -1206,13 +1207,13 @@ class NetPyneTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["pop"] = {}
 
-        ##cell model test
+        ##cellModel test
         testObj = TestObj()
         testObj.testName = "cellModelTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "cellModel"
         testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.messageText = ["No Cell Model specified in population paramters."]
+        testObj.messageText = ["No cellModel specified in population paramters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["cellModelTest"] = testObj
@@ -1361,118 +1362,118 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["cell"] = {}
 
-        # # condsTest test
-        # testObj = TestObj()
-        # testObj.testName = "condsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "conds"
-        # testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        # testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
-        # self.testParamsMap["cell"]["condsTest"] = testObj
-        #
-        # # secs test
-        # testObj = TestObj()
-        # testObj.testName = "secsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_IS_DICT]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # testObj.messageText = ["Secs is not a dict."]
-        # self.testParamsMap["cell"]["secsTest"] = testObj
-        #
-        # # cellTypes test
-        # testObj = TestObj()
-        # testObj.testName = "cellTypesTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "conds"
-        # testObj.testParameterValue1 = "cellType"
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        # testObj.compareDict = "self.netParams.popParams"
-        # testObj.messageText = ["Cell type does not match the cell type specified in pop parameters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        #
-        # self.testParamsMap["cell"]["cellTypeTest"] = testObj
-        #
-        # # cellModel test
-        # testObj = TestObj()
-        # testObj.testName = "cellModelTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "conds"
-        # testObj.testParameterValue1 = "cellModel"
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
-        # testObj.compareDict = "self.netParams.popParams"
-        # testObj.messageText = ["Cell model does not match the cell model specified in pop parameters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        #
-        # self.testParamsMap["cell"]["cellModelTest"] = testObj
-        #
-        # #geom test
-        # testObj = TestObj()
-        # testObj.testName = "geomExistTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secs"
-        # testObj.testParameterDictString = "geom"
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
-        # testObj.messageText = ["Geom is not specified in section "]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # self.testParamsMap["cell"]["geomExistTest"] = testObj
-        #
-        # # geom test
-        # testObj = TestObj()
-        # testObj.testName = "geomValidTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "geom"
-        # testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
-        # #testObj.testValueList = VALID_GEOMETRIES,
-        # testObj.messageText = ["Geom is not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["geomValidTest"] = testObj
+        # condsTest test
+        testObj = TestObj()
+        testObj.testName = "condsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
+        self.testParamsMap["cell"]["condsTest"] = testObj
+        
+        # secs test
+        testObj = TestObj()
+        testObj.testName = "secsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["Secs is not a dict."]
+        self.testParamsMap["cell"]["secsTest"] = testObj
+        
+        # cellTypes test
+        testObj = TestObj()
+        testObj.testName = "cellTypesTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testParameterValue1 = "cellType"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        testObj.compareDict = "self.netParams.popParams"
+        testObj.messageText = ["cellType does not match the cellType specified in pop parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        
+        self.testParamsMap["cell"]["cellTypeTest"] = testObj
+        
+        # cellModel test
+        testObj = TestObj()
+        testObj.testName = "cellModelTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "conds"
+        testObj.testParameterValue1 = "cellModel"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
+        testObj.compareDict = "self.netParams.popParams"
+        testObj.messageText = ["cellModel does not match the cellModel specified in pop parameters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        
+        self.testParamsMap["cell"]["cellModelTest"] = testObj
+        
+        #geom test
+        testObj = TestObj()
+        testObj.testName = "geomExistTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secs"
+        testObj.testParameterDictString = "geom"
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
+        testObj.messageText = ["Geom is not specified in section "]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        self.testParamsMap["cell"]["geomExistTest"] = testObj
+        
+        # geom test
+        testObj = TestObj()
+        testObj.testName = "geomValidTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "geom"
+        testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
+        #testObj.testValueList = VALID_GEOMETRIES,
+        testObj.messageText = ["Geom is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        
+        self.testParamsMap["cell"]["geomValidTest"] = testObj
 
-        # # topol test
-        # testObj = TestObj()
-        # testObj.testName = "topologyTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "topol"
-        # testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
-        # testObj.messageText = ["Topology is not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["toplogyValidTest"] = testObj
-        #
-        # # mechs test
-        # testObj = TestObj()
-        # testObj.testName = "mechsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "mechs"
-        # testObj.testTypes = [TEST_TYPE_VALID_MECHS]
-        # testObj.messageText = ["Mechs are not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["mechsValidTest"] = testObj
+        # topol test
+        testObj = TestObj()
+        testObj.testName = "topologyTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "topol"
+        testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
+        testObj.messageText = ["Topology is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        
+        self.testParamsMap["cell"]["toplogyValidTest"] = testObj
+        
+        # mechs test
+        testObj = TestObj()
+        testObj.testName = "mechsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "mechs"
+        testObj.testTypes = [TEST_TYPE_VALID_MECHS]
+        testObj.messageText = ["Mechs are not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        
+        self.testParamsMap["cell"]["mechsValidTest"] = testObj
 
-        # # pointps test
-        # testObj = TestObj()
-        # testObj.testName = "pointpsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "pointps"
-        # testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
-        # testObj.messageText = ["Pointps are not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["pointpsValidTest"] = testObj
+        # pointps test
+        testObj = TestObj()
+        testObj.testName = "pointpsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "pointps"
+        testObj.testTypes = [TEST_TYPE_VALID_POINTPS]
+        testObj.messageText = ["Pointps are not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        
+        self.testParamsMap["cell"]["pointpsValidTest"] = testObj
 
-        # # secList test
-        # testObj = TestObj()
-        # testObj.testName = "secListTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "secList"
-        # testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST]
-        # testObj.messageText = ["SecList is not valid."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["cell"]["secListTest"] = testObj
+        # secList test
+        testObj = TestObj()
+        testObj.testName = "secListTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "secList"
+        testObj.testTypes = [TEST_TYPE_VALID_SEC_LIST]
+        testObj.messageText = ["SecList is not valid."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        
+        self.testParamsMap["cell"]["secListTest"] = testObj
 
         # secList test
         testObj = TestObj()

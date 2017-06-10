@@ -61,9 +61,9 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'model_output' # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig':'tut7_raster_3.png', 'syncLines': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'saveFig':'tut7_traces_3.png', 'include': [1]}         # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig':'tut7_net_3.png'} #True                      # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
 
 
 ###############################################################################

@@ -702,10 +702,6 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 
 The resulting plots show that the increased mutual inhibition synchronizes the network activity, increasing the synchrony measure to 0.69:
 
-.. image:: figs/tut7_2.png
-	:width: 70%
-	:align: center
-
 .. image:: figs/tut7_raster_2.png
 	:width: 33%
 
@@ -729,10 +725,6 @@ Additionally, we could also modify some of the cell properties to observe how th
 
 
 The resulting plot shows decreased firing rate and increased synchrony due to the new cell geometry:
-
-.. image:: figs/tut7_3.png
-	:width: 70%
-	:align: center
 
 .. image:: figs/tut7_raster_3.png
 	:width: 33%

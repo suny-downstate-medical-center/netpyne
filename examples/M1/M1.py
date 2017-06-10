@@ -147,13 +147,13 @@ netParams.stimSourceParams['background_E']  = {'type': 'NetStim', 'rate': 20, 'n
 netParams.stimSourceParams['background_I']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Inh
 
 netParams.stimTargetParams['bgE->IT,CT'] = {'source': 'background_E', 'conds': {'cellType': ['IT','CT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgE->PT'] = {'source': 'background_E', 'conds': {'cellType': ['PT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgI->PV'] = {'source': 'background_E', 'conds': {'cellType': ['PV']}, 
-                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgI->SOM'] = {'source': 'background_E', 'conds': {'cellType': ['SOM']}, 
-                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'normal(5,3)'}  
 
 # List of connectivity rules/params
 netParams.ItoIweight = 0.5
@@ -1806,140 +1806,140 @@ netParams.addConnParams(None, {'preConds': {'cellType': ['IT','PT','CT'], 'ynorm
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'IT_L23'},
-'postConds': {'popLabel': 'SOM_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': 'IT_L23'},
+'postConds': {'pop': 'SOM_L23'},
 'synMech': 'AMPA',
 'probability': 0.18713,
 'weight': 0.78,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'IT_L23'},
-'postConds': {'popLabel': 'SOM_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': 'IT_L23'},
+'postConds': {'pop': 'SOM_L5'},
 'synMech': 'AMPA',
 'probability': 0.21712,
 'weight': 1.01,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'SOM_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'SOM_L23'},
 'synMech': 'AMPA',
 'probability': 0.02222,
 'weight': 0.3625,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'SOM_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'SOM_L5'},
 'synMech': 'AMPA',
 'probability': 0.03494,
 'weight': 0.1225,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'SOM_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'SOM_L6'},
 'synMech': 'AMPA',
 'probability': 0.01553,
 'weight': 0.4375,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L6','CT_L6']},
-'postConds': {'popLabel': 'SOM_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L6','CT_L6']},
+'postConds': {'pop': 'SOM_L5'},
 'synMech': 'AMPA',
 'probability': 0.02485,
 'weight': 0.24786,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L6','CT_L6']},
-'postConds': {'popLabel': 'SOM_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L6','CT_L6']},
+'postConds': {'pop': 'SOM_L6'},
 'synMech': 'AMPA',
 'probability': 0.02343,
 'weight': 0.53,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'IT_L23'},
-'postConds': {'popLabel': 'PV_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': 'IT_L23'},
+'postConds': {'pop': 'PV_L23'},
 'synMech': 'AMPA',
 'probability': 0.18713,
 'weight': 0.78,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'IT_L23'},
-'postConds': {'popLabel': 'PV_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': 'IT_L23'},
+'postConds': {'pop': 'PV_L5'},
 'synMech': 'AMPA',
 'probability': 0.01996,
 'weight': 0.11,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'PV_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'PV_L23'},
 'synMech': 'AMPA',
 'probability': 0.02222,
 'weight': 0.3625,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'PV_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'PV_L5'},
 'synMech': 'AMPA',
 'probability': 0.19058,
 'weight': 1.0775,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
-'postConds': {'popLabel': 'PV_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L4','IT_L5A','IT_L5B','PT_L5B']},
+'postConds': {'pop': 'PV_L6'},
 'synMech': 'AMPA',
 'probability': 0.01553,
 'weight': 0.4375,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L6','CT_L6']},
-'postConds': {'popLabel': 'PV_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L6','CT_L6']},
+'postConds': {'pop': 'PV_L5'},
 'synMech': 'AMPA',
 'probability': 0.02485,
 'weight': 0.24786,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': ['IT_L6','CT_L6']},
-'postConds': {'popLabel': 'PV_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': ['IT_L6','CT_L6']},
+'postConds': {'pop': 'PV_L6'},
 'synMech': 'AMPA',
 'probability': 0.02343,
 'weight': 0.53,
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'SOM_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': 'SOM_L23'},
 'postConds': {'ynorm': [0.12,0.31]},
 'synMech': 'GABAB',
 'probability': '1.0 * exp(-dist_3D/probLambda)',
 'weight': 'ItoIweight',
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'SOM_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': 'SOM_L5'},
 'postConds': {'ynorm': [0.31,0.77]},
 'synMech': 'GABAB',
 'probability': '1.0 * exp(-dist_3D/probLambda)',
 'weight': 'ItoIweight',
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'SOM_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': 'SOM_L6'},
 'postConds': {'ynorm': [0.77,1.0]},
 'synMech': 'GABAB',
 'probability': '1.0 * exp(-dist_3D/probLambda)',
 'weight': 'ItoIweight',
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'PV_L23'},
+netParams.addConnParams(None, {'preConds': {'pop': 'PV_L23'},
 'postConds': {'ynorm': [0.12,0.31]},
 'synMech': 'GABAA',
 'probability': '1.0 * exp(-dist_3D/probLambda)',
 'weight': 'ItoIweight',
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'PV_L5'},
+netParams.addConnParams(None, {'preConds': {'pop': 'PV_L5'},
 'postConds': {'ynorm': [0.31,0.77]},
 'synMech': 'GABAA',
 'probability': '1.0 * exp(-dist_3D/probLambda)',
 'weight': 'ItoIweight',
 'delay': 'defaultDelay+dist_3D/propVelocity'})
 
-netParams.addConnParams(None, {'preConds': {'popLabel': 'PV_L6'},
+netParams.addConnParams(None, {'preConds': {'pop': 'PV_L6'},
 'postConds': {'ynorm': [0.77,1.0]},
 'synMech': 'GABAA',
 'probability': '1.0 * exp(-dist_3D/probLambda)',

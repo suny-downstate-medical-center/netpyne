@@ -40,7 +40,7 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, gauss(5,2))', 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
 
 ## Cell connectivity rules
@@ -52,7 +52,7 @@ netParams.connParams['E->all'] = {
   'synMech': 'exc'}                     # synaptic mechanism 
 
 netParams.connParams['I->E'] = {
-  'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
+  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
   'weight': 0.001,                                      # synaptic weight 
   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
@@ -62,7 +62,7 @@ netParams.connParams['I->E'] = {
 # Simulation options
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3           # Duration of the simulation, in ms
-simConfig.dt = 0.05                  # Internal integration timestep to use
+simConfig.dt = 0.025                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -76,5 +76,5 @@ simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
-   
+
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

@@ -63,11 +63,11 @@ netParams.connParams['E2->all'] = {
     'synsPerConn': 5}                                                       # synapses per connection  
 
 netParams.connParams['E4->E2'] = {
-    'preConds': {'popLabel': 'L4_E'},                                       # presyn: L4_E
-    'postConds': {'popLabel': 'L2_E'},                                      # postsyn: L2_E 
+    'preConds': {'pop': 'L4_E'},                                       # presyn: L4_E
+    'postConds': {'pop': 'L2_E'},                                      # postsyn: L2_E 
     'probability': 0.1,                                                     # fixed probability
     'weight': '0.5*post_ynorm',                                             # synaptic weight depends of normalized cortical depth of postsyn cell 
-    'delay': 'gauss(5,1)',                                                  # gaussian distributed transmission delay (ms) 
+    'delay': 'normal(5,1)',                                                  # gaussian distributed transmission delay (ms) 
     'synMech': 'AMPA',                                                      # target synaptic mechanism 
     'synsPerConn': 5}                                                       # uniformly distributed synapses per connection  
 

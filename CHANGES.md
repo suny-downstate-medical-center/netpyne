@@ -4,6 +4,8 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Replaced python random package methods with more robust h.Random() methods (no backward reproducibility)
 
+- Added netParams error checking (BETA version: set cfg.checkErrors = True to test) 
+
 - Enabled use of VecStim spkTimes pops with individual list of cells
 
 - Replaced 'pop' with 'popLabel' (added fix for backward compatibility) (issue #213)

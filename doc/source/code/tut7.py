@@ -86,9 +86,9 @@ sim.saveData()                      # save params, cell info and sim output to f
 sim.analysis.plotData()             # plot spike raster
 
 
-# ###############################################################################
-# # INTERACTING WITH INSTANTIATED NETWORK
-# ###############################################################################
+###############################################################################
+# INTERACTING WITH INSTANTIATED NETWORK
+###############################################################################
 
 # modify conn weights
 sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})

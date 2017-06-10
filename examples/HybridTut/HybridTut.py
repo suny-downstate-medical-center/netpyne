@@ -69,7 +69,7 @@ netParams.stimTargetParams['bg->PYR_HH'] = {'source': 'bkg', 'conds': {'cellType
 netParams.connParams['PYR->PYR'] = {
     'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},
     'weight': 0.2,                    # weight of each connection
-    'delay': '0.2+gauss(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'convergence': 'uniform(0,5)',       # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 10
     'synMech': 'AMPA'}    

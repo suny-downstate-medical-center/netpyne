@@ -340,10 +340,10 @@ class TestTypeObj(object):
                         if not isinstance(values['geom'], dict):
                             errorMessage = "CellParams -> secs ('" + str(key) + "'): Geom parameters must be specified as a dict."
                             geomValid = False
-                        if any ([x in values['geom'].keys() for x in VALID_GEOMETRIES_SUBSET]) and not all([x in values['geom'].keys() for x in VALID_GEOMETRIES_SUBSET]):
-                            #print (" ----++ 999")
-                            errorMessage = "CellParams -> secs ('" + str(key) + "'): If one of '" + str(VALID_GEOMETRIES_SUBSET) + "' are specified, then at least all of the parameters in that list needs to be specified. Values specified are: '" + str(values['geom']) + "'."
-                            geomValid = False
+                        # if any ([x in values['geom'].keys() for x in VALID_GEOMETRIES_SUBSET]) and not all([x in values['geom'].keys() for x in VALID_GEOMETRIES_SUBSET]):
+                        #     #print (" ----++ 999")
+                        #     errorMessage = "CellParams -> secs ('" + str(key) + "'): If one of '" + str(VALID_GEOMETRIES_SUBSET) + "' are specified, then at least all of the parameters in that list needs to be specified. Values specified are: '" + str(values['geom']) + "'."
+                        #     geomValid = False
                         assert geomValid is True
 
                         for key1, values1 in values['geom'].items():
@@ -1569,17 +1569,17 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["locsRangeTest"] = testObj
-
-        # locs synMechs test
-        testObj = TestObj()
-        testObj.testName = "connLocsSynMechTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "loc"
-        testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
-        testObj.messageText = ["Syn Mechs are invalid."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["conn"]["synMechsTest"] = testObj
+        #
+        # # locs synMechs test
+        # testObj = TestObj()
+        # testObj.testName = "connLocsSynMechTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "loc"
+        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
+        # testObj.messageText = ["Syn Mechs are invalid."]
+        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        #
+        # self.testParamsMap["conn"]["synMechsTest"] = testObj
 
         # weights synMechs test
         testObj = TestObj()
@@ -1634,7 +1634,7 @@ class NetPyneTestObj(object):
         self.testParamsMap["conn"]["probabilityTest"] = testObj
 
         # convergence  optional; positive integer
-        # 
+        #
         # testObj = TestObj()
         # testObj.testName = "convergenceTest"
         # testObj.testParameterType = "string"
@@ -2102,29 +2102,29 @@ class NetPyneTestObj(object):
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e))
 
-            elif testType == TEST_TYPE_VALID_CONN_LIST:
-
-                if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
-                        try:
-
-                            errorMessage = self.testTypeObj.testValidConnList(paramValues)
-
-                            if errorMessage == '':
-                                if self.verboseFlag:
-                                    print ( "Test: for valid connList in cell")
-                                    print ( "PASSED" )
-                            else:
-                                if self.verboseFlag:
-                                    print ( "Test: for valid connList in cell")
-                                print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
-
-                        except Exception as e:
-                            #traceback.print_exc(file=sys.stdout)
-                            if self.verboseFlag:
-                                print ( "Test: for valid conn list in cell")
-                            #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + " : Topology is invalid. Must be specified if more than one section specified. For each topology, parentSec and parentX and childX must be defined. ParentSec needs to be a valid section, and both parentX and childX needs to be in range [0,1].")
+            # elif testType == TEST_TYPE_VALID_CONN_LIST:
+            #
+            #     if isinstance(params, dict):
+            #         for paramLabel, paramValues in params.items():
+            #             try:
+            #
+            #                 errorMessage = self.testTypeObj.testValidConnList(paramValues)
+            #
+            #                 if errorMessage == '':
+            #                     if self.verboseFlag:
+            #                         print ( "Test: for valid connList in cell")
+            #                         print ( "PASSED" )
+            #                 else:
+            #                     if self.verboseFlag:
+            #                         print ( "Test: for valid connList in cell")
+            #                     print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+            #
+            #             except Exception as e:
+            #                 #traceback.print_exc(file=sys.stdout)
+            #                 if self.verboseFlag:
+            #                     print ( "Test: for valid conn list in cell")
+            #                 #print ( "paramvalues = " + str(paramValues))
+            #                 print (str(MESSAGE_TYPE_ERROR) + " : Topology is invalid. Must be specified if more than one section specified. For each topology, parentSec and parentX and childX must be defined. ParentSec needs to be a valid section, and both parentX and childX needs to be in range [0,1].")
 
             elif testType == TEST_TYPE_VALID_MECHS:
 

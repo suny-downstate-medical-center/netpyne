@@ -13,8 +13,7 @@ import os
 import traceback
 import numpy
 
-##sys.path.append('../')
-#import utils
+from netpyne import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
 POP_NUMCELLS_PARAMS = ['Density','NumCells','GridSpacing']
@@ -1038,13 +1037,13 @@ class TestTypeObj(object):
                 allKeys.remove('type')
 
             if 'pointps' in mechVarList:
-                validTypes = mechVarList['pointps'].keys()
+                validTypes = mechVarList['pointps'].keys() + ['rate']
 
             if simType not in validTypes:
                 errorMessage = " StimSourceParams -> type: Invalid simtype " + str(simType) + ". Valied values are: " + str(validTypes) + "."
                 errorMessages.append(errorMessage)
             else:
-                allowedValues = mechVarList['pointps'][simType]
+                allowedValues = mechVarList['pointps'][simType] + ['rate']
                 if any([x not in allowedValues for x in allKeys]):
                     errorMessage = "StimSourceParams -> : Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
                     errorMessages.append(errorMessage)

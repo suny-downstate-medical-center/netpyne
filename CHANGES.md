@@ -1,5 +1,9 @@
 # Version 0.7.0
 
+IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random number generators it won't be possible to reproduce results of previous versions that required random values, e.g. random spike streams, connections or cell locations.
+
+- Replaced python random package methods with more robust h.Random() methods (no backward reproducibility)
+
 - Enabled use of VecStim spkTimes pops with individual list of cells
 
 - Replaced 'pop' with 'popLabel' (added fix for backward compatibility) (issue #213)

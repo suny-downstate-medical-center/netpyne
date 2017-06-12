@@ -49,6 +49,14 @@ simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell
 simConfig.checkErrors = 1
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
+sim.create(netParams = netParams, simConfig = simConfig)
+from neuron import h
+v = h.Vector()
+v.record(sim.net.cells[0].secs.soma.hSec(0.5)._ref_v, 0.1)
+sim.simulate()
+sim.analyze()
+
+print v.to_python()
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

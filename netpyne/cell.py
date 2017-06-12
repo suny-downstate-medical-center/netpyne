@@ -189,11 +189,9 @@ class Cell (object):
                             for ptrItem,secLoc in zip(ptr, secLocs):
                                 sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
-                                print ptr
                         else:
                             sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                             sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
-                            print ptr
                         if sim.cfg.verbose: print '  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
                 except:
                     if sim.cfg.verbose: print '  Cannot record ', key, 'from cell ', self.gid

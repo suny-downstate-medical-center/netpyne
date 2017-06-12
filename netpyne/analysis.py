@@ -844,6 +844,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    print fullTrace
                     if isinstance(fullTrace, dict):
                         data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in fullTrace.keys()]
                         lenData = len(data[0])
@@ -851,7 +852,9 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     else:
                         data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
                         lenData = len(data)
+                    print data
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    print t
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList[itrace%len(colorList)]
                     if not overlay:

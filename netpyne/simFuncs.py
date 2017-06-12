@@ -691,8 +691,9 @@ def setupRecording ():
         # record h.t
         if len(sim.simData) > 0:
             try:
-                sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t)
+                pass
+                #sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                #sim.simData['t'].record(h._ref_t)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 

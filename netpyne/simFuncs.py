@@ -25,22 +25,23 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-from tests import *
-
+import tests
+from tests.tests import *
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
-    if netParams is None:
-        netParams = {} # If not specified, initialize as empty dict
-    else:
-        netPyneTestObj = NetPyneTestObj(verboseFlag = True)
-        netPyneTestObj.netParams = netParams
-        #netPyneTestObj.runTests()
+    if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
+
+    # if sim config
+    if simConfig.checkErrors: # whether to validate the input parameters
+        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
+        netPyneTestObj.netParams = netParams
+        netPyneTestObj.runTests()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
@@ -363,8 +364,15 @@ def clearAll ():
 # Hash function to obtain random value
 ###############################################################################
 def id32 (obj):
-    #return hash(obj) & 0xffffffff  # hash func 
+    #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+
+
+###############################################################################
+# Initialize the stim randomizer
+###############################################################################
+def _init_stim_randomizer(rand, stimType, gid, seed):
+    rand.Random123(sim.id32(stimType), gid, seed)
 
 
 ###############################################################################
@@ -455,7 +463,7 @@ def replaceKeys (obj, oldkey, newkey):
                 obj[newkey] = obj.pop(oldkey)
     return obj
 
-    
+
 ###############################################################################
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
@@ -682,8 +690,11 @@ def setupRecording ():
 
         # record h.t
         if len(sim.simData) > 0:
-            sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-            sim.simData['t'].record(h._ref_t)
+            try:
+                sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                sim.simData['t'].record(h._ref_t)
+            except:
+                if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 
         # print recorded traces
         cat = 0
@@ -823,7 +834,8 @@ def preRun ():
     # reset all netstims so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            cell.hRandom.Random123(cell.gid, sim.id32('%d'%(cell.params['seed'])))
+            #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
+            _init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
         pop = sim.net.pops[cell.tags['pop']]
@@ -832,7 +844,8 @@ def preRun ():
             cell.initRandom()
         for stim in cell.stims:
             if 'hRandom' in stim:
-                stim['hRandom'].Random123(cell.gid, sim.id32('%d'%(stim['seed'])))
+                #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+                _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
                 # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
                 if not isinstance(stim['hNetStim'].noiseFromRandom, dict):

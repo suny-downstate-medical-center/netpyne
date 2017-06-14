@@ -1,4 +1,14 @@
+# Version 0.7.1
+
+- Added warning when point process mechanism (eg. VecStim) required for pop is not found
+
 # Version 0.7.0
+
+IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random number generators it won't be possible to reproduce results of previous versions that required random values, e.g. random spike streams, connections or cell locations.
+
+- Replaced python random package methods with more robust h.Random() methods (no backward reproducibility)
+
+- Added netParams error checking (BETA version: set cfg.checkErrors = True to test) 
 
 - Enabled use of VecStim spkTimes pops with individual list of cells
 

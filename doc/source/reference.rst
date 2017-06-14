@@ -479,9 +479,9 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 
 * All Python mathematical operators: '+', '-', '*', '/', '%', '**' (exponent), etc.
 
-* Python mathematical functions: 'sin', 'cos', 'tan', 'exp', 'sqrt', 'mean', 'inf'
+* Python mathematical functions: 'sin', 'cos', 'tan', 'exp', 'sqrt', 'mean', 'inf' (see https://docs.python.org/2/library/math.html for details)
 
-* Python random number generation functions: 'random', 'randint', 'sample', 'uniform', 'triangular', 'gauss', 'betavariate', 'expovariate', 'gammavariate' (see https://docs.python.org/2/library/math.html for details)
+* NEURON h.Random() methods: 'binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull' (see https://www.neuron.yale.edu/neuron/static/py_doc/programming/math/random.html)
 
 * Cell location variables:
 	* 'pre_x', 'pre_y', 'pre_z': pre-synaptic cell x, y or z location.
@@ -526,7 +526,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	.. code-block:: python
 
 		netParams.connParams[...] = {
-			'delay': '0.2 + gauss(13.0,1.4)',
+			'delay': '0.2 + normal(13.0,1.4)',
 		# ...
 
 * Same as above but using variables defined in the ``netParams`` dict:
@@ -540,7 +540,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 		netParams.connParams[...] = {
-			'delay': 'delayMin + gauss(delayMean, delayVar)',
+			'delay': 'delayMin + normal(delayMean, delayVar)',
 		# ...
 
 * Connection delay set to minimum ``defaultDelay`` value plus 3D distance-dependent delay based on propagation velocity (``propVelocity``):
@@ -647,7 +647,7 @@ The code below shows an example of how to create different types of stimulation 
 		'source': 'Input_4', 
 		'sec':'soma', 
 		'loc': 0.5, 
-	    'weight': '0.1+gauss(0.2,0.05)',
+	    'weight': '0.1+normal(0.2,0.05)',
 	    'delay': 1,
 		'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
 

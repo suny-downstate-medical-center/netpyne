@@ -147,13 +147,13 @@ netParams.stimSourceParams['background_E']  = {'type': 'NetStim', 'rate': 20, 'n
 netParams.stimSourceParams['background_I']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Inh
 
 netParams.stimTargetParams['bgE->IT,CT'] = {'source': 'background_E', 'conds': {'cellType': ['IT','CT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgE->PT'] = {'source': 'background_E', 'conds': {'cellType': ['PT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgI->PV'] = {'source': 'background_E', 'conds': {'cellType': ['PV']}, 
-                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'normal(5,3)'}  
 netParams.stimTargetParams['bgI->SOM'] = {'source': 'background_E', 'conds': {'cellType': ['SOM']}, 
-                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'gauss(5,3)'}  
+                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'normal(5,3)'}  
 
 # List of connectivity rules/params
 netParams.ItoIweight = 0.5

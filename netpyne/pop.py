@@ -7,7 +7,7 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import arange, seed, rand, array, pi, sqrt, sin, cos, arccos
+from matplotlib.pylab import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
 import sim
@@ -25,7 +25,8 @@ class Pop (object):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['pop'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
-        self._setCellClass()
+        self._setCellClass()  # set type of cell
+        self.rand = h.Random()  # random number generator
 
 
     def _distributeCells(self, numCellsPop):
@@ -76,8 +77,11 @@ class Pop (object):
     def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
         cells = []
-        seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
-        randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
+        self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
+        self.rand.uniform(0, 1)
+        vec = h.Vector(self.tags['numCells']*3)
+        vec.setrand(self.rand)
+        randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales 
@@ -166,16 +170,16 @@ class Pop (object):
                 maxRange = self.tags[coordFunc+'Range'][1]
 
                 interval = 0.001  # interval of location values to evaluate func in order to find the max cell density
-                maxDensity = max(map(densityFunc, (arange(minRange, maxRange, interval))))  # max cell density 
+                maxDensity = max(map(densityFunc, (np.arange(minRange, maxRange, interval))))  # max cell density 
                 maxCells = volume * maxDensity  # max number of cells based on max value of density func 
                 
-                seed(sim.id32('%d' % sim.cfg.seeds['loc']+sim.net.lastGid))  # reset random number generator
-                locsAll = minRange + ((maxRange-minRange)) * rand(int(maxCells), 1)  # random location values 
-                locsProb = array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)
-                allrands = rand(len(locsProb))  # create an array of random numbers for checking each location pos 
+                self.rand.Random123(int(maxDensity), sim.net.lastGid, sim.cfg.seeds['loc'])
+                locsAll = minRange + ((maxRange-minRange)) * np.array([self.rand.uniform(0, 1) for i in range(int(maxCells))])  # random location values 
+                locsProb = np.array(map(densityFunc, locsAll)) / maxDensity  # calculate normalized density for each location value (used to prune)
+                allrands = np.array([self.rand.uniform(0, 1) for i in range(len(locsProb))])  # create an array of random numbers for checking each location pos 
                 
                 makethiscell = locsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-                funcLocs = [locsAll[i] for i in range(len(locsAll)) if i in array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfuncLocs based on density func
+                funcLocs = [locsAll[i] for i in range(len(locsAll)) if i in np.array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfuncLocs based on density func
                 self.tags['numCells'] = len(funcLocs)  # final number of cells after pruning of location values based on density func
                 if sim.cfg.verbose: print 'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells'])
             else:
@@ -185,8 +189,11 @@ class Pop (object):
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
 
         # calculate locations of cells 
-        seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['numCells']+sim.net.lastGid)))
-        randLocs = rand(self.tags['numCells'], 3)  # create random x,y,z locations
+        self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
+        self.rand.uniform(0, 1)
+        vec = h.Vector(self.tags['numCells']*3)
+        vec.setrand(self.rand)
+        randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales 
@@ -269,7 +276,6 @@ class Pop (object):
     def createCellsGrid (self):
         ''' Create population cells based on fixed number of cells'''
         cells = []
-        seed(sim.id32('%d'%(sim.cfg.seeds['loc']+self.tags['gridSpacing']+sim.net.lastGid)))
         
         rangeLocs = [[0, getattr(sim.net.params, 'size'+coord)] for coord in ['X','Y','Z']]
         for icoord, coord in enumerate(['x', 'y', 'z']):
@@ -329,8 +335,9 @@ class Pop (object):
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
+                if self.tags['cellModel'] in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
+                    print 'Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop'])
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
-                # print "Error: cellModel=%s not a key in netParam.cellParams or a point process mechanism (eg. NetStim or IntFire1)" % (self.tags['cellModel'])
 
 
     def __getstate__ (self): 

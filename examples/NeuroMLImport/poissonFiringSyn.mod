@@ -57,7 +57,7 @@ PARAMETER {
     syn0_tauDecay = 10 (ms)
     syn0_peakTime = 1.5767012 (ms)
     syn0_waveformFactor = 1.2324 
-    syn0_gbase = 0.0019999999 (uS)
+    syn0_gbase = 0.002 (uS)
     syn0_erev = 0 (mV)
 }
 

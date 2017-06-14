@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
+'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
 
 import sys
 import os
@@ -788,7 +788,7 @@ def preRun ():
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
-       sim.fih.append(h.FInitializeHandler(cell.initV))
+       sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
     if not getattr(h, 'cvode', None):

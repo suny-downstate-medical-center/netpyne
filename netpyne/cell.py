@@ -1005,7 +1005,7 @@ class CompartCell (Cell):
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
                     if params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
-                        rand.Random123(sim.id32('stim_exotic'), params['stim_count'], sim.cfg.seeds['stim'])
+                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
                         self.stims.append(Dict())  # add new stim to Cell object
@@ -1563,13 +1563,15 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
-        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
         randContainer['hRandom'] = rand 
+        randContainer['type'] = self.tags['cellType'] 
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

@@ -59,10 +59,10 @@ PARAMETER {
     vt = -40 (mV)
     vpeak = 35 (mV)
     a = 0.030000001 (kHz)
-    b = -0.0019999999 (uS)
+    b = -0.002 (uS)
     c = -50 (mV)
     d = 0.1 (nA)
-    C = 1.00000005E-4 (microfarads)
+    C = 1.0E-4 (microfarads)
 }
 
 ASSIGNED {

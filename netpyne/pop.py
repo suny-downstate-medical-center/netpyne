@@ -264,7 +264,6 @@ class Pop (object):
                     cellTags[coord] = cellTags[coord+'norm']*getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             if 'params' in cellTags:  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][listIndex]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object

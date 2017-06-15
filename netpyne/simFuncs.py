@@ -27,6 +27,10 @@ from neuron import h, init # Import NEURON
 import sim, specs
 import tests
 from tests.tests import *
+
+import pprint; pp = pprint.PrettyPrinter(depth=6)
+
+
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
@@ -935,7 +939,7 @@ def gatherData ():
     if not sim.cfg.saveCellConns:
         for cell in sim.net.cells:
             cell.conns = []
-
+            
     simDataVecs = ['t','spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
@@ -986,6 +990,13 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.iteritems():
                 data[0][k] = v
+                
+            for d in data: 
+                if isinstance(d,dict):
+                    print("<<<<<<< Data on host %s"%sim.rank)
+                    pp.pprint(d)
+                    print(">>>>>>>> End data on host %s"%sim.rank)
+                
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
             if sim.rank == 0:

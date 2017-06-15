@@ -38,7 +38,7 @@ def initialize (netParams = None, simConfig = None, net = None):
         sys.exit()
 
     # if sim config
-    if simConfig.checkErrors: # whether to validate the input parameters
+    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
         netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
         netPyneTestObj.netParams = netParams
         netPyneTestObj.runTests()

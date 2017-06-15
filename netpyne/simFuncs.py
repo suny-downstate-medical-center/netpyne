@@ -788,7 +788,7 @@ def preRun ():
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
-       sim.fih.append(h.FInitializeHandler(cell.initV))
+       sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
     if not getattr(h, 'cvode', None):

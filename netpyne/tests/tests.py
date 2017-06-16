@@ -21,6 +21,8 @@ VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d']
 VALID_GEOMETRIES_SUBSET = ['L', 'diam', 'Ra']
 PT_3D = 'pt3d'
 VALID_TOPOLOGY_PARAMS = ['parentSec', 'parentX','childX']
+PULSE_KEYS = ['start','end','rate','noise']
+POP_STIM_KEYS = ['start','end','rate','noise','spkTimes','pulses']
 
 MESSAGE_TYPE_WARNING = "WARNING"
 MESSAGE_TYPE_ERROR = "ERROR"
@@ -76,50 +78,7 @@ TEST_TYPE_CONN_PLASTICITY = "Check for shape in conn plasticity"
 TEST_TYPE_STIM_SOURCE_TEST = "Stim target test"
 TEST_TYPE_STIM_TARGET_TEST = "Stim source test"
 TEST_TYPE_IS_VALID_SPIKE_GENLOC = "Spike gen loc"
-
-testFunctionsMap = {}
-
-testFunctionsMap [TEST_TYPE_EXISTS] = "testExists"
-testFunctionsMap [TEST_TYPE_EXISTS_IN_LIST] = "testExistsInList"
-testFunctionsMap [TEST_TYPE_IS_VALID_RANGE] = "testIsValidRange"
-testFunctionsMap [TEST_TYPE_IN_RANGE] = "testInRange"
-testFunctionsMap [TEST_TYPE_EQ] = "testEquals"
-
-testFunctionsMap [TEST_TYPE_GT] = "testGt"
-testFunctionsMap [TEST_TYPE_GTE] = "testGte"
-testFunctionsMap [TEST_TYPE_GTE_ZERO] = "testGteZero"
-
-testFunctionsMap [TEST_TYPE_LT] = "testGt"
-testFunctionsMap [TEST_TYPE_LTE] = "testGte"
-testFunctionsMap [TEST_TYPE_LTE_ZERO] = "testGteZero"
-
-testFunctionsMap [TEST_TYPE_VALUE_LIST] = "testExists"
-
-testFunctionsMap [TEST_TYPE_EXISTS_IN_LIST] = "testExistsInList"
-testFunctionsMap [TEST_TYPE_EXISTS_IN_DICT] = "testExistsInDict"
-testFunctionsMap [TEST_TYPE_EXISTS_IN_ALL_DICTS] = "testExistsInAllDicts"
-
-testFunctionsMap [TEST_TYPE_VALID_GEOMETRIES] = "testValidGeometries"
-testFunctionsMap [TEST_TYPE_VALID_TOPOLOGIES] = "testValidTopologies"
-
-testFunctionsMap [TEST_TYPE_VALID_MECHS] = "testValidMechs"
-testFunctionsMap [TEST_TYPE_VALID_IONS] = "testValidIons"
-testFunctionsMap [TEST_TYPE_VALID_POINTPS] = "testValidPointps"
-testFunctionsMap [TEST_TYPE_VALID_SYN_MECHS] = "testValidSynMechs"
-testFunctionsMap [TEST_TYPE_ARRAY_IN_RANGE] = "testArrayInRange"
-
-testFunctionsMap [TEST_TYPE_EXISTS_IN_POP_LABELS] = "testExistsInPopLabels"
-testFunctionsMap [TEST_TYPE_VALID_SEC_LIST] = "testValidSecLists"
-
-testFunctionsMap [TEST_TYPE_VALID_CONN_LIST] = "testValidConnList"
-testFunctionsMap [TEST_TYPE_CONN_PARM_HIERARCHY] = "testTypeHierarchy"
-testFunctionsMap [TEST_TYPE_CONN_SHAPE] = "testValidConnShape"
-testFunctionsMap [TEST_TYPE_CONN_PLASTICITY] = "testValidConnPlasticity"
-
-testFunctionsMap [TEST_TYPE_STIM_SOURCE_TEST] = "testValidStimSource"
-testFunctionsMap [TEST_TYPE_STIM_TARGET_TEST] = "testValidStimTarget"
-
-testFunctionsMap [TEST_TYPE_IS_VALID_SPIKE_GENLOC] = "testSpikeGenLoc"
+TEST_TYPE_VALID_STIM = "Valid stim"
 
 class TestTypeObj(object):
 
@@ -134,7 +93,6 @@ class TestTypeObj(object):
 
     def testExists(self, val,params):
         try:
-            # print ( " val = " + str(val ) + " -- " + str(params))
             assert (val in params), val + " must be specified."
         except AssertionError as e:
             e.args += (val,)
@@ -150,10 +108,7 @@ class TestTypeObj(object):
     def testExistsInDict(self, val,paramDict, dictKey):
         try:
             existsInDict = False
-            #print ( " ::: in exists in dict test " + str(paramDict) + " val " + str(val))
             for key, valueDict in paramDict.items():
-                # print
-                #print ( " ^^^^^ ---- valueDict[dictKey] " + str(valueDict) + " val " + str(val))
                 if val == valueDict[dictKey]:
                     existsInDict = True
                     break
@@ -178,22 +133,13 @@ class TestTypeObj(object):
         try:
             existsInPopLabels = False
             popLabelsSpecified = False
-            #print ( " val " + str(val) + " pop labels = " + str(popLabels))
             paramPopLabel = ''
             errorMessage = ''
             if 'popLabel' in paramValues[val]:
                 popLabelsSpecified = True
-                #print (" 1 =  " + str(paramValues[val]['popLabel']) + " 2 = " + str(popLabels.keys()))
                 if paramValues[val]['popLabel'] not in popLabels.keys():
                     errorMessage = "Pop label specified in conn params is: " + str(paramValues[val]['popLabel']) + ". This does not exist in list of pop labels = " + str(popLabels.keys()) + "."
                     return errorMessage
-                # for popLabel in popLabels.keys():
-                #     if paramValues[val]['popLabel'] != popLabel:
-                #         print ( " --- 1 : " + str(paramValues[val]['popLabel']) + " pop label " + str(popLabel))
-                #         errorMessage = "Pop label specified in conn params is: " + str(paramValues[val]['popLabel']) + ". This does not exist in list of pop labels = " + str(popLabels.keys()) + "."
-                #         existsInPopLabels = False
-                #         break
-            #assert existsInPopLabels is True, errorMessage
         except Exception as e:
             # e.args += (e,)
             raise
@@ -212,10 +158,8 @@ class TestTypeObj(object):
     def testInRange(self, val,range, params): # TEST_TYPE_IN_RANGE
         try:
             if val in params:
-            #     print ( "************* BEFORE !!!!!!!")
                 assert (params[val][0] >= range[0] and params[val][1] <= range[1])
         except AssertionError as e:
-            # print ( "************* IN ERROR !!!!!!!")
             e.args += (val,)
             raise
 
@@ -325,6 +269,78 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
+    def testValidStim(self,paramValues): # TEST_TYPE_VALID_STIM
+        try:
+
+            stimValid = True
+            stimParamsAllowed = False
+            errorMessages = []
+
+            #print ( " IN VALIDATION !!!! " + str(isinstance (paramValues, dict)))
+
+            if isinstance (paramValues, dict):
+                # for key, value in paramValues.items():
+                #     print ( " IN VALIDATION 2222 !!!! " + str(value))
+                #     if isinstance (value, dict):
+                #         print ( 'cellModel' + str(value['cellModel']) )
+                if 'cellModel' in paramValues:
+                    if paramValues['cellModel'] in ['IntFire1', 'IntFire2', 'NetStim', 'VecStim']:
+                        stimParamsAllowed = True
+            if not stimParamsAllowed:
+                if any([x in POP_STIM_KEYS for x in  paramValues]):
+                    stimValid = False
+                    errorMessages.append("PopParams: Any or all of the params '" + str(POP_STIM_KEYS)+ "' are allowed only if cellModel in '" + str(['IntFire1', 'IntFire2', 'NetStim', 'VecStim']) + "'.")
+            else: # if stimParamsAllowed:
+                #print ( " IN ELSE !!!!" + str(paramValues.keys()) + " :: " + str('pulses' in paramValues))
+                if 'interval' in paramValues:
+                    if not isinstance(paramValues['interval'], numbers.Real):
+                        stimValid = False
+                        errorMessages.append("PopParams->'interval': Must be a float if specified. Value provided is :" + str(paramValues['interval']))
+                if 'rate' in paramValues:
+                    if not isinstance(paramValues['rate'], numbers.Real):
+                        stimValid = False
+                        errorMessages.append("PopParams->'rate': Must be a float if specified. Value provided is :" + str(paramValues['rate']))
+                if 'noise' in paramValues:
+                    if not isinstance(paramValues['noise'], numbers.Real):
+                        stimValid = False
+                        errorMessages.append("PopParams->'noise': Must be a float between 0 and 1 if specified. Value provided is :" + str(paramValues['noise']))
+                    elif float(paramValues['noise']) < 0 or float(paramValues['noise']) > 1:
+                        stimValid = False
+                        errorMessages.append("PopParams->'noise': Must be a float between 0 and 1 if specified. Value provided is :" + str(paramValues['noise']))
+                if 'start' in paramValues:
+                    if not isinstance(paramValues['start'], numbers.Real):
+                        stimValid = False
+                        errorMessages.append("PopParams->'start': Must be a float if specified. Value provided is :" + str(paramValues['start']))
+                if 'number' in paramValues:
+                    if not isinstance(paramValues['number'], numbers.Real):
+                        stimValid = False
+                        errorMessages.append("PopParams->'number': Must be a float if specified. Value provided is :" + str(paramValues['number']))
+                if paramValues['cellModel'] != 'VecStim' and any([x in paramValues for x in ['spkTimes', 'pulses']]):
+                        stimValid = False
+                        errorMessages.append("PopParams: 'spkTimes' or 'pulses' can be provided if 'cellModel' is 'VecStim' ")
+                if 'spkTimes' in paramValues:
+                    if not isinstance(paramValues['spkTimes'], list):
+                        stimValid = False
+                        errorMessages.append("PopParams->'spkTimes': Must be a list if specified. Value provided is :" + str(paramValues['spkTimes']))
+                if 'pulses' in paramValues:
+                    #print (" *** IN PULSES ")
+                    if not isinstance(paramValues['pulses'], list):
+                        stimValid = False
+                        errorMessages.append("PopParams->'pulses': Must be a list of dicts if specified. They keys for each dict are '" + str(PULSE_KEYS) + "' Value provided is :" + str(paramValues['pulses']))
+                    if not all( [isinstance(x, dict) for x in paramValues['pulses']]):
+                        stimValid = False
+                        errorMessages.append("PopParams->'pulses': Must be a list of dicts if specified. Value provided is :" + str(paramValues['pulses']))
+                    for pulseValue in paramValues['pulses']:
+                        if not all([x in PULSE_KEYS for x in pulseValue.keys()]):
+                            stimValid = False
+                            errorMessages.append("PopParams->'pulses': Must be a list of dicts if specified. Value provided is :'" + str(paramValues['pulses']) + "'. Keys of each dict must be in '" + str(PULSE_KEYS) + "'.")
+
+        except Exception as e:
+            e.args += ()
+            raise
+
+        return stimValid, errorMessages
+
     def testValidGeometries(self,paramValues): # TEST_TYPE_VALUE_LIST
         geomValid = True
         errorMessage = ''
@@ -335,8 +351,6 @@ class TestTypeObj(object):
                         if len(values['geom']) == 0:
                             errorMessage = "CellParams -> secs ('" + str(key) + "'): Geom parameters must be specified."
                             geomValid = False
-                        #print (" :: " + str(values['geom'] ))
-                        #print ( " -- " + str(all([x in values['geom'].keys() for x in VALID_GEOMETRIES_SUBSET])))
                         if not isinstance(values['geom'], dict):
                             errorMessage = "CellParams -> secs ('" + str(key) + "'): Geom parameters must be specified as a dict."
                             geomValid = False
@@ -344,15 +358,18 @@ class TestTypeObj(object):
                         #     #print (" ----++ 999")
                         #     errorMessage = "CellParams -> secs ('" + str(key) + "'): If one of '" + str(VALID_GEOMETRIES_SUBSET) + "' are specified, then at least all of the parameters in that list needs to be specified. Values specified are: '" + str(values['geom']) + "'."
                         #     geomValid = False
-                        assert geomValid is True
+                        if not geomValid:
+                            break
+                        #assert geomValid is True
 
                         for key1, values1 in values['geom'].items():
-                            #print ( " key1 = " + str(key1) + " -- " + str(key1 not in VALID_GEOMETRIES))
-                            if key1 not in VALID_GEOMETRIES:
 
+                            if key1 not in VALID_GEOMETRIES:
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> 'geom': Invalid geom parameter '"+ str(key1) + "' specified. Valid values are '" + str(VALID_GEOMETRIES) + "'."
                                 geomValid = False
-                            assert geomValid is True
+                            if not geomValid:
+                                break
+                            #assert geomValid is True
 
                             if PT_3D in values['geom']:
                                 if not isinstance ( values['geom'][PT_3D] , list ):
@@ -361,7 +378,11 @@ class TestTypeObj(object):
                                 elif len(values['geom'][PT_3D]) == 0 :
                                     errorMessage = "CellParams -> secs ('" + str(key) + "') -> 'geom': At least one element must be provided for pt3D."
                                     geomValid = False
-                                assert geomValid is True
+
+                                if not geomValid:
+                                    break
+                                #assert geomValid is True
+
                                 for elem in values['geom'][PT_3D]:
                                     if not isinstance ( elem , list ):
                                         errorMessage = "CellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Type error. pt3D must be an array with each array element being a 4length 4 array of floats."
@@ -369,15 +390,18 @@ class TestTypeObj(object):
                                     elif len(elem) != 4:
                                         errorMessage = "CellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Length error. pt3D must be an array with each array element being a 4 length 4 array of floats."
                                         geomValid = False
-                                    assert geomValid is True
+                                    if not geomValid:
+                                        break
                                     for elem2 in elem:
                                         if not isinstance ( elem2, numbers.Real ):
                                             errorMessage = "CellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Float error. pt3D must be an array with each array element being a 4 length 4 array of floats. Value specified is: '" + str(elem2) + "'."
                                             geomValid = False
-                                        assert geomValid is True
+                                        if not geomValid:
+                                            break
 
+            assert geom is True, errorMessage
         except AssertionError as e:
-            e.args += (errorMessage,)
+            e.args += ()
             raise
 
     def testValidTopologies(self,paramValues): # TEST_TYPE_VALUE_LIST
@@ -397,41 +421,30 @@ class TestTypeObj(object):
                                 errorMessage = "CellParams -> secs ('" + str(paramValues['secs'].keys()) + "'): Topology needs to be specified if more than one section."
                         else:
                             topolValid = True
-                            #print ( " **** past 1 " + str(  len(value['topol'].keys())) )
-                            #print ("0 = " + str(topolValid))
-                            if not isinstance (value['topol'], dict ) :
-                                #print ( " **** past 0 ")
 
+                            if not isinstance (value['topol'], dict ) :
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol: Topology, if specified, must be a dict. Value specified is '" + str(value['topol']) + "'."
 
                             elif len(value['topol'].keys()) < 3:
                                 topolValid = False
-                                #print ( " **** past 2 ")
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol: At least 3 parameters (parentSec, parentX and childX) must be specified for topology. Values specified are: '" + str(value['topol'].keys()) + "'."
                             elif not any([x in value['topol'].keys() for x in VALID_TOPOLOGY_PARAMS ]):
-                                #print ( " **** past 3 ")
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol: Invalid value specified :''" + str(value['topol']) + "'. Valid values are: '" + str(VALID_TOPOLOGY_PARAMS) + "'."
                             elif value['topol']['parentSec'] not in paramValues['secs']:
-                                #print ( " **** past 4 ")
-                                # print (" ::: secs are " + str(paramValues['secs']) )
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol -> parentSec: parentSec '" + str(value['topol']['parentSec']) +"' does not point to a valid section. Valid sections are ('" + str(paramValues['secs'].keys()) + "')."
                             elif not isinstance ( value['topol']['parentX'] , numbers.Real ) :
-                                #print ( " **** past 5 ")
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol -> parentX: parentX is not a float."
                             elif not isinstance ( value['topol']['childX'] , numbers.Real ) :
-                                #print ( " **** past 6 ")
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol -> childX: childX is not a float."
                             elif value['topol']['parentX'] < 0 or value['topol']['parentX'] >1 :
-                                #print ( " **** past 7 ")
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol -> parentX: parentX must be between 0 and 1. Value specified is '" + str(value['topol']['parentX'] ) + "'."
                             elif value['topol']['childX'] < 0 or value['topol']['childX'] >1 :
-                                #print ( " **** past 8 ")
                                 topolValid = False
                                 errorMessage = "CellParams -> secs ('" + str(key) + "') -> topol -> parentX: childX must be between 0 and 1. Value specified is '" + str(value['topol']['childX'] ) + "'."
 
@@ -466,41 +479,28 @@ class TestTypeObj(object):
                                         ionName = key2.split('_ion')[0]
                                         mechs[key2] = [x.replace(ionName, "") for x in mechs[key2] ]
                                         keys_suffixed = [x for x in values2.keys()]
-                                        #print ( " !!!!!!!!  " + str(mechs[key2]) + " :: " + str(values2.keys()))
                                         if not any([x in mechs[key2] for x in values2.keys() ]):
-                                            #print ( " 1111111 setting invalid 1 " )
                                             mechsValidFlag = False
                                             errorMessage = "CellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "') : Invalid ions (" + str(values2.keys()) + ") specified. Valid value are: " + str(mechs[key2]) + ". Values specified are " + str(values2.keys()) + "."
                                         elif not all([x in values2.keys() for x in mechs[key2] ]):
-                                            #print ( " 2222222 setting invalid 2 ")
                                             mechsWarningFlag = True
                                             errorMessage = "CellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "') : Ion specifications incomplete (" + str(values2.keys()) + "). Complete list is: " + str(mechs[key2]) + ". Values specified are " + str(values2.keys()) + "."
                                     else:
                                         keys_suffixed = [x + "_" + key2 for x in values2.keys()]
                                         mechs_unsuffixed = [x.replace("_" + key2, "") for x in mechs[key2]]
-                                        #print (" mechs[key2] = " + str(mechs[key2]) + " keys_suffixed = " + str(keys_suffixed))
                                         if not all([x in mechs[key2] for x in keys_suffixed]):
-                                            #print ( " !!!!!!!! setting invalid 1 "  + str(mechs[key2]) + " :: " + str(values2.keys()))
                                             mechsValidFlag = False
                                             errorMessage = "CellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Invalid mechs (" + str(values2.keys()) + ") specified . Valid value are: " + str(mechs_unsuffixed) + ". Values specified are " + str(values2.keys()) + "."
                                         elif not all([x in keys_suffixed for x in mechs[key2] ]):
-                                            #print ( " !!!!!!!! setting invalid 2 " + str (keys_suffixed) + " -- " + str(mechs[key2]) + " === " + str([x in keys_suffixed for x in mechs[key2] ]))
                                             mechsWarningFlag = True
                                             errorMessage = "CellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Incomplete list provided. Complete list is: " + str(mechs_unsuffixed) + ". Values specified are " + str(values2.keys()) + "."
-                                            #errorMessage = str(paramValues['secs'][key][key1])
 
                                     mechsValidFlagList.append(mechsValidFlag)
                                     mechsWarningFlagList.append(mechsWarningFlagList)
                                     errorMessages.append(errorMessage)
 
-            #assert mechsValid is True, " Must be a valid mech as specified in utils.mechVarList."
-            # return errorMessage
-
         except:
-            #e.args += (errorMessage)
-            #raise
-            #traceback.print_exc(file=sys.stdout)
-            pass
+            raise
 
         return errorMessages, mechsValidFlagList, mechsWarningFlagList
 
@@ -541,22 +541,17 @@ class TestTypeObj(object):
     def testArrayInRange(self, val,range, params): # TEST_TYPE_IN_RANGE
         try:
             if val in params:
-            #     print ( "************* BEFORE !!!!!!!")
                 if isinstance (params[val], list):
                     flattenedList = numpy.ravel(params[val])
-                    #print (" flag list " + str(flattenedList))
                     for x in flattenedList:
                         assert (x >= range[0] and x <= range[1])
                 elif isinstance (params[val], numbers.Real):
                     assert (params[val] >= range[0] and params[val] <= range[1])
         except AssertionError as e:
-            # print ( "************* IN ERROR !!!!!!!")
             e.args += (e,)
             raise
 
     def checkSyncMechs(self,paramValue, values, dimValues, dimSynMechs, synsPerConn): # check syncMechs
-
-        #print ( " paramValue = " + str(paramValue) + " values = " + str(values) + " dimValues = " + str(dimValues) + " dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
 
         errorMessage = ''
         synMechsValid = True
@@ -564,9 +559,7 @@ class TestTypeObj(object):
         try:
 
             if dimSynMechs == 1:
-                # print ( " in check 1 synsPerConn 333 " + str(dimLocs) + " :: " + str(synsPerConn))
                 if synsPerConn != 1:
-                    # print ( " in check 1 synsPerConn 444 " + str(dimLocs) + " :: " + str(synsPerConn))
                     if dimValues not in [0,1]:
                         errorMessage = "ConnParams -> '" + str(paramValue) + "' can only be a number, function or 1d list if only one 1 synMech and synsPerConn > 1."
                         synMechsValid = False
@@ -580,30 +573,24 @@ class TestTypeObj(object):
                         synMechsValid = False
             else: # more than 1 synMech
                 if synsPerConn != 1:
-                    # print ( " in check 1 synsPerConn 333 dimlocs = " + str(dimLocs) + " synsPerConn = " + str(synsPerConn) + " dimSynMechs = " + str(dimSynMechs))
                     if dimValues not in [0,1,2]:
                         errorMessage = "ConnParams -> '" + str(paramValue) + "' can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
                         synMechsValid = False
                     elif dimValues == 1 and len(values) != dimSynMechs:
-                        # print ( " in check 1 synsPerConn 555 ")
                         errorMessage = "ConnParams -> '" + str(paramValue) + "' can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
                         synMechsValid = False
                     elif dimValues == 2:
                         if numpy.array(locs).shape[1] != synsPerConn:
-                            # print ( " in check 1 synsPerConn 666 " )
                             errorMessage = "ConnParams -> '" + str(paramValue) + "' can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn > 1."
                             synMechsValid = False
                         elif numpy.array(values).shape[0] != dimSynMechs:
                             errorMessage = "ConnParams -> '" + str(paramValue) + "': Invalid " + str(paramValue) + " for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
                             synMechsValid = False
                 else: # only 1 synsPerConn
-                    print ( " in check 1 synsPerConn " + str(dimValues))
                     if dimValues not in [0,1]:
-                        #print ( " ---------- in error check 1 synsPerConn " + str(dimValues))
                         errorMessage =  "ConnParams -> " + str(paramValue) + " can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
                         synMechsValid = False
                     elif dimValues == 1 and len(values) != dimSynMechs:
-                        # print ( " in check 1 synsPerConn " + str(len(locs)))
                         errorMessage =  "ConnParams -> " + sstr(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
                         synMechsValid = False
         except Exception as e:
@@ -612,9 +599,6 @@ class TestTypeObj(object):
         return errorMessage, synMechsValid
 
     def checkConnList(self,paramValue, values, dimValues, dimSynMechs, synsPerConn): # check syncMechs
-
-        #print ( " paramValue = " + str(paramValue) + " values = " + str(values) + " dimValues = " + str(dimValues) + " dimSynMechs = " + str(dimSynMechs) + " synsPerConn = " + str(synsPerConn))
-
         errorMessage = ''
 
         try:
@@ -632,40 +616,6 @@ class TestTypeObj(object):
             if dimValues not in [2,3]:
                     errorMessage = "ConnParams -> connList can only be 2D or 3D list."
                     return errorMessage
-
-            # if dimSynMechs == 1:
-            #     # print ( " in check 1 synsPerConn 333 " + str(dimLocs) + " :: " + str(synsPerConn))
-            #     if synsPerConn != 1:
-            #         # print ( " in check 1 synsPerConn 444 " + str(dimLocs) + " :: " + str(synsPerConn))
-            #         if dimValues not in [1,2]:
-            #             errorMessage = str(paramValue) + " can only be a 1D or 2D list if only one 1 synMech and synsPerConn > 1."
-            #         elif dimValues == 1 and len(values) != synsPerConn:
-            #             errorMessage = "Dimension of " + str(paramValue) + " locs array must be same as synsPerConn."
-            #
-            #     else: # only 1 synsPerConn
-            #         if dimValues !=0:
-            #             errorMessage = str(paramValue) + " can only be a list if 1 synMech and synsPerConn = 1."
-            # else: # more than 1 synMech
-            #     if synsPerConn != 1:
-            #         # print ( " in check 1 synsPerConn 333 dimlocs = " + str(dimLocs) + " synsPerConn = " + str(synsPerConn) + " dimSynMechs = " + str(dimSynMechs))
-            #         if dimValues not in [1,2,3]:
-            #             errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
-            #         elif dimValues == 2 and len(values) != dimSynMechs:
-            #             # print ( " in check 1 synsPerConn 555 ")
-            #             errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
-            #         elif dimValues == 3:
-            #             if numpy.array(locs).shape[2] != synsPerConn:
-            #                 # print ( " in check 1 synsPerConn 666 " )
-            #                 errorMessage = str(paramValue) + " can only be a number or 2d or 3D list if more than 1 synMech and synsPerConn > 1."
-            #             elif numpy.array(values).shape[2] != dimSynMechs:
-            #                 errorMessage = "Invalid " + str(paramValue) + " for synMechs and synsPerConn. If specifying 2D array, please ensure that the array of arrays has the number of elements as # of synMechs, with each array having the number of elements as specified by synsPerConn."
-            #     else: # only 1 synsPerConn
-            #         # print ( " in check 1 synsPerConn ")
-            #         if dimValues not in [1,2]:
-            #             errorMessage = str(paramValue) + " can only be a number or 1 D list if more than 1 synMech and synsPerConn = 1."
-            #         elif dimValues == 1 and len(values) != dimSynMechs:
-            #             # print ( " in check 1 synsPerConn " + str(len(locs)))
-            #             errorMessage = str(paramValue) + " can only be a number or 1d or 2D list if more than 1 synMech and synsPerConn = 1."
 
         except Exception as e:
             return errorMessage
@@ -685,22 +635,13 @@ class TestTypeObj(object):
                     if not synMech in netParams.synMechParams:
                         errorMessage = "ConnParams -> synMechs -> " + synMech + ": Synaptic mechanism is not valid."
                         synMechsValid = False
-            # else:
-            #     errorMessage = "ConnParams -> synMechs -> " + str(synMechs) + ": Synaptic mechanism is not valid, must be a list."
-            #     synMechsValid = False
+
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             raise
         return errorMessage, synMechsValid
 
     def testValidSynMechs(self,parameterName, paramValues, netParams): # TEST_TYPE_VALID_SYN_MECHS
-
-        # If omitted, defaults to netParams.defaultWeight = 1.
-        # If have list of synMechs, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: [0.1, 0.01]).
-        # If have synsPerConn > 1, can have single weight for all, or list of weights (one per synapse, e.g. if synsPerConn = 3: [0.2, 0.3, 0.4])
-        # If have both a list of synMechs and synsPerConn > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and synsPerConn = 3: [[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]])
-
-        #print ( " parameterName "  + str(parameterName))
 
         errorMessage = ''
 
@@ -817,8 +758,7 @@ class TestTypeObj(object):
                         #print (" value### = " + str(value.keys()))
                         validSections.extend ( value.keys())
 
-        #    print ( " @@@@ valid sections = " + str(validSections))
-
+            #print ( " @@@@ valid sections = " + str(validSections))
             if 'secList' in cellParams:
                 secList = cellParams['secList']
                 #print ( " seclist = " + str(secList))
@@ -1149,8 +1089,8 @@ class NetPyneTestObj(object):
 
     def runTests(self):
 
-        # if self.verboseFlag:
-        #     print (" *** Running tests *** ")
+        if self.verboseFlag:
+            print (" *** Running tests *** ")
         self.runPopTests() # run pop tests
         self.runNetTests() # run net tests
         self.runCellTests() # run cell tests
@@ -1158,8 +1098,8 @@ class NetPyneTestObj(object):
         self.runStimSourceTests() # load stimSource tests
         self.runStimTargetTests() # load stimTarget tests
 
-        # if self.verboseFlag:
-        #     print (" *** Finished running tests *** ")
+        if self.verboseFlag:
+            print (" *** Finished running tests *** ")
 
     def loadStimSourceTests(self):
 
@@ -1207,99 +1147,107 @@ class NetPyneTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["pop"] = {}
 
-        ##cellModel test
+        # ##cellModel test
+        # testObj = TestObj()
+        # testObj.testName = "cellModelTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "cellModel"
+        # testObj.testTypes = [TEST_TYPE_EXISTS]
+        # testObj.messageText = ["No cellModel specified in population paramters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["cellModelTest"] = testObj
+        #
+        # ##volume params test
+        # testObj = TestObj()
+        # testObj.testName = "volumeParamsTest"
+        # testObj.testParameterType = "list"
+        # testObj.testParameterValueList = ['density','numCells','gridSpacing']
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
+        # testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["volumeParamsTest"] = testObj
+        #
+        # # xnormrange test
+        # testObj = TestObj()
+        # testObj.testName = "xNormRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "xnormRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,1]"
+        # testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["xNormRangeTest"] = testObj
+        #
+        # # ynormrange test
+        # testObj = TestObj()
+        # testObj.testName = "yNormRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "ynormRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,1]"
+        # testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["yNormRangeTest"] = testObj
+        #
+        # # znormrange test
+        # testObj = TestObj()
+        # testObj.testName = "zNormRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "znormRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,1]"
+        # testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["zNormRangeTest"] = testObj
+        #
+        # # xrange test
+        # testObj = TestObj()
+        # testObj.testName = "xRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "xRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,self.netParams.sizeX]"
+        # testObj.messageText = ["xRange invalid.","xRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
+        #
+        # self.testParamsMap["pop"]["xRangeTest"] = testObj
+        #
+        # # yrange test
+        # testObj = TestObj()
+        # testObj.testName = "yRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "yRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,self.netParams.sizeY]"
+        # testObj.messageText = ["yRange invalid.", "yRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["yRangeTest"] = testObj
+        #
+        # # zrange test
+        # testObj = TestObj()
+        # testObj.testName = "zRangeTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "zRange"
+        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        # testObj.testValueRange = "[0,self.netParams.sizeX]"
+        # testObj.messageText = ["zRange invalid.", "zRange not in range."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["pop"]["zRangeTest"] = testObj
+
+        # stim test
         testObj = TestObj()
-        testObj.testName = "cellModelTest"
+        testObj.testName = "stimTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "cellModel"
-        testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.messageText = ["No cellModel specified in population paramters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.testTypes = [TEST_TYPE_VALID_STIM]
 
-        self.testParamsMap["pop"]["cellModelTest"] = testObj
-
-        ##volume params test
-        testObj = TestObj()
-        testObj.testName = "volumeParamsTest"
-        testObj.testParameterType = "list"
-        testObj.testParameterValueList = ['density','numCells','gridSpacing']
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["volumeParamsTest"] = testObj
-
-        # xnormrange test
-        testObj = TestObj()
-        testObj.testName = "xNormRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "xnormRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["xNormRangeTest"] = testObj
-
-        # ynormrange test
-        testObj = TestObj()
-        testObj.testName = "yNormRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "ynormRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["yNormRangeTest"] = testObj
-
-        # znormrange test
-        testObj = TestObj()
-        testObj.testName = "zNormRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "znormRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["zNormRangeTest"] = testObj
-
-        # xrange test
-        testObj = TestObj()
-        testObj.testName = "xRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "xRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["xRange invalid.","xRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
-
-        self.testParamsMap["pop"]["xRangeTest"] = testObj
-
-        # yrange test
-        testObj = TestObj()
-        testObj.testName = "yRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "yRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,self.netParams.sizeY]"
-        testObj.messageText = ["yRange invalid.", "yRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["yRangeTest"] = testObj
-
-        # zrange test
-        testObj = TestObj()
-        testObj.testName = "zRangeTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "zRange"
-        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["zRange invalid.", "zRange not in range."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["pop"]["zRangeTest"] = testObj
+        self.testParamsMap["pop"]["stimTest"] = testObj
 
         # if self.verboseFlag:
         #     print (" *** Finished loading pop tests *** ")
@@ -1517,16 +1465,6 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
 
-        # # condsTest test
-        # testObj = TestObj()
-        # testObj.testName = "popLabelsTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "popLabel"
-        # testObj.testTypes = [TEST_TYPE_POP_LABEL_VALID]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        # testObj.messageText = ["Pop label specified in conn parameters."]
-        # self.testParamsMap["conn"]["popLabelsTest"] = testObj
-
         # condsTest test
         testObj = TestObj()
         testObj.testName = "preCondsTest"
@@ -1569,17 +1507,6 @@ class NetPyneTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["locsRangeTest"] = testObj
-        #
-        # # locs synMechs test
-        # testObj = TestObj()
-        # testObj.testName = "connLocsSynMechTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "loc"
-        # testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
-        # testObj.messageText = ["Syn Mechs are invalid."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["synMechsTest"] = testObj
 
         # weights synMechs test
         testObj = TestObj()
@@ -1599,63 +1526,9 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "delay"
         testObj.testTypes = [TEST_TYPE_VALID_SYN_MECHS]
         testObj.messageText = ["Syn Mechs are invalid."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["delayMechsTest"] = testObj
-
-
-        # synsPerConn
-        #- synsPerConn: optional, defaults to 1; has to be >=1
-
-        # testObj = TestObj()
-        # testObj.testName = "synsPerConnTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "synsPerConn"
-        # testObj.testTypeSpecialString = "synMechsTest"
-        # testObj.testTypes = [TEST_TYPE_INTEGER, TEST_TYPE_GTE ]
-        # testObj.compareValueString = "1"
-        # testObj.compareValueType = "int"
-        # testObj.messageText = ["Syns Per Conn must be >= 1."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        # self.testParamsMap["conn"]["synsPerConnTest"] = testObj
-
-        # probability: optional; [0,1]
-        testObj = TestObj()
-        testObj.testName = "probabilityTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "probability"
-        testObj.testTypes = [TEST_TYPE_IS_FLOAT ]
-        testObj.compareValueString = "1"
-        testObj.compareValueType = "int"
-        testObj.messageText = ["Probability needs to be between 0 and 1."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-
-        self.testParamsMap["conn"]["probabilityTest"] = testObj
-
-        # convergence  optional; positive integer
-        #
-        # testObj = TestObj()
-        # testObj.testName = "convergenceTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "convergence"
-        # testObj.testTypes = [TEST_TYPE_IS_INT ]
-        # testObj.messageText = ["Convergence, is specified, needs to be a positive integer."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["convergenceTest"] = testObj
-        #
-        # # divergence  optional; positive integer
-        #
-        # testObj = TestObj()
-        # testObj.testName = "divergenceTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "divergence"
-        # testObj.testTypes = [TEST_TYPE_IS_INT ]
-        # testObj.messageText = ["Divergence, is specified, needs to be a positive integer."]
-        # testObj.errorMessageLevel = ["MESSAGE_TYPE_ERROR"]
-        #
-        # self.testParamsMap["conn"]["divergenceTest"] = testObj
 
         # secs test
         testObj = TestObj()
@@ -1664,7 +1537,7 @@ class NetPyneTestObj(object):
         testObj.testParameterValue = "secs"
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
         testObj.messageText = ["Secs, if specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
-        testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING,MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
 
@@ -1712,7 +1585,7 @@ class NetPyneTestObj(object):
         # #
         # self.testParamsMap["conn"]["connShapeTest"] = testObj
 
-        # # conn list test
+        # # conn plasticity test
         # testObj = TestObj()
         # testObj.testName = "shapeTest"
         # testObj.testParameterType = "string"
@@ -2408,5 +2281,30 @@ class NetPyneTestObj(object):
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid spike gen loc target.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+
+            elif testType == TEST_TYPE_VALID_STIM:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+
+                            stimValid, errorMessages = self.testTypeObj.testValidStim(paramValues)
+
+                            if len(errorMessages) == 0:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim target.")
+                                    print ( "PASSED" )
+                            else:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid stim target.")
+                                for errorMessage in errorMessages:
+                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid stim target.")
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")

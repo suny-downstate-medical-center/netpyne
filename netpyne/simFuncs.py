@@ -45,6 +45,9 @@ def initialize (netParams = None, simConfig = None, net = None):
         netPyneTestObj.netParams = netParams
         netPyneTestObj.runTests()
 
+    # for testing validation
+    #sys.exit()
+
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank

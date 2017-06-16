@@ -17,7 +17,7 @@ from netpyne import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
 POP_NUMCELLS_PARAMS = ['Density','NumCells','GridSpacing']
-VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d']
+VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d', 'nseg']
 VALID_GEOMETRIES_SUBSET = ['L', 'diam', 'Ra']
 PT_3D = 'pt3d'
 VALID_TOPOLOGY_PARAMS = ['parentSec', 'parentX','childX']
@@ -107,6 +107,9 @@ class TestTypeObj(object):
 
     def testExistsInDict(self, val,paramDict, dictKey):
         try:
+            #print ( " VAL = " + str(val) + " paramDict " + str(paramDict) + " dictKey " + str(dictKey))
+            if val == '' :
+                return
             existsInDict = False
             for key, valueDict in paramDict.items():
                 if val == valueDict[dictKey]:
@@ -399,10 +402,13 @@ class TestTypeObj(object):
                                         if not geomValid:
                                             break
 
-            assert geom is True, errorMessage
+            assert geomValid is True, errorMessage
         except AssertionError as e:
             e.args += ()
             raise
+        # except Exception as e:
+        #     traceback.print_exc(file=sys.stdout)
+        #     raise
 
     def testValidTopologies(self,paramValues): # TEST_TYPE_VALUE_LIST
         try:
@@ -905,6 +911,8 @@ class TestTypeObj(object):
 
             if 'plasticity' in paramValues:
                 plasticity = paramValues['plasticity']
+            else:
+                return errorMessages
 
             if not isinstance ( plasticity, dict):
                 errorMessage = "connParams -> 'plasticity': Plasticity must be a dict."
@@ -1061,7 +1069,7 @@ class ErrorMessageObj(object):
     def __unicode__(self):
         return str(self.messageText)
 
-class NetPyneTestObj(object):
+class SimTestObj(object):
 
     def __init__(self, verboseFlag = False):
 
@@ -1147,99 +1155,99 @@ class NetPyneTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["pop"] = {}
 
-        # ##cellModel test
-        # testObj = TestObj()
-        # testObj.testName = "cellModelTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "cellModel"
-        # testObj.testTypes = [TEST_TYPE_EXISTS]
-        # testObj.messageText = ["No cellModel specified in population paramters."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["cellModelTest"] = testObj
-        #
-        # ##volume params test
-        # testObj = TestObj()
-        # testObj.testName = "volumeParamsTest"
-        # testObj.testParameterType = "list"
-        # testObj.testParameterValueList = ['density','numCells','gridSpacing']
-        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        # testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["volumeParamsTest"] = testObj
-        #
-        # # xnormrange test
-        # testObj = TestObj()
-        # testObj.testName = "xNormRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "xnormRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,1]"
-        # testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["xNormRangeTest"] = testObj
-        #
-        # # ynormrange test
-        # testObj = TestObj()
-        # testObj.testName = "yNormRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "ynormRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,1]"
-        # testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["yNormRangeTest"] = testObj
-        #
-        # # znormrange test
-        # testObj = TestObj()
-        # testObj.testName = "zNormRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "znormRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,1]"
-        # testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["zNormRangeTest"] = testObj
-        #
-        # # xrange test
-        # testObj = TestObj()
-        # testObj.testName = "xRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "xRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,self.netParams.sizeX]"
-        # testObj.messageText = ["xRange invalid.","xRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
-        #
-        # self.testParamsMap["pop"]["xRangeTest"] = testObj
-        #
-        # # yrange test
-        # testObj = TestObj()
-        # testObj.testName = "yRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "yRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,self.netParams.sizeY]"
-        # testObj.messageText = ["yRange invalid.", "yRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["yRangeTest"] = testObj
-        #
-        # # zrange test
-        # testObj = TestObj()
-        # testObj.testName = "zRangeTest"
-        # testObj.testParameterType = "string"
-        # testObj.testParameterValue = "zRange"
-        # testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
-        # testObj.testValueRange = "[0,self.netParams.sizeX]"
-        # testObj.messageText = ["zRange invalid.", "zRange not in range."]
-        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        #
-        # self.testParamsMap["pop"]["zRangeTest"] = testObj
+        ##cellModel test
+        testObj = TestObj()
+        testObj.testName = "cellModelTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "cellModel"
+        testObj.testTypes = [TEST_TYPE_EXISTS]
+        testObj.messageText = ["No cellModel specified in population paramters."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["cellModelTest"] = testObj
+
+        ##volume params test
+        testObj = TestObj()
+        testObj.testName = "volumeParamsTest"
+        testObj.testParameterType = "list"
+        testObj.testParameterValueList = ['density','numCells','gridSpacing']
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
+        testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["volumeParamsTest"] = testObj
+
+        # xnormrange test
+        testObj = TestObj()
+        testObj.testName = "xNormRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "xnormRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,1]"
+        testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["xNormRangeTest"] = testObj
+
+        # ynormrange test
+        testObj = TestObj()
+        testObj.testName = "yNormRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "ynormRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,1]"
+        testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["yNormRangeTest"] = testObj
+
+        # znormrange test
+        testObj = TestObj()
+        testObj.testName = "zNormRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "znormRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,1]"
+        testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["zNormRangeTest"] = testObj
+
+        # xrange test
+        testObj = TestObj()
+        testObj.testName = "xRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "xRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,self.netParams.sizeX]"
+        testObj.messageText = ["xRange invalid.","xRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
+
+        self.testParamsMap["pop"]["xRangeTest"] = testObj
+
+        # yrange test
+        testObj = TestObj()
+        testObj.testName = "yRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "yRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,self.netParams.sizeY]"
+        testObj.messageText = ["yRange invalid.", "yRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["yRangeTest"] = testObj
+
+        # zrange test
+        testObj = TestObj()
+        testObj.testName = "zRangeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "zRange"
+        testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
+        testObj.testValueRange = "[0,self.netParams.sizeX]"
+        testObj.messageText = ["zRange invalid.", "zRange not in range."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["pop"]["zRangeTest"] = testObj
 
         # stim test
         testObj = TestObj()
@@ -1535,8 +1543,8 @@ class NetPyneTestObj(object):
         testObj.testName = "connsSecsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "secs"
-        testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
-        testObj.messageText = ["Secs, if specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.testTypes = [ TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
+        testObj.messageText = ["Secs is not specified. Will use 'soma' by default otherwise first available section."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING,MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
@@ -1563,38 +1571,38 @@ class NetPyneTestObj(object):
 
         self.testParamsMap["conn"]["connsListTest"] = testObj
 
-        # # conn list test
-        # testObj = TestObj()
-        # testObj.testName = "hierarchyTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "hierarchyTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_PARM_HIERARCHY ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        # self.testParamsMap["conn"]["connHierarchyTest"] = testObj
+        self.testParamsMap["conn"]["connHierarchyTest"] = testObj
 
-        # # conn list test
-        # testObj = TestObj()
-        # testObj.testName = "shapeTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_SHAPE ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # #
-        # self.testParamsMap["conn"]["connShapeTest"] = testObj
+        # conn list test
+        testObj = TestObj()
+        testObj.testName = "shapeTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_SHAPE ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        self.testParamsMap["conn"]["connShapeTest"] = testObj
 
-        # # conn plasticity test
-        # testObj = TestObj()
-        # testObj.testName = "shapeTest"
-        # testObj.testParameterType = "string"
-        # #testObj.testParameterValue = "secs"
-        # testObj.testTypes = [TEST_TYPE_CONN_PLASTICITY ]
-        # #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
-        # #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        # #
-        # self.testParamsMap["conn"]["connPlasticityTest"] = testObj
+        # conn plasticity test
+        testObj = TestObj()
+        testObj.testName = "shapeTest"
+        testObj.testParameterType = "string"
+        #testObj.testParameterValue = "secs"
+        testObj.testTypes = [TEST_TYPE_CONN_PLASTICITY ]
+        #testObj.messageText = ["If synsPerConn > 1, a list of sections or sectionList can be specified. These secs need to be specified in the cell parameters."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        self.testParamsMap["conn"]["connPlasticityTest"] = testObj
 
         if self.verboseFlag:
             print (" *** Finished loading conn tests *** ")
@@ -1743,13 +1751,14 @@ class NetPyneTestObj(object):
 
                         try:
 
-                            if paramValues[testObj.testParameterValue] and paramValues[testObj.testParameterValue][testObj.testParameterValue1]:
+                            if testObj.testParameterValue in paramValues and testObj.testParameterValue1 in paramValues[testObj.testParameterValue] and paramValues[testObj.testParameterValue][testObj.testParameterValue1]:
                                 self.testTypeObj.testExistsInDict (  paramValues[testObj.testParameterValue][testObj.testParameterValue1],  eval(testObj.compareDict), testObj.testParameterValue1)
                                 if self.verboseFlag:
                                     print ( "Test: " + str(paramValues[testObj.testParameterValue][testObj.testParameterValue1]) + " for : " + str(testType)+ " value : " + str(eval(testObj.compareDict)) )
                                     print ( "PASSED" )
 
                         except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag :
                                 print ( "Test " + testObj.testParameterValue + " for : " + str(testType)+ " value : " + str(eval(testObj.compareDict)))
                             print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])

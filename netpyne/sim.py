@@ -1,5 +1,5 @@
 """
-sim.py 
+sim.py
 
 Contains all the model shared variables and modules.
 It is imported as "sim" from all other file,  so that any variable or module can be referenced from any module using sim.varName
@@ -7,7 +7,7 @@ It is imported as "sim" from all other file,  so that any variable or module can
 Contributors: salvadordura@gmail.com
 """
 
-# check for -nogui option 
+# check for -nogui option
 import sys
 if '-nogui' in sys.argv:
     import netpyne
@@ -20,7 +20,8 @@ from wrappers import *
 import analysis
 from network import Network
 from cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
-from pop import Pop 
+from pop import Pop
 import utils
 from neuron import h
-
+import tests
+from tests.tests import SimTestObj

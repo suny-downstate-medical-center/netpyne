@@ -18,7 +18,7 @@ netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of ce
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
 
 # Stimulation parameters
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5,}
 netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
 
 ## Cell connectivity rules
@@ -45,8 +45,6 @@ simConfig.savePickle = False 		# Save params, network and sim output to pickle f
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-
-simConfig.checkErrors = 1
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)

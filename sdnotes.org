@@ -6993,9 +6993,11 @@ Ohio Wesleyan University
 
 ** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
-
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
+** Convert hoc models (Ben Latimer, Missouri)
+** Thalamocortical stimulation (Brenyn Jungmann, Missouri)
+
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu
@@ -7023,6 +7025,8 @@ anat.buchin@gmail.com
 lucas.koelman@ucdconnect.ie
 cgfink@owu.edu
 birgit.kriener@medisin.uio.no
+LatimerB@missouri.edu
+bwjmbb@mail.missouri.edu
 
 * Related tools
 ** NEURON

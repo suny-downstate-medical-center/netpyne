@@ -16,6 +16,7 @@ x86_64
 i386
 *.dll
 umac
+.DS_Store
 
 /examples/HybridTut/*.nml
 /examples/HybridTut/*.mod

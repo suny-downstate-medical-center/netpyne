@@ -249,14 +249,14 @@ class Pop (object):
         ''' Create population cells based on list of individual cells'''
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
-        for listIndex, i in enumerate(self._distributeCells(len(self.tags['cellsList']))[sim.rank]):
+        for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
             #if 'cellModel' in self.tags['cellsList'][i]:
             #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.iteritems() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
             cellTags['pop'] = self.tags['pop']
-            cellTags.update(self.tags['cellsList'][listIndex])  # add tags specific to this cells
+            cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
             for coord in ['x','y','z']:
                 if coord in cellTags:  # if absolute coord exists
                     cellTags[coord+'norm'] = cellTags[coord]/getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
@@ -264,9 +264,8 @@ class Pop (object):
                     cellTags[coord] = cellTags[coord+'norm']*getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'propList' not in cellTags: cellTags['propList'] = []  # initalize list of property sets if doesn't exist
             if 'params' in cellTags:  # if VecStim, copy spike times to params
-                cellTags['params']['spkTimes'] = self.tags['cellsList'][listIndex]['spkTimes']
+                cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank))
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
@@ -335,8 +334,9 @@ class Pop (object):
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
+                if self.tags['cellModel'] in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
+                    print 'Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop'])
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
-                # print "Error: cellModel=%s not a key in netParam.cellParams or a point process mechanism (eg. NetStim or IntFire1)" % (self.tags['cellModel'])
 
 
     def __getstate__ (self): 

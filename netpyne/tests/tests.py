@@ -286,8 +286,11 @@ class TestTypeObj(object):
                 #     print ( " IN VALIDATION 2222 !!!! " + str(value))
                 #     if isinstance (value, dict):
                 #         print ( 'cellModel' + str(value['cellModel']) )
+                pointpsValues = []
+                if 'pointps' in utils.mechVarList() and isinstance(utils.mechVarList()['pointps'], dict):
+                    pointpsValues = utils.mechVarList()['pointps'].keys()
                 if 'cellModel' in paramValues:
-                    if paramValues['cellModel'] in ['IntFire1', 'IntFire2', 'NetStim', 'VecStim']:
+                    if paramValues['cellModel'] in pointpsValues:
                         stimParamsAllowed = True
             if not stimParamsAllowed:
                 if any([x in POP_STIM_KEYS for x in  paramValues]):

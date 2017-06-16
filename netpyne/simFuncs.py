@@ -25,12 +25,6 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-<<<<<<< HEAD
-import tests
-from tests.tests import *
-
-=======
->>>>>>> sitm test and rename netpynetestobj and other fixes
 
 ###############################################################################
 # initialize variables and MPI
@@ -49,7 +43,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     # for testing validation
     # if simConfig.exitOnError:
-    # sys.exit()
+    #sys.exit()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers

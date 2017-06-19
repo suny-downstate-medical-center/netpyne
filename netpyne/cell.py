@@ -132,7 +132,7 @@ class Cell (object):
             if 'conds' in params:
                 for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
                     # choose what to comapare to 
-                    if condKey in ['postGid']:
+                    if condKey in ['gid']:  # CHANGE TO GID
                         compareTo = self.gid
                     else:
                         compareTo = self.tags[condKey]

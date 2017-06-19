@@ -334,7 +334,7 @@ class Pop (object):
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
-                if self.tags['cellModel'] in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
+                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
                     print 'Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop'])
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 

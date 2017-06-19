@@ -2,6 +2,8 @@
 
 - Added warning when point process mechanism (eg. VecStim) required for pop is not found
 
+- Changed 'postGid' to 'gid' in conditions of recordTraces
+
 - Fixed bug: removed 'propList' param in list - was replaced by 'label'
 
 - Fixed bug distributing cells of population with cellList (issue #235)

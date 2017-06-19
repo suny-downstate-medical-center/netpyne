@@ -501,6 +501,7 @@ class SimConfig (object):
         # error checking
         self.checkErrors = False # whether to validate the input parameters
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
+        # self.exitOnError = False # whether to hard exit on error
 
         # Analysis and plotting
         self.analysis = ODict()

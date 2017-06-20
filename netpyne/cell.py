@@ -1004,14 +1004,12 @@ class CompartCell (Cell):
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 elif 'originalFormat' in params:
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
-                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
                         sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
-                        self.stims.append(Dict())  # add new stim to Cell object
-                        randContainer = self.stims[-1]
-                        randContainer['NeuroML2_stochastic_input_rand'] = rand 
+                        params['h%s'%params['originalFormat']] = rand
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)

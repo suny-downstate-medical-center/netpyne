@@ -25,9 +25,6 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-import tests
-from tests.tests import *
-
 
 ###############################################################################
 # initialize variables and MPI
@@ -39,11 +36,14 @@ def initialize (netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    # if sim config
-    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
-        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
-        netPyneTestObj.netParams = netParams
-        netPyneTestObj.runTests()
+    if simConfig.checkErrors: # whether to validate the input parameters
+        simTestObj = sim.SimTestObj(simConfig.checkErrorsVerbose)
+        simTestObj.netParams = netParams
+        simTestObj.runTests()
+
+    # for testing validation
+    # if simConfig.exitOnError:
+    #sys.exit()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers

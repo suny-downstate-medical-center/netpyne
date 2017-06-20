@@ -2,6 +2,8 @@
 
 - Added warning when point process mechanism (eg. VecStim) required for pop is not found
 
+- Added 'ylim' option to plotTraces
+
 - Changed 'postGid' to 'gid' in conditions of recordTraces
 
 - Fixed bug: removed 'propList' param in list - was replaced by 'label'

@@ -28,8 +28,6 @@ import sim, specs
 import tests
 from tests.tests import *
 
-import pprint; pp = pprint.PrettyPrinter(depth=6)
-
 
 ###############################################################################
 # initialize variables and MPI
@@ -990,12 +988,6 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.iteritems():
                 data[0][k] = v
-                
-            for d in data: 
-                if isinstance(d,dict):
-                    print("<<<<<<< Data on host %s"%sim.rank)
-                    pp.pprint(d)
-                    print(">>>>>>>> End data on host %s"%sim.rank)
                 
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()

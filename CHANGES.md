@@ -12,6 +12,8 @@
 
 - Fixed bug saving to .mat: removed h.Random object from each pop
 
+- Fixed bug: check if checkErrors exists in cfg before checking value
+
 # Version 0.7.0
 
 IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random number generators it won't be possible to reproduce results of previous versions that required random values, e.g. random spike streams, connections or cell locations.

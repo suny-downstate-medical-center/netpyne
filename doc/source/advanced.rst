@@ -255,7 +255,7 @@ display, all of which has now been handled in the new top level code
 excerpt from tut2.py
 
 Additional Background Reading:
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 `A description of the
 algorithm <https://www.google.com/url?q=https://en.wikipedia.org/wiki/Evolutionary_algorithm&sa=D&ust=1498757041056000&usg=AFQjCNH6OIVTnmce_hlIexUok_PoJcZomA>`__\  methodology
 that will be used to optimize the simple neural network in this example.
@@ -687,6 +687,8 @@ is isolated below:
   sim.createSimulateAnalyze(netParams=tut2.netParams, simConfig=tut2.simConfig) # run simulation
 
 excerpt from tut\_optimization.py
+
+The code for neural network optimization through evolutionary algorithm used in this tutorial can be found here: :download:`tut_optimization.py <code/tut_optimization.py>`.
 
 
 .. Cell density and connectivity as a function of cell location

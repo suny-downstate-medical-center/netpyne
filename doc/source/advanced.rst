@@ -360,16 +360,16 @@ ec.replacers, ec.terminators, ec.observers:
 .. code-block:: python
 
   #toggle variators
-  my_ec.variator = [ec.variators.uniform\_crossover, # implement uniform crossover & gaussian replacement
-                  ec.variators.gaussian\_mutation]   
-  my_ec.replacer = ec.replacers.generational\_replacement   # implement generational replacement
+  my_ec.variator = [ec.variators.uniform_crossover, # implement uniform crossover & gaussian replacement
+                  ec.variators.gaussian_mutation]   
+  my_ec.replacer = ec.replacers.generational_replacement   # implement generational replacement
 
-  my_ec.terminator = ec.terminators.evaluation\_termination # termination dictated by no. evaluations
+  my_ec.terminator = ec.terminators.evaluation_termination # termination dictated by no. evaluations
 
   #toggle observers
-  my_ec.observer = [ec.observers.stats\_observer,  # print evolutionary computation statistics
-                  ec.observers.plot\_observer,   # plot output of the evolutionary computation as graph
-                  ec.observers.best\_observer]   # print the best individual in the population to screen
+  my_ec.observer = [ec.observers.stats_observer,  # print evolutionary computation statistics
+                  ec.observers.plot_observer,   # plot output of the evolutionary computation as graph
+                  ec.observers.best_observer]   # print the best individual in the population to screen
 
 excerpt from ex_optimization.py
 
@@ -516,7 +516,7 @@ distribution:
 
   def generate_netparams(random, args):
 
-      size = args.get('num\_inputs')
+      size = args.get('num_inputs')
       initialParams = [random.uniform(minParamValues[i], maxParamValues[i]) for i in range(size)]
 
   return initialParams
@@ -534,7 +534,7 @@ general template:
 
 .. code-block:: python
 
-  def evaluate\_fitness(candidates, args):
+  def evaluate_fitness(candidates, args):
      fitness = []
      for candidate in candidates:
          fit = some_fitness_function(candidate)
@@ -646,7 +646,7 @@ candidates within the iterator:
 
   for icand,cand in enumerate(candidates):
         ...
-        print '\\n CHILD/CANDIDATE %d: Network with prob:%.2f, weight:%.2f, delay:%.1f \\n  firing rate: %.1f, FITNESS = %.2f \\n'\\
+        print '\n CHILD/CANDIDATE %d: Network with prob:%.2f, weight:%.2f, delay:%.1f \n  firing rate: %.1f, FITNESS = %.2f \n'\
         %(icand, cand[0], cand[1], cand[2], netFiring, fitness)
 
 excerpt from tut\_optimization.py
@@ -679,7 +679,7 @@ is isolated below:
   ...
   # plot raster of top solutions
   final_pop.sort(reverse=True)         # sort final population so best fitness (minimum difference) is first in list
-  bestCand = final\_pop[0].candidate   # bestCand <-- candidate in first position of list
+  bestCand = final_pop[0].candidate   # bestCand <-- candidate in first position of list
   tut2.simConfig.analysis['plotRaster'] = True                      # plotting
   tut2.netParams.connParams['S->M']['probability'] = bestCand[0]    # set tut2 values to corresponding
   tut2.netParams.connParams['S->M']['weight'] = bestCand[1]         # best candidate values

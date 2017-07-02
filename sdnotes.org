@@ -6997,6 +6997,7 @@ Ohio Wesleyan University
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
 ** Convert hoc models (Ben Latimer, Missouri)
 ** Thalamocortical stimulation (Brenyn Jungmann, Missouri)
+** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
 ** EMAIL LIST
 salvadordura@gmail.com
@@ -7011,7 +7012,7 @@ andrew.knox@cchmc.org
 penggao.1987@gmail.com
 ramazan.tekin@batman.edu.tr
 sergio.angulo@gmail.com
-siddharthamitra2_pbw@indeedemail.com
+mitra.siddhartha@gmail.com
 adrianquintana@gmail.com
 matteo.cantarelli@gmail.com
 foxy1987@gmail.com
@@ -7027,6 +7028,7 @@ cgfink@owu.edu
 birgit.kriener@medisin.uio.no
 LatimerB@missouri.edu
 bwjmbb@mail.missouri.edu
+ali.taylor331@gmail.com
 
 * Related tools
 ** NEURON

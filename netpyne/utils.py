@@ -11,6 +11,7 @@ from neuron import h
 h.load_file("stdrun.hoc") 
 
 
+
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
 
@@ -241,7 +242,7 @@ def getCellParams(cell, varList, origGlob):
         secs = [cell.soma]
     else:
         secs = []
-    
+
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
@@ -405,9 +406,17 @@ def getCellParams(cell, varList, origGlob):
 
     # clean 
     h.initnrn()
-    del(cell) # delete cell
+    for i in range(len(secs)):
+        tmp=secs.pop()
+        del tmp
+    for sec in h.allsec():
+        h.delete_section(sec=sec)
+    h.initnrn()
     import gc; gc.collect()
 
+
+    # for sec in secs:
+    #     del sec
     return secDic, secListDic, synMechs, globs
 
 

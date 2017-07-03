@@ -1067,7 +1067,6 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             fig.printfile(filename)
 
 
-
     return fig
 
 

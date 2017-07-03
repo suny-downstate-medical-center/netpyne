@@ -115,7 +115,7 @@ class TestTypeObj(object):
                 if val == valueDict[dictKey]:
                     existsInDict = True
                     break
-            assert existsInDict is True, " Value " + str(val) + "exists in dictionary " + str(params) + "."
+            assert existsInDict is True, " Value " + str(val) + "exists in dictionary " + str(paramDict) + "."
         except AssertionError as e:
             e.args += (val,)
             raise

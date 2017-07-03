@@ -115,7 +115,7 @@ class TestTypeObj(object):
                 if val == valueDict[dictKey]:
                     existsInDict = True
                     break
-            assert existsInDict is True, " Value " + str(val) + "exists in dictionary " + str(params) + "."
+            assert existsInDict is True, " Value " + str(val) + "."
         except AssertionError as e:
             e.args += (val,)
             raise
@@ -127,7 +127,7 @@ class TestTypeObj(object):
                 if dictKey not in valueDict:
                     existsInDict = False
                     break
-            assert existsInDict is True, " Value " + str(paramKey) + "exists in dictionary " + str(paramValues) + "."
+            assert existsInDict is True, " Value " + str(paramKey) + "."
         except AssertionError as e:
             e.args += (val,)
             raise
@@ -138,10 +138,11 @@ class TestTypeObj(object):
             popLabelsSpecified = False
             paramPopLabel = ''
             errorMessage = ''
-            if 'popLabel' in paramValues[val]:
+            if isinstance (paramValues[val], dict ) and 'popLabel' in paramValues[val]:
                 popLabelsSpecified = True
-                if paramValues[val]['popLabel'] not in popLabels.keys():
-                    errorMessage = "Pop label specified in conn params is: " + str(paramValues[val]['popLabel']) + ". This does not exist in list of pop labels = " + str(popLabels.keys()) + "."
+                #print( " LLL **** ")
+                if isinstance (popLabels, dict) and paramValues[val]['popLabel'] not in popLabels.keys():
+                    errorMessage = "ConnParams->'popLabel': Pop label specified in conn params is: " + str(paramValues[val]['popLabel']) + ". This does not exist in list of pop labels = " + str(popLabels.keys()) + "."
                     return errorMessage
         except Exception as e:
             # e.args += (e,)
@@ -997,7 +998,7 @@ class TestTypeObj(object):
             else:
                 allowedValues = mechVarList['pointps'][simType] + ['rate']
                 if any([x not in allowedValues for x in allKeys]):
-                    errorMessage = "StimSourceParams -> : Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
+                    errorMessage = "StimSourceParams -> 'simType': Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
                     errorMessages.append(errorMessage)
 
         except Exception as e:
@@ -1164,7 +1165,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "cellModel"
         testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.messageText = ["No cellModel specified in population paramters."]
+        testObj.messageText = ["PopParams->'cellModel': No cellModel specified in population paramters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["cellModelTest"] = testObj
@@ -1175,7 +1176,7 @@ class SimTestObj(object):
         testObj.testParameterType = "list"
         testObj.testParameterValueList = ['density','numCells','gridSpacing']
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        testObj.messageText = ["One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
+        testObj.messageText = ["PopParams->'volumeParams': One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["volumeParamsTest"] = testObj
@@ -1187,7 +1188,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "xnormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["XNormRange invalid range.","XNormRange not in range."]
+        testObj.messageText = ["PopParams->'xnormRange': XNormRange invalid range.","PopParams->'xnormRange': XNormRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["xNormRangeTest"] = testObj
@@ -1199,7 +1200,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "ynormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["YNormRange invalid.","YNormRange not in range."]
+        testObj.messageText = ["PopParams->'ynormRange': YNormRange invalid.","PopParams->'ynormRange': YNormRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yNormRangeTest"] = testObj
@@ -1211,7 +1212,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "znormRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["ZNormRange invalid.","ZNormRange not in range."]
+        testObj.messageText = ["PopParams->'znormRange': ZNormRange invalid.","PopParams->'znormRange': ZNormRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["zNormRangeTest"] = testObj
@@ -1223,7 +1224,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "xRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["xRange invalid.","xRange not in range."]
+        testObj.messageText = ["PopParams->'xRange': xRange invalid.","PopParams->'xRange': xRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, TEST_TYPE_IN_RANGE]
 
         self.testParamsMap["pop"]["xRangeTest"] = testObj
@@ -1235,7 +1236,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "yRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeY]"
-        testObj.messageText = ["yRange invalid.", "yRange not in range."]
+        testObj.messageText = ["PopParams->'yRange': yRange invalid.","PopParams->'yRange': yRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["yRangeTest"] = testObj
@@ -1247,7 +1248,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "zRange"
         testObj.testTypes = [TEST_TYPE_IS_VALID_RANGE, TEST_TYPE_IN_RANGE]
         testObj.testValueRange = "[0,self.netParams.sizeX]"
-        testObj.messageText = ["zRange invalid.", "zRange not in range."]
+        testObj.messageText = ["PopParams->'zRange': zRange invalid.","PopParams->'zRange': zRange not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["zRangeTest"] = testObj
@@ -1277,6 +1278,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeX"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["NetParams->'sizeX': sizeX is not an int.","NetParams->'sizeX': sizeX is not greater than 0."]
 
         self.testParamsMap["net"]["sizeXTest"] = testObj
 
@@ -1287,6 +1289,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeY"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["NetParams->'sizeY': sizeY is not an int.","NetParams->'sizeY': sizeY is not greater than 0."]
 
         self.testParamsMap["net"]["sizeYTest"] = testObj
 
@@ -1297,6 +1300,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeZ"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["NetParams->'sizeZ': sizeZ is not an int.","NetParams->'sizeZ': sizeZ is not greater than 0."]
 
         self.testParamsMap["net"]["sizeZTest"] = testObj
 
@@ -1308,6 +1312,7 @@ class SimTestObj(object):
         testObj.testTypes = [TEST_TYPE_VALUE_LIST]
         testObj.testValueList = VALID_SHAPES
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["NetParams->'shape': Shape is not valid."]
 
         self.testParamsMap["net"]["shapeTest"] = testObj
 
@@ -1328,7 +1333,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "conds"
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Conds does not exist.", "Conds is not a dict."]
+        testObj.messageText = ["CellParams->'conds': Conds does not exist.", "CellParams->'conds': Conds is not a dict."]
         self.testParamsMap["cell"]["condsTest"] = testObj
 
         # secs test
@@ -1338,7 +1343,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "secs"
         testObj.testTypes = [TEST_TYPE_IS_DICT]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Secs is not a dict."]
+        testObj.messageText = ["CellParams->'secs': Secs is not a dict."]
         self.testParamsMap["cell"]["secsTest"] = testObj
 
         # cellTypes test
@@ -1349,7 +1354,7 @@ class SimTestObj(object):
         testObj.testParameterValue1 = "cellType"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
         testObj.compareDict = "self.netParams.popParams"
-        testObj.messageText = ["cellType does not match the cellType specified in pop parameters."]
+        testObj.messageText = ["CellParams->'cellType': cellType does not match the cellType specified in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
 
         self.testParamsMap["cell"]["cellTypeTest"] = testObj
@@ -1362,7 +1367,7 @@ class SimTestObj(object):
         testObj.testParameterValue1 = "cellModel"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_DICT]
         testObj.compareDict = "self.netParams.popParams"
-        testObj.messageText = ["cellModel does not match the cellModel specified in pop parameters."]
+        testObj.messageText = ["CellParams->'cellModel': cellModel does not match the cellModel specified in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
 
         self.testParamsMap["cell"]["cellModelTest"] = testObj
@@ -1374,7 +1379,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "secs"
         testObj.testParameterDictString = "geom"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_ALL_DICTS]
-        testObj.messageText = ["Geom is not specified in section "]
+        testObj.messageText = ["CellParams->'secs'->'geom': Geom is not specified in section "]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
         self.testParamsMap["cell"]["geomExistTest"] = testObj
 
@@ -1385,7 +1390,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "geom"
         testObj.testTypes = [TEST_TYPE_VALID_GEOMETRIES]
         #testObj.testValueList = VALID_GEOMETRIES,
-        testObj.messageText = ["Geom is not valid."]
+        testObj.messageText = ["CellParams->'secs'->'geom': Geom is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["cell"]["geomValidTest"] = testObj
@@ -1396,7 +1401,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "topol"
         testObj.testTypes = [TEST_TYPE_VALID_TOPOLOGIES]
-        testObj.messageText = ["Topology is not valid."]
+        testObj.messageText = ["CellParams->'secs'->'topol':Topology is not valid."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["cell"]["toplogyValidTest"] = testObj
@@ -1462,7 +1467,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "preConds"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
-        testObj.messageText = ["Pop label specified for preConds not listed in pop parameters."]
+        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for preConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
 
@@ -1472,7 +1477,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "postConds"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
-        testObj.messageText = ["Pop label specified for postConds not listed in pop parameters."]
+        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for postConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
 
@@ -1483,7 +1488,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "preConds"
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Preconds does not exist.", "Preconds is not a dict."]
+        testObj.messageText = ["ConnParams->'preConds': Preconds does not exist.", "ConnParams->'preConds': Preconds is not a dict."]
         self.testParamsMap["conn"]["preCondsTest"] = testObj
 
         # condsTest test
@@ -1493,7 +1498,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "postConds"
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["Postconds does not exist.", "Postconds is not a dict."]
+        testObj.messageText = ["ConnParams->'postConds': Postconds does not exist.", "ConnParams->'postConds': Postconds is not a dict."]
         self.testParamsMap["conn"]["postCondsTest"] = testObj
 
         # secs test
@@ -1502,7 +1507,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "secs"
         testObj.testTypes = [TEST_TYPE_EXISTS, TEST_TYPE_IS_DICT ]
-        testObj.messageText = ["Secs, is specified, needs to be a dict.", "Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.messageText = ["ConnParams->'secs': Secs, is specified, needs to be a dict.", "ConnParams->'secs': Secs is not specified. Will use 'soma' by default otherwise first available section."]
         testObj.errorMessageLevel = ["MESSAGE_TYPE_WARNING", "MESSAGE_TYPE_ERROR"]
 
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
@@ -1514,7 +1519,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "loc"
         testObj.testTypes = [TEST_TYPE_ARRAY_IN_RANGE]
         testObj.testValueRange = "[0,1]"
-        testObj.messageText = ["Loc is not in range."]
+        testObj.messageText = ["ConnParams->'loc': Loc is not in range."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["locsRangeTest"] = testObj
@@ -1547,7 +1552,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "secs"
         testObj.testTypes = [ TEST_TYPE_IS_DICT, TEST_TYPE_VALID_SEC_LIST ]
-        testObj.messageText = ["Secs is not specified. Will use 'soma' by default otherwise first available section."]
+        testObj.messageText = ["ConnParams->'secs': Secs is not specified. Will use 'soma' by default otherwise first available section.", "ConnParams->'secs': Invalid sec."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING,MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["conn"]["connsSecsTest"] = testObj
@@ -1761,7 +1766,7 @@ class SimTestObj(object):
                                     print ( "PASSED" )
 
                         except Exception as e:
-                            traceback.print_exc(file=sys.stdout)
+                            #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag :
                                 print ( "Test " + testObj.testParameterValue + " for : " + str(testType)+ " value : " + str(eval(testObj.compareDict)))
                             print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
@@ -1877,7 +1882,10 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
-                            print "ERROR: Value specified is not an integer."
+                            try:
+                                print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " ."
+                            except:
+                                pass
 
             elif testType == TEST_TYPE_GTE_ZERO:
 
@@ -1911,7 +1919,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramName))
-                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " ."
 
             elif testType == TEST_TYPE_IS_DICT:
 

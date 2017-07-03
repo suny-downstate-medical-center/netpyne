@@ -1,8 +1,6 @@
 Advanced Features
 =======================================
 
-Coming soon
-
 .. _importing_cells:
 
 Importing externally-defined cell models

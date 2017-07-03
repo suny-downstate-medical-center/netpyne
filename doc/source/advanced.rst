@@ -255,13 +255,13 @@ display, all of which has now been handled in the new top level code
 
 excerpt from tut2.py
 
-Additional Background Reading:
+Additional Background Reading
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 `A description of the
 algorithm <https://www.google.com/url?q=https://en.wikipedia.org/wiki/Evolutionary_algorithm&sa=D&ust=1498757041056000&usg=AFQjCNH6OIVTnmce_hlIexUok_PoJcZomA>`__\  methodology
 that will be used to optimize the simple neural network in this example.
 
-Introduction:
+Introduction
 ^^^^^^^^^^^^^
 Using the inspyred python package to find neural network parameters so
 that some property of the network (e.g. firing rate) matches a desired
@@ -321,7 +321,7 @@ evolutionary algorithm, including:
 
         
 
-Coding Details -- Using inspyred:
+Using inspyred
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The evolutionary algorithm is implemented the ec module from the
 inspyred package:
@@ -549,7 +549,7 @@ The actual code that is used to serve as    
 
  
 
-Coding Details -- Overview of the Fitness Function:
+Overview of the Fitness Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The fitness function in this case involves 1) creating a neural network
 with the given parameters, 2) simulating it to find the average firing
@@ -636,7 +636,7 @@ firing rate as follows:
 
 excerpt from tut\_optimization.py
 
-Coding Details -- Displaying Findings:
+Displaying Findings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The results of the evolutionary algorithm are displayed on the standard
 output (terminal) as well as plotted using the matplotlib package. The

@@ -6,6 +6,8 @@
 
 - Changed 'postGid' to 'gid' in conditions of recordTraces
 
+- Fixed bug: avoid saving 't' multiple times when using multiple nodes
+
 - Fixed bug: removed 'propList' param in list - was replaced by 'label'
 
 - Fixed bug distributing cells of population with cellList (issue #235)

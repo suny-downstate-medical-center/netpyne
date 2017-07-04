@@ -1029,7 +1029,7 @@ def gatherData ():
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
-               if len(sim.allSimData['spkt']) > 0:
+                if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
                 sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])

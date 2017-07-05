@@ -348,7 +348,6 @@ class NetParams (object):
         if importSynMechs:
             for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
 
-
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):

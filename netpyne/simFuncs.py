@@ -939,7 +939,8 @@ def gatherData ():
         for cell in sim.net.cells:
             cell.conns = []
             
-    simDataVecs = ['t','spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+    simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+    singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
 
@@ -959,6 +960,9 @@ def gatherData ():
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                     sim.allSimData[k] = {}
 
+                for key in singleNodeVecs: # store single node vectors (eg. 't')
+                    sim.allSimData[key] = list(nodeData['simData'][key])
+
                 # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
                 for node in gather:  # concatenate data from each node
                     for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector
@@ -973,9 +977,11 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        else:
+                        elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
+            if len(sim.allSimData['spkt']) > 0:
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
             sim.net.allPops = ODict() # pops
             for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
@@ -1002,6 +1008,9 @@ def gatherData ():
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                     sim.allSimData[k] = {}
 
+                for key in singleNodeVecs:  # store single node vectors (eg. 't')
+                    sim.allSimData[key] = list(nodeData['simData'][key])
+
                 # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
                 for node in gather:  # concatenate data from each node
                     allCells.extend(node['netCells'])  # extend allCells list
@@ -1020,8 +1029,11 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        else:
+                        elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+
+                if len(sim.allSimData['spkt']) > 0:
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
                 sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
 
@@ -1051,7 +1063,7 @@ def gatherData ():
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector
-                if key in simDataVecs:          # simData dicts that contain Vectors
+                if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):

@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
+'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
 
 import sys
 import os
@@ -849,7 +849,9 @@ def preRun ():
                 #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
                 _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
-                stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################

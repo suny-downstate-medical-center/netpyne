@@ -120,6 +120,7 @@ class Cell (object):
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 
 
@@ -1003,14 +1004,12 @@ class CompartCell (Cell):
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 elif 'originalFormat' in params:
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
-                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
-                        rand.Random123(sim.id32('stim_exotic'), params['stim_count'], sim.cfg.seeds['stim'])
+                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
-                        self.stims.append(Dict())  # add new stim to Cell object
-                        randContainer = self.stims[-1]
-                        randContainer['NeuroML2_stochastic_input_rand'] = rand 
+                        params['h%s'%params['originalFormat']] = rand
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
@@ -1530,6 +1529,11 @@ class PointCell (Cell):
 
 class NML2Cell (CompartCell):
     ''' Class for NeuroML2 neuron models: No different than CompartCell '''
+    
+    ''' Might this be useful to show better name for cell when psection() called?
+    def __str__():
+        return "%s"%self.tags['cellType']
+    '''
 
 
 ###############################################################################
@@ -1558,13 +1562,15 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
-        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
         randContainer['hRandom'] = rand 
+        randContainer['type'] = self.tags['cellType'] 
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

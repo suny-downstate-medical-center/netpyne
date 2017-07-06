@@ -1016,7 +1016,7 @@ if neuromlExists:
                 cellRule = {'label': component, 
                             'conds': {'cellType': component, 
                                       'cellModel': component},  
-                            'sections': {}} # This parameter is required to distinguish NML2 "point processes" from artificial cells
+                            'secs': {}} # This parameter is required to distinguish NML2 "point processes" from artificial cells
 
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
                 default_diam = 10

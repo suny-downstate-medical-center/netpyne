@@ -374,7 +374,6 @@ def id32 (obj):
 # Initialize the stim randomizer
 ###############################################################################
 def _init_stim_randomizer(rand, stimType, gid, seed):
-    #print("INIT STIM  %s; %s; %s; %s; %s"%(rand, stimType, sim.id32(stimType), gid, seed))
     rand.Random123(sim.id32(stimType), gid, seed)
 
 

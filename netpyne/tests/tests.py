@@ -1096,6 +1096,7 @@ class SimTestObj(object):
         self.loadConnTests() # load conn tests
         self.loadStimSourceTests() # load stimSource tests
         self.loadStimTargetTests() # load stimTarget tests
+        self.loadSimConfigTests() # load simConfig tests
         if self.verboseFlag:
             print (" *** Finish loading tests *** ")
 
@@ -1109,9 +1110,29 @@ class SimTestObj(object):
         self.runConnTests() # run conn tests
         self.runStimSourceTests() # load stimSource tests
         self.runStimTargetTests() # load stimTarget tests
+        self.runSimConfigTests() # load simConfig tests
 
         if self.verboseFlag:
             print (" *** Finished running tests *** ")
+
+    def loadSimConfigTests(self):
+
+        # if self.verboseFlag:
+        #     print (" *** Loading pop tests *** ")
+
+        # initialiase list of test objs
+        self.testParamsMap["simConfig"] = {}
+
+        ##cellModel test
+        testObj = TestObj()
+        testObj.testName = "stimSourceTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_STIM_SOURCE_TEST]
+        testObj.messageText = ["Invalid stim source specified."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["stimSource"]["stimSourceTest"] = testObj
 
     def loadStimSourceTests(self):
 

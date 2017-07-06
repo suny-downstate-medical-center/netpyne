@@ -26,7 +26,18 @@ class RunNetPyneTests():
             self.paramsMap = {}
             self.netPyneTestObj = SimTestObj(verboseFlag = True)
             self.loadTestsWithParams()
+            self.loadSimConfigTests()
             self.runTestsWithParams()
+
+        def loadSimConfigTests(self):
+
+            # print ( " loading tests ")
+            self.paramsMap["simConfig"] = {}
+            self.paramsMap["simConfig"]["duration"] = []
+
+            simConfigParams = ParamsObj()
+            simConfigParams.simConfig.popParams['validDurationParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+            self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
 
         def loadTestsWithParams(self):
 
@@ -1944,12 +1955,13 @@ class RunNetPyneTests():
 
         def runTestsWithParams(self):
 
-            self.runPopTestsWithParams()
+            #self.runPopTestsWithParams()
             #self.runNetTestsWithParams()
             #self.runCellTestsWithParams()
             #self.runConnTestsWithParams()
             #self.runStimSourceTests()
             #self.runStimTargetTests()
+            self.runSimConfigTests()
 
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]
@@ -2004,6 +2016,16 @@ class RunNetPyneTests():
             stimTargetParamsMap = self.paramsMap["stimTarget"]
             # run the different tests for conn
             for testName, paramObjList in stimTargetParamsMap.items():
+                for paramsObj in paramObjList:
+                    #print ( " calling tests")
+                    self.netPyneTestObj.netParams = paramsObj.netParams
+                    self.netPyneTestObj.runTests()
+
+        def runSimConfigTests(self):
+            #print ( " running conn tests " )
+            simConfigParamsMap = self.paramsMap["simConfig"]
+            # run the different tests for conn
+            for testName, paramObjList in simConfigParamsMap.items():
                 for paramsObj in paramObjList:
                     #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams

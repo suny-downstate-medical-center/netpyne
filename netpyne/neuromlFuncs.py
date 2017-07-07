@@ -1148,8 +1148,8 @@ if neuromlExists:
             import neuroml
             
             format = 'NeuroML2'
-            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
-                format = 'NeuroML2_stochastic_input'
+            #if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
+            format = 'NeuroML2_stochastic_input'
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
                         'conds': {'pop':population_id}}
@@ -1294,7 +1294,7 @@ if neuromlExists:
             elif hasattr(preComp,'v_thresh'):
                 threshold = float(preComp.v_thresh) # PyNN cells...
             else:
-                threshold = 0
+                threshold = 0.0
 
             for conn in nmlHandler.connections[projName]:
                 

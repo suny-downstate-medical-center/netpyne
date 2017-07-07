@@ -355,6 +355,9 @@ class CompartCell (Cell):
             if 'weightNorm' in sectParams:
                 sec['weightNorm'] = sectParams['weightNorm']
 
+            if 'threshold' in sectParams:
+                sec['threshold'] = sectParams['threshold']
+
         # add sectionLists
         if 'secLists' in prop:
             self.secLists.update(prop['secLists'])  # diction of section lists
@@ -521,7 +524,7 @@ class CompartCell (Cell):
 
             netcon.weight[0] = conn['weight']
             netcon.delay = conn['delay']
-            netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
+            #netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
             conn['hNetcon'] = netcon
             
             # Add plasticity 
@@ -547,6 +550,7 @@ class CompartCell (Cell):
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                if 'threshold' in sec: threshold = sec['threshold'] 
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
@@ -765,7 +769,7 @@ class CompartCell (Cell):
                     
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
-                    netcon.threshold = threshold  # set Netcon threshold
+                    #netcon.threshold = threshold  # set Netcon threshold
                     self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
@@ -1407,7 +1411,7 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
+        #threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
@@ -1459,7 +1463,7 @@ class PointCell (Cell):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = threshold # set Netcon threshold
+                #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         
 

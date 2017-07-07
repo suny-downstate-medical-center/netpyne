@@ -6,6 +6,8 @@
 
 - Changed 'postGid' to 'gid' in conditions of recordTraces
 
+- Fixed bug: threshold in conns has no effect, have to use presyn cell threshold (issue #235)
+
 - Fixed bug: avoid saving 't' multiple times when using multiple nodes
 
 - Fixed bug: removed 'propList' param in list - was replaced by 'label'

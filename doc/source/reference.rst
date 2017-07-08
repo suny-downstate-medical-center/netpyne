@@ -236,6 +236,9 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 	* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
 	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
 
+	* **threshold** - (optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to ``netParams.defaultThreshold = 10.0``
+	e.g. ``cellRule['secs']['soma']['threshold'] = 5.0``
+
 * **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
 
 
@@ -374,9 +377,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``)
 
-* **threshold** (optional) - Threshold (in mV) to detect spike in source.
-
-	If omitted, defaults to ``netParams.defaultThreshold = 0``
+* **threshold** (deprecated, do not use) - To set the source cell threshold (in mV) use the ``threshold`` param within a section of a cell rule in `cellParams`; or set default value (e.g. ``netParams.defaultThreshold = 10.0``)
 
 * **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
 

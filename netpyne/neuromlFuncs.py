@@ -45,7 +45,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
                             delay = conn['delay']
                             sec = conn['sec']
                             synMech = conn['synMech']
-                            threshold = conn['threshold']
+                            #threshold = conn['threshold']
 
                             if sim.cfg.verbose: print("      Conn %s[%i]->%s[%i] with %s, w: %s, d: %s"%(popPre, indexPre,popPost, indexPost, synMech, weight, delay))
 
@@ -86,7 +86,7 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
                                 assert(not netstim_found)
                                 netstim_found = True
                                 synMech = conn['synMech']
-                                threshold = conn['threshold']
+                                #threshold = conn['threshold']
                                 delay = conn['delay']
                                 weight = conn['weight']
                                 
@@ -98,7 +98,8 @@ def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
                             stims[stim_info] = []
 
 
-                        stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})   
+                        stims[stim_info].append({'index':index,'weight':weight,'delay':delay}) 
+                        #stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})
 
     #print(stims)
     return stims
@@ -739,6 +740,16 @@ if neuromlExists:
                                 
                 use_segment_groups_for_neuron = False
                 
+                
+                if len(cell.biophysical_properties.membrane_properties.spike_threshes)>0:
+                    st = cell.biophysical_properties.membrane_properties.spike_threshes[0]
+                    # Ensure threshold is same everywhere on cell
+                    assert(st.segment_groups=='all')
+                    assert(len(cell.biophysical_properties.membrane_properties.spike_threshes)==1)
+                    threshold = pynml.convert_to_units(st.value,'mV')
+                else:
+                    threshold = 0
+                
                 for seg_grp in cell.morphology.segment_groups:
                     if hasattr(seg_grp,'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383":
                         use_segment_groups_for_neuron = True
@@ -748,6 +759,8 @@ if neuromlExists:
                                 cellRule['secs'][seg_grp.id]['geom']['nseg'] = int(prop.value)
                         #seg_grps_vs_nrn_sections[seg_grp.id] = seg_grp.id
                         seg_grps_vs_nrn_sections['all'].append(seg_grp.id)
+                        
+                        cellRule['secs'][seg_grp.id]['threshold'] = threshold
                         
                 self.pop_ids_vs_use_segment_groups_for_neuron[population_id] = use_segment_groups_for_neuron
                     
@@ -1010,6 +1023,14 @@ if neuromlExists:
                 
                 if self.verbose: print("Abstract cell: %s"%(isinstance(component_obj,BaseCell)))
                 
+                if hasattr(component_obj,'thresh'):
+                    threshold = pynml.convert_to_units(component_obj.thresh,'mV')
+                elif hasattr(component_obj,'v_thresh'):
+                    threshold = float(component_obj.v_thresh) # PyNN cells...
+                else:
+                    threshold = 0.0
+                    
+                
                 if not isinstance(component_obj,BaseCell):
                     popInfo['originalFormat'] = 'NeuroML2_SpikeSource' 
                     
@@ -1021,6 +1042,7 @@ if neuromlExists:
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
                 default_diam = 10
                 soma['geom'] = {'diam': default_diam, 'L': default_diam}
+                soma['threshold'] = threshold
                 
                 # TODO: add correct hierarchy to Schema for baseCellMembPotCap etc. and use this...
                 if hasattr(component_obj,'C'):
@@ -1148,8 +1170,8 @@ if neuromlExists:
             import neuroml
             
             format = 'NeuroML2'
-            #if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
-            format = 'NeuroML2_stochastic_input'
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
+                format = 'NeuroML2_stochastic_input'
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
                         'conds': {'pop':population_id}}
@@ -1279,6 +1301,9 @@ if neuromlExists:
             preComp = nmlHandler.pop_ids_vs_components[prePop]
             
             from neuroml import Cell
+            '''
+            
+            No longer used in connections, defined in section on cell...
             
             if isinstance(preComp,Cell):
                 if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
@@ -1294,13 +1319,14 @@ if neuromlExists:
             elif hasattr(preComp,'v_thresh'):
                 threshold = float(preComp.v_thresh) # PyNN cells...
             else:
-                threshold = 0.0
+                threshold = 0.0'''
 
             for conn in nmlHandler.connections[projName]:
                 
                 pre_id, pre_seg, pre_fract, post_id, post_seg, post_fract, delay, weight = conn
                 
-                connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
+                #connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
+                connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract}
                 
                 if ptype == 'electricalProjection':
 
@@ -1316,8 +1342,8 @@ if neuromlExists:
                                  'weight': weight,
                                  'synsPerConn': 1, 
                                  'sec': post_seg, 
-                                 'loc': post_fract, 
-                                 'threshold': threshold}
+                                 'loc': post_fract} 
+                                 #'threshold': threshold}
 
                 connParam['synMech'] = synapse
 

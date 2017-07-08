@@ -1,132 +1,53 @@
-"""
-sandbox.py 
+from neuron import h, gui
 
-netParams is a class containing a set of network parameters using a standardized structure
+pc = h.ParallelContext()
+pc.set_maxstep(10)
+idhost = int(pc.id())
+nhost = int(pc.nhost())
 
-simConfig is a class containing a set of simulation configurations using a standardized structure
+# Create presyn cell 1
+pre1_gid = 0
+pre1_host = 0
+if idhost == pre1_host:
+    pre1 = h.Section(name='pre1')
+    pc.set_gid2node(pre1_gid, pre1_host)
+    nc = h.NetCon(pre1(0.5)._ref_v, None, sec = pre1)
+    nc.threshold = 20.0
+    pc.cell(pre1_gid, nc)
 
-Contributors: salvadordura@gmail.com
-"""
+# Create presyn cell 2
+pre2_gid = 1
+pre2_host = 1 if nhost>1 else 0
+if idhost == pre2_host:
+    pre2 = h.Section(name='pre2')
+    pc.set_gid2node(pre2_gid, pre2_host)
+    nc = h.NetCon(pre2(0.5)._ref_v, None, sec = pre2) 
+    nc.threshold = 20.0
+    pc.cell(pre2_gid, nc)
 
-###############################################################################
-#
-# SANDBOX PARAMS
-#
-###############################################################################
-
-"""
-tut_artif.py 
-
-Tutorial on artificial cells (no sections)
-"""
-
-from netpyne import specs, sim
-from netpyne.specs import Dict
-
-netParams = specs.NetParams()  # object of class NetParams to store the network parameters
-cfg = specs.SimConfig()  # dictionary to store sets of simulation configurations
-
-
-###############################################################################
-# SIMULATION PARAMETERS
-###############################################################################
-
-# Simulation parameters
-cfg.duration = 1.0*1e3 # Duration of the simulation, in ms
-cfg.dt = 0.1 # Internal integration timestep to use
-cfg.createNEURONObj = 1  # create HOC objects when instantiating network
-cfg.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-cfg.verbose = 0 #False  # show detailed messages 
-
-# Recording 
-cfg.recordCells = [('PYR1',5), 8]
-cfg.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
-cfg.recordStim=1
-
-# # Analysis and plotting 
-cfg.analysis['plotRaster'] = {'include':['all'],'saveFig': True, 'showFig':True, 'labels': 'overlay',
-                                    'orderInverse': True, 'figSize': (12,10), 'lw': 0.6, 'marker': '|'} 
+# Create postsyn cell
+post_gid = 2
+post_host = 0
+if idhost == post_host:
+    post = h.Section(name='post')
+    postsyn = h.Exp2Syn(post(0.5))
+    pc.set_gid2node(post_gid, post_host)
+    nc = h.NetCon(post(0.5)._ref_v, None, sec = post)
+    pc.cell(post_gid, nc) # Associate the cell with this host and gid
 
 
-###############################################################################
-# NETWORK PARAMETERS
-###############################################################################
-
-netParams.sizeX = 100
-netParams.sizeY = 50
-netParams.sizeZ = 20
-
+# Connect pre to post cells
+if pc.gid_exists(post_gid):
+    nc1 = pc.gid_connect(pre1_gid, postsyn)
+    nc1.threshold = 5.0
+    nc2 = pc.gid_connect(pre2_gid, postsyn)
+    nc2.threshold = 5.0
 
 
-# Population parameters
-netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 10, 'xRange': [30,60]} # pop of HH cells
-#netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 1} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
-#netParams.popParams['bkg'] = {'cellModel': 'VecStim', 'numCells': 1, 'spkTimes': [1,10,20,30,40,50]}  # pop of NetStims
-# netParams.popParams['artif1'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': [0,5], 'noise': 1.0, 'start': 50}#, 
-#    'pulses': [{'start': 200, 'end': 300, 'rate': 50, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise':0.5}]}  # pop of NetStims
-netParams.popParams['PYR2'] = {'cellModel': 'NetStim', 'interval': 20, 'number': 10, 'start': 500, 'noise': 0.5, 'numCells': 1} # 'gridSpacing': 5, 'yRange': [20,40]} # pop of HH cells
+# run sim
+h.stdinit()
 
-
-# Synaptic mechanism parameters
-netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
-
-
-# Stimulation parameters
-netParams.stimSourceParams['background1'] = {'type': 'NetStim', 'interval': 20, 'number': 10, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-# netParams.stimTargetParams['bkg1->PYR1'] = {'source': 'background1', 'conds': {'pop': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
-# netParams.stimSourceParams['background2'] = {'type': 'NetStim', 'interval': 20, 'number': 10, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-netParams.stimTargetParams['bkg2->PYR1'] = {'source': 'background1', 'conds': {'pop': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
-
-
-# Cell parameters
-## PYR cell properties
-cellParams = Dict()
-cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
-cellParams['secs']['soma']['ions']['na'] = {'e': 0.12, 'i': 37, 'o': 180}
-cellParams.conds = {'cellType': 'PYR'}
-netParams.cellParams['PYR'] = cellParams
-
-
-# Connections
-# netParams.connParams['artif1->PYR1'] = {
-#     'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR1'},
-#     'convergence': 4,
-#     'weight': 0.005,                    
-#     'synMech': 'AMPA',                
-#     'delay': 'uniform(1,5)',
-#     'synsPerConn': 1}          
-
-# netParams.connParams['PYR1->PYR2_1'] = {
-#     'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
-#     'probability': 0.1,
-#     'weight': 0.2,                     
-#     'delay': 'uniform(1,5)',
-#     'synsPerConn': 1}     
-
-# netParams.connParams['PYR1->PYR2_2'] = {
-#     'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'},
-#     'probability': 0.1,
-#     'weight': 0.4,                     
-#     'delay': 'uniform(1,5)',
-#     'synsPerConn': 1} 
-
-# netParams.addConnParams('artif1->PYR2',
-#     {'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR2'}, 
-#     'divergence': 3,
-#     'weight': 0.05,              
-#     'delay': 3,
-#     'synsPerConn': 1})        
-
-
-
-###############################################################################
-# RUN SIM
-###############################################################################
-
-sim.createSimulateAnalyze(simConfig=cfg)
-
-
-#sim.create()
-#sim.gatherData()
+for i in range(3):
+    if pc.gid_exists(i):
+        print '\ngid: %d, pc.threshold: %.1f' % (i, pc.threshold(i))
 

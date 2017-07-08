@@ -1,3 +1,29 @@
+# Version 0.7.1
+
+- Updates and bug fixes of NeuroML importer/exporter
+
+- Added missing error checks and made error messages clearer 
+
+- Added warning when point process mechanism (eg. VecStim) required for pop is not found
+
+- Added 'ylim' option to plotTraces
+
+- Changed 'postGid' to 'gid' in conditions of recordTraces
+
+- Fixed bug: threshold in conns has no effect, have to use presyn cell threshold (issue #235)
+
+- Fixed bug: avoid saving 't' multiple times when using multiple nodes
+
+- Fixed bug: removed 'propList' param in list - was replaced by 'label'
+
+- Fixed bug distributing cells of population with cellList (issue #235)
+
+- Fixed bug saving to .mat: removed h.Random object from each pop
+
+- Fixed bug: check if checkErrors exists in cfg before checking value
+
+- Fixed bug importing multiple hoc cells consecutively (removed from memory properly)
+
 # Version 0.7.0
 
 IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random number generators it won't be possible to reproduce results of previous versions that required random values, e.g. random spike streams, connections or cell locations.

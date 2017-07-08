@@ -348,7 +348,6 @@ class NetParams (object):
         if importSynMechs:
             for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
 
-
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
@@ -501,6 +500,7 @@ class SimConfig (object):
         # error checking
         self.checkErrors = False # whether to validate the input parameters
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
+        # self.exitOnError = False # whether to hard exit on error
 
         # Analysis and plotting
         self.analysis = ODict()

@@ -758,7 +758,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None,
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -770,6 +770,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             or per trace (showing multiple cells) (default: 'cell')
         - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
         - colors (list): List of normalized RGB colors to use for traces
+        - ylim (list): Y-axis limits
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -829,6 +830,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
+                    if ylim: plt.ylim(ylim)
                     plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
             if overlay:
                 #maxLabelLen = 10
@@ -861,6 +863,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
+                    if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if overlay: 
                         #maxLabelLen = 10
@@ -1062,7 +1065,6 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             else:
                 filename = sim.cfg.filename+'_'+'shape.ps'
             fig.printfile(filename)
-
 
 
     return fig

@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance'])  # misc/utilities
+'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
 
 import sys
 import os
@@ -25,8 +25,7 @@ from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
 import sim, specs
-import tests
-from tests.tests import *
+
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
@@ -37,11 +36,14 @@ def initialize (netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    # if sim config
-    if simConfig.checkErrors: # whether to validate the input parameters
-        netPyneTestObj = NetPyneTestObj(simConfig.checkErrorsVerbose)
-        netPyneTestObj.netParams = netParams
-        netPyneTestObj.runTests()
+    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
+        simTestObj = sim.SimTestObj(simConfig.checkErrorsVerbose)
+        simTestObj.netParams = netParams
+        simTestObj.runTests()
+
+    # for testing validation
+    # if simConfig.exitOnError:
+    #sys.exit()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
@@ -788,7 +790,7 @@ def preRun ():
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
-       sim.fih.append(h.FInitializeHandler(cell.initV))
+       sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
     if not getattr(h, 'cvode', None):
@@ -847,7 +849,9 @@ def preRun ():
                 #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
                 _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                 stim['hRandom'].negexp(1)
-                stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################
@@ -933,8 +937,9 @@ def gatherData ():
     if not sim.cfg.saveCellConns:
         for cell in sim.net.cells:
             cell.conns = []
-
-    simDataVecs = ['t','spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+            
+    simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
+    singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.iteritems()}
 
@@ -954,6 +959,9 @@ def gatherData ():
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                     sim.allSimData[k] = {}
 
+                for key in singleNodeVecs: # store single node vectors (eg. 't')
+                    sim.allSimData[key] = list(nodeData['simData'][key])
+
                 # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
                 for node in gather:  # concatenate data from each node
                     for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector
@@ -968,9 +976,11 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        else:
+                        elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
+            if len(sim.allSimData['spkt']) > 0:
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
             sim.net.allPops = ODict() # pops
             for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
@@ -984,6 +994,7 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.iteritems():
                 data[0][k] = v
+                
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
             if sim.rank == 0:
@@ -995,6 +1006,9 @@ def gatherData ():
 
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
                     sim.allSimData[k] = {}
+
+                for key in singleNodeVecs:  # store single node vectors (eg. 't')
+                    sim.allSimData[key] = list(nodeData['simData'][key])
 
                 # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
                 for node in gather:  # concatenate data from each node
@@ -1014,8 +1028,11 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        else:
+                        elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+
+                if len(sim.allSimData['spkt']) > 0:
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
                 sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
 
@@ -1045,7 +1062,7 @@ def gatherData ():
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
                 sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector
-                if key in simDataVecs:          # simData dicts that contain Vectors
+                if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):
                         for cell,val2 in val.iteritems():
                             if isinstance(val2,dict):

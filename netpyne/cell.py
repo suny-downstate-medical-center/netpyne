@@ -120,6 +120,7 @@ class Cell (object):
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 
 
@@ -132,7 +133,7 @@ class Cell (object):
             if 'conds' in params:
                 for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
                     # choose what to comapare to 
-                    if condKey in ['postGid']:
+                    if condKey in ['gid']:  # CHANGE TO GID
                         compareTo = self.gid
                     else:
                         compareTo = self.tags[condKey]
@@ -354,6 +355,9 @@ class CompartCell (Cell):
             if 'weightNorm' in sectParams:
                 sec['weightNorm'] = sectParams['weightNorm']
 
+            if 'threshold' in sectParams:
+                sec['threshold'] = sectParams['threshold']
+
         # add sectionLists
         if 'secLists' in prop:
             self.secLists.update(prop['secLists'])  # diction of section lists
@@ -520,7 +524,7 @@ class CompartCell (Cell):
 
             netcon.weight[0] = conn['weight']
             netcon.delay = conn['delay']
-            netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
+            #netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
             conn['hNetcon'] = netcon
             
             # Add plasticity 
@@ -546,6 +550,7 @@ class CompartCell (Cell):
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                if 'threshold' in sec: threshold = sec['threshold'] 
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
@@ -764,7 +769,7 @@ class CompartCell (Cell):
                     
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
-                    netcon.threshold = threshold  # set Netcon threshold
+                    #netcon.threshold = threshold  # set Netcon threshold
                     self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
@@ -1003,14 +1008,12 @@ class CompartCell (Cell):
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 elif 'originalFormat' in params:
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
-                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
-                        rand.Random123(sim.id32('stim_exotic'), params['stim_count'], sim.cfg.seeds['stim'])
+                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
-                        self.stims.append(Dict())  # add new stim to Cell object
-                        randContainer = self.stims[-1]
-                        randContainer['NeuroML2_stochastic_input_rand'] = rand 
+                        params['h%s'%params['originalFormat']] = rand
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
@@ -1408,7 +1411,7 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
+        #threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
@@ -1460,7 +1463,7 @@ class PointCell (Cell):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = threshold # set Netcon threshold
+                #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         
 
@@ -1530,6 +1533,11 @@ class PointCell (Cell):
 
 class NML2Cell (CompartCell):
     ''' Class for NeuroML2 neuron models: No different than CompartCell '''
+    
+    ''' Might this be useful to show better name for cell when psection() called?
+    def __str__():
+        return "%s"%self.tags['cellType']
+    '''
 
 
 ###############################################################################
@@ -1558,13 +1566,15 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
-        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
         randContainer['hRandom'] = rand 
+        randContainer['type'] = self.tags['cellType'] 
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

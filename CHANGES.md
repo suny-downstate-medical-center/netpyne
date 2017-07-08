@@ -1,5 +1,9 @@
 # Version 0.7.1
 
+- Updates and bug fixes of NeuroML importer/exporter
+
+- Added missing error checks and made error messages clearer 
+
 - Added warning when point process mechanism (eg. VecStim) required for pop is not found
 
 - Added 'ylim' option to plotTraces

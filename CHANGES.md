@@ -1,3 +1,9 @@
+# Version 0.7.2
+
+- Added popColors option to plotSpikeHist and plotRatePSD
+
+- Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
+
 # Version 0.7.1
 
 - Updates and bug fixes of NeuroML importer/exporter

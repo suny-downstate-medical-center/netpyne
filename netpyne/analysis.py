@@ -477,7 +477,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
-        - popColors (dict): TO DO!
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
@@ -555,7 +555,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         if yaxis=='rate': histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
-        color = colorList[iplot%len(colorList)]
+        color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
@@ -581,7 +581,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            plt.plot(0,0,color=colorList[i%len(colorList)],label=str(subset))
+            color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
+            plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
@@ -613,7 +614,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ## Plot spike histogram
 ######################################################################################################################################################
 def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, 
-    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -625,6 +626,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
@@ -695,7 +697,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
         histData.append(histoCount)
 
-        color = colorList[iplot%len(colorList)]
+        color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
@@ -727,7 +729,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            plt.plot(0,0,color=colorList[i%len(colorList)],label=str(subset))
+            color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
+            plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))

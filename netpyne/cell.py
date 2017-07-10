@@ -925,6 +925,14 @@ class CompartCell (Cell):
                                         conn['hNetcon'].weight[0] = paramValue
                                     elif paramName in ['delay', 'threshold']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
+                                    elif paramName in ['rate']: 
+                                        stim['interval'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    elif paramName in ['interval']: 
+                                        stim['rate'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    else:
+                                        setattr(stim['h'+stim['type']], paramName, paramValue)
                                 else:
                                     setattr(stim['h'+stim['type']], paramName, paramValue)
                             except:

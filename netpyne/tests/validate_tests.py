@@ -36,6 +36,20 @@ class RunNetPyneTests():
             self.paramsMap["simConfig"]["duration"] = []
 
             simConfigParams = ParamsObj()
+
+            # Simulation options
+            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            simConfigParams.simConfig.verbose = False           # Show detailed messages
+            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+
+            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+
             simConfigParams.simConfig.popParams['validDurationParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
             self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
 

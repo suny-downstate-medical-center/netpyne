@@ -1123,16 +1123,392 @@ class SimTestObj(object):
         # initialiase list of test objs
         self.testParamsMap["simConfig"] = {}
 
-        ##cellModel test
+        ## duration test
+        ## duration - Duration of the simulation, in ms (default: 1000)
+
         testObj = TestObj()
-        testObj.testName = "stimSourceTest"
+        testObj.testName = "durationTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_STIM_SOURCE_TEST]
-        testObj.messageText = ["Invalid stim source specified."]
+        testObj.testTypes = [TEST_TYPE_IS_INT]
+        testObj.messageText = ["SimConfig->'duration':Duration is not an integer."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        self.testParamsMap["stimSource"]["stimSourceTest"] = testObj
+        self.testParamsMap["simConfig"]["durationTest"] = testObj
+
+        ## dt test
+        ## dt - Internal integration timestep to use (default: 0.025)
+
+        testObj = TestObj()
+        testObj.testName = "dtTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT]
+        testObj.messageText = ["SimConfig->'dt':dt is not a float."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["dtTest"] = testObj
+
+        ## hParams test
+        ## hParams - Dictionary with parameters of h module (default: {‘celsius’: 6.3, ‘clamp_resist’: 0.001})
+
+        testObj = TestObj()
+        testObj.testName = "hParamsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.messageText = ["SimConfig->'hParams':hParams is not a dict."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["hParamsTest"] = testObj
+
+        ## cache_efficient test
+        ## cache_efficient - Use CVode cache_efficient option to optimize load when running on many cores (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "cacheEfficientTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'cacheEfficient':cacheEfficient is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["cacheEfficientTest"] = testObj
+
+        ## cvode_active test
+        ## cvode_active - Use CVode variable time step (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "cvodeActiveTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'cvodeActive':cvodeActive is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["cvodeActiveTest"] = testObj
+
+        ## seeds test
+        ## seeds - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {‘conn’: 1, ‘stim’: 1, ‘loc’: 1})
+
+        testObj = TestObj()
+        testObj.testName = "seedsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.messageText = ["SimConfig->'seedsActive':seeds is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["seedsTest"] = testObj
+
+        ## createNEURONObj test
+        ## createNEURONObj - Create HOC objects when instantiating network (default: True)
+
+        testObj = TestObj()
+        testObj.testName = "createNEURONObjTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'createNEURONObj':createNEURONObj is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["createNEURONObjTest"] = testObj
+
+        ## createPyStruct test
+        ## createPyStruct - Create Python structure (simulator-independent) when instantiating network (default: True)
+
+        testObj = TestObj()
+        testObj.testName = "createPyStruct"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'createPyStruct':createPyStruct is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["createPyStructTest"] = testObj
+
+        ## gatherOnlySimData test
+        ## gatherOnlySimData - Omits gathering of net and cell data thus reducing gatherData time (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "gatherOnlySimData"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'gatherOnlySimData':gatherOnlySimData is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["cgatherOnlySimDataTest"] = testObj
+
+        ## gatherOnlySimData test
+        ## gatherOnlySimData - Omits gathering of net and cell data thus reducing gatherData time (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "gatherOnlySimData"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'gatherOnlySimData':gatherOnlySimData is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["gatherOnlySimDataTest"] = testObj
+
+        ## printRunTime test
+        ## printRunTime - Print run time at interval (in sec) specified here (eg. 0.1) (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "printRunTimeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'printRunTime':printRunTime is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["printRunTimeTest"] = testObj
+
+        ## printPopAvgRates test
+        ## printPopAvgRates - Print population avg firing rates after run (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "printPopAvgRatesTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'printPopAvgRates':printPopAvgRates is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["printPopAvgRatesTest"] = testObj
+
+        ## includeParamsLabel test
+        ## includeParamsLabel - Include label of param rule that created that cell, conn or stim (default: True)
+
+        testObj = TestObj()
+        testObj.testName = "includeParamsLabelTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'includeParamsLabel':includeParamsLabel is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["includeParamsLabelTest"] = testObj
+
+        ## timing test
+        ## timing - Show and record timing of each process (default: True)
+
+        testObj = TestObj()
+        testObj.testName = "timingTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'timing':timing is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["timingTest"] = testObj
+
+        ## saveTiming test
+        ## saveTiming - Save timing data to pickle file (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "saveTimingTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveTiming':saveTiming is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveTimingTest"] = testObj
+
+        ## verbose test
+        ## verbose - Show detailed messages (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "verboseTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'verbose':verbose is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["verboseTest"] = testObj
+
+        ## recordCells test
+        ## recordCells - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. ‘S’ to record from one cell of the ‘S’ population), or ‘all’, to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: [])
+
+        testObj = TestObj()
+        testObj.testName = "recordCellsTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_LIST]
+        testObj.messageText = ["SimConfig->'recordCells':recordCells is not a list."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["recordCellsTest"] = testObj
+
+        ## recordTraces test
+        ## recordTraces - Dict of traces to record (default: {} ; example: {‘V_soma’:{‘sec’:’soma’,’loc’:0.5,’var’:’v’}})
+
+        testObj = TestObj()
+        testObj.testName = "recordTracesTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_DICT]
+        testObj.messageText = ["SimConfig->'recordTraces':recordTraces is not a dict."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
+
+        ## recordStim test
+        ## recordStim - Record spikes of cell stims (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "recordStimTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'recordStim':recordStim is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["recordStimTest"] = testObj
+
+        ## recordStep test
+        ## recordStep - Record spikes of cell stims (default: False)
+
+        testObj = TestObj()
+        testObj.testName = "recordStepTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT]
+        testObj.messageText = ["SimConfig->'recordStep':recordStep is not a float."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["recordStimTest"] = testObj
+
+        ## saveDataInclude test
+        ## saveDataInclude - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveDataIncludeTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_LIST]
+        testObj.messageText = ["SimConfig->'saveDataInclude':saveDataInclude is not a float."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveDataIncludeTest"] = testObj
+
+        ## timestampFilename test
+        ## timestampFilename - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "timestampFilenameTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'timestampFilename':timestampFilename is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["timestampFilenameTest"] = testObj
+
+        ## savePickle test
+        ## savePickle - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "savePickleTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'savePickle':savePickle is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["savePickleTest"] = testObj
+
+        ## saveJson test
+        ## saveJson - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveJsonTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveJson':saveJson is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveJsonTest"] = testObj
+
+        ## saveMat test
+        ## saveMat - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveMatTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveMat':saveMat is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveMatTest"] = testObj
+
+
+        ## saveTxt test
+        ## saveTxt - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveTxtTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveTxt':saveTxt is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveTxtTest"] = testObj
+
+        ## saveDpk test
+        ## saveDpk - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveDpkTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveDpk':saveDpk is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveDpkTest"] = testObj
+
+        ## saveHDF5 test
+        ## saveHDF5 - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "saveHDF5Test"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'saveHDF5':saveHDF5 is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["saveHDF5Test"] = testObj
+
+
+        ## backupCfgFile test
+        ## backupCfgFile - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "backupCfgFileTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a boolean."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
+
+# savePickle - Save data to pickle file (default: False)
+# saveJson - Save dat to json file (default: False)
+# saveMat - Save data to mat file (default: False)
+# saveTxt - Save data to txt file (default: False)
+# saveDpk - Save data to .dpk pickled file (default: False)
+# saveHDF5 - Save data to save to HDF5 file (default: False)
+# backupCfgFile - Copy cfg file to folder, eg. [‘cfg.py’, ‘backupcfg/’] (default: [])
 
     def loadStimSourceTests(self):
 

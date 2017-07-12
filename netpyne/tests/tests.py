@@ -1502,14 +1502,6 @@ class SimTestObj(object):
 
         self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
 
-# savePickle - Save data to pickle file (default: False)
-# saveJson - Save dat to json file (default: False)
-# saveMat - Save data to mat file (default: False)
-# saveTxt - Save data to txt file (default: False)
-# saveDpk - Save data to .dpk pickled file (default: False)
-# saveHDF5 - Save data to save to HDF5 file (default: False)
-# backupCfgFile - Copy cfg file to folder, eg. [‘cfg.py’, ‘backupcfg/’] (default: [])
-
     def loadStimSourceTests(self):
 
         # if self.verboseFlag:

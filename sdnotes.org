@@ -125,7 +125,6 @@ We can use the google chat or this google doc to bounce ideas back and forth (li
 - synapses as list of objects inside each cell (postsynaptic) - netcon in pre is stub; netcon in post is real synapse
 - netcon (neuron object) as part of synapse object
 
-
 * 15dec28 Convert into python package
 - PyNet ? NeuPyNE, NeuPyNet, netpyne !! PYthon-based NETwork development framework for the NEuron simulator
 - make shared -> framework 

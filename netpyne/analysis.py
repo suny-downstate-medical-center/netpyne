@@ -697,7 +697,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
         histData.append(histoCount)
 
-        color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
+        color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)] 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot

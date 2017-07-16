@@ -12,7 +12,7 @@ from time import sleep
 from neuron import h # Import NEURON
 from .specs import Dict
 import numpy as np
-from random import seed, uniform
+from . import sim
 
 
 ###############################################################################
@@ -22,7 +22,6 @@ from random import seed, uniform
 ###############################################################################
 
 class Cell (object):
-
     ''' Generic class for neuron models '''
     
     def __init__ (self, gid, tags):
@@ -33,7 +32,6 @@ class Cell (object):
 
 
     def recordStimSpikes (self):
-        from . import sim
         sim.simData['stims'].update({'cell_'+str(self.gid): Dict()})
         for conn in self.conns:
             if conn['preGid'] == 'NetStim':
@@ -86,7 +84,6 @@ class Cell (object):
 
 
     def addNetStim (self, params, stimContainer=None):
-        from . import sim
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
@@ -120,15 +117,14 @@ class Cell (object):
 
 
     def __getstate__ (self): 
-        from . import sim
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 
 
     def recordTraces (self):
-        from . import sim
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.items():
             
@@ -137,7 +133,7 @@ class Cell (object):
             if 'conds' in params:
                 for (condKey,condVal) in params['conds'].items():  # check if all conditions are met
                     # choose what to comapare to 
-                    if condKey in ['postGid']:
+                    if condKey in ['gid']:  # CHANGE TO GID
                         compareTo = self.gid
                     else:
                         compareTo = self.tags[condKey]
@@ -226,7 +222,6 @@ class CompartCell (Cell):
 
 
     def create (self):
-        from . import sim
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
@@ -255,7 +250,6 @@ class CompartCell (Cell):
 
 
     def modify (self, prop):
-        from . import sim
         conditionsMet = 1
         for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
             if condKey=='label':
@@ -361,6 +355,9 @@ class CompartCell (Cell):
             if 'weightNorm' in sectParams:
                 sec['weightNorm'] = sectParams['weightNorm']
 
+            if 'threshold' in sectParams:
+                sec['threshold'] = sectParams['threshold']
+
         # add sectionLists
         if 'secLists' in prop:
             self.secLists.update(prop['secLists'])  # diction of section lists
@@ -424,10 +421,10 @@ class CompartCell (Cell):
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
                                 seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
-                            elif ionParamName == 'init_ext_conc':
+                            elif ionParamName == 'o':
                                 seg.__setattr__('%so'%ionName,ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
-                            elif ionParamName == 'init_int_conc':
+                            elif ionParamName == 'i':
                                 seg.__setattr__('%si'%ionName,ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
@@ -498,7 +495,6 @@ class CompartCell (Cell):
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
     def addConnsNEURONObj(self):
-        from . import sim
         # Note: loading connections to point process (eg. Izhi2007a) not yet supported
         # Note: assumes weight is in index 0 (netcon.weight[0])
         # assumes python structure exists
@@ -528,7 +524,7 @@ class CompartCell (Cell):
 
             netcon.weight[0] = conn['weight']
             netcon.delay = conn['delay']
-            netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
+            #netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
             conn['hNetcon'] = netcon
             
             # Add plasticity 
@@ -537,7 +533,6 @@ class CompartCell (Cell):
 
 
     def associateGid (self, threshold = None):
-        from . import sim
         if self.secs:
             if sim.cfg.createNEURONObj: 
                 sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -555,6 +550,7 @@ class CompartCell (Cell):
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                if 'threshold' in sec: threshold = sec['threshold'] 
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
@@ -564,7 +560,6 @@ class CompartCell (Cell):
 
 
     def addSynMech (self, synLabel, secLabel, loc):
-        from . import sim
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
         # add synaptic mechanism to python struct
@@ -662,7 +657,6 @@ class CompartCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        from . import sim
         threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
@@ -676,8 +670,7 @@ class CompartCell (Cell):
 
         # Get list of section labels
         secLabels = self._setConnSections(params)
-        if secLabels == -1: 
-            return  # if no section available exit func 
+        if secLabels == -1: return  # if no section available exit func 
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
@@ -698,14 +691,15 @@ class CompartCell (Cell):
             synMechs, synMechSecs, synMechLocs = self._setConnSynMechs(params, secLabels)
             if synMechs == -1: return
 
-        # Adapt weight based on section weightNorm (normalization based on section location)
-        for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
-            if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
-                nseg = self.secs[sec]['geom']['nseg']
-                weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
+            # Adapt weight based on section weightNorm (normalization based on section location)
+            for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
+                if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                    nseg = self.secs[sec]['geom']['nseg']
+                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
 
         # Create connections
         for i in range(params['synsPerConn']):
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -772,10 +766,10 @@ class CompartCell (Cell):
                         netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                     else:
                         netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-
+                    
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
-                    netcon.threshold = threshold  # set Netcon threshold
+                    #netcon.threshold = threshold  # set Netcon threshold
                     self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
             
 
@@ -824,7 +818,6 @@ class CompartCell (Cell):
 
 
     def modifyConns (self, params):
-        from . import sim
         for conn in self.conns:
             conditionsMet = 1
             
@@ -883,7 +876,6 @@ class CompartCell (Cell):
 
 
     def modifyStims (self, params):
-        from . import sim
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
@@ -933,6 +925,14 @@ class CompartCell (Cell):
                                         conn['hNetcon'].weight[0] = paramValue
                                     elif paramName in ['delay', 'threshold']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
+                                    elif paramName in ['rate']: 
+                                        stim['interval'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    elif paramName in ['interval']: 
+                                        stim['rate'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    else:
+                                        setattr(stim['h'+stim['type']], paramName, paramValue)
                                 else:
                                     setattr(stim['h'+stim['type']], paramName, paramValue)
                             except:
@@ -941,7 +941,6 @@ class CompartCell (Cell):
 
 
     def addStim (self, params):
-        from . import sim
         if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, list(self.secs.keys()),params))
             if 'soma' in self.secs:  
@@ -951,9 +950,9 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print('  Error: no Section available on cell gid=%d to add stim'%(self.gid))
                 return 
-
+                
         sec = self.secs[params['sec']]
-        
+
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
         if params['type'] == 'NetStim':
@@ -1017,14 +1016,12 @@ class CompartCell (Cell):
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 elif 'originalFormat' in params:
                     if sim.cfg.verbose: print(('   originalFormat: %s'%(params['originalFormat'])))
-                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                         rand = h.Random()
-                        rand.Random123(params['stim_count'], sim.id32('%d'%(sim.cfg.seeds['stim'])))
+                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
                         rand.negexp(1)
                         stim.noiseFromRandom(rand)
-                        self.stims.append(Dict())  # add new stim to Cell object
-                        randContainer = self.stims[-1]
-                        randContainer['NeuroML2_stochastic_input_rand'] = rand 
+                        params['h%s'%params['originalFormat']] = rand
                 else: 
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
@@ -1035,7 +1032,6 @@ class CompartCell (Cell):
 
 
     def _setConnSections (self, params):
-        from . import sim
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid))
@@ -1072,7 +1068,6 @@ class CompartCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams, secLabels):
-        from . import sim
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1082,6 +1077,7 @@ class CompartCell (Cell):
 
         if isinstance(params['weight'],list):
             weights = [scaleFactor * w for w in params['weight']]
+            if len(weights) == 1: weights = [weights[0]] * params['synsPerConn']
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
         
@@ -1089,7 +1085,6 @@ class CompartCell (Cell):
 
 
     def _setConnPointP(self, params, secLabels, weightIndex):
-        from . import sim
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if len(secLabels)==1 and 'pointps' in self.secs[secLabels[0]]:  #  check if point processes with 'vref' (artificial cell)
@@ -1111,7 +1106,6 @@ class CompartCell (Cell):
 
 
     def _setConnSynMechs (self, params, secLabels):
-        from . import sim
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
@@ -1127,7 +1121,11 @@ class CompartCell (Cell):
             if len(secLabels) == 1:  # if single section, create all syns there
                 synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
                 if isinstance(params['loc'], list):
-                    if len(params['loc']) == synsPerConn: synMechLocs = params['loc']
+                    if len(params['loc']) == synsPerConn: 
+                        synMechLocs = params['loc']
+                    else:
+                        print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
+                        synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
@@ -1143,7 +1141,6 @@ class CompartCell (Cell):
 
 
     def _distributeSynsUniformly (self, secList, numSyns):
-        from . import sim
         from numpy import cumsum
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
@@ -1167,7 +1164,6 @@ class CompartCell (Cell):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
-        from . import sim
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
@@ -1203,7 +1199,6 @@ class PointCell (Cell):
     '''
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
-        from . import sim
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
         if 'params' in self.tags:
@@ -1215,7 +1210,6 @@ class PointCell (Cell):
 
 
     def createNEURONObj (self):
-        from . import sim
         # add point processes
         try:
             self.hPointp = getattr(h, self.tags['cellModel'])()
@@ -1225,8 +1219,9 @@ class PointCell (Cell):
 
         # if rate is list with 2 items generate random value from uniform distribution
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
-            seed(sim.id32('%d'%(sim.cfg.seeds['conn']+self.gid)))  # initialize randomizer 
-            self.params['rate'] = uniform(self.params['rate'][0], self.params['rate'][1])
+            rand = h.Random()
+            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+            self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
  
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.items()}
@@ -1248,7 +1243,7 @@ class PointCell (Cell):
                 params['number'] = 1e9 
                 setattr(self.hPointp, 'number', params['number']) 
             if 'seed' not in self.params: 
-                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized via noiseFromRandom() from sim.preRun()
+                self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized from sim.preRun()
         
 
         # VecStim - generate spike vector based on params
@@ -1257,66 +1252,80 @@ class PointCell (Cell):
             if 'seed' not in self.params: 
                 self.params['seed'] = sim.cfg.seeds['stim']
 
-            # interval
+            # convert rate to interval
+            if 'rate' in self.params:
+                self.params['interval'] = 1000.0/self.params['rate'] 
+
+            # if interval
             if 'interval' in self.params:
+                # set interval, start and noise params
                 interval = self.params['interval'] 
-            else:
-                return
+                start = self.params['start'] if 'start' in self.params else 0.0
+                noise = self.params['noise'] if 'noise' in self.params else 0.0
 
-            # set start and noise params
-            start = self.params['start'] if 'start' in self.params else 0.0
-            noise = self.params['noise'] if 'noise' in self.params else 0.0
+                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
-            # fixed interval of duration (1 - noise)*interval 
-            fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
-            numSpks = len(fixedInterval)
+                # fixed interval of duration (1 - noise)*interval 
+                fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                numSpks = len(fixedInterval)
 
-            maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
-
-            # randomize the first spike so on average it occurs at start + noise*interval
-            # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
-            if noise == 0.0:
-                vec = h.Vector(len(fixedInterval))
-                spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
-            else:
-                # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
-                rand = h.Random()
-                rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
-
-                # Method 1: vec length depends on duration -- not reproducible
-                # vec = h.Vector(numSpks)
-                # rand.negexp(noise*interval)
-                # vec.setrand(rand)
-                # negexpInterval= np.array(vec)                     
-                # #print negexpInterval
-                # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
-
-                if numSpks < 100:
-                    # Method 2: vec length=1, slower but reproducible
-                    vec = h.Vector(1) 
-                    rand.negexp(noise*interval)
-                    negexpInterval = []
-                    for i in range(numSpks):
-                        vec.setrand(rand)
-                        negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
-                    spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
-
-                elif numSpks < maxReproducibleSpks:
-                    # Method 3: vec length=maxReproducibleSpks, then select subset; slower but reproducible
-                    vec = h.Vector(maxReproducibleSpks)
-                    rand.negexp(noise*interval)
-                    vec.setrand(rand)
-                    negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
-                    spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
-
+                # randomize the first spike so on average it occurs at start + noise*interval
+                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)    
+                if noise == 0.0:
+                    vec = h.Vector(len(fixedInterval))
+                    spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
                 else:
-                    print('\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks))
-                    import sys
-                    sys.exit() 
+                    # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
+                    rand = h.Random()
+                    rand.Random123(sim.id32('vecstim_spkt'), self.gid, self.params['seed'])
+
+                    # Method 1: vec length depends on duration -- not reproducible
+                    # vec = h.Vector(numSpks)
+                    # rand.negexp(noise*interval)
+                    # vec.setrand(rand)
+                    # negexpInterval= np.array(vec)                     
+                    # #print negexpInterval
+                    # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                    if numSpks < 100:
+                        # Method 2: vec length=1, slower but reproducible
+                        vec = h.Vector(1) 
+                        rand.negexp(noise*interval)
+                        negexpInterval = []
+                        for i in range(numSpks):
+                            vec.setrand(rand)
+                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
+                        spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
+
+                    elif numSpks < maxReproducibleSpks:
+                        # Method 3: vec length=maxReproducibleSpks, then select subset; slower but reproducible
+                        vec = h.Vector(maxReproducibleSpks)
+                        rand.negexp(noise*interval)
+                        vec.setrand(rand)
+                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
+                        spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
+
+                    else:
+                        print('\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks))
+                        return
+
+            # if spkTimess
+            elif 'spkTimes' in self.params:
+                spkTimes = self.params['spkTimes']
+                if type(spkTimes) not in (list,tuple,np.array):
+                    print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
+                    return
+                spkTimes = np.array(spkTimes)
+                vec = h.Vector(len(spkTimes))
+            
+            # missing params
+            else:
+                print('\nError: VecStim requires interval, rate or spkTimes')
+                return
 
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
-                for pulse in self.params['pulses']:
+                for ipulse, pulse in enumerate(self.params['pulses']):
                     
                     # check interval or rate params
                     if 'interval' in pulse:
@@ -1350,7 +1359,7 @@ class PointCell (Cell):
                         else:
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
-                            rand.Random123(self.gid, sim.id32('%d'%(self.params['seed'])))
+                            rand.Random123(ipulse, self.gid, self.params['seed'])
                             
                             # Method 1: vec length depends on duration -- not reproducible
                             # vec = h.Vector(len(fixedInterval))
@@ -1379,7 +1388,6 @@ class PointCell (Cell):
 
 
     def associateGid (self, threshold = None):
-        from . import sim
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
@@ -1395,7 +1403,6 @@ class PointCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams):
-        from . import sim
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1412,8 +1419,7 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        from . import sim
-        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
+        #threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
@@ -1465,7 +1471,7 @@ class PointCell (Cell):
                 
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
-                netcon.threshold = threshold # set Netcon threshold
+                #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
         
 
@@ -1535,6 +1541,11 @@ class PointCell (Cell):
 
 class NML2Cell (CompartCell):
     ''' Class for NeuroML2 neuron models: No different than CompartCell '''
+    
+    ''' Might this be useful to show better name for cell when psection() called?
+    def __str__():
+        return "%s"%self.tags['cellType']
+    '''
 
 
 ###############################################################################
@@ -1550,7 +1561,6 @@ class NML2SpikeSource (CompartCell):
     '''
         
     def associateGid (self, threshold = 10.0):
-        from . import sim
         
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -1564,14 +1574,15 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
-        from . import sim
-        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
         randContainer['hRandom'] = rand 
+        randContainer['type'] = self.tags['cellType'] 
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

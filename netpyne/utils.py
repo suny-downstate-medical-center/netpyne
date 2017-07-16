@@ -11,6 +11,7 @@ from neuron import h
 h.load_file("stdrun.hoc") 
 
 
+
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
 
@@ -182,6 +183,13 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         _delete_module(moduleName)
         _delete_module('tempModule')
         del modulePointer
+    elif fileName.endswith('.hoc'):
+        for sec in h.allsec():
+            try:
+                h.delete_section(sec=sec)
+            except:
+                pass
+    h.initnrn()
 
     setGlobals(origGlob)  # restore original globals
 
@@ -241,7 +249,7 @@ def getCellParams(cell, varList, origGlob):
         secs = [cell.soma]
     else:
         secs = []
-    
+
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
@@ -322,7 +330,10 @@ def getCellParams(cell, varList, origGlob):
                         varNameSplit = varName
                         if varName not in ignoreVars:
                             try:
-                                varVals = [seg.__getattribute__(varNameSplit+ionName) for seg in sec]
+                                if varNameSplit in ['i','o']: # var name after ion name (eg. 'nai', 'nao')
+                                    varVals = [seg.__getattribute__(ionName+varNameSplit) for seg in sec]
+                                else: # var name before ion name (eg. 'ena')
+                                    varVals = [seg.__getattribute__(varNameSplit+ionName) for seg in sec]
                                 if len(set(varVals)) == 1:
                                     varVals = varVals[0] 
                                 ionDic[ionName][varNameSplit] = varVals
@@ -401,8 +412,11 @@ def getCellParams(cell, varList, origGlob):
         for sec in list(secDic.values()): sec['vinit'] = globs['v_init']  
 
     # clean 
-    h.initnrn()
-    del(cell) # delete cell
+    cell = None
+    for i in range(len(secs)):
+        tmp=secs.pop()
+        del tmp
+
     import gc; gc.collect()
 
     return secDic, secListDic, synMechs, globs

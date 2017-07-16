@@ -96,11 +96,19 @@ class Batch(object):
             # iterate over all param combinations
             if self.method == 'grid':
                 groupedParams = False
+                ungroupedParams = False
                 for p in self.params:
                     if 'group' not in p: 
-                        p['group'] = False # by default set linear to False
+                        p['group'] = False
+                        ungroupedParams = True
                     elif p['group'] == True: 
                         groupedParams = True
+
+                if ungroupedParams:
+                    labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False]))
+                else:
+                    labelList = ()
+                    valuesList = ()
 
                 labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False]))
                 valueCombinations = list(product(*(valuesList)))
@@ -177,12 +185,13 @@ class Batch(object):
                             nodes = self.runCfg.get('nodes', 1)
                             ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
+                            mpiCommand = self.runCfg.get('mpiCommand', 'mpiexec')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                             numproc = nodes*ppn
                             
-                            command = 'mpiexec -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath)  
+                            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
 
                             output, input = popen2('qsub') # Open a pipe to the qsub command.
 
@@ -215,9 +224,10 @@ class Batch(object):
                             email = self.runCfg.get('email', 'a@b.c')
                             folder = self.runCfg.get('folder', '.')
                             script = self.runCfg.get('script', 'init.py')
+                            mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             numproc = nodes*coresPerNode
-                            command = 'ibrun -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (numproc, script, cfgSavePath, netParamsSavePath) 
+                            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath) 
 
                             jobString = """#!/bin/bash 
 #SBATCH --job-name=%s

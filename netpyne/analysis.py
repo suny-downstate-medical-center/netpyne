@@ -17,8 +17,6 @@ from scipy import array, cumsum
 from numbers import Number
 import math
 
-from . import sim
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -35,6 +33,8 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
 ## Wrapper to run analysis functions in simConfig
 ######################################################################################################################################################
 def plotData ():
+    from . import sim
+
     ## Plotting
     if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
@@ -72,6 +72,8 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName=None, type=''):
+    from . import sim
+
     if not fileName or not isinstance(fileName, str):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
@@ -158,6 +160,8 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Synchrony measure
 ######################################################################################################################################################
 def syncMeasure ():
+    from . import sim
+
     t0=-1 
     width=1 
     cnt=0
@@ -172,6 +176,8 @@ def syncMeasure ():
 ## Get subset of cells and netstims indicated by include list
 ######################################################################################################################################################
 def getCellsInclude(include):
+    from . import sim
+
     allCells = sim.net.allCells
     allNetStimLabels = list(sim.net.params.stimSourceParams.keys())
     cellGids = []
@@ -253,6 +259,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
     #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
     #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
+
+    from . import sim
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
@@ -495,6 +503,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
     #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
 
+    from . import sim
     
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
@@ -638,6 +647,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     '''
 
     print('Plotting firing rate power spectral density (PSD) ...')
+
+    from . import sim
 
     # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
     #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
@@ -783,6 +794,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
         - Returns figure handles
     '''
+    from . import sim
 
     print('Plotting recorded cell traces ...')
 
@@ -950,7 +962,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
 
         - Returns figure handles
     '''
-
+    from . import sim
     from neuron import h, gui
 
     if not iv: # plot using Python instead of interviews
@@ -1139,6 +1151,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
         - Returns figure handles
     '''
+    from . import sim
 
     print('Plotting connectivity matrix...')
 
@@ -1527,6 +1540,8 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
         - Returns figure handles
     '''
 
+    from . import sim
+
     print('Plotting 2D representation of network cell locations and connections...')
 
     fig = plt.figure(figsize=figSize)
@@ -1614,7 +1629,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 
         - Returns nTE (float): normalized transfer entropy 
     '''
-
+    from . import sim
     from neuron import h
     import netpyne
     import os
@@ -1735,7 +1750,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
             Fxy: instantaneous causality between x and y 
             fig: Figure handle 
     '''
-    
+    from . import sim 
     import numpy as np
     from netpyne.support.bsmart import pwcausalr
 
@@ -1846,6 +1861,8 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ######################################################################################################################################################
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', saveFig=False, showFig=True):
 
+    from . import sim
+
     print('Plotting EPSP amplitudes...')
 
     if include is None: include = [] # If not defined, initialize as empty list
@@ -1915,6 +1932,8 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
 ## Plot weight changes
 ######################################################################################################################################################
 def plotWeightChanges():
+    from . import sim
+
     print('Plotting weight changes...')
 
     if sim.usestdp:
@@ -1959,8 +1978,9 @@ def plotWeightChanges():
 ## Create colormap
 ######################################################################################################################################################
 def _bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
+   from . import sim
    from matplotlib.colors import LinearSegmentedColormap as makecolormap
-   
+
    mng=mingreen; # Minimum amount of green to add into the colors
    mix=redbluemix; # How much red to mix with the blue an vice versa
    eps=epsilon; # How much of the center of the colormap to make gray

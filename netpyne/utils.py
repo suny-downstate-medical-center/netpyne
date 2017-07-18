@@ -424,6 +424,8 @@ def getCellParams(cell, varList, origGlob):
 
 
 def importConnFromExcel (fileName, sheetName):
+    from . import sim
+
     ''' Import connectivity rules from Excel sheet'''
     import openpyxl as xl
 

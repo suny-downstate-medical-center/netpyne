@@ -14,7 +14,7 @@ addons:
     - python-tables 
 
 language: python
-python: 2.7
+python: 3.6
 
 virtualenv:
     system_site_packages: true  

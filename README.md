@@ -35,7 +35,7 @@ Requires NEURON with Python and MPI support.
 	```
 	import HHTut
 	from netpyne import sim
-	sim.createAndSimulate(
+	sim.createSimulateAnalyze(
 		simConfig = HHTut.simConfig,     
 		netParams = HHTut.netParams)
 	```

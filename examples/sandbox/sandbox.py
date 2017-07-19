@@ -1,53 +1,44 @@
-from neuron import h, gui
+from netpyne import specs,sim
 
-pc = h.ParallelContext()
-pc.set_maxstep(10)
-idhost = int(pc.id())
-nhost = int(pc.nhost())
+netParams = specs.NetParams()   # object of class NetParams to store the network parameters
+simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
 
-# Create presyn cell 1
-pre1_gid = 0
-pre1_host = 0
-if idhost == pre1_host:
-    pre1 = h.Section(name='pre1')
-    pc.set_gid2node(pre1_gid, pre1_host)
-    nc = h.NetCon(pre1(0.5)._ref_v, None, sec = pre1)
-    nc.threshold = 20.0
-    pc.cell(pre1_gid, nc)
+SysIVibrationFreq    = 180
+SysITimeofVibration = 1e9
+STARTTIME         = 1
+INTERVAL         = 1
 
-# Create presyn cell 2
-pre2_gid = 1
-pre2_host = 1 if nhost>1 else 0
-if idhost == pre2_host:
-    pre2 = h.Section(name='pre2')
-    pc.set_gid2node(pre2_gid, pre2_host)
-    nc = h.NetCon(pre2(0.5)._ref_v, None, sec = pre2) 
-    nc.threshold = 20.0
-    pc.cell(pre2_gid, nc)
+R_SysISyn_Erev    = 0               #...FR...
+R_SysISyn_tau1    = 0.2
+R_SysISyn_tau2    = 0.2            # deactivation
 
-# Create postsyn cell
-post_gid = 2
-post_host = 0
-if idhost == post_host:
-    post = h.Section(name='post')
-    postsyn = h.Exp2Syn(post(0.5))
-    pc.set_gid2node(post_gid, post_host)
-    nc = h.NetCon(post(0.5)._ref_v, None, sec = post)
-    pc.cell(post_gid, nc) # Associate the cell with this host and gid
+# populations
+netParams.popParams['FR'] = {'cellType': 'FR', 'numCells': 2, 'cellModel': 'HH3D'}
 
+# cell rules
+#cellRule0 = netParams.importCellParams(label = 'FR',conds={'cellType': 'FR', 'cellModel': 'HH3D'}, fileName= 'FRcellTemplate.hoc', cellName='FR_Cell',importSynMechs=False)
+cellRule = {'conds': {'cellModel': 'HH3D', 'cellType': 'FR'},  'secs': {}}   # cell rule dict
+nsec = 10
+nseg = 5
+for isec in range(nsec):
+    cellRule['secs']['sec_'+str(isec)] = {'geom': {'nseg': nseg}, 'mechs':{}}
+netParams.cellParams['FRrule'] = cellRule
 
-# Connect pre to post cells
-if pc.gid_exists(post_gid):
-    nc1 = pc.gid_connect(pre1_gid, postsyn)
-    nc1.threshold = 5.0
-    nc2 = pc.gid_connect(pre2_gid, postsyn)
-    nc2.threshold = 5.0
+# synapses
+netParams.synMechParams['FR_syn'] = {'mod': 'Exp2Syn', 'tau1': R_SysISyn_tau1, 'tau2': R_SysISyn_tau2, 'e': R_SysISyn_Erev}
+
+# stimulation
+netParams.stimSourceParams['stim1'] = {'type': 'NetStim', 'interval': 1000/SysIVibrationFreq , 'number': SysITimeofVibration*SysIVibrationFreq/1000, 'start': STARTTIME, 'noise': 0}
+
+# OPTION 1: syns distributed uniformly across sec length 
+netParams.stimTargetParams['stim1->FR'] = {'source': 'stim1', 'conds': {'cellType': 'FR'} ,'weight': 1, 'sec':'all', 'synsPerConn': nsec*nseg , 'delay': 1, 'synMech': 'FR_syn'}
+
+# OPTION 2: 1 syn per segment
+for secName,sec in netParams.cellParams['FRrule']['secs'].iteritems():
+    for iseg in range(sec['geom']['nseg']):
+        netParams.stimTargetParams['stim1->FR_'+secName+'_'+str(iseg)] = \
+        {'source': 'stim1', 'conds': {'cellType': 'FR'} ,'weight': 1, 'sec': secName, 'loc': (iseg+1)*(1.0/nseg)-(0.5/nseg), 'synPerConn':1 , 'delay': 1, 'synMech': 'FR_syn'}
 
 
-# run sim
-h.stdinit()
-
-for i in range(3):
-    if pc.gid_exists(i):
-        print '\ngid: %d, pc.threshold: %.1f' % (i, pc.threshold(i))
+sim.create()
 

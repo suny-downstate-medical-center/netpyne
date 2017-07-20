@@ -1033,6 +1033,69 @@ class TestTypeObj(object):
             raise
         return errorMessages
 
+    def testValidAnalysis(self, simConfig): # TEST_TYPE_VALID_ANALYSIS
+
+        errorMessages = []
+
+        if simConfig.analysis:
+
+            analysis = simConfig.analysis
+
+            if not isinstance ( simConfig.analysis, dict):
+                errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + "."")
+                return errorMessages
+
+            if any (analysis.keys() not in ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger']):
+                errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger'.")
+
+            if 'plotRaster' in analysis:
+
+                plotRaster = analysis['plotRaster']
+
+                if not isinstance ( plotRaster, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster': Must be a dict.  Value provided is " + str(plotRaster) + "."")
+
+                if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
+
+                if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+
+                if 'maxSpikes' in plotRaster and not isinstance( plotRaster['maxSpikes'], int):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'maxSpikes': Must be an integer. Value provided is " + str(plotRaster['maxSpikes']) + ".")
+
+                if 'orderBy' in plotRaster:
+
+                    if not isinstance( plotRaster['orderBy'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+                    else:
+                        if any ( [x not in 'gid', 'ynorm', 'y' for x in plotRaster['orderBy'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+
+                if 'orderInverse' in plotRaster:
+
+                    if not isinstance( plotRaster['orderInverse'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
+
+                if 'labels' in plotRaster:
+
+                    if not isinstance( plotRaster['labels'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
+
+                # orderInverse boolean
+                # labels: string (in valid list)? (‘legend’|’overlay’))
+                # popRates: string (in valid list)? (‘legend’|’overlay’)
+                #
+                # spikeHist: string (in valid list)? (None|’overlay’|’subplot’)
+                #
+                # spikeHistBin:  (int)
+                #
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            e.args += ( )
+            raise
+        return errorMessages
+
 # Tests that are defined for each set of parameters
 class TestObj(object):
 
@@ -1195,8 +1258,9 @@ class SimTestObj(object):
         testObj.testName = "seedsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.messageText = ["SimConfig->'seedsActive':seeds is not a boolean."]
+        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ] # ‘conn’, ‘stim’, ‘loc’
+        testObj.testValueList = ['conn', 'stim', 'loc']
+        testObj.messageText = ["SimConfig->'seedsActive':seeds is not a boolean.","SimConfig->'recordTracesTest':is not a valid value. Valid values are 'conn', 'stim', 'loc'."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["seedsTest"] = testObj
@@ -1351,12 +1415,23 @@ class SimTestObj(object):
         testObj.testName = "recordTracesTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.messageText = ["SimConfig->'recordTraces':recordTraces is not a dict."]
+        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
+        testObj.testValueList = ['sec','loc','var']
+        testObj.messageText = ["SimConfig->'recordTraces':recordTraces is not a dict.","SimConfig->'recordTracesTest':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
 
+        testObj = TestObj()
+        testObj.testName = "saveDataInclude"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
+        testObj.testValueList = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
+        testObj.messageText = ["SimConfig->'saveDataInclude':recordTraces is not a dict.","SimConfig->'saveDataInclude':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'." ]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
         ## recordStim test
         ## recordStim - Record spikes of cell stims (default: False)
 
@@ -1488,7 +1563,6 @@ class SimTestObj(object):
 
         self.testParamsMap["simConfig"]["saveHDF5Test"] = testObj
 
-
         ## backupCfgFile test
         ## backupCfgFile - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
 
@@ -1499,6 +1573,19 @@ class SimTestObj(object):
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+
+        self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
+
+        ## backupCfgFile test
+        ## backupCfgFile - Data structures to save to file (default: [‘netParams’, ‘netCells’, ‘netPops’, ‘simConfig’, ‘simData’])
+
+        testObj = TestObj()
+        testObj.testName = "analysisTest"
+        testObj.testParameterType = "string"
+        testObj.testParameterValue = "type"
+        testObj.testTypes = [TEST_TYPE_VALID_ANALYSIS]
+        #testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a boolean."]
+        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
 
@@ -2327,6 +2414,26 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_VALUE_LIST:
+
+                if isinstance(params, dict):
+
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+                            if testObj.testParameterValue in paramValues:
+                                self.testTypeObj.testIsValueList(paramValues[testObj.testParameterValue], testObj.testValueList)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for : " + str(testType)+ " value : " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + " : " + str(testObj.messageText[testIndex])
+
+testIsValueList
 
             elif testType == TEST_TYPE_EXISTS_IN_ALL_DICTS:
 

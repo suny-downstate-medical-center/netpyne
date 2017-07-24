@@ -249,11 +249,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     print('Plotting raster...')
 
-    # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-    #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-    #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-    #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
     selectedPops = [cell['tags']['pop'] for cell in cells]
@@ -490,12 +485,6 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     print('Plotting spike histogram...')
 
-    # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-    #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-    #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-    #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-
-    
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
         include.remove('eachPop')
@@ -638,12 +627,6 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     '''
 
     print('Plotting firing rate power spectral density (PSD) ...')
-
-    # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-    #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-    #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-    #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-
     
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
@@ -787,10 +770,9 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     print('Plotting recorded cell traces ...')
 
     if include is None: include = [] # If not defined, initialize as empty list
+    global colorList
     if isinstance(colors, list): 
         colorList = colors
-    else: 
-        global colorList
 
     # rerun simulation so new include cells get recorded from
     if rerun: 

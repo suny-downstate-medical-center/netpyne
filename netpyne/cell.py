@@ -375,7 +375,7 @@ class CompartCell (Cell):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] == None: 
+            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]: 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 

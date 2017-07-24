@@ -1,44 +1,91 @@
-from netpyne import specs,sim
+"""
+params.py 
+
+netParams is a dict containing a set of network parameters using a standardized structure
+
+simConfig is a dict containing a set of simulation configurations using a standardized structure
+
+Contributors: salvadordura@gmail.com
+"""
+
+from netpyne import specs, sim
 
 netParams = specs.NetParams()   # object of class NetParams to store the network parameters
 simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
 
-SysIVibrationFreq    = 180
-SysITimeofVibration = 1e9
-STARTTIME         = 1
-INTERVAL         = 1
 
-R_SysISyn_Erev    = 0               #...FR...
-R_SysISyn_tau1    = 0.2
-R_SysISyn_tau2    = 0.2            # deactivation
+###############################################################################
+#
+# MPI HH TUTORIAL PARAMS
+#
+###############################################################################
 
-# populations
-netParams.popParams['FR'] = {'cellType': 'FR', 'numCells': 2, 'cellModel': 'HH3D'}
+###############################################################################
+# NETWORK PARAMETERS
+###############################################################################
 
-# cell rules
-#cellRule0 = netParams.importCellParams(label = 'FR',conds={'cellType': 'FR', 'cellModel': 'HH3D'}, fileName= 'FRcellTemplate.hoc', cellName='FR_Cell',importSynMechs=False)
-cellRule = {'conds': {'cellModel': 'HH3D', 'cellType': 'FR'},  'secs': {}}   # cell rule dict
-nsec = 10
-nseg = 5
-for isec in range(nsec):
-    cellRule['secs']['sec_'+str(isec)] = {'geom': {'nseg': nseg}, 'mechs':{}}
-netParams.cellParams['FRrule'] = cellRule
-
-# synapses
-netParams.synMechParams['FR_syn'] = {'mod': 'Exp2Syn', 'tau1': R_SysISyn_tau1, 'tau2': R_SysISyn_tau2, 'e': R_SysISyn_Erev}
-
-# stimulation
-netParams.stimSourceParams['stim1'] = {'type': 'NetStim', 'interval': 1000/SysIVibrationFreq , 'number': SysITimeofVibration*SysIVibrationFreq/1000, 'start': STARTTIME, 'noise': 0}
-
-# OPTION 1: syns distributed uniformly across sec length 
-netParams.stimTargetParams['stim1->FR'] = {'source': 'stim1', 'conds': {'cellType': 'FR'} ,'weight': 1, 'sec':'all', 'synsPerConn': nsec*nseg , 'delay': 1, 'synMech': 'FR_syn'}
-
-# OPTION 2: 1 syn per segment
-for secName,sec in netParams.cellParams['FRrule']['secs'].iteritems():
-    for iseg in range(sec['geom']['nseg']):
-        netParams.stimTargetParams['stim1->FR_'+secName+'_'+str(iseg)] = \
-        {'source': 'stim1', 'conds': {'cellType': 'FR'} ,'weight': 1, 'sec': secName, 'loc': (iseg+1)*(1.0/nseg)-(0.5/nseg), 'synPerConn':1 , 'delay': 1, 'synMech': 'FR_syn'}
+# Population parameters
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
 
 
-sim.create()
+# Cell parameters
+## PYR cell properties
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}}   # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR'] = cellRule                                                  # add dict to list of cell params
+
+# Synaptic mechanism parameters
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+
+
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+netParams.stimSourceParams['bkg2'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
+
+
+# Connectivity parameters
+netParams.connParams['PYR->PYR'] = {
+    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': 'PYR'},
+    'weight': 0.002,                    # weight of each connection
+    'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'}    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+
+###############################################################################
+# SIMULATION PARAMETERS
+###############################################################################
+
+# Simulation parameters
+simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = False  # show detailed messages 
+
+# Recording 
+simConfig.recordCells = []  # which cells to record from
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+
+# Saving
+simConfig.filename = 'HHTut'  # Set file output name
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = True
+
+# Analysis and plotting 
+simConfig.analysis['plotRaster'] =True
+
+sim.createSimulateAnalyze()
+
+data=sim.loadSimData('HHTut.mat')
+
 

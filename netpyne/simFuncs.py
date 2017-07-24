@@ -240,8 +240,61 @@ def loadAll (filename, data=None):
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
-    loadNet(filename, data=data)
+    data=loadNet(filename, data=data)
     loadSimData(filename, data=data)
+
+
+###############################################################################
+# Support funcs to load from mat
+###############################################################################
+
+def _mat2dict(obj): 
+    '''
+    A recursive function which constructs from matobjects nested dictionaries
+    Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
+    '''
+    import scipy.io as spio
+    import numpy as np
+
+    if isinstance(obj, dict):
+        out = {}
+        for key in obj:
+            if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(obj[key])
+            elif isinstance(obj[key], np.ndarray):
+                out[key] = _mat2dict(obj[key])
+            else:
+                out[key] = obj[key]
+
+    elif isinstance(obj, spio.matlab.mio5_params.mat_struct):
+        out = {}
+        for key in obj._fieldnames:
+            val = obj.__dict__[key]
+            if isinstance(val, spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(val)]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(val)
+            elif isinstance(val, np.ndarray):
+                out[key] = _mat2dict(val)
+            else:
+                out[key] = val
+
+    elif isinstance(obj, np.ndarray):
+        out = []
+        for item in obj:
+            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+                out.append(_mat2dict(item))
+            else:
+                out.append(item)
+
+    else:
+        out = obj
+
+    return out
 
 
 ###############################################################################
@@ -277,8 +330,10 @@ def _loadFile (filename):
 
     # load mat file
     elif ext == 'mat':
-        from scipy.io import savemat
+        from scipy.io import loadmat
         print('Loading file %s ... ' % (filename))
+        dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
+        data = _mat2dict(dataraw)
         #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
         print('Finished saving!')
 

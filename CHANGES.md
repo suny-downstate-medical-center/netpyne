@@ -4,6 +4,8 @@
 
 - Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
 
+- Fixed bug importing cell -- use h.pop_section() to avoid stack overflow
+
 # Version 0.7.1
 
 - Updates and bug fixes of NeuroML importer/exporter

@@ -540,7 +540,8 @@ class CompartCell (Cell):
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
                 else:
-                    sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    sec = next((sec for secName, sec in self.secs.iteritems() if len(sec['topol']) == 0), self.secs[self.secs.keys()[0]])  # root sec (no parents)
                     loc = 0.5
                 nc = None
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)

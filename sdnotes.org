@@ -6998,6 +6998,8 @@ Ohio Wesleyan University
 ** Thalamocortical stimulation (Brenyn Jungmann, Missouri)
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
+** Macaque M1 TMS (Aman Aberra, Duke)
+** CA1/CA3 (Mariane Bezaire, Boston University)
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu
@@ -7028,6 +7030,8 @@ birgit.kriener@medisin.uio.no
 LatimerB@missouri.edu
 bwjmbb@mail.missouri.edu
 ali.taylor331@gmail.com
+aman.aberra@duke.edu
+marianne.bezaire@gmail.com
 
 * Related tools
 ** NEURON

@@ -240,7 +240,7 @@ def loadAll (filename, data=None):
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
-    data=loadNet(filename, data=data)
+    loadNet(filename, data=data)
     loadSimData(filename, data=data)
 
 

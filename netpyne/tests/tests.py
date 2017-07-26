@@ -1058,8 +1058,8 @@ class TestTypeObj(object):
                 if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
 
-                if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
 
                 if 'maxSpikes' in plotRaster and not isinstance( plotRaster['maxSpikes'], int):
                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'maxSpikes': Must be an integer. Value provided is " + str(plotRaster['maxSpikes']) + ".")
@@ -1069,8 +1069,8 @@ class TestTypeObj(object):
                     if not isinstance( plotRaster['orderBy'], list):
                         errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
                     else:
-                        if any ( [x not in 'gid', 'ynorm', 'y' for x in plotRaster['orderBy'] ] )
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+                        if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
 
                 if 'orderInverse' in plotRaster:
 
@@ -1081,15 +1081,205 @@ class TestTypeObj(object):
 
                     if not isinstance( plotRaster['labels'], list):
                         errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
+                    else:
+                        if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
-                # orderInverse boolean
-                # labels: string (in valid list)? (‘legend’|’overlay’))
-                # popRates: string (in valid list)? (‘legend’|’overlay’)
-                #
-                # spikeHist: string (in valid list)? (None|’overlay’|’subplot’)
-                #
-                # spikeHistBin:  (int)
-                #
+                if 'popRates' in plotRaster:
+
+                    if not isinstance( plotRaster['popRates'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                    else:
+                        if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                if 'popRates' in plotRaster:
+
+                    if not isinstance( plotRaster['popRates'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                    else:
+                        if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                if 'spikeHist' in plotRaster:
+
+                    if not isinstance( plotRaster['spikeHist'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Must be a list. Value provided is " + str(plotRaster['spikeHist']) + ".")
+                    else:
+                        if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['spikeHist'] ] )
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+            if 'plotSpikeHist' in analysis:
+
+                plotSpikeHist = analysis['plotSpikeHist']
+
+                if not isinstance ( plotSpikeHist, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikeHist': Must be a dict.  Value provided is " + str(plotSpikeHist) + "."")
+
+                if 'include' in plotSpikeHist and not isinstance( plotSpikeHist['include'], list):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikeHist'->'include': Must be a list. Value provided is " + str(plotSpikeHist['include']) + ".")
+
+                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+
+                if 'orderInverse' in plotRaster:
+
+                    if not isinstance( plotRaster['orderInverse'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
+
+                if 'overlay' in plotRaster:
+
+                    if not isinstance( plotRaster['overlay'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'overlay': Must be boolean. Value provided is " + str(plotRaster['overlay']) + ".")
+
+                if 'graphType' in plotRaster and plotRaster['graphType'] not in ['line','bar']:
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'graphType': GraphType must be in " + str(['line','bar']) + ". Value provided is " + str(plotRaster['graphType']) + ".")
+
+                if 'yaxis' in plotRaster and plotRaster['yaxis'] not in ['rate','count']:
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'yaxis': yaxis must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['yaxis']) + ".")
+
+                if 'figSize' in plotRaster and not isinstance (plotRaster['figSize'], tuple):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'figSize': figSize must be tuple if specified". Value provided is " + str(plotRaster['figSize']) + ".")
+
+                if 'binSize' in plotRaster and not isinstance( plotRaster['binSize'], int):
+                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'binSize': Must be an integer. Value provided is " + str(plotRaster['binSize']) + ".")
+
+                if 'showFig' in plotRaster:
+
+                    if not isinstance( plotRaster['showFig'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'showFig': Must be boolean. Value provided is " + str(plotRaster['showFig']) + ".")
+
+            if 'plotSpikePSD' in analysis:
+
+                plotSpikePSD = analysis['plotSpikePSD']
+                if not isinstance ( plotSpikePSD, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': Must be a dict.  Value provided is " + str(plotSpikePSD) + "."")
+
+                if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
+
+                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+
+                if 'overlay' in plotSpikePSD:
+
+                    if not isinstance( plotSpikePSD['overlay'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'overlay': Must be boolean. Value provided is " + str(plotSpikePSD['overlay']) + ".")
+
+                if 'Fs' in plotSpikePSD and not isinstance ( plotSpikePSD['Fs'] , numbers.Real ) :
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'Fs': Fs must be float. Value provided is " + str(plotSpikePSD['Fs']) + ".")
+
+                if 'figSize' in plotSpikePSD and not isinstance (plotSpikePSD['figSize'], tuple):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'figSize': figSize must be tuple if specified". Value provided is " + str(plotSpikePSD['figSize']) + ".")
+
+                if 'binSize' in plotSpikePSD and not isinstance( plotSpikePSD['binSize'], int):
+                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'binSize': Must be an integer. Value provided is " + str(plotSpikePSD['binSize']) + ".")
+
+                if 'showFig' in plotSpikePSD:
+
+                    if not isinstance( plotSpikePSD['showFig'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'showFig': Must be boolean. Value provided is " + str(plotSpikePSD['showFig']) + ".")
+
+            if 'plotTraces' in analysis:
+
+                plotTraces = analysis['plotTraces']
+                if not isinstance ( plotTraces, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces': Must be a dict.  Value provided is " + str(plotTraces) + "."")
+
+                if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
+
+                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+
+                if 'overlay' in plotTraces and not isinstance( plotTraces['overlay'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'overlay': Must be boolean. Value provided is " + str(plotTraces['overlay']) + ".")
+
+                if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
+
+                if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
+
+                if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")
+
+                if 'figSize' in plotTraces and not isinstance (plotTraces['figSize'], tuple):
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotTraces['figSize']) + ".")
+
+                if 'saveFig' in plotTraces and not isinstance (plotTraces['saveFig'], tuple):
+                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'saveFig': saveFig must be tuple if specified. Value provided is " + str(plotTraces['saveFig']) + ".")
+
+            if 'plotShape' in analysis:
+
+                plotShapes = analysis['plotShapes']
+                if not isinstance ( plotShapes, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict.  Value provided is " + str(plotShapes) + "."")
+
+                if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+
+                if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
+
+            if 'plotConn' in analysis:
+
+                plotConn = analysis['plotConn']
+
+                if not isinstance ( plotConn, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + "."")
+
+                if 'include' in plotConn and not isinstance( plotConn['include'], list):
+                    errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
+
+                if 'feature' in plotConn:
+                    if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
+
+                if 'groupBy' in plotConn:
+                    if plotConn['spikeHist'] not in ['pop', 'cell']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
+
+                if 'orderBy' in plotConn:
+                    if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
+
+                if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
+
+            if 'plotConn' in analysis:
+
+                plotConn = analysis['plotConn']
+
+                if not isinstance ( plotConn, dict):
+                    errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + "."")
+
+                if 'include' in plotConn and not isinstance( plotConn['include'], list):
+                    errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
+
+                if 'feature' in plotConn:
+                    if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
+
+                if 'groupBy' in plotConn:
+                    if plotConn['spikeHist'] not in ['pop', 'cell']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
+
+                if 'orderBy' in plotConn:
+                    if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
+
+                if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
+
+# include: List of cells to show ([‘all’|,’allCells’|,’allNetStims’|,120|,’L4’|,(‘L2’, 56)|,(‘L5’,[4,5,6])])
+# showConns: Whether to show connections or not (True|False)
+# view: Perspective view, either front (‘xy’) or top-down (‘xz’)
+# figSize: Size of figure ((width, height))
+# saveData: File name where to save the final data used to generate the figure (None|’fileName’)
+# saveFig: File name where to save the figure (None|’fileName’)
+# showFig: Whether to show the figure or not (True|False)
+
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             e.args += ( )

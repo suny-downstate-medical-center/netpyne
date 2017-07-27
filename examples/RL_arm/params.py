@@ -92,31 +92,31 @@ STDPparams = {'hebbwt': 0.00001, 'antiwt':-0.00001, 'wmax': 50, 'RLon': 1 , 'RLh
 # Background and stims
 
 netParams.stimTargetParams['bg->E'] = {'source': 'backgroundE', 
-    'conds': {'popLabel': ['ES', 'EM']}, # background -> Exc
+    'conds': {'pop': ['ES', 'EM']}, # background -> Exc
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
     'synMech': 'NMDA'}  
 
 netParams.stimTargetParams['bg->I'] = {'source': 'backgroundI', 
-    'conds': {'popLabel': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
+    'conds': {'pop': ['ISL', 'IML', 'IS', 'IM']}, # background -> Inh
     'weight': 0.05, 
     'delay': 'uniform(1,5)',
     'synMech': 'NMDA'}   
 
 netParams.stimTargetParams['Pstim_sh->Psh'] = {'source': 'stimPsh', 
-    'conds': {'popLabel': 'Psh'},  # Pstim_sh -> P_sh
+    'conds': {'pop': 'Psh'},  # Pstim_sh -> P_sh
     'weight': 0.1,                   
     'delay': 1,     
     'synMech': 'NMDA'} 
 
 netParams.stimTargetParams['Pstim_el->Pel'] = {'source': 'stimPel', 
-    'conds': {'popLabel': 'Pel'},  # Pstim_el -> P_el
+    'conds': {'pop': 'Pel'},  # Pstim_el -> P_el
     'weight': 0.1,                  
     'delay': 1,     
     'synMech': 'NMDA'}
 
 netParams.stimTargetParams['EMstim->EM'] = {'source': 'stimEM', 
-    'conds': {'popLabel': 'EM'}, # EMstim-> EM
+    'conds': {'pop': 'EM'}, # EMstim-> EM
     'weight': 0.4, 
     'delay': 'uniform(1,5)',
     'synMech': 'NMDA'}  
@@ -125,7 +125,7 @@ netParams.stimTargetParams['EMstim->EM'] = {'source': 'stimEM',
 # Sensory
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': ['Psh', 'Pel']}, 'postConds': {'popLabel': 'ES'},  # P_sh,P_el -> ES
+    {'preConds': {'pop': ['Psh', 'Pel']}, 'postConds': {'pop': 'ES'},  # P_sh,P_el -> ES
     'weight': 4,      
     'probability': 0.1125,              
     'delay': 5,     
@@ -133,7 +133,7 @@ netParams.addConnParams(None,
     'plast': {'mech': 'STDP', 'params': STDPparams}}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'ES'},  # ES -> ES 
+    {'preConds': {'pop': 'ES'}, 'postConds': {'pop': 'ES'},  # ES -> ES 
     'weight': 1.98,      
     'probability': 0.05625,              
     'delay': 5,     
@@ -141,21 +141,21 @@ netParams.addConnParams(None,
 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'IS'},  # ES -> IS
+    {'preConds': {'pop': 'ES'}, 'postConds': {'pop': 'IS'},  # ES -> IS
     'weight': 0.48375,      
     'probability': 1.150,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'ISL'},  # ES -> ISL
+    {'preConds': {'pop': 'ES'}, 'postConds': {'pop': 'ISL'},  # ES -> ISL
     'weight': 0.57375,      
     'probability': 0.575,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ES'}, 'postConds': {'popLabel': 'EM'},  # ES -> EM (plastic)
+    {'preConds': {'pop': 'ES'}, 'postConds': {'pop': 'EM'},  # ES -> EM (plastic)
     'weight': 2.640,      
     'probability': 0.33750,              
     'delay': 5,     
@@ -164,7 +164,7 @@ netParams.addConnParams(None,
 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'ES'},  # IS -> ES
+    {'preConds': {'pop': 'IS'}, 'postConds': {'pop': 'ES'},  # IS -> ES
     'weight': 4.5,      
     'probability': 0.495,              
     'delay': 5,     
@@ -172,35 +172,35 @@ netParams.addConnParams(None,
 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'IS'},  # IS -> IS
+    {'preConds': {'pop': 'IS'}, 'postConds': {'pop': 'IS'},  # IS -> IS
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IS'}, 'postConds': {'popLabel': 'ISL'},  # IS -> ISL
+    {'preConds': {'pop': 'IS'}, 'postConds': {'pop': 'ISL'},  # IS -> ISL
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'IS'},  # ISL -> ES
+    {'preConds': {'pop': 'ISL'}, 'postConds': {'pop': 'IS'},  # ISL -> ES
     'weight': 2.25,      
     'probability': 0.39375,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'IS'},  # ISL -> IS
+    {'preConds': {'pop': 'ISL'}, 'postConds': {'pop': 'IS'},  # ISL -> IS
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'ISL'}, 'postConds': {'popLabel': 'ISL'},  # ISL -> ISL
+    {'preConds': {'pop': 'ISL'}, 'postConds': {'pop': 'ISL'},  # ISL -> ISL
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     
@@ -208,7 +208,7 @@ netParams.addConnParams(None,
 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'ES'},  # EM -> ES 
+    {'preConds': {'pop': 'EM'}, 'postConds': {'pop': 'ES'},  # EM -> ES 
     'weight': 0.72,      
     'probability': 0.01125,              
     'delay': 5,     
@@ -219,63 +219,63 @@ netParams.addConnParams(None,
 # Motor
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'EM'},  # EM -> EM 
+    {'preConds': {'pop': 'EM'}, 'postConds': {'pop': 'EM'},  # EM -> EM 
     'weight': 1.782,      
     'probability': 0.05625,              
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'IM'},  # EM -> IM 
+    {'preConds': {'pop': 'EM'}, 'postConds': {'pop': 'IM'},  # EM -> IM 
     'weight': 1.15,      
     'probability': 0.48375,          
     'delay': 5,     
     'synMech': 'AMPA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'EM'}, 'postConds': {'popLabel': 'IML'},  # EM -> IML
+    {'preConds': {'pop': 'EM'}, 'postConds': {'pop': 'IML'},  # EM -> IML
     'weight': 0.575,      
     'probability': 0.57375,              
     'delay': 5,     
     'synMech': 'AMPA'})  
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'EM'},  # IM -> EM
+    {'preConds': {'pop': 'IM'}, 'postConds': {'pop': 'EM'},  # IM -> EM
     'weight': 9,      
     'probability': 0.495,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'IM'},  # IM -> IM
+    {'preConds': {'pop': 'IM'}, 'postConds': {'pop': 'IM'},  # IM -> IM
     'weight': 4.5,      
     'probability': 0.69750,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IM'}, 'postConds': {'popLabel': 'IML'},  # IM -> IML 
+    {'preConds': {'pop': 'IM'}, 'postConds': {'pop': 'IML'},  # IM -> IML 
     'weight': 4.5,      
     'probability': 0.38250,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'EM'},  # IML -> EM 
+    {'preConds': {'pop': 'IML'}, 'postConds': {'pop': 'EM'},  # IML -> EM 
     'weight': 2.49,      
     'probability': 0.39375,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'IM'},  # IML -> IM 
+    {'preConds': {'pop': 'IML'}, 'postConds': {'pop': 'IM'},  # IML -> IM 
     'weight': 2.25,      
     'probability': 0.59625,              
     'delay': 5,     
     'synMech': 'GABA'}) 
 
 netParams.addConnParams(None,
-    {'preConds': {'popLabel': 'IML'}, 'postConds': {'popLabel': 'IML'},  # IML -> IML
+    {'preConds': {'pop': 'IML'}, 'postConds': {'pop': 'IML'},  # IML -> IML
     'weight': 4.5,      
     'probability': 0.10125,              
     'delay': 5,     

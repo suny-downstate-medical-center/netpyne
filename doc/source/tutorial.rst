@@ -56,9 +56,14 @@ If you want to avoid typing that long line every time, you can download this sim
 
 Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
 
-.. image:: figs/tut1.png
-	:width: 100%
-	:align: center
+.. image:: figs/tut1_net.png
+	:width: 30%
+
+.. image:: figs/tut1_raster.png
+	:width: 33%
+
+.. image:: figs/tut1_traces.png
+	:width: 33%
 
 
 Congratulations! You have created and simulated a biological neuronal network in NEURON! 
@@ -167,8 +172,8 @@ Take a moment to examine the nested dictionary structure used to define the cell
 	netParams.cellParams['PYRrule'] = {		# cell rule label
 		'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
 		'secs': {'soma':					# sections 
-					{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-					'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
+			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
+			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
 
 
 All methods are equally valid as long as the resulting structure looks like this (order of elements doesn't matter in dictionaries)::
@@ -176,7 +181,7 @@ All methods are equally valid as long as the resulting structure looks like this
 	>>> netParams.cellParams['PYRrule']
 	{'conds': {'cellType': 'PYR'},
  	'secs': {'soma': {'geom': {'L': 18.8, 'Ra': 123.0, 'diam': 18.8},
-    'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
+    	'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
 
 
 Synaptic mechanisms parameters
@@ -200,7 +205,7 @@ Stimulation
 Let's now add a some background stimulation to the cells using ``NetStim`` (NEURON's artificial spike generator). We will create a source of stimulation labeled ``bkg`` and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
 
 	# Stimulation parameters
-	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5,}
+	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
 
 Next we will specify what cells will be targeted by this stimulation. In this case we want all pyramidal cells so we set the conditions to ``{'cellType': 'PYR'}``. Finally we want the NetStims to be connected with a weight of 0.01, a delay of 5 ms, and to target the ``exc`` synaptic mechanism::
 
@@ -228,12 +233,12 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
-		'preConds': {'popLabel': 'S'}, # conditions of presyn cells
-		'postConds': {'popLabel': 'M'}, # conditions of postsyn cells
+		'preConds': {'pop': 'S'}, # conditions of presyn cells
+		'postConds': {'pop': 'M'}, # conditions of postsyn cells
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
-		'synMech': 'exc'})   		# synaptic mechanism 
+		'synMech': 'exc'}   		# synaptic mechanism 
 
 
 Simulation configuration options
@@ -290,10 +295,14 @@ If mpi working and have ``runsim`` shell script::
 
 You should get the raster plot and voltage trace figures shown below. Notice how the ``M`` population firing rate is higher than that of the ``S`` population. This makes sense since they both receive the same background inputs, but ``S`` cells connect randomly to ``M`` cells thus increasing the ``M`` firing rate. 
 
-.. image:: figs/tut2.png
-	:width: 100%
-	:align: center
+.. image:: figs/tut2_net.png
+	:width: 30%
 
+.. image:: figs/tut2_raster.png
+	:width: 33%
+
+.. image:: figs/tut2_traces.png
+	:width: 33%
 
 Feel free to explore the effect of changing any of the model parameters, e.g. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 
@@ -317,7 +326,7 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams.connParams['S->M'] = {'preConds': {'popLabel': 'S'}, 'postConds': {'popLabel': 'M'},  #  S -> M
+	netParams.connParams['S->M'] = {'preConds': {'pop': 'S'}, 'postConds': {'pop': 'M'},  #  S -> M
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
@@ -420,11 +429,11 @@ As in previous examples we also add the parameters of the excitatory and inhibit
 	netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
 
-In terms of stimulation, we'll add background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, gauss(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background stimulation looks like this::
+In terms of stimulation, we'll add background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, normal(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background stimulation looks like this::
 
 	# Stimulation parameters
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
-	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, gauss(5,2))', 'synMech': 'exc'}
+	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
 
 We can now add the standard simulation configuration options and the code to create and run the network. Notice that we have chosen to record and plot voltage traces of one cell in each of the excitatory populations (``{'include': [('E2',0), ('E4', 0), ('E5', 5)]})``), plot the raster ordered based on cell cortical depth (``{'orderBy': 'y', 'orderInverse': True})``), show a 2D visualization of cell positions and connections, and plot the connectivity matrix::
@@ -450,10 +459,17 @@ We can now add the standard simulation configuration options and the code to cre
 	   
 If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input:
 
-.. image:: figs/tut5_1.png
-	:width: 95%
-	:align: center
+.. image:: figs/tut5_conn_1.png
+	:width: 17%
 
+.. image:: figs/tut5_net_1.png
+	:width: 17%
+
+.. image:: figs/tut5_raster_1.png
+	:width: 35%
+
+.. image:: figs/tut5_traces_1.png
+	:width: 30%
 
 Let's now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First, let's  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 
 
@@ -471,17 +487,25 @@ Finally, we can specify the delay based on the distance between the cells (``dis
 
 Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells:
 
-.. image:: figs/tut5_2.png
-	:width: 95%
-	:align: center
+.. image:: figs/tut5_conn_2.png
+	:width: 17%
+
+.. image:: figs/tut5_net_2.png
+	:width: 17%
+
+.. image:: figs/tut5_raster_2.png
+	:width: 35%
+
+.. image:: figs/tut5_traces_2.png
+	:width: 30%
 
 
-Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``popLabel`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
+Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``pop`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
 To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 	netParams.connParams['I->E'] = {
-	 'preConds': {'cellType': 'I'}, 'postConds': {'popLabel': ['E2','E4','E5']},       #  I -> E
+	 'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
 	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
 	  'weight': 0.001,                                     # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
@@ -489,9 +513,17 @@ To make the probability of connection decay exponentiall as a function of distan
 
 Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.
 
-.. image:: figs/tut5_3.png
-	:width: 95%
-	:align: center
+.. image:: figs/tut5_conn_3.png
+	:width: 17%
+
+.. image:: figs/tut5_net_3.png
+	:width: 17%
+
+.. image:: figs/tut5_raster_3.png
+	:width: 35%
+
+.. image:: figs/tut5_traces_3.png
+	:width: 30%
 
 
 The full tutorial code for this example is available here: :download:`tut5.py <code/tut5.py>`.
@@ -513,12 +545,12 @@ Below we add four typical NEURON sources of stimulation, each of a different typ
 	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1}
 
 
-Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'popLabel', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
+Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
 
-	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'popLabel':'S', 'cellList': range(15)}}
-	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'popLabel':'S', 'ynorm': [0,0.5]}}
-	netParams.stimTargetParams['Input_3->M1'] = {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'popLabel':'M', 'cellList': [2,4,5,8,10,15,19]}}
-	netParams.stimTargetParams['Input_4->PYR'] = {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+gauss(0.2,0.05)','delay': 1, 'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}}
+	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'pop':'S', 'cellList': range(15)}}
+	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'S', 'ynorm': [0,0.5]}}
+	netParams.stimTargetParams['Input_3->M1'] = {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'pop':'M', 'cellList': [2,4,5,8,10,15,19]}}
+	netParams.stimTargetParams['Input_4->PYR'] = {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+normal(0.2,0.05)','delay': 1, 'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}}
 
 
 .. note:: The stimTargetParams of NetStims require connection parameters (e.g. weight and delay), since a new connection will be created to map/apply the NetStim to each target cell. 
@@ -530,7 +562,7 @@ Running the above network with different types of stimulation should produce the
 
 The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
-.. image:: figs/tut6.png
+.. image:: figs/tut6_raster.png
 	:width: 50%
 	:align: center
 
@@ -568,12 +600,12 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 
 	# Stimulation parameters
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
-	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'popLabel': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
+	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
 
 	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
-	    'preConds': {'popLabel': 'hop'}, 'postConds': {'popLabel': 'hop'},
+	    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
 	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5}       				    # delay 
@@ -621,11 +653,17 @@ Finally, we add the code to create the network and run the simulation, but for i
 	sim.analysis.plotData()                   # plot spike raster
 
 
-If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.28 (vertical red lines illustrate poor synchrony):
+If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.26 (vertical red lines illustrate poor synchrony):
 
-.. image:: figs/tut7_1.png
-	:width: 100%
-	:align: center
+.. image:: figs/tut7_net_1.png
+	:width: 30%
+
+.. image:: figs/tut7_raster_1.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_1.png
+	:width: 32%
+
 
 .. note:: We can now access the instantiated network with all the cell and connection metadata, as well as the associated NEURON objects (Sections, Netcons, etc.). The ``sim`` object contains a ``net`` object which, in turn, contains a list of Cell objects called ``cells``. Each Cell object contains a structure with its tags (``tags``), sections (``secs``), connections (``conns``), and external inputs (``stims``). NEURON objects are contained within this python hierarchical structure. See :ref:`data_model` for details.
 
@@ -662,18 +700,20 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 
 .. note:: that for the condition we have used the `hop->hop` label, which makes reference to the set of recurrent connections previously created.
 
-The resulting plots show that the increased mutual inhibition synchronizes the network activity, increasing the synchrony measure to 0.70:
+The resulting plots show that the increased mutual inhibition synchronizes the network activity, increasing the synchrony measure to 0.69:
 
-.. image:: figs/tut7_2.png
-	:width: 70%
-	:align: center
+.. image:: figs/tut7_raster_2.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_2.png
+	:width: 32%
 
 
 Additionally, we could also modify some of the cell properties to observe how this affects synchrony. The code below modifies the soma length of all cells in the 'hop' population to 160 um::
 
 
 	# modify cells geometry
-	sim.net.modifyCells({'conds': {'popLabel': 'hop'}, 
+	sim.net.modifyCells({'conds': {'pop': 'hop'}, 
 	                    'secs': {'soma': {'geom': {'L': 160}}}})
 
 	sim.simulate()
@@ -686,9 +726,11 @@ Additionally, we could also modify some of the cell properties to observe how th
 
 The resulting plot shows decreased firing rate and increased synchrony due to the new cell geometry:
 
-.. image:: figs/tut7_3.png
-	:width: 70%
-	:align: center
+.. image:: figs/tut7_raster_3.png
+	:width: 33%
+
+.. image:: figs/tut7_traces_3.png
+	:width: 32%
 
 
 The full tutorial code for this example is available here: :download:`tut7.py <code/tut7.py>`.

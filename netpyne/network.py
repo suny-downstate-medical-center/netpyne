@@ -144,7 +144,12 @@ class Network (object):
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
                             params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
                             params['synMech'] = target.get('synMech', None)
+                            
                         
+                        if 'originalFormat' in source and source['originalFormat'] == 'NeuroML2':
+                            if 'weight' in target:
+                                params['weight'] = target['weight']
+
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
 

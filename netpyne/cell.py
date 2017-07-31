@@ -1332,7 +1332,7 @@ class PointCell (Cell):
                     if 'interval' in pulse:
                         interval = pulse['interval'] 
                     elif 'rate' in pulse:
-                        interval = 1000/pulse['rate']
+                        interval = 1000.0/pulse['rate']
                     else:
                         print 'Error: Vecstim pulse missing "rate" or "interval" parameter'
                         return

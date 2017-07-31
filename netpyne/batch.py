@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 import datetime
 from itertools import product
-from popen2 import popen2
+from subprocess import Popen, PIPE
 from time import sleep
 import imp
 from netpyne import specs
@@ -193,7 +193,8 @@ class Batch(object):
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
 
-                            output, input = popen2('qsub') # Open a pipe to the qsub command.
+                            proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+                            (output, input) = (proc.stdin, proc.stdout)
 
                             jobString = """#!/bin/bash 
                             #PBS -N %s
@@ -258,8 +259,7 @@ wait
                                 text_file.write("%s" % jobString)
 
                             #subprocess.call
-                            output, pinput = popen2('sbatch '+batchfile) # Open a pipe to the qsub command.
-                            pinput.close()
+                            proc = Popen('sbatch '+batchfile, stdout=PIPE, stderr=PIPE)
 
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py

@@ -28,6 +28,22 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
+def tupleToStr (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict]:
+                tupleToStr(item)
+            elif type(item) == tuple:
+                obj[obj.index(item)] = str(item)
+
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict]:
+                tupleToStr(val)
+            elif type(val) == tuple:
+                obj[key] = str(val) # also replace empty dicts with empty list
+    return obj
+
 
 class Batch(object):
 
@@ -64,7 +80,7 @@ class Batch(object):
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print('Saving batch to %s ... ' % (filename))
             with open(filename, 'w') as fileObj:
-                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
+                json.dump(tupleToStr(dataSave), fileObj, indent=4, sort_keys=True)
 
 
     def setCfgNestedParam(self, paramLabel, paramVal):

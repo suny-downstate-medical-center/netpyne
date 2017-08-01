@@ -25,7 +25,7 @@ class RunNetPyneTests():
         def __init__ (self):
             self.paramsMap = {}
             self.netPyneTestObj = SimTestObj(verboseFlag = True)
-            self.loadTestsWithParams()
+            #self.loadTestsWithParams()
             self.loadSimConfigTests()
             self.runTestsWithParams()
 
@@ -33,7 +33,7 @@ class RunNetPyneTests():
 
             # print ( " loading tests ")
             self.paramsMap["simConfig"] = {}
-            self.paramsMap["simConfig"]["duration"] = []
+            self.paramsMap["simConfig"]["durationTest"] = []
 
             simConfigParams = ParamsObj()
 
@@ -50,8 +50,7 @@ class RunNetPyneTests():
             simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
             simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
 
-            simConfigParams.simConfig.popParams['validDurationParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
-            self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
+            self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
 
         def loadTestsWithParams(self):
 
@@ -2043,6 +2042,7 @@ class RunNetPyneTests():
                 for paramsObj in paramObjList:
                     #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
+                    self.netPyneTestObj.simConfig = paramsObj.simConfig
                     self.netPyneTestObj.runTests()
 
 runNetPyneTests = RunNetPyneTests()

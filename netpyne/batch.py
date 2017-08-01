@@ -63,7 +63,7 @@ class Batch(object):
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print('Saving batch to %s ... ' % (filename))
             with open(filename, 'w') as fileObj:
-                json.dump(tupleToStr(dataSave), fileObj, indent=4, sort_keys=True)
+                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
 
     def setCfgNestedParam(self, paramLabel, paramVal):

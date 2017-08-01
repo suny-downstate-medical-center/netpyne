@@ -31,9 +31,10 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 
 class Batch(object):
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, initCfg={}):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
+        self.initCfg = initCfg
         self.netParamsFile = netParamsFile
         self.saveFolder = '/'+self.batchLabel
         self.method = 'grid'
@@ -66,6 +67,18 @@ class Batch(object):
                 json.dump(dataSave, fileObj, indent=4, sort_keys=True)
 
 
+    def setCfgNestedParam(self, paramLabel, paramVal):
+        if isinstance(paramLabel, tuple):
+            container = self.cfg
+            for ip in range(len(paramLabel)-1):
+                if isinstance(container, specs.SimConfig):
+                    container = getattr(container, paramLabel[ip])
+                else:
+                    container = container[paramLabel[ip]]
+            container[paramLabel[-1]] = paramVal
+        else:
+            setattr(self.cfg, paramLabel, paramVal) # set simConfig params
+
     def run(self):
         if self.method in ['grid','list']:
             # create saveFolder
@@ -92,6 +105,11 @@ class Batch(object):
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
             self.cfg = cfgModule.cfg
+
+            # set initial cfg initCfg
+            if len(self.initCfg) > 0:
+                for paramLabel, paramVal in self.initCfg.iteritems():
+                    self.setCfgNestedParam(paramLabel, paramVal)
 
             # iterate over all param combinations
             if self.method == 'grid':
@@ -145,16 +163,8 @@ class Batch(object):
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
-                        if isinstance(paramLabel, tuple):
-                            container = self.cfg
-                            for ip in range(len(paramLabel)-1):
-                                if isinstance(container, specs.SimConfig):
-                                    container = getattr(container, paramLabel[ip])
-                                else:
-                                    container = container[paramLabel[ip]]
-                            container[paramLabel[-1]] = paramVal
-                        else:
-                            setattr(self.cfg, paramLabel, paramVal) # set simConfig params
+                        self.setCfgNestedParam(paramLabel, paramVal)
+
                         print str(paramLabel)+' = '+str(paramVal)
                         
                     # set simLabel and jobName

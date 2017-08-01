@@ -88,6 +88,17 @@ class Batch(object):
                 if not os.path.exists(self.saveFolder):
                     print ' Could not create', self.saveFolder
 
+            # import cfg
+            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            self.cfg = cfgModule.cfg
+
+            # set initial cfg initCfg
+            if len(self.initCfg) > 0:
+                for paramLabel, paramVal in self.initCfg.iteritems():
+                    self.setCfgNestedParam(paramLabel, paramVal)
+                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
+
             # save Batch dict as json
             targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
             self.save(targetFile)
@@ -100,16 +111,6 @@ class Batch(object):
             netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
             os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
 
-            # import cfg
-            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-            self.cfg = cfgModule.cfg
-
-            # set initial cfg initCfg
-            if len(self.initCfg) > 0:
-                for paramLabel, paramVal in self.initCfg.iteritems():
-                    self.setCfgNestedParam(paramLabel, paramVal)
-                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
 
             # iterate over all param combinations
             if self.method == 'grid':

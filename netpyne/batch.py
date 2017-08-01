@@ -28,23 +28,6 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
-def tupleToStr (obj):
-    if type(obj) == list:
-        for item in obj:
-            if type(item) in [list, dict]:
-                tupleToStr(item)
-            elif type(item) == tuple:
-                obj[obj.index(item)] = str(item)
-
-    elif type(obj) == dict:
-        for key,val in obj.iteritems():
-            if type(val) in [list, dict]:
-                tupleToStr(val)
-            elif type(val) == tuple:
-                obj[key] = str(val) # also replace empty dicts with empty list
-    return obj
-
-
 class Batch(object):
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, initCfg={}):
@@ -126,6 +109,7 @@ class Batch(object):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.iteritems():
                     self.setCfgNestedParam(paramLabel, paramVal)
+                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
 
             # iterate over all param combinations
             if self.method == 'grid':

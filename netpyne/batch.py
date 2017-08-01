@@ -28,6 +28,20 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
+def tupleToStr (obj):
+    if type(obj) == list:
+        for item in obj:
+            if type(item) in [list, dict]:
+                tupleToStr(item)
+    elif type(obj) == dict:
+        for key,val in obj.iteritems():
+            if type(val) in [list, dict]:
+                tupleToStr(val)
+            elif type(key) == tuple:
+                obj[str(key)] = obj.pop(key) 
+    return obj
+
+
 class Batch(object):
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, initCfg={}):
@@ -56,7 +70,7 @@ class Batch(object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'batch': self.__dict__}
+        dataSave = {'batch': tupleToStr(self.__dict__)}
         if ext == 'json':
             import json
             #from json import encoder
@@ -88,16 +102,6 @@ class Batch(object):
                 if not os.path.exists(self.saveFolder):
                     print ' Could not create', self.saveFolder
 
-            # import cfg
-            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-            self.cfg = cfgModule.cfg
-
-            # set initial cfg initCfg
-            if len(self.initCfg) > 0:
-                for paramLabel, paramVal in self.initCfg.iteritems():
-                    self.setCfgNestedParam(paramLabel, paramVal)
-                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
 
             # save Batch dict as json
             targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
@@ -110,6 +114,17 @@ class Batch(object):
             # copy netParams source to folder
             netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
             os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
+            
+            # import cfg
+            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            self.cfg = cfgModule.cfg
+
+            # set initial cfg initCfg
+            if len(self.initCfg) > 0:
+                for paramLabel, paramVal in self.initCfg.iteritems():
+                    self.setCfgNestedParam(paramLabel, paramVal)
+                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
 
 
             # iterate over all param combinations

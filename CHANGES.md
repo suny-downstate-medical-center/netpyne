@@ -6,6 +6,8 @@
 
 - Made root section (with no parents) the source of spikes by default (issue #246)
 
+- Added option to set initial cfg in batch sims
+
 - Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
 
 - Fixed bug importing cell -- use h.pop_section() to avoid stack overflow

@@ -263,8 +263,10 @@ class TestTypeObj(object):
 
     def testIsFloat(self,val): # TEST_TYPE_IS_FLOAT
         try:
+            #print (" in float *** = " + str(val))
             assert (isinstance (val,numbers.Real))
         except AssertionError as e:
+            #print ( " !!!!! in float error ")
             e.args += (val,)
             raise
 
@@ -1445,9 +1447,9 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "durationTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_INT]
-        testObj.messageText = ["SimConfig->'duration':Duration is not an integer."]
+        testObj.testParameterValue = "self.simConfig.duration"
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT]
+        testObj.messageText = ["SimConfig->'duration':Duration is not an float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["durationTest"] = testObj
@@ -1458,7 +1460,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "dtTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.dt"
         testObj.testTypes = [TEST_TYPE_IS_FLOAT]
         testObj.messageText = ["simConfig->'dt':dt is not a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1583,7 +1585,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "printPopAvgRatesTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.printPopAvgRates"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'printPopAvgRates':printPopAvgRates is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1595,7 +1597,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "includeParamsLabelTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.includeParamsLabel"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'includeParamsLabel':includeParamsLabel is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1607,7 +1609,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "timingTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.timing"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'timing':timing is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1619,7 +1621,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "saveTimingTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveTiming"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'saveTiming':saveTiming is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1631,7 +1633,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "verboseTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.verbose"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'verbose':verbose is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1643,7 +1645,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "recordCellsTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.recordCells"
         testObj.testTypes = [TEST_TYPE_IS_LIST]
         testObj.messageText = ["simConfig->'recordCells':recordCells is not a list."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1655,7 +1657,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "recordTracesTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "recordTraces"
         testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
         testObj.testValueList = ['sec','loc','var']
         testObj.messageText = ["simConfig->'recordTraces':recordTraces is not a dict.","SimConfig->'recordTracesTest':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'."]
@@ -1666,7 +1668,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "saveDataInclude"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveData"
         testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
         testObj.testValueList = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
         testObj.messageText = ["simConfig->'saveDataInclude':recordTraces is not a dict.","SimConfig->'saveDataInclude':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'." ]
@@ -1678,7 +1680,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "recordStimTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.recordStim"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'recordStim':recordStim is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1690,7 +1692,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "recordStepTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.recordStep"
         testObj.testTypes = [TEST_TYPE_IS_FLOAT]
         testObj.messageText = ["SimConfig->'recordStep':recordStep is not a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -2400,7 +2402,7 @@ class SimTestObj(object):
 
     def execRunTests(self, testObj, params):
 
-        print ( " !!!!!!!! for test " + str(testObj.testTypes))
+        # print ( " !!!!!!!! for test " + str(testObj.testTypes))
 
         for testIndex, testType in enumerate(testObj.testTypes):
 
@@ -2571,7 +2573,8 @@ class SimTestObj(object):
                     for paramLabel, paramValues in params.items():
 
                         try:
-                            self.testTypeObj.testIsInt(testObj.testParameterValue, paramValues)
+                            #print (" in int = " + str(paramValues))
+                            self.testTypeObj.testIsInt(testObj.testParameterValue)
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                                 print ( "PASSED" )
@@ -2585,6 +2588,7 @@ class SimTestObj(object):
 
                         try:
                             paramName = eval(testObj.testParameterValue)
+                            #print (" in int 2 = " + str(paramName))
 
                             self.testTypeObj.testIsInt(paramName)
                             if self.verboseFlag:
@@ -2595,7 +2599,44 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " ."
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "."
+                            except:
+                                pass
+
+            elif testType == TEST_TYPE_IS_FLOAT:
+
+                if isinstance(params, dict):
+
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+                            #print (" in float = " + str(paramValues))
+                            self.testTypeObj.testIsFloat(testObj.testParameterValue)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+
+                else:
+
+                        try:
+                            paramName = eval(testObj.testParameterValue)
+                            #print (" in float 2 = " + str(paramName))
+
+                            self.testTypeObj.testIsFloat(paramName)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                            try:
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "."
                             except:
                                 pass
 

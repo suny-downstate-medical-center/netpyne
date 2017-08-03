@@ -44,7 +44,7 @@ def tupleToStr (obj):
 
 class Batch(object):
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, grouped=None, initCfg={}):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.initCfg = initCfg
@@ -56,9 +56,9 @@ class Batch(object):
         if params:
             for k,v in params.iteritems():
                 self.params.append({'label': k, 'values': v})
-        if grouped:
+        if groupedParams:
             for p in self.params:
-                if p['label'] in grouped: p['group'] = True
+                if p['label'] in groupedParams: p['group'] = True
     
     def save(self, filename):
         import os

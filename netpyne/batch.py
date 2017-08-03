@@ -29,6 +29,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     print proc.stdout.read()
 
 def tupleToStr (obj):
+    #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -37,8 +38,9 @@ def tupleToStr (obj):
         for key,val in obj.iteritems():
             if type(val) in [list, dict]:
                 tupleToStr(val)
-            elif type(key) == tuple:
+            if type(key) == tuple:
                 obj[str(key)] = obj.pop(key) 
+    #print 'after:', obj
     return obj
 
 
@@ -73,7 +75,7 @@ class Batch(object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'batch': tupleToStr(self.__dict__)}
+        dataSave = {'batch': tupleToStr(self.__dict__)} 
         if ext == 'json':
             import json
             #from json import encoder

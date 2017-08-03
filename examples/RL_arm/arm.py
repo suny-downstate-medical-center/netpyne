@@ -132,7 +132,7 @@ class Arm:
         fig = figure() 
         l = 1.1*sum(self.armLen)
         ax = fig.add_subplot(111, autoscale_on=False, xlim=(-l/2, +l), ylim=(-l/2, +l)) # create subplot
-        posX, posY = zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll])
+        posX, posY = list(zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll]))
         ax.plot(posX, posY, 'r')
         targ = Circle((self.targetPos),0.04, color='g', fill=False) # target
         ax.add_artist(targ)
@@ -151,8 +151,8 @@ class Arm:
         ax.plot(el, 'b', label='elbow')
         shTarg = self.pos2angles(self.targetPos, self.armLen)[0]
         elTarg = self.pos2angles(self.targetPos, self.armLen)[1]
-        ax.plot(range(0,len(sh)), [shTarg] * len(sh), 'r:', label='sh target')
-        ax.plot(range(0,len(el)), [elTarg] * len(el), 'b:', label='el target')
+        ax.plot(list(range(0,len(sh))), [shTarg] * len(sh), 'r:', label='sh target')
+        ax.plot(list(range(0,len(el))), [elTarg] * len(el), 'b:', label='el target')
         ax.set_title('Joint angles')
         xlabel('time')
         ylabel('angle')
@@ -290,7 +290,7 @@ class Arm:
                             break
             f.timeoflastexplor = t
             if f.rank==0 and f.cfg.verbose: 
-                print 'Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur   
+                print('Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur)   
 
 
         # Reset arm and set target after every trial -start from center etc

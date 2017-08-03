@@ -25,7 +25,8 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5} # add dict with params for this pop 
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR2', 'numCells': 5} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -36,6 +37,14 @@ cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}       
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
 cellRule['secs']['soma']['vinit'] = -71
 netParams.cellParams['PYR'] = cellRule                                                  # add dict to list of cell params
+
+
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR2'},  'secs': {}}   # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR2'] = cellRule                                                  # add dict to list of cell params
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
@@ -50,7 +59,7 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PY
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
-    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': 'PYR'},
+    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': ['PYR','PYR2']},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -71,7 +80,7 @@ simConfig.verbose = False  # show detailed messages
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from
-simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v','conds': {'cellType': 'PYR2'}}}
 simConfig.recordStim = True  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -83,6 +92,7 @@ simConfig.saveMat = True
 
 # Analysis and plotting 
 simConfig.analysis['plotRaster'] =True
+simConfig.analysis['plotTraces'] = {'include': ['all'], 'oneFigPer':'trace'}
 
 sim.createSimulateAnalyze()
 

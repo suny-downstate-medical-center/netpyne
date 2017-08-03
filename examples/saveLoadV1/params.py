@@ -42,8 +42,8 @@ cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl':
 netParams.cellParams['E2_simple'] = cellRule                                                        # add cell params rule
 
 # Set vinit for all sections of all cells
-for cellRule in netParams.cellParams.values():
-    for sec in cellRule['secs'].values():
+for cellRule in list(netParams.cellParams.values()):
+    for sec in list(cellRule['secs'].values()):
         sec['vinit'] = -90.0
 
 

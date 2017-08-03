@@ -13,7 +13,7 @@ import numpy as np
 def createBatch(params):
 	# Create Batch object
 	b = Batch()
-	for k,v in params.iteritems():
+	for k,v in params.items():
 		b.params.append({'label': k, 'values': v})
 	return b
 
@@ -32,6 +32,7 @@ def runBatch(b, label):
 def batchNa():
 	b = createBatch({'dendNa': [0.025, 0.03, 0.035, 0.4],  
 					('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)})
+	b.initCfg = {'duration': 1.1, 'tau1NMDA': 15}
 	runBatch(b, 'batchNa')
 
 

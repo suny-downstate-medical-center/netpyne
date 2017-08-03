@@ -8,6 +8,8 @@
 
 - Added option to set initial cfg in batch sims
 
+- Added option to set grouped params in Batch constructor
+
 - Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
 
 - Fixed bug importing cell -- use h.pop_section() to avoid stack overflow

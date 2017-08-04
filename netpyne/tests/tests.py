@@ -82,7 +82,7 @@ TEST_TYPE_STIM_TARGET_TEST = "Stim source test"
 TEST_TYPE_IS_VALID_SPIKE_GENLOC = "Spike gen loc"
 TEST_TYPE_VALID_STIM = "Valid stim"
 TEST_TYPE_VALID_ANALYSIS = " Valid analysis"
-
+TEST_TYPE_VALID_HPARAMS = "hParams test"
 class TestTypeObj(object):
 
     def __init__(self):
@@ -1473,8 +1473,8 @@ class SimTestObj(object):
         testObj.testName = "hParamsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_DICT]
-        testObj.messageText = ["simConfig->'hParams':hParams is not a dict."]
+        testObj.testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_VALID_HPARAMS ]
+        testObj.messageText = ["simConfig->'hParams':hParams is not a dict."   ]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["hParamsTest"] = testObj
@@ -1660,7 +1660,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "recordTraces"
         testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
         testObj.testValueList = ['sec','loc','var']
-        testObj.messageText = ["simConfig->'recordTraces':recordTraces is not a dict.","SimConfig->'recordTracesTest':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'."]
+        testObj.messageText = ["simConfig->'recordTraces':recordTraces is not a dict.","simConfig->'recordTracesTest':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
@@ -3160,3 +3160,28 @@ class SimTestObj(object):
                                 print ( "Test: for valid stim target.")
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+
+            elif testType == TEST_TYPE_VALID_HPARAMS:
+
+                if isinstance(params, dict):
+                    for paramLabel, paramValues in params.items():
+                        try:
+
+                            stimValid, errorMessages = self.testTypeObj.testValidHParams(paramValues)
+
+                            if len(errorMessages) == 0:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid hParams.")
+                                    print ( "PASSED" )
+                            else:
+                                if self.verboseFlag:
+                                    print ( "Test: for valid hParams.")
+                                for errorMessage in errorMessages:
+                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
+                            if self.verboseFlag:
+                                print ( "Test: for valid hParams.")
+                            #print ( "paramvalues = " + str(paramValues))
+                            print (str(MESSAGE_TYPE_ERROR) + ": simConfig->hParams: Invalid value. Valid values are " + str(h.__dict__.keys()) + ". Value supplied is " + str(simConfig.hParams))

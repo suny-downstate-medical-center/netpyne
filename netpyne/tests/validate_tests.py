@@ -1,4 +1,5 @@
 """
+
 test_validate.py
 
 Testing code for Validation class
@@ -83,7 +84,7 @@ class RunNetPyneTests():
             simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
             simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
 
-            self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
+            self.paramsMap["simConfig"]["dtTest"].append(simConfigParams)
 
             # invalid duration
             self.paramsMap["simConfig"]["invalidDtTest"] = []
@@ -100,7 +101,43 @@ class RunNetPyneTests():
             simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
             simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
 
-            self.paramsMap["simConfig"]["invalidDurationTest"].append(simConfigParams)
+            self.paramsMap["simConfig"]["invalidDtTest"].append(simConfigParams)
+
+            # duration
+            self.paramsMap["simConfig"]["hParamsTest"] = []
+            simConfigParams = ParamsObj()
+            simConfigParams.simConfig.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}
+            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            simConfigParams.simConfig.verbose = False           # Show detailed messages
+            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+
+            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+
+            self.paramsMap["simConfig"]["hParamsTest"].append(simConfigParams)
+
+            # invalid duration
+            self.paramsMap["simConfig"]["invalidHParamsTest"] = []
+            simConfigParams = ParamsObj()
+            simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
+            simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
+            simConfigParams.simConfig.dt = "s"                # Internal integration timestep to use
+            simConfigParams.simConfig.verbose = False           # Show detailed messages
+            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+
+            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+
+            self.paramsMap["simConfig"]["invalidHParamsTest"].append(simConfigParams)
 
         def loadTestsWithParams(self):
 

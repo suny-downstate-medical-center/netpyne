@@ -26,7 +26,7 @@ class RunNetPyneTests():
         def __init__ (self):
             self.paramsMap = {}
             self.netPyneTestObj = SimTestObj(verboseFlag = True)
-            #self.loadTestsWithParams()
+            self.loadTestsWithParams()
             self.loadSimConfigTests()
             self.runTestsWithParams()
 
@@ -2055,12 +2055,12 @@ class RunNetPyneTests():
 
         def runTestsWithParams(self):
 
-            #self.runPopTestsWithParams()
-            #self.runNetTestsWithParams()
-            #self.runCellTestsWithParams()
-            #self.runConnTestsWithParams()
-            #self.runStimSourceTests()
-            #self.runStimTargetTests()
+            self.runPopTestsWithParams()
+            self.runNetTestsWithParams()
+            self.runCellTestsWithParams()
+            self.runConnTestsWithParams()
+            self.runStimSourceTests()
+            self.runStimTargetTests()
             self.runSimConfigTests()
 
         def runPopTestsWithParams(self):

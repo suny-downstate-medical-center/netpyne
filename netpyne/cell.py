@@ -700,7 +700,7 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-
+            
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -1015,17 +1015,19 @@ class CompartCell (Cell):
                     print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                elif 'originalFormat' in params:
+                elif 'originalFormat' in params and stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
-                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
-                        rand = h.Random()
-                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
-                        rand.negexp(1)
-                        stim.noiseFromRandom(rand)
-                        params['h%s'%params['originalFormat']] = rand
+
+                    rand = h.Random()
+                    sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
+                    rand.negexp(1)
+                    stim.noiseFromRandom(rand)
+                    params['h%s'%params['originalFormat']] = rand
                 else: 
-                    setattr(stim, stimParamName, stimParamValue)
-                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    if stimParamName in ['weight']:
+                        setattr(stim, stimParamName, stimParamValue)
+                        stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                        
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%

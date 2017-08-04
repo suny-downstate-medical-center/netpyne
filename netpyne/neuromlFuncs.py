@@ -510,7 +510,7 @@ if neuromlExists:
                            preFractionAlong="0.5" postSegment="0" postFractionAlong="0.5" synapse="gj1"/>'''
                         weight = conn['weight']
                         if weight!=1:
-                            raise Exception('Cannot yet support inputs where weight !=1!')
+                            raise Exception('Cannot yet support electrical connections where weight !=1!')
                         
                         connection = neuroml.ElectricalConnectionInstance(id=index, \
                                     pre_cell="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
@@ -1199,8 +1199,6 @@ if neuromlExists:
             
             pop_id = self.popStimLists[inputListId]['conds']['pop']
             nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)
-            if weight!=1:
-                raise Exception('Cannot yet support inputs where weight !=1!')
             
             #seg_name = self.pop_ids_vs_seg_ids_vs_segs[pop_id][segId].name if self.pop_ids_vs_seg_ids_vs_segs.has_key(pop_id) else 'soma'
             
@@ -1218,8 +1216,10 @@ if neuromlExists:
                         'loc': nrn_fract, 
                         'conds': {'pop':pop_id, 'cellList': [cellId]}}
                         
-            
-            if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId))
+            if weight!=1:
+                self.stimLists[stimId]['weight'] = weight
+                        
+            if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s; weight: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId, weight))
             
             # TODO: build just one stimLists/stimSources entry for the inputList
             # Issue: how to specify the sec/loc per individual stim??

@@ -1,5 +1,9 @@
 # Version 0.7.2
 
+- Improved NeuroML importing/exporting
+
+- Added error checking for simConfig
+
 - Added popColors option to plotSpikeHist and plotRatePSD
 
 - Added support to load params, cfg, net and simData from .mat files

@@ -64,6 +64,7 @@ class Batch(object):
     
     def save(self, filename):
         import os
+        from copy import deepcopy
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
@@ -75,7 +76,8 @@ class Batch(object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'batch': tupleToStr(self.__dict__)} 
+        odict = deepcopy(self.__dict__)
+        dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
             import json
             #from json import encoder
@@ -106,8 +108,7 @@ class Batch(object):
             except OSError:
                 if not os.path.exists(self.saveFolder):
                     print ' Could not create', self.saveFolder
-
-
+            
             # save Batch dict as json
             targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
             self.save(targetFile)
@@ -129,8 +130,7 @@ class Batch(object):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.iteritems():
                     self.setCfgNestedParam(paramLabel, paramVal)
-                    self.initCfg[str(paramLabel)] = self.initCfg.pop(paramLabel)  # convert tuple to str
-
+              
 
             # iterate over all param combinations
             if self.method == 'grid':

@@ -499,7 +499,7 @@ class SimConfig (object):
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = True # whether to validate the input parameters
+        self.checkErrors = False # whether to validate the input parameters
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

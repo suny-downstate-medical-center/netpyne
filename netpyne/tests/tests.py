@@ -12,7 +12,7 @@ import sys
 import os
 import traceback
 import numpy
-
+from neuron import h
 from netpyne import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', ' cylinder']
@@ -56,11 +56,12 @@ TEST_TYPE_IS_FLOAT = "Is Float" # must be float
 TEST_TYPE_IS_INT = "Is Integer" # must be integer
 TEST_TYPE_IS_CHARACTER = "Is Character" # must be char [a-z][A-Z]
 TEST_TYPE_VALUE_LIST = "Value List" # must be in valid values list
+TEST_TYPE_ALL_VALUE_LIST = " All value list" # every key in list must belong to list
 TEST_TYPE_EXISTS_IN_DICT = "Exists in Dict" # input param must exist in dict
 TEST_TYPE_EXISTS_IN_NESTED_DICT = "Exists in nested dict" # input param must exist in nested dict
 TEST_TYPE_SPECIAL = "Special" # special method, method name provided
 TEST_TYPE_EXISTS_IN_ALL_DICTS = "Exists in all dicts"
-
+TEST_TYPE_DICT_KEY_VALID_VALUE = "Dict key is valid value"
 TEST_TYPE_VALID_GEOMETRIES = "Valid geometries"
 TEST_TYPE_VALID_TOPOLOGIES = "Valid topologies"
 TEST_TYPE_VALID_MECHS = "Valid mechs"
@@ -235,30 +236,34 @@ class TestTypeObj(object):
 
     def testIsDict(self,val): # TEST_TYPE_IS_DICT
         try:
-            assert (isinstance (val,dict))
+            # print (" **** val in dict = " + str(val))
+            if val and val != '':
+                assert (isinstance (val,dict)), "Value specified is " + val + "."
         except AssertionError as e:
-            e.args += (val,)
+            # print ( " ***** " + str(e))
+            #e.args += (,)
             raise
 
     def testIsList(self,val): # TEST_TYPE_IS_LIST
         try:
-            assert (isinstance (val,list))
+            if val and val != '':
+                assert (isinstance (val,list)), "Value specified is " + str(val) + "."
         except AssertionError as e:
-            e.args += (val,)
+            #e.args += (,)
             raise
 
     def testIsBoolean(self,val): # TEST_TYPE_IS_BOOLEAN
         try:
-            assert (isinstance (val,bool))
+            assert (isinstance (val,bool)), "Value specified is " + str(val) + "."
         except AssertionError as e:
-            e.args += (val,)
+            #e.args += (,)
             raise
 
     def testIsNumeric(self,val): # TEST_TYPE_IS_NUMERIC
         try:
             assert (isinstance (val,numbers.Number))
         except AssertionError as e:
-            e.args += (val,)
+            #e.args += (val,)
             raise
 
     def testIsFloat(self,val): # TEST_TYPE_IS_FLOAT
@@ -267,14 +272,14 @@ class TestTypeObj(object):
             assert (isinstance (val,numbers.Real))
         except AssertionError as e:
             #print ( " !!!!! in float error ")
-            e.args += (val,)
+            #e.args += (val,)
             raise
 
     def testIsInt(self,val): # TEST_TYPE_IS_INT
         try:
             assert (isinstance (val,int))
         except AssertionError as e:
-            e.args += (val,)
+            #e.args += (val,)
             raise
 
     def testIsCharacter(self,val): # TEST_TYPE_IS_CHARACTER
@@ -282,14 +287,42 @@ class TestTypeObj(object):
             isascii = lambda s: len(s) == len(s.encode())
             assert (isascii (val))
         except AssertionError as e:
-            e.args += (val,)
+            #e.args += (,)
             raise
 
     def testIsValueList(self,val, valList): # TEST_TYPE_VALUE_LIST
         try:
-            assert (val in valList), val + " must be in list " + (",").join()
+            # print ( " in val list test" + str(val) + " :: " + str(valList))
+            assert (val in valList), str(val) + " must be in list " + str(valList)
         except AssertionError as e:
-            e.args += (val,)
+            print (e)
+            #e.args += (,)
+            raise
+
+    def testIsAllValueList(self,val, valList): # TEST_TYPE_ALL_VALUE_LIST
+        try:
+            #print ( " 1")
+            # print ( " in val list test" + str(val) + " :: " + str(valList))
+            if isinstance(val, list) and isinstance(valList, list):
+                assert (all([x in valList for x in val])), str(val) + " must be in list " + str(valList)
+        except AssertionError as e:
+            #print (" 1" + str(e))
+            #e.args += (,)
+            raise
+
+    def testDictKeyValidValue(self,paramDict, valList): # TEST_TYPE_VALUE_LIST
+        try:
+            #print ( "2")
+            #print ( " in val list test" + str(paramDict) + " :: " + str(valList))
+            if isinstance(paramDict, dict) and isinstance(valList, list):
+                if isinstance(valList, str):
+                    valList = eval(valList)
+                assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str(valList) + ". Keys provided are " + str(paramDict.keys()) + "."
+                #assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str("") + ". Keys provided are " + str(paramDict.keys()) + "."
+
+        except AssertionError as e:
+            #print (" **** " + str(e))
+            #e.args += (,)
             raise
 
     def testValidStim(self,paramValues): # TEST_TYPE_VALID_STIM
@@ -1055,295 +1088,307 @@ class TestTypeObj(object):
     def testValidAnalysis(self, simConfig): # TEST_TYPE_VALID_ANALYSIS
 
         errorMessages = []
-
+#        print ( " *** in analysis test" )
         try:
 
-            if simConfig.analysis:
+            if simConfig and simConfig.analysis:
 
                 analysis = simConfig.analysis
 
                 if not isinstance ( simConfig.analysis, dict):
                     errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + ".")
                     return errorMessages
-
-                if any (analysis.keys() not in ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger']):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger'.")
+                #print (" before ")
+                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2Dnet', 'nTE', 'granger']
+                # print ( [x in validList for x in analysis.keys()] )
+                if not all ([x in validList for x in analysis.keys()]):
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger'. Keys specified are " + str(analysis.keys()) + ".")
+                #print (" after ")
 
                 if 'plotRaster' in analysis:
+                    #print ( " in plot raster ")
 
                     plotRaster = analysis['plotRaster']
 
                     if not isinstance ( plotRaster, dict):
                         errorMessages.append("SimConfig->'analysis'->'plotRaster': Must be a dict.  Value provided is " + str(plotRaster) + ".")
 
-                    if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
-                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
+                    else:
+
+                        #print ( " in plot raster 2 " + str(plotRaster.keys()))
+                        validList = ['include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'labels', 'popRates', 'spikeHist', 'spikeHistBin', 'syncLines', 'figSize', 'saveData', 'saveFig', 'showFig']
+
+                        if not all(x in validList for x in plotRaster.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster': plotRaster must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotRaster.keys()) + ".")
+
+                        if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
+
+                        # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                        #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+
+                        if 'maxSpikes' in plotRaster and not isinstance( plotRaster['maxSpikes'], int):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'maxSpikes': Must be an integer. Value provided is " + str(plotRaster['maxSpikes']) + ".")
+
+                        if 'orderBy' in plotRaster:
+
+                            if not isinstance( plotRaster['orderBy'], list):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+                            else:
+                                if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
+                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+
+                        if 'orderInverse' in plotRaster:
+
+                            if not isinstance( plotRaster['orderInverse'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
+
+                        if 'labels' in plotRaster:
+
+                            if not isinstance( plotRaster['labels'], list):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
+                            else:
+                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
+                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                        if 'popRates' in plotRaster:
+
+                            if not isinstance( plotRaster['popRates'], list):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                            else:
+                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                        if 'popRates' in plotRaster:
+
+                            if not isinstance( plotRaster['popRates'], list):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                            else:
+                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                        if 'spikeHist' in plotRaster:
+
+                            if not isinstance( plotRaster['spikeHist'], list):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Must be a list. Value provided is " + str(plotRaster['spikeHist']) + ".")
+                            else:
+                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['spikeHist'] ] ):
+                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+
+                if 'plotSpikeHist' in analysis:
+
+                    plotSpikeHist = analysis['plotSpikeHist']
+
+                    if not isinstance ( plotSpikeHist, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikeHist': Must be a dict.  Value provided is " + str(plotSpikeHist) + ".")
+
+                    if 'include' in plotSpikeHist and not isinstance( plotSpikeHist['include'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikeHist'->'include': Must be a list. Value provided is " + str(plotSpikeHist['include']) + ".")
 
                     # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
                     #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
-
-                    if 'maxSpikes' in plotRaster and not isinstance( plotRaster['maxSpikes'], int):
-                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'maxSpikes': Must be an integer. Value provided is " + str(plotRaster['maxSpikes']) + ".")
-
-                    if 'orderBy' in plotRaster:
-
-                        if not isinstance( plotRaster['orderBy'], list):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
-                        else:
-                            if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
 
                     if 'orderInverse' in plotRaster:
 
                         if not isinstance( plotRaster['orderInverse'], bool):
                             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
 
-                    if 'labels' in plotRaster:
+                    if 'overlay' in plotRaster:
 
-                        if not isinstance( plotRaster['labels'], list):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
-                        else:
-                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                        if not isinstance( plotRaster['overlay'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'overlay': Must be boolean. Value provided is " + str(plotRaster['overlay']) + ".")
 
-                    if 'popRates' in plotRaster:
+                    if 'graphType' in plotRaster and plotRaster['graphType'] not in ['line','bar']:
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'graphType': GraphType must be in " + str(['line','bar']) + ". Value provided is " + str(plotRaster['graphType']) + ".")
 
-                        if not isinstance( plotRaster['popRates'], list):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
-                        else:
-                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                    if 'yaxis' in plotRaster and plotRaster['yaxis'] not in ['rate','count']:
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'yaxis': yaxis must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['yaxis']) + ".")
 
-                    if 'popRates' in plotRaster:
+                    if 'figSize' in plotRaster and not isinstance (plotRaster['figSize'], tuple):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotRaster['figSize']) + ".")
 
-                        if not isinstance( plotRaster['popRates'], list):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
-                        else:
-                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                    if 'binSize' in plotRaster and not isinstance( plotRaster['binSize'], int):
+                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'binSize': Must be an integer. Value provided is " + str(plotRaster['binSize']) + ".")
 
-                    if 'spikeHist' in plotRaster:
+                    if 'showFig' in plotRaster:
 
-                        if not isinstance( plotRaster['spikeHist'], list):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Must be a list. Value provided is " + str(plotRaster['spikeHist']) + ".")
-                        else:
-                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['spikeHist'] ] ):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'spikeHist': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                        if not isinstance( plotRaster['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster'->'showFig': Must be boolean. Value provided is " + str(plotRaster['showFig']) + ".")
 
-            if 'plotSpikeHist' in analysis:
+                if 'plotSpikePSD' in analysis:
 
-                plotSpikeHist = analysis['plotSpikeHist']
+                    plotSpikePSD = analysis['plotSpikePSD']
+                    if not isinstance ( plotSpikePSD, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': Must be a dict.  Value provided is " + str(plotSpikePSD) + ".")
 
-                if not isinstance ( plotSpikeHist, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikeHist': Must be a dict.  Value provided is " + str(plotSpikeHist) + ".")
+                    if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
 
-                if 'include' in plotSpikeHist and not isinstance( plotSpikeHist['include'], list):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikeHist'->'include': Must be a list. Value provided is " + str(plotSpikeHist['include']) + ".")
+                    # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                    #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
 
-                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                    if 'overlay' in plotSpikePSD:
 
-                if 'orderInverse' in plotRaster:
+                        if not isinstance( plotSpikePSD['overlay'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'overlay': Must be boolean. Value provided is " + str(plotSpikePSD['overlay']) + ".")
 
-                    if not isinstance( plotRaster['orderInverse'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
+                    if 'Fs' in plotSpikePSD and not isinstance ( plotSpikePSD['Fs'] , numbers.Real ):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'Fs': Fs must be float. Value provided is " + str(plotSpikePSD['Fs']) + ".")
 
-                if 'overlay' in plotRaster:
+                    if 'figSize' in plotSpikePSD and not isinstance (plotSpikePSD['figSize'], tuple):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotSpikePSD['figSize']) + ".")
 
-                    if not isinstance( plotRaster['overlay'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'overlay': Must be boolean. Value provided is " + str(plotRaster['overlay']) + ".")
+                    if 'binSize' in plotSpikePSD and not isinstance( plotSpikePSD['binSize'], int):
+                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'binSize': Must be an integer. Value provided is " + str(plotSpikePSD['binSize']) + ".")
 
-                if 'graphType' in plotRaster and plotRaster['graphType'] not in ['line','bar']:
-                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'graphType': GraphType must be in " + str(['line','bar']) + ". Value provided is " + str(plotRaster['graphType']) + ".")
+                    if 'showFig' in plotSpikePSD:
 
-                if 'yaxis' in plotRaster and plotRaster['yaxis'] not in ['rate','count']:
-                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'yaxis': yaxis must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['yaxis']) + ".")
+                        if not isinstance( plotSpikePSD['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'showFig': Must be boolean. Value provided is " + str(plotSpikePSD['showFig']) + ".")
 
-                if 'figSize' in plotRaster and not isinstance (plotRaster['figSize'], tuple):
-                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotRaster['figSize']) + ".")
+                if 'plotTraces' in analysis:
 
-                if 'binSize' in plotRaster and not isinstance( plotRaster['binSize'], int):
-                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'binSize': Must be an integer. Value provided is " + str(plotRaster['binSize']) + ".")
+                    plotTraces = analysis['plotTraces']
+                    if not isinstance ( plotTraces, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces': Must be a dict.  Value provided is " + str(plotTraces) + ".")
 
-                if 'showFig' in plotRaster:
+                    if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
 
-                    if not isinstance( plotRaster['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotRaster'->'showFig': Must be boolean. Value provided is " + str(plotRaster['showFig']) + ".")
+                    # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                    #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
 
-            if 'plotSpikePSD' in analysis:
+                    if 'overlay' in plotTraces and not isinstance( plotTraces['overlay'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'overlay': Must be boolean. Value provided is " + str(plotTraces['overlay']) + ".")
 
-                plotSpikePSD = analysis['plotSpikePSD']
-                if not isinstance ( plotSpikePSD, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': Must be a dict.  Value provided is " + str(plotSpikePSD) + ".")
+                    if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
 
-                if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
+                    if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
 
-                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                    if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")
 
-                if 'overlay' in plotSpikePSD:
+                    if 'figSize' in plotTraces and not isinstance (plotTraces['figSize'], tuple):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotTraces['figSize']) + ".")
 
-                    if not isinstance( plotSpikePSD['overlay'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'overlay': Must be boolean. Value provided is " + str(plotSpikePSD['overlay']) + ".")
+                    if 'saveFig' in plotTraces and not isinstance (plotTraces['saveFig'], tuple):
+                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'saveFig': saveFig must be tuple if specified. Value provided is " + str(plotTraces['saveFig']) + ".")
 
-                if 'Fs' in plotSpikePSD and not isinstance ( plotSpikePSD['Fs'] , numbers.Real ):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'Fs': Fs must be float. Value provided is " + str(plotSpikePSD['Fs']) + ".")
+                if 'plotShape' in analysis:
 
-                if 'figSize' in plotSpikePSD and not isinstance (plotSpikePSD['figSize'], tuple):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotSpikePSD['figSize']) + ".")
+                    plotShapes = analysis['plotShapes']
+                    if not isinstance ( plotShapes, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict.  Value provided is " + str(plotShapes) + ".")
 
-                if 'binSize' in plotSpikePSD and not isinstance( plotSpikePSD['binSize'], int):
-                    errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'binSize': Must be an integer. Value provided is " + str(plotSpikePSD['binSize']) + ".")
+                    if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
 
-                if 'showFig' in plotSpikePSD:
+                    if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
 
-                    if not isinstance( plotSpikePSD['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'showFig': Must be boolean. Value provided is " + str(plotSpikePSD['showFig']) + ".")
+                if 'plotConn' in analysis:
 
-            if 'plotTraces' in analysis:
+                    plotConn = analysis['plotConn']
 
-                plotTraces = analysis['plotTraces']
-                if not isinstance ( plotTraces, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces': Must be a dict.  Value provided is " + str(plotTraces) + ".")
+                    if not isinstance ( plotConn, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + ".")
 
-                if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
+                    if 'include' in plotConn and not isinstance( plotConn['include'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
 
-                # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                    if 'feature' in plotConn:
+                        if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
+                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
 
-                if 'overlay' in plotTraces and not isinstance( plotTraces['overlay'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'overlay': Must be boolean. Value provided is " + str(plotTraces['overlay']) + ".")
+                    if 'groupBy' in plotConn:
+                        if plotConn['spikeHist'] not in ['pop', 'cell']:
+                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
 
-                if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
+                    if 'orderBy' in plotConn:
+                        if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
 
-                if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
+                    if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
 
-                if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")
+                if 'plot2DNet' in analysis:
 
-                if 'figSize' in plotTraces and not isinstance (plotTraces['figSize'], tuple):
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotTraces['figSize']) + ".")
+                    plot2DNet = analysis['plot2DNet']
 
-                if 'saveFig' in plotTraces and not isinstance (plotTraces['saveFig'], tuple):
-                    errorMessages.append("SimConfig->'analysis'->'plotTraces'->'saveFig': saveFig must be tuple if specified. Value provided is " + str(plotTraces['saveFig']) + ".")
+                    if not isinstance ( plot2DNet, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plot2DNet': Must be a dict.  Value provided is " + str(plot2DNet) + ".")
 
-            if 'plotShape' in analysis:
+                    if 'include' in plot2DNet and not isinstance( plot2DNet['include'], list):
+                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'include': Must be a list. Value provided is " + str(plot2DNet['include']) + ".")
 
-                plotShapes = analysis['plotShapes']
-                if not isinstance ( plotShapes, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict.  Value provided is " + str(plotShapes) + ".")
+                    if 'orderBy' in plot2DNet:
+                        if plot2DNet['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plot2DNet['orderBy']) + ".")
 
-                if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+                    if 'view' in plot2DNet:
+                        if plot2DNet['spikeHist'] not in ['xy', 'xz']:
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'view': Valid values are " + str(['xy', 'xz'])+ ". Value provided is " + str(plot2DNet['view']) + ".")
 
-                if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
+                    if 'showConns' in plot2DNet and not isinstance( plot2DNet['showConns'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showConns': Must be boolean. Value provided is " + str(plot2DNet['showConns']) + ".")
 
-            if 'plotConn' in analysis:
+                    if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
 
-                plotConn = analysis['plotConn']
+                if 'nTE' in analysis:
 
-                if not isinstance ( plotConn, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + ".")
+                    nTE = analysis['nTE']
 
-                if 'include' in plotConn and not isinstance( plotConn['include'], list):
-                    errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
+                    if not isinstance ( nTE, dict):
+                        errorMessages.append("SimConfig->'analysis'->'nTE': Must be a dict.  Value provided is " + str(nTE) + ".")
 
-                if 'feature' in plotConn:
-                    if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
-                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
+                    if 'cells1' in nTE and not isinstance( nTE['cells1'], list):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'cells1': Must be a list. Value provided is " + str(nTE['cells1']) + ".")
 
-                if 'groupBy' in plotConn:
-                    if plotConn['spikeHist'] not in ['pop', 'cell']:
-                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
+                    if 'cells2' in nTE and not isinstance( nTE['cells2'], list):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'cells2': Must be a list. Value provided is " + str(nTE['cells2']) + ".")
 
-                if 'orderBy' in plotConn:
-                    if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
-                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
+                    if 'spks1' in nTE and not isinstance( nTE['spks1'], list):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'spks1': Must be a list. Value provided is " + str(nTE['spks1']) + ".")
 
-                if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
+                    if 'spks2' in nTE and not isinstance( nTE['spks2'], list):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'spks2': Must be a list. Value provided is " + str(nTE['spks2']) + ".")
 
-            if 'plot2DNet' in analysis:
+                    if 'binSize' in nTE and not isinstance( nTE['binSize'], int):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'binSize': Must be an int. Value provided is " + str(nTE['binSize']) + ".")
 
-                plot2DNet = analysis['plot2DNet']
+                    if 'numShuffle' in nTE and not isinstance( nTE['numShuffle'], int):
+                        errorMessages.append("SimConfig->'analysis'->'nTE'->'numShuffle': Must be an int. Value provided is " + str(nTE['numShuffle']) + ".")
 
-                if not isinstance ( plot2DNet, dict):
-                    errorMessages.append("SimConfig->'analysis'->'plot2DNet': Must be a dict.  Value provided is " + str(plot2DNet) + ".")
+                if 'granger' in analysis:
 
-                if 'include' in plot2DNet and not isinstance( plot2DNet['include'], list):
-                    errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'include': Must be a list. Value provided is " + str(plot2DNet['include']) + ".")
+                    granger = analysis['granger']
 
-                if 'orderBy' in plot2DNet:
-                    if plot2DNet['spikeHist'] not in ['gid', 'ynorm', 'y']:
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plot2DNet['orderBy']) + ".")
+                    if not isinstance ( granger, dict):
+                        errorMessages.append("SimConfig->'analysis'->'granger': Must be a dict.  Value provided is " + str(granger) + ".")
 
-                if 'view' in plot2DNet:
-                    if plot2DNet['spikeHist'] not in ['xy', 'xz']:
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'view': Valid values are " + str(['xy', 'xz'])+ ". Value provided is " + str(plot2DNet['view']) + ".")
+                    if 'cells1' in granger and not isinstance( granger['cells1'], list):
+                        errorMessages.append("SimConfig->'analysis'->'granger'->'cells1': Must be a list. Value provided is " + str(granger['cells1']) + ".")
 
-                if 'showConns' in plot2DNet and not isinstance( plot2DNet['showConns'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showConns': Must be boolean. Value provided is " + str(plot2DNet['showConns']) + ".")
+                    if 'cells2' in granger and not isinstance( granger['cells2'], list):
+                        errorMessages.append("SimConfig->'analysis'->'granger'->'cells2': Must be a list. Value provided is " + str(granger['cells2']) + ".")
 
-                if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
+                    if 'spks1' in granger and not isinstance( granger['spks1'], list):
+                        errorMessages.append("SimConfig->'analysis'->'granger'->'spks1': Must be a list. Value provided is " + str(granger['spks1']) + ".")
 
-            if 'nTE' in analysis:
+                    if 'spks2' in granger and not isinstance( granger['spks2'], list):
+                        errorMessages.append("SimConfig->'analysis'->'granger'->'spks2': Must be a list. Value provided is " + str(granger['spks2']) + ".")
 
-                nTE = analysis['nTE']
+                    if 'binSize' in granger and not isinstance( granger['binSize'], int):
+                        errorMessages.append("SimConfig->'analysis'->'granger'->'binSize': Must be an int. Value provided is " + str(granger['binSize']) + ".")
 
-                if not isinstance ( nTE, dict):
-                    errorMessages.append("SimConfig->'analysis'->'nTE': Must be a dict.  Value provided is " + str(nTE) + ".")
+                    if 'plotFig' in plot2DNet and not isinstance( plot2DNet['plotFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'plotFig': Must be boolean. Value provided is " + str(plot2DNet['plotFig']) + ".")
 
-                if 'cells1' in nTE and not isinstance( nTE['cells1'], list):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'cells1': Must be a list. Value provided is " + str(nTE['cells1']) + ".")
-
-                if 'cells2' in nTE and not isinstance( nTE['cells2'], list):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'cells2': Must be a list. Value provided is " + str(nTE['cells2']) + ".")
-
-                if 'spks1' in nTE and not isinstance( nTE['spks1'], list):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'spks1': Must be a list. Value provided is " + str(nTE['spks1']) + ".")
-
-                if 'spks2' in nTE and not isinstance( nTE['spks2'], list):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'spks2': Must be a list. Value provided is " + str(nTE['spks2']) + ".")
-
-                if 'binSize' in nTE and not isinstance( nTE['binSize'], int):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'binSize': Must be an int. Value provided is " + str(nTE['binSize']) + ".")
-
-                if 'numShuffle' in nTE and not isinstance( nTE['numShuffle'], int):
-                    errorMessages.append("SimConfig->'analysis'->'nTE'->'numShuffle': Must be an int. Value provided is " + str(nTE['numShuffle']) + ".")
-
-            if 'granger' in analysis:
-
-                granger = analysis['granger']
-
-                if not isinstance ( granger, dict):
-                    errorMessages.append("SimConfig->'analysis'->'granger': Must be a dict.  Value provided is " + str(granger) + ".")
-
-                if 'cells1' in granger and not isinstance( granger['cells1'], list):
-                    errorMessages.append("SimConfig->'analysis'->'granger'->'cells1': Must be a list. Value provided is " + str(granger['cells1']) + ".")
-
-                if 'cells2' in granger and not isinstance( granger['cells2'], list):
-                    errorMessages.append("SimConfig->'analysis'->'granger'->'cells2': Must be a list. Value provided is " + str(granger['cells2']) + ".")
-
-                if 'spks1' in granger and not isinstance( granger['spks1'], list):
-                    errorMessages.append("SimConfig->'analysis'->'granger'->'spks1': Must be a list. Value provided is " + str(granger['spks1']) + ".")
-
-                if 'spks2' in granger and not isinstance( granger['spks2'], list):
-                    errorMessages.append("SimConfig->'analysis'->'granger'->'spks2': Must be a list. Value provided is " + str(granger['spks2']) + ".")
-
-                if 'binSize' in granger and not isinstance( granger['binSize'], int):
-                    errorMessages.append("SimConfig->'analysis'->'granger'->'binSize': Must be an int. Value provided is " + str(granger['binSize']) + ".")
-
-                if 'plotFig' in plot2DNet and not isinstance( plot2DNet['plotFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'plotFig': Must be boolean. Value provided is " + str(plot2DNet['plotFig']) + ".")
-
-                if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
+                    if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
 
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
@@ -1467,15 +1512,16 @@ class SimTestObj(object):
 
         self.testParamsMap["simConfig"]["dtTest"] = testObj
 
-        ## hParams test
+        # hParams test
 
         testObj = TestObj()
         testObj.testName = "hParamsTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_VALID_HPARAMS ]
-        testObj.messageText = ["simConfig->'hParams':hParams is not a dict."   ]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.testParameterValue = "self.simConfig.hParams"
+        testObj.testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_DICT_KEY_VALID_VALUE ]
+        testObj.testValueList = "h.__dict__.keys()"
+        testObj.messageText = ["simConfig->'hParams':hParams is not a dict.", "simConfig->'hParams':is not a valid value. Valid key values are in h.__dict__.keys()."   ]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["hParamsTest"] = testObj
 
@@ -1485,7 +1531,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "cacheEfficientTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.cache_efficient"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'cacheEfficient':cacheEfficient is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1498,23 +1544,23 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "cvodeActiveTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.cvode_active"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'cvodeActive':cvodeActive is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["cvodeActiveTest"] = testObj
-
+        #
         ## seeds test
 
         testObj = TestObj()
         testObj.testName = "seedsTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
+        testObj.testParameterValue = "self.simConfig.seeds"
+        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_DICT_KEY_VALID_VALUE ]
         testObj.testValueList = ['conn', 'stim', 'loc']
-        testObj.messageText = ["simConfig->'seedsActive':seeds is not a boolean.","SimConfig->'recordTracesTest':is not a valid value. Valid values are 'conn', 'stim', 'loc'."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["simConfig->'seeds':seeds is not a dict.","SimConfig->'seeds':is not a valid value. Valid values are 'conn', 'stim', 'loc'."]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["seedsTest"] = testObj
 
@@ -1523,7 +1569,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "createNEURONObjTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.createNEURONObj"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'createNEURONObj':createNEURONObj is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1533,9 +1579,9 @@ class SimTestObj(object):
         ## createPyStruct test
 
         testObj = TestObj()
-        testObj.testName = "createPyStruct"
+        testObj.testName = "createPyStructTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.createPyStruct"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'createPyStruct':createPyStruct is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1545,22 +1591,9 @@ class SimTestObj(object):
         ## gatherOnlySimData test
 
         testObj = TestObj()
-        testObj.testName = "gatherOnlySimData"
+        testObj.testName = "gatherOnlySimDataTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_BOOL]
-        testObj.messageText = ["simConfig->'gatherOnlySimData':gatherOnlySimData is not a boolean."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["simConfig"]["cgatherOnlySimDataTest"] = testObj
-
-        ## gatherOnlySimData test
-        ## gatherOnlySimData - Omits gathering of net and cell data thus reducing gatherData time (default: False)
-
-        testObj = TestObj()
-        testObj.testName = "gatherOnlySimData"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.gatherOnlySimData"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'gatherOnlySimData':gatherOnlySimData is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1573,7 +1606,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "printRunTimeTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.printRunTime"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["simConfig->'printRunTime':printRunTime is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1664,15 +1697,15 @@ class SimTestObj(object):
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
-
+        #
         testObj = TestObj()
         testObj.testName = "saveDataInclude"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "self.simConfig.saveData"
-        testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_VALUE_LIST ]
+        testObj.testParameterValue = "self.simConfig.saveDataInclude"
+        testObj.testTypes = [TEST_TYPE_IS_LIST, TEST_TYPE_ALL_VALUE_LIST]
         testObj.testValueList = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData']
-        testObj.messageText = ["simConfig->'saveDataInclude':recordTraces is not a dict.","SimConfig->'saveDataInclude':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'." ]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        testObj.messageText = ["simConfig->'saveDataInclude':saveDataInclude is not a dict.","SimConfig->'saveDataInclude':is not a valid value. Valid values are 'netParams', 'netCells', 'netPops', 'simConfig', 'simData'." ]
+        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["recordTracesTest"] = testObj
         ## recordStim test
@@ -1697,38 +1730,27 @@ class SimTestObj(object):
         testObj.messageText = ["SimConfig->'recordStep':recordStep is not a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        self.testParamsMap["simConfig"]["recordStimTest"] = testObj
+        self.testParamsMap["simConfig"]["recordStepTest"] = testObj
 
         ## saveDataInclude test
 
         testObj = TestObj()
         testObj.testName = "saveDataIncludeTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveDataInclude"
         testObj.testTypes = [TEST_TYPE_IS_LIST]
         testObj.messageText = ["SimConfig->'saveDataInclude':saveDataInclude is not a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["saveDataIncludeTest"] = testObj
 
-        ## timestampFilename test
-
-        testObj = TestObj()
-        testObj.testName = "timestampFilenameTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_BOOL]
-        testObj.messageText = ["SimConfig->'timestampFilename':timestampFilename is not a boolean."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["simConfig"]["timestampFilenameTest"] = testObj
 
         ## savePickle test
 
         testObj = TestObj()
         testObj.testName = "savePickleTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.savePickle"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'savePickle':savePickle is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1740,7 +1762,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "saveJsonTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveJson"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'saveJson':saveJson is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1752,30 +1774,30 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "saveMatTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveMat"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'saveMat':saveMat is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["saveMatTest"] = testObj
 
-        ## saveTxt test
-        testObj = TestObj()
-        testObj.testName = "saveTxtTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_BOOL]
-        testObj.messageText = ["SimConfig->'saveTxt':saveTxt is not a boolean."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
-
-        self.testParamsMap["simConfig"]["saveTxtTest"] = testObj
+        # ## saveTxt test
+        # testObj = TestObj()
+        # testObj.testName = "saveTxtTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "self.simConfig.saveTxt"
+        # testObj.testTypes = [TEST_TYPE_IS_BOOL]
+        # testObj.messageText = ["SimConfig->'saveTxt':saveTxt is not a boolean."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
+        #
+        # self.testParamsMap["simConfig"]["saveTxtTest"] = testObj
 
         ## saveDpk test
 
         testObj = TestObj()
         testObj.testName = "saveDpkTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveDpk"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'saveDpk':saveDpk is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1787,7 +1809,7 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "saveHDF5Test"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "self.simConfig.saveHDF5"
         testObj.testTypes = [TEST_TYPE_IS_BOOL]
         testObj.messageText = ["SimConfig->'saveHDF5':saveHDF5 is not a boolean."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
@@ -1799,24 +1821,22 @@ class SimTestObj(object):
         testObj = TestObj()
         testObj.testName = "backupCfgFileTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
-        testObj.testTypes = [TEST_TYPE_IS_BOOL]
-        testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a boolean."]
+        testObj.testParameterValue = "self.simConfig.backupCfgFile"
+        testObj.testTypes = [TEST_TYPE_IS_LIST]
+        testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a list."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
 
-        ## backupCfgFile test
+        ## analysisTest test
 
         testObj = TestObj()
         testObj.testName = "analysisTest"
         testObj.testParameterType = "string"
-        testObj.testParameterValue = "type"
+        testObj.testParameterValue = "analysis"
         testObj.testTypes = [TEST_TYPE_VALID_ANALYSIS]
-        #testObj.messageText = ["SimConfig->'backupCfgFile':backupCfgFile is not a boolean."]
-        #testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
-        self.testParamsMap["simConfig"]["backupCfgFileTest"] = testObj
+        self.testParamsMap["simConfig"]["analysisTest"] = testObj
 
     def loadStimSourceTests(self):
 
@@ -2624,13 +2644,18 @@ class SimTestObj(object):
                 else:
 
                         try:
-                            paramName = eval(testObj.testParameterValue)
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                pass
+                            if paramName != '':
                             #print (" in float 2 = " + str(paramName))
 
-                            self.testTypeObj.testIsFloat(paramName)
-                            if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
-                                print ( "PASSED" )
+                                self.testTypeObj.testIsFloat(paramName)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -2662,12 +2687,16 @@ class SimTestObj(object):
 
                 else:
                         try:
-                            paramName = eval(testObj.testParameterValue)
-
-                            self.testTypeObj.testGteZero(paramName)
-                            if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
-                                print ( "PASSED" )
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                pass
+                            if paramName != '':
+                                self.testTypeObj.testGteZero(paramName)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
@@ -2675,9 +2704,10 @@ class SimTestObj(object):
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " ."
 
             elif testType == TEST_TYPE_IS_DICT:
+                #print (" in dict test type ")
 
                 if isinstance(params, dict):
-
+                    #print (" in dict test type 2 ")
                     for paramLabel, paramValues in params.items():
 
                         try:
@@ -2691,6 +2721,22 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                else:
+                        try:
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                pass
+                            self.testTypeObj.testIsDict(paramName)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0])
 
             elif testType == TEST_TYPE_IS_LIST:
 
@@ -2710,6 +2756,26 @@ class SimTestObj(object):
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
 
+                else:
+                        try:
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                # print ( " 333 " )
+                                pass
+                            if paramName != '':
+                                # print (" ee ")
+                                self.testTypeObj.testIsList(paramName)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(" -- " + e[0])
+
             elif testType == TEST_TYPE_IS_BOOL:
 
                 if isinstance(params, dict):
@@ -2727,6 +2793,55 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                else:
+                        try:
+                            # print (" --- " + str(testObj.testParameterValue))
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                pass
+                            if paramName != '':
+                                self.testTypeObj.testIsBoolean(paramName)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0])
+
+            # elif testType == TEST_TYPE_IS_BOOL:
+            #
+            #     if isinstance(params, dict):
+            #
+            #         for paramLabel, paramValues in params.items():
+            #
+            #             try:
+            #                 if testObj.testParameterValue in paramValues:
+            #                     self.testTypeObj.testIsBoolean(paramValues[testObj.testParameterValue])
+            #                     if self.verboseFlag:
+            #                         print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+            #                         print ( "PASSED" )
+            #
+            #             except Exception as e:
+            #                 if self.verboseFlag:
+            #                     print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+            #                 print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+            #     else:
+            #             try:
+            #                 paramName = eval(testObj.testParameterValue)
+            #
+            #                 self.testTypeObj.testIsBoolean(paramName)
+            #                 if self.verboseFlag:
+            #                     print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+            #                     print ( "PASSED" )
+            #
+            #             except Exception as e:
+            #                 if self.verboseFlag:
+            #                     print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+            #                 print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0])
 
             elif testType == TEST_TYPE_VALUE_LIST:
 
@@ -2745,6 +2860,52 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                else:
+                        try:
+                            paramName = eval(testObj.testParameterValue)
+                            self.testTypeObj.testIsValueList(paramName, testObj.testValueList)
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
+            elif testType == TEST_TYPE_ALL_VALUE_LIST:
+
+                if isinstance(params, dict):
+
+                    for paramLabel, paramValues in params.items():
+
+                        try:
+                            if testObj.testParameterValue in paramValues:
+                                self.testTypeObj.testIsAllValueList(paramValues[testObj.testParameterValue], testObj.testValueList)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                else:
+                        try:
+                            paramName = ''
+                            try:
+                                paramName = eval(testObj.testParameterValue)
+                            except:
+                                pass
+                            if paramName != '':
+                                self.testTypeObj.testIsAllValueList(paramName, testObj.testValueList)
+                                if self.verboseFlag:
+                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print ( "PASSED" )
+
+                        except Exception as e:
+                            if self.verboseFlag:
+                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
 
             elif testType == TEST_TYPE_EXISTS_IN_ALL_DICTS:
 
@@ -2767,6 +2928,25 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
                             print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+
+            elif testType == TEST_TYPE_DICT_KEY_VALID_VALUE:
+
+                try:
+                    paramDict = ''
+                    try:
+                        paramDict = eval(testObj.testParameterValue)
+                    except:
+                        pass
+                    if paramDict != '':
+                        self.testTypeObj.testDictKeyValidValue(paramDict, testObj.testValueList)
+                        if self.verboseFlag:
+                            print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramDict))
+                            print ( "PASSED" )
+
+                except Exception as e:
+                    if self.verboseFlag:
+                        print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValueList))
+                    print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
 
             elif testType == TEST_TYPE_VALID_GEOMETRIES:
 
@@ -2801,30 +2981,6 @@ class SimTestObj(object):
                                 print ( "Test: for valid topology in cell")
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e))
-
-            # elif testType == TEST_TYPE_VALID_CONN_LIST:
-            #
-            #     if isinstance(params, dict):
-            #         for paramLabel, paramValues in params.items():
-            #             try:
-            #
-            #                 errorMessage = self.testTypeObj.testValidConnList(paramValues)
-            #
-            #                 if errorMessage == '':
-            #                     if self.verboseFlag:
-            #                         print ( "Test: for valid connList in cell")
-            #                         print ( "PASSED" )
-            #                 else:
-            #                     if self.verboseFlag:
-            #                         print ( "Test: for valid connList in cell")
-            #                     print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
-            #
-            #             except Exception as e:
-            #                 #traceback.print_exc(file=sys.stdout)
-            #                 if self.verboseFlag:
-            #                     print ( "Test: for valid conn list in cell")
-            #                 #print ( "paramvalues = " + str(paramValues))
-            #                 print (str(MESSAGE_TYPE_ERROR) + ": Topology is invalid. Must be specified if more than one section specified. For each topology, parentSec and parentX and childX must be defined. ParentSec needs to be a valid section, and both parentX and childX needs to be in range [0,1].")
 
             elif testType == TEST_TYPE_VALID_MECHS:
 
@@ -3138,50 +3294,23 @@ class SimTestObj(object):
 
             elif testType == TEST_TYPE_VALID_ANALYSIS:
 
-                if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
-                        try:
+                    try:
 
-                            stimValid, errorMessages = self.testTypeObj.testValidAnalysis(paramValues)
+                        errorMessages = self.testTypeObj.testValidAnalysis(params)
 
-                            if len(errorMessages) == 0:
-                                if self.verboseFlag:
-                                    print ( "Test: for valid stim target.")
-                                    print ( "PASSED" )
-                            else:
-                                if self.verboseFlag:
-                                    print ( "Test: for valid stim target.")
-                                for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
-
-                        except Exception as e:
-                            traceback.print_exc(file=sys.stdout)
+                        if len(errorMessages) == 0:
                             if self.verboseFlag:
                                 print ( "Test: for valid stim target.")
-                            #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
-
-            elif testType == TEST_TYPE_VALID_HPARAMS:
-
-                if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
-                        try:
-
-                            stimValid, errorMessages = self.testTypeObj.testValidHParams(paramValues)
-
-                            if len(errorMessages) == 0:
-                                if self.verboseFlag:
-                                    print ( "Test: for valid hParams.")
-                                    print ( "PASSED" )
-                            else:
-                                if self.verboseFlag:
-                                    print ( "Test: for valid hParams.")
-                                for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
-
-                        except Exception as e:
-                            traceback.print_exc(file=sys.stdout)
+                                print ( "PASSED" )
+                        else:
                             if self.verboseFlag:
-                                print ( "Test: for valid hParams.")
-                            #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": simConfig->hParams: Invalid value. Valid values are " + str(h.__dict__.keys()) + ". Value supplied is " + str(simConfig.hParams))
+                                print ( "Test: for valid stim target.")
+                            for errorMessage in errorMessages:
+                                print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+
+                    except Exception as e:
+                        traceback.print_exc(file=sys.stdout)
+                        if self.verboseFlag:
+                            print ( "Test: for valid stim target.")
+                        #print ( "paramvalues = " + str(paramValues))
+                        print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")

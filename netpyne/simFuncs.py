@@ -746,10 +746,10 @@ def setupRecording ():
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
-        if len(sim.simData) > 0:
+        if sim.cfg.recordTime and len(sim.simData) > 0:
             try:
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t)
+                sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 

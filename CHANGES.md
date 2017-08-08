@@ -14,6 +14,8 @@
 
 - Added option to set grouped params in Batch constructor
 
+- Added option to not record time (to reduce output file size)
+
 - Fixed bug: synMechFraction had no effect; replaced with synMechWeightFactor
 
 - Fixed bug in modifyStims for NetStim 'interval' and 'rate' 

@@ -479,6 +479,7 @@ class SimConfig (object):
         self.recordTraces = {}  # Dict of traces to record
         self.recordStim = False  # record spikes of cell stims
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+        self.recordTime = True  # record time step of recording
 
         # Saving
         self.simLabel = ''  # name of simulation (used as filename if none provided)

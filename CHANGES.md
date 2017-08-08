@@ -20,6 +20,9 @@
 
 - Fixed bug when adding stim NetStim where sec is a list
 
+- Fixed bug when adding stim NetStim with multiple synMechs and synsPerConn>1
+
+
 # Version 0.7.1
 
 - Updates and bug fixes of NeuroML importer/exporter

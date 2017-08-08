@@ -153,7 +153,10 @@ class Network (object):
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
 
-                        postCell.addStim(params)  # call cell method to add connections
+                        if source['type'] == 'NetStim':
+                            self._addCellStim(params, postCell)  # call method to add connections (sort out synMechs first)
+                        else:
+                            postCell.addStim(params)  # call cell method to add connection
 
         print('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
         sim.pc.barrier()
@@ -161,6 +164,40 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
 
         return [cell.stims for cell in self.cells]
+
+
+
+    ###############################################################################
+    ### Set parameters and add stim
+    ###############################################################################
+    def _addCellStim (self, stimParam, postCell):
+
+        # convert synMech param to list (if not already)
+        if not isinstance(stimParam.get('synMech'), list):
+            stimParam['synMech'] = [stimParam.get('synMech')]
+
+
+        # generate dict with final params for each synMech
+        paramPerSynMech = ['weight', 'delay', 'loc']
+        finalParam = {}
+        for i, synMech in enumerate(stimParam.get('synMech')):
+
+            for param in paramPerSynMech:
+                finalParam[param+'SynMech'] = finalParam.get(param)
+                if len(stimParam['synMech']) > 1:
+                    if isinstance (stimParam.get(param), list):  # get weight from list for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param][i]
+                    elif 'synMech'+param+'Factor' in stimParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param] * stimParam['synMech'+param+'Factor'][i]
+
+            params = {k: stimParam.get(k) for k,v in stimParam.iteritems()}
+
+            params['synMech'] = synMech 
+            params['loc'] = finalParam['locSynMech'] 
+            params['weight'] = finalParam['weightSynMech']
+            params['delay'] = finalParam['delaySynMech']
+
+            postCell.addStim(params=params)
 
 
 

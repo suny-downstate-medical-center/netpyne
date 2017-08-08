@@ -18,6 +18,8 @@
 
 - Fixed bug importing cell -- use h.pop_section() to avoid stack overflow
 
+- Fixed bug when adding stim NetStim where sec is a list
+
 # Version 0.7.1
 
 - Updates and bug fixes of NeuroML importer/exporter

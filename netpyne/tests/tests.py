@@ -304,7 +304,7 @@ class TestTypeObj(object):
             #print ( " 1")
             # print ( " in val list test" + str(val) + " :: " + str(valList))
             if isinstance(val, list) and isinstance(valList, list):
-                assert (all([x in valList for x in val])), str(val) + " must be in list " + str(valList)
+                assert (all([x in valList for x in val])), str(val[[x in valList for x in val].index(False)]) + " must be in list " + str(valList)
         except AssertionError as e:
             #print (" 1" + str(e))
             #e.args += (,)
@@ -317,7 +317,7 @@ class TestTypeObj(object):
             if isinstance(paramDict, dict) and isinstance(valList, list):
                 if isinstance(valList, str):
                     valList = eval(valList)
-                assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str(valList) + ". Keys provided are " + str(paramDict.keys()) + "."
+                assert (all([x in valList for x in paramDict.keys()])), " '" + str(paramDict.keys()[[x in valList for x in paramDict.keys()].index(False)]) + "' must be a key in list " + str(valList) + ". Keys provided are " + str(paramDict.keys()) + "."
                 #assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str("") + ". Keys provided are " + str(paramDict.keys()) + "."
 
         except AssertionError as e:
@@ -499,10 +499,10 @@ class TestTypeObj(object):
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentSec: parentSec '" + str(value['topol']['parentSec']) +"' does not point to a valid section. Valid sections are ('" + str(paramValues['secs'].keys()) + "')."
                             elif not isinstance ( value['topol']['parentX'] , numbers.Real ):
                                 topolValid = False
-                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentX: parentX is not a float."
+                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentX: Value should be a float."
                             elif not isinstance ( value['topol']['childX'] , numbers.Real ):
                                 topolValid = False
-                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> childX: childX is not a float."
+                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> childX: Value should be a float."
                             elif value['topol']['parentX'] < 0 or value['topol']['parentX'] >1:
                                 topolValid = False
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentX: parentX must be between 0 and 1. Value specified is '" + str(value['topol']['parentX'] ) + "'."
@@ -1099,7 +1099,7 @@ class TestTypeObj(object):
                     errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + ".")
                     return errorMessages
                 #print (" before ")
-                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2Dnet', 'nTE', 'granger']
+                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
                     errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger'. Keys specified are " + str(analysis.keys()) + ".")
@@ -1221,30 +1221,37 @@ class TestTypeObj(object):
                     if not isinstance ( plotSpikePSD, dict):
                         errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': Must be a dict.  Value provided is " + str(plotSpikePSD) + ".")
 
-                    if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
+                    else:
 
-                    # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                    #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                        validList = ['include', 'timeRange', 'binSize', 'Fs', 'spikeHist', 'overlay', 'yaxis', 'figSize', 'saveData', 'saveFig' , 'showFig']
 
-                    if 'overlay' in plotSpikePSD:
+                        if not all(x in validList for x in plotSpikePSD.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': plotSpikePSD must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotSpikePSD.keys()) + ".")
 
-                        if not isinstance( plotSpikePSD['overlay'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'overlay': Must be boolean. Value provided is " + str(plotSpikePSD['overlay']) + ".")
+                        if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
 
-                    if 'Fs' in plotSpikePSD and not isinstance ( plotSpikePSD['Fs'] , numbers.Real ):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'Fs': Fs must be float. Value provided is " + str(plotSpikePSD['Fs']) + ".")
+                        # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                        #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
 
-                    if 'figSize' in plotSpikePSD and not isinstance (plotSpikePSD['figSize'], tuple):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotSpikePSD['figSize']) + ".")
+                        if 'overlay' in plotSpikePSD:
 
-                    if 'binSize' in plotSpikePSD and not isinstance( plotSpikePSD['binSize'], int):
-                        errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'binSize': Must be an integer. Value provided is " + str(plotSpikePSD['binSize']) + ".")
+                            if not isinstance( plotSpikePSD['overlay'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'overlay': Must be boolean. Value provided is " + str(plotSpikePSD['overlay']) + ".")
 
-                    if 'showFig' in plotSpikePSD:
+                        if 'Fs' in plotSpikePSD and not isinstance ( plotSpikePSD['Fs'] , numbers.Real ):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'Fs': Fs must be float. Value provided is " + str(plotSpikePSD['Fs']) + ".")
 
-                        if not isinstance( plotSpikePSD['showFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'showFig': Must be boolean. Value provided is " + str(plotSpikePSD['showFig']) + ".")
+                        if 'figSize' in plotSpikePSD and not isinstance (plotSpikePSD['figSize'], tuple):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotSpikePSD['figSize']) + ".")
+
+                        if 'binSize' in plotSpikePSD and not isinstance( plotSpikePSD['binSize'], int):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'binSize': Must be an integer. Value provided is " + str(plotSpikePSD['binSize']) + ".")
+
+                        if 'showFig' in plotSpikePSD:
+
+                            if not isinstance( plotSpikePSD['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'showFig': Must be boolean. Value provided is " + str(plotSpikePSD['showFig']) + ".")
 
                 if 'plotTraces' in analysis:
 
@@ -1252,41 +1259,54 @@ class TestTypeObj(object):
                     if not isinstance ( plotTraces, dict):
                         errorMessages.append("SimConfig->'analysis'->'plotTraces': Must be a dict.  Value provided is " + str(plotTraces) + ".")
 
-                    if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
+                    else:
 
-                    # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
-                    #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
+                        validList = ['include', 'timeRange','overlay', 'oneFigPer', 'rerun', 'figSize', 'saveData' , 'showFig']
 
-                    if 'overlay' in plotTraces and not isinstance( plotTraces['overlay'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'overlay': Must be boolean. Value provided is " + str(plotTraces['overlay']) + ".")
+                        if not all(x in validList for x in plotTraces.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces': plotTraces must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotTraces.keys()) + ".")
 
-                    if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
+                        if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
 
-                    if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
+                        # if 'timeRange' in plotRaster and not isinstance( plotRaster['timeRange'], dict):
+                        #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'timeRange': Must be a list. Value provided is " + str(plotRaster['timeRange']) + ".")
 
-                    if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")
+                        if 'overlay' in plotTraces and not isinstance( plotTraces['overlay'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotTraces'->'overlay': Must be boolean. Value provided is " + str(plotTraces['overlay']) + ".")
 
-                    if 'figSize' in plotTraces and not isinstance (plotTraces['figSize'], tuple):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotTraces['figSize']) + ".")
+                        if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
 
-                    if 'saveFig' in plotTraces and not isinstance (plotTraces['saveFig'], tuple):
-                        errorMessages.append("SimConfig->'analysis'->'plotTraces'->'saveFig': saveFig must be tuple if specified. Value provided is " + str(plotTraces['saveFig']) + ".")
+                        if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
+
+                        if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")
+
+                        if 'figSize' in plotTraces and not isinstance (plotTraces['figSize'], tuple):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'figSize': figSize must be tuple if specified. Value provided is " + str(plotTraces['figSize']) + ".")
+
+                        if 'saveFig' in plotTraces and not isinstance (plotTraces['saveFig'], tuple):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'saveFig': saveFig must be tuple if specified. Value provided is " + str(plotTraces['saveFig']) + ".")
 
                 if 'plotShape' in analysis:
 
                     plotShapes = analysis['plotShapes']
                     if not isinstance ( plotShapes, dict):
                         errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict.  Value provided is " + str(plotShapes) + ".")
+                    else:
 
-                    if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+                        validList = ['showSyns', 'include', 'style', 'siz', 'figSize', 'saveData', 'saveFig', 'showFig']
 
-                    if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
+                        if not all(x in validList for x in plotShape.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotShape.keys()) + ".")
+
+                        if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+
+                        if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
 
                 if 'plotConn' in analysis:
 
@@ -1295,23 +1315,30 @@ class TestTypeObj(object):
                     if not isinstance ( plotConn, dict):
                         errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + ".")
 
-                    if 'include' in plotConn and not isinstance( plotConn['include'], list):
-                        errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
+                    else:
 
-                    if 'feature' in plotConn:
-                        if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
-                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
+                        validList = ['include', 'feature', 'orderBy', 'figSize', 'groupBy', 'saveData', 'saveFig', 'showFig']
 
-                    if 'groupBy' in plotConn:
-                        if plotConn['spikeHist'] not in ['pop', 'cell']:
-                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
+                        if not all(x in validList for x in plotConn.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plotConn': plotConn must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotConn.keys()) + ".")
 
-                    if 'orderBy' in plotConn:
-                        if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
-                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
+                        if 'include' in plotConn and not isinstance( plotConn['include'], list):
+                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
 
-                    if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
+                        if 'feature' in plotConn:
+                            if plotConn['spikeHist'] not in ['weight', 'delay', 'numConns']:
+                                errorMessages.append("SimConfig->'analysis'->'plotConn'->'feature': Valid values are " + str(['weight', 'delay', 'numConns'])+ ". Value provided is " + str(plotConn['feature']) + ".")
+
+                        if 'groupBy' in plotConn:
+                            if plotConn['spikeHist'] not in ['pop', 'cell']:
+                                errorMessages.append("SimConfig->'analysis'->'plotConn'->'groupBy': Valid values are " + str(['pop', 'cell'])+ ". Value provided is " + str(plotConn['groupBy']) + ".")
+
+                        if 'orderBy' in plotConn:
+                            if plotConn['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                                errorMessages.append("SimConfig->'analysis'->'plotConn'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plotConn['orderBy']) + ".")
+
+                        if 'showFig' in plotConn and not isinstance( plotConn['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotConn'->'showFig': Must be boolean. Value provided is " + str(plotConn['showFig']) + ".")
 
                 if 'plot2DNet' in analysis:
 
@@ -1319,23 +1346,29 @@ class TestTypeObj(object):
 
                     if not isinstance ( plot2DNet, dict):
                         errorMessages.append("SimConfig->'analysis'->'plot2DNet': Must be a dict.  Value provided is " + str(plot2DNet) + ".")
+                    else:
 
-                    if 'include' in plot2DNet and not isinstance( plot2DNet['include'], list):
-                        errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'include': Must be a list. Value provided is " + str(plot2DNet['include']) + ".")
+                        validList = ['include', 'feature', 'orderBy', 'figSize', 'groupBy', 'saveData', 'saveFig', 'showFig']
 
-                    if 'orderBy' in plot2DNet:
-                        if plot2DNet['spikeHist'] not in ['gid', 'ynorm', 'y']:
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plot2DNet['orderBy']) + ".")
+                        if not all(x in validList for x in plot2DNet.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet': plot2DNet must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plot2DNet.keys()) + ".")
 
-                    if 'view' in plot2DNet:
-                        if plot2DNet['spikeHist'] not in ['xy', 'xz']:
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'view': Valid values are " + str(['xy', 'xz'])+ ". Value provided is " + str(plot2DNet['view']) + ".")
+                        if 'include' in plot2DNet and not isinstance( plot2DNet['include'], list):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'include': Must be a list. Value provided is " + str(plot2DNet['include']) + ".")
 
-                    if 'showConns' in plot2DNet and not isinstance( plot2DNet['showConns'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showConns': Must be boolean. Value provided is " + str(plot2DNet['showConns']) + ".")
+                        if 'orderBy' in plot2DNet:
+                            if plot2DNet['spikeHist'] not in ['gid', 'ynorm', 'y']:
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'orderBy': Valid values are " + str(['gid', 'ynorm','y'])+ ". Value provided is " + str(plot2DNet['orderBy']) + ".")
 
-                    if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
+                        if 'view' in plot2DNet:
+                            if plot2DNet['spikeHist'] not in ['xy', 'xz']:
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'view': Valid values are " + str(['xy', 'xz'])+ ". Value provided is " + str(plot2DNet['view']) + ".")
+
+                        if 'showConns' in plot2DNet and not isinstance( plot2DNet['showConns'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showConns': Must be boolean. Value provided is " + str(plot2DNet['showConns']) + ".")
+
+                        if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
 
                 if 'nTE' in analysis:
 
@@ -1343,24 +1376,29 @@ class TestTypeObj(object):
 
                     if not isinstance ( nTE, dict):
                         errorMessages.append("SimConfig->'analysis'->'nTE': Must be a dict.  Value provided is " + str(nTE) + ".")
+                    else:
+                        validList = ['cells1', 'cells2', 'spks1', 'spks2', 'timeRange', 'binSize', 'numShuffle']
 
-                    if 'cells1' in nTE and not isinstance( nTE['cells1'], list):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'cells1': Must be a list. Value provided is " + str(nTE['cells1']) + ".")
+                        if not all(x in validList for x in nTE.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'nTE': nTE must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(nTE.keys()) + ".")
 
-                    if 'cells2' in nTE and not isinstance( nTE['cells2'], list):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'cells2': Must be a list. Value provided is " + str(nTE['cells2']) + ".")
+                        if 'cells1' in nTE and not isinstance( nTE['cells1'], list):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'cells1': Must be a list. Value provided is " + str(nTE['cells1']) + ".")
 
-                    if 'spks1' in nTE and not isinstance( nTE['spks1'], list):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'spks1': Must be a list. Value provided is " + str(nTE['spks1']) + ".")
+                        if 'cells2' in nTE and not isinstance( nTE['cells2'], list):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'cells2': Must be a list. Value provided is " + str(nTE['cells2']) + ".")
 
-                    if 'spks2' in nTE and not isinstance( nTE['spks2'], list):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'spks2': Must be a list. Value provided is " + str(nTE['spks2']) + ".")
+                        if 'spks1' in nTE and not isinstance( nTE['spks1'], list):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'spks1': Must be a list. Value provided is " + str(nTE['spks1']) + ".")
 
-                    if 'binSize' in nTE and not isinstance( nTE['binSize'], int):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'binSize': Must be an int. Value provided is " + str(nTE['binSize']) + ".")
+                        if 'spks2' in nTE and not isinstance( nTE['spks2'], list):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'spks2': Must be a list. Value provided is " + str(nTE['spks2']) + ".")
 
-                    if 'numShuffle' in nTE and not isinstance( nTE['numShuffle'], int):
-                        errorMessages.append("SimConfig->'analysis'->'nTE'->'numShuffle': Must be an int. Value provided is " + str(nTE['numShuffle']) + ".")
+                        if 'binSize' in nTE and not isinstance( nTE['binSize'], int):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'binSize': Must be an int. Value provided is " + str(nTE['binSize']) + ".")
+
+                        if 'numShuffle' in nTE and not isinstance( nTE['numShuffle'], int):
+                            errorMessages.append("SimConfig->'analysis'->'nTE'->'numShuffle': Must be an int. Value provided is " + str(nTE['numShuffle']) + ".")
 
                 if 'granger' in analysis:
 
@@ -1368,27 +1406,33 @@ class TestTypeObj(object):
 
                     if not isinstance ( granger, dict):
                         errorMessages.append("SimConfig->'analysis'->'granger': Must be a dict.  Value provided is " + str(granger) + ".")
+                    else:
 
-                    if 'cells1' in granger and not isinstance( granger['cells1'], list):
-                        errorMessages.append("SimConfig->'analysis'->'granger'->'cells1': Must be a list. Value provided is " + str(granger['cells1']) + ".")
+                        validList = ['cells1', 'cells2', 'spks1', 'spks2','label1', 'label2', 'timeRange', 'binSize', 'plotFig', 'saveData', 'saveFig', 'showFig']
 
-                    if 'cells2' in granger and not isinstance( granger['cells2'], list):
-                        errorMessages.append("SimConfig->'analysis'->'granger'->'cells2': Must be a list. Value provided is " + str(granger['cells2']) + ".")
+                        if not all(x in validList for x in granger.keys()):
+                            errorMessages.append("SimConfig->'analysis'->'granger': granger must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(granger.keys()) + ".")
 
-                    if 'spks1' in granger and not isinstance( granger['spks1'], list):
-                        errorMessages.append("SimConfig->'analysis'->'granger'->'spks1': Must be a list. Value provided is " + str(granger['spks1']) + ".")
+                        if 'cells1' in granger and not isinstance( granger['cells1'], list):
+                            errorMessages.append("SimConfig->'analysis'->'granger'->'cells1': Must be a list. Value provided is " + str(granger['cells1']) + ".")
 
-                    if 'spks2' in granger and not isinstance( granger['spks2'], list):
-                        errorMessages.append("SimConfig->'analysis'->'granger'->'spks2': Must be a list. Value provided is " + str(granger['spks2']) + ".")
+                        if 'cells2' in granger and not isinstance( granger['cells2'], list):
+                            errorMessages.append("SimConfig->'analysis'->'granger'->'cells2': Must be a list. Value provided is " + str(granger['cells2']) + ".")
 
-                    if 'binSize' in granger and not isinstance( granger['binSize'], int):
-                        errorMessages.append("SimConfig->'analysis'->'granger'->'binSize': Must be an int. Value provided is " + str(granger['binSize']) + ".")
+                        if 'spks1' in granger and not isinstance( granger['spks1'], list):
+                            errorMessages.append("SimConfig->'analysis'->'granger'->'spks1': Must be a list. Value provided is " + str(granger['spks1']) + ".")
 
-                    if 'plotFig' in plot2DNet and not isinstance( plot2DNet['plotFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'plotFig': Must be boolean. Value provided is " + str(plot2DNet['plotFig']) + ".")
+                        if 'spks2' in granger and not isinstance( granger['spks2'], list):
+                            errorMessages.append("SimConfig->'analysis'->'granger'->'spks2': Must be a list. Value provided is " + str(granger['spks2']) + ".")
 
-                    if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
+                        if 'binSize' in granger and not isinstance( granger['binSize'], int):
+                            errorMessages.append("SimConfig->'analysis'->'granger'->'binSize': Must be an int. Value provided is " + str(granger['binSize']) + ".")
+
+                        if 'plotFig' in plot2DNet and not isinstance( plot2DNet['plotFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'plotFig': Must be boolean. Value provided is " + str(plot2DNet['plotFig']) + ".")
+
+                        if 'showFig' in plot2DNet and not isinstance( plot2DNet['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'showFig': Must be boolean. Value provided is " + str(plot2DNet['showFig']) + ".")
 
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
@@ -1494,7 +1538,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.simConfig.duration"
         testObj.testTypes = [TEST_TYPE_IS_FLOAT]
-        testObj.messageText = ["SimConfig->'duration':Duration is not an float."]
+        testObj.messageText = ["SimConfig->'duration': Value should be a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["durationTest"] = testObj
@@ -1507,7 +1551,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.simConfig.dt"
         testObj.testTypes = [TEST_TYPE_IS_FLOAT]
-        testObj.messageText = ["simConfig->'dt':dt is not a float."]
+        testObj.messageText = ["simConfig->'dt': Value should be a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["dtTest"] = testObj
@@ -1727,7 +1771,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.simConfig.recordStep"
         testObj.testTypes = [TEST_TYPE_IS_FLOAT]
-        testObj.messageText = ["SimConfig->'recordStep':recordStep is not a float."]
+        testObj.messageText = ["SimConfig->'recordStep': Value should be a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["recordStepTest"] = testObj
@@ -1739,7 +1783,7 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.simConfig.saveDataInclude"
         testObj.testTypes = [TEST_TYPE_IS_LIST]
-        testObj.messageText = ["SimConfig->'saveDataInclude':saveDataInclude is not a float."]
+        testObj.messageText = ["SimConfig->'saveDataInclude': Value should be a float."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["saveDataIncludeTest"] = testObj
@@ -2003,7 +2047,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeX"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeX': sizeX is not an int.","NetParams->'sizeX': sizeX is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeX': Value should be an int.","NetParams->'sizeX': sizeX is not greater than 0."]
 
         self.testParamsMap["net"]["sizeXTest"] = testObj
 
@@ -2014,7 +2058,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeY"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeY': sizeY is not an int.","NetParams->'sizeY': sizeY is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeY': Value should be an int.","NetParams->'sizeY': sizeY is not greater than 0."]
 
         self.testParamsMap["net"]["sizeYTest"] = testObj
 
@@ -2025,7 +2069,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.netParams.sizeZ"
         testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeZ': sizeZ is not an int.","NetParams->'sizeZ': sizeZ is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeZ': Value should be an int.","NetParams->'sizeZ': sizeZ is not greater than 0."]
 
         self.testParamsMap["net"]["sizeZTest"] = testObj
 

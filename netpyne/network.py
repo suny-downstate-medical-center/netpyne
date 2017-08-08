@@ -166,7 +166,6 @@ class Network (object):
         return [cell.stims for cell in self.cells]
 
 
-
     ###############################################################################
     ### Set parameters and add stim
     ###############################################################################
@@ -187,8 +186,8 @@ class Network (object):
                 if len(stimParam['synMech']) > 1:
                     if isinstance (stimParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
-                    elif 'synMech'+param+'Factor' in stimParam: # adapt weight for each synMech
-                        finalParam[param+'SynMech'] = finalParam[param] * stimParam['synMech'+param+'Factor'][i]
+                    elif 'synMech'+param.title()+'Factor' in stimParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param] * stimParam['synMech'+param.title()+'Factor'][i]
 
             params = {k: stimParam.get(k) for k,v in stimParam.iteritems()}
 
@@ -858,8 +857,9 @@ class Network (object):
                 if len(connParam['synMech']) > 1:
                     if isinstance (finalParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
-                    elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                        finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
+                    elif 'synMech'+param.title()+'Factor' in connParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param.title()+'Factor'][i]
+                        print finalParam[param+'SynMech']
 
             params = {'preGid': preCellGid, 
             'sec': connParam.get('sec'), 

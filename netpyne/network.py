@@ -185,7 +185,7 @@ class Network (object):
         for i, synMech in enumerate(stimParam.get('synMech')):
 
             for param in paramPerSynMech:
-                finalParam[param+'SynMech'] = finalParam.get(param)
+                finalParam[param+'SynMech'] = stimParam.get(param)
                 if len(stimParam['synMech']) > 1:
                     if isinstance (stimParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = stimParam[param][i]
@@ -199,6 +199,7 @@ class Network (object):
             params['weight'] = finalParam['weightSynMech']
             params['delay'] = finalParam['delaySynMech']
 
+            print params
             postCell.addStim(params=params)
 
 

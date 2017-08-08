@@ -144,6 +144,9 @@ class Network (object):
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
                             params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
                             params['synMech'] = target.get('synMech', None)
+                            for p in ['Weight', 'Delay', 'loc']:
+                                if 'synMech'+p+'Factor' in target:
+                                    params['synMech'+p+'Factor'] = target.get('synMech'+p+'Factor')
                             
                         
                         if 'originalFormat' in source and source['originalFormat'] == 'NeuroML2':
@@ -185,9 +188,9 @@ class Network (object):
                 finalParam[param+'SynMech'] = finalParam.get(param)
                 if len(stimParam['synMech']) > 1:
                     if isinstance (stimParam.get(param), list):  # get weight from list for each synMech
-                        finalParam[param+'SynMech'] = finalParam[param][i]
+                        finalParam[param+'SynMech'] = stimParam[param][i]
                     elif 'synMech'+param.title()+'Factor' in stimParam: # adapt weight for each synMech
-                        finalParam[param+'SynMech'] = finalParam[param] * stimParam['synMech'+param.title()+'Factor'][i]
+                        finalParam[param+'SynMech'] = stimParam[param] * stimParam['synMech'+param.title()+'Factor'][i]
 
             params = {k: stimParam.get(k) for k,v in stimParam.iteritems()}
 
@@ -859,7 +862,6 @@ class Network (object):
                         finalParam[param+'SynMech'] = finalParam[param][i]
                     elif 'synMech'+param.title()+'Factor' in connParam: # adapt weight for each synMech
                         finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param.title()+'Factor'][i]
-                        print finalParam[param+'SynMech']
 
             params = {'preGid': preCellGid, 
             'sec': connParam.get('sec'), 

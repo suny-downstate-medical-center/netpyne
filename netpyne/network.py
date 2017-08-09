@@ -199,7 +199,6 @@ class Network (object):
             params['weight'] = finalParam['weightSynMech']
             params['delay'] = finalParam['delaySynMech']
 
-            print params
             postCell.addStim(params=params)
 
 

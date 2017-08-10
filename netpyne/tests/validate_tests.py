@@ -41,9 +41,9 @@ class RunNetPyneTests():
 
             # Simulation parameters
             simConfigParams.simConfig.duration = simConfigParams.simConfig.tstop = 100.0 # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.1 # Internal integration timestep to use
+            simConfigParams.simConfig.dt = "a" # Internal integration timestep to use
 
-            simConfigParams.simConfig.seeds = {'conn': 0, 'stim': 0, 'loc': 0}
+            simConfigParams.simConfig.seeds = {'con': 0, 'stim': 0, 'loc': 0}
 
             simConfigParams.simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
             simConfigParams.simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
@@ -53,7 +53,7 @@ class RunNetPyneTests():
             simConfigParams.simConfig.recordCells = ['all']
 
             # Column: v_pop_pre_0_RS_v: Pop: pop_pre; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
-            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_0_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#,'cellLabel':0}}
+            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_0_soma_v'] = {'bla':1,'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#,'cellLabel':0}}
             # Column: v_pop_pre_1_RS_v: Pop: pop_pre; cell: 1; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
             simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_1_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#, 'cellLabel':1}}
             # Column: v_pop_post_0_RS_v: Pop: pop_post; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)

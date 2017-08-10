@@ -38,173 +38,206 @@ class RunNetPyneTests():
             # duration
             self.paramsMap["simConfig"]["durationTest"] = []
             simConfigParams = ParamsObj()
-            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            # Simulation parameters
+            simConfigParams.simConfig.duration = simConfigParams.simConfig.tstop = 100.0 # Duration of the simulation, in ms
+            simConfigParams.simConfig.dt = 0.1 # Internal integration timestep to use
 
-            # invalid duration
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.duration = "s" # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            simConfigParams.simConfig.seeds = {'conn': 0, 'stim': 0, 'loc': 0}
 
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            simConfigParams.simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+            simConfigParams.simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+            simConfigParams.simConfig.verbose = 0 # show detailed messages
+
+            # Recording
+            simConfigParams.simConfig.recordCells = ['all']
+
+            # Column: v_pop_pre_0_RS_v: Pop: pop_pre; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_0_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#,'cellLabel':0}}
+            # Column: v_pop_pre_1_RS_v: Pop: pop_pre; cell: 1; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_1_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#, 'cellLabel':1}}
+            # Column: v_pop_post_0_RS_v: Pop: pop_post; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            simConfigParams.simConfig.recordTraces['Volts_file__pop_post_pop_post_0_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_post'}}#, 'cellLabel':0}}
+
+            simConfigParams.simConfig.recordStim = True  # record spikes of cell stims
+            simConfigParams.simConfig.recordStep = simConfigParams.simConfig.dt # Step size in ms to save data (eg. V traces, LFP, etc)
+
+            # Analysis and plottingsimConfig.plotRaster = True # Whether or not to plot a raster
+            simConfigParams.simConfig.analysis.plotTraces = {'include': ['all']}
+
+            # Saving
+            simConfigParams.simConfig.saveJson=1
+            simConfigParams.simConfig.saveFileStep = simConfigParams.simConfig.dt # step size in ms to save data to disk
 
             self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
 
-            # duration
-            self.paramsMap["simConfig"]["dtTest"] = []
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["dtTest"].append(simConfigParams)
-
-            # invalid dt
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = "s"                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["dtTest"].append(simConfigParams)
-
-            # hParams
-            self.paramsMap["simConfig"]["hParamsTest"] = []
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}
-            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["hParamsTest"].append(simConfigParams)
-
-            # invalid hParams
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
-            simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 1                # Internal integration timestep to use
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["hParamsTest"].append(simConfigParams)
-
-            # seeds
-            self.paramsMap["simConfig"]["seedsTest"] = []
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}
-            simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.seeds ={'conn': 1, 'stim': 1, 'loc': 1}
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
-
-            # invalid seeds
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
-            simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # # invalid duration
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.duration = "s" # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
+            #
+            # # duration
+            # self.paramsMap["simConfig"]["dtTest"] = []
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["dtTest"].append(simConfigParams)
+            #
+            # # invalid dt
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = "s"                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["dtTest"].append(simConfigParams)
+            #
+            # # hParams
+            # self.paramsMap["simConfig"]["hParamsTest"] = []
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}
+            # simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["hParamsTest"].append(simConfigParams)
+            #
+            # # invalid hParams
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
+            # simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 1                # Internal integration timestep to use
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["hParamsTest"].append(simConfigParams)
+            #
+            # # seeds
+            # self.paramsMap["simConfig"]["seedsTest"] = []
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.hParams = {'celsius': 6.3, 'clamp_resist': 0.001}
+            # simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # simConfigParams.simConfig.seeds ={'conn': 1, 'stim': 1, 'loc': 1}
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
+            #
+            # # invalid seeds
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
+            # simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
+            # # simConfigParams.simConfig.seeds ={'con': 1, 'stim': 1, 'loc': 1}
+            # simConfigParams.simConfig.seeds ="s"
+            #
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
+            # # invalid seeds
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
+            # simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
             # simConfigParams.simConfig.seeds ={'con': 1, 'stim': 1, 'loc': 1}
-            simConfigParams.simConfig.seeds ="s"
-
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
-            # invalid seeds
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.hParams = {'celsius11': 6.3, 'clamp_resist': 0.001}
-            simConfigParams.simConfig.duration = 0.5*1e3  # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
-            simConfigParams.simConfig.seeds ={'con': 1, 'stim': 1, 'loc': 1}
-            #simConfigParams.simConfig.seeds ="s"
-
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
-            self.paramsMap["simConfig"]["plotRasterTest"] = []
-            # invalid seeds
-            simConfigParams = ParamsObj()
-            simConfigParams.simConfig.verbose = False           # Show detailed messages
-            simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-            simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
-            simConfigParams.simConfig.filename = 'model_output' # Set file output name
-            simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
-
-            simConfigParams.simConfig.analysis['plotRaster'] = {'bla':1,'syncLines': True}      # Plot a raster
-            simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-            simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
-
-            self.paramsMap["simConfig"]["plotRasterTest"].append(simConfigParams)
+            # #simConfigParams.simConfig.seeds ="s"
+            #
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["seedsTest"].append(simConfigParams)
+            # self.paramsMap["simConfig"]["plotRasterTest"] = []
+            # # invalid seeds
+            # simConfigParams = ParamsObj()
+            # simConfigParams.simConfig.verbose = False           # Show detailed messages
+            # simConfigParams.simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+            # simConfigParams.simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+            # simConfigParams.simConfig.filename = 'model_output' # Set file output name
+            # simConfigParams.simConfig.savePickle = False        # Save params, network and sim output to pickle file
+            #
+            # simConfigParams.simConfig.analysis['plotRaster'] = {'bla':1,'syncLines': True}      # Plot a raster
+            # simConfigParams.simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
+            # simConfigParams.simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+            #
+            # self.paramsMap["simConfig"]["plotRasterTest"].append(simConfigParams)
 
         def loadTestsWithParams(self):
 

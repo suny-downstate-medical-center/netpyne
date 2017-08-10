@@ -254,7 +254,7 @@ class TestTypeObj(object):
 
     def testIsBoolean(self,val): # TEST_TYPE_IS_BOOLEAN
         try:
-            assert (isinstance (val,bool)), "Value specified is " + str(val) + "."
+            assert (isinstance (val,bool) or val in [0,1]), "Value specified is " + str(val) + "."
         except AssertionError as e:
             #e.args += (,)
             raise
@@ -1278,8 +1278,8 @@ class TestTypeObj(object):
                         if 'binSize' in plotTraces and not isinstance( plotTraces['binSize'], int):
                             errorMessages.append("SimConfig->'analysis'->'plotTraces'->'binSize': Must be an integer. Value provided is " + str(plotTraces['binSize']) + ".")
 
-                        if 'oneFigPer' in plotRaster and plotRaster['oneFigPer'] not in ['cell','trace']:
-                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotRaster['oneFigPer']) + ".")
+                        if 'oneFigPer' in plotTraces and plotTraces['oneFigPer'] not in ['cell','trace']:
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces'->'oneFigPer': oneFigPer must be in " + str(['rate','count']) + ". Value provided is " + str(plotTraces['oneFigPer']) + ".")
 
                         if 'rerun' in plotTraces and not isinstance( plotTraces['rerun'], bool):
                                 errorMessages.append("SimConfig->'analysis'->'plotTraces'->'rerun': Must be boolean. Value provided is " + str(plotTraces['rerun']) + ".")

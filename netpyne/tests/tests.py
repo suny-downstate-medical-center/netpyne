@@ -317,7 +317,7 @@ class TestTypeObj(object):
             if isinstance(paramDict, dict) and isinstance(valList, list):
                 if isinstance(valList, str):
                     valList = eval(valList)
-                assert (all([x in valList for x in paramDict.keys()])), " '" + str(paramDict.keys()[[x in valList for x in paramDict.keys()].index(False)]) + "' must be a key in list " + str(valList) + ". Keys provided are " + str(paramDict.keys()) + "."
+                assert (all([x in valList for x in paramDict.keys()])), " contains invalid key '" + str(paramDict.keys()[[x in valList for x in paramDict.keys()].index(False)]) + "': Valid values are: " + str(valList) + "."
                 #assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str("") + ". Keys provided are " + str(paramDict.keys()) + "."
 
         except AssertionError as e:
@@ -1564,7 +1564,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.simConfig.hParams"
         testObj.testTypes = [TEST_TYPE_IS_DICT, TEST_TYPE_DICT_KEY_VALID_VALUE ]
         testObj.testValueList = "h.__dict__.keys()"
-        testObj.messageText = ["simConfig->'hParams':hParams is not a dict.", "simConfig->'hParams':is not a valid value. Valid key values are in h.__dict__.keys()."   ]
+        testObj.messageText = ["simConfig->'hParams':hParams is not a dict.", "simConfig->'hParams':"   ]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["hParamsTest"] = testObj
@@ -1603,7 +1603,7 @@ class SimTestObj(object):
         testObj.testParameterValue = "self.simConfig.seeds"
         testObj.testTypes = [TEST_TYPE_IS_DICT,TEST_TYPE_DICT_KEY_VALID_VALUE ]
         testObj.testValueList = ['conn', 'stim', 'loc']
-        testObj.messageText = ["simConfig->'seeds':seeds is not a dict.","SimConfig->'seeds':is not a valid value. Valid values are 'conn', 'stim', 'loc'."]
+        testObj.messageText = ["simConfig->'seeds':seeds is not a dict.","SimConfig->'seeds':"]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["simConfig"]["seedsTest"] = testObj

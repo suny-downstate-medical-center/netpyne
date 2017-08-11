@@ -187,6 +187,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         for sec in h.allsec():
             try:
                 h.delete_section(sec=sec)
+                h.pop_section()
             except:
                 pass
     h.initnrn()

@@ -375,7 +375,7 @@ class CompartCell (Cell):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] == None: 
+            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]: 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
@@ -540,7 +540,8 @@ class CompartCell (Cell):
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
                 else:
-                    sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    sec = next((sec for secName, sec in self.secs.iteritems() if len(sec['topol']) == 0), self.secs[self.secs.keys()[0]])  # root sec (no parents)
                     loc = 0.5
                 nc = None
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
@@ -699,7 +700,7 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-
+            
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -925,6 +926,14 @@ class CompartCell (Cell):
                                         conn['hNetcon'].weight[0] = paramValue
                                     elif paramName in ['delay', 'threshold']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
+                                    elif paramName in ['rate']: 
+                                        stim['interval'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    elif paramName in ['interval']: 
+                                        stim['rate'] = 1.0/paramValue
+                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                    else:
+                                        setattr(stim['h'+stim['type']], paramName, paramValue)
                                 else:
                                     setattr(stim['h'+stim['type']], paramName, paramValue)
                             except:
@@ -942,8 +951,6 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
                 return 
-                
-        sec = self.secs[params['sec']]
 
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
@@ -975,6 +982,7 @@ class CompartCell (Cell):
        
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            sec = self.secs[params['sec']]
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -997,7 +1005,8 @@ class CompartCell (Cell):
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
                 
         else:
-            if sim.cfg.verbose: print('Adding exotic stim (NeuroML 2 based?): %s'% params)   
+            if sim.cfg.verbose: print('Adding exotic stim (NeuroML 2 based?): %s'% params)
+            sec = self.secs[params['sec']]   
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -1006,17 +1015,19 @@ class CompartCell (Cell):
                     print "Can't set point process paramaters of type vector eg. VClamp.amp[3]"
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                elif 'originalFormat' in params:
+                elif 'originalFormat' in params and stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
-                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
-                        rand = h.Random()
-                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
-                        rand.negexp(1)
-                        stim.noiseFromRandom(rand)
-                        params['h%s'%params['originalFormat']] = rand
+
+                    rand = h.Random()
+                    sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
+                    rand.negexp(1)
+                    stim.noiseFromRandom(rand)
+                    params['h%s'%params['originalFormat']] = rand
                 else: 
-                    setattr(stim, stimParamName, stimParamValue)
-                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    if stimParamName in ['weight']:
+                        setattr(stim, stimParamName, stimParamValue)
+                        stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                        
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
@@ -1323,7 +1334,7 @@ class PointCell (Cell):
                     if 'interval' in pulse:
                         interval = pulse['interval'] 
                     elif 'rate' in pulse:
-                        interval = 1000/pulse['rate']
+                        interval = 1000.0/pulse['rate']
                     else:
                         print 'Error: Vecstim pulse missing "rate" or "interval" parameter'
                         return

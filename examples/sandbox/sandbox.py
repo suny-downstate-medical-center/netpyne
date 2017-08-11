@@ -1,53 +1,103 @@
-from neuron import h, gui
+"""
+params.py 
 
-pc = h.ParallelContext()
-pc.set_maxstep(10)
-idhost = int(pc.id())
-nhost = int(pc.nhost())
+netParams is a dict containing a set of network parameters using a standardized structure
 
-# Create presyn cell 1
-pre1_gid = 0
-pre1_host = 0
-if idhost == pre1_host:
-    pre1 = h.Section(name='pre1')
-    pc.set_gid2node(pre1_gid, pre1_host)
-    nc = h.NetCon(pre1(0.5)._ref_v, None, sec = pre1)
-    nc.threshold = 20.0
-    pc.cell(pre1_gid, nc)
+simConfig is a dict containing a set of simulation configurations using a standardized structure
 
-# Create presyn cell 2
-pre2_gid = 1
-pre2_host = 1 if nhost>1 else 0
-if idhost == pre2_host:
-    pre2 = h.Section(name='pre2')
-    pc.set_gid2node(pre2_gid, pre2_host)
-    nc = h.NetCon(pre2(0.5)._ref_v, None, sec = pre2) 
-    nc.threshold = 20.0
-    pc.cell(pre2_gid, nc)
+Contributors: salvadordura@gmail.com
+"""
 
-# Create postsyn cell
-post_gid = 2
-post_host = 0
-if idhost == post_host:
-    post = h.Section(name='post')
-    postsyn = h.Exp2Syn(post(0.5))
-    pc.set_gid2node(post_gid, post_host)
-    nc = h.NetCon(post(0.5)._ref_v, None, sec = post)
-    pc.cell(post_gid, nc) # Associate the cell with this host and gid
+from netpyne import specs, sim
+
+netParams = specs.NetParams()   # object of class NetParams to store the network parameters
+simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
 
 
-# Connect pre to post cells
-if pc.gid_exists(post_gid):
-    nc1 = pc.gid_connect(pre1_gid, postsyn)
-    nc1.threshold = 5.0
-    nc2 = pc.gid_connect(pre2_gid, postsyn)
-    nc2.threshold = 5.0
+###############################################################################
+#
+# MPI HH TUTORIAL PARAMS
+#
+###############################################################################
+
+###############################################################################
+# NETWORK PARAMETERS
+###############################################################################
+
+# Population parameters
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5} # add dict with params for this pop 
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR2', 'numCells': 5} # add dict with params for this pop 
 
 
-# run sim
-h.stdinit()
+# Cell parameters
+## PYR cell properties
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}}   # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR'] = cellRule                                                  # add dict to list of cell params
 
-for i in range(3):
-    if pc.gid_exists(i):
-        print '\ngid: %d, pc.threshold: %.1f' % (i, pc.threshold(i))
+
+cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR2'},  'secs': {}}   # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR2'] = cellRule                                                  # add dict to list of cell params
+
+# Synaptic mechanism parameters
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+
+
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+netParams.stimSourceParams['bkg2'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
+
+netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
+
+
+# Connectivity parameters
+netParams.connParams['PYR->PYR'] = {
+    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': ['PYR','PYR2']},
+    'weight': 0.002,                    # weight of each connection
+    'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'convergence': 'uniform(1,15)'}    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+
+
+###############################################################################
+# SIMULATION PARAMETERS
+###############################################################################
+
+# Simulation parameters
+simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.dt = 'a' # Internal integration timestep to use
+simConfig.seeds = {'con': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = False  # show detailed messages 
+
+simConfig.checkErrors = 0
+
+# Recording 
+simConfig.recordCells = []  # which cells to record from
+simConfig.recordTraces = {'Vsoma':{'se':'soma','loc':0.5,'var':'v','conds': {'cellType': 'PYR2'}}}
+simConfig.recordStim = True  # record spikes of cell stims
+simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+
+# Saving
+simConfig.filename = 'HHTut'  # Set file output name
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveMat = True
+
+# Analysis and plotting 
+simConfig.analysis['plotRaster'] = {'bla':1}
+#simConfig.analysis['plotTraces'] = {'include': ['all'], 'oneFigPer':'trace'}
+
+sim.createSimulateAnalyze()
+
+#data=sim.loadSimData('HHTut.mat')
+
 

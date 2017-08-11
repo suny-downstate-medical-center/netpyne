@@ -36,11 +36,6 @@ def initialize (netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
-        simTestObj = sim.SimTestObj(simConfig.checkErrorsVerbose)
-        simTestObj.netParams = netParams
-        simTestObj.runTests()
-
     # for testing validation
     # if simConfig.exitOnError:
     #sys.exit()
@@ -65,6 +60,12 @@ def initialize (netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
+
+    if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
+        simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
+        simTestObj.simConfig = sim.cfg
+        simTestObj.netParams = sim.net.params
+        simTestObj.runTests()
 
     sim.timing('stop', 'initialTime')
 
@@ -245,6 +246,59 @@ def loadAll (filename, data=None):
 
 
 ###############################################################################
+# Support funcs to load from mat
+###############################################################################
+
+def _mat2dict(obj): 
+    '''
+    A recursive function which constructs from matobjects nested dictionaries
+    Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
+    '''
+    import scipy.io as spio
+    import numpy as np
+
+    if isinstance(obj, dict):
+        out = {}
+        for key in obj:
+            if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(obj[key])
+            elif isinstance(obj[key], np.ndarray):
+                out[key] = _mat2dict(obj[key])
+            else:
+                out[key] = obj[key]
+
+    elif isinstance(obj, spio.matlab.mio5_params.mat_struct):
+        out = {}
+        for key in obj._fieldnames:
+            val = obj.__dict__[key]
+            if isinstance(val, spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(val)]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(val)
+            elif isinstance(val, np.ndarray):
+                out[key] = _mat2dict(val)
+            else:
+                out[key] = val
+
+    elif isinstance(obj, np.ndarray):
+        out = []
+        for item in obj:
+            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+                out.append(_mat2dict(item))
+            else:
+                out.append(item)
+
+    else:
+        out = obj
+
+    return out
+
+
+###############################################################################
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
@@ -277,8 +331,10 @@ def _loadFile (filename):
 
     # load mat file
     elif ext == 'mat':
-        from scipy.io import savemat
+        from scipy.io import loadmat
         print('Loading file %s ... ' % (filename))
+        dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
+        data = _mat2dict(dataraw)
         #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
         print('Finished saving!')
 
@@ -367,7 +423,7 @@ def clearAll ():
 ###############################################################################
 def id32 (obj):
     #return hash(obj) & 0xffffffff  # hash func
-    return int(hashlib.md5(obj).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+    return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
 ###############################################################################
@@ -691,10 +747,10 @@ def setupRecording ():
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
-        if len(sim.simData) > 0:
+        if sim.cfg.recordTime and len(sim.simData) > 0:
             try:
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t)
+                sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 

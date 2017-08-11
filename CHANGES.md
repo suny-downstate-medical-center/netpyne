@@ -1,3 +1,32 @@
+# Version 0.7.2
+
+- Improved NeuroML importing/exporting
+
+- Added error checking for simConfig
+
+- Added popColors option to plotSpikeHist and plotRatePSD
+
+- Added support to load params, cfg, net and simData from .mat files
+
+- Made root section (with no parents) the source of spikes by default (issue #246)
+
+- Added option to set initial cfg in batch sims
+
+- Added option to set grouped params in Batch constructor
+
+- Added option to not record time (to reduce output file size)
+
+- Fixed bug: synMechFraction had no effect; replaced with synMechWeightFactor
+
+- Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
+
+- Fixed bug importing cell -- use h.pop_section() to avoid stack overflow
+
+- Fixed bug when adding stim NetStim where sec is a list
+
+- Fixed bug when adding stim NetStim with multiple synMechs and synsPerConn>1
+
+
 # Version 0.7.1
 
 - Updates and bug fixes of NeuroML importer/exporter

@@ -848,22 +848,22 @@ def preRun ():
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
-    # # cvode variables
-    # if not getattr(h, 'cvode', None):
-    #     h('objref cvode')
-    #     h('cvode = new CVode()')
+    # cvode variables
+    if not getattr(h, 'cvode', None):
+        h('objref cvode')
+        h('cvode = new CVode()')
 
-    # if sim.cfg.cvode_active:
-    #     h.cvode.active(1)
-    # else:
-    #     h.cvode.active(0)
+    if sim.cfg.cvode_active:
+        h.cvode.active(1)
+    else:
+        h.cvode.active(0)
 
-    # if sim.cfg.cache_efficient:
-    #     h.cvode.cache_efficient(1)
-    # else:
-    #     h.cvode.cache_efficient(0)
+    if sim.cfg.cache_efficient:
+        h.cvode.cache_efficient(1)
+    else:
+        h.cvode.cache_efficient(0)
 
-    # h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
 
     # set h global params
     sim.setGlobals()

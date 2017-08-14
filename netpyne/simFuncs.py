@@ -872,11 +872,11 @@ def preRun ():
     h.dt = sim.cfg.dt
     h.tstop = sim.cfg.duration
 
-    # # parallelcontext vars
-    # sim.pc.set_maxstep(10)
-    # mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    # if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
-    # sim.pc.setup_transfer()  # setup transfer of source_var to target_var
+    # parallelcontext vars
+    sim.pc.set_maxstep(10)
+    mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
+    sim.pc.setup_transfer()  # setup transfer of source_var to target_var
 
     # # handler for printing out time during simulation run
     # if sim.rank == 0 and sim.cfg.printRunTime:

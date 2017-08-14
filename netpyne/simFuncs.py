@@ -858,10 +858,10 @@ def preRun ():
     else:
         h.cvode.active(0)
 
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
+    # if sim.cfg.cache_efficient:
+    #     h.cvode.cache_efficient(1)
+    # else:
+    #     h.cvode.cache_efficient(0)
 
     h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
 

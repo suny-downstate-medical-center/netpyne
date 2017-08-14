@@ -355,7 +355,7 @@ class NetParams (object):
         return self.cellParams
 
 
-    def addCellParamsSecList(self, label, secListName, somaDist):
+    def addCellParamsSecList(self, label, secListName, somaDist=None, somaDistY=None):
         import numpy as np
 
         if label in self.cellParams:
@@ -364,9 +364,14 @@ class NetParams (object):
             print 'Error adding secList: netParams.cellParams does not contain %s' % (label)
             return
 
-        if not isinstance(somaDist, list) or len(somaDist) != 2:
+        if somaDist is not None and (not isinstance(somaDist, list) or len(somaDist) != 2):
             print 'Error adding secList: somaDist should be a list with 2 elements'
             return
+
+        if somaDistY is not None and (not isinstance(somaDistY, list) or len(somaDistY) != 2):
+            print 'Error adding secList: somaDistY should be a list with 2 elements'
+            return
+
 
         secList = []
         for secName, sec in cellRule.secs.iteritems():
@@ -374,9 +379,13 @@ class NetParams (object):
                 pt3d = sec['geom']['pt3d']
                 midpoint = int(len(pt3d)/2)
                 x,y,z = pt3d[midpoint][0:3]
-                distSec = np.linalg.norm(np.array([x,y,z]))
-                if distSec >= somaDist[0] and distSec <= somaDist[1]:
-                    secList.append(secName)
+                if somaDist:
+                    distSec = np.linalg.norm(np.array([x,y,z]))
+                    if distSec >= somaDist[0] and distSec <= somaDist[1]:
+                        secList.append(secName)
+                elif somaDistY:
+                    if y >= somaDistY[0] and y <= somaDistY[1]:
+                        secList.append(secName)                    
 
             else:
                 print 'Error adding secList: Sections do not contain 3d points'

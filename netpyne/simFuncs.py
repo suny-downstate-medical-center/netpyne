@@ -844,26 +844,26 @@ def setGlobals ():
 ###############################################################################
 def preRun ():
     # set initial v of cells
-    sim.fih = []
-    for cell in sim.net.cells:
-       sim.fih.append(h.FInitializeHandler(0, cell.initV))
+    # sim.fih = []
+    # for cell in sim.net.cells:
+    #    sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
-    # cvode variables
-    if not getattr(h, 'cvode', None):
-        h('objref cvode')
-        h('cvode = new CVode()')
+    # # cvode variables
+    # if not getattr(h, 'cvode', None):
+    #     h('objref cvode')
+    #     h('cvode = new CVode()')
 
-    if sim.cfg.cvode_active:
-        h.cvode.active(1)
-    else:
-        h.cvode.active(0)
+    # if sim.cfg.cvode_active:
+    #     h.cvode.active(1)
+    # else:
+    #     h.cvode.active(0)
 
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
+    # if sim.cfg.cache_efficient:
+    #     h.cvode.cache_efficient(1)
+    # else:
+    #     h.cvode.cache_efficient(0)
 
-    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    # h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
 
     # set h global params
     sim.setGlobals()
@@ -872,42 +872,42 @@ def preRun ():
     h.dt = sim.cfg.dt
     h.tstop = sim.cfg.duration
 
-    # parallelcontext vars
-    sim.pc.set_maxstep(10)
-    mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
-    sim.pc.setup_transfer()  # setup transfer of source_var to target_var
+    # # parallelcontext vars
+    # sim.pc.set_maxstep(10)
+    # mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
+    # if sim.rank==0 and sim.cfg.verbose: print('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
+    # sim.pc.setup_transfer()  # setup transfer of source_var to target_var
 
-    # handler for printing out time during simulation run
-    if sim.rank == 0 and sim.cfg.printRunTime:
-        def printRunTime():
-            h('objref cvode')
-            h('cvode = new CVode()')
-            for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+    # # handler for printing out time during simulation run
+    # if sim.rank == 0 and sim.cfg.printRunTime:
+    #     def printRunTime():
+    #         h('objref cvode')
+    #         h('cvode = new CVode()')
+    #         for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
+    #             h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
 
-        sim.printRunTime = printRunTime
-        sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
+    #     sim.printRunTime = printRunTime
+    #     sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
 
-    # reset all netstims so runs are always equivalent
-    for cell in sim.net.cells:
-        if cell.tags.get('cellModel') == 'NetStim':
-            #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
-            _init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
-            cell.hRandom.negexp(1)
-            cell.hPointp.noiseFromRandom(cell.hRandom)
-        pop = sim.net.pops[cell.tags['pop']]
-        if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
-            if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
-            cell.initRandom()
-        for stim in cell.stims:
-            if 'hRandom' in stim:
-                #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
-                _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
-                stim['hRandom'].negexp(1)
-                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
-                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
-                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+    # # reset all netstims so runs are always equivalent
+    # for cell in sim.net.cells:
+    #     if cell.tags.get('cellModel') == 'NetStim':
+    #         #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
+    #         _init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
+    #         cell.hRandom.negexp(1)
+    #         cell.hPointp.noiseFromRandom(cell.hRandom)
+    #     pop = sim.net.pops[cell.tags['pop']]
+    #     if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
+    #         if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
+    #         cell.initRandom()
+    #     for stim in cell.stims:
+    #         if 'hRandom' in stim:
+    #             #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+    #             _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
+    #             stim['hRandom'].negexp(1)
+    #             # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+    #             if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+    #                 stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################

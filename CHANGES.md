@@ -1,3 +1,7 @@
+# Version 0.7.3
+
+- Option to create section lists based on y displacement from soma (addCellParamsSecList)
+
 # Version 0.7.2
 
 - Improved NeuroML importing/exporting

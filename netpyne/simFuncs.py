@@ -36,11 +36,6 @@ def initialize (netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
-        simTestObj = sim.SimTestObj(simConfig.checkErrorsVerbose)
-        simTestObj.netParams = netParams
-        simTestObj.runTests()
-
     # for testing validation
     # if simConfig.exitOnError:
     #sys.exit()
@@ -65,6 +60,12 @@ def initialize (netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
+
+    if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
+        simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
+        simTestObj.simConfig = sim.cfg
+        simTestObj.netParams = sim.net.params
+        simTestObj.runTests()
 
     sim.timing('stop', 'initialTime')
 

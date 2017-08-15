@@ -78,7 +78,7 @@ simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = False  # show detailed messages 
 
-simConfig.checkErrors = 1
+simConfig.checkErrors = 0
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from

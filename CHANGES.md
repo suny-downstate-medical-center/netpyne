@@ -2,6 +2,8 @@
 
 - Option to create section lists based on y displacement from soma (addCellParamsSecList)
 
+- Converted popParams, cellParams etc to object of their own class and added method to set param
+
 # Version 0.7.2
 
 - Improved NeuroML importing/exporting

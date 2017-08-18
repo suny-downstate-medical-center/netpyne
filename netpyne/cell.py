@@ -417,6 +417,11 @@ class CompartCell (Cell):
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
+                                print(sec)
+                                print(seg)
+                                print(mechName)
+                                print(mechParamName)
+                                print(mechParamValueFinal)
                                 seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
                             
             # add ions

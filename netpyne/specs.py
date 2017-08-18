@@ -1,3 +1,4 @@
+
 """
 specs.py
 NetParams is a class containing a set of network parameters using a standardized structure
@@ -200,6 +201,7 @@ class ODict(OrderedDict):
 
     def __setstate__ (self, d):
         self = self.fromOrderedDict(d)
+
 
 
 ###############################################################################

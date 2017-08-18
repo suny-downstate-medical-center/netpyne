@@ -40,8 +40,10 @@ def importCellParams (fileName, labels, values, key = None):
             if filePath not in sys.path:  # add to path if not there (need to import module)
                 sys.path.insert(0, filePath)
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-            tempModule=None
-            exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
+            # tempModule=None
+            # exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
+            import importlib
+            tempModule = importlib.import_module(moduleName)
             modulePointer = tempModule
             paramLabels = getattr(modulePointer, labels) # tuple with labels
             paramValues = getattr(modulePointer, values)  # variable with paramValues
@@ -171,8 +173,6 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         import importlib
         tempModule = importlib.import_module(moduleName)
         #exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
-
-        print(tempModule)
         modulePointer = tempModule
 
         if isinstance(cellArgs, dict):

@@ -169,7 +169,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         tempModule=None
-        print moduleName
+        print(moduleName)
         exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
         print(tempModule in globals())
         print(tempModule in locals())

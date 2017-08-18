@@ -169,9 +169,14 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         tempModule=None
-        exec('import ' + moduleName + ' as tempModule') #, globals(), locals()) # import module dynamically
+        print moduleName
+        exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
+        print(tempModule in globals())
+        print(tempModule in locals())
+        print(tempModule)
+
         modulePointer = tempModule
-        print(modulePointer)
+
         print(dir(modulePointer))
         if isinstance(cellArgs, dict):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args

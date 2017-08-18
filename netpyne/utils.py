@@ -168,6 +168,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
+        import importlib
         tempModule = importlib.import_module(moduleName)
         #exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
 

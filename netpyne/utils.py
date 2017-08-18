@@ -41,9 +41,7 @@ def importCellParams (fileName, labels, values, key = None):
                 sys.path.insert(0, filePath)
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
             tempModule=None
-            print(moduleName)
             exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
-            print(tempModule)
             modulePointer = tempModule
             paramLabels = getattr(modulePointer, labels) # tuple with labels
             paramValues = getattr(modulePointer, values)  # variable with paramValues
@@ -171,10 +169,10 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             sys.path.insert(0, filePath)
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         tempModule=None
-        print(moduleName)
         exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
-        print(tempModule)
         modulePointer = tempModule
+        print(modulePointer)
+        print(dir(modulePointer))
         if isinstance(cellArgs, dict):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
         else:

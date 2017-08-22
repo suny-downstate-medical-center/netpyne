@@ -441,23 +441,23 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
         if objCopy=='ROOT':
             objCopy = []
         for item in obj:
-            if type(item) in [list]:
+            if isinstance(item, list):
                 objCopy.append([])
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
-            elif type(item) in [dict, Dict]:
+            elif isinstance(item, (dict, Dict)):
                 objCopy.append({})
                 copyReplaceItemObj(item, keystart, newval, objCopy[-1])
             else:
                 objCopy.append(item)
 
-    elif type(obj) in [dict, Dict]:
+    elif isinstance(obj, (dict, Dict)):
         if objCopy == 'ROOT':
             objCopy = Dict()
         for key,val in obj.iteritems():
             if type(val) in [list]:
                 objCopy[key] = []
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
-            elif type(val) in [dict, Dict]:
+            elif isinstance(val, (dict, Dict)):
                 objCopy[key] = {}
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
             elif key.startswith(keystart):
@@ -473,14 +473,14 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 def clearObj (obj):
     if type(obj) == list:
         for item in obj:
-            if type(item) in [list, dict, Dict, ODict]:
+            if isinstance(item, (list, dict, Dict, ODict)):
                 clearObj(item)
             del item
 
-    elif type(obj) in [dict, Dict, ODict]:
+    elif isinstance(obj, (dict, Dict, ODict)):
         for key in obj.keys():
             val = obj[key]
-            if type(val) in [list, dict, Dict, ODict]:
+            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
                 clearObj(val)
             del obj[key]
     return obj
@@ -509,13 +509,13 @@ def replaceItemObj (obj, keystart, newval):
 def replaceKeys (obj, oldkey, newkey):
     if type(obj) == list:
         for item in obj:
-            if type(item) in [list, dict, Dict, ODict, OrderedDict]:
+            if isinstance(item, (list, dict, Dict, ODict, OrderedDict)):
                 replaceKeys(item, oldkey, newkey)
 
-    elif type(obj) in [dict, Dict, ODict, OrderedDict]:
+    elif isinstance(obj, (dict, Dict, ODict, OrderedDict)):
         for key in obj.keys():
             val = obj[key]
-            if type(val) in [list, dict, Dict, ODict, OrderedDict]:
+            if isinstance(val, (list, dict, Dict, ODict, OrderedDict)):
                 replaceKeys(val, oldkey, newkey)
             if key == oldkey:
                 obj[newkey] = obj.pop(oldkey)
@@ -546,12 +546,12 @@ def replaceFuncObj (obj):
 def replaceNoneObj (obj):
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
-            if type(item) in [list, dict, Dict, ODict]:
+            if isinstance(item, (list, dict, Dict, ODict)):
                 replaceNoneObj(item)
 
-    elif type(obj) in [dict, Dict, ODict]:
+    elif isinstance(obj, (dict, Dict, ODict)):
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, Dict, ODict]:
+            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
@@ -566,38 +566,38 @@ def replaceNoneObj (obj):
 def replaceDictODict (obj):
     if type(obj) == list:
         for item in obj:
-            if type(item) == Dict:
+            if isinstance(item, Dict):
                 item = item.todict()
-            elif type(item) == ODict:
+            elif isinstance(item, ODict):
                 item = item.toOrderedDict()
-            if type(item) in [list, dict, OrderedDict]:
+            if isinstance(item, (list, dict, OrderedDict)):
                 replaceDictODict(item)
 
-    elif type(obj) in [dict, OrderedDict, Dict, ODict]:
+    elif isinstance(obj, (dict, OrderedDict, Dict, ODict)):
         for key,val in obj.iteritems():
-            if type(val) == Dict:
+            if isinstance(val, Dict):
                 obj[key] = val.todict()
-            elif type(val) == ODict:
+            elif isinstance(val, ODict):
                 obj[key] = val.toOrderedDict()
-            if type(val) in [list, dict, OrderedDict]:
+            if isinstance(val, (list, dict, OrderedDict)):
                 replaceDictODict(val)
 
     # elif type(obj) == Dict:
     #     obj = obj.todict()
     #     for key,val in obj.iteritems():
-    #         if type(val) in [list, dict, Dict, ODict]:
+    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
     #             replaceDictODict(val)
 
     # elif type(obj) == ODict:
     #     print obj.keys()
     #     obj = obj.toOrderedDict()
     #     for key,val in obj.iteritems():
-    #         if type(val) in [list, dict, Dict, ODict]:
+    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
     #             replaceDictODict(val)
 
     # elif type(obj) == dict:
     #     for key,val in obj.iteritems():
-    #         if type(val) in [list, dict, Dict, ODict]:
+    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
     #             replaceDictODict(val)
     return obj
 
@@ -612,9 +612,9 @@ def tupleToStr (obj):
             elif type(item) == tuple:
                 obj[obj.index(item)] = str(item)
 
-    elif type(obj) == dict or type(obj) == ODict:
+    elif isinstance(obj, (dict, ODict)):
         for key,val in obj.iteritems():
-            if type(val) in [list, dict, ODict]:
+            if isinstance(val, (list, dict, ODict)):
                 tupleToStr(val)
             elif type(val) == tuple:
                 obj[key] = str(val) # also replace empty dicts with empty list

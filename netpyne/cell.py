@@ -418,7 +418,8 @@ class CompartCell (Cell):
                                 mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 #seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
-                                seg.__getattribute__(mechName).__dict__[mechParamName] = mechParamValueFinal  # TEMP FIX
+                                setattr(seg.__getattribute__(mechName), mechParamName, mechParamValueFinal)
+                                #seg.__getattribute__(mechName).__dict__[mechParamName] = mechParamValueFinal  # TEMP FIX
 
                             
             # add ions
@@ -433,12 +434,15 @@ class CompartCell (Cell):
                             if type(ionParamValue) in [list]: 
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
-                                seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                                #seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                                setattr(seg, ionParamName+ionName,ionParamValueFinal)
                             elif ionParamName == 'o':
-                                seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                                #seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                                setattr(seg, '%so'%ionName, ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
                             elif ionParamName == 'i':
-                                seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                #seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                setattr(seg, '%si'%ionName, ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
                     #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \

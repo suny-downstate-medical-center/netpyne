@@ -700,14 +700,15 @@ class Network (object):
     ###############################################################################
     def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, disynCounter, maxImbalance=10):
         probability = float(origProbability)
-        bias = min(bias, origProbability)  # don't modify more than orig, so can compensate
+        factor = bias/origProbability
+        #bias = min(bias, origProbability)  # don't modify more than orig, so can compensate
         if not set(prePreGids).isdisjoint(postPreGids) and disynCounter < maxImbalance:
             probability = min(origProbability + bias, 1.0)
-            disynCounter += 1
+            disynCounter += factor #1
         elif disynCounter > -maxImbalance:
             probability = max(origProbability - (min(origProbability + bias, 1.0) - origProbability), 0.0)
             disynCounter -= 1
-        print disynCounter, origProbability, probability
+        #print disynCounter, origProbability, probability
         return probability, disynCounter
 
 
@@ -748,7 +749,7 @@ class Network (object):
             allPreGids = sim._gatherAllCellConnPreGids()
             prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
             postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
-            minProb = 0.05*connParam['probability'] if isinstance(connParam['probability'], Number) else 0.05 
+            minProb = 0.01*connParam['probability'] if isinstance(connParam['probability'], Number) else 0.001
             maxImbalance = len(preCellsTags)*len(postCellsTags)*minProb
 
         disynCounter = 0  # counter for disynaptic connections modified, to keep balance (keep same avg prob) 

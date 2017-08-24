@@ -67,15 +67,15 @@ netParams.connParams['PYR->ALL'] = {
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 0.2}
+    'probability': 0.05}
 
 netParams.connParams['INT->PYR2'] = {
     'preConds': {'pop': ['INT']}, 'postConds': {'pop': ['PYR2']},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 0.2, # '0.4*exp(-dist_3D/probLengthConst)',
-    'disynapticBias': 0.2}  
+    'probability': 0.05, # '0.4*exp(-dist_3D/probLengthConst)',
+    'disynapticBias': 0.5}  
 
 
 ###############################################################################
@@ -111,7 +111,7 @@ simConfig.analysis['plotRaster'] = True
 sim.createSimulateAnalyze()
 
 
-print sim.analysis.calculateDisynaptic()
+sim.analysis.calculateDisynaptic()
 
 #data=sim.loadSimData('HHTut.mat')
 

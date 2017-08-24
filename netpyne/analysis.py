@@ -1584,14 +1584,21 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 ###################################################################################################################################################### 
 def calculateDisynaptic():
     numDis = 0
+    #numInt = 0
+    #totInt = 0
     for postCell in sim.net.allCells:
         preGids = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number)]
         for preGid in preGids:
             preCell = sim.net.allCells[preGid]
             prePreGids = [conn['preGid'] for conn in preCell['conns']]
+            # if preCell.tags['pop'] == 'INT':
+            #         totInt +=1
             if not set(prePreGids).isdisjoint(preGids):
                 numDis += 1
+                # if preCell.tags['pop'] == 'INT':
+                #     numInt +=1
     print '  Total disynaptic connections: %d (%.2f%%)' % (numDis, float(numDis)/float(sim.totalSynapses)*100)
+    #print '  Total disynaptic connections from interneurons: %d (%.2f%%)' % (numInt, float(numInt)/float(totInt)*100)
 
 
 

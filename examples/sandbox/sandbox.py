@@ -27,10 +27,10 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 netParams.probLengthConst = 200
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200, 'xnormRange': [0,0.2]} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0,0.2]} # add dict with params for this pop 
 netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.8,1.0]} # add dict with params for this pop 
 #netParams.popParams['PYR3'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5, 'xNormRange': [0.8,1.0]} # add dict with params for this pop 
-netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
+netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -83,7 +83,7 @@ netParams.connParams['INT->PYR2'] = {
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 1*1e3 # Duration of the simulation, in ms
+simConfig.duration = 0.1*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.05 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network

@@ -1579,6 +1579,21 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 
     return fig
 
+######################################################################################################################################################
+## Calculate number of disynaptic connections
+###################################################################################################################################################### 
+def calculateDisynaptic():
+    numDis = 0
+    for postCell in sim.net.allCells:
+        preGids = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number)]
+        for preGid in preGids:
+            preCell = sim.net.allCells[preGid]
+            prePreGids = [conn['preGid'] for conn in preCell['conns']]
+            if not set(prePreGids).isdisjoint(preGids):
+                numDis += 1
+    print '  Total disynaptic connections: %d (%.2f%%)' % (numDis, float(numDis)/float(sim.totalSynapses)*100)
+
+
 
 ######################################################################################################################################################
 ## Calculate normalized transfer entropy

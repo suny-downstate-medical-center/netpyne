@@ -24,9 +24,13 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 # NETWORK PARAMETERS
 ###############################################################################
 
+netParams.probLengthConst = 200
+
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5} # add dict with params for this pop 
-netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR2', 'numCells': 5} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0,0.2]} # add dict with params for this pop 
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.8,1.0]} # add dict with params for this pop 
+#netParams.popParams['PYR3'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5, 'xNormRange': [0.8,1.0]} # add dict with params for this pop 
+netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -39,12 +43,12 @@ cellRule['secs']['soma']['vinit'] = -71
 netParams.cellParams['PYR'] = cellRule                                                  # add dict to list of cell params
 
 
-cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR2'},  'secs': {}}   # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
-cellRule['secs']['soma']['vinit'] = -71
-netParams.cellParams['PYR2'] = cellRule                                                  # add dict to list of cell params
+# cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR2'},  'secs': {}}   # cell rule dict
+# cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                        # soma params dict
+# cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                                   # soma geometry
+# cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}          # soma hh mechanism
+# cellRule['secs']['soma']['vinit'] = -71
+# netParams.cellParams['PYR2'] = cellRule                                                  # add dict to list of cell params
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
@@ -58,12 +62,20 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PY
 
 
 # Connectivity parameters
-netParams.connParams['PYR->PYR'] = {
-    'preConds': {'pop': 'PYR'}, 'postConds': {'pop': ['PYR','PYR2']},
+netParams.connParams['PYR->ALL'] = {
+    'preConds': {'pop': ['PYR']}, 'postConds': {'pop': ['PYR2', 'INT']},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'convergence': 'uniform(1,15)'}    # convergence (num presyn targeting postsyn) is uniformly distributed between 1 and 15
+    'probability': 0.1}
+
+netParams.connParams['INT->PYR2'] = {
+    'preConds': {'pop': ['INT']}, 'postConds': {'pop': ['PYR2']},
+    'weight': 0.002,                    # weight of each connection
+    'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+    'threshold': 10,                    # threshold
+    'probability': 0.1, # '0.4*exp(-dist_3D/probLengthConst)',
+    'disynapticBias': 0.5}  
 
 
 ###############################################################################
@@ -72,17 +84,17 @@ netParams.connParams['PYR->PYR'] = {
 
 # Simulation parameters
 simConfig.duration = 1*1e3 # Duration of the simulation, in ms
-simConfig.dt = 'a' # Internal integration timestep to use
-simConfig.seeds = {'con': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.dt = 0.05 # Internal integration timestep to use
+simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = False  # show detailed messages 
+simConfig.verbose = 0  # show detailed messages 
 
 simConfig.checkErrors = 0
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from
-simConfig.recordTraces = {'Vsoma':{'se':'soma','loc':0.5,'var':'v','conds': {'cellType': 'PYR2'}}}
+simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v','conds': {'cellType': 'PYR2'}}}
 simConfig.recordStim = True  # record spikes of cell stims
 simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
@@ -93,10 +105,13 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 simConfig.saveMat = True
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = {'bla':1}
+simConfig.analysis['plotRaster'] = True
 #simConfig.analysis['plotTraces'] = {'include': ['all'], 'oneFigPer':'trace'}
-
+#simConfig.analysis['plot2Dnet'] = True
 sim.createSimulateAnalyze()
+
+
+print sim.analysis.calculateDisynaptic()
 
 #data=sim.loadSimData('HHTut.mat')
 

@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
-__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
+__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
 'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
@@ -551,7 +551,7 @@ def replaceNoneObj (obj):
 
     elif isinstance(obj, (dict, Dict, ODict)):
         for key,val in obj.iteritems():
-            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
+            if isinstance(val, (list, dict, Dict, ODict)):
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
@@ -972,6 +972,30 @@ def _gatherAllCellTags ():
             del item
 
     return allCellTags
+
+
+###############################################################################
+### Gather tags from cells
+###############################################################################
+def _gatherAllCellConnPreGids ():
+    data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
+    gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+    sim.pc.barrier()
+    allCellConnPreGids = {}
+    for dataNode in gather:
+        allCellConnPreGids.update(dataNode)
+
+    # clean to avoid mem leaks
+    for node in gather:
+        if node:
+            node.clear()
+            del node
+    for item in data:
+        if item:
+            item.clear()
+            del item
+
+    return allCellConnPreGids
 
 
 ###############################################################################

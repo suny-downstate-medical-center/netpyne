@@ -4,6 +4,8 @@
 
 - Converted popParams, cellParams etc to object of their own class and added method to set param
 
+- Added 'disynapticBias' option to bias probabilistic connections towards disynaptic connections
+
 # Version 0.7.2
 
 - Improved NeuroML importing/exporting

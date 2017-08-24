@@ -4,7 +4,9 @@
 
 - Converted popParams, cellParams etc to object of their own class and added method to set param
 
-- Added 'disynapticBias' option to bias probabilistic connections towards disynaptic connections
+- Added 'disynapticBias' option to increase probability of B->C conns if A->B and A->C exist 
+
+- Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
 
 # Version 0.7.2
 

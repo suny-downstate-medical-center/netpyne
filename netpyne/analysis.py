@@ -1598,8 +1598,10 @@ def calculateDisynaptic():
                 # if preCell.tags['pop'] == 'INT':
                 #     numInt +=1
     print '  Total disynaptic connections: %d (%.2f%%)' % (numDis, float(numDis)/float(sim.totalSynapses)*100)
-    #print '  Total disynaptic connections from interneurons: %d (%.2f%%)' % (numInt, float(numInt)/float(totInt)*100)
-
+    #print '  Total disynaptic connections from interneurons: %d (%.2f%%)' % (numInt, float(
+    sim.allSimData['disynConns'] = numDis
+    
+    return numDis
 
 
 ######################################################################################################################################################

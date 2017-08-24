@@ -27,10 +27,10 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 netParams.probLengthConst = 200
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0,0.2]} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200, 'xnormRange': [0,0.2]} # add dict with params for this pop 
 netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.8,1.0]} # add dict with params for this pop 
 #netParams.popParams['PYR3'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5, 'xNormRange': [0.8,1.0]} # add dict with params for this pop 
-netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
+netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -67,15 +67,15 @@ netParams.connParams['PYR->ALL'] = {
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 0.1}
+    'probability': 0.2}
 
 netParams.connParams['INT->PYR2'] = {
     'preConds': {'pop': ['INT']}, 'postConds': {'pop': ['PYR2']},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 0.1, # '0.4*exp(-dist_3D/probLengthConst)',
-    'disynapticBias': 0.5}  
+    'probability': 0.2, # '0.4*exp(-dist_3D/probLengthConst)',
+    'disynapticBias': 0.2}  
 
 
 ###############################################################################
@@ -102,7 +102,7 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'HHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
-simConfig.saveMat = True
+simConfig.saveMat = 0
 
 # Analysis and plotting 
 simConfig.analysis['plotRaster'] = True

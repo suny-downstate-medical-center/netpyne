@@ -699,13 +699,15 @@ class Network (object):
     ### Disynaptic bias for probability
     ###############################################################################
     def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, disynCounter, maxImbalance=10):
-        probability = origProbability
+        probability = float(origProbability)
+        bias = min(bias, origProbability)  # don't modify more than orig, so can compensate
         if not set(prePreGids).isdisjoint(postPreGids) and disynCounter < maxImbalance:
             probability = min(origProbability + bias, 1.0)
             disynCounter += 1
         elif disynCounter > -maxImbalance:
-            probability = origProbability - (probability - origProbability)
+            probability = max(origProbability - (min(origProbability + bias, 1.0) - origProbability), 0.0)
             disynCounter -= 1
+        print disynCounter, origProbability, probability
         return probability, disynCounter
 
 

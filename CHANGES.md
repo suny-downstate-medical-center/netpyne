@@ -8,6 +8,8 @@
 
 - Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
 
+- Fix bug for newer pyplot versions: replace 'linewidths' with 'lw'
+
 # Version 0.7.2
 
 - Improved NeuroML importing/exporting

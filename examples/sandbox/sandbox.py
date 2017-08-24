@@ -105,7 +105,7 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 simConfig.saveMat = 0
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = True
+simConfig.analysis['calculateDisynaptic'] = True
 #simConfig.analysis['plotTraces'] = {'include': ['all'], 'oneFigPer':'trace'}
 #simConfig.analysis['plot2Dnet'] = True
 sim.createSimulateAnalyze()

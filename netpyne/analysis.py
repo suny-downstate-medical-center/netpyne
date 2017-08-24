@@ -350,7 +350,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
  
-    ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
+    ax1.scatter(spkts, spkinds, 10, lw=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats

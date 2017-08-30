@@ -75,7 +75,7 @@ netParams.connParams['INT->PYR2'] = {
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
     'probability': 0.05, # '0.4*exp(-dist_3D/probLengthConst)',
-    'disynapticBias': 0.5}  
+    'disynapticBias': 0.3}  
 
 
 ###############################################################################
@@ -105,7 +105,7 @@ simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat fil
 simConfig.saveMat = 0
 
 # Analysis and plotting 
-simConfig.analysis['calculateDisynaptic'] = True
+simConfig.analysis['calculateDisynaptic'] = {'includePost': ['PYR2'], 'includePre': ['INT'], 'includePrePre': ['PYR']}
 #simConfig.analysis['plotTraces'] = {'include': ['all'], 'oneFigPer':'trace'}
 #simConfig.analysis['plot2Dnet'] = True
 sim.createSimulateAnalyze()

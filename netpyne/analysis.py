@@ -1582,23 +1582,25 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
 ###################################################################################################################################################### 
-def calculateDisynaptic():
+def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells']):
     numDis = 0
-    #numInt = 0
-    #totInt = 0
-    for postCell in sim.net.allCells:
-        preGids = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number)]
+    totCon = 0
+    
+    _, cellsPreGids, _ =  getCellsInclude(includePre)
+    _, cellsPrePreGids, _ = getCellsInclude(includePrePre)
+    cellsPost, _, _ = getCellsInclude(includePost)
+
+
+    for postCell in cellsPost:
+        preGidsAll = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number) and conn['preGid'] in cellsPreGids+cellsPrePreGids]
+        preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
         for preGid in preGids:
             preCell = sim.net.allCells[preGid]
-            prePreGids = [conn['preGid'] for conn in preCell['conns']]
-            # if preCell.tags['pop'] == 'INT':
-            #         totInt +=1
-            if not set(prePreGids).isdisjoint(preGids):
+            prePreGids = [conn['preGid'] for conn in preCell['conns'] if conn['preGid'] in cellsPrePreGids]
+            totCon += 1
+            if not set(prePreGids).isdisjoint(preGidsAll):
                 numDis += 1
-                # if preCell.tags['pop'] == 'INT':
-                #     numInt +=1
-    print '  Total disynaptic connections: %d (%.2f%%)' % (numDis, float(numDis)/float(sim.totalSynapses)*100)
-    #print '  Total disynaptic connections from interneurons: %d (%.2f%%)' % (numInt, float(
+    print '  Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100)
     sim.allSimData['disynConns'] = numDis
     
     return numDis

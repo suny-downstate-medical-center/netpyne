@@ -45,9 +45,9 @@ netParams.stimTargetParams['bkg->ExcPopType'] = {'source': 'bkg', 'conds': {'pop
 netParams.connParams['ExcPop->ExcPop'] = {
     'preConds': {'popLabel': 'ExcPop'},                                         # presyn: PYR_E
     'postConds': {'popLabel': 'ExcPop'},                                        # postsyn: PYR_E 
-    'probability': 0.1,
+    'probability': 'max(0.1, normal(0.2,1))',
     'weight': 0.008,                                                        # weight of each connection
-    'delay': 'max(1, normal(10,2))',                                         # gaussian distributed transmission delay (ms)
+    'delay': 0.5, #'max(1, normal(10,2))',                                         # gaussian distributed transmission delay (ms)
     'synMech': 'AMPA'}                                                      # target synaptic mechanism 
 
 # netParams.connParams['ExcPop->InhPop'] = {
@@ -90,10 +90,10 @@ cfg.saveFileStep = 1000 # step size in ms to save data to disk
 cfg.savePickle = True # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
-cfg.analysis['plotRaster'] = True  # Plot raster
-cfg.analysis['plotTraces'] = {'include': [('ExcPop',10), ('InhPop',10)]}  # Plot raster
-# cfg.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
-# cfg.analysis['plotConn'] = True
+# cfg.analysis['plotRaster'] = True  # Plot raster
+# cfg.analysis['plotTraces'] = {'include': [('ExcPop',10), ('InhPop',10)]}  # Plot raster
+# # cfg.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
+# # cfg.analysis['plotConn'] = True
 
 
 sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)

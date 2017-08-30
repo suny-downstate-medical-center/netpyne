@@ -10,7 +10,7 @@
 
 - Added 1 second between batch job submission to avoid saturating scheduler
 
-- Fixed bug: init randomizer for each probabilistic connection so string-based functions equivalent indep of cores
+- Fixed bug: init randomizer so params with string-based random func are independent of cores
 
 - Fixed bug for newer pyplot versions: replace 'linewidths' with 'lw'
 

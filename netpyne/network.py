@@ -762,7 +762,6 @@ class Network (object):
                     if probability >= allRands[preCellGid,postCellGid]: 
                         for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                             connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-                        self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -788,7 +787,6 @@ class Network (object):
              
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-                    #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -814,8 +812,7 @@ class Network (object):
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                     connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
- 
-                #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
+            
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -860,12 +857,17 @@ class Network (object):
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
+
+        # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
+        args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
+        if 'rand' in args and connParam['connFunc'] not in ['convConn']:
+            self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
+
         for param in paramStrFunc:
             if param+'List' in connParam:
                 finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
             elif param+'Func' in connParam:
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
-                print finalParam[param]
             else:
                 finalParam[param] = connParam.get(param)
 

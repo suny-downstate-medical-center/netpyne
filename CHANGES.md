@@ -8,7 +8,12 @@
 
 - Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
 
-- Fix bug for newer pyplot versions: replace 'linewidths' with 'lw'
+- Added 1 second between batch job submission to avoid saturating scheduler
+
+- Fixed bug: init randomizer for each probabilistic connection so string-based functions equivalent indep of cores
+
+- Fixed bug for newer pyplot versions: replace 'linewidths' with 'lw'
+
 
 # Version 0.7.2
 

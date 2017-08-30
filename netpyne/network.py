@@ -740,8 +740,7 @@ class Network (object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
 
-        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
-
+        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection        
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
@@ -763,8 +762,7 @@ class Network (object):
                     if probability >= allRands[preCellGid,postCellGid]: 
                         for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                             connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-                       
-                        #rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
+                        self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -790,7 +788,6 @@ class Network (object):
              
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-        
                     #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
@@ -868,6 +865,7 @@ class Network (object):
                 finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
             elif param+'Func' in connParam:
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
+                print finalParam[param]
             else:
                 finalParam[param] = connParam.get(param)
 

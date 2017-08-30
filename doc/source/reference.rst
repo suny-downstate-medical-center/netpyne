@@ -864,17 +864,34 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **plotShape** (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+* **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     
-    Plot 3D cell shape using NEURON Interview PlotShape
+    Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-    - *showSyns*: Show synaptic connections in 3D (True|False) 
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+       - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+        - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+        - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+        - *dist*: 3D distance (like zoom)  
+        - *synSize*: Size of marker to show synapses 
+        - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
+        - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
+        - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
+        - *ivprops*: Dict of properties to plot using Interviews (dict)
+        - *includeAxon*: Include axon in shape plot (True|False)
+        - *showSyns*: Show synaptic connections in 3D (True|False) 
+        - *figSize*: Size of figure ((width, height))
+        - *saveData*: File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (None|True|'fileName')
+        - *saveFig*: File name where to save the figure;
+            if set to True uses filename from simConfig (None|True|'fileName')
+        - *showFig*: Whether to show the figure or not (True|False)
 
-    - Returns figure handles
+        - Returns figure handles
+
+    Examples of plotShape():
+
+    	- cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('PT5B',100)], 'cvar':'numSyns','saveFig': True, 'showFig': False, 'includeAxon': False}
+
 
 
 * **analysis.plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)

@@ -604,20 +604,20 @@ def replaceDictODict (obj):
 ###############################################################################
 ### Replace tuples with str
 ###############################################################################
-def tupleToStr (obj):
+def tupleToList (obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                tupleToStr(item)
+                tupleToList(item)
             elif type(item) == tuple:
-                obj[obj.index(item)] = str(item)
+                obj[obj.index(item)] = list(item)
 
     elif isinstance(obj, (dict, ODict)):
         for key,val in obj.iteritems():
             if isinstance(val, (list, dict, ODict)):
-                tupleToStr(val)
+                tupleToList(val)
             elif type(val) == tuple:
-                obj[key] = str(val) # also replace empty dicts with empty list
+                obj[key] = list(val) # also replace empty dicts with empty list
     return obj
 
 
@@ -1374,7 +1374,7 @@ def saveData (include = None):
             if sim.cfg.saveMat:
                 from scipy.io import savemat
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.mat'))
-                savemat(sim.cfg.filename+'.mat', tupleToStr(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                savemat(sim.cfg.filename+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
@@ -1430,6 +1430,52 @@ def saveData (include = None):
 
         else:
             print('Nothing to save')
+
+
+###############################################################################
+### Load cell tags and conns using ijson (faster!) 
+###############################################################################
+def ijsonLoad(filename, gid, loadTags=True, loadConns=True, saveTags=None, saveConns=None):
+    # requires: 1) pip install ijson, 2) brew install yajl
+    #import ijson
+    import ijson.backends.yajl2_cffi as ijson
+    from time import time
+    tags, conns = [], None
+
+    print 'Reading data'
+    with open(filename, 'r') as fd:
+        start = time()
+        objs = ijson.items(fd, 'net.cells.item')
+        if loadTags and loadConns:
+            for cell in objs:
+                tags.append(cell['tags'])
+                if cell['gid'] == gid:
+                    conns = cell['conns']
+        elif loadTags:
+            tags = [cell['tags'] for cell in objs]
+        elif loadConns:                
+            conns = next((cell['conns'] for cell in objs if cell['gid']==gid),[])
+
+        print 'time ellapsed (s): ', time() - start
+    return tags, conns
+
+    # load conns of cells
+    loadFull = 0
+    path = cfg.saveFolder
+
+    if loadFull:
+        tags,conns = ijson_load(cfg.netClampConnsFile, cfg.netClampGid, loadTags=False)
+        if tags:
+            with open(path+'/netClamp_tags.pkl', 'w') as fileObj: pickle.dump({'tags': tags}, fileObj) 
+        else:
+            with open(path+'/netClamp_tags.pkl', 'r') as fileObj: tags = pickle.load(fileObj)['tags']
+        if conns:
+            with open(path+'/netClamp_conns.pkl', 'w') as fileObj: pickle.dump({'conns': conns}, fileObj)
+        else:
+            with open(path+'/netClamp_conns.pkl', 'r') as fileObj: conns = pickle.load(fileObj)['conns']
+    else:
+        with open(path+'/netClamp_tags.pkl', 'r') as fileObj: tags = pickle.load(fileObj)['tags']
+        with open(path+'/netClamp_conns.pkl', 'r') as fileObj: conns = pickle.load(fileObj)['conns']
 
 
 ###############################################################################

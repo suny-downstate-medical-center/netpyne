@@ -6995,7 +6995,7 @@ Ohio Wesleyan University
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
 ** Convert hoc models (Ben Latimer, Missouri)
-** Thalamocortical stimulation (Brenyn Jungmann, Missouri)
+** Thalamocortical stimulation (Brenyn Jungmann, Nahir lab,Missouri)
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
 ** Macaque M1 TMS (Aman Aberra, Duke)

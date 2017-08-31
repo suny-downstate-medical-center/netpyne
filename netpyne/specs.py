@@ -202,6 +202,91 @@ class ODict(OrderedDict):
         self = self.fromOrderedDict(d)
 
 
+class PopParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+        
+        dimParams = ['numCells', 'density', 'gridSpacing']
+        if param in dimParams:
+            for removeParam in dimParams: d.pop(removeParam, None)  # remove other properties
+
+        d[param] = value
+
+        return True
+    
+class CellParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+class ConnParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+
+class SynMechParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+class SubConnParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+
+class StimSourceParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+
+class StimTargetParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+
 ###############################################################################
 # NETWORK PARAMETERS CLASS
 ###############################################################################
@@ -228,24 +313,24 @@ class NetParams (object):
         self.propVelocity = 500.0  # propagation velocity (um/ms)
 
         # Cell params dict
-        self.cellParams = ODict()
+        self.cellParams = CellParams()
 
         # Population params dict
-        self.popParams = ODict()  # create list of populations - each item will contain dict with pop params
+        self.popParams = PopParams()  # create list of populations - each item will contain dict with pop params
         self.popTagsCopiedToCells = ['cellModel', 'cellType']
 
         # Synaptic mechanism params dict
-        self.synMechParams = ODict()
+        self.synMechParams = SynMechParams()
 
         # Connectivity params dict
-        self.connParams = ODict()
+        self.connParams = ConnParams()
 
         # Subcellular connectivity params dict
-        self.subConnParams = ODict()
+        self.subConnParams = SubConnParams()
 
         # Stimulation source and target params dicts
-        self.stimSourceParams = ODict()
-        self.stimTargetParams = ODict()
+        self.stimSourceParams = StimSourceParams()
+        self.stimTargetParams = StimTargetParams()
 
         # fill in params from dict passed as argument
         if netParamsDict:

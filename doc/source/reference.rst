@@ -864,17 +864,52 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **plotShape** (showSyns = True, include = [], style = '.', siz=10, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+* **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     
-    Plot 3D cell shape using NEURON Interview PlotShape
+    Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-    - *showSyns*: Show synaptic connections in 3D (True|False) 
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+       - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+        - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+        - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+        - *dist*: 3D distance (like zoom)  
+        - *synSize*: Size of marker to show synapses 
+        - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
+        - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
+        - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
+        - *ivprops*: Dict of properties to plot using Interviews (dict)
+        - *includeAxon*: Include axon in shape plot (True|False)
+        - *showSyns*: Show synaptic connections in 3D (True|False) 
+        - *figSize*: Size of figure ((width, height))
+        - *saveData*: File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (None|True|'fileName')
+        - *saveFig*: File name where to save the figure;
+            if set to True uses filename from simConfig (None|True|'fileName')
+        - *showFig*: Whether to show the figure or not (True|False)
 
-    - Returns figure handles
+        - Returns figure handles
+
+    Examples of plotShape():
+
+    .. code-block:: python
+		
+		# num syns from I2 pop -> E5 cell 0  (using matplotlib)
+		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
+
+		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
+
+		# syn locations (using matplotlib) of cell with gid=0
+		sim.analysis.plotShape(includePost=[0], showSyns=1, synStyle='.', synSiz=3)
+
+		# syn location (using interviews)
+		sim.analysis.plotShape(includePre=['I2'], showSyns=1, includePost= [('E5',0)], saveFig=True, showFig=True, iv=1, ivprops={'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2})
+
+
+		# Of course, as with any analysis function, can also include it as a dict in simConfg, instead of calling function directly
+		cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5',3)], 'cvar':'numSyns','saveFig': True, 'showFig': True, 'includeAxon': False}
+
+
 
 
 * **analysis.plotConn** (include = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', saveData = None, saveFig = None, showFig = True)

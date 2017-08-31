@@ -350,7 +350,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
  
-    ax1.scatter(spkts, spkinds, 10, linewidths=lw, marker=marker, color = spkgidColors) # Create raster  
+    ax1.scatter(spkts, spkinds, 10, lw=lw, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats
@@ -907,7 +907,7 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
+def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
@@ -993,7 +993,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label(cbLabels[cvar], rotation=90)
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'
@@ -1021,7 +1021,7 @@ def plotShape (showSyns = False, includePost = ['all'], includePre = ['all'], sy
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
         
         for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
             for sec in cell.secs.values():
@@ -1578,6 +1578,32 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     if showFig: _showFigure()
 
     return fig
+
+######################################################################################################################################################
+## Calculate number of disynaptic connections
+###################################################################################################################################################### 
+def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells']):
+    numDis = 0
+    totCon = 0
+    
+    _, cellsPreGids, _ =  getCellsInclude(includePre)
+    _, cellsPrePreGids, _ = getCellsInclude(includePrePre)
+    cellsPost, _, _ = getCellsInclude(includePost)
+
+
+    for postCell in cellsPost:
+        preGidsAll = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number) and conn['preGid'] in cellsPreGids+cellsPrePreGids]
+        preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
+        for preGid in preGids:
+            preCell = sim.net.allCells[preGid]
+            prePreGids = [conn['preGid'] for conn in preCell['conns'] if conn['preGid'] in cellsPrePreGids]
+            totCon += 1
+            if not set(prePreGids).isdisjoint(preGidsAll):
+                numDis += 1
+    print '  Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100)
+    sim.allSimData['disynConns'] = numDis
+    
+    return numDis
 
 
 ######################################################################################################################################################

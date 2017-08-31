@@ -2,6 +2,19 @@
 
 - Option to create section lists based on y displacement from soma (addCellParamsSecList)
 
+- Converted popParams, cellParams etc to object of their own class and added method to set param
+
+- Added 'disynapticBias' option to increase probability of B->C conns if A->B and A->C exist 
+
+- Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
+
+- Added 1 second between batch job submission to avoid saturating scheduler
+
+- Fixed bug: init randomizer so params with string-based random func are independent of cores
+
+- Fixed bug for newer pyplot versions: replace 'linewidths' with 'lw'
+
+
 # Version 0.7.2
 
 - Improved NeuroML importing/exporting

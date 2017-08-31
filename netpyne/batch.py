@@ -242,7 +242,7 @@ class Batch(object):
                             print jobString+'\n'
                             input.close()
 
-                                                # hpc torque job submission
+                        # hpc torque job submission
                         elif self.runCfg.get('type',None) == 'hpc_slurm':
 
                             # read params or set defaults
@@ -299,7 +299,9 @@ wait
                             print 'Submitting job ',jobName
                             # master/slave bulletin board schedulling of jobs
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
-                            
+                
+                    sleep(1) # avoid saturating scheduler
+
             # wait for pc bulletin board jobs to finish
             try:
                 while pc.working():

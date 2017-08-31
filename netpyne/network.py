@@ -696,6 +696,23 @@ class Network (object):
  
 
     ###############################################################################
+    ### Disynaptic bias for probability
+    ###############################################################################
+    def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, disynCounter, maxImbalance=10):
+        probability = float(origProbability)
+        factor = bias/origProbability
+        #bias = min(bias, origProbability)  # don't modify more than orig, so can compensate
+        if not set(prePreGids).isdisjoint(postPreGids) and disynCounter < maxImbalance:
+            probability = min(origProbability + bias, 1.0)
+            disynCounter += factor #1
+        elif disynCounter > -maxImbalance:
+            probability = max(origProbability - (min(origProbability + bias, 1.0) - origProbability), 0.0)
+            disynCounter -= 1
+        #print disynCounter, origProbability, probability
+        return probability, disynCounter
+
+
+    ###############################################################################
     ### Full connectivity
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
@@ -723,21 +740,28 @@ class Network (object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
 
-        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
-
+        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection        
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
+        if isinstance(connParam.get('disynapticBias', None), Number):  # calculate the conn preGids of the each pre and post cell
+            allPreGids = sim._gatherAllCellConnPreGids()
+            prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
+            postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
+            minProb = 0.01*connParam['probability'] if isinstance(connParam['probability'], Number) else 0.001
+            maxImbalance = len(preCellsTags)*len(postCellsTags)*minProb
+
+        disynCounter = 0  # counter for disynaptic connections modified, to keep balance (keep same avg prob) 
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
+                    if isinstance(connParam.get('disynapticBias', None), Number):
+                        probability, disynCounter = self._disynapticBiasProb(probability, connParam['disynapticBias'], prePreGids[preCellGid], postPreGids[postCellGid], disynCounter, maxImbalance)
                     
-                    for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-                  
-                    if probability >= allRands[preCellGid,postCellGid]:      
-                        #rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
+                    if probability >= allRands[preCellGid,postCellGid]: 
+                        for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
+                            connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
@@ -763,8 +787,6 @@ class Network (object):
              
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-        
-                    #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -790,8 +812,7 @@ class Network (object):
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                     connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
- 
-                #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
+            
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -836,6 +857,12 @@ class Network (object):
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
+
+        # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
+        args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
+        if 'rand' in args and connParam['connFunc'] not in ['convConn']:
+            self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
+
         for param in paramStrFunc:
             if param+'List' in connParam:
                 finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]

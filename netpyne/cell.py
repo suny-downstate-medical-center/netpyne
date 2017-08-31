@@ -1269,7 +1269,7 @@ class PointCell (Cell):
                 maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
                 # fixed interval of duration (1 - noise)*interval 
-                fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                fixedInterval = np.full(int(((1+0.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval

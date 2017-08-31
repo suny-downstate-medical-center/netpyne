@@ -993,7 +993,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label(cbLabels[cvar], rotation=90)
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'
@@ -1021,7 +1021,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
         
         for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
             for sec in cell.secs.values():

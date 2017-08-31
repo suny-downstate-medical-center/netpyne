@@ -890,7 +890,25 @@ Analysis-related functions
 
     Examples of plotShape():
 
-    	- cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('PT5B',100)], 'cvar':'numSyns','saveFig': True, 'showFig': False, 'includeAxon': False}
+    .. code-block:: python
+
+    	# num syns from I2 pop -> E5 cell 0  (using matplotlib)
+		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
+
+		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
+
+		# syn locations (using matplotlib) of cell with gid=0
+		sim.analysis.plotShape(includePost=[0], showSyns=1, synStyle='.', synSiz=3)
+
+		# syn location (using interviews)
+		sim.analysis.plotShape(includePre=['I2'], showSyns=1, includePost= [('E5',0)], saveFig=True, showFig=True, iv=1, ivprops={'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2})
+
+
+		# Of course, as with any analysis function, can also include it as a dict in simConfg, instead of calling function directly
+    	cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5',3)], 'cvar':'numSyns','saveFig': True, 'showFig': True, 'includeAxon': False}
+
 
 
 

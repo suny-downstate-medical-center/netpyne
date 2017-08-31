@@ -891,8 +891,8 @@ Analysis-related functions
     Examples of plotShape():
 
     .. code-block:: python
-
-    	# num syns from I2 pop -> E5 cell 0  (using matplotlib)
+		
+		# num syns from I2 pop -> E5 cell 0  (using matplotlib)
 		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
 		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
@@ -907,7 +907,7 @@ Analysis-related functions
 
 
 		# Of course, as with any analysis function, can also include it as a dict in simConfg, instead of calling function directly
-    	cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5',3)], 'cvar':'numSyns','saveFig': True, 'showFig': True, 'includeAxon': False}
+		cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5',3)], 'cvar':'numSyns','saveFig': True, 'showFig': True, 'includeAxon': False}
 
 
 

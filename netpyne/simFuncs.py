@@ -9,9 +9,9 @@ Contributors: salvadordura@gmail.com
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
+'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer', 'decimalToFloat'])  # misc/utilities
 
 import sys
 import os
@@ -248,7 +248,6 @@ def loadAll (filename, data=None):
 ###############################################################################
 # Support funcs to load from mat
 ###############################################################################
-
 def _mat2dict(obj): 
     '''
     A recursive function which constructs from matobjects nested dictionaries
@@ -618,6 +617,27 @@ def tupleToList (obj):
                 tupleToList(val)
             elif type(val) == tuple:
                 obj[key] = list(val) # also replace empty dicts with empty list
+    return obj
+
+
+###############################################################################
+### Replace Decimal with float
+###############################################################################
+def decimalToFloat (obj):
+    from decimal import Decimal
+    if type(obj) == list:
+        for i,item in enumerate(obj):
+            if type(item) in [list, dict, tuple]:
+                decimalToFloat(item)
+            elif type(item) == Decimal:
+                obj[i] = float(item)
+
+    elif isinstance(obj, dict):
+        for key,val in obj.iteritems():
+            if isinstance(val, (list, dict)):
+                decimalToFloat(val)
+            elif type(val) == Decimal:
+                obj[key] = float(val) # also replace empty dicts with empty list
     return obj
 
 
@@ -1435,47 +1455,56 @@ def saveData (include = None):
 ###############################################################################
 ### Load cell tags and conns using ijson (faster!) 
 ###############################################################################
-def ijsonLoad(filename, gid, loadTags=True, loadConns=True, saveTags=None, saveConns=None):
+def ijsonLoad(filename, gidRange, loadTags=True, loadConns=True, connFormat=None, saveTags=None, saveConns=None):
     # requires: 1) pip install ijson, 2) brew install yajl
-    #import ijson
     import ijson.backends.yajl2_cffi as ijson
+    import json
     from time import time
-    tags, conns = [], None
 
-    print 'Reading data'
+    tags, conns = {}, {}
+
+    if connFormat:
+        conns['format'] = connFormat
+
     with open(filename, 'r') as fd:
         start = time()
+        print 'Loading data ...'
         objs = ijson.items(fd, 'net.cells.item')
         if loadTags and loadConns:
+            print 'Storing tags and conns ...'
             for cell in objs:
-                tags.append(cell['tags'])
-                if cell['gid'] == gid:
-                    conns = cell['conns']
+                if cell['gid'] in gidRange:
+                    print 'Cell gid: %d'%(cell['gid'])
+                    tags[cell['gid']] = cell['tags']
+                    if connFormat:
+                        conns[cell['gid']] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                    else:
+                        conns[cell['gid']] = cell['conns']
         elif loadTags:
+            print 'Storing tags ...'
             tags = [cell['tags'] for cell in objs]
-        elif loadConns:                
-            conns = next((cell['conns'] for cell in objs if cell['gid']==gid),[])
+        elif loadConns:             
+            print 'Storing conns...'
+            if connFormat:
+                conns = {cell['gid']: [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if cell['gid'] in gidRange}
+            else:
+                conns = {cell['gid']: cell['conns'] for cell in objs if cell['gid'] in gidRange}
 
         print 'time ellapsed (s): ', time() - start
+
+    tags = sim.decimalToFloat(tags)
+    conns = sim.decimalToFloat(conns)
+
+    if saveTags and tags:
+        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        print 'Saving tags to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+    if saveConns and conns:
+        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        print 'Saving conns to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+
     return tags, conns
-
-    # load conns of cells
-    loadFull = 0
-    path = cfg.saveFolder
-
-    if loadFull:
-        tags,conns = ijson_load(cfg.netClampConnsFile, cfg.netClampGid, loadTags=False)
-        if tags:
-            with open(path+'/netClamp_tags.pkl', 'w') as fileObj: pickle.dump({'tags': tags}, fileObj) 
-        else:
-            with open(path+'/netClamp_tags.pkl', 'r') as fileObj: tags = pickle.load(fileObj)['tags']
-        if conns:
-            with open(path+'/netClamp_conns.pkl', 'w') as fileObj: pickle.dump({'conns': conns}, fileObj)
-        else:
-            with open(path+'/netClamp_conns.pkl', 'r') as fileObj: conns = pickle.load(fileObj)['conns']
-    else:
-        with open(path+'/netClamp_tags.pkl', 'r') as fileObj: tags = pickle.load(fileObj)['tags']
-        with open(path+'/netClamp_conns.pkl', 'r') as fileObj: conns = pickle.load(fileObj)['conns']
 
 
 ###############################################################################

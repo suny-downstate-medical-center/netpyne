@@ -87,7 +87,7 @@ cfg.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 # Saving
 cfg.filename = 'FirstExampleOscill'  # Set file output name
 cfg.saveFileStep = 1000 # step size in ms to save data to disk
-cfg.savePickle = True # Whether or not to write spikes etc. to a .mat file
+cfg.saveJson = True # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
 # cfg.analysis['plotRaster'] = True  # Plot raster

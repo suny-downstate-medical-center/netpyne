@@ -1,3 +1,11 @@
+# Version 0.7.4
+
+- Added function ijsonLoad() to load faster and save tags conns to json
+
+- Fixed bug by converting tuples to strings when saving Matlab; now converts to lists
+
+- Fixed bug use int as argument to np.full in fixedInterval variable
+
 # Version 0.7.3
 
 - Option to create section lists based on y displacement from soma (addCellParamsSecList)

@@ -1455,7 +1455,7 @@ def saveData (include = None):
 ###############################################################################
 ### Load cell tags and conns using ijson (faster!) 
 ###############################################################################
-def ijsonLoad(filename, gidRange, loadTags=True, loadConns=True, connFormat=None, saveTags=None, saveConns=None):
+def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
     # requires: 1) pip install ijson, 2) brew install yajl
     import ijson.backends.yajl2_cffi as ijson
     import json
@@ -1465,6 +1465,8 @@ def ijsonLoad(filename, gidRange, loadTags=True, loadConns=True, connFormat=None
 
     if connFormat:
         conns['format'] = connFormat
+    if tagFormat:
+        tags['format'] = tagFormat
 
     with open(filename, 'r') as fd:
         start = time()
@@ -1473,22 +1475,29 @@ def ijsonLoad(filename, gidRange, loadTags=True, loadConns=True, connFormat=None
         if loadTags and loadConns:
             print 'Storing tags and conns ...'
             for cell in objs:
-                if cell['gid'] in gidRange:
+                if tagsGidRange==None or cell['gid'] in tagsGidRange:
                     print 'Cell gid: %d'%(cell['gid'])
-                    tags[cell['gid']] = cell['tags']
-                    if connFormat:
-                        conns[cell['gid']] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                    if tagFormat:
+                        tags[int(cell['gid'])] = [cell['tags'][param] for param in tagFormat]
                     else:
-                        conns[cell['gid']] = cell['conns']
+                        tags[int(cell['gid'])] = cell['tags']
+                    if connsGidRange==None or cell['gid'] in connsGidRange:
+                        if connFormat:
+                            conns[int(cell['gid'])] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                        else:
+                            conns[int(cell['gid'])] = cell['conns']
         elif loadTags:
             print 'Storing tags ...'
-            tags = [cell['tags'] for cell in objs]
+            if tagFormat:
+                tags = {int(cell['gid']): {param: cell['tags'][param] for param in tagFormat} for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+            else:
+                tags = {int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
         elif loadConns:             
             print 'Storing conns...'
             if connFormat:
-                conns = {cell['gid']: [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if cell['gid'] in gidRange}
+                conns = {int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
             else:
-                conns = {cell['gid']: cell['conns'] for cell in objs if cell['gid'] in gidRange}
+                conns = {int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
 
         print 'time ellapsed (s): ', time() - start
 

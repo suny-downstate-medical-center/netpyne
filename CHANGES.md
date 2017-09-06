@@ -1,5 +1,7 @@
 # Version 0.7.4
 
+- Added polarity param to analysis.plotEPSPAmp() 
+
 - Added sim.gitChangeset() function and store netpyne_changeset in every output file
 
 - Added function ijsonLoad() to load faster and save tags conns to json

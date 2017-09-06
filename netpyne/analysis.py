@@ -1923,7 +1923,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ######################################################################################################################################################
 ## EPSPs amplitude
 ######################################################################################################################################################
-def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', saveFig=False, showFig=True):
+def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
 
     print('Plotting EPSP amplitudes...')
 
@@ -1942,7 +1942,10 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     for icell, gid in enumerate(cellGids):
         vsoma = sim.allSimData[trace]['cell_'+str(gid)]
         for ipeak in range(number):
-            peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+            if polarity == 'exc':
+                peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+            elif polarity == 'inh':
+                peakAbs = min(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
             peakRel = peakAbs - vsoma[int((start-1)/step)]
             peaksAbs[ipeak,icell] = peakAbs
             peaksRel[ipeak,icell] = peakRel

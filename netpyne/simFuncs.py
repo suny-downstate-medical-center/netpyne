@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer', 'decimalToFloat'])  # misc/utilities
+'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat'])  # misc/utilities
 
 import sys
 import os
@@ -1348,6 +1348,8 @@ def saveData (include = None):
         net = {}
 
         dataSave['netpyne_version'] = sim.version(show=False)
+        dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
+        
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -1540,12 +1542,20 @@ def version (show=True):
 ###############################################################################
 ### Print github version
 ###############################################################################
-def gitversion ():
-    import netpyne,os
+def gitChangeset (show=True):
+    import netpyne, os, subprocess 
     currentPath = os.getcwd()
-    netpynePath = os.path.dirname(netpyne.__file__)
-    os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath)
+    try:
+        netpynePath = os.path.dirname(netpyne.__file__)
+        os.chdir(netpynePath)
+        if show: os.system('git log -1')
+        # get changeset (need to remove initial tag+num and ending '\n')
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+    except: 
+        changeset = ''
+    os.chdir(currentPath)
 
+    return changeset
 
 ###############################################################################
 ### Print github version

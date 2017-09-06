@@ -1,5 +1,7 @@
 # Version 0.7.4
 
+- Added sim.gitChangeset() function and store netpyne_changeset in every output file
+
 - Added function ijsonLoad() to load faster and save tags conns to json
 
 - Fixed bug by converting tuples to strings when saving Matlab; now converts to lists

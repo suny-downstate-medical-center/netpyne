@@ -713,6 +713,47 @@ class Network (object):
 
 
     ###############################################################################
+    ### Disynaptic bias for probability (version 2)
+    ### bis = min fraction of conns that will be disynaptic
+    ###############################################################################
+    def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGids):
+        connGids = []
+        # calculate which conns are disyn vs 
+        disynMatrix = {(preGid, postGid): not set(prePreGids[preGid]).isdisjoint(postPreGids[postGid]) 
+                for preGid, postGid in probMatrix.keys()}
+
+        # calculate which conns are going to be created
+        connCreate = {(preGid, postGid): probMatrix[(preGid, postGid)] >= allRands[(preGid, postGid)]
+                for preGid, postGid in probMatrix.keys()}
+        numConns = len([c for c in connCreate.values() if c])
+
+        # change % bias of conns from non-disyn to disyn (start with low, high probs respectively)
+        disynConn, nonDisynConn, disynNotConn = [], [], []
+        for (pre,post), disyn in disynMatrix.iteritems():
+            if disyn and connCreate[(pre,post)]:
+                disynConn.append((pre,post))
+            elif not disyn and connCreate[(pre,post)]:
+                nonDisynConn.append((pre,post))
+            elif disyn and not connCreate[(pre,post)]:
+                disynNotConn.append((pre,post))
+        disynNumNew = int(float(bias) * numConns)
+        disynAdd = disynNumNew - len(disynConn)
+
+        if disynAdd > 0:
+            # sort by low/high probs 
+            nonDisynConn = sorted(nonDisynConn, key=lambda k: probMatrix[k])
+            disynNotconn = sorted(disynNotConn, key=lambda k: probMatrix[k], reverse=True)
+
+            # replaced nonDisynConn with disynNotConn
+            for i in range(disynAdd):
+                connCreate[nonDisynConn[i]] = False
+                connCreate[disynNotConn[i]] = True
+
+        connGids = [(pre,post) for (pre,post), c in connCreate.iteritems() if c]
+        return connGids
+        
+
+    ###############################################################################
     ### Full connectivity
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
@@ -748,21 +789,29 @@ class Network (object):
             allPreGids = sim._gatherAllCellConnPreGids()
             prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
             postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
-            minProb = 0.01*connParam['probability'] if isinstance(connParam['probability'], Number) else 0.001
-            maxImbalance = len(preCellsTags)*len(postCellsTags)*minProb
+            
+            probMatrix = {(preCellGid,postCellGid): connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
+                                                for postCellGid,postCellTags in postCellsTags.iteritems() # for each postsyn cell
+                                                for preCellGid, preCellTags in preCellsTags.iteritems()  # for each presyn cell
+                                                if postCellGid in self.lid2gid}  # check if postsyn is in this node
+            
+            connGids = self._disynapticBiasProb2(probMatrix, allRands, connParam['disynapticBias'], prePreGids, postPreGids)
+            for preCellGid, postCellGid in connGids:
+                for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
+                    connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
-        disynCounter = 0  # counter for disynaptic connections modified, to keep balance (keep same avg prob) 
-        for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
-            if postCellGid in self.lid2gid:  # check if postsyn is in this node
-                for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
-                    probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
-                    if isinstance(connParam.get('disynapticBias', None), Number):
-                        probability, disynCounter = self._disynapticBiasProb(probability, connParam['disynapticBias'], prePreGids[preCellGid], postPreGids[postCellGid], disynCounter, maxImbalance)
-                    
-                    if probability >= allRands[preCellGid,postCellGid]: 
-                        for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                            connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+               
+        # disynCounter = 0  # counter for disynaptic connections modified, to keep balance (keep same avg prob) 
+        else:
+            for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
+                if postCellGid in self.lid2gid:  # check if postsyn is in this node
+                    for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
+                        probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
+                        if probability >= allRands[preCellGid,postCellGid]: 
+                            for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
+                                connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
     ###############################################################################

@@ -10,6 +10,8 @@
 
 - Fixed bug use int as argument to np.full in fixedInterval variable
 
+- Fixed bug that removed previously existing element from path during importCellParams()
+
 # Version 0.7.3
 
 - Option to create section lists based on y displacement from soma (addCellParamsSecList)

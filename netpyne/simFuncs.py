@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat'])  # misc/utilities
+'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
 
 import sys
 import os
@@ -243,6 +243,15 @@ def loadAll (filename, data=None):
     loadNetParams(filename, data=data)
     loadNet(filename, data=data)
     loadSimData(filename, data=data)
+
+
+###############################################################################
+# Fast function to find unique elements in sequence and preserve order
+###############################################################################
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 
 ###############################################################################

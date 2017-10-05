@@ -9,9 +9,9 @@ Contributors: salvadordura@gmail.com
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
+'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
 
 import sys
 import os
@@ -246,9 +246,17 @@ def loadAll (filename, data=None):
 
 
 ###############################################################################
+# Fast function to find unique elements in sequence and preserve order
+###############################################################################
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
+
+###############################################################################
 # Support funcs to load from mat
 ###############################################################################
-
 def _mat2dict(obj): 
     '''
     A recursive function which constructs from matobjects nested dictionaries
@@ -604,20 +612,41 @@ def replaceDictODict (obj):
 ###############################################################################
 ### Replace tuples with str
 ###############################################################################
-def tupleToStr (obj):
+def tupleToList (obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                tupleToStr(item)
+                tupleToList(item)
             elif type(item) == tuple:
-                obj[obj.index(item)] = str(item)
+                obj[obj.index(item)] = list(item)
 
     elif isinstance(obj, (dict, ODict)):
         for key,val in obj.iteritems():
             if isinstance(val, (list, dict, ODict)):
-                tupleToStr(val)
+                tupleToList(val)
             elif type(val) == tuple:
-                obj[key] = str(val) # also replace empty dicts with empty list
+                obj[key] = list(val) # also replace empty dicts with empty list
+    return obj
+
+
+###############################################################################
+### Replace Decimal with float
+###############################################################################
+def decimalToFloat (obj):
+    from decimal import Decimal
+    if type(obj) == list:
+        for i,item in enumerate(obj):
+            if type(item) in [list, dict, tuple]:
+                decimalToFloat(item)
+            elif type(item) == Decimal:
+                obj[i] = float(item)
+
+    elif isinstance(obj, dict):
+        for key,val in obj.iteritems():
+            if isinstance(val, (list, dict)):
+                decimalToFloat(val)
+            elif type(val) == Decimal:
+                obj[key] = float(val) # also replace empty dicts with empty list
     return obj
 
 
@@ -1328,6 +1357,8 @@ def saveData (include = None):
         net = {}
 
         dataSave['netpyne_version'] = sim.version(show=False)
+        dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
+        
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -1374,7 +1405,7 @@ def saveData (include = None):
             if sim.cfg.saveMat:
                 from scipy.io import savemat
                 print('Saving output as %s ... ' % (sim.cfg.filename+'.mat'))
-                savemat(sim.cfg.filename+'.mat', tupleToStr(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                savemat(sim.cfg.filename+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
@@ -1433,6 +1464,70 @@ def saveData (include = None):
 
 
 ###############################################################################
+### Load cell tags and conns using ijson (faster!) 
+###############################################################################
+def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
+    # requires: 1) pip install ijson, 2) brew install yajl
+    import ijson.backends.yajl2_cffi as ijson
+    import json
+    from time import time
+
+    tags, conns = {}, {}
+
+    if connFormat:
+        conns['format'] = connFormat
+    if tagFormat:
+        tags['format'] = tagFormat
+
+    with open(filename, 'r') as fd:
+        start = time()
+        print 'Loading data ...'
+        objs = ijson.items(fd, 'net.cells.item')
+        if loadTags and loadConns:
+            print 'Storing tags and conns ...'
+            for cell in objs:
+                if tagsGidRange==None or cell['gid'] in tagsGidRange:
+                    print 'Cell gid: %d'%(cell['gid'])
+                    if tagFormat:
+                        tags[int(cell['gid'])] = [cell['tags'][param] for param in tagFormat]
+                    else:
+                        tags[int(cell['gid'])] = cell['tags']
+                    if connsGidRange==None or cell['gid'] in connsGidRange:
+                        if connFormat:
+                            conns[int(cell['gid'])] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                        else:
+                            conns[int(cell['gid'])] = cell['conns']
+        elif loadTags:
+            print 'Storing tags ...'
+            if tagFormat:
+                tags = {int(cell['gid']): {param: cell['tags'][param] for param in tagFormat} for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+            else:
+                tags = {int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+        elif loadConns:             
+            print 'Storing conns...'
+            if connFormat:
+                conns = {int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+            else:
+                conns = {int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+
+        print 'time ellapsed (s): ', time() - start
+
+    tags = sim.decimalToFloat(tags)
+    conns = sim.decimalToFloat(conns)
+
+    if saveTags and tags:
+        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        print 'Saving tags to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+    if saveConns and conns:
+        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        print 'Saving conns to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+
+    return tags, conns
+
+
+###############################################################################
 ### Timing - Stop Watch
 ###############################################################################
 def timing (mode, processName):
@@ -1456,12 +1551,20 @@ def version (show=True):
 ###############################################################################
 ### Print github version
 ###############################################################################
-def gitversion ():
-    import netpyne,os
+def gitChangeset (show=True):
+    import netpyne, os, subprocess 
     currentPath = os.getcwd()
-    netpynePath = os.path.dirname(netpyne.__file__)
-    os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath)
+    try:
+        netpynePath = os.path.dirname(netpyne.__file__)
+        os.chdir(netpynePath)
+        if show: os.system('git log -1')
+        # get changeset (need to remove initial tag+num and ending '\n')
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+    except: 
+        changeset = ''
+    os.chdir(currentPath)
 
+    return changeset
 
 ###############################################################################
 ### Print github version

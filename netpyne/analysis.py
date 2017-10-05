@@ -215,6 +215,38 @@ def getCellsInclude(include):
 
 
 ######################################################################################################################################################
+## Get subset of cells and netstims indicated by include list
+######################################################################################################################################################
+def getCellsIncludeTags(include, tags):
+    allCells = tags.copy()
+    if 'format' in allCells: allCells.pop('format')
+    cellGids = []
+
+    for condition in include:
+        if condition in  ['all', 'allCells']:  # all cells 
+            cellGids = allCells.keys()
+            return cellGids
+
+        elif isinstance(condition, int):  # cell gid 
+            cellGids.append(condition)
+        
+        elif isinstance(condition, basestring):  # entire pop
+            cellGids.extend([gid for gid,c in allCells.iteritems() if c['pop']==condition])
+        
+        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+            cellsPop = [gid for gid,c in allCells.iteritems() if c['pop']==condition[0]]
+            if isinstance(condition[1], list):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+            elif isinstance(condition[1], int):
+                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+
+    cellGids = [int(x) for x in set(cellGids)]  # unique values
+
+    return cellGids
+
+
+
+######################################################################################################################################################
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
@@ -993,7 +1025,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            cb.set_label(cbLabels[cvar], rotation=90)
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
 
         if showSyns:
             synColor='red'
@@ -1021,7 +1053,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': '.', 'siz':10}
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
         
         for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
             for sec in cell.secs.values():
@@ -1582,26 +1614,65 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
 ###################################################################################################################################################### 
-def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells']):
+def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells'], 
+        tags=None, conns=None, tagsFile=None, connsFile=None):
+
+    import json
+    from time import time
+
     numDis = 0
     totCon = 0
-    
-    _, cellsPreGids, _ =  getCellsInclude(includePre)
-    _, cellsPrePreGids, _ = getCellsInclude(includePrePre)
-    cellsPost, _, _ = getCellsInclude(includePost)
 
+    start = time()
+    if tagsFile:
+        print 'Loading tags file...'
+        with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+        tags = {int(k): v for k,v in tagsTmp.iteritems()}
+        del tagsTmp
+    if connsFile:
+        print 'Loading conns file...'
+        with open(connsFile, 'r') as fileObj: connsTmp = json.load(fileObj)['conns']
+        conns = {int(k): v for k,v in connsTmp.iteritems()}
+        del connsTmp
+         
+    print '  Calculating disynaptic connections...'
+    if tags and conns:
+        cellsPreGids = getCellsIncludeTags(includePre, tags)
+        cellsPrePreGids = getCellsIncludeTags(includePrePre, tags)
+        cellsPostGids = getCellsIncludeTags(includePost, tags)
 
-    for postCell in cellsPost:
-        preGidsAll = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number) and conn['preGid'] in cellsPreGids+cellsPrePreGids]
-        preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
-        for preGid in preGids:
-            preCell = sim.net.allCells[preGid]
-            prePreGids = [conn['preGid'] for conn in preCell['conns'] if conn['preGid'] in cellsPrePreGids]
-            totCon += 1
-            if not set(prePreGids).isdisjoint(preGidsAll):
-                numDis += 1
-    print '  Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100)
-    sim.allSimData['disynConns'] = numDis
+        preGidIndex = conns['format'].index('preGid') if 'format' in conns else 0
+        for postGid in cellsPostGids:
+            preGidsAll = [conn[preGidIndex] for conn in conns[postGid] if isinstance(conn[preGidIndex], Number) and conn[preGidIndex] in cellsPreGids+cellsPrePreGids]
+            preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
+            for preGid in preGids:
+                prePreGids = [conn[preGidIndex] for conn in conns[preGid] if conn[preGidIndex] in cellsPrePreGids]
+                totCon += 1
+                if not set(prePreGids).isdisjoint(preGidsAll):
+                    numDis += 1
+
+    else:
+        _, cellsPreGids, _ =  getCellsInclude(includePre)
+        _, cellsPrePreGids, _ = getCellsInclude(includePrePre)
+        cellsPost, _, _ = getCellsInclude(includePost)
+
+        for postCell in cellsPost:
+            preGidsAll = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number) and conn['preGid'] in cellsPreGids+cellsPrePreGids]
+            preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
+            for preGid in preGids:
+                preCell = sim.net.allCells[preGid]
+                prePreGids = [conn['preGid'] for conn in preCell['conns'] if conn['preGid'] in cellsPrePreGids]
+                totCon += 1
+                if not set(prePreGids).isdisjoint(preGidsAll):
+                    numDis += 1
+
+    print '    Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100 if totCon>0 else 0.0)
+    try:
+        sim.allSimData['disynConns'] = numDis
+    except:
+        pass
+
+    print '    time ellapsed (s): ', time() - start
     
     return numDis
 
@@ -1852,7 +1923,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ######################################################################################################################################################
 ## EPSPs amplitude
 ######################################################################################################################################################
-def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', saveFig=False, showFig=True):
+def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
 
     print('Plotting EPSP amplitudes...')
 
@@ -1871,7 +1942,10 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     for icell, gid in enumerate(cellGids):
         vsoma = sim.allSimData[trace]['cell_'+str(gid)]
         for ipeak in range(number):
-            peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+            if polarity == 'exc':
+                peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+            elif polarity == 'inh':
+                peakAbs = min(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
             peakRel = peakAbs - vsoma[int((start-1)/step)]
             peaksAbs[ipeak,icell] = peakAbs
             peaksRel[ipeak,icell] = peakRel

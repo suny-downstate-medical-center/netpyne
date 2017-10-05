@@ -1,3 +1,19 @@
+# Version 0.7.4
+
+- Added polarity param to analysis.plotEPSPAmp() 
+
+- Added sim.gitChangeset() function and store netpyne_changeset in every output file
+
+- Added function ijsonLoad() to load faster and save tags conns to json
+
+- Fixed bug in convergence and divergence connectivity -- now fixed number and no self conns
+
+- Fixed bug by converting tuples to strings when saving Matlab; now converts to lists
+
+- Fixed bug use int as argument to np.full in fixedInterval variable
+
+- Fixed bug that removed previously existing element from path during importCellParams()
+
 # Version 0.7.3
 
 - Option to create section lists based on y displacement from soma (addCellParamsSecList)

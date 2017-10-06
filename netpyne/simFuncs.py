@@ -929,14 +929,15 @@ def preRun ():
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
-        for stim in cell.stims:
-            if 'hRandom' in stim:
-                #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
-                _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
-                stim['hRandom'].negexp(1)
-                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
-                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
-                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+        else:
+            for stim in cell.stims:
+                if 'hRandom' in stim:
+                    #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+                    _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
+                    stim['hRandom'].negexp(1)
+                    # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                    if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+                        stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################

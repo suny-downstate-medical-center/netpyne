@@ -6998,8 +6998,10 @@ Ohio Wesleyan University
 ** Thalamocortical stimulation (Brenyn Jungmann, Nahir lab,Missouri)
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
-** Macaque M1 TMS (Aman Aberra, Duke)
+** Macaque M1 TMS/tDCS (Aman Aberra, Duke)
 ** CA1/CA3 (Mariane Bezaire, Boston University)
+** EEG (Sam Neymotin, Boston)
+
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu

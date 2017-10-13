@@ -1,3 +1,7 @@
+# Version 0.7.5
+
+- Fix issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
+
 # Version 0.7.4
 
 - Added polarity param to analysis.plotEPSPAmp() 
@@ -13,6 +17,7 @@
 - Fixed bug use int as argument to np.full in fixedInterval variable
 
 - Fixed bug that removed previously existing element from path during importCellParams()
+
 
 # Version 0.7.3
 

@@ -6993,6 +6993,7 @@ Ohio Wesleyan University
 ** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
+
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
 ** Convert hoc models (Ben Latimer, Missouri)
 ** Thalamocortical stimulation (Brenyn Jungmann, Nahir lab,Missouri)

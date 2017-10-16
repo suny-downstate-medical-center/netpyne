@@ -4,6 +4,8 @@
 
 - Fix issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
+- Fix bug when using sim.gatherOnlySimData
+
 # Version 0.7.4
 
 - Added polarity param to analysis.plotEPSPAmp() 

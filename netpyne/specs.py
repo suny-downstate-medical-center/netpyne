@@ -195,6 +195,23 @@ class ODict(OrderedDict):
         else:
             return x
 
+    def __rename__(self, old, new, label=None):
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                print obj.keys()
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+        
     def __getstate__ (self):
         return self.toOrderedDict()
 
@@ -216,6 +233,9 @@ class PopParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -228,6 +248,16 @@ class CellParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+        # special case: renaming cellParams[x]['secs'] requires updating topology
+        if isinstance(label, (list, tuple)) and 'secs' in label and 'topol' in self[label[0]]:
+            d = self[label[0]]
+            for sec in d['secs'].values():  # replace appearences in topol
+                if d['topol'].get('parentSec') == old: sec['topol']['parentSec'] = new
+
+
 class ConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -238,6 +268,9 @@ class ConnParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
 
 
 class SynMechParams (ODict):
@@ -251,6 +284,10 @@ class SynMechParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -261,6 +298,9 @@ class SubConnParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
 
 
 class StimSourceParams (ODict):
@@ -274,6 +314,9 @@ class StimSourceParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):
@@ -285,6 +328,9 @@ class StimTargetParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
 
 
 ###############################################################################
@@ -407,6 +453,22 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
+    # def rename(self, attr, old, new):
+    #     try:
+    #         obj = getattr(self, attr)
+    #     except:
+    #         print 'Error renaming: netParams does not contain %s' % (attr)
+    #         return False
+
+    #     if old not in obj:
+    #         print 'Error renaming: netParams.%s rule does not contain %s' % (attribute, old)
+    #         return False
+
+    #     obj[new] = obj.pop(old)  # replace
+
+    #     return True
+
+
     def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label:
@@ -480,19 +542,7 @@ class NetParams (object):
 
 
     def renameCellParamsSec(self, label, oldSec, newSec):
-        if label in self.cellParams:
-            cellRule = self.cellParams[label]
-        else:
-            print 'Error renaming section: netParams.cellParams does not contain %s' % (label)
-            return
-
-        if oldSec not in cellRule['secs']:
-            print 'Error renaming section: cellRule does not contain section %s' % (label)
-            return
-
-        cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
-        for sec in cellRule['secs'].values():  # replace appearences in topol
-            if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
+        self.cellParams.renameObj(label, 'secs', oldSec, newSec)
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):

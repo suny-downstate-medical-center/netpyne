@@ -1,5 +1,7 @@
 # Version 0.7.5
 
+- Added methods to rename netParams dict keys in a nested format (needed for GUI)
+
 - Fix issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
 # Version 0.7.4

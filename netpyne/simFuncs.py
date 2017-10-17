@@ -574,20 +574,20 @@ def replaceNoneObj (obj):
 def replaceDictODict (obj):
     if type(obj) == list:
         for item in obj:
-            if isinstance(item, Dict):
+            if type(item) == Dict:
                 item = item.todict()
-            elif isinstance(item, ODict):
+            elif type(item) == ODict:
                 item = item.toOrderedDict()
-            if isinstance(item, (list, dict, OrderedDict)):
+            if type(item) in [list, dict, OrderedDict]:
                 replaceDictODict(item)
 
-    elif isinstance(obj, (dict, OrderedDict, Dict, ODict)):
+    elif type(obj) in [dict, OrderedDict, Dict, ODict]:
         for key,val in obj.iteritems():
-            if isinstance(val, Dict):
+            if type(val) == Dict:
                 obj[key] = val.todict()
-            elif isinstance(val, ODict):
+            elif type(val) == ODict:
                 obj[key] = val.toOrderedDict()
-            if isinstance(val, (list, dict, OrderedDict)):
+            if type(val) in [list, dict, OrderedDict]:
                 replaceDictODict(val)
 
     # elif type(obj) == Dict:

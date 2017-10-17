@@ -2,9 +2,11 @@
 
 - Added methods to rename netParams dict keys in a nested format (needed for GUI)
 
-- Fix issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
+- Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
-- Fix bug when using sim.gatherOnlySimData
+- Fixed bug in replaceDictODict() that lead to wrong results when importing cells
+
+- Fixed bug when using sim.gatherOnlySimData
 
 # Version 0.7.4
 

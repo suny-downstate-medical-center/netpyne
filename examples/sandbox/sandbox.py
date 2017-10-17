@@ -67,7 +67,7 @@ netParams.connParams['PYR->ALL'] = {
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'convergence': 12}
+    'divergence': 12}
 
 # netParams.connParams['PYR->PYR2'] = {
 #     'preConds': {'pop': ['PYR']}, 'postConds': {'pop': ['PYR2']},

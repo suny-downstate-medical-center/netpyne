@@ -785,7 +785,8 @@ class Network (object):
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
-        if isinstance(connParam.get('disynapticBias', None), Number):  # calculate the conn preGids of the each pre and post cell
+        # probabilistic connections with disynapticBias  
+        if isinstance(connParam.get('disynapticBias', None), Number):  
             allPreGids = sim._gatherAllCellConnPreGids()
             prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
             postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
@@ -801,9 +802,9 @@ class Network (object):
                     connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
                 self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
-               
-        # disynCounter = 0  # counter for disynaptic connections modified, to keep balance (keep same avg prob) 
+        # standard probabilistic conenctions   
         else:
+            # calculate the conn preGids of the each pre and post cell
             for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
                 if postCellGid in self.lid2gid:  # check if postsyn is in this node
                     for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
@@ -814,6 +815,16 @@ class Network (object):
                             self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
+    ###############################################################################
+    ### Generate random unique integers 
+    ###############################################################################
+    def randUniqueInt(self, r, N, vmin, vmax):
+        r.discunif(vmin,vmax)
+        out = []
+        while len(out)<N:
+            x=int(r.repick())
+            if x not in out: out.append(x)
+        return out
 
 
     ###############################################################################
@@ -831,17 +842,8 @@ class Network (object):
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
                 self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
-                randSample = list(sim.unique([int(round(self.rand.uniform(0,len(preCellsTags)-1))) for i in range(40*convergence)])) # generate 40x and find unique list (to avoid duplicates)
-                preCellsSample = [preCellsTags.keys()[i] for i in randSample[0:convergence]]  # selected gids of presyn cells
-                '''
-                print "con %s"%convergence
-                print "preCellsTags %s"%preCellsTags
-                print "preCellsTags %s"%len(preCellsTags)
-                print "randSample %s"%randSample
-                print "preCellsSample %s"%preCellsSample
-                print "postCellGid %s"%postCellGid
-                print "preCellsSample %s"%preCellsSample'''
-                
+                randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
+                preCellsSample = [preCellsTags.keys()[i] for i in randSample][0:convergence]  # selected gids of presyn cells
                 preCellsSample[:] = [randSample[convergence] if x==postCellGid else x for x in preCellsSample] # remove post gid  
                 #print "preCellsSample %s"%preCellsSample
                 
@@ -868,7 +870,7 @@ class Network (object):
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
-            randSample = list(sim.unique([int(round(self.rand.uniform(0,len(postCellsTags)-1))) for i in range(40*divergence)])) # generate 40x and find unique list (to avoid duplicates)
+            randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
             postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
             postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
             postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags

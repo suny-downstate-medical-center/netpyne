@@ -125,6 +125,7 @@ class Batch(object):
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
             self.cfg = cfgModule.cfg
+            self.cfg.checkErrors = False  # avoid error checking during batch
 
             # set initial cfg initCfg
             if len(self.initCfg) > 0:

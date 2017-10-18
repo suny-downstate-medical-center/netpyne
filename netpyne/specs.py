@@ -651,7 +651,7 @@ class SimConfig (object):
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters
+        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

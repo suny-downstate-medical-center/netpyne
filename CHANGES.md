@@ -1,5 +1,7 @@
 # Version 0.7.5
 
+- Make cfg.checkErrors = True by default, but set to False if using multiple cores or batch
+
 - Added methods to rename netParams dict keys in a nested format (needed for GUI)
 
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)

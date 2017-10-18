@@ -61,6 +61,8 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
+    if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
+
     if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
         simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
         simTestObj.simConfig = sim.cfg

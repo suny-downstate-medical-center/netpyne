@@ -432,7 +432,7 @@ class TestTypeObj(object):
 
                             if PT_3D in values['geom']:
                                 if not isinstance ( values['geom'][PT_3D] , list ):
-                                    errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': pt3D must be an array with each array element being a 4-element list or array of floats."
+                                    errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': pt3D must be an array/list where each element is an array/list of 4 floats."
                                     geomValid = False
                                 elif len(values['geom'][PT_3D]) == 0:
                                     errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': At least one element must be provided for pt3D."
@@ -444,16 +444,16 @@ class TestTypeObj(object):
 
                                 for elem in values['geom'][PT_3D]:
                                     if not isinstance ( elem , list ):
-                                        errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Type error. pt3D must be an array with each array element being a 4-element list or array of floats.Value specified is: '" + str(elem) + "'."
+                                        errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D': Type error. pt3D must be an array/list where each element is an array/list of 4 floats.Value specified is: '" + str(elem) + "'."
                                         geomValid = False
                                     elif len(elem) != 4:
-                                        errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Length error. pt3D must be an array with each array element being a 4-element list or array of floats.Value specified is: '" + str(elem) + "'."
+                                        errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D': Length error. pt3D must be an array/list where each element is an array/list of 4 floats.Value specified is: '" + str(elem) + "'."
                                         geomValid = False
                                     if not geomValid:
                                         break
                                     for elem2 in elem:
                                         if not isinstance ( elem2, numbers.Real ):
-                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Float error. pt3D must be an array with each array element being a 4-element list or array of floats. Value specified is: '" + str(elem2) + "'."
+                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D': Float error. pt3D must be an array/list where each element is an array/list of 4 floats. Value specified is: '" + str(elem2) + "'."
                                             geomValid = False
                                         if not geomValid:
                                             break

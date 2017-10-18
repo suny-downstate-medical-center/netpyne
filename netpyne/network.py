@@ -836,7 +836,7 @@ class Network (object):
                
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
-        
+
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
@@ -845,8 +845,6 @@ class Network (object):
                 randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
                 preCellsSample = [preCellsTags.keys()[i] for i in randSample][0:convergence]  # selected gids of presyn cells
                 preCellsSample[:] = [randSample[convergence] if x==postCellGid else x for x in preCellsSample] # remove post gid  
-                #print "preCellsSample %s"%preCellsSample
-                
                 preCellsConv = {k:v for k,v in preCellsTags.iteritems() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.iteritems():  # for each presyn cell
              

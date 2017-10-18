@@ -11,7 +11,7 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat'])  # misc/utilities
+'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
 
 import sys
 import os
@@ -243,6 +243,15 @@ def loadAll (filename, data=None):
     loadNetParams(filename, data=data)
     loadNet(filename, data=data)
     loadSimData(filename, data=data)
+
+
+###############################################################################
+# Fast function to find unique elements in sequence and preserve order
+###############################################################################
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 
 ###############################################################################
@@ -565,20 +574,20 @@ def replaceNoneObj (obj):
 def replaceDictODict (obj):
     if type(obj) == list:
         for item in obj:
-            if isinstance(item, Dict):
+            if type(item) == Dict:
                 item = item.todict()
-            elif isinstance(item, ODict):
+            elif type(item) == ODict:
                 item = item.toOrderedDict()
-            if isinstance(item, (list, dict, OrderedDict)):
+            if type(item) in [list, dict, OrderedDict]:
                 replaceDictODict(item)
 
-    elif isinstance(obj, (dict, OrderedDict, Dict, ODict)):
+    elif type(obj) in [dict, OrderedDict, Dict, ODict]:
         for key,val in obj.iteritems():
-            if isinstance(val, Dict):
+            if type(val) == Dict:
                 obj[key] = val.todict()
-            elif isinstance(val, ODict):
+            elif type(val) == ODict:
                 obj[key] = val.toOrderedDict()
-            if isinstance(val, (list, dict, OrderedDict)):
+            if type(val) in [list, dict, OrderedDict]:
                 replaceDictODict(val)
 
     # elif type(obj) == Dict:
@@ -1079,13 +1088,13 @@ def gatherData ():
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
-            if len(sim.allSimData['spkt']) > 0:
-                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                if len(sim.allSimData['spkt']) > 0:
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
 
-            sim.net.allPops = ODict() # pops
-            for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+                sim.net.allPops = ODict() # pops
+                for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
 
-            sim.net.allCells = [c.__dict__ for c in sim.net.cells]
+                sim.net.allCells = [c.__dict__ for c in sim.net.cells]
 
         # gather cells, pops and sim data
         else:

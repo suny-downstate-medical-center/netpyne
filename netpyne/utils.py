@@ -39,6 +39,9 @@ def importCellParams (fileName, labels, values, key = None):
             filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
             if filePath not in sys.path:  # add to path if not there (need to import module)
                 sys.path.insert(0, filePath)
+                removeFilePath = True
+            else:
+                removeFilePath = False
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
             exec('import '+ moduleName + ' as tempModule') in locals() # import module dynamically
             modulePointer = tempModule
@@ -47,7 +50,7 @@ def importCellParams (fileName, labels, values, key = None):
             if key:  # if paramValues = dict
                 paramValues = paramValues[key]
             params = dict(zip(paramLabels, paramValues))
-            sys.path.remove(filePath)
+            if removeFilePath: sys.path.remove(filePath)
         except:
             print "Error loading cell parameter values from " + fileName
     else:
@@ -166,6 +169,9 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
+            removeFilePath = True
+        else:
+            removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
         modulePointer = tempModule
@@ -173,7 +179,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
         else:
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
-        sys.path.remove(filePath)
+        if removeFilePath: sys.path.remove(filePath)
     else:
         print "File name should be either .hoc or .py file"
         return
@@ -214,6 +220,9 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
+            removeFilePath = True
+        else:
+            removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
         print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
@@ -221,7 +230,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         load_mechanisms(filePath)
         exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
         modulePointer = tempModule
-        sys.path.remove(filePath)
+        if removeFilePath: sys.path.remove(filePath)
     else:
         print "File name should be either .hoc or .py file"
         return

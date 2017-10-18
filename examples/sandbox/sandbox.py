@@ -27,10 +27,10 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 netParams.probLengthConst = 200
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0,0.2]} # add dict with params for this pop 
-netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.8,1.0]} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20, 'xnormRange': [0,0.2]} # add dict with params for this pop 
+netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20, 'xnormRange': [0.8,1.0]} # add dict with params for this pop 
 #netParams.popParams['PYR3'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 5, 'xNormRange': [0.8,1.0]} # add dict with params for this pop 
-netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
+#netParams.popParams['INT'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100, 'xnormRange': [0.4,0.6]} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -58,16 +58,16 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, '
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
 netParams.stimSourceParams['bkg2'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5, 'start': 1}
 
-netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
+#netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'PYR'}, 'weight': 0.1, 'delay': 'uniform(1,5)'}
 
 
 # Connectivity parameters
 netParams.connParams['PYR->ALL'] = {
-    'preConds': {'pop': ['PYR']}, 'postConds': {'pop': ['INT', 'PYR2']},
+    'preConds': {'pop': ['PYR']}, 'postConds': {'pop': ['PYR']},
     'weight': 0.002,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
-    'probability': 0.05}
+    'divergence': 12}
 
 # netParams.connParams['PYR->PYR2'] = {
 #     'preConds': {'pop': ['PYR']}, 'postConds': {'pop': ['PYR2']},
@@ -77,13 +77,13 @@ netParams.connParams['PYR->ALL'] = {
 #     'probability': 0.05}
 
 
-netParams.connParams['INT->PYR2'] = {
-    'preConds': {'pop': ['INT']}, 'postConds': {'pop': ['PYR2']},
-    'weight': 0.002,                    # weight of each connection
-    'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
-    'threshold': 10,                    # threshold
-    'probability': 0.05, # '0.4*exp(-dist_3D/probLengthConst)',
-    'disynapticBias': 0.5}  
+# netParams.connParams['INT->PYR2'] = {
+#     'preConds': {'pop': ['INT']}, 'postConds': {'pop': ['PYR2']},
+#     'weight': 0.002,                    # weight of each connection
+#     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
+#     'threshold': 10,                    # threshold
+#     'probability': 0.05, # '0.4*exp(-dist_3D/probLengthConst)',
+#     'disynapticBias': 0.5}  
 
 
 ###############################################################################

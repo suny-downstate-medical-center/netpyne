@@ -1,3 +1,13 @@
+# Version 0.7.5
+
+- Added methods to rename netParams dict keys in a nested format (needed for GUI)
+
+- Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
+
+- Fixed bug in replaceDictODict() that lead to wrong results when importing cells
+
+- Fixed bug when using sim.gatherOnlySimData
+
 # Version 0.7.4
 
 - Added polarity param to analysis.plotEPSPAmp() 
@@ -6,9 +16,14 @@
 
 - Added function ijsonLoad() to load faster and save tags conns to json
 
+- Fixed bug in convergence and divergence connectivity -- now fixed number and no self conns
+
 - Fixed bug by converting tuples to strings when saving Matlab; now converts to lists
 
 - Fixed bug use int as argument to np.full in fixedInterval variable
+
+- Fixed bug that removed previously existing element from path during importCellParams()
+
 
 # Version 0.7.3
 

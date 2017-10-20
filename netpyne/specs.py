@@ -207,7 +207,6 @@ class ODict(OrderedDict):
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
-                print obj.keys()
                 try:
                     obj = obj[label[ip]] 
                 except:
@@ -260,10 +259,11 @@ class CellParams (ODict):
         self.__rename__(old, new, label)
 
         # special case: renaming cellParams[x]['secs'] requires updating topology
-        if isinstance(label, (list, tuple)) and 'secs' in label and 'topol' in self[label[0]]:
+        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
             d = self[label[0]]
             for sec in d['secs'].values():  # replace appearences in topol
-                if d['topol'].get('parentSec') == old: sec['topol']['parentSec'] = new
+                if sec['topol'].get('parentSec') == old: 
+                    sec['topol']['parentSec'] = new
 
 
 class ConnParams (ODict):
@@ -550,7 +550,7 @@ class NetParams (object):
 
 
     def renameCellParamsSec(self, label, oldSec, newSec):
-        self.cellParams.renameObj(label, 'secs', oldSec, newSec)
+        self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):

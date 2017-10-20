@@ -10,6 +10,7 @@
 
 - Fixed bug when using sim.gatherOnlySimData
 
+
 # Version 0.7.4
 
 - Added polarity param to analysis.plotEPSPAmp() 

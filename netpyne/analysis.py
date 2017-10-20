@@ -25,11 +25,7 @@ warnings.filterwarnings("ignore")
 colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10],
-            [0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-            [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-            [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]] 
+            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]]*3
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -804,7 +800,9 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     if include is None: include = [] # If not defined, initialize as empty list
     global colorList
     if isinstance(colors, list): 
-        colorList = colors
+        colorList2 = colors
+    else:
+        colorList2 = colorList
 
     # rerun simulation so new include cells get recorded from
     if rerun: 
@@ -839,7 +837,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[igid%len(colorList)]
+                    color = colorList2[igid%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(subGids),1,igid+1)
                         color = 'blue'
@@ -872,7 +870,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         lenData = len(data)
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    color = colorList[itrace%len(colorList)]
+                    color = colorList2[itrace%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'

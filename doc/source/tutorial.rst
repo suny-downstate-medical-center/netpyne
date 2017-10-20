@@ -737,4 +737,9 @@ The full tutorial code for this example is available here: :download:`tut7.py <c
 
 An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
+
+Running batch simulations (Tutorial 8)
+--------------------------------------------
+
+
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

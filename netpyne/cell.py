@@ -1019,7 +1019,8 @@ class CompartCell (Cell):
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
 
                     rand = h.Random()
-                    stim_ref = params['label'].split(self.tags['pop'])[0]
+                    stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
+                    
                     # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
                     index_in_stim = int(stim_ref.split('_')[-2])
                     stim_id = stim_ref.split('_')[0]

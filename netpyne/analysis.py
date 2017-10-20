@@ -1402,7 +1402,9 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
 
 def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech, connsFile, tagsFile):
     
+    import json
     from time import time    
+
     def list_of_dict_unique_by_key(seq, index):
         seen = set()
         seen_add = seen.add
@@ -1414,11 +1416,13 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
     if tagsFile:
         print 'Loading tags file...'
         with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+        tagsFormat = tagsTmp.pop('format', [])
         tags = {int(k): v for k,v in tagsTmp.iteritems()} # find method to load json with int keys?
         del tagsTmp
     if connsFile:
         print 'Loading conns file...'
         with open(connsFile, 'r') as fileObj: connsTmp = json.load(fileObj)['conns']
+        connsFormat = connsTmp.pop('format', [])
         conns = {int(k): v for k,v in connsTmp.iteritems()}
         del connsTmp
 
@@ -1426,33 +1430,29 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
          
     # finde pre and post cells
     if tags and conns:
-        cellGidsPre = getCellsIncludeTags(includePre)
+        cellGidsPre = getCellsIncludeTags(includePre, tags)
         if includePre == includePost:
             cellGidsPost = cellGidsPre
         else:
-            cellGidsPost = getCellsIncludeTags(includePost)
+            cellGidsPost = getCellsIncludeTags(includePost, tags)
     else:
         print 'Error loading tags and conns from file' 
         return None, None, None
 
 
     # set indices of fields to read compact format (no keys)
-    popIndex = tags['format'].index('pop') if 'format' in tags else 0
-    preGidIndex = conns['format'].index('preGid') if 'format' in conns else 0
-    synMechIndex = conns['format'].index('synMech') if 'format' in conns else 0
-    weightIndex = conns['format'].index('weight') if 'format' in conns else 0
-    delayIndex = conns['format'].index('delay') if 'format' in conns else 0
-
-
-        # preGidIndex = conns['format'].index('preGid') if 'format' in conns else 0
-        # for postGid in cellsPostGids:
-        #     preGidsAll = [conn[preGidIndex] for conn in conns[postGid] if isinstance(conn[preGidIndex], Number) and conn[preGidIndex] in cellsPreGids+cellsPrePreGids]
-        #     preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
-        #     for preGid in preGids:
-        #         prePreGids = [conn[preGidIndex] for conn in conns[preGid] if conn[preGidIndex] in cellsPrePreGids]
-        #         totCon += 1
-        #         if not set(prePreGids).isdisjoint(preGidsAll):
-        #             numDis += 1
+    missing = []
+    popIndex = tagsFormat.index('pop') if 'pop' in tagsFormat else missing.append('pop')
+    preGidIndex = connsFormat.index('preGid') if 'preGid' in connsFormat else missing.append('preGid')
+    synMechIndex = connsFormat.index('synMech') if 'synMech' in connsFormat else missing.append('synMech')
+    weightIndex = connsFormat.index('weight') if 'weight' in connsFormat else missing.append('weight')
+    delayIndex = connsFormat.index('delay') if 'delay' in connsFormat else missing.append('delay')
+    preLabelIndex = connsFormat.index('preLabel') if 'preLabel' in connsFormat else -1
+    
+    if len(missing) > 0:
+        print "Missing:"
+        print missing
+        return None, None, None 
 
     if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
     
@@ -1467,6 +1467,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
         # get list of pops
         popsPre = list(set([tags[gid][popIndex] for gid in cellGidsPre]))
         popIndsPre = {pop: ind for ind,pop in enumerate(popsPre)}
+        netStimPopsPre = []
 
         if includePre == includePost:
             popsPost = popsPre
@@ -1523,9 +1524,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 
             for conn in cellConns:
                 if conn[preGidIndex] == 'NetStim':
-                    #prePopLabel = conn['preLabel']
-                    print 'PlotConn from file: NetStims not yet supported'
-                    return
+                    prePopLabel = conn[preLabelIndex] if preLabelIndex >=0 else 'NetStims'
                 else:
                     preCellGid = next((gid for gid in cellGidsPre if gid==conn[preGidIndex]), None)
                     prePopLabel = tags[preCellGid][popIndex] if preCellGid else None
@@ -1598,10 +1597,14 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     print('Plotting connectivity matrix...')
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech)
-    else:
         connMatrix, pre, post = __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech, connsFile, tagsFile)
+    else:
+        connMatrix, pre, post = __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech)
 
+
+    if connMatrix == None:
+        print "Error calculating connMatrix in plotConn()"
+        return None
 
     # matrix plot
     if graphType == 'matrix':

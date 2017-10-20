@@ -6,6 +6,8 @@
 
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
+- Fixed bug in colors of plotSpikeHist
+
 - Fixed bug in replaceDictODict() that lead to wrong results when importing cells
 
 - Fixed bug when using sim.gatherOnlySimData

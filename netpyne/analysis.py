@@ -213,28 +213,53 @@ def getCellsInclude(include):
 ######################################################################################################################################################
 ## Get subset of cells and netstims indicated by include list
 ######################################################################################################################################################
-def getCellsIncludeTags(include, tags):
+def getCellsIncludeTags(include, tags, tagsFormat=None):
     allCells = tags.copy()
-    if 'format' in allCells: allCells.pop('format')
     cellGids = []
 
-    for condition in include:
-        if condition in  ['all', 'allCells']:  # all cells 
-            cellGids = allCells.keys()
-            return cellGids
+    # using list with indices
+    if tagsFormat or 'format' in allCells: 
+        if not tagsFormat: tagsFormat = allCells.pop('format')
+        popIndex = tagsFormat.index('pop')
 
-        elif isinstance(condition, int):  # cell gid 
-            cellGids.append(condition)
-        
-        elif isinstance(condition, basestring):  # entire pop
-            cellGids.extend([gid for gid,c in allCells.iteritems() if c['pop']==condition])
-        
-        elif isinstance(condition, tuple):  # subset of a pop with relative indices
-            cellsPop = [gid for gid,c in allCells.iteritems() if c['pop']==condition[0]]
-            if isinstance(condition[1], list):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
-            elif isinstance(condition[1], int):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+        for condition in include:
+            if condition in  ['all', 'allCells']:  # all cells 
+                cellGids = allCells.keys()
+                return cellGids
+
+            elif isinstance(condition, int):  # cell gid 
+                cellGids.append(condition)
+            
+            elif isinstance(condition, basestring):  # entire pop
+                cellGids.extend([gid for gid,c in allCells.iteritems() if c[popIndex]==condition])
+            
+            elif isinstance(condition, tuple):  # subset of a pop with relative indices
+                cellsPop = [gid for gid,c in allCells.iteritems() if c[popIndex]==condition[0]]
+                if isinstance(condition[1], list):
+                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                elif isinstance(condition[1], int):
+                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+
+    # using dict with keys
+    else:
+    
+        for condition in include:
+            if condition in  ['all', 'allCells']:  # all cells 
+                cellGids = allCells.keys()
+                return cellGids
+
+            elif isinstance(condition, int):  # cell gid 
+                cellGids.append(condition)
+            
+            elif isinstance(condition, basestring):  # entire pop
+                cellGids.extend([gid for gid,c in allCells.iteritems() if c['pop']==condition])
+            
+            elif isinstance(condition, tuple):  # subset of a pop with relative indices
+                cellsPop = [gid for gid,c in allCells.iteritems() if c['pop']==condition[0]]
+                if isinstance(condition[1], list):
+                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                elif isinstance(condition[1], int):
+                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = [int(x) for x in set(cellGids)]  # unique values
 
@@ -1430,11 +1455,11 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
          
     # finde pre and post cells
     if tags and conns:
-        cellGidsPre = getCellsIncludeTags(includePre, tags)
+        cellGidsPre = getCellsIncludeTags(includePre, tags, tagsFormat)
         if includePre == includePost:
             cellGidsPost = cellGidsPre
         else:
-            cellGidsPost = getCellsIncludeTags(includePost, tags)
+            cellGidsPost = getCellsIncludeTags(includePost, tags, tagsFormat)
     else:
         print 'Error loading tags and conns from file' 
         return None, None, None
@@ -1465,9 +1490,11 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
     elif groupBy == 'pop': 
         
         # get list of pops
+        print '    Obtaining list of populations ...'
         popsPre = list(set([tags[gid][popIndex] for gid in cellGidsPre]))
         popIndsPre = {pop: ind for ind,pop in enumerate(popsPre)}
-        netStimPopsPre = []
+        netStimPopsPre = []  # netstims not yet supported
+        netStimPopsPost = []
 
         if includePre == includePost:
             popsPost = popsPre
@@ -1484,6 +1511,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
         countMatrix = np.zeros((len(popsPre), len(popsPost)))
         
         # calculate max num conns per pre and post pair of pops
+        print '    Calculating max num conns for each pair of population ...'
         numCellsPopPre = {}
         for pop in popsPre:
             if pop in netStimPopsPre:
@@ -1512,8 +1540,9 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
                 if feature == 'divergence': maxPreConnMatrix[popIndsPre[prePop], popIndsPost[postPop]] = numCellsPopPre[prePop]
         
         # Calculate conn matrix
+        print '    Calculating weights, strength, prob, delay etc matrices ...'
         for postGid in cellGidsPost:  # for each postsyn cell
-
+            print '     cell %d'%(int(postGid))
             if synOrConn=='syn':
                 cellConns = conns[postGid] # include all synapses 
             else:
@@ -1564,6 +1593,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
         elif feature == 'divergence':
             connMatrix = countMatrix / maxPreConnMatrix
 
+    print '    plotting ...'
     return connMatrix, pre, post
 
 

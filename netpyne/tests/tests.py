@@ -62,6 +62,7 @@ TEST_TYPE_EXISTS_IN_NESTED_DICT = "Exists in nested dict" # input param must exi
 TEST_TYPE_SPECIAL = "Special" # special method, method name provided
 TEST_TYPE_EXISTS_IN_ALL_DICTS = "Exists in all dicts"
 TEST_TYPE_DICT_KEY_VALID_VALUE = "Dict key is valid value"
+
 TEST_TYPE_VALID_GEOMETRIES = "Valid geometries"
 TEST_TYPE_VALID_TOPOLOGIES = "Valid topologies"
 TEST_TYPE_VALID_MECHS = "Valid mechs"
@@ -1934,7 +1935,8 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "cellModel"
         testObj.testTypes = [TEST_TYPE_EXISTS]
-        testObj.messageText = ["popParams->'cellModel': No cellModel specified in population paramters."]
+        testObj.messageText = ["popParams->'cellModel': No cellModel specified in population parameters."]
+        #testObj.messageMap = {"popParamsLabel"del': No cellModel specified in population parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["cellModelTest"] = testObj

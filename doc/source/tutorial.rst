@@ -804,9 +804,13 @@ The ``tut8_init.py`` will contain only only three lines, and just one new line c
 At this point you can run the simulation using e.g. ``python tut8_init.py`` and it should produce the same result as in Tutorial 2 (``tut2.py``).
 
 Now we will add the ``tut8_batch.py`` which contains all the information related to the batch simulations. We have defined a function ``batchTauWeight`` to explore this specific combination of parameters. We could later define other similar functions to create other batches. 
+
 The first thing we do is create an ordered dictionary ``params`` -- this will be of a special NetPyNE type (``specs.ODict``)but it essentially behaves like an ordered dictionary. Next we add the parameters to explore as keys of this dictionary -- ``synMechTau2`` and ``connWeight`` -- and add the list of parameter values to try in the batch simulation as the dictionary keys -- ``[3.0, 5.0, 7.0]`` and ``[0.005, 0.01, 0.15]``. Note that parameter names should coincide with the variables defined in ``cfg``.
+
 We then create an object ``b`` of the NetPyNE class ``Batch`` and pass as arguments the parameters to explore, and the files containing the netParams and simConfig modules. Finally, we customize some attributes of the ``Batch`` object, including the the batch label (``'tauWeight'``), used to create the output file; the folder where to save the data (``'tut8_data'``), the method used to explore parameters (``'grid'``), meaning all combinations of the parameter values; and the run configuration indicating we want to use ``'mpi'`` (this uses MPI and NEURON's Bulletin Board; other options are available for supercomputers), the ``'tut8_init.py'`` to run each sims, and to ``'skip'`` runs if the output files already exist. 
+
 At the end we just need to add the command to launch the batch simulation: ``b.run()``.
+
 The ``tut8_batch.py`` should look like this::
  
 
@@ -843,35 +847,39 @@ To run the batch simulations you will need to have MPI properly installed and NE
 
 Once the simulations are completed you should have a new foler ``tut8_data`` with the following files:
 
-* tauWeight_netParams.py: a copy of the original netParams file used (``tut8_netParams.py``)
+* **tauWeight_netParams.py**: a copy of the original netParams file used (``tut8_netParams.py``)
 
-* tauWeight_batchScript.py:  a copy of the original batch file used (``tut8_batch.py``)
+* **tauWeight_batchScript.py**:  a copy of the original batch file used (``tut8_batch.py``)
 
-* tauWeight_batch.json: a JSON file with the batch parameters and run option used.
+* **tauWeight_batch.json**: a JSON file with the batch parameters and run option used.
 
 * For each combination of parameters (with x,y representing the indices of the parameter values):
 	
-	* tauWeight_x_y_cfg.json: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
+	* **tauWeight_x_y_cfg.json**: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
 
-	* tauWeight_x_y_cfg.json: JSON file with the output data for this combination of batch parameters; output data will contain by default the ``netParams``, ``net``, ``simConfig`` and ``simData``.
+	* **tauWeight_x_y_cfg.json**: JSON file with the output data for this combination of batch parameters; output data will contain by default the ``netParams``, ``net``, ``simConfig`` and ``simData``.
 
-	* tauWeight_x_y_raster.png and tauWeight_x_y_traces.png: output figures for this combination of parameters.
+	* **tauWeight_x_y_raster.png** and **tauWeight_x_y_traces.png**: output figures for this combination of parameters.
 
 
 To analyze the output data you can download :download:`tut8_analysis.py <tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulation results. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. IMPORTANT: The analysis functions (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
 
-Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameter explored and the firing rate of the ``M`` populations::
+Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameter explored and the firing rate of the ``M`` populations:
 
 .. image:: figs/tut8_analysis.png
 	:width: 50%
 
-
 .. note:: For the more advanced users, this is what NetPyNE does under the hood when you run a batch:
 	1) copy netParams.py (or whatever names specified) to batch folder
+	
 	2) load cfg (SimConfig object) from cfg.py (or whatever file is specified)
+	
 	3) iterate param combinations:
+ 	
  		3a) modify cfg (SimConfig object) 
+ 	
  		3b) save cfg to .json file
+ 	
  		3c) run simulation by passing netParams.py and cfg.json files; this means code in netParams.py is executed but cfg is a set of fixed saved values.
 
 .. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.

@@ -1601,7 +1601,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 ## Plot connectivity
 ######################################################################################################################################################
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
-            graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, saveData = None, saveFig = None, showFig = True): 
+            graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -1667,7 +1667,6 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.xaxis.set_ticks_position('top')
             plt.xlim(-0.5,len(cellsPost)-0.5)
             plt.ylim(len(cellsPre)-0.5,-0.5)
-            plt.clim(np.nanmin(connMatrix),np.nanmax(connMatrix))
 
         elif groupBy == 'pop':
             popsPre, popsPost = pre, post
@@ -1685,7 +1684,6 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.xaxis.set_ticks_position('top')
             plt.xlim(-0.5,len(popsPost)-0.5)
             plt.ylim(len(popsPre)-0.5,-0.5)
-            plt.clim(np.nanmin(connMatrix),np.nanmax(connMatrix))
 
         else:
             groupsPre, groupsPost = pre, post
@@ -1703,8 +1701,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.xaxis.set_ticks_position('top')
             plt.xlim(-0.5,len(groupsPost)-0.5)
             plt.ylim(len(groupsPre)-0.5,-0.5)
-            plt.clim(np.nanmin(connMatrix),np.nanmax(connMatrix))
 
+        if not clim: clim = [np.nanmin(connMatrix), np.nanmax(connMatrix)]
+        plt.clim(clim[0], clim[1])
         plt.colorbar(label=feature, shrink=0.8) #.set_label(label='Fitness',size=20,weight='bold')
         plt.xlabel('post')
         h.xaxis.set_label_coords(0.5, 1.06)
@@ -1714,6 +1713,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # stacked bar graph
     elif graphType == 'bar':
         if groupBy == 'pop':
+            popsPre, popsPost = pre, post
+            
             from netpyne.support import stackedBarGraph 
             SBG = stackedBarGraph.StackedBarGrapher()
     

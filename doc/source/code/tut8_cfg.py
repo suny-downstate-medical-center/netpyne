@@ -15,5 +15,5 @@ cfg.analysis['plotRaster'] = {'saveFig': True} 			# Plot a raster
 cfg.analysis['plotTraces'] = {'include': [20], 'saveFig': True} 			# Plot recorded traces for this list of cells
 
 # Variable parameters (used in netParams)
-cfg.synMechTau2 = 50
+cfg.synMechTau2 = 5
 cfg.connWeight = 0.01

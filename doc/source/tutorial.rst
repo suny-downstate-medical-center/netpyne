@@ -869,7 +869,7 @@ Running ``python tut8_analysis.py`` should produce a color plot showing the rela
 .. image:: figs/tut8_analysis.png
 	:width: 50%
 
-Notice how rate initially increases as a function of connection weight, but then decreases due to depolarization blockade; and the effect of the synaptic time decay constant (synMechTau2) depends on whether the cell is spiking normally or in blockade. The batch simulations and analyses facilitate exploration and understanding of these complex interactions.   
+Notice how the rate initially increases as a function of connection weight, but then decreases due to depolarization blockade; and the effect of the synaptic time decay constant (synMechTau2) depends on whether the cell is spiking normally or in blockade. The batch simulations and analyses facilitate exploration and understanding of these complex interactions.   
 
 .. note:: For the more advanced users, this is what NetPyNE does under the hood when you run a batch:
 

@@ -745,15 +745,15 @@ Here we are going to illustrate how to run batch simulations using the simple ne
 
 The first thing we need to do is break up the tut2.py code into three different files -- although not needed for such small models, this will be very helpful for more complex and large models. The file organization should be as follows (click on filename to download):
 
-* :download:`tut8_netParams.py <tut8_netParams.py>` : Defines the network model. Includes "fixed" parameter values of cells, synapses, connections, stimulation, etc. Changes to this file should only be made for relatively stable improvements of the model. Parameter values that will be varied systematically to explore or tune the model should be included here by referencing the appropiate variable in the simulation configuration (cfg) module. Only a single netParams file is required for each batch of simulations.
+* File :download:`tut8_netParams.py <tut8_netParams.py>` : Defines the network model. Includes "fixed" parameter values of cells, synapses, connections, stimulation, etc. Changes to this file should only be made for relatively stable improvements of the model. Parameter values that will be varied systematically to explore or tune the model should be included here by referencing the appropiate variable in the simulation configuration (cfg) module. Only a single netParams file is required for each batch of simulations.
 
-* :download:`tut8_cfg.py <tut8_cfg.py>` : Simulation configuration. Includes parameter values for each simulation run such as duration, dt, recording parameters etc. Also includes the model parameters that are being varied to explore or tune the network. When running a batch, NetPyNE will automatically create one cfg file for each parameter configuration (using this one as a starting point).
+* File :download:`tut8_cfg.py <tut8_cfg.py>` : Simulation configuration. Includes parameter values for each simulation run such as duration, dt, recording parameters etc. Also includes the model parameters that are being varied to explore or tune the network. When running a batch, NetPyNE will automatically create one cfg file for each parameter configuration (using this one as a starting point).
 
-* :download:`tut8_init.py <tut8_init.py>` : Sequence of commands to run a single simulation. Can be executed via 'python init.py'. When running a batch, NetPyNE will call init.py multiple times, pass a different cfg file for each of the parameter configurations explored. 
+* File :download:`tut8_init.py <tut8_init.py>` : Sequence of commands to run a single simulation. Can be executed via 'python init.py'. When running a batch, NetPyNE will call init.py multiple times, pass a different cfg file for each of the parameter configurations explored. 
 
 We will also need to add a new file to control the batch simulation:
 
-* :download:`tut8_batch.py <tut8_batch.py>` : Defines the parameters and parameter values to be explored in a batch of simulations, the run configuration -- e.g. whether to use MPI+Bulletin Board (for multicore machines) or SLURM/PBS Torque (for HPCs) --, and the command to run the batch.
+* File :download:`tut8_batch.py <tut8_batch.py>` : Defines the parameters and parameter values to be explored in a batch of simulations, the run configuration -- e.g. whether to use MPI+Bulletin Board (for multicore machines) or SLURM/PBS Torque (for HPCs) --, and the command to run the batch.
 
 In summary, **netParams.py** for fixed (network) parameters, **cfg.py** for variable (simulation) parameters, **init.py** to run a simulation, and **batch.py** to run a batch of simulations exploring combinations of parameter values.
 

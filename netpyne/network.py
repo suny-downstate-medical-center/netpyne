@@ -745,7 +745,7 @@ class Network (object):
             disynNotconn = sorted(disynNotConn, key=lambda k: probMatrix[k], reverse=True)
 
             # replaced nonDisynConn with disynNotConn
-            for i in range(disynAdd):
+            for i in range(min(disynAdd, nonDisynConn, disynNotConn)):
                 connCreate[nonDisynConn[i]] = False
                 connCreate[disynNotConn[i]] = True
 

@@ -1019,7 +1019,12 @@ class CompartCell (Cell):
                     if sim.cfg.verbose: print('   originalFormat: %s'%(params['originalFormat']))
 
                     rand = h.Random()
-                    sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
+                    stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
+                    
+                    # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
+                    index_in_stim = int(stim_ref.split('_')[-2])
+                    stim_id = stim_ref.split('_')[0]
+                    sim._init_stim_randomizer(rand, stim_id, index_in_stim, sim.cfg.seeds['stim'])
                     rand.negexp(1)
                     stim.noiseFromRandom(rand)
                     params['h%s'%params['originalFormat']] = rand
@@ -1585,7 +1590,7 @@ class NML2SpikeSource (CompartCell):
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
-        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

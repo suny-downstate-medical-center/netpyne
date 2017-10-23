@@ -869,18 +869,21 @@ Running ``python tut8_analysis.py`` should produce a color plot showing the rela
 .. image:: figs/tut8_analysis.png
 	:width: 50%
 
+Notice how rate initially increases as a function of connection weight, but then decreases due to depolarization blockade; and the effect of the synaptic time decay constant (synMechTau2) depends on whether the cell is spiking normally or in blockade. The batch simulations and analyses facilitate exploration and understanding of these complex interactions.   
+
 .. note:: For the more advanced users, this is what NetPyNE does under the hood when you run a batch:
-	1) copy netParams.py (or whatever names specified) to batch folder
+
+	1) Copy netParams.py (or whatever file is specified) to batch data folder
 	
-	2) load cfg (SimConfig object) from cfg.py (or whatever file is specified)
+	2) Load cfg (SimConfig object) from cfg.py (or whatever file is specified)
 	
-	3) iterate param combinations:
+	3) Iterate parameter combinations:
  	
- 		3a) modify cfg (SimConfig object) 
+ 		3a) Modify cfg (SimConfig object) with the parameter values
  	
- 		3b) save cfg to .json file
+ 		3b) Save cfg to .json file
  	
- 		3c) run simulation by passing netParams.py and cfg.json files; this means code in netParams.py is executed but cfg is a set of fixed saved values.
+ 		3c) Run simulation by passing netParams.py and cfg.json files as arguments; this means the code in netParams.py is executed each time but cfg is just a set of fixed saved values.
 
 .. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.
 

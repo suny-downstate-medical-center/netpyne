@@ -22,7 +22,7 @@ VALID_GEOMETRIES_SUBSET = ['L', 'diam', 'Ra']
 PT_3D = 'pt3d'
 VALID_TOPOLOGY_PARAMS = ['parentSec', 'parentX','childX']
 PULSE_KEYS = ['start','end','rate','noise']
-POP_STIM_KEYS = ['start','end','rate','noise','spkTimes','pulses']
+POP_STIM_KEYS = ['seeds','start','end','rate','noise','spkTimes','pulses']
 
 MESSAGE_TYPE_WARNING = "WARNING"
 MESSAGE_TYPE_ERROR = "ERROR"
@@ -1051,7 +1051,7 @@ class TestTypeObj(object):
             else:
                 allowedValues = mechVarList['pointps'][simType] + ['rate']
                 if any([x not in allowedValues for x in allKeys]):
-                    errorMessage = "StimSourceParams -> 'simType': Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
+                    errorMessage = "StimSourceParams: Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
                     errorMessages.append(errorMessage)
 
         except Exception as e:
@@ -1936,7 +1936,6 @@ class SimTestObj(object):
         testObj.testParameterValue = "cellModel"
         testObj.testTypes = [TEST_TYPE_EXISTS]
         testObj.messageText = ["popParams->'cellModel': No cellModel specified in population parameters."]
-        #testObj.messageMap = {"popParamsLabel"del': No cellModel specified in population parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["cellModelTest"] = testObj
@@ -1947,7 +1946,7 @@ class SimTestObj(object):
         testObj.testParameterType = "list"
         testObj.testParameterValueList = ['density','numCells','gridSpacing']
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_LIST]
-        testObj.messageText = ["popParams->'volumeParams': One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
+        testObj.messageText = ["popParams: One of the following must be specified in parameters: " + str(testObj.testParameterValueList)]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR]
 
         self.testParamsMap["pop"]["volumeParamsTest"] = testObj
@@ -2047,9 +2046,9 @@ class SimTestObj(object):
         testObj.testName = "sizeXTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeX"
-        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeX': Value should be an int.","NetParams->'sizeX': sizeX is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeX': Value should be a float.","NetParams->'sizeX': sizeX is not greater than 0."]
 
         self.testParamsMap["net"]["sizeXTest"] = testObj
 
@@ -2058,9 +2057,9 @@ class SimTestObj(object):
         testObj.testName = "sizeYTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeY"
-        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeY': Value should be an int.","NetParams->'sizeY': sizeY is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeY': Value should be a float.","NetParams->'sizeY': sizeY is not greater than 0."]
 
         self.testParamsMap["net"]["sizeYTest"] = testObj
 
@@ -2069,9 +2068,9 @@ class SimTestObj(object):
         testObj.testName = "sizeZTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "self.netParams.sizeZ"
-        testObj.testTypes = [TEST_TYPE_IS_INT, TEST_TYPE_GT_ZERO]
+        testObj.testTypes = [TEST_TYPE_IS_FLOAT, TEST_TYPE_GT_ZERO]
         testObj.errorMessageLevel = [MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR]
-        testObj.messageText = ["NetParams->'sizeZ': Value should be an int.","NetParams->'sizeZ': sizeZ is not greater than 0."]
+        testObj.messageText = ["NetParams->'sizeZ': Value should be a float.","NetParams->'sizeZ': sizeZ is not greater than 0."]
 
         self.testParamsMap["net"]["sizeZTest"] = testObj
 
@@ -2489,7 +2488,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues) )
                 else:
 
                         try:
@@ -2501,7 +2500,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
             elif testType == TEST_TYPE_EXISTS_IN_LIST:
 
@@ -2517,7 +2516,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
                 else:
 
@@ -2530,7 +2529,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
             elif testType == TEST_TYPE_EXISTS_IN_DICT:
 
@@ -2549,7 +2548,7 @@ class SimTestObj(object):
                             #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test " + testObj.testParameterValue + " for: " + str(testType)+ " value: " + str(eval(testObj.compareDict)))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ". Value provided is " + paramValues[testObj.testParameterValue][testObj.testParameterValue1] + ".")
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Value provided is '" + paramValues[testObj.testParameterValue][testObj.testParameterValue1] + "'.")
 
             elif testType == TEST_TYPE_IN_RANGE:
 
@@ -2566,7 +2565,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType) + " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
                 else:
 
                         try:
@@ -2578,7 +2577,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
             elif testType == TEST_TYPE_ARRAY_IN_RANGE:
 
@@ -2617,7 +2616,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
                 else:
 
@@ -2630,7 +2629,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
             elif testType == TEST_TYPE_IS_INT:
 
@@ -2648,7 +2647,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
                 else:
 
@@ -2665,7 +2664,7 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "."
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues)
                             except:
                                 pass
 
@@ -2685,7 +2684,7 @@ class SimTestObj(object):
                         except Exception as e:
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
 
                 else:
 
@@ -2707,7 +2706,7 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue) + ".")
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "."
+                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues)
                             except:
                                 pass
 

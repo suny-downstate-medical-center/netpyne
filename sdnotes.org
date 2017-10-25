@@ -7248,7 +7248,32 @@ for folder in folders:
 	call(('rm -r %s'%(folder)).split(' '))
 	call(('2to3 --output-dir=./%s -W -n %s/%s'%(folder, py2_root, folder)).split(' '))
 
+** error checking error in py3
+Traceback (most recent call last):
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2849, in execRunTests
+    self.testTypeObj.testIsBoolean(paramName)
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 257, in testIsBoolean
+    assert (isinstance (val,bool) or val in [0,1]), "Value specified is " + str(val) + "."
+AssertionError: Value specified is 0.1.
 
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "init.py", line 8, in <module>
+    sim.createSimulateAnalyze(simConfig = cfg, netParams = netParams) 
+  File "/usr/site/python3/netpyne/netpyne/wrappers.py", line 73, in createSimulateAnalyze
+    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
+  File "/usr/site/python3/netpyne/netpyne/wrappers.py", line 25, in create
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+  File "/usr/site/python3/netpyne/netpyne/simFuncs.py", line 72, in initialize
+    simTestObj.runTests()
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 1520, in runTests
+    self.runSimConfigTests() # load simConfig tests
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2465, in runSimConfigTests
+    self.execRunTests(simConfigTestObj, simConfigParams)
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2857, in execRunTests
+    print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0]))
+TypeError: 'AssertionError' object is not subscriptable
 
 
 * Netpyne Models/Users

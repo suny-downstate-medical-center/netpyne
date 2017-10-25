@@ -7200,6 +7200,27 @@ ic
 samn [11:51 AM] 
 wonder if mh could add something for getting axial current in an easier way; similar to new feature of transmembrane current
 
+* 17Oct18 Automating conversion from py2 to py3
+** steps required and which can be included in py2
+*** 2to3
+convert everything, including examples and docs
+*** replace global import sim with local in each func
+- can probably be done now in py2
+*** fix import neuromlFuncs and analysis
+- use py3 format
+from . import x
+import .x
+*** id32() encode utf-8
+- use in py2 (error?)
+return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16) 
+*** replace popen2 with Popen in batch.py
+- not sure if Popen available in py2?
+
+py2: output, input = popen2('qsub') # Open a pipe to the qsub command.                            
+
+py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+    (output, input) = (proc.stdin, proc.stdout)
+
 
 * Netpyne Models/Users
 ** Github examples folder
@@ -7238,7 +7259,7 @@ Ohio Wesleyan University
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
 ** Macaque M1 TMS/tDCS (Aman Aberra, Duke)
-** CA1/CA3 (Mariane Bezaire, Boston University)
+** CA1/CA3 (Mariane Bezaire, Boston University; Andras Ecker, HBP)
 ** EEG (Sam Neymotin, Boston)
 
 ** EMAIL LIST

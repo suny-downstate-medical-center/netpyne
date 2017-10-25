@@ -782,7 +782,7 @@ Misc/utilities:
 
 * **sim.cellByGid()**
 * **sim.version()**
-* **sim.gitversion()**
+* **sim.gitChangeset()**
 
 
 .. _analysis_functions:

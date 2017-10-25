@@ -7,7 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy 
 from time import time, sleep
 from numbers import Number
 from copy import copy
@@ -149,11 +149,22 @@ class Network (object):
                             params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
                             params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
                             params['synMech'] = target.get('synMech', None)
+                            for p in ['Weight', 'Delay', 'loc']:
+                                if 'synMech'+p+'Factor' in target:
+                                    params['synMech'+p+'Factor'] = target.get('synMech'+p+'Factor')
+                            
                         
+                        if 'originalFormat' in source and source['originalFormat'] == 'NeuroML2':
+                            if 'weight' in target:
+                                params['weight'] = target['weight']
+
                         for sourceParam in source: # copy source params
                             params[sourceParam] = strParams[sourceParam+'List'][postCellGid] if sourceParam+'List' in strParams else source.get(sourceParam)
 
-                        postCell.addStim(params)  # call cell method to add connections
+                        if source['type'] == 'NetStim':
+                            self._addCellStim(params, postCell)  # call method to add connections (sort out synMechs first)
+                        else:
+                            postCell.addStim(params)  # call cell method to add connection
 
         print(('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells]))))
         sim.pc.barrier()
@@ -163,11 +174,46 @@ class Network (object):
         return [cell.stims for cell in self.cells]
 
 
+    ###############################################################################
+    ### Set parameters and add stim
+    ###############################################################################
+    def _addCellStim (self, stimParam, postCell):
+
+        # convert synMech param to list (if not already)
+        if not isinstance(stimParam.get('synMech'), list):
+            stimParam['synMech'] = [stimParam.get('synMech')]
+
+
+        # generate dict with final params for each synMech
+        paramPerSynMech = ['weight', 'delay', 'loc']
+        finalParam = {}
+        for i, synMech in enumerate(stimParam.get('synMech')):
+
+            for param in paramPerSynMech:
+                finalParam[param+'SynMech'] = stimParam.get(param)
+                if len(stimParam['synMech']) > 1:
+                    if isinstance (stimParam.get(param), list):  # get weight from list for each synMech
+                        finalParam[param+'SynMech'] = stimParam[param][i]
+                    elif 'synMech'+param.title()+'Factor' in stimParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = stimParam[param] * stimParam['synMech'+param.title()+'Factor'][i]
+
+            params = {k: stimParam.get(k) for k,v in stimParam.items()}
+
+            params['synMech'] = synMech 
+            params['loc'] = finalParam['locSynMech'] 
+            params['weight'] = finalParam['weightSynMech']
+            params['delay'] = finalParam['delaySynMech']
+
+            postCell.addStim(params=params)
+
+
 
     ###############################################################################
     # Convert stim param string to function
     ###############################################################################
     def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
+        from . import sim
+
         # list of params that have a function passed in as a string
         #params = sourceParams+targetParams
         params = sourceParams.copy()
@@ -555,6 +601,8 @@ class Network (object):
     # Find pre and post cells matching conditions
     ###############################################################################
     def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
+        from . import sim
+
         #try:
         preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
         postCellsTags = None
@@ -661,6 +709,64 @@ class Network (object):
  
 
     ###############################################################################
+    ### Disynaptic bias for probability
+    ###############################################################################
+    def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, disynCounter, maxImbalance=10):
+        probability = float(origProbability)
+        factor = bias/origProbability
+        #bias = min(bias, origProbability)  # don't modify more than orig, so can compensate
+        if not set(prePreGids).isdisjoint(postPreGids) and disynCounter < maxImbalance:
+            probability = min(origProbability + bias, 1.0)
+            disynCounter += factor #1
+        elif disynCounter > -maxImbalance:
+            probability = max(origProbability - (min(origProbability + bias, 1.0) - origProbability), 0.0)
+            disynCounter -= 1
+        #print disynCounter, origProbability, probability
+        return probability, disynCounter
+
+
+    ###############################################################################
+    ### Disynaptic bias for probability (version 2)
+    ### bis = min fraction of conns that will be disynaptic
+    ###############################################################################
+    def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGids):
+        connGids = []
+        # calculate which conns are disyn vs 
+        disynMatrix = {(preGid, postGid): not set(prePreGids[preGid]).isdisjoint(postPreGids[postGid]) 
+                for preGid, postGid in list(probMatrix.keys())}
+
+        # calculate which conns are going to be created
+        connCreate = {(preGid, postGid): probMatrix[(preGid, postGid)] >= allRands[(preGid, postGid)]
+                for preGid, postGid in list(probMatrix.keys())}
+        numConns = len([c for c in list(connCreate.values()) if c])
+
+        # change % bias of conns from non-disyn to disyn (start with low, high probs respectively)
+        disynConn, nonDisynConn, disynNotConn = [], [], []
+        for (pre,post), disyn in disynMatrix.items():
+            if disyn and connCreate[(pre,post)]:
+                disynConn.append((pre,post))
+            elif not disyn and connCreate[(pre,post)]:
+                nonDisynConn.append((pre,post))
+            elif disyn and not connCreate[(pre,post)]:
+                disynNotConn.append((pre,post))
+        disynNumNew = int(float(bias) * numConns)
+        disynAdd = disynNumNew - len(disynConn)
+
+        if disynAdd > 0:
+            # sort by low/high probs 
+            nonDisynConn = sorted(nonDisynConn, key=lambda k: probMatrix[k])
+            disynNotconn = sorted(disynNotConn, key=lambda k: probMatrix[k], reverse=True)
+
+            # replaced nonDisynConn with disynNotConn
+            for i in range(min(disynAdd, nonDisynConn, disynNotConn)):
+                connCreate[nonDisynConn[i]] = False
+                connCreate[disynNotConn[i]] = True
+
+        connGids = [(pre,post) for (pre,post), c in connCreate.items() if c]
+        return connGids
+        
+
+    ###############################################################################
     ### Full connectivity
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
@@ -692,22 +798,52 @@ class Network (object):
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
-        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection
-
+        allRands = {(preGid,postGid): self.rand.uniform(0,1) for preGid in preCellsTags for postGid in postCellsTags}  # Create an array of random numbers for checking each connection        
         # get list of params that have a lambda function
         paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
-        for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
-            if postCellGid in self.lid2gid:  # check if postsyn is in this node
-                for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
-                    probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
-                    
-                    for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                        connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
-                  
-                    if probability >= allRands[preCellGid,postCellGid]:      
-                        #rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])  # randomize for pre- post- gid
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+        # probabilistic connections with disynapticBias  
+        if isinstance(connParam.get('disynapticBias', None), Number):  
+            allPreGids = sim._gatherAllCellConnPreGids()
+            prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
+            postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
+            
+            probMatrix = {(preCellGid,postCellGid): connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
+                                                for postCellGid,postCellTags in postCellsTags.items() # for each postsyn cell
+                                                for preCellGid, preCellTags in preCellsTags.items()  # for each presyn cell
+                                                if postCellGid in self.lid2gid}  # check if postsyn is in this node
+            
+            connGids = self._disynapticBiasProb2(probMatrix, allRands, connParam['disynapticBias'], prePreGids, postPreGids)
+            for preCellGid, postCellGid in connGids:
+                for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
+                    connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].items()}  
+                self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+
+        # standard probabilistic conenctions   
+        else:
+            # calculate the conn preGids of the each pre and post cell
+            for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
+                if postCellGid in self.lid2gid:  # check if postsyn is in this node
+                    for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
+                        probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
+                        if probability >= allRands[preCellGid,postCellGid]: 
+                            for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
+                                connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
+                            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+
+
+    ###############################################################################
+    ### Generate random unique integers 
+    ###############################################################################
+    def randUniqueInt(self, r, N, vmin, vmax):
+        from . import sim
+
+        r.discunif(vmin,vmax)
+        out = []
+        while len(out)<N:
+            x=int(r.repick())
+            if x not in out: out.append(x)
+        return out
 
 
     ###############################################################################
@@ -727,15 +863,14 @@ class Network (object):
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
                 convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
                 self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
-                randSample = list(set([self.rand.uniform(0,len(preCellsTags)-1) for i in range(2*convergence)])) # generate twice and find unique list (to avoid duplicates)
-                preCellsSample = [list(preCellsTags.keys())[int(i)] for i in randSample[0:convergence]]  # selected gids of presyn cells
+                randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
+                preCellsSample = [list(preCellsTags.keys())[i] for i in randSample][0:convergence]  # selected gids of presyn cells
+                preCellsSample[:] = [randSample[convergence] if x==postCellGid else x for x in preCellsSample] # remove post gid  
                 preCellsConv = {k:v for k,v in preCellsTags.items() if k in preCellsSample}  # dict of selected presyn cells tags
                 for preCellGid, preCellTags in preCellsConv.items():  # for each presyn cell
              
                     for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                         connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
-        
-                    #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))  
                     if preCellGid != postCellGid: # if not self-connection   
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -756,15 +891,15 @@ class Network (object):
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
-            randSample = list(set([self.rand.uniform(0,len(postCellsTags)-1) for i in range(2*divergence)])) # generate twice and find unique list (to avoid duplicates)
-            postCellsSample = [list(postCellsTags.keys())[int(i)] for i in randSample[0:divergence]]  # selected gids of postsyn cells
+            randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
+            postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
+            postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
             postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                     connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
- 
-                #seed(sim.id32('%d'%(sim.cfg.seeds['conn']+postCellGid+preCellGid)))            
+            
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -813,6 +948,12 @@ class Network (object):
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
+
+        # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
+        args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
+        if 'rand' in args and connParam['connFunc'] not in ['convConn']:
+            self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
+
         for param in paramStrFunc:
             if param+'List' in connParam:
                 finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
@@ -837,8 +978,8 @@ class Network (object):
                 if len(connParam['synMech']) > 1:
                     if isinstance (finalParam.get(param), list):  # get weight from list for each synMech
                         finalParam[param+'SynMech'] = finalParam[param][i]
-                    elif 'synMech'+param+'Factor' in connParam: # adapt weight for each synMech
-                        finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param+'Factor'][i]
+                    elif 'synMech'+param.title()+'Factor' in connParam: # adapt weight for each synMech
+                        finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param.title()+'Factor'][i]
 
             params = {'preGid': preCellGid, 
             'sec': connParam.get('sec'), 
@@ -927,7 +1068,7 @@ class Network (object):
     ###############################################################################
     def modifyStims (self, params, updateMasterAllCells=False):
         from . import sim
-
+        
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyStimsTime')
         if sim.rank==0: 

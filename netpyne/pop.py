@@ -322,7 +322,6 @@ class Pop (object):
 
     def _setCellClass (self):
         from . import sim
-
         
         # Check whether it's a NeuroML2 based cell
         if 'originalFormat' in self.tags:
@@ -351,7 +350,7 @@ class Pop (object):
 
     def __getstate__ (self): 
         from . import sim
-
+        
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled

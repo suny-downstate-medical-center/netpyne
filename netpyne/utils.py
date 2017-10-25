@@ -8,6 +8,8 @@ Contributors: salvador dura@gmail.com
 import os, sys
 from numbers import Number
 from neuron import h
+import importlib
+
 h.load_file("stdrun.hoc") 
 
 
@@ -39,10 +41,10 @@ def importCellParams (fileName, labels, values, key = None):
             filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
             if filePath not in sys.path:  # add to path if not there (need to import module)
                 sys.path.insert(0, filePath)
+                removeFilePath = True
+            else:
+                removeFilePath = False
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-            # tempModule=None
-            # exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
-            import importlib
             tempModule = importlib.import_module(moduleName)
             modulePointer = tempModule
             paramLabels = getattr(modulePointer, labels) # tuple with labels
@@ -50,7 +52,7 @@ def importCellParams (fileName, labels, values, key = None):
             if key:  # if paramValues = dict
                 paramValues = paramValues[key]
             params = dict(list(zip(paramLabels, paramValues)))
-            sys.path.remove(filePath)
+            if removeFilePath: sys.path.remove(filePath)
         except:
             print("Error loading cell parameter values from " + fileName)
     else:
@@ -169,17 +171,17 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
+            removeFilePath = True
+        else:
+            removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-        import importlib
         tempModule = importlib.import_module(moduleName)
-        #exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
         modulePointer = tempModule
-
         if isinstance(cellArgs, dict):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
         else:
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
-        sys.path.remove(filePath)
+        if removeFilePath: sys.path.remove(filePath)
     else:
         print("File name should be either .hoc or .py file")
         return
@@ -220,14 +222,17 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         filePath,fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
             sys.path.insert(0, filePath)
+            removeFilePath = True
+        else:
+            removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
         print('\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName))
         from neuron import load_mechanisms
         load_mechanisms(filePath)
-        exec(('import ' + moduleName + ' as tempModule'), globals(), locals()) # import module dynamically
+        tempModule = importlib.import_module(moduleName)
         modulePointer = tempModule
-        sys.path.remove(filePath)
+        if removeFilePath: sys.path.remove(filePath)
     else:
         print("File name should be either .hoc or .py file")
         return
@@ -431,8 +436,6 @@ def getCellParams(cell, varList, origGlob):
 
 
 def importConnFromExcel (fileName, sheetName):
-    from . import sim
-
     ''' Import connectivity rules from Excel sheet'''
     import openpyxl as xl
 
@@ -488,6 +491,6 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + ",\n'weight': " + str(weight)  # write prob
                 line = line + "})"  # add closing brackets
                 line = line + '\n\n' # new line after each conn rule
-                sim.write(line)  # write to file
+                f.write(line)  # write to file
                 
         

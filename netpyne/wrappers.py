@@ -16,9 +16,8 @@ __all__.extend(['create', 'simulate', 'analyze', 'createSimulate', 'createSimula
 # Wrapper to create network
 ###############################################################################
 def create (netParams=None, simConfig=None, output=False):
-    from . import sim
-
     ''' Sequence of commands to create network '''
+    from . import sim
     import __main__ as top
     if not netParams: netParams = top.netParams
     if not simConfig: simConfig = top.simConfig
@@ -37,9 +36,8 @@ def create (netParams=None, simConfig=None, output=False):
 # Wrapper to simulate network
 ###############################################################################
 def simulate ():
-    from . import sim
-
     ''' Sequence of commands to simulate network '''
+    from . import sim
     sim.runSim()                      # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     
@@ -48,9 +46,8 @@ def simulate ():
 # Wrapper to simulate network
 ###############################################################################
 def analyze ():
-    from . import sim
-
     ''' Sequence of commands to simulate network '''
+    from . import sim
     sim.saveData()                      # run parallel Neuron simulation  
     sim.analysis.plotData()                  # gather spiking data and cell info from each node
 
@@ -59,9 +56,8 @@ def analyze ():
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createSimulate (netParams=None, simConfig=None, output=False):
-    from . import sim
-
     ''' Sequence of commands create, simulate and analyse network '''
+    from . import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
 
@@ -72,9 +68,8 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 # Wrapper to create, simulate, and analyse network
 ###############################################################################
 def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
-    from . import sim
-
     ''' Sequence of commands create, simulate and analyse network '''
+    from . import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
     sim.analyze()
@@ -86,9 +81,8 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 # Wrapper to load all, ready for simulation
 ###############################################################################
 def load (filename, simConfig=None, output=False):
-    from . import sim
-
     ''' Sequence of commands load, simulate and analyse network '''
+    from . import sim
     sim.initialize()  # create network object and set cfg and net params
     sim.loadAll(filename)
     if simConfig: sim.setSimCfg(simConfig)
@@ -110,7 +104,6 @@ def load (filename, simConfig=None, output=False):
 ###############################################################################
 def loadSimulate (filename, simConfig=None, output=False):
     from . import sim
-
     sim.load(filename, simConfig)
     sim.simulate()
 
@@ -122,7 +115,6 @@ def loadSimulate (filename, simConfig=None, output=False):
 ###############################################################################
 def loadSimulateAnalyze (filename, simConfig=None, output=False):
     from . import sim
-
     sim.load(filename, simConfig)
     sim.simulate()
     sim.analyze()
@@ -134,9 +126,8 @@ def loadSimulateAnalyze (filename, simConfig=None, output=False):
 # Wrapper to create and export network to NeuroML2
 ###############################################################################
 def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
-    from . import sim
-
     ''' Sequence of commands to create and export network to NeuroML2 '''
+    from . import sim
     import __main__ as top
     if not netParams: netParams = top.netParams
     if not simConfig: simConfig = top.simConfig

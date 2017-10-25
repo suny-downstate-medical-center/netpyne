@@ -1,4 +1,3 @@
-
 """
 specs.py
 NetParams is a class containing a set of network parameters using a standardized structure
@@ -196,12 +195,150 @@ class ODict(OrderedDict):
         else:
             return x
 
+    def __rename__(self, old, new, label=None):
+        '''
+        old (string): old dict key
+        new (string): new dict key
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
+        
+        returns: True if successful, False otherwse
+        '''
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+        
     def __getstate__ (self):
         return self.toOrderedDict()
 
     def __setstate__ (self, d):
         self = self.fromOrderedDict(d)
 
+
+class PopParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+        
+        dimParams = ['numCells', 'density', 'gridSpacing']
+        if param in dimParams:
+            for removeParam in dimParams: d.pop(removeParam, None)  # remove other properties
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+    
+class CellParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+        # special case: renaming cellParams[x]['secs'] requires updating topology
+        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
+            d = self[label[0]]
+            for sec in list(d['secs'].values()):  # replace appearences in topol
+                if sec['topol'].get('parentSec') == old: 
+                    sec['topol']['parentSec'] = new
+
+
+class ConnParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+
+class SynMechParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+
+class SubConnParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+
+class StimSourceParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
+
+
+class StimTargetParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        self.__rename__(old, new, label)
 
 
 ###############################################################################
@@ -230,24 +367,24 @@ class NetParams (object):
         self.propVelocity = 500.0  # propagation velocity (um/ms)
 
         # Cell params dict
-        self.cellParams = ODict()
+        self.cellParams = CellParams()
 
         # Population params dict
-        self.popParams = ODict()  # create list of populations - each item will contain dict with pop params
+        self.popParams = PopParams()  # create list of populations - each item will contain dict with pop params
         self.popTagsCopiedToCells = ['cellModel', 'cellType']
 
         # Synaptic mechanism params dict
-        self.synMechParams = ODict()
+        self.synMechParams = SynMechParams()
 
         # Connectivity params dict
-        self.connParams = ODict()
+        self.connParams = ConnParams()
 
         # Subcellular connectivity params dict
-        self.subConnParams = ODict()
+        self.subConnParams = SubConnParams()
 
         # Stimulation source and target params dicts
-        self.stimSourceParams = ODict()
-        self.stimTargetParams = ODict()
+        self.stimSourceParams = StimSourceParams()
+        self.stimTargetParams = StimTargetParams()
 
         # fill in params from dict passed as argument
         if netParamsDict:
@@ -324,6 +461,22 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
+    # def rename(self, attr, old, new):
+    #     try:
+    #         obj = getattr(self, attr)
+    #     except:
+    #         print 'Error renaming: netParams does not contain %s' % (attr)
+    #         return False
+
+    #     if old not in obj:
+    #         print 'Error renaming: netParams.%s rule does not contain %s' % (attribute, old)
+    #         return False
+
+    #     obj[new] = obj.pop(old)  # replace
+
+    #     return True
+
+
     def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label:
@@ -357,7 +510,7 @@ class NetParams (object):
         return self.cellParams
 
 
-    def addCellParamsSecList(self, label, secListName, somaDist):
+    def addCellParamsSecList(self, label, secListName, somaDist=None, somaDistY=None):
         import numpy as np
 
         if label in self.cellParams:
@@ -366,9 +519,14 @@ class NetParams (object):
             print('Error adding secList: netParams.cellParams does not contain %s' % (label))
             return
 
-        if not isinstance(somaDist, list) or len(somaDist) != 2:
+        if somaDist is not None and (not isinstance(somaDist, list) or len(somaDist) != 2):
             print('Error adding secList: somaDist should be a list with 2 elements')
             return
+
+        if somaDistY is not None and (not isinstance(somaDistY, list) or len(somaDistY) != 2):
+            print('Error adding secList: somaDistY should be a list with 2 elements')
+            return
+
 
         secList = []
         for secName, sec in cellRule.secs.items():
@@ -376,9 +534,13 @@ class NetParams (object):
                 pt3d = sec['geom']['pt3d']
                 midpoint = int(len(pt3d)/2)
                 x,y,z = pt3d[midpoint][0:3]
-                distSec = np.linalg.norm(np.array([x,y,z]))
-                if distSec >= somaDist[0] and distSec <= somaDist[1]:
-                    secList.append(secName)
+                if somaDist:
+                    distSec = np.linalg.norm(np.array([x,y,z]))
+                    if distSec >= somaDist[0] and distSec <= somaDist[1]:
+                        secList.append(secName)
+                elif somaDistY:
+                    if y >= somaDistY[0] and y <= somaDistY[1]:
+                        secList.append(secName)                    
 
             else:
                 print('Error adding secList: Sections do not contain 3d points')
@@ -388,19 +550,7 @@ class NetParams (object):
 
 
     def renameCellParamsSec(self, label, oldSec, newSec):
-        if label in self.cellParams:
-            cellRule = self.cellParams[label]
-        else:
-            print('Error renaming section: netParams.cellParams does not contain %s' % (label))
-            return
-
-        if oldSec not in cellRule['secs']:
-            print('Error renaming section: cellRule does not contain section %s' % (label))
-            return
-
-        cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
-        for sec in list(cellRule['secs'].values()):  # replace appearences in topol
-            if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
+        self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
@@ -481,6 +631,7 @@ class SimConfig (object):
         self.recordTraces = {}  # Dict of traces to record
         self.recordStim = False  # record spikes of cell stims
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+        self.recordTime = True  # record time step of recording
 
         # Saving
         self.simLabel = ''  # name of simulation (used as filename if none provided)
@@ -500,7 +651,7 @@ class SimConfig (object):
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters
+        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

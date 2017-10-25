@@ -120,9 +120,9 @@ class Cell (object):
 
 
     def __getstate__ (self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         from . import sim
 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
@@ -163,33 +163,34 @@ class Cell (object):
                     ptr = None
                     if 'loc' in params:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
+                            
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(synMech['hSyn'], '_ref_'+params['var'])
                         else:  # eg. soma(0.5)._ref_v
-                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(self.secs[params['sec']]['hSec'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
                         if 'sec' in params:
                             sec = self.secs[params['sec']]
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr = [synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs]
+                            ptr = [getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs]
                             secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
                         else: 
                             ptr = []
                             secLocs = []
                             for secName,sec in self.secs.items():
                                 synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                                ptr.extend([synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs])
+                                ptr.extend([getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs])
                                 secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
 
                     else:
                         if 'pointp' in params: # eg. soma.izh._ref_u
                             if params['pointp'] in self.secs[params['sec']]['pointps']:
-                                ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
+                                ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'], '_ref_'+params['var'])
                         elif 'var' in params: # point process cell eg. cell._ref_v
-                            ptr = self.hPointp.__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(self.hPointp, '_ref_'+params['var'])
 
                     if ptr:  # if pointer has been created, then setup recording
                         if isinstance(ptr, list):
@@ -381,12 +382,14 @@ class CompartCell (Cell):
 
 
     def createNEURONObj (self, prop):
+        from . import sim
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] == None: 
+            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]: 
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
@@ -417,10 +420,7 @@ class CompartCell (Cell):
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
-                                #seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
-                                setattr(seg.__getattribute__(mechName), mechParamName, mechParamValueFinal)
-                                #seg.__getattribute__(mechName).__dict__[mechParamName] = mechParamValueFinal  # TEMP FIX
-
+                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
             # add ions
             if 'ions' in sectParams:
@@ -434,14 +434,11 @@ class CompartCell (Cell):
                             if type(ionParamValue) in [list]: 
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
-                                #seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
-                                setattr(seg, ionParamName+ionName,ionParamValueFinal)
+                                setattr(seg, ionParamName+ionName, ionParamValueFinal)
                             elif ionParamName == 'o':
-                                #seg.__setattr__('%so'%ionName,ionParamValueFinal)
                                 setattr(seg, '%so'%ionName, ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
                             elif ionParamName == 'i':
-                                #seg.__setattr__('%si'%ionName,ionParamValueFinal)
                                 setattr(seg, '%si'%ionName, ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
@@ -512,10 +509,11 @@ class CompartCell (Cell):
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
     def addConnsNEURONObj(self):
-        from . import sim
-
         # Note: loading connections to point process (eg. Izhi2007a) not yet supported
         # Note: assumes weight is in index 0 (netcon.weight[0])
+        
+        from . import sim
+
         # assumes python structure exists
         for conn in self.conns:
             # set postsyn target
@@ -561,13 +559,14 @@ class CompartCell (Cell):
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
                 else:
-                    sec = self.secs['soma'] if 'soma' in self.secs else self.secs[list(self.secs.keys())[0]]  # use soma if exists, otherwise 1st section
+                    #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+                    sec = next((sec for secName, sec in self.secs.items() if len(sec['topol']) == 0), self.secs[list(self.secs.keys())[0]])  # root sec (no parents)
                     loc = 0.5
                 nc = None
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                     for pointpName, pointpParams in sec['pointps'].items():
                         if 'vref' in pointpParams:
-                            nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
+                            nc = h.NetCon(getattr(sec['pointps'][pointpName]['hPointp'], '_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
@@ -726,7 +725,7 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-
+            
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -983,8 +982,6 @@ class CompartCell (Cell):
             else:  
                 if sim.cfg.verbose: print('  Error: no Section available on cell gid=%d to add stim'%(self.gid))
                 return 
-                
-        sec = self.secs[params['sec']]
 
         if not 'loc' in params: params['loc'] = 0.5  # default stim location 
 
@@ -1016,6 +1013,7 @@ class CompartCell (Cell):
        
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            sec = self.secs[params['sec']]
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.items() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -1038,7 +1036,8 @@ class CompartCell (Cell):
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams)))
                 
         else:
-            if sim.cfg.verbose: print(('Adding exotic stim (NeuroML 2 based?): %s'% params))   
+            if sim.cfg.verbose: print(('Adding exotic stim (NeuroML 2 based?): %s'% params))
+            sec = self.secs[params['sec']]   
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.items() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -1047,17 +1046,24 @@ class CompartCell (Cell):
                     print("Can't set point process paramaters of type vector eg. VClamp.amp[3]")
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                elif 'originalFormat' in params:
+                elif 'originalFormat' in params and stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
                     if sim.cfg.verbose: print(('   originalFormat: %s'%(params['originalFormat'])))
-                    if stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
-                        rand = h.Random()
-                        sim._init_stim_randomizer(rand, params['type'], params['stim_count'], sim.cfg.seeds['stim'])
-                        rand.negexp(1)
-                        stim.noiseFromRandom(rand)
-                        params['h%s'%params['originalFormat']] = rand
+
+                    rand = h.Random()
+                    stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
+                    
+                    # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
+                    index_in_stim = int(stim_ref.split('_')[-2])
+                    stim_id = stim_ref.split('_')[0]
+                    sim._init_stim_randomizer(rand, stim_id, index_in_stim, sim.cfg.seeds['stim'])
+                    rand.negexp(1)
+                    stim.noiseFromRandom(rand)
+                    params['h%s'%params['originalFormat']] = rand
                 else: 
-                    setattr(stim, stimParamName, stimParamValue)
-                    stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    if stimParamName in ['weight']:
+                        setattr(stim, stimParamName, stimParamValue)
+                        stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                        
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print(('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
@@ -1315,7 +1321,7 @@ class PointCell (Cell):
                 maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
                 # fixed interval of duration (1 - noise)*interval 
-                fixedInterval = np.full(((1+0.5*noise)*sim.cfg.duration/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                fixedInterval = np.full(int(((1+0.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval
@@ -1380,7 +1386,7 @@ class PointCell (Cell):
                     if 'interval' in pulse:
                         interval = pulse['interval'] 
                     elif 'rate' in pulse:
-                        interval = 1000/pulse['rate']
+                        interval = 1000.0/pulse['rate']
                     else:
                         print('Error: Vecstim pulse missing "rate" or "interval" parameter')
                         return
@@ -1395,7 +1401,7 @@ class PointCell (Cell):
                         end = pulse['end']
 
                         # fixed interval of duration (1 - noise)*interval 
-                        fixedInterval = np.full(((1+1.5*noise)*(end-start)/interval), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                        fixedInterval = np.full(int(((1+1.5*noise)*(end-start)/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                         numSpks = len(fixedInterval)
 
                         # randomize the first spike so on average it occurs at start + noise*interval
@@ -1442,7 +1448,7 @@ class PointCell (Cell):
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
-                nc = h.NetCon(self.hPointp.__getattribute__('_ref_'+self.tags['vref']), None)
+                nc = h.NetCon(getattr(self.hPointp, '_ref_'+self.tags['vref']), None)
             else:
                 nc = h.NetCon(self.hPointp, None)
             threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
@@ -1515,7 +1521,7 @@ class PointCell (Cell):
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 if 'vref' in self.tags:
-                    postTarget = self.hPointp.__getattribute__('_ref_'+self.tags['vref']) #  local point neuron 
+                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron 
                 else: 
                     postTarget = self.hPointp
 
@@ -1630,6 +1636,8 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
+        from . import sim
+        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
@@ -1638,7 +1646,7 @@ class NML2SpikeSource (CompartCell):
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
         self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
-        sim._init_stim_randomizer(rand, randContainer['type'], self.gid, seed)
+        sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
     

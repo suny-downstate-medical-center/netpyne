@@ -8,10 +8,10 @@ Contributors: salvadordura@gmail.com
 
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
-__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll']) # saving and loading
+__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitversion', 'loadBalance','_init_stim_randomizer'])  # misc/utilities
+'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
 
 import sys
 import os
@@ -24,6 +24,7 @@ from copy import copy
 from .specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
+from . import specs
 
 ###############################################################################
 # initialize variables and MPI
@@ -36,11 +37,6 @@ def initialize (netParams = None, simConfig = None, net = None):
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
-
-    if hasattr(simConfig, 'checkErrors') and simConfig.checkErrors: # whether to validate the input parameters
-        simTestObj = sim.SimTestObj(simConfig.checkErrorsVerbose)
-        simTestObj.netParams = netParams
-        simTestObj.runTests()
 
     # for testing validation
     # if simConfig.exitOnError:
@@ -67,6 +63,14 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
+    if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
+
+    if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
+        simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
+        simTestObj.simConfig = sim.cfg
+        simTestObj.netParams = sim.net.params
+        simTestObj.runTests()
+
     sim.timing('stop', 'initialTime')
 
 
@@ -75,7 +79,6 @@ def initialize (netParams = None, simConfig = None, net = None):
 ###############################################################################
 def setNet (net):
     from . import sim
-
     sim.net = net
 
 
@@ -83,7 +86,7 @@ def setNet (net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams (params):
-    from . import sim, specs
+    from . import sim
 
     if params and isinstance(params, specs.NetParams):
         paramsDict = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
@@ -98,7 +101,7 @@ def setNetParams (params):
 # Set simulation config
 ###############################################################################
 def setSimCfg (cfg):
-    from . import sim, specs
+    from . import sim
 
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set
@@ -130,8 +133,6 @@ def createParallelContext ():
 # Load netParams from cell
 ###############################################################################
 def loadNetParams (filename, data=None, setLoaded=True):
-    from . import sim, specs
-
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
@@ -220,8 +221,6 @@ def loadNet (filename, data=None, instantiate=True):
 # Load simulation config from file
 ###############################################################################
 def loadSimCfg (filename, data=None, setLoaded=True):
-    from . import specs
-
     if not data: data = _loadFile(filename)
     print('Loading simConfig...')
     if 'simConfig' in data:
@@ -262,11 +261,71 @@ def loadAll (filename, data=None):
 
 
 ###############################################################################
+# Fast function to find unique elements in sequence and preserve order
+###############################################################################
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
+
+###############################################################################
+# Support funcs to load from mat
+###############################################################################
+def _mat2dict(obj): 
+    '''
+    A recursive function which constructs from matobjects nested dictionaries
+    Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
+    '''
+    import scipy.io as spio
+    import numpy as np
+
+    if isinstance(obj, dict):
+        out = {}
+        for key in obj:
+            if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(obj[key])
+            elif isinstance(obj[key], np.ndarray):
+                out[key] = _mat2dict(obj[key])
+            else:
+                out[key] = obj[key]
+
+    elif isinstance(obj, spio.matlab.mio5_params.mat_struct):
+        out = {}
+        for key in obj._fieldnames:
+            val = obj.__dict__[key]
+            if isinstance(val, spio.matlab.mio5_params.mat_struct):
+                if key in ['conns', 'stims', 'synMechs']:
+                    out[key] = [_mat2dict(val)]  # convert to 1-element list
+                else:
+                    out[key] = _mat2dict(val)
+            elif isinstance(val, np.ndarray):
+                out[key] = _mat2dict(val)
+            else:
+                out[key] = val
+
+    elif isinstance(obj, np.ndarray):
+        out = []
+        for item in obj:
+            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+                out.append(_mat2dict(item))
+            else:
+                out.append(item)
+
+    else:
+        out = obj
+
+    return out
+
+
+###############################################################################
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
     from . import sim
-
     import os
 
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
@@ -296,8 +355,10 @@ def _loadFile (filename):
 
     # load mat file
     elif ext == 'mat':
-        from scipy.io import savemat
+        from scipy.io import loadmat
         print(('Loading file %s ... ' % (filename)))
+        dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
+        data = _mat2dict(dataraw)
         #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
         print('Finished saving!')
 
@@ -404,7 +465,7 @@ def _init_stim_randomizer(rand, stimType, gid, seed):
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
 def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
-    if isinstance(obj, list):
+    if type(obj) == list:
         if objCopy=='ROOT':
             objCopy = []
         for item in obj:
@@ -421,7 +482,7 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
         if objCopy == 'ROOT':
             objCopy = Dict()
         for key,val in obj.items():
-            if isinstance(val, list):
+            if type(val) in [list]:
                 objCopy[key] = []
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
             elif isinstance(val, (dict, Dict)):
@@ -438,7 +499,7 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 ### Recursively remove items of an object (used to avoid mem leaks)
 ###############################################################################
 def clearObj (obj):
-    if isinstance(obj, list):
+    if type(obj) == list:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict)):
                 clearObj(item)
@@ -447,7 +508,7 @@ def clearObj (obj):
     elif isinstance(obj, (dict, Dict, ODict)):
         for key in list(obj.keys()):
             val = obj[key]
-            if isinstance(val, (list, dict, Dict, ODict)):
+            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
                 clearObj(val)
             del obj[key]
     return obj
@@ -456,14 +517,14 @@ def clearObj (obj):
 ### Replace item with specific key from dict or list (used to remove h objects)
 ###############################################################################
 def replaceItemObj (obj, keystart, newval):
-    if isinstance(obj, list):
+    if type(obj) == list:
         for item in obj:
-            if isinstance(item, (list, dict)):
+            if type(item) in [list, dict]:
                 replaceItemObj(item, keystart, newval)
 
-    elif isinstance(obj, dict):
+    elif type(obj) == dict:
         for key,val in obj.items():
-            if isinstance(val, (list, dict)):
+            if type(val) in [list, dict]:
                 replaceItemObj(val, keystart, newval)
             if key.startswith(keystart):
                 obj[key] = newval
@@ -474,7 +535,7 @@ def replaceItemObj (obj, keystart, newval):
 ### Recursivele replace dict keys
 ###############################################################################
 def replaceKeys (obj, oldkey, newkey):
-    if isinstance(obj, list):
+    if type(obj) == list:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict, OrderedDict)):
                 replaceKeys(item, oldkey, newkey)
@@ -493,14 +554,14 @@ def replaceKeys (obj, oldkey, newkey):
 ### Replace functions from dict or list with function string (so can be pickled)
 ###############################################################################
 def replaceFuncObj (obj):
-    if isinstance(obj, list):
+    if type(obj) == list:
         for item in obj:
-            if isinstance(item, (list, dict)):
+            if type(item) in [list, dict]:
                 replaceFuncObj(item)
 
-    elif isinstance(obj, dict):
+    elif type(obj) == dict:
         for key,val in obj.items():
-            if isinstance(val, (list, dict)):
+            if type(val) in [list, dict]:
                 replaceFuncObj(val)
             if 'func_name' in dir(val): #hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts()
                 obj[key] = 'func' # funcSource
@@ -511,7 +572,7 @@ def replaceFuncObj (obj):
 ### Replace None from dict or list with [](so can be saved to .mat)
 ###############################################################################
 def replaceNoneObj (obj):
-    if isinstance(obj, list):# or type(obj) == tuple:
+    if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict)):
                 replaceNoneObj(item)
@@ -531,60 +592,64 @@ def replaceNoneObj (obj):
 ### Replace Dict with dict and Odict with OrderedDict
 ###############################################################################
 def replaceDictODict (obj):
-    if isinstance(obj, list):
+    if type(obj) == list:
         for item in obj:
-            if isinstance(item, Dict):
+            if type(item) == Dict:
                 item = item.todict()
-            elif isinstance(item, ODict):
+            elif type(item) == ODict:
                 item = item.toOrderedDict()
-            if isinstance(item, (list, dict, OrderedDict)):
+            if type(item) in [list, dict, OrderedDict]:
                 replaceDictODict(item)
 
-    elif isinstance(obj, (dict, OrderedDict, Dict, ODict)):
+    elif type(obj) in [dict, OrderedDict, Dict, ODict]:
         for key,val in obj.items():
-            if isinstance(val, Dict):
+            if type(val) == Dict:
                 obj[key] = val.todict()
-            elif isinstance(val, ODict):
+            elif type(val) == ODict:
                 obj[key] = val.toOrderedDict()
-            if isinstance(val, (list, dict, OrderedDict)):
+            if type(val) in [list, dict, OrderedDict]:
                 replaceDictODict(val)
 
-    # elif isinstance(obj, Dict):
-    #     obj = obj.todict()
-    #     for key,val in obj.iteritems():
-    #         if isinstance(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
-
-    # elif type(obj) == ODict:
-    #     print obj.keys()
-    #     obj = obj.toOrderedDict()
-    #     for key,val in obj.iteritems():
-    #         if isinstance(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
-
-    # elif isinstance(obj, dict):
-    #     for key,val in obj.iteritems():
-    #         if isinstance(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
     return obj
 
 ###############################################################################
 ### Replace tuples with str
 ###############################################################################
-def tupleToStr (obj):
-    if isinstance(obj, list):
+def tupleToList (obj):
+    if type(obj) == list:
         for item in obj:
-            if isinstance(item, (list, dict)):
-                tupleToStr(item)
-            elif isinstance(item, tuple):
-                obj[obj.index(item)] = str(item)
+            if type(item) in [list, dict]:
+                tupleToList(item)
+            elif type(item) == tuple:
+                obj[obj.index(item)] = list(item)
 
     elif isinstance(obj, (dict, ODict)):
         for key,val in obj.items():
             if isinstance(val, (list, dict, ODict)):
-                tupleToStr(val)
-            elif isinstance(val, tuple):
-                obj[key] = str(val) # also replace empty dicts with empty list
+                tupleToList(val)
+            elif type(val) == tuple:
+                obj[key] = list(val) # also replace empty dicts with empty list
+    return obj
+
+
+###############################################################################
+### Replace Decimal with float
+###############################################################################
+def decimalToFloat (obj):
+    from decimal import Decimal
+    if type(obj) == list:
+        for i,item in enumerate(obj):
+            if type(item) in [list, dict, tuple]:
+                decimalToFloat(item)
+            elif type(item) == Decimal:
+                obj[i] = float(item)
+
+    elif isinstance(obj, dict):
+        for key,val in obj.items():
+            if isinstance(val, (list, dict)):
+                decimalToFloat(val)
+            elif type(val) == Decimal:
+                obj[key] = float(val) # also replace empty dicts with empty list
     return obj
 
 
@@ -623,9 +688,8 @@ def cellByGid (gid):
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
 def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
-    import imp, __main__
     from . import sim
-
+    import imp, __main__
 
     if len(sys.argv) > 1:
         print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
@@ -720,10 +784,10 @@ def setupRecording ():
         for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
-        if len(sim.simData) > 0:
+        if sim.cfg.recordTime and len(sim.simData) > 0:
             try:
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t)
+                sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 
@@ -879,14 +943,15 @@ def preRun ():
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
-        for stim in cell.stims:
-            if 'hRandom' in stim:
-                #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
-                _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
-                stim['hRandom'].negexp(1)
-                # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
-                if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
-                    stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+        else:
+            for stim in cell.stims:
+                if 'hRandom' in stim:
+                    #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+                    _init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
+                    stim['hRandom'].negexp(1)
+                    # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                    if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
+                        stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
 
 ###############################################################################
@@ -960,6 +1025,32 @@ def _gatherAllCellTags ():
 
 
 ###############################################################################
+### Gather tags from cells
+###############################################################################
+def _gatherAllCellConnPreGids ():
+    from . import sim
+
+    data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
+    gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+    sim.pc.barrier()
+    allCellConnPreGids = {}
+    for dataNode in gather:
+        allCellConnPreGids.update(dataNode)
+
+    # clean to avoid mem leaks
+    for node in gather:
+        if node:
+            node.clear()
+            del node
+    for item in data:
+        if item:
+            item.clear()
+            del item
+
+    return allCellConnPreGids
+
+
+###############################################################################
 ### Gather data from nodes
 ###############################################################################
 def gatherData ():
@@ -1022,13 +1113,13 @@ def gatherData ():
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
-            if len(sim.allSimData['spkt']) > 0:
-                sim.allSimData['spkt'], sim.allSimData['spkid'] = list(zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid'])))) # sort spks
+                if len(sim.allSimData['spkt']) > 0:
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid'])))) # sort spks
 
-            sim.net.allPops = ODict() # pops
-            for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+                sim.net.allPops = ODict() # pops
+                for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
 
-            sim.net.allCells = [c.__dict__ for c in sim.net.cells]
+                sim.net.allCells = [c.__dict__ for c in sim.net.cells]
 
         # gather cells, pops and sim data
         else:
@@ -1298,6 +1389,8 @@ def saveData (include = None):
         net = {}
 
         dataSave['netpyne_version'] = sim.version(show=False)
+        dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
+        
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -1344,7 +1437,7 @@ def saveData (include = None):
             if sim.cfg.saveMat:
                 from scipy.io import savemat
                 print(('Saving output as %s ... ' % (sim.cfg.filename+'.mat')))
-                savemat(sim.cfg.filename+'.mat', tupleToStr(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                savemat(sim.cfg.filename+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
@@ -1403,6 +1496,71 @@ def saveData (include = None):
 
 
 ###############################################################################
+### Load cell tags and conns using ijson (faster!) 
+###############################################################################
+def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
+    # requires: 1) pip install ijson, 2) brew install yajl
+    from . import sim
+    import ijson.backends.yajl2_cffi as ijson
+    import json
+    from time import time
+
+    tags, conns = {}, {}
+
+    if connFormat:
+        conns['format'] = connFormat
+    if tagFormat:
+        tags['format'] = tagFormat
+
+    with open(filename, 'r') as fd:
+        start = time()
+        print('Loading data ...')
+        objs = ijson.items(fd, 'net.cells.item')
+        if loadTags and loadConns:
+            print('Storing tags and conns ...')
+            for cell in objs:
+                if tagsGidRange==None or cell['gid'] in tagsGidRange:
+                    print('Cell gid: %d'%(cell['gid']))
+                    if tagFormat:
+                        tags[int(cell['gid'])] = [cell['tags'][param] for param in tagFormat]
+                    else:
+                        tags[int(cell['gid'])] = cell['tags']
+                    if connsGidRange==None or cell['gid'] in connsGidRange:
+                        if connFormat:
+                            conns[int(cell['gid'])] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                        else:
+                            conns[int(cell['gid'])] = cell['conns']
+        elif loadTags:
+            print('Storing tags ...')
+            if tagFormat:
+                tags = {int(cell['gid']): {param: cell['tags'][param] for param in tagFormat} for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+            else:
+                tags = {int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+        elif loadConns:             
+            print('Storing conns...')
+            if connFormat:
+                conns = {int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+            else:
+                conns = {int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+
+        print('time ellapsed (s): ', time() - start)
+
+    tags = sim.decimalToFloat(tags)
+    conns = sim.decimalToFloat(conns)
+
+    if saveTags and tags:
+        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        print('Saving tags to %s ...' % (outFilename))
+        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+    if saveConns and conns:
+        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        print('Saving conns to %s ...' % (outFilename))
+        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+
+    return tags, conns
+
+
+###############################################################################
 ### Timing - Stop Watch
 ###############################################################################
 def timing (mode, processName):
@@ -1419,6 +1577,7 @@ def timing (mode, processName):
 ### Print netpyne version
 ###############################################################################
 def version (show=True):
+    from . import sim
     from netpyne import __version__
     if show:
         print(__version__)
@@ -1428,19 +1587,28 @@ def version (show=True):
 ###############################################################################
 ### Print github version
 ###############################################################################
-def gitversion ():
-    import netpyne,os
+def gitChangeset (show=True):
+    from . import sim
+    import netpyne, os, subprocess 
     currentPath = os.getcwd()
-    netpynePath = os.path.dirname(netpyne.__file__)
-    os.system('cd '+netpynePath+' ; git log -1; '+'cd '+currentPath)
+    try:
+        netpynePath = os.path.dirname(netpyne.__file__)
+        os.chdir(netpynePath)
+        if show: os.system('git log -1')
+        # get changeset (need to remove initial tag+num and ending '\n')
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+    except: 
+        changeset = ''
+    os.chdir(currentPath)
 
+    return changeset
 
 ###############################################################################
 ### Print github version
 ###############################################################################
 def checkMemory ():
     from . import sim
-
+    
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:
         import resource

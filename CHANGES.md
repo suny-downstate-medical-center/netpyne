@@ -1,7 +1,84 @@
+# Version 0.7.5
+
+- Improved NeuroML conversion support
+
+- Make cfg.checkErrors = True by default, but set to False if using multiple cores or batch
+
+- Added methods to rename netParams dict keys in a nested format (needed for GUI)
+
+- Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
+
+- Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
+
+- Fixed bug in colors of plotSpikeHist
+
+- Fixed bug in replaceDictODict() that lead to wrong results when importing cells
+
+- Fixed bug when using sim.gatherOnlySimData
+
+
+# Version 0.7.4
+
+- Added polarity param to analysis.plotEPSPAmp() 
+
+- Added sim.gitChangeset() function and store netpyne_changeset in every output file
+
+- Added function ijsonLoad() to load faster and save tags conns to json
+
+- Fixed bug in convergence and divergence connectivity -- now fixed number and no self conns
+
+- Fixed bug by converting tuples to strings when saving Matlab; now converts to lists
+
+- Fixed bug use int as argument to np.full in fixedInterval variable
+
+- Fixed bug that removed previously existing element from path during importCellParams()
+
+
+# Version 0.7.3
+
+- Option to create section lists based on y displacement from soma (addCellParamsSecList)
+
+- Converted popParams, cellParams etc to object of their own class and added method to set param
+
+- Added 'disynapticBias' option to increase probability of B->C conns if A->B and A->C exist 
+
+- Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
+
+- Added 1 second between batch job submission to avoid saturating scheduler
+
+- Fixed bug: init randomizer so params with string-based random func are independent of cores
+
+- Fixed bug for newer pyplot versions: replace 'linewidths' with 'lw'
+
+
 # Version 0.7.2
 
+- Improved NeuroML importing/exporting
+
+- Added error checking for simConfig
+
+- Added popColors option to plotSpikeHist and plotRatePSD
+
+- Added support to load params, cfg, net and simData from .mat files
+
+- Made root section (with no parents) the source of spikes by default (issue #246)
+
+- Added option to set initial cfg in batch sims
+
+- Added option to set grouped params in Batch constructor
+
+- Added option to not record time (to reduce output file size)
+
+- Fixed bug: synMechFraction had no effect; replaced with synMechWeightFactor
+
+- Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
 
 - Fixed bug importing cell -- use h.pop_section() to avoid stack overflow
+
+- Fixed bug when adding stim NetStim where sec is a list
+
+- Fixed bug when adding stim NetStim with multiple synMechs and synsPerConn>1
+
 
 # Version 0.7.1
 

@@ -6963,6 +6963,294 @@ sam: need to recompile Neuron and specify python3
 - netParams conceptual (eg. label doesn't exist) - error check
 - netpyne bug
 
+* 17Oct17 Fixing issue importing cell
+** problem
+Importing cell works in Penny's computer but not mine or Sergios
+works = produces same outptu in NEURON/Py than in NetPyNE
+
+** same code (penny+me)
+*** NEURON/Py code
+from CA229_PFC import *
+import matplotlib.pyplot as plt
+from neuron import h
+import numpy as np
+#import json
+#import time
+#import pdb     # For python debugging
+
+
+
+
+cell = CA229()
+cell.init_once()
+
+Stim = h.IClamp(cell.soma[2](0.5))
+Stim.dur = 300
+Stim.delay = 200
+Stim.amp = 0.2
+
+t_vec = h.Vector()
+t_vec.record(h._ref_t)
+v_vec_soma = h.Vector()
+v_vec_dend1 = h.Vector()
+v_vec_dend2 = h.Vector()
+
+
+v_vec_soma.record(cell.soma[2](0.5)._ref_v)
+#v_vec_dend1.record(cell.basal[8](0.9)._ref_v)
+v_vec_dend2.record(cell.basal[34](0.8)._ref_v)
+
+
+h.tstop = 500
+h.v_init = -67.3
+h.celsius = 32
+h.run() # plot voltage vs time
+
+
+plt.figure() # Default figsize is (8,6)
+plt.plot(t_vec, v_vec_soma, label = 'Soma[0](0.5)', color = 'blue')
+#plt.plot(t_vec, v_vec_dend1, label = 'Basal[8](0.9)', color = 'green')
+plt.plot(t_vec, v_vec_dend2, label = 'Basal[34](0.8)', color = 'red')
+plt.ylim([-80, 60])
+plt.xlim([0,500])
+plt.legend(loc = 'best')
+plt.show()
+
+*** netpyne code
+"""
+params.py
+
+netParams is a dict containing a set of network parameters using a standardized structure
+
+simConfig is a dict containing a set of simulation configurations using a standardized structure
+
+Contributors: salvadordura@gmail.com
+"""
+
+#import matplotlib; matplotlib.use('Agg')
+
+from netpyne import specs
+# from netpyne import sim
+# sim.version()
+# sim.gitChangeset()
+
+netParams = specs.NetParams()   # object of class NetParams to store the network parameters
+simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
+
+#netParams.scaleConnWeightNetStims = 1.0 #0.5  # scale conn weight factor for NetStims
+###############################################################################
+#
+# MPI HH TUTORIAL PARAMS
+#
+###############################################################################
+
+###############################################################################
+# NETWORK PARAMETERS
+###############################################################################
+
+# Population parameters
+##########
+
+cellRule = netParams.importCellParams(label='PFC_full',conds={'cellType': 'PFC', 'cellModel': 'PFC_full'},
+  fileName='CA229_PFC.py', cellName='MakeCA229')
+
+netParams.cellParams['PFC_cell_rule'] = cellRule
+
+
+data = netParams.cellParams['PFC_cell_rule']
+
+#import json
+#with open('CellRule.json','w') as output:
+#    json.dump(data, output)
+########## secName is the compartment name: soma_0, soma_1, basal_1, basal_2
+#for secName,sec in cellRule['secs'].iteritems(): sec['v_init'] = -67.59
+
+netParams.popParams['PFC'] = {'cellType': 'PFC', 'cellModel': 'PFC_full', 'numCells': 1}
+
+
+#netParams.synMechParams['AMPA'] = {'mod':'GLU'}
+#netParams.synMechParams['NMDA'] = {'mod':'NMDA','Beta': 0.01}
+
+
+netParams.stimSourceParams['Stim'] = {'type':'IClamp','delay':200, 'amp': 0.2, 'dur':300}
+netParams.stimTargetParams['Stim->PFC'] = {'source': 'Stim','conds': {'pop':'PFC'}, 'sec': 'soma_2', 'loc': 0.5}
+#netParams.popParams['ST1'] = {'cellModel': 'NetStim', 'numCells': 1, 'rate':50, 'noise': 0, 'start':50, 'number': 1}
+#netParams.popParams['ST1_1'] = {'cellModel': 'NetStim', 'numCells': 1, 'rate': 50, 'noise': 0, 'start':50, 'number': 1}
+#netParams.popParams['ST2'] = {'cellModel': 'NetStim', 'numCells': 1, 'rate':50, 'noise': 0, 'start':50, 'number': 1}
+#import itertools
+
+#w_AMPA = list(itertools.repeat(0.00058, 20))
+#loc_AMPA = list(itertools.repeat(0.6, 20))
+###### Connectivity parameters
+#netParams.connParams['ST1'] = {
+#    'preConds': {'pop': 'ST1'},
+#    'postConds': {'pop': 'PFC', 'cellModel':'PFC_full'},
+#    'synMech': 'AMPA',
+#    'weight': 0.00058,                    # weight of each connection
+#    'delay': 10,
+#    'synsPerConn': 10,
+#    'sec': 'basal_34',
+#    'loc': 0.6,
+#    'threshold': -20}#
+#
+
+#netParams.connParams['ST2'] = {
+#    'preConds': {'pop': 'ST2'},
+#    'postConds': {'pop': 'PFC', 'cellModel':'PFC_full'},
+#    'synMech': 'NMDA',
+#    'weight': 0.02,                    # weight of each connection
+#    'delay': 10,
+#    'synsPerConn': 2,
+#    'sec': 'basal_34',
+#    'loc': 0.6,
+#    'threshold': -20}
+
+
+
+###############################################################################
+# SIMULATION PARAMETERS
+###############################################################################
+
+# Simulation parameters
+#simConfig.hParams = {'celsius': 6}
+simConfig.duration = 500 # Duration of the simulation, in ms
+simConfig.dt = 0.025 # Internal integration timestep to use
+simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
+simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = False  # show detailed messages
+simConfig.hParams = {'celsius': 32, 'v_init': -67.3}
+
+#'celsius': 32,
+# Recording
+simConfig.recordCells = ['all']  # which cells to record from
+simConfig.recordTraces = {'V_soma':{'sec':'soma_2','loc':0.5,'var':'v'}}
+simConfig.recordTraces['Bdend1'] = {'sec':'basal_34', 'loc': 0.8, 'var': 'v'}
+simConfig.recordTraces['Bdend2'] = {'sec':'basal_34', 'loc': 0.5, 'var': 'v'}
+simConfig.recordTraces['Bdend3'] = {'sec':'basal_34', 'loc': 0.3, 'var': 'v'}
+#simConfig.recordTraces['Bdend'] = {'sec':'basal_34', 'loc': 0.8, 'var': 'v'}
+simConfig.recordStim = False  # record spikes of cell stims
+simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
+
+# Saving
+simConfig.filename = 'HHTut'  # Set file output name
+#simConfig.Label = 'sim1'
+simConfig.saveFileStep = 1000 # step size in ms to save data to disk
+simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
+simConfig.recordStim = True
+simConfig.saveJson = True # save to json file
+
+# Analysis and plotting
+simConfig.analysis['plotRaster'] = False  # Plot raster
+simConfig.analysis['plotTraces'] = {'include': [0], 'overlay': True, 'saveFig': True, 'showFig': False}  # Plot raster
+simConfig.analysis['plot2Dnet'] = False  # Plot 2D net cells and connections
+
+from netpyne import sim
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
+
+import pylab; pylab.show()
+
+** same/similar NEURON version
+penny: NEURON -- VERSION 7.5 master (8c17845) 2017-06-22
+me: NEURON -- VERSION 7.5 master (0388d94) 2017-08-09
+
+** python version
+penny: Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08) 
+me: Python 2.7.13 |Anaconda custom (x86_64)| (default, Dec 20 2016, 23:05:08) 
+
+** netpyne version!
+difference in netpyne: sim.replaceDictODict()
+- due to an obscure bug resulting from using `isinstance()` instead of `type()` (isinstance takes into account inherited
+classes, so was applied to wrong objects and messed up imported structures)
+
+* 17Oct18 Implementing HNN's dipole
+** chat with sam
+samn [8:58 AM] 
+looks like two components dipole.mod (non point process with pointer) dipole_pp.mod (point process)
+
+
+salvadord [11:48 AM] 
+not familiar with non-point process with pointer — any doc/notes on that ?
+
+
+samn [11:49 AM] not much - stephanie developed that with michael hines a long time ago and then shane lee translated it to
+python with michael's help
+
+
+[11:49] 
+maybe i should email steph/michael and cc you
+
+
+[11:49] 
+dipole_insert in cell.py has a few comments
+
+
+salvadord [11:50 AM] 
+I’ll check the code and if can’t figure out will let u know
+
+
+samn [11:50 AM] 
+mainly what dipole needs is the axial resistance and voltage in different locations so that it can calculate the axial current flow
+
+
+salvadord [11:50 AM] 
+ic
+
+
+samn [11:51 AM] 
+wonder if mh could add something for getting axial current in an easier way; similar to new feature of transmembrane current
+
+* 17Oct18 Automating conversion from py2 to py3
+** steps required and which can be included in py2
+*** 2to3
+convert everything, including examples and docs
+*** DONE - replace global import sim with local in each func
+- can probably be done now in py2
+*** DONE fix import neuromlFuncs and analysis
+- use py3 format
+from . import x
+import .x
+*** DONE id32() encode utf-8
+- use in py2 (error?)
+return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16) 
+*** DONE replace popen2 with Popen in batch.py
+- not sure if Popen available in py2?
+
+py2: output, input = popen2('qsub') # Open a pipe to the qsub command.                            
+
+py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+    (output, input) = (proc.stdin, proc.stdout)
+*** DONE replaced exec to import with importlib.import_module
+- test in py2 - looks like more elegant solution
+
+            # tempModule=None
+            # exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
+            import importlib
+            tempModule = importlib.import_module(moduleName)
+
+*** DONE replaced x.setattr(...) with setattr(x,...)
+- 4 occur in cell.py - more stable, use in py2
+
+
+** create script to convert py2 to 3
+# py2to3.py - convert netpyne py2 to py3
+from subprocess import call
+
+py2_root = '../netpyne_repo'
+folders = ['netpyne', 'doc', 'examples']
+files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
+
+for file in files:
+	call(('rm %s'%(file)).split(' '))
+	call(('cp %s/%s .'%(py2_root, file)).split(' '))
+
+for folder in folders: 
+	call(('rm -r %s'%(folder)).split(' '))
+	call(('2to3 --output-dir=./%s -W -n %s/%s'%(folder, py2_root, folder)).split(' '))
+
+
+
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -6990,16 +7278,19 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+* Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
+
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
 ** Convert hoc models (Ben Latimer, Missouri)
-** Thalamocortical stimulation (Brenyn Jungmann, Missouri)
+** Thalamocortical stimulation (Brenyn Jungmann, Nahir lab,Missouri)
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
 
-** Macaque M1 TMS (Aman Aberra, Duke)
-** CA1/CA3 (Mariane Bezaire, Boston University)
+** Macaque M1 TMS/tDCS (Aman Aberra, Duke)
+** CA1/CA3 (Mariane Bezaire, Boston University; Andras Ecker, HBP)
+** EEG (Sam Neymotin, Boston)
+
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu

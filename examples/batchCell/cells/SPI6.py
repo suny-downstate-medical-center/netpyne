@@ -32,7 +32,7 @@ bdendRM = 13123.00174
 p_ek = -104.0 # these reversal potentials for in vitro conditions
 p_ena = 42.0 
 # h-current
-h.erev_h = h.erev_ih = -37.0 # global
+h.erev_ih = -37.0 # global
 gbar_h = 0.000140956438043 
 h_gbar_tuft = 0.00565 # mho/cm^2 (based on Harnett 2015 J Neurosci)
 

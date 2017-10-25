@@ -1111,7 +1111,7 @@ class TestTypeObj(object):
 
                     plotRaster = analysis['plotRaster']
 
-                    if not isinstance ( plotRaster, dict):
+                    if not isinstance ( plotRaster, dict) and not isinstance ( plotRaster, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotRaster': Must be a dict.  Value provided is " + str(plotRaster) + ".")
 
                     else:
@@ -1180,7 +1180,7 @@ class TestTypeObj(object):
 
                     plotSpikeHist = analysis['plotSpikeHist']
 
-                    if not isinstance ( plotSpikeHist, dict):
+                    if not isinstance ( plotSpikeHist, dict) and not isinstance ( plotSpikeHist, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotSpikeHist': Must be a dict.  Value provided is " + str(plotSpikeHist) + ".")
 
                     if 'include' in plotSpikeHist and not isinstance( plotSpikeHist['include'], list):
@@ -1191,7 +1191,7 @@ class TestTypeObj(object):
 
                     if 'orderInverse' in plotRaster:
 
-                        if not isinstance( plotRaster['orderInverse'], bool):
+                        if not isinstance( plotRaster['orderInverse'], bool) and not isinstance ( plotSpikeHist, dict):
                             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderInverse': Must be boolean. Value provided is " + str(plotRaster['orderInverse']) + ".")
 
                     if 'overlay' in plotRaster:
@@ -1219,7 +1219,7 @@ class TestTypeObj(object):
                 if 'plotSpikePSD' in analysis:
 
                     plotSpikePSD = analysis['plotSpikePSD']
-                    if not isinstance ( plotSpikePSD, dict):
+                    if not isinstance ( plotSpikePSD, dict) and  not isinstance ( plotSpikePSD, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': Must be a dict.  Value provided is " + str(plotSpikePSD) + ".")
 
                     else:
@@ -1257,7 +1257,7 @@ class TestTypeObj(object):
                 if 'plotTraces' in analysis:
 
                     plotTraces = analysis['plotTraces']
-                    if not isinstance ( plotTraces, dict):
+                    if not isinstance ( plotTraces, dict) and  not isinstance ( plotTraces, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotTraces': Must be a dict.  Value provided is " + str(plotTraces) + ".")
 
                     else:
@@ -1294,7 +1294,7 @@ class TestTypeObj(object):
                 if 'plotShape' in analysis:
 
                     plotShapes = analysis['plotShapes']
-                    if not isinstance ( plotShapes, dict):
+                    if not isinstance ( plotShapes, dict) and  not isinstance ( plotShapes, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict.  Value provided is " + str(plotShapes) + ".")
                     else:
 
@@ -1313,7 +1313,7 @@ class TestTypeObj(object):
 
                     plotConn = analysis['plotConn']
 
-                    if not isinstance ( plotConn, dict):
+                    if not isinstance ( plotConn, dict) and  not isinstance ( plotConn, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotConn': Must be a dict.  Value provided is " + str(plotConn) + ".")
 
                     else:
@@ -1345,7 +1345,7 @@ class TestTypeObj(object):
 
                     plot2DNet = analysis['plot2DNet']
 
-                    if not isinstance ( plot2DNet, dict):
+                    if not isinstance ( plot2DNet, dict) and not isinstance ( plot2DNet, bool):
                         errorMessages.append("SimConfig->'analysis'->'plot2DNet': Must be a dict.  Value provided is " + str(plot2DNet) + ".")
                     else:
 
@@ -1375,7 +1375,7 @@ class TestTypeObj(object):
 
                     nTE = analysis['nTE']
 
-                    if not isinstance ( nTE, dict):
+                    if not isinstance ( nTE, dict) and not isinstance ( nTE, bool):
                         errorMessages.append("SimConfig->'analysis'->'nTE': Must be a dict.  Value provided is " + str(nTE) + ".")
                     else:
                         validList = ['cells1', 'cells2', 'spks1', 'spks2', 'timeRange', 'binSize', 'numShuffle']
@@ -1405,7 +1405,7 @@ class TestTypeObj(object):
 
                     granger = analysis['granger']
 
-                    if not isinstance ( granger, dict):
+                    if not isinstance ( granger, dict) and not isinstance ( granger, bool):
                         errorMessages.append("SimConfig->'analysis'->'granger': Must be a dict.  Value provided is " + str(granger) + ".")
                     else:
 

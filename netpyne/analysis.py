@@ -655,6 +655,198 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
+def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
+                 popColors = [], figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot spike histogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - graphType ('boxplot'): Type of graph to use (default: 'boxplot')
+        - stats (['rate', |'isicv'| 'sync'| 'pairsync']): Measure to plot stats on (default: ['rate', 'isicv'])
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
+    print('Plotting spike stats...')
+
+    # Set plot style
+    colors = []
+    params = {
+        'axes.labelsize': 14,
+        'text.fontsize': 14,
+        'legend.fontsize': 14,
+        'xtick.labelsize': 14,
+        'ytick.labelsize': 14,
+        'text.usetex': False,
+        }
+    plt.rcParams.update(params)
+
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    for stat in stats:
+        # create fig
+        fig,ax1 = plt.subplots(figsize=figSize)
+        fontsiz = 16
+
+        statData = []
+
+        # Calculate data for each entry in include
+        for iplot,subset in enumerate(include):
+
+            cells, cellGids, netStimLabels = getCellsInclude([subset])
+            numNetStims = 0
+
+            # Select cells to include
+            if len(cellGids) > 0:
+                try:
+                    spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+                except:
+                    spkinds,spkts = [],[]
+            else: 
+                spkinds,spkts = [],[]
+
+            # Add NetStim spikes
+            spkts, spkinds = list(spkts), list(spkinds)
+            numNetStims = 0
+            if 'stims' in sim.allSimData:
+                for netStimLabel in netStimLabels:
+                    netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+                    for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                    if len(netStimSpks) > 0:
+                        lastInd = max(spkinds) if len(spkinds)>0 else 0
+                        spktsNew = netStimSpks 
+                        spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                        spkts.extend(spktsNew)
+                        spkinds.extend(spkindsNew)
+                        numNetStims += 1
+
+
+            # rate stats
+            if stat == 'rate':
+                toRate = 1e3/(timeRange[1]-timeRange[0])
+                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] 
+                statData.insert(0, rates)
+                xlabel = 'Rate'
+
+            # Inter-spike interval (ISI) coefficient of variation (CV) stats
+            elif stat == 'isicv':
+                xlabel = 'Irregularity (ISI CV)'
+                spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] for gid in set(spkinds)]
+                isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
+                isicv = [np.std(x) / np.mean(x) for x in isimat if len(x)>0]
+                statData.insert(0, isicv) 
+
+            # synchrony
+            elif stat in ['sync', 'pairsync']:
+                try: 
+                    import pyspike  
+                except:
+                    print "Error: plotSpikeStats() requires the PySpike python package to calculate synchrony (try: pip install pyspike)"
+                    return 0
+
+                
+                spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid], timeRange) for gid in set(spkinds)]
+                if stat == 'sync':
+                    xlabel = 'Synchrony (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    syncMat = [pyspike.spike_sync(spkmat)]
+                    #graphType = 'bar'
+                elif stat == 'pairsync':
+                    xlabel = 'Pairwise synchrony (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    syncMat = np.mean([pyspike.spike_sync(spkmat)], 0)
+                    
+
+                statData.insert(0, syncMat)
+
+            colors.insert(0, popColors[subset] if subset in popColors else colorList[iplot%len(colorList)])
+
+        # plotting
+        if graphType == 'boxplot':
+            meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
+            bp=plt.boxplot(statData, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
+                        whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
+            plt.xlabel(xlabel, fontsize=fontsiz)
+            plt.ylabel('Population', fontsize=fontsiz) 
+
+            icolor=0
+            borderColor = 'k'
+            for i in range(0, len(bp['boxes'])):
+                icolor = i
+                bp['boxes'][i].set_facecolor(colors[icolor])
+                bp['boxes'][i].set_linewidth(2)
+                # we have two whiskers!
+                bp['whiskers'][i*2].set_color(borderColor)
+                bp['whiskers'][i*2 + 1].set_color(borderColor)
+                bp['whiskers'][i*2].set_linewidth(2)
+                bp['whiskers'][i*2 + 1].set_linewidth(2)
+                bp['medians'][i].set_color(borderColor)
+                bp['medians'][i].set_linewidth(3)
+                #for f in bp['fliers']:
+                #    f.set_color(colors[icolor])
+                #    print f
+                # and 4 caps to remove
+                for c in bp['caps']:
+                    c.set_color(borderColor)
+                    c.set_linewidth(2)
+
+            ax = plt.gca()
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['bottom'].set_visible(False)
+            ax.get_xaxis().tick_bottom()
+            ax.get_yaxis().tick_left()
+            ax.tick_params(axis='x', length=0)
+            ax.tick_params(axis='y', direction='out')
+            ax.grid(axis='x', color="0.9", linestyle='-', linewidth=1)
+            ax.set_axisbelow(True)
+        
+        # elif graphType == 'bar':
+        #     print range(1, len(statData)+1), statData
+        #     plt.bar(range(1, len(statData)+1), statData, tick_label=include[::-1], orientation='horizontal', colors=colors)
+
+        try:
+            plt.tight_layout()
+        except:
+            pass
+
+        # save figure data
+        if saveData:
+            figData = {'include': include, 'statData': statData, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+
+            _saveFigData(figData, saveData, 'spikeStats_'+stat)
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'spikeStat_'+stat+'.png'
+            plt.savefig(filename)
+
+        # show fig 
+        if showFig: _showFigure()
+
+    return fig
+
+
+
+######################################################################################################################################################
+## Plot spike histogram
+######################################################################################################################################################
 def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, 
     popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1714,7 +1906,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     elif graphType == 'bar':
         if groupBy == 'pop':
             popsPre, popsPost = pre, post
-            
+
             from netpyne.support import stackedBarGraph 
             SBG = stackedBarGraph.StackedBarGrapher()
     

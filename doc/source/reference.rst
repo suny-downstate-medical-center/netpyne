@@ -828,7 +828,23 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handle
-    
+
+
+* **analysis.plotSpikeStats** (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], popColors = [], figSize = (6,8), saveData = None, saveFig = None, showFig = True)
+     
+    Plot spike histogram. Optional arguments:
+
+    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *graphType*: Type of graph to use  ('boxplot')
+    - *stats*: List of types measure to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (['rate', |'isicv'| 'pairsync' |'sync'|])
+    - *popColors*: Dictionary with color (value) used for each population/key 
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle    
 
 * **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      

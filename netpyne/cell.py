@@ -175,7 +175,7 @@ class Cell (object):
                         if 'sec' in params:
                             sec = self.secs[params['sec']]
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr = getattr([synMech['hSyn'], ('_ref_'+params['var']) for synMech in synMechs])
+                            ptr = [getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs]
                             secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
                         else: 
                             ptr = []

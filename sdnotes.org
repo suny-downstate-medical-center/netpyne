@@ -7228,11 +7228,27 @@ py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to
             import importlib
             tempModule = importlib.import_module(moduleName)
 
-*** replaced x.setattr(...) with setattr(x,...)
+*** DONE replaced x.setattr(...) with setattr(x,...)
 - 4 occur in cell.py - more stable, use in py2
 
 
-** create script for changes that cannot be included in py2
+** create script to convert py2 to 3
+# py2to3.py - convert netpyne py2 to py3
+from subprocess import call
+
+py2_root = '../netpyne_repo'
+folders = ['netpyne', 'doc', 'examples']
+files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
+
+for file in files:
+	call(('rm %s'%(file)).split(' '))
+	call(('cp %s/%s .'%(py2_root, file)).split(' '))
+
+for folder in folders: 
+	call(('rm -r %s'%(folder)).split(' '))
+	call(('2to3 --output-dir=./%s -W -n %s/%s'%(folder, py2_root, folder)).split(' '))
+
+
 
 
 * Netpyne Models/Users
@@ -7262,7 +7278,7 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+* Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 

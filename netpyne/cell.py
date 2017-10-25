@@ -12,7 +12,6 @@ from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import numpy as np
-import sim
 
 
 ###############################################################################
@@ -32,6 +31,8 @@ class Cell (object):
 
 
     def recordStimSpikes (self):
+        import sim
+
         sim.simData['stims'].update({'cell_'+str(self.gid): Dict()})
         for conn in self.conns:
             if conn['preGid'] == 'NetStim':
@@ -84,6 +85,8 @@ class Cell (object):
 
 
     def addNetStim (self, params, stimContainer=None):
+        import sim
+
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
@@ -118,6 +121,8 @@ class Cell (object):
 
     def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        import sim
+
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
@@ -125,6 +130,8 @@ class Cell (object):
 
 
     def recordTraces (self):
+        import sim
+
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.iteritems():
             
@@ -222,6 +229,8 @@ class CompartCell (Cell):
 
 
     def create (self):
+        import sim
+
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
@@ -250,6 +259,8 @@ class CompartCell (Cell):
 
 
     def modify (self, prop):
+        import sim
+
         conditionsMet = 1
         for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
             if condKey=='label':
@@ -370,6 +381,8 @@ class CompartCell (Cell):
 
 
     def createNEURONObj (self, prop):
+        import sim
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
@@ -497,6 +510,9 @@ class CompartCell (Cell):
     def addConnsNEURONObj(self):
         # Note: loading connections to point process (eg. Izhi2007a) not yet supported
         # Note: assumes weight is in index 0 (netcon.weight[0])
+        
+        import sim
+
         # assumes python structure exists
         for conn in self.conns:
             # set postsyn target
@@ -533,6 +549,8 @@ class CompartCell (Cell):
 
 
     def associateGid (self, threshold = None):
+        import sim
+
         if self.secs:
             if sim.cfg.createNEURONObj: 
                 sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -561,6 +579,8 @@ class CompartCell (Cell):
 
 
     def addSynMech (self, synLabel, secLabel, loc):
+        import sim
+
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
         # add synaptic mechanism to python struct
@@ -607,6 +627,8 @@ class CompartCell (Cell):
 
 
     def modifySynMechs (self, params):
+        import sim
+
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
@@ -658,6 +680,8 @@ class CompartCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
+        import sim
+
         threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
@@ -819,6 +843,8 @@ class CompartCell (Cell):
 
 
     def modifyConns (self, params):
+        import sim
+
         for conn in self.conns:
             conditionsMet = 1
             
@@ -877,6 +903,8 @@ class CompartCell (Cell):
 
 
     def modifyStims (self, params):
+        import sim
+
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
@@ -942,6 +970,8 @@ class CompartCell (Cell):
 
 
     def addStim (self, params):
+        import sim
+
         if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, self.secs.keys(),params)
             if 'soma' in self.secs:  
@@ -1040,6 +1070,8 @@ class CompartCell (Cell):
 
 
     def _setConnSections (self, params):
+        import sim
+
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
@@ -1076,6 +1108,8 @@ class CompartCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams, secLabels):
+        import sim
+
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1093,6 +1127,8 @@ class CompartCell (Cell):
 
 
     def _setConnPointP(self, params, secLabels, weightIndex):
+        import sim
+
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
         if len(secLabels)==1 and 'pointps' in self.secs[secLabels[0]]:  #  check if point processes with 'vref' (artificial cell)
@@ -1114,6 +1150,8 @@ class CompartCell (Cell):
 
 
     def _setConnSynMechs (self, params, secLabels):
+        import sim
+
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
@@ -1149,6 +1187,8 @@ class CompartCell (Cell):
 
 
     def _distributeSynsUniformly (self, secList, numSyns):
+        import sim
+
         from numpy import cumsum
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
@@ -1172,6 +1212,8 @@ class CompartCell (Cell):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
+        import sim
+
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
@@ -1207,6 +1249,8 @@ class PointCell (Cell):
     '''
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
+        import sim
+
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
         if 'params' in self.tags:
@@ -1218,6 +1262,8 @@ class PointCell (Cell):
 
 
     def createNEURONObj (self):
+        import sim
+
         # add point processes
         try:
             self.hPointp = getattr(h, self.tags['cellModel'])()
@@ -1396,6 +1442,8 @@ class PointCell (Cell):
 
 
     def associateGid (self, threshold = None):
+        import sim
+
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
@@ -1411,6 +1459,8 @@ class PointCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams):
+        import sim
+
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
         elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
@@ -1427,6 +1477,8 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
+        import sim
+
         #threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
@@ -1569,6 +1621,7 @@ class NML2SpikeSource (CompartCell):
     '''
         
     def associateGid (self, threshold = 10.0):
+        import sim
         
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -1582,6 +1635,8 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
+        import sim
+        
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]

@@ -489,6 +489,6 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + ",\n'weight': " + str(weight)  # write prob
                 line = line + "})"  # add closing brackets
                 line = line + '\n\n' # new line after each conn rule
-                sim.write(line)  # write to file
+                f.write(line)  # write to file
                 
         

@@ -7220,6 +7220,19 @@ py2: output, input = popen2('qsub') # Open a pipe to the qsub command.
 
 py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
     (output, input) = (proc.stdin, proc.stdout)
+*** replaced exec to import with importlib.import_module
+- test in py2 - looks like more elegant solution
+
+            # tempModule=None
+            # exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
+            import importlib
+            tempModule = importlib.import_module(moduleName)
+
+*** replaced x.setattr(...) with setattr(x,...)
+- 4 occur in cell.py - more stable, use in py2
+
+
+** create script for changes that cannot be included in py2
 
 
 * Netpyne Models/Users

@@ -7213,7 +7213,7 @@ import .x
 *** DONE id32() encode utf-8
 - use in py2 (error?)
 return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16) 
-*** replace popen2 with Popen in batch.py
+*** DONE replace popen2 with Popen in batch.py
 - not sure if Popen available in py2?
 
 py2: output, input = popen2('qsub') # Open a pipe to the qsub command.                            

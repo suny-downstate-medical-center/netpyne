@@ -762,12 +762,12 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 
                 spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid], timeRange) for gid in set(spkinds)]
                 if stat == 'sync':
-                    xlabel = 'Synchrony (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    xlabel = 'Synchrony'# (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
                     syncMat = [pyspike.spike_sync(spkmat)]
                     #graphType = 'bar'
                 elif stat == 'pairsync':
-                    xlabel = 'Pairwise synchrony (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
-                    syncMat = np.mean([pyspike.spike_sync(spkmat)], 0)
+                    xlabel = 'Pairwise synchrony'# (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
                     
 
                 statData.insert(0, syncMat)
@@ -775,6 +775,10 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             colors.insert(0, popColors[subset] if subset in popColors else colorList[iplot%len(colorList)])
 
         # plotting
+        if include[0] == 'allCells': 
+            colors.insert(len(include), (0.5,0.5,0.5))  # if allCells is at top make its color=black
+            del colors[0]
+
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             bp=plt.boxplot(statData, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 

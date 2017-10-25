@@ -1017,6 +1017,9 @@ The figure show usage examples for the different analysis functions:
 	:width: 90%
 	:align: center
 
+.. image:: figs/spikeStats.png
+	:width: 90%
+	:align: center
 
 
 .. _network_methods:

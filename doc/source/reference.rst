@@ -1017,7 +1017,7 @@ The figure show usage examples for the different analysis functions:
 	:width: 90%
 	:align: center
 
-.. image:: figs/spikeStats.png
+.. image:: figs/spikestats.png
 	:width: 90%
 	:align: center
 

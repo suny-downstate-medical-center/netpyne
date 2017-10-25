@@ -24,12 +24,14 @@ from copy import copy
 from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
-import sim, specs
+import specs
 
 ###############################################################################
 # initialize variables and MPI
 ###############################################################################
 def initialize (netParams = None, simConfig = None, net = None):
+    import sim
+
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
@@ -64,11 +66,14 @@ def initialize (netParams = None, simConfig = None, net = None):
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 
     if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
-        simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
-        simTestObj.simConfig = sim.cfg
-        simTestObj.netParams = sim.net.params
-        simTestObj.runTests()
-
+        try:
+            simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
+            simTestObj.simConfig = sim.cfg
+            simTestObj.netParams = sim.net.params
+            simTestObj.runTests()
+        except:
+            print("\nAn exception occurred during the error checking process...")
+            
     sim.timing('stop', 'initialTime')
 
 
@@ -76,6 +81,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 # Set network object to use in simulation
 ###############################################################################
 def setNet (net):
+    import sim
     sim.net = net
 
 
@@ -83,6 +89,8 @@ def setNet (net):
 # Set network params to use in simulation
 ###############################################################################
 def setNetParams (params):
+    import sim
+
     if params and isinstance(params, specs.NetParams):
         paramsDict = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
@@ -96,6 +104,8 @@ def setNetParams (params):
 # Set simulation config
 ###############################################################################
 def setSimCfg (cfg):
+    import sim
+
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set
     elif cfg and isinstance(cfg, dict):
@@ -111,6 +121,8 @@ def setSimCfg (cfg):
 # Create parallel context
 ###############################################################################
 def createParallelContext ():
+    import sim
+
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     sim.pc.done()
     sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
@@ -141,6 +153,8 @@ def loadNetParams (filename, data=None, setLoaded=True):
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
 def loadNet (filename, data=None, instantiate=True):
+    import sim
+
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
         if sim.rank == 0:
@@ -226,6 +240,8 @@ def loadSimCfg (filename, data=None, setLoaded=True):
 # Load netParams from cell
 ###############################################################################
 def loadSimData (filename, data=None):
+    import sim
+
     if not data: data = _loadFile(filename)
     print('Loading simData...')
     if 'simData' in data:
@@ -312,6 +328,7 @@ def _mat2dict(obj):
 # Load data from file
 ###############################################################################
 def _loadFile (filename):
+    import sim
     import os
 
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
@@ -395,6 +412,8 @@ def _loadFile (filename):
 # Clear all sim objects in memory
 ###############################################################################
 def clearAll ():
+    import sim
+
     # clean up
     sim.pc.barrier()
     sim.pc.gid_clear()                    # clear previous gid settings
@@ -440,6 +459,8 @@ def id32 (obj):
 # Initialize the stim randomizer
 ###############################################################################
 def _init_stim_randomizer(rand, stimType, gid, seed):
+    import sim
+
     rand.Random123(sim.id32(stimType), gid, seed)
 
 
@@ -592,23 +613,6 @@ def replaceDictODict (obj):
             if type(val) in [list, dict, OrderedDict]:
                 replaceDictODict(val)
 
-    # elif type(obj) == Dict:
-    #     obj = obj.todict()
-    #     for key,val in obj.iteritems():
-    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
-
-    # elif type(obj) == ODict:
-    #     print obj.keys()
-    #     obj = obj.toOrderedDict()
-    #     for key,val in obj.iteritems():
-    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
-
-    # elif type(obj) == dict:
-    #     for key,val in obj.iteritems():
-    #         if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
-    #             replaceDictODict(val)
     return obj
 
 ###############################################################################
@@ -677,6 +681,8 @@ def _dict2utf8 (obj):
 ### Convert dict strings to utf8 so can be saved in HDF5 format
 ###############################################################################
 def cellByGid (gid):
+    import sim
+
     cell = next((c for c in sim.net.cells if c.gid==gid), None)
     return cell
 
@@ -685,6 +691,7 @@ def cellByGid (gid):
 ### Read simConfig and netParams from command line arguments
 ###############################################################################
 def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
+    import sim
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -732,6 +739,8 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 ### Setup Recording
 ###############################################################################
 def setupRecording ():
+    import sim
+
     timing('start', 'setrecordTime')
 
     # spike recording
@@ -806,6 +815,8 @@ def setupRecording ():
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def getCellsList (include):
+    import sim
+
     if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
         allCellTags = sim._gatherAllCellTags()
     else:
@@ -841,6 +852,8 @@ def getCellsList (include):
 ### Get cells list for recording based on set of conditions
 ###############################################################################
 def setGlobals ():
+    import sim
+
     hParams = sim.cfg.hParams
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
@@ -874,6 +887,8 @@ def setGlobals ():
 ### Commands required just before running simulation
 ###############################################################################
 def preRun ():
+    import sim
+
     # set initial v of cells
     sim.fih = []
     for cell in sim.net.cells:
@@ -946,6 +961,8 @@ def preRun ():
 ### Run Simulation
 ###############################################################################
 def runSim ():
+    import sim
+
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
@@ -965,6 +982,8 @@ def runSim ():
 ### Run Simulation
 ###############################################################################
 def runSimWithIntervalFunc (interval, func):
+    import sim
+
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
@@ -986,6 +1005,8 @@ def runSimWithIntervalFunc (interval, func):
 ### Gather tags from cells
 ###############################################################################
 def _gatherAllCellTags ():
+    import sim
+
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()
@@ -1010,6 +1031,8 @@ def _gatherAllCellTags ():
 ### Gather tags from cells
 ###############################################################################
 def _gatherAllCellConnPreGids ():
+    import sim
+
     data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
     sim.pc.barrier()
@@ -1034,6 +1057,8 @@ def _gatherAllCellConnPreGids ():
 ### Gather data from nodes
 ###############################################################################
 def gatherData ():
+    import sim
+
     timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0:
@@ -1231,6 +1256,8 @@ def gatherData ():
 ### Calculate and print avg pop rates
 ###############################################################################
 def popAvgRates (trange = None, show = True):
+    import sim
+
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
         print 'Error: sim.allSimData not available; please call sim.gatherData()'
         return None
@@ -1258,6 +1285,8 @@ def popAvgRates (trange = None, show = True):
 ### Calculate and print load balance
 ###############################################################################
 def loadBalance ():
+    import sim
+
     computation_time = sim.pc.step_time()
     max_comp_time = sim.pc.allreduce(computation_time, 2)
     min_comp_time = sim.pc.allreduce(computation_time, 3)
@@ -1279,6 +1308,8 @@ def loadBalance ():
 ### Gather data from nodes
 ###############################################################################
 def _gatherCells ():
+    import sim
+
     ## Pack data from all hosts
     if sim.rank==0:
         print('\nUpdating sim.net.allCells...')
@@ -1317,6 +1348,7 @@ def _gatherCells ():
 ### Save data
 ###############################################################################
 def saveData (include = None):
+    import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
     else: needGather = False
@@ -1471,6 +1503,7 @@ def saveData (include = None):
 ###############################################################################
 def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
     # requires: 1) pip install ijson, 2) brew install yajl
+    import sim
     import ijson.backends.yajl2_cffi as ijson
     import json
     from time import time
@@ -1534,6 +1567,8 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
 ### Timing - Stop Watch
 ###############################################################################
 def timing (mode, processName):
+    import sim
+
     if sim.rank == 0 and sim.cfg.timing:
         if mode == 'start':
             sim.timingData[processName] = time()
@@ -1545,6 +1580,7 @@ def timing (mode, processName):
 ### Print netpyne version
 ###############################################################################
 def version (show=True):
+    import sim
     from netpyne import __version__
     if show:
         print(__version__)
@@ -1555,6 +1591,7 @@ def version (show=True):
 ### Print github version
 ###############################################################################
 def gitChangeset (show=True):
+    import sim
     import netpyne, os, subprocess 
     currentPath = os.getcwd()
     try:
@@ -1573,6 +1610,8 @@ def gitChangeset (show=True):
 ### Print github version
 ###############################################################################
 def checkMemory ():
+    import sim
+    
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:
         import resource

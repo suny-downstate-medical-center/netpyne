@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 
 import datetime
 from itertools import izip, product
-from popen2 import popen2
+from subprocess import Popen, PIPE
 from time import sleep
 import imp
 from netpyne import specs
@@ -20,8 +20,7 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
-    from subprocess import Popen, PIPE
-
+    
     print '\nJob in rank id: ',pc.id()
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print command+'\n'
@@ -225,23 +224,30 @@ class Batch(object):
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
 
-                            output, input = popen2('qsub') # Open a pipe to the qsub command.
 
                             jobString = """#!/bin/bash 
-                            #PBS -N %s
-                            #PBS -l walltime=%s
-                            #PBS -q %s
-                            #PBS -l %s
-                            #PBS -o %s.run
-                            #PBS -e %s.err
-                            cd $PBS_O_WORKDIR
-                            echo $PBS_O_WORKDIR
-                            %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+#PBS -N %s
+#PBS -l walltime=%s
+#PBS -q %s
+#PBS -l %s
+#PBS -o %s.run
+#PBS -e %s.err
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+%s
+                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
 
-                            # Send job_string to qsub
-                            input.write(jobString)
+                           # Send job_string to qsub
+                            print 'Submitting job ',jobName
                             print jobString+'\n'
-                            input.close()
+
+                            batchfile = '%s.pbs'%(jobName)
+                            with open(batchfile, 'w') as text_file:
+                                text_file.write("%s" % jobString)
+
+                            proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+                            (output, input) = (proc.stdin, proc.stdout)
+
 
                         # hpc torque job submission
                         elif self.runCfg.get('type',None) == 'hpc_slurm':
@@ -279,20 +285,17 @@ wait
                             """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
-                            # output, input = popen2('sbatch') # Open a pipe to the qsub command.
-                            # input.write(jobString)
                             print 'Submitting job ',jobName
                             print jobString+'\n'
-                            # input.close()
 
                             batchfile = '%s.sbatch'%(jobName)
                             with open(batchfile, 'w') as text_file:
                                 text_file.write("%s" % jobString)
 
                             #subprocess.call
-                            output, pinput = popen2('sbatch '+batchfile) # Open a pipe to the qsub command.
-                            pinput.close()
-
+                            proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+                            (output, input) = (proc.stdin, proc.stdout)
+                            
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                         elif self.runCfg.get('type',None) == 'mpi':

@@ -7204,22 +7204,76 @@ wonder if mh could add something for getting axial current in an easier way; sim
 ** steps required and which can be included in py2
 *** 2to3
 convert everything, including examples and docs
-*** replace global import sim with local in each func
+*** DONE - replace global import sim with local in each func
 - can probably be done now in py2
-*** fix import neuromlFuncs and analysis
+*** DONE fix import neuromlFuncs and analysis
 - use py3 format
 from . import x
 import .x
-*** id32() encode utf-8
+*** DONE id32() encode utf-8
 - use in py2 (error?)
 return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16) 
-*** replace popen2 with Popen in batch.py
+*** DONE replace popen2 with Popen in batch.py
 - not sure if Popen available in py2?
 
 py2: output, input = popen2('qsub') # Open a pipe to the qsub command.                            
 
 py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
     (output, input) = (proc.stdin, proc.stdout)
+*** DONE replaced exec to import with importlib.import_module
+- test in py2 - looks like more elegant solution
+
+            # tempModule=None
+            # exec(('import '+ moduleName + ' as tempModule'), locals()) # import module dynamically
+            import importlib
+            tempModule = importlib.import_module(moduleName)
+
+*** DONE replaced x.setattr(...) with setattr(x,...)
+- 4 occur in cell.py - more stable, use in py2
+
+
+** create script to convert py2 to 3
+# py2to3.py - convert netpyne py2 to py3
+from subprocess import call
+
+py2_root = '../netpyne_repo'
+folders = ['netpyne', 'doc', 'examples']
+files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
+
+for file in files:
+	call(('rm %s'%(file)).split(' '))
+	call(('cp %s/%s .'%(py2_root, file)).split(' '))
+
+for folder in folders: 
+	call(('rm -r %s'%(folder)).split(' '))
+	call(('2to3 --output-dir=./%s -W -n %s/%s'%(folder, py2_root, folder)).split(' '))
+
+** error checking error in py3
+Traceback (most recent call last):
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2849, in execRunTests
+    self.testTypeObj.testIsBoolean(paramName)
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 257, in testIsBoolean
+    assert (isinstance (val,bool) or val in [0,1]), "Value specified is " + str(val) + "."
+AssertionError: Value specified is 0.1.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "init.py", line 8, in <module>
+    sim.createSimulateAnalyze(simConfig = cfg, netParams = netParams) 
+  File "/usr/site/python3/netpyne/netpyne/wrappers.py", line 73, in createSimulateAnalyze
+    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
+  File "/usr/site/python3/netpyne/netpyne/wrappers.py", line 25, in create
+    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+  File "/usr/site/python3/netpyne/netpyne/simFuncs.py", line 72, in initialize
+    simTestObj.runTests()
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 1520, in runTests
+    self.runSimConfigTests() # load simConfig tests
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2465, in runSimConfigTests
+    self.execRunTests(simConfigTestObj, simConfigParams)
+  File "/usr/site/python3/netpyne/netpyne/tests/tests.py", line 2857, in execRunTests
+    print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0]))
+TypeError: 'AssertionError' object is not subscriptable
 
 
 * Netpyne Models/Users
@@ -7249,7 +7303,7 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+* Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 

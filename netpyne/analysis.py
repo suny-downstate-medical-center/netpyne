@@ -17,8 +17,6 @@ from scipy import array, cumsum
 from numbers import Number
 import math
 
-import sim
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -31,6 +29,8 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
 ## Wrapper to run analysis functions in simConfig
 ######################################################################################################################################################
 def plotData ():
+    import sim
+
     ## Plotting
     if sim.rank == 0 and __gui__:
         sim.timing('start', 'plotTime')
@@ -154,6 +154,8 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Synchrony measure
 ######################################################################################################################################################
 def syncMeasure ():
+    import sim
+
     t0=-1 
     width=1 
     cnt=0
@@ -168,6 +170,8 @@ def syncMeasure ():
 ## Get subset of cells and netstims indicated by include list
 ######################################################################################################################################################
 def getCellsInclude(include):
+    import sim
+
     allCells = sim.net.allCells
     allNetStimLabels = sim.net.params.stimSourceParams.keys()
     cellGids = []
@@ -299,6 +303,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - Returns figure handle
     '''
 
+    import sim
 
     print('Plotting raster...')
 
@@ -536,6 +541,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - Returns figure handle
     '''
 
+    import sim
+
     print('Plotting spike histogram...')
 
     # Replace 'eachPop' with list of pops
@@ -674,6 +681,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 
         - Returns figure handle
     '''
+
+    import sim
 
     print('Plotting spike stats...')
 
@@ -875,6 +884,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - Returns figure handle
     '''
 
+    import sim
+
     print('Plotting firing rate power spectral density (PSD) ...')
     
     # Replace 'eachPop' with list of pops
@@ -1015,6 +1026,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
         - Returns figure handles
     '''
+    import sim
 
     print('Plotting recorded cell traces ...')
 
@@ -1184,6 +1196,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         - Returns figure handles
     '''
 
+    import sim
     from neuron import h, gui
 
     if not iv: # plot using Python instead of interviews
@@ -1310,6 +1323,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 def plotLFP ():
+    import sim
+
     print('Plotting LFP power spectral density...')
 
     colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
@@ -1352,6 +1367,8 @@ def _roundFigures(x, n):
 ######################################################################################################################################################
 
 def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech):
+
+    import sim
 
     def list_of_dict_unique_by_key(seq, key):
         seen = set()
@@ -1623,6 +1640,7 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
 
 def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech, connsFile, tagsFile):
     
+    import sim
     import json
     from time import time    
 
@@ -1819,6 +1837,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
         - Returns figure handles
     '''
+    
+    import sim
 
     print('Plotting connectivity matrix...')
 
@@ -2124,6 +2144,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 
     from neuron import h
     import netpyne
+    import sim
     import os
             
     root = os.path.dirname(netpyne.__file__)
@@ -2243,6 +2264,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
             fig: Figure handle 
     '''
     
+    import sim
     import numpy as np
     from netpyne.support.bsmart import pwcausalr
 
@@ -2353,6 +2375,8 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ######################################################################################################################################################
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
 
+    import sim
+
     print('Plotting EPSP amplitudes...')
 
     if include is None: include = [] # If not defined, initialize as empty list
@@ -2419,80 +2443,3 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
 
     return peaks, fig
 
-
-
-######################################################################################################################################################
-## Plot weight changes
-######################################################################################################################################################
-def plotWeightChanges():
-    print('Plotting weight changes...')
-
-    if sim.usestdp:
-        # create plot
-        figh = plt.figure(figsize=(1.2*8,1.2*6))
-        figh.subplots_adjust(left=0.02) # Less space on left
-        figh.subplots_adjust(right=0.98) # Less space on right
-        figh.subplots_adjust(top=0.96) # Less space on bottom
-        figh.subplots_adjust(bottom=0.02) # Less space on bottom
-        figh.subplots_adjust(wspace=0) # More space between
-        figh.subplots_adjust(hspace=0) # More space between
-        h = plt.axes()
-
-        # create data matrix
-        wcs = [x[-1][-1] for x in sim.allweightchanges] # absolute final weight
-        wcs = [x[-1][-1]-x[0][-1] for x in sim.allweightchanges] # absolute weight change
-        pre,post,recep = zip(*[(x[0],x[1],x[2]) for x in sim.allstdpconndata])
-        ncells = int(max(max(pre),max(post))+1)
-        wcmat = np.zeros([ncells, ncells])
-
-        for iwc,ipre,ipost,irecep in zip(wcs,pre,post,recep):
-            wcmat[int(ipre),int(ipost)] = iwc *(-1 if irecep>=2 else 1)
-
-        # plot
-        plt.imshow(wcmat,interpolation='nearest',cmap=_bicolormap(gap=0,mingreen=0.2,redbluemix=0.1,epsilon=0.01))
-        plt.xlabel('post-synaptic cell id')
-        plt.ylabel('pre-synaptic cell id')
-        h.set_xticks(sim.popGidStart)
-        h.set_yticks(sim.popGidStart)
-        h.set_xticklabels(sim.popnames)
-        h.set_yticklabels(sim.popnames)
-        h.xaxif.set_ticks_position('top')
-        plt.xlim(-0.5,ncells-0.5)
-        plt.ylim(ncells-0.5,-0.5)
-        plt.clim(-abs(wcmat).max(),abs(wcmat).max())
-        plt.colorbar()
-        _showFigure()
-
-
-
-######################################################################################################################################################
-## Create colormap
-######################################################################################################################################################
-def _bicolormap(gap=0.1,mingreen=0.2,redbluemix=0.5,epsilon=0.01):
-   from matplotlib.colors import LinearSegmentedColormap as makecolormap
-   
-   mng=mingreen; # Minimum amount of green to add into the colors
-   mix=redbluemix; # How much red to mix with the blue an vice versa
-   eps=epsilon; # How much of the center of the colormap to make gray
-   omg=1-gap # omg = one minus gap
-   
-   cdict = {'red': ((0.00000, 0.0, 0.0),
-                    (0.5-eps, mix, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, 1.0),
-                    (1.00000, 1.0, 1.0)),
-
-         'green':  ((0.00000, mng, mng),
-                    (0.5-eps, omg, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, omg),
-                    (1.00000, mng, mng)),
-
-         'blue':   ((0.00000, 1.0, 1.0),
-                    (0.5-eps, 1.0, omg),
-                    (0.50000, omg, omg),
-                    (0.5+eps, omg, mix),
-                    (1.00000, 0.0, 0.0))}
-   cmap = makecolormap('bicolormap',cdict,256)
-
-   return cmap

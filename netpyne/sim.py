@@ -14,14 +14,14 @@ if '-nogui' in sys.argv:
     netpyne.__gui__ = False
 
 # import all required modules
-from simFuncs import *
-from neuromlFuncs import *
+from .simFuncs import *
+from .neuromlFuncs import *
 from wrappers import *
-import analysis
-from network import Network
-from cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
-from pop import Pop
-import utils
+from . import analysis
+from .network import Network
+from .cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
+from .pop import Pop
+from . import utils
 from neuron import h
-import tests
-from tests.tests import SimTestObj
+from . import tests
+from .tests.tests import SimTestObj

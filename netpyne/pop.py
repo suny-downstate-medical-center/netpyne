@@ -10,7 +10,6 @@ Contributors: salvadordura@gmail.com
 from matplotlib.pylab import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
-import sim
 
 
 ###############################################################################
@@ -30,6 +29,7 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
+        import sim
             
         hostCells = {}
         for i in range(sim.nhosts):
@@ -75,6 +75,8 @@ class Pop (object):
 
 
     def createCellsFixedNum (self):
+        import sim
+
         ''' Create population cells based on fixed number of cells'''
         cells = []
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
@@ -132,6 +134,8 @@ class Pop (object):
 
                 
     def createCellsDensity (self):
+        import sim
+
         ''' Create population cells based on density'''
         cells = []
         shape = sim.net.params.shape
@@ -246,6 +250,8 @@ class Pop (object):
 
 
     def createCellsList (self):
+        import sim
+
         ''' Create population cells based on list of individual cells'''
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
@@ -273,6 +279,8 @@ class Pop (object):
 
 
     def createCellsGrid (self):
+        import sim
+
         ''' Create population cells based on fixed number of cells'''
         cells = []
         
@@ -313,6 +321,7 @@ class Pop (object):
 
 
     def _setCellClass (self):
+        import sim
         
         # Check whether it's a NeuroML2 based cell
         if 'originalFormat' in self.tags:
@@ -340,6 +349,8 @@ class Pop (object):
 
 
     def __getstate__ (self): 
+        import sim
+        
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled

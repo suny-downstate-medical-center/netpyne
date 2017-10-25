@@ -66,10 +66,13 @@ def initialize (netParams = None, simConfig = None, net = None):
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 
     if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
-        simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
-        simTestObj.simConfig = sim.cfg
-        simTestObj.netParams = sim.net.params
-        simTestObj.runTests()
+        try:
+            simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
+            simTestObj.simConfig = sim.cfg
+            simTestObj.netParams = sim.net.params
+            simTestObj.runTests()
+        except:
+            print "\nAn exception occurred during the error checking process..."
 
     sim.timing('stop', 'initialTime')
 

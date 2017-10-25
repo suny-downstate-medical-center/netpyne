@@ -7210,7 +7210,7 @@ convert everything, including examples and docs
 - use py3 format
 from . import x
 import .x
-*** id32() encode utf-8
+*** DONE id32() encode utf-8
 - use in py2 (error?)
 return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16) 
 *** replace popen2 with Popen in batch.py

@@ -8,6 +8,10 @@
 
 - Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
 
+- Added option to plotConn() and plot2Dnet() to load data from compact format json files 
+
+- Adapted python2 code so conversion to python3 via 2to3 command works straight away
+
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
 - Fixed bug in colors of plotSpikeHist

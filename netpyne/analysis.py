@@ -1667,7 +1667,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 
     print 'Finished loading; total time (s): %.2f'%(time()-start)
          
-    # finde pre and post cells
+    # find pre and post cells
     if tags and conns:
         cellGidsPre = getCellsIncludeTags(includePre, tags, tagsFormat)
         if includePre == includePost:
@@ -1972,7 +1972,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 ######################################################################################################################################################
 ## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
-def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, saveData = None, saveFig = None, showFig = True): 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, 
+                tagsFile = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -1993,29 +1994,70 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 
     fig = plt.figure(figsize=figSize)
 
-    # colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-    #             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-    #             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-    #             [0.71,0.82,0.41], [0.0,0.2,0.5]] 
-
-    cells, cellGids, _ = getCellsInclude(include)           
-    selectedPops = [cell['tags']['pop'] for cell in cells]
-    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
-    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColors: popColorsTmp.update(popColors)
-    popColors = popColorsTmp
-    cellColors = [popColors[cell['tags']['pop']] for cell in cells]
-
     # front view
     if view == 'xy':
         ycoord = 'y'
     elif view == 'xz':
         ycoord = 'z'
 
-    posX = [cell['tags']['x'] for cell in cells]  # get all x positions
-    posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+    if tagsFile:
+        print 'Loading tags file...'
+        import json
+        with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+        tagsFormat = tagsTmp.pop('format', [])
+        tags = {int(k): v for k,v in tagsTmp.iteritems()} # find method to load json with int keys?
+        del tagsTmp
+
+        # set indices of fields to read compact format (no keys)
+        missing = []
+        popIndex = tagsFormat.index('pop') if 'pop' in tagsFormat else missing.append('pop')
+        xIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('x')
+        yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
+        zIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('z')
+        if len(missing) > 0:
+            print "Missing:"
+            print missing
+            return None, None, None 
+
+        # find pre and post cells
+        if tags:
+            cellGids = getCellsIncludeTags(include, tags, tagsFormat)
+            popLabels = list(set([tags[gid][popIndex] for gid in cellGids]))
+            
+            # pop and cell colors
+            popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+            if popColors: popColorsTmp.update(popColors)
+            popColors = popColorsTmp
+            cellColors = [popColors[tags[gid][popIndex]] for gid in cellGids]
+            
+            # cell locations
+            posX = [tags[gid][xIndex] for gid in cellGids]  # get all x positions
+            if ycoord == 'y':
+                posY = [tags[gid][yIndex] for gid in cellGids]  # get all y positions
+            elif ycoord == 'z':
+                posY = [tags[gid][zIndex] for gid in cellGids]  # get all y positions
+        else:
+            print 'Error loading tags from file' 
+            return None
+
+    else:
+        cells, cellGids, _ = getCellsInclude(include)           
+        selectedPops = [cell['tags']['pop'] for cell in cells]
+        popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+        
+        # pop and cell colors
+        popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+        if popColors: popColorsTmp.update(popColors)
+        popColors = popColorsTmp
+        cellColors = [popColors[cell['tags']['pop']] for cell in cells]
+
+        # cell locations
+        posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+        posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+    
+
     plt.scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
-    if showConns:
+    if showConns and not tagsFile:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
                 if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
@@ -2026,12 +2068,12 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
                         color = 'blue'
                     width = 0.1 #50*con['weight']
                     plt.plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
+    
     plt.xlabel('x (um)')
     plt.ylabel(ycoord+' (um)') 
     plt.xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
     plt.ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
     fontsiz = 12
-
 
     for popLabel in popLabels:
         plt.plot(0,0,color=popColors[popLabel],label=popLabel)

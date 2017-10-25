@@ -7204,9 +7204,9 @@ wonder if mh could add something for getting axial current in an easier way; sim
 ** steps required and which can be included in py2
 *** 2to3
 convert everything, including examples and docs
-*** replace global import sim with local in each func
+*** DONE - replace global import sim with local in each func
 - can probably be done now in py2
-*** fix import neuromlFuncs and analysis
+*** DONE fix import neuromlFuncs and analysis
 - use py3 format
 from . import x
 import .x

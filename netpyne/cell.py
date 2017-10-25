@@ -163,33 +163,34 @@ class Cell (object):
                     ptr = None
                     if 'loc' in params:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__(params['mech']).__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
+                            
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = synMech['hSyn'].__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(synMech['hSyn'], '_ref_'+params['var'])
                         else:  # eg. soma(0.5)._ref_v
-                            ptr = self.secs[params['sec']]['hSec'](params['loc']).__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(self.secs[params['sec']]['hSec'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
                         if 'sec' in params:
                             sec = self.secs[params['sec']]
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr = [synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs]
+                            ptr = getattr([synMech['hSyn'], ('_ref_'+params['var']) for synMech in synMechs])
                             secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
                         else: 
                             ptr = []
                             secLocs = []
                             for secName,sec in self.secs.iteritems():
                                 synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                                ptr.extend([synMech['hSyn'].__getattribute__('_ref_'+params['var']) for synMech in synMechs])
+                                ptr.extend([getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs])
                                 secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
 
                     else:
                         if 'pointp' in params: # eg. soma.izh._ref_u
                             if params['pointp'] in self.secs[params['sec']]['pointps']:
-                                ptr = self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'].__getattribute__('_ref_'+params['var'])
+                                ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'], '_ref_'+params['var'])
                         elif 'var' in params: # point process cell eg. cell._ref_v
-                            ptr = self.hPointp.__getattribute__('_ref_'+params['var'])
+                            ptr = getattr(self.hPointp, '_ref_'+params['var'])
 
                     if ptr:  # if pointer has been created, then setup recording
                         if isinstance(ptr, list):
@@ -419,7 +420,7 @@ class CompartCell (Cell):
                             if type(mechParamValue) in [list]: 
                                 mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
-                                seg.__getattribute__(mechName).__setattr__(mechParamName,mechParamValueFinal)
+                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
             # add ions
             if 'ions' in sectParams:
@@ -433,12 +434,12 @@ class CompartCell (Cell):
                             if type(ionParamValue) in [list]: 
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
-                                seg.__setattr__(ionParamName+ionName,ionParamValueFinal)
+                                setattr(seg, ionParamName+ionName, ionParamValueFinal)
                             elif ionParamName == 'o':
-                                seg.__setattr__('%so'%ionName,ionParamValueFinal)
+                                setattr(seg, '%so'%ionName, ionParamValueFinal)
                                 h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
                             elif ionParamName == 'i':
-                                seg.__setattr__('%si'%ionName,ionParamValueFinal)
+                                setattr(seg, '%si'%ionName, ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
                                 
                     #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
@@ -565,7 +566,7 @@ class CompartCell (Cell):
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                     for pointpName, pointpParams in sec['pointps'].iteritems():
                         if 'vref' in pointpParams:
-                            nc = h.NetCon(sec['pointps'][pointpName]['hPointp'].__getattribute__('_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
+                            nc = h.NetCon(getattr(sec['pointps'][pointpName]['hPointp'], '_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
                             break
                 if not nc:  # if still haven't created netcon  
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
@@ -1447,7 +1448,7 @@ class PointCell (Cell):
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
-                nc = h.NetCon(self.hPointp.__getattribute__('_ref_'+self.tags['vref']), None)
+                nc = h.NetCon(getattr(self.hPointp, '_ref_'+self.tags['vref']), None)
             else:
                 nc = h.NetCon(self.hPointp, None)
             threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
@@ -1520,7 +1521,7 @@ class PointCell (Cell):
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 if 'vref' in self.tags:
-                    postTarget = self.hPointp.__getattribute__('_ref_'+self.tags['vref']) #  local point neuron 
+                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron 
                 else: 
                     postTarget = self.hPointp
 

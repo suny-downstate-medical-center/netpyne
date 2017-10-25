@@ -7220,7 +7220,7 @@ py2: output, input = popen2('qsub') # Open a pipe to the qsub command.
 
 py3: proc = Popen(command.split(' '), stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
     (output, input) = (proc.stdin, proc.stdout)
-*** replaced exec to import with importlib.import_module
+*** DONE replaced exec to import with importlib.import_module
 - test in py2 - looks like more elegant solution
 
             # tempModule=None

@@ -226,17 +226,26 @@ class Batch(object):
 
 
                             jobString = """#!/bin/bash 
-                            #PBS -N %s
-                            #PBS -l walltime=%s
-                            #PBS -q %s
-                            #PBS -l %s
-                            #PBS -o %s.run
-                            #PBS -e %s.err
-                            cd $PBS_O_WORKDIR
-                            echo $PBS_O_WORKDIR
-                            %s""" % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+#PBS -N %s
+#PBS -l walltime=%s
+#PBS -q %s
+#PBS -l %s
+#PBS -o %s.run
+#PBS -e %s.err
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+%s
+                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
 
-                            proc = Popen('qsub '+jobString+'\n', stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+                           # Send job_string to qsub
+                            print 'Submitting job ',jobName
+                            print jobString+'\n'
+
+                            batchfile = '%s.pbs'%(jobName)
+                            with open(batchfile, 'w') as text_file:
+                                text_file.write("%s" % jobString)
+
+                            proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
                             (output, input) = (proc.stdin, proc.stdout)
 
 
@@ -284,10 +293,9 @@ wait
                                 text_file.write("%s" % jobString)
 
                             #subprocess.call
-                            proc = Popen('sbatch '+batchfile, stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+                            proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
                             (output, input) = (proc.stdin, proc.stdout)
-
-
+                            
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                         elif self.runCfg.get('type',None) == 'mpi':

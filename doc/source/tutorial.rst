@@ -859,7 +859,7 @@ Once the simulations are completed you should have a new folder ``tut8_data`` wi
 	
 	* **tauWeight_x_y_cfg.json**: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
 
-	* **tauWeight_x_y_cfg.json**: JSON file with the output data for this combination of batch parameters; output data will contain by default the ``netParams``, ``net``, ``simConfig`` and ``simData``.
+	* **tauWeight_x_y.json**: JSON file with the output data for this combination of batch parameters; output data will contain by default the ``netParams``, ``net``, ``simConfig`` and ``simData``.
 
 	* **tauWeight_x_y_raster.png** and **tauWeight_x_y_traces.png**: output figures for this combination of parameters.
 

@@ -1374,7 +1374,32 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
         seen = set()
         seen_add = seen.add
         return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
-    
+
+    # adapt indices/keys based on compact vs long conn format
+    if sim.cfg.compactConnFormat: 
+        connsFormat = sim.cfg.compactConnFormat
+
+        # set indices of fields to read compact format (no keys)
+        missing = []
+        preGidIndex = connsFormat.index('preGid') if 'preGid' in connsFormat else missing.append('preGid')
+        synMechIndex = connsFormat.index('synMech') if 'synMech' in connsFormat else missing.append('synMech')
+        weightIndex = connsFormat.index('weight') if 'weight' in connsFormat else missing.append('weight')
+        delayIndex = connsFormat.index('delay') if 'delay' in connsFormat else missing.append('delay')
+        preLabelIndex = connsFormat.index('preLabel') if 'preLabel' in connsFormat else -1
+        
+        if len(missing) > 0:
+            print "  Error: cfg.compactConnFormat missing:"
+            print missing
+            return None, None, None 
+    else:  
+        # using long conn format (dict)
+        preGidIndex = 'preGid' 
+        synMechIndex = 'synMech'
+        weightIndex = 'weight'
+        delayIndex = 'delay'
+        preLabelIndex = 'preLabel'
+
+    # Calculate pre and post cells involved
     cellsPre, cellGidsPre, netStimPopsPre = getCellsInclude(includePre)
     if includePre == includePost:
         cellsPost, cellGidsPost, netStimPopsPost = cellsPre, cellGidsPre, netStimPopsPre 
@@ -1424,17 +1449,17 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             if synOrConn=='syn':
                 cellConns = cell['conns'] # include all synapses 
             else:
-                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+                cellConns = list_of_dict_unique_by_key(cell['conns'], preGidIndex)
 
             if synMech:
-                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+                cellConns = [conn for conn in cellConns if conn[synMechIndex] in synMech]
 
             for conn in cellConns:
-                if conn['preGid'] != 'NetStim' and conn['preGid'] in cellIndsPre:
+                if conn[preGidIndex] != 'NetStim' and conn[preGidIndex] in cellIndsPre:
                     if feature in ['weight', 'delay']: 
-                        if conn['preGid'] in cellIndsPre:
-                            connMatrix[cellIndsPre[conn['preGid']], cellIndsPost[cell['gid']]] += conn[feature]
-                    countMatrix[cellIndsPre[conn['preGid']], cellIndsPost[cell['gid']]] += 1
+                        if conn[preGidIndex] in cellIndsPre:
+                            connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[feature]
+                    countMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += 1
 
         if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
         elif feature in ['numConns']: connMatrix = countMatrix 
@@ -1498,23 +1523,23 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             if synOrConn=='syn':
                 cellConns = cell['conns'] # include all synapses 
             else:
-                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+                cellConns = list_of_dict_unique_by_key(cell['conns'], preGidIndex)
 
             if synMech:
-                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+                cellConns = [conn for conn in cellConns if conn[synMechIndex] in synMech]
 
             for conn in cellConns:
-                if conn['preGid'] == 'NetStim':
-                    prePopLabel = conn['preLabel']
+                if conn[preGidIndex] == 'NetStim':
+                    prePopLabel = conn[preLabelIndex]
                 else:
-                    preCell = next((cell for cell in cellsPre if cell['gid']==conn['preGid']), None)
+                    preCell = next((cell for cell in cellsPre if cell['gid']==conn[preGidIndex]), None)
                     prePopLabel = preCell['tags']['pop'] if preCell else None
                 
                 if prePopLabel in popIndsPre:
                     if feature in ['weight', 'strength']: 
-                        weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn['weight']
+                        weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex]
                     elif feature == 'delay': 
-                        delayMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn['delay'] 
+                        delayMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[delayIndex] 
                     countMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += 1    
 
         pre, post = popsPre, popsPost 
@@ -1583,16 +1608,16 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             if synOrConn=='syn':
                 cellConns = cell['conns'] # include all synapses 
             else:
-                cellConns = list_of_dict_unique_by_key(cell['conns'], 'preGid')
+                cellConns = list_of_dict_unique_by_key(cell['conns'], preGidIndex)
 
             if synMech:
-                cellConns = [conn for conn in cellConns if conn['synMech'] in synMech]
+                cellConns = [conn for conn in cellConns if conn[synMechIndex] in synMech]
 
             for conn in cellConns:
-                if conn['preGid'] == 'NetStim':
+                if conn[preGidIndex] == 'NetStim':
                     prePopLabel = -1  # maybe add in future
                 else:
-                    preCell = next((c for c in cellsPre if cell['gid']==conn['preGid']), None)
+                    preCell = next((c for c in cellsPre if cell['gid']==conn[preGidIndex]), None)
                     if preCell:
                         preGroup = _roundFigures(groupByInterval * np.floor(preCell['tags'][groupBy] / groupByInterval), 3)
                     else:
@@ -1603,9 +1628,9 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
                 #print groupInds
                 if preGroup in groupIndsPre:
                     if feature in ['weight', 'strength']: 
-                        weightMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn['weight']
+                        weightMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[weightIndex]
                     elif feature == 'delay': 
-                        delayMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn['delay'] 
+                        delayMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[delayIndex] 
                     countMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += 1   
 
         pre, post = groupsPre, groupsPost 
@@ -2110,6 +2135,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
 
     import json
     from time import time
+    import sim
 
     numDis = 0
     totCon = 0
@@ -2127,6 +2153,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
         del connsTmp
          
     print '  Calculating disynaptic connections...'
+    # loading from json files    
     if tags and conns:
         cellsPreGids = getCellsIncludeTags(includePre, tags)
         cellsPrePreGids = getCellsIncludeTags(includePrePre, tags)
@@ -2143,16 +2170,25 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
                     numDis += 1
 
     else:
+        if sim.cfg.compactConnFormat: 
+            if 'preGid' in sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid')  # using compact conn format (list)
+            else:
+                print '   Error: cfg.compactConnFormat does not include "preGid"'
+                return -1
+        else:  
+            preGidIndex = 'preGid' # using long conn format (dict)
+
         _, cellsPreGids, _ =  getCellsInclude(includePre)
         _, cellsPrePreGids, _ = getCellsInclude(includePrePre)
         cellsPost, _, _ = getCellsInclude(includePost)
 
         for postCell in cellsPost:
-            preGidsAll = [conn['preGid'] for conn in postCell['conns'] if isinstance(conn['preGid'], Number) and conn['preGid'] in cellsPreGids+cellsPrePreGids]
+            preGidsAll = [conn[preGidIndex] for conn in postCell['conns'] if isinstance(conn[preGidIndex], Number) and conn[preGidIndex] in cellsPreGids+cellsPrePreGids]
             preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
             for preGid in preGids:
                 preCell = sim.net.allCells[preGid]
-                prePreGids = [conn['preGid'] for conn in preCell['conns'] if conn['preGid'] in cellsPrePreGids]
+                prePreGids = [conn[preGidIndex] for conn in preCell['conns'] if conn[preGidIndex] in cellsPrePreGids]
                 totCon += 1
                 if not set(prePreGids).isdisjoint(preGidsAll):
                     numDis += 1

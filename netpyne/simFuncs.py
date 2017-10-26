@@ -1076,7 +1076,7 @@ def gatherData ():
             cell.conns = []
 
     # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
-    if sim.cfg.compactConnFormat:
+    elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
             
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()

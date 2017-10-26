@@ -1989,6 +1989,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 
         - Returns figure handles
     '''
+    import sim
 
     print('Plotting 2D representation of network cell locations and connections...')
 

@@ -1087,7 +1087,8 @@ class TestTypeObj(object):
         return errorMessages
 
     def testValidAnalysis(self, simConfig): # TEST_TYPE_VALID_ANALYSIS
-
+        return []
+'''
         errorMessages = []
 #        print ( " *** in analysis test" )
         try:
@@ -1119,8 +1120,8 @@ class TestTypeObj(object):
                         #print ( " in plot raster 2 " + str(plotRaster.keys()))
                         validList = ['include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'labels', 'popRates', 'spikeHist', 'spikeHistBin', 'syncLines', 'figSize', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plotRaster.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster': plotRaster must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotRaster.keys()) + ".")
+                        # if not all(x in validList for x in plotRaster.keys()):
+                        #     errorMessages.append("SimConfig->'analysis'->'plotRaster': plotRaster must be a dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotRaster.keys()) + ".")
 
                         if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
                             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
@@ -1440,6 +1441,7 @@ class TestTypeObj(object):
             e.args += ( )
             raise
         return errorMessages
+'''
 
 # Tests that are defined for each set of parameters
 class TestObj(object):

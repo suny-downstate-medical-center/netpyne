@@ -1074,6 +1074,10 @@ def gatherData ():
     if not sim.cfg.saveCellConns:
         for cell in sim.net.cells:
             cell.conns = []
+
+    # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
+    if sim.cfg.compactConnFormat:
+        sim.compactConnFormat()
             
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     singleNodeVecs = ['t']
@@ -1222,7 +1226,11 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.compactConnFormat:
+            preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+            sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+        else:
+            sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -1561,6 +1569,21 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
         with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
 
     return tags, conns
+
+
+###############################################################################
+### Convet connections in long dict format to compact list format 
+###############################################################################
+def compactConnFormat():
+    if type(sim.cfg.compactConnFormat) is not list:
+        sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+
+    format = sim.cfg.compactConnFormat
+    for cell in sim.net.cells:
+        newConns = [[conn[param] for param in connFormat] for conn in cell['conns']]
+        del cell.conns
+        cell.conns = newConns
+ 
 
 
 ###############################################################################

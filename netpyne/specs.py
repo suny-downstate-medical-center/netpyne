@@ -620,6 +620,9 @@ class SimConfig (object):
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
+        self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
+        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
@@ -647,8 +650,6 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
-        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
-        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
         self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)

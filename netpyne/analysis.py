@@ -1287,7 +1287,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         if not ivprops:
             ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
         
-        for cell in [c for c in sim.net.cells if c.tags['pop'] in includePost]:
+        for cell in [c for c in sim.net.cells if c.gid in includePost or c.tags['pop'] in includePost]:
             for sec in cell.secs.values():
                 if 'axon' in sec['hSec'].hname() and not includeAxon: continue
                 sec['hSec'].push()

@@ -35,41 +35,41 @@ class RunNetPyneTests():
             # print ( " loading tests ")
             self.paramsMap["simConfig"] = {}
 
-            # duration
-            self.paramsMap["simConfig"]["durationTest"] = []
-            simConfigParams = ParamsObj()
-
-            # Simulation parameters
-            simConfigParams.simConfig.duration = simConfigParams.simConfig.tstop = 100.0 # Duration of the simulation, in ms
-            simConfigParams.simConfig.dt = "a" # Internal integration timestep to use
-
-            simConfigParams.simConfig.seeds = {'con': 0, 'stim': 0, 'loc': 0}
-
-            simConfigParams.simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
-            simConfigParams.simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-            simConfigParams.simConfig.verbose = 0 # show detailed messages
-
-            # Recording
-            simConfigParams.simConfig.recordCells = ['all']
-
-            # Column: v_pop_pre_0_RS_v: Pop: pop_pre; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
-            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_0_soma_v'] = {'bla':1,'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#,'cellLabel':0}}
-            # Column: v_pop_pre_1_RS_v: Pop: pop_pre; cell: 1; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
-            simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_1_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#, 'cellLabel':1}}
-            # Column: v_pop_post_0_RS_v: Pop: pop_post; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
-            simConfigParams.simConfig.recordTraces['Volts_file__pop_post_pop_post_0_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_post'}}#, 'cellLabel':0}}
-
-            simConfigParams.simConfig.recordStim = True  # record spikes of cell stims
-            simConfigParams.simConfig.recordStep = simConfigParams.simConfig.dt # Step size in ms to save data (eg. V traces, LFP, etc)
-
-            # Analysis and plottingsimConfig.plotRaster = True # Whether or not to plot a raster
-            simConfigParams.simConfig.analysis.plotTraces = {'include': ['all']}
-
-            # Saving
-            simConfigParams.simConfig.saveJson=1
-            simConfigParams.simConfig.saveFileStep = simConfigParams.simConfig.dt # step size in ms to save data to disk
-
-            self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
+            # # duration
+            # self.paramsMap["simConfig"]["durationTest"] = []
+            # simConfigParams = ParamsObj()
+            #
+            # # Simulation parameters
+            # simConfigParams.simConfig.duration = simConfigParams.simConfig.tstop = 100.0 # Duration of the simulation, in ms
+            # simConfigParams.simConfig.dt = "a" # Internal integration timestep to use
+            #
+            # simConfigParams.simConfig.seeds = {'con': 0, 'stim': 0, 'loc': 0}
+            #
+            # simConfigParams.simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
+            # simConfigParams.simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
+            # simConfigParams.simConfig.verbose = 0 # show detailed messages
+            #
+            # # Recording
+            # simConfigParams.simConfig.recordCells = ['all']
+            #
+            # # Column: v_pop_pre_0_RS_v: Pop: pop_pre; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            # simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_0_soma_v'] = {'bla':1,'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#,'cellLabel':0}}
+            # # Column: v_pop_pre_1_RS_v: Pop: pop_pre; cell: 1; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            # simConfigParams.simConfig.recordTraces['Volts_file__pop_pre_pop_pre_1_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_pre'}}#, 'cellLabel':1}}
+            # # Column: v_pop_post_0_RS_v: Pop: pop_post; cell: 0; segment id: $oc.segment_id; segment name: soma; Neuron loc: soma(0.5); value: v (v)
+            # simConfigParams.simConfig.recordTraces['Volts_file__pop_post_pop_post_0_soma_v'] = {'sec':'soma','loc':0.5,'var':'v','conds':{'pop':'pop_post'}}#, 'cellLabel':0}}
+            #
+            # simConfigParams.simConfig.recordStim = True  # record spikes of cell stims
+            # simConfigParams.simConfig.recordStep = simConfigParams.simConfig.dt # Step size in ms to save data (eg. V traces, LFP, etc)
+            #
+            # # Analysis and plottingsimConfig.plotRaster = True # Whether or not to plot a raster
+            # simConfigParams.simConfig.analysis.plotTraces = {'include': ['all']}
+            #
+            # # Saving
+            # simConfigParams.simConfig.saveJson=1
+            # simConfigParams.simConfig.saveFileStep = simConfigParams.simConfig.dt # step size in ms to save data to disk
+            #
+            # self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
 
             # simConfigParams.simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
             # simConfigParams.simConfig.dt = 0.025                # Internal integration timestep to use
@@ -255,9 +255,9 @@ class RunNetPyneTests():
             cellModelParams.netParams.popParams['validCellModelParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
             self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
 
-            # cellModelParams = ParamsObj()
-            # cellModelParams.netParams.popParams['invalidCellModelParams'] = {'cellType': 'PYR', 'numCells': 50}     # add dict with params for this pop
-            # self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
+            cellModelParams = ParamsObj()
+            cellModelParams.netParams.popParams['invalidCellModelParams'] = {'cellType': 'PYR', 'numCells': 50}     # add dict with params for this pop
+            self.paramsMap["pop"]["cellModelTest"].append(cellModelParams)
             #
             # self.paramsMap["pop"]["volumeParamsTest"] = []
             #
@@ -325,15 +325,15 @@ class RunNetPyneTests():
             # params.netParams.popParams['invalidzNormRangeParams1'] = {'cellType': 'PYR', 'cellModel': 'HH', 'density' : 0.8, 'numCells': 50, 'znormRange' : [6,10]}     # add dict with params for this pop
             # self.paramsMap["pop"]["zNormRangeParamsTest"].append(params)
             #
-            # self.paramsMap["pop"]["xRangeParamsTest"] = []
-            #
+            self.paramsMap["pop"]["xRangeParamsTest"] = []
+
+            params = ParamsObj()
+            params.netParams.sizeX = 70   # max size for network
+            params.netParams.popParams['validxRangeParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'density' : 0.8, 'numCells': 50, 'xRange' : [30,60]}     # add dict with params for this pop
+            self.paramsMap["pop"]["xRangeParamsTest"].append(params)
+
             # params = ParamsObj()
-            # params.netParams.sizeX = 70   # max size for network
-            # params.netParams.popParams['validxRangeParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'density' : 0.8, 'numCells': 50, 'xRange' : [30,60]}     # add dict with params for this pop
-            # self.paramsMap["pop"]["xRangeParamsTest"].append(params)
-            #
-            # params = ParamsObj()
-            # params.netParams.sizeX = 70   # max size for network
+            # params.netParams.sizeX = 70.0   # max size for network
             # params.netParams.popParams['invalidxRangeParams'] = {'cellType': 'PYR', 'cellModel': 'HH', 'density' : 0.8, 'numCells': 50, 'xRange' : [40,90]}     # add dict with params for this pop
             # self.paramsMap["pop"]["xRangeParamsTest"].append(params)
             #
@@ -403,20 +403,20 @@ class RunNetPyneTests():
             # params.netParams.popParams['invalidPopStimParams4'] = {'cellModel': 'VecStim', 'numCells': 100, 'spkTimes': spkTimes, 'pulses': pulses}  # VecStim with spike times
             # self.paramsMap["pop"]["popStimParamsTest"].append(params)
             #
-            # # #net params test
-            # self.paramsMap["net"]["sizeXParamsTest"] = []
-            #
-            # params = ParamsObj()
-            # params.netParams.sizeX = 70   # max size for network
-            # self.paramsMap["net"]["sizeXParamsTest"].append(params)
-            #
-            # params = ParamsObj()
-            # params.netParams.sizeX = 3.53   # max size for network
-            # self.paramsMap["net"]["sizeXParamsTest"].append(params)
-            #
-            # params = ParamsObj()
-            # params.netParams.sizeX = -44   # max size for network
-            # self.paramsMap["net"]["sizeXParamsTest"].append(params)
+            # #net params test
+            self.paramsMap["net"]["sizeXParamsTest"] = []
+
+            params = ParamsObj()
+            params.netParams.sizeX = 70   # max size for network
+            self.paramsMap["net"]["sizeXParamsTest"].append(params)
+
+            params = ParamsObj()
+            params.netParams.sizeX = "abc"   # max size for network
+            self.paramsMap["net"]["sizeXParamsTest"].append(params)
+
+            params = ParamsObj()
+            params.netParams.sizeX = -44   # max size for network
+            self.paramsMap["net"]["sizeXParamsTest"].append(params)
             #
             # self.paramsMap["net"]["shapeTest"] = []
             #

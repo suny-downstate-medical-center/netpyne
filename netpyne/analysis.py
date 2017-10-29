@@ -1530,7 +1530,7 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
 
             for conn in cellConns:
                 if conn[preGidIndex] == 'NetStim':
-                    prePopLabel = conn[preLabelIndex]
+                    prePopLabel = conn[preLabelIndex] if preLabelIndex in conn else 'NetStim'
                 else:
                     preCell = next((cell for cell in cellsPre if cell['gid']==conn[preGidIndex]), None)
                     prePopLabel = preCell['tags']['pop'] if preCell else None
@@ -2037,9 +2037,9 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
         # set indices of fields to read compact format (no keys)
         missing = []
         popIndex = tagsFormat.index('pop') if 'pop' in tagsFormat else missing.append('pop')
-        xIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('x')
+        xIndex = tagsFormat.index('x') if 'x' in tagsFormat else missing.append('x')
         yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
-        zIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('z')
+        zIndex = tagsFormat.index('z') if 'z' in tagsFormat else missing.append('z')
         if len(missing) > 0:
             print "Missing:"
             print missing

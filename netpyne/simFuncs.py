@@ -150,9 +150,25 @@ def loadNetParams (filename, data=None, setLoaded=True):
 
 
 ###############################################################################
+# Convert compact (list-based) to long (dict-based) conn format
+###############################################################################
+def compactToLongConnFormat(cells, connFormat):
+    
+    formatIndices = {key: connFormat.index(key) for key in connFormat}
+    try:
+        for cell in cells:
+            for iconn, conn in enumerate(cell['conns']):
+                cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
+        return cells
+    except:
+        print "Error converting conns from compact to long format"
+        return cells
+
+
+###############################################################################
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
-def loadNet (filename, data=None, instantiate=True):
+def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
     import sim
 
     if not data: data = _loadFile(filename)
@@ -160,6 +176,7 @@ def loadNet (filename, data=None, instantiate=True):
         if sim.rank == 0:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
+            if compactConnFormat: compactToLongConnFormat(data['net']['cells'], compactConnFormat)
             sim.net.allPops = data['net']['pops']
             sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -256,10 +273,13 @@ def loadSimData (filename, data=None):
 # Load all data in file
 ###############################################################################
 def loadAll (filename, data=None):
+    import sim 
+
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
-    loadNet(filename, data=data)
+    if hasattr(sim.cfg, 'compactConnFormat'): connFormat = sim.cfg.compactConnFormat
+    loadNet(filename, data=data, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
 
@@ -1544,15 +1564,15 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
         elif loadTags:
             print 'Storing tags ...'
             if tagFormat:
-                tags = {int(cell['gid']): {param: cell['tags'][param] for param in tagFormat} for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+                tags.update({int(cell['gid']): [cell['tags'][param] for param in tagFormat] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
             else:
-                tags = {int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+                tags.update({int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
         elif loadConns:             
             print 'Storing conns...'
             if connFormat:
-                conns = {int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+                conns.update({int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
             else:
-                conns = {int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+                conns.update({int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
 
         print 'time ellapsed (s): ', time() - start
 

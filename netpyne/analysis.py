@@ -2184,7 +2184,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
         cellsPost, _, _ = getCellsInclude(includePost)
 
         for postCell in cellsPost:
-            print postCell.gid
+            print postCell['gid']
             preGidsAll = [conn[preGidIndex] for conn in postCell['conns'] if isinstance(conn[preGidIndex], Number) and conn[preGidIndex] in cellsPreGids+cellsPrePreGids]
             preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
             for preGid in preGids:

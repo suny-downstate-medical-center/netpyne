@@ -275,7 +275,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 ## Raster plot 
 ######################################################################################################################################################
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None, 
+        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None, 
         showFig = True): 
     ''' 
     Raster plot of network cells 
@@ -408,7 +408,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
  
-    ax1.scatter(spkts, spkinds, 10, lw=lw, marker=marker, color = spkgidColors) # Create raster  
+    ax1.scatter(spkts, spkinds, lw=lw, s=markerSize, marker=marker, color = spkgidColors) # Create raster  
     ax1.set_xlim(timeRange)
     
     # Plot stats
@@ -614,7 +614,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if graphType == 'line':
             plt.plot (histoT, histoCount, linewidth=1.0, color = color)
         elif graphType == 'bar':
-            plt.bar(histoT, histoCount, width = binSize, color = color)
+            #plt.bar(histoT, histoCount, width = binSize, color = color, fill=False)
+            plt.plot (histoT, histoCount, linewidth=1.0, color = color, ls='steps')
 
         if iplot == 0: 
             plt.xlabel('Time (ms)', fontsize=fontsiz)

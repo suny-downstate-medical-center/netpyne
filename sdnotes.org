@@ -7275,6 +7275,17 @@ Traceback (most recent call last):
     print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0]))
 TypeError: 'AssertionError' object is not subscriptable
 
+* 17Nov01 Issue reproducing PT cell results
+** problem
+- when run vs load from saved get different result
+- also in old vs new version of netpyne where the way to convert netParams to dict changed
+- saved netParams and net in json are identical in good vs bad version
+** possible explanations/solutions
+- order of mechs saved (order of instnatiation affects since dependent global variables?)
+- global variables not saved properly
+
+** solved
+was due to using getattr() instead of x.get() when setting global variables
 
 * Netpyne Models/Users
 ** Github examples folder

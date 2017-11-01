@@ -878,19 +878,21 @@ def setGlobals ():
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.iteritems()}
     for cellRuleName, cellRule in sim.net.params.cellParams.iteritems():
-        for k,v in getattr(cellRule, 'globals', {}).iteritems():
+        for k,v in cellRule.get('globals', {}).iteritems():
             if k not in cellGlobs:
                 cellGlobs[k] = v
-            elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception
+            elif cellGlobs[k] != v and sim.cfg.verbose:  # exception
                 if k == 'v_init':
                     wrongVinit = [s['v_init'] for s in cellRule['secs'] if 'v_init' in s and s['v_init'] != v] # check if set inside secs
                     if len(wrongVinit) > 0:
-                        print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
+                        print "\nWarning: existing global variable %s=%s differs from that defined in the 'secs' of cellParams rule %s: " % (k, str(cellGlobs[k]), cellRuleName)
+                    else:
+                        print "\nWarning: existing global variable %s=%s differs from that defined in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
                 else:
-                    print '\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v))
-            elif k in cellGlobs and cellGlobs[k] != v:
-                print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
-                sys.exit()
+                    print "\nWarning: existing global variable %s=%s differs from that defined in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
+            # elif k in cellGlobs and cellGlobs[k] != v:
+            #     print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
+            #     sys.exit()
 
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:

@@ -74,7 +74,7 @@ TEST_TYPE_VALID_CONN_LIST = "Valid conn list"
 TEST_TYPE_VALID_SYN_MECHS = "Valid synaptic mechanisms"
 TEST_TYPE_ARRAY_IN_RANGE = "Array elements in range"
 
-TEST_TYPE_EXISTS_IN_POP_LABELS = "Exists in pop labels"
+TEST_TYPE_EXISTS_IN_POP = "Exists in pop labels"
 TEST_TYPE_VALID_SEC_LIST = "Valid sec list for conn"
 TEST_TYPE_CONN_PARM_HIERARCHY = "Check for parameter hierarchy"
 TEST_TYPE_CONN_SHAPE = "Check for shape in conn params"
@@ -137,17 +137,17 @@ class TestTypeObj(object):
             e.args += (val,)
             raise
 
-    def testExistsInPopLabels(self, val,paramValues, popLabels):
+    def testExistsInPop(self, val,paramValues, pops):
         try:
-            existsInPopLabels = False
-            popLabelsSpecified = False
-            paramPopLabel = ''
+            existsInPops = False
+            popsSpecified = False
+            paramPop = ''
             errorMessage = ''
-            if isinstance (paramValues[val], dict ) and 'popLabel' in paramValues[val]:
-                popLabelsSpecified = True
+            if isinstance (paramValues[val], dict ) and 'pop' in paramValues[val]:
+                popsSpecified = True
                 #print( " LLL **** ")
-                if isinstance (popLabels, dict) and paramValues[val]['popLabel'] not in popLabels.keys():
-                    errorMessage = "ConnParams->'popLabel': Pop label specified in conn params is: " + str(paramValues[val]['popLabel']) + ". This does not exist in list of pop labels = " + str(popLabels.keys()) + "."
+                if isinstance (pops, dict) and paramValues[val]['pop'] not in pop.keys():
+                    errorMessage = "ConnParams->'pop': Pop specified in conn params is: " + str(paramValues[val]['pop']) + ". This does not exist in list of pop keys = " + str(pop.keys()) + "."
                     return errorMessage
         except Exception as e:
             # e.args += (e,)
@@ -2238,7 +2238,7 @@ class SimTestObj(object):
         testObj.testName = "popLabelsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "preConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
         testObj.messageText = ["ConnParams->'popLabel': Pop label specified for preConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
@@ -2248,7 +2248,7 @@ class SimTestObj(object):
         testObj.testName = "popLabelsTest"
         testObj.testParameterType = "string"
         testObj.testParameterValue = "postConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP_LABELS]
+        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
         testObj.messageText = ["ConnParams->'popLabel': Pop label specified for postConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
         self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
@@ -3114,12 +3114,12 @@ class SimTestObj(object):
                             #print ( "paramvalues = " + str(paramValues))
                             print (str(MESSAGE_TYPE_ERROR) + ": " + str(e))
 
-            elif testType == TEST_TYPE_EXISTS_IN_POP_LABELS:
+            elif testType == TEST_TYPE_EXISTS_IN_POP:
 
                 if isinstance(params, dict):
                     for paramLabel, paramValues in params.items():
                         try:
-                            errorMessage = self.testTypeObj.testExistsInPopLabels(testObj.testParameterValue, paramValues, self.netParams.popParams)
+                            errorMessage = self.testTypeObj.testExistsInPop(testObj.testParameterValue, paramValues, self.netParams.popParams)
 
                             if errorMessage != '':
 

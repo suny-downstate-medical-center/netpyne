@@ -14,6 +14,10 @@
 
 - Adapted python2 code so conversion to python3 via 2to3 command works straight away
 
+- Added argument 'instantiate' to load function
+
+- Replaced init() with stdinit() so h.v_init gets set
+
 - Fixed issue setting global variables when loading from json
 
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)

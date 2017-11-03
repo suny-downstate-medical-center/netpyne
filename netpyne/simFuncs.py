@@ -272,14 +272,14 @@ def loadSimData (filename, data=None):
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename, data=None):
+def loadAll (filename, data=None, instantiate=True):
     import sim 
 
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     loadNetParams(filename, data=data)
     if hasattr(sim.cfg, 'compactConnFormat'): connFormat = sim.cfg.compactConnFormat
-    loadNet(filename, data=data, compactConnFormat=connFormat)
+    loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
 
@@ -881,19 +881,16 @@ def setGlobals ():
         for k,v in cellRule.get('globals', {}).iteritems():
             if k not in cellGlobs:
                 cellGlobs[k] = v
-            elif cellGlobs[k] != v and sim.cfg.verbose:  # exception
+            elif cellGlobs[k] != v and sim.cfg.verbose:
                 if k == 'v_init':
-                    wrongVinit = [s['v_init'] for s in cellRule['secs'] if 'v_init' in s and s['v_init'] != v] # check if set inside secs
-                    if len(wrongVinit) > 0:
-                        print "\nWarning: existing global variable %s=%s differs from that defined in the 'secs' of cellParams rule %s: " % (k, str(cellGlobs[k]), cellRuleName)
-                    else:
-                        print "\nWarning: existing global variable %s=%s differs from that defined in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
+                    wrongVinit = [s['vinit'] for s in cellRule['secs'].values() if 'vinit' in s and s['vinit'] == v and s['vinit'] != cellGlobs[k]] # check if set inside secs (set by default during import)
+                    if len(wrongVinit) == len(cellRule['secs']):
+                        print "\nWarning: global variable %s=%s differs from that set for each section in cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
+                    else: # no need since v_inits set in each sec during import
+                        print "\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
                 else:
-                    print "\nWarning: existing global variable %s=%s differs from that defined in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
-            # elif k in cellGlobs and cellGlobs[k] != v:
-            #     print '\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k]))
-            #     sys.exit()
-
+                    print "\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
+           
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:
         print '\nSetting h global variables ...'
@@ -988,7 +985,8 @@ def runSim ():
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
-    init()
+    h.stdinit()
+    #init()
 
     if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)

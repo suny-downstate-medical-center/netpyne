@@ -16,6 +16,7 @@ class Dict(dict):
 
     __slots__ = []
 
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -60,6 +61,7 @@ class Dict(dict):
                 raise AttributeError(k)
         else:
             object.__delattr__(self, k)
+
 
     def todict(self):
         return self.undotify(self)

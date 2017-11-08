@@ -151,22 +151,6 @@ def _smooth1d(x,window_len=11,window='hanning'):
 
 
 ######################################################################################################################################################
-## Synchrony measure
-######################################################################################################################################################
-def syncMeasure ():
-    import sim
-
-    t0=-1 
-    width=1 
-    cnt=0
-    for spkt in sim.allSimData['spkt']:
-        if (spkt>=t0+width): 
-            t0=spkt 
-            cnt+=1
-    return 1-cnt/(sim.cfg.duration/width)
-
-
-######################################################################################################################################################
 ## Get subset of cells and netstims indicated by include list
 ######################################################################################################################################################
 def getCellsInclude(include):
@@ -269,6 +253,95 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 
     return cellGids
 
+
+######################################################################################################################################################
+## Synchrony measure
+######################################################################################################################################################
+def syncMeasure ():
+    import sim
+
+    t0=-1 
+    width=1 
+    cnt=0
+    for spkt in sim.allSimData['spkt']:
+        if (spkt>=t0+width): 
+            t0=spkt 
+            cnt+=1
+    return 1-cnt/(sim.cfg.duration/width)
+
+
+
+
+######################################################################################################################################################
+## Calculate avg and peak rate of different subsets of cells for specific time period
+######################################################################################################################################################
+def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = None): 
+    ''' 
+    Calculate avg and peak rate of different subsets of cells for specific time period
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - peakBin (int): Histogram bin size used to calculate peak firing rate; if None, peak rate not calculated (default: 5)
+        - Returns list with rates
+    '''
+
+    import sim
+
+    print('Calculating avg and peak firing rates ...')
+
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    avg, peak, histData = [], [], []
+
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimLabels = getCellsInclude([subset])
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            except:
+                spkinds,spkts = [],[]
+        else: 
+            spkinds,spkts = [],[]
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        if 'stims' in sim.allSimData:
+            for netStimLabel in netStimLabels:
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+                for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                if len(netStimSpks) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = netStimSpks 
+                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += 1
+
+        if peakBin:
+            histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], peakBin))
+            histoT = histo[1][:-1]+peakBin/2
+            histoCount = histo[0] 
+
+            histData.append(histoCount)
+
+            histoCount = histoCount * float((1000.0 / peakBin)) / float((len(cellGids)+numNetStims)) # convert to firing rate
+            peak.append(float(max(histoCount)))
+
+        avg.append(float(len(spkts)) / float((len(cellGids)+numNetStims)) / float((timeRange[1]-timeRange[0])) * 1000.0)
+
+    return include, avg, peak
 
 
 ######################################################################################################################################################
@@ -664,7 +737,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ## Plot spike histogram
 ######################################################################################################################################################
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
-                 popColors = [], figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -827,6 +900,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             ax.tick_params(axis='y', direction='out')
             ax.grid(axis='x', color="0.9", linestyle='-', linewidth=1)
             ax.set_axisbelow(True)
+            if xlim: ax.set_xlim(xlim)
         
         # elif graphType == 'bar':
         #     print range(1, len(statData)+1), statData

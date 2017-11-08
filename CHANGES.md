@@ -14,7 +14,9 @@
 
 - Adapted python2 code so conversion to python3 via 2to3 command works straight away
 
-- Added argument 'instantiate' to load function
+- Added 'instantiate' argument to sim.load function
+
+- Added 'dpi' argument to analysis.plotSpikeHist()
 
 - Replaced init() with stdinit() so h.v_init gets set
 

@@ -520,7 +520,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ## Plot spike histogram
 ######################################################################################################################################################
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
-    popColors = [], figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = [], dpi = 100, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -651,7 +651,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikeHist.png'
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=dpi)
 
     # show fig 
     if showFig: _showFigure()
@@ -1074,7 +1074,6 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     color = colorList2[igid%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(subGids),1,igid+1)
-                        color = 'blue'
                         plt.ylabel(trace, fontsize=fontsiz)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)

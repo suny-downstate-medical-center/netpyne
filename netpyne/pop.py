@@ -75,7 +75,7 @@ class Pop (object):
 
 
     def createCellsFixedNum (self):
-        import sim
+        import sim, specs
 
         ''' Create population cells based on fixed number of cells'''
         cells = []
@@ -127,14 +127,14 @@ class Pop (object):
             cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
             cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
             cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, specs.Dict(cellTags))) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
         return cells
 
                 
     def createCellsDensity (self):
-        import sim
+        import sim, specs
 
         ''' Create population cells based on density'''
         cells = []
@@ -242,7 +242,7 @@ class Pop (object):
             cellTags['x'] = sizeX * randLocs[i,0]  # calculate x location (um)
             cellTags['y'] = sizeY * randLocs[i,1]  # calculate y location (um)
             cellTags['z'] = sizeZ * randLocs[i,2]  # calculate z location (um)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, specs.Dict(cellTags))) # instantiate Cell object
             if sim.cfg.verbose: 
                 print('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
@@ -250,7 +250,7 @@ class Pop (object):
 
 
     def createCellsList (self):
-        import sim
+        import sim, specs
 
         ''' Create population cells based on list of individual cells'''
         cells = []
@@ -272,14 +272,14 @@ class Pop (object):
                     cellTags[coord+'norm'] = cellTags[coord] = 0
             if 'params' in cellTags:  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, specs.Dict(cellTags))) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank))
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
         return cells
 
 
     def createCellsGrid (self):
-        import sim
+        import sim, specs
 
         ''' Create population cells based on fixed number of cells'''
         cells = []
@@ -313,7 +313,7 @@ class Pop (object):
             cellTags['x'] = gridLocs[i][0]   # set x location (um)
             cellTags['y'] = gridLocs[i][1] # set y location (um)
             cellTags['z'] = gridLocs[i][2] # set z location (um)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            cells.append(self.cellModelClass(gid, specs.Dict(cellTags))) # instantiate Cell object
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + numCells
         return cells

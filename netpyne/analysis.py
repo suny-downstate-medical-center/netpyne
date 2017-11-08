@@ -68,6 +68,8 @@ def _showFigure():
 ## Save figure data
 ######################################################################################################################################################
 def _saveFigData(figData, fileName=None, type=''):
+    import sim
+    
     if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
@@ -270,8 +272,6 @@ def syncMeasure ():
     return 1-cnt/(sim.cfg.duration/width)
 
 
-
-
 ######################################################################################################################################################
 ## Calculate avg and peak rate of different subsets of cells for specific time period
 ######################################################################################################################################################
@@ -342,6 +342,66 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
         avg.append(float(len(spkts)) / float((len(cellGids)+numNetStims)) / float((timeRange[1]-timeRange[0])) * 1000.0)
 
     return include, avg, peak
+
+
+######################################################################################################################################################
+## Plot avg and peak rates at different time periods 
+######################################################################################################################################################
+def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, figSize = ((5,5)), saveData = None, 
+        saveFig = None, showFig = True):
+    ''' 
+    Calculate avg and peak rate of different subsets of cells for specific time period
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRanges ([[start1:stop1], [start2:stop2]]): List of time range of spikes shown; if None shows all (default: None)
+        - timeRangeLabels (['preStim', 'postStim']): List of labels for each time range period (default: None)
+        - peakBin (int): Histogram bin size used to calculate peak firing rate; if None, peak rate not calculated (default: 5)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figs
+    '''
+    import sim
+
+    avgs = []
+    peaks = []
+    if not timeRangeLabels:
+        timeRangeLabels = ['period '+i for i in range(len(timeRanges))]
+
+    for i, (timeRange, timeRangeLabels) in enumerate(zip(timeRanges, timeRangeLabels)):
+        labels, avg, peak = sim.analysis.calculateRate(include=include, peakBin=peakBin, timeRange=timeRange)
+        avgs.append(avg)
+        peaks.append(peaks)
+
+    fig1,ax1 = plt.subplots(figsize=figSize)
+    fig2,ax2 = plt.subplots(figsize=figSize)
+    
+    ax1.plot(avgs)
+    ax2.plot(peaks)
+
+    # save figure data
+    if saveData:
+        figData = {'includeList': includeList, 'timeRanges': timeRanges, 'avgs': avgs, 'peaks': peaks}
+
+        _saveFigData(figData, saveData, 'raster')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'rates.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig
+
 
 
 ######################################################################################################################################################

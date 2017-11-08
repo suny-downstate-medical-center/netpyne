@@ -928,7 +928,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         # show fig 
         if showFig: _showFigure()
 
-    return fig
+    return fig, statData
 
 
 

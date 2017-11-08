@@ -8,6 +8,10 @@
 
 - Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
 
+- Added analysis.calculateRate() func to calculate avg and peak rate of pop subset at time range
+
+- Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
+
 - Added cfg.compactConnFormat option to replace conns dict format with compact list format 
 
 - Added option to plotConn() and plot2Dnet() to load data from compact format json files 

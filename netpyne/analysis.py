@@ -69,7 +69,7 @@ def _showFigure():
 ######################################################################################################################################################
 def _saveFigData(figData, fileName=None, type=''):
     import sim
-    
+
     if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
@@ -339,7 +339,8 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
             histoCount = histoCount * float((1000.0 / peakBin)) / float((len(cellGids)+numNetStims)) # convert to firing rate
             peak.append(float(max(histoCount)))
 
-        avg.append(float(len(spkts)) / float((len(cellGids)+numNetStims)) / float((timeRange[1]-timeRange[0])) * 1000.0)
+        spktsRange = [spkt for spkt in spkts if timeRange[0] <= spkt <= timeRange[1]]
+        avg.append(float(len(spktsRange)) / float((len(cellGids)+numNetStims)) / float((timeRange[1]-timeRange[0])) * 1000.0)
 
     return include, avg, peak
 
@@ -347,7 +348,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ######################################################################################################################################################
 ## Plot avg and peak rates at different time periods 
 ######################################################################################################################################################
-def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, figSize = ((5,5)), saveData = None, 
+def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
         saveFig = None, showFig = True):
     ''' 
     Calculate avg and peak rate of different subsets of cells for specific time period
@@ -367,22 +368,41 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
     '''
     import sim
 
+    if not colors: colors = colorList
+
     avgs = []
     peaks = []
     if not timeRangeLabels:
-        timeRangeLabels = ['period '+i for i in range(len(timeRanges))]
+        timeRangeLabels = ['%f-%f ms'%(t[0], t[1]) for t in timeRangeLabels] #['period '+i for i in range(len(timeRanges))]
 
-    for i, (timeRange, timeRangeLabels) in enumerate(zip(timeRanges, timeRangeLabels)):
+    for i, timeRange in enumerate(timeRanges):
         labels, avg, peak = sim.analysis.calculateRate(include=include, peakBin=peakBin, timeRange=timeRange)
         avgs.append(avg)
-        peaks.append(peaks)
+        peaks.append(peak)
 
     fig1,ax1 = plt.subplots(figsize=figSize)
     fig2,ax2 = plt.subplots(figsize=figSize)
     
-    ax1.plot(avgs)
-    ax2.plot(peaks)
+    fontsiz=14
+    ax1.set_color_cycle(colors)
+    ax1.plot(avgs, marker='o')
+    ax1.set_xlabel('Time period', fontsize=fontsiz)
+    ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
+    ax1.set_xticks(range(len(timeRangeLabels)))
+    ax1.set_xticklabels(timeRangeLabels)
+    ax1.set_xlim(-0.5, len(avgs)-0.5)
+    ax1.legend(include)
 
+    ax2.set_color_cycle(colors)
+    ax2.plot(peaks, marker='o')
+    ax2.set_xlabel('Time period', fontsize=fontsiz)
+    ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
+    ax2.set_xticks(range(len(timeRangeLabels)))
+    ax2.set_xticklabels(timeRangeLabels)
+    ax2.set_xlim(-0.5, len(avgs)-0.5)
+    ax2.legend(include)
+
+    
     # save figure data
     if saveData:
         figData = {'includeList': includeList, 'timeRanges': timeRanges, 'avgs': avgs, 'peaks': peaks}
@@ -400,7 +420,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return fig1, fig2, avgs, peaks
 
 
 

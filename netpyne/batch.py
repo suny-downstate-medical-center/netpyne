@@ -282,7 +282,7 @@ source ~/.bashrc
 cd %s
 %s
 wait
-                            """  % (jobName, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
 
                             # Send job_string to qsub
                             print 'Submitting job ',jobName

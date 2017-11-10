@@ -2027,7 +2027,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         connMatrix, pre, post = __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech)
 
 
-    if connMatrix == None:
+    if connMatrix is None:
         print "Error calculating connMatrix in plotConn()"
         return None
 

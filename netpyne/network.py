@@ -13,7 +13,6 @@ from numbers import Number
 from copy import copy
 from specs import ODict
 from neuron import h  # import NEURON
-import sim
 
 class Network (object):
 
@@ -55,6 +54,8 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     ###############################################################################
     def createPops (self):
+        import sim
+
         for popLabel, popParam in self.params.popParams.iteritems(): # for each set of population paramseters 
             self.pops[popLabel] = sim.Pop(popLabel, popParam)  # instantiate a new object of class Pop and add to list pop
         return self.pops
@@ -64,6 +65,8 @@ class Network (object):
     # Create Cells
     ###############################################################################
     def createCells (self):
+        import sim
+
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
@@ -85,6 +88,8 @@ class Network (object):
     #  Add stims
     ###############################################################################
     def addStims (self):
+        import sim
+
         sim.timing('start', 'stimsTime')
         if self.params.stimSourceParams and self.params.stimTargetParams:
             if sim.rank==0: 
@@ -207,6 +212,8 @@ class Network (object):
     # Convert stim param string to function
     ###############################################################################
     def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
+        import sim
+
         # list of params that have a function passed in as a string
         #params = sourceParams+targetParams
         params = sourceParams.copy()
@@ -338,6 +345,8 @@ class Network (object):
     # Subcellular connectivity (distribution of synapses)
     ###############################################################################
     def subcellularConn(self, allCellTags, allPopTags):
+        import sim
+
         sim.timing('start', 'subConnectTime')
         print('  Distributing synapses based on subcellular connectivity rules...')
 
@@ -490,6 +499,8 @@ class Network (object):
     # Connect Cells
     ###############################################################################
     def connectCells (self):
+        import sim
+
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'connectTime')
         if sim.rank==0: 
@@ -590,6 +601,8 @@ class Network (object):
     # Find pre and post cells matching conditions
     ###############################################################################
     def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
+        import sim
+
         #try:
         preCellsTags = dict(allCellTags)  # initialize with all presyn cells (make copy)
         postCellsTags = None
@@ -745,7 +758,7 @@ class Network (object):
             disynNotconn = sorted(disynNotConn, key=lambda k: probMatrix[k], reverse=True)
 
             # replaced nonDisynConn with disynNotConn
-            for i in range(disynAdd):
+            for i in range(min(disynAdd, nonDisynConn, disynNotConn)):
                 connCreate[nonDisynConn[i]] = False
                 connCreate[disynNotConn[i]] = True
 
@@ -757,6 +770,8 @@ class Network (object):
     ### Full connectivity
     ###############################################################################
     def fullConn (self, preCellsTags, postCellsTags, connParam):
+        import sim
+
         ''' Generates connections between all pre and post-syn cells '''
         if sim.cfg.verbose: print 'Generating set of all-to-all connections (rule: %s) ...' % (connParam['label'])
 
@@ -778,6 +793,8 @@ class Network (object):
     ### Probabilistic connectivity 
     ###############################################################################
     def probConn (self, preCellsTags, postCellsTags, connParam):
+        import sim
+
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of probabilistic connections (rule: %s) ...' % (connParam['label'])
 
@@ -819,6 +836,8 @@ class Network (object):
     ### Generate random unique integers 
     ###############################################################################
     def randUniqueInt(self, r, N, vmin, vmax):
+        import sim
+
         r.discunif(vmin,vmax)
         out = []
         while len(out)<N:
@@ -831,6 +850,8 @@ class Network (object):
     ### Convergent connectivity 
     ###############################################################################
     def convConn (self, preCellsTags, postCellsTags, connParam):
+        import sim
+
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of convergent connections (rule: %s) ...' % (connParam['label'])
                
@@ -858,6 +879,8 @@ class Network (object):
     ### Divergent connectivity 
     ###############################################################################
     def divConn (self, preCellsTags, postCellsTags, connParam):
+        import sim
+
         ''' Generates connections between all pre and post-syn cells based on probability values'''
         if sim.cfg.verbose: print 'Generating set of divergent connections (rule: %s) ...' % (connParam['label'])
          
@@ -885,6 +908,8 @@ class Network (object):
     ### From list connectivity 
     ###############################################################################
     def fromListConn (self, preCellsTags, postCellsTags, connParam):
+        import sim
+
         ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
         if sim.cfg.verbose: print 'Generating set of connections from list (rule: %s) ...' % (connParam['label'])
 
@@ -918,6 +943,8 @@ class Network (object):
     ### Set parameters and create connection
     ###############################################################################
     def _addCellConn (self, connParam, preCellGid, postCellGid):
+        import sim
+
         # set final param values
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
@@ -976,6 +1003,8 @@ class Network (object):
     ### Modify cell params
     ###############################################################################
     def modifyCells (self, params, updateMasterAllCells=False):
+        import sim
+
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyCellsTime')
         if sim.rank==0: 
@@ -995,6 +1024,8 @@ class Network (object):
     ### Modify synMech params
     ###############################################################################
     def modifySynMechs (self, params, updateMasterAllCells=False):
+        import sim
+
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifySynMechsTime')
         if sim.rank==0: 
@@ -1015,6 +1046,8 @@ class Network (object):
     ### Modify conn params
     ###############################################################################
     def modifyConns (self, params, updateMasterAllCells=False):
+        import sim
+
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyConnsTime')
         if sim.rank==0: 
@@ -1034,6 +1067,8 @@ class Network (object):
     ### Modify stim source params
     ###############################################################################
     def modifyStims (self, params, updateMasterAllCells=False):
+        import sim
+        
         # Instantiate network connections based on the connectivity rules defined in params
         sim.timing('start', 'modifyStimsTime')
         if sim.rank==0: 

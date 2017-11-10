@@ -16,6 +16,7 @@ class Dict(dict):
 
     __slots__ = []
 
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -60,6 +61,7 @@ class Dict(dict):
                 raise AttributeError(k)
         else:
             object.__delattr__(self, k)
+
 
     def todict(self):
         return self.undotify(self)
@@ -207,7 +209,6 @@ class ODict(OrderedDict):
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
-                print obj.keys()
                 try:
                     obj = obj[label[ip]] 
                 except:
@@ -260,10 +261,11 @@ class CellParams (ODict):
         self.__rename__(old, new, label)
 
         # special case: renaming cellParams[x]['secs'] requires updating topology
-        if isinstance(label, (list, tuple)) and 'secs' in label and 'topol' in self[label[0]]:
+        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
             d = self[label[0]]
             for sec in d['secs'].values():  # replace appearences in topol
-                if d['topol'].get('parentSec') == old: sec['topol']['parentSec'] = new
+                if sec['topol'].get('parentSec') == old: 
+                    sec['topol']['parentSec'] = new
 
 
 class ConnParams (ODict):
@@ -550,7 +552,7 @@ class NetParams (object):
 
 
     def renameCellParamsSec(self, label, oldSec, newSec):
-        self.cellParams.renameObj(label, 'secs', oldSec, newSec)
+        self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
@@ -615,11 +617,14 @@ class SimConfig (object):
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
-        self.createNEURONObj = True  # create HOC objects when instantiating network
+        self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
+        self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
+        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
@@ -647,11 +652,9 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
-        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
-        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters
+        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

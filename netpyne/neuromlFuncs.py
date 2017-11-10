@@ -20,12 +20,14 @@ except:
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-import sim, specs
+import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
 def _convertNetworkRepresentation (net, gids_vs_pop_indices):
+
+    import sim
 
     nn = {}
 
@@ -120,6 +122,8 @@ if neuromlExists:
     ############################################################################### 
     def _export_synapses (net, nml_doc):
 
+        import sim
+
         syn_types = {}
         for id,syn in net.params.synMechParams.iteritems():
             syn_types[id]=syn['mod']
@@ -197,6 +201,8 @@ if neuromlExists:
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
     def exportNeuroML2 (reference, connections=True, stimulations=True):
+
+        import sim
 
         net = sim.net
         
@@ -1231,6 +1237,8 @@ if neuromlExists:
     # Import network from NeuroML2
     ###############################################################################
     def importNeuroML2(fileName, simConfig):
+
+        import sim
 
         netParams = specs.NetParams()
 

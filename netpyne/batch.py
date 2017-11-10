@@ -264,6 +264,12 @@ echo $PBS_O_WORKDIR
                             script = self.runCfg.get('script', 'init.py')
                             mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
                             walltime = self.runCfg.get('walltime', '00:30:00')
+                            reservation = self.runCfg.get('reservation', None)
+                            if reservation:
+                                res = '#SBATCH --res=%s'%(reservation)
+                            else:  
+                                res = ''
+
                             numproc = nodes*coresPerNode
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath) 
 
@@ -277,12 +283,13 @@ echo $PBS_O_WORKDIR
 #SBATCH -e %s.err
 #SBATCH --mail-user=%s
 #SBATCH --mail-type=end
+%s
 
 source ~/.bashrc
 cd %s
 %s
 wait
-                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, folder, command)
+                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, folder, command)
 
                             # Send job_string to qsub
                             print 'Submitting job ',jobName

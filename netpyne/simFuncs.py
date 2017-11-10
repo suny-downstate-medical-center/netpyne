@@ -181,7 +181,10 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
             sim.net.allCells = data['net']['cells']
         if instantiate:
             # calculate cells to instantiate in this node
-            cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
+            if isinstance(instantiate, list):
+                cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+            else:
+                cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
             if sim.cfg.createPyStruct:
                 for popLoadLabel, popLoad in data['net']['pops'].iteritems():
                     pop = sim.Pop(popLoadLabel, popLoad['tags'])

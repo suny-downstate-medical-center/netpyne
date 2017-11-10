@@ -268,7 +268,7 @@ class CellParams (ODict):
                     if sec['topol'].get('parentSec') == old: 
                         sec['topol']['parentSec'] = new
             return success
-        else:
+        except:
             return False
 
 

@@ -467,8 +467,10 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
         timeRangeLabels = ['%f-%f ms'%(t[0], t[1]) for t in timeRanges] #['period '+i for i in range(len(timeRanges))]
 
     for i, timeRange in enumerate(timeRanges):
+        print timeRange
         _, sync = sim.analysis.plotSpikeStats (include = include, timeRange = timeRange, stats = ['sync'], saveFig = False, showFig =False)
         print sync
+        sync = [s[0] for s in sync]
         syncs.append(sync)
 
     fig1,ax1 = plt.subplots(figsize=figSize)
@@ -481,7 +483,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
     ax1.set_ylabel('Spiking synchrony', fontsize=fontsiz)
     ax1.set_xticks(range(len(timeRangeLabels)))
     ax1.set_xticklabels(timeRangeLabels)
-    ax1.set_xlim(-0.5, len(avgs)-0.5)
+    ax1.set_xlim(-0.5, len(syncs)-0.5)
     ax1.legend(include)
 
     # save figure
@@ -497,7 +499,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 
     # save figure data
     if saveData:
-        figData = {'includeList': includeList, 'timeRanges': timeRanges, 'avgs': avgs, 'peaks': peaks}
+        figData = {'includeList': includeList, 'timeRanges': timeRanges, 'syncs': syncs}
 
         _saveFigData(figData, saveData, 'raster')
  
@@ -712,7 +714,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             else:
                 finalty = tyOffset + ty/2.0 - 0.01
             plt.text(tx, finalty, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
-        maxLabelLen = max([len(l) for l in labels])
+        maxLabelLen = min(6, max([len(l) for l in labels]))
         plt.subplots_adjust(right=(1.0-0.011*maxLabelLen))
 
     # Plot spike hist
@@ -981,6 +983,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                         spkinds.extend(spkindsNew)
                         numNetStims += 1
 
+            spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) if timeRange[0] <= spkt <= timeRange[1]])
 
             # rate stats
             if stat == 'rate':

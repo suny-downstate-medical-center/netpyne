@@ -244,7 +244,7 @@ class PopParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -258,14 +258,18 @@ class CellParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        success = elf.__rename__(old, new, label)
 
-        # special case: renaming cellParams[x]['secs'] requires updating topology
-        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
-            d = self[label[0]]
-            for sec in d['secs'].values():  # replace appearences in topol
-                if sec['topol'].get('parentSec') == old: 
-                    sec['topol']['parentSec'] = new
+        try:
+            # special case: renaming cellParams[x]['secs'] requires updating topology
+            if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
+                d = self[label[0]]
+                for sec in d['secs'].values():  # replace appearences in topol
+                    if sec['topol'].get('parentSec') == old: 
+                        sec['topol']['parentSec'] = new
+            return success
+        except:
+            return False
 
 
 class ConnParams (ODict):
@@ -280,7 +284,7 @@ class ConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SynMechParams (ODict):
@@ -295,7 +299,7 @@ class SynMechParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SubConnParams (ODict):
@@ -310,7 +314,7 @@ class SubConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimSourceParams (ODict):
@@ -325,7 +329,7 @@ class StimSourceParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimTargetParams (ODict):
@@ -340,7 +344,7 @@ class StimTargetParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 ###############################################################################

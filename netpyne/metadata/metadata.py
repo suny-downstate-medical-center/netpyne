@@ -25,14 +25,14 @@ metadata = {
                         "hintText": "number of cells",
                         "type": "int"
                     },
-                     "density": {
+                    "density": {
                         "label": "Density or Grid Spacing",
                         "suggestions": "",
                         "help": "The total number of cells in this population, the density in neurons/mm3, or the fixed grid spacing (only one of the three is required). The volume occupied by each population can be customized (see xRange, yRange and zRange); otherwise the full network volume will be used (defined in netParams: sizeX, sizeY, sizeZ). density can be expressed as a function of normalized location (xnorm, ynorm or znorm), by providing a string with the variable and any common Python mathematical operators/functions. e.g. '1e5 * exp(-ynorm/2)'. gridSpacing is the spacing between cells (in um). The total number of cells will be determined based on spacing and sizeX, sizeY, sizeZ. e.g. 10.",
                         "hintText": "density in neurons/mm3",
                         "type": "str"
                     },
-                     "gridSpacing": {
+                    "gridSpacing": {
                         "label": "Density or Grid Spacing",
                         "suggestions": "",
                         "help": "The total number of cells in this population, the density in neurons/mm3, or the fixed grid spacing (only one of the three is required). The volume occupied by each population can be customized (see xRange, yRange and zRange); otherwise the full network volume will be used (defined in netParams: sizeX, sizeY, sizeZ). density can be expressed as a function of normalized location (xnorm, ynorm or znorm), by providing a string with the variable and any common Python mathematical operators/functions. e.g. '1e5 * exp(-ynorm/2)'. gridSpacing is the spacing between cells (in um). The total number of cells will be determined based on spacing and sizeX, sizeY, sizeZ. e.g. 10.",
@@ -57,7 +57,7 @@ metadata = {
                         "help": "Range of neuron positions in x-axis (horizontal length), specified2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
-                        "default": [0,1],
+                        "default": [0, 1],
                         "type": "list(float)"
                     },
                     "yRange": {
@@ -89,7 +89,8 @@ metadata = {
                         "type": "list(float)"
                     }
                 }
-            }
+            },
+
         }
     },
     "simConfig": {
@@ -97,6 +98,70 @@ metadata = {
         "suggestions": "",
         "help": "",
         "hintText": "",
-        "children": []
+        "children": {
+            "duration": {
+                "label": "Duration",
+            },
+            "dt": {
+                "label": "Dt",
+            },
+            "seeds": {
+                "label": "Seeds",
+            },
+            "addSynMechs": {
+                "label": "Add Syn Mechs",
+            },
+            "includeParamsLabel": {
+                "label": "Include Params Label",
+            },
+            "timing": {
+                "label": "Timing",
+            },
+            "verbose": {
+                "label": "Verbose",
+            },
+            "saveFolder": {
+                "label": "Save Folder",
+            },
+            "filename": {
+                "label": "File Name",
+            },
+            "saveDataInclude": {
+                "label": "Save Data Include",
+            },
+            "timestampFilename": {
+                "label": "Timestamp File Name",
+            },
+            "savePickle": {
+                "label": "Save Pickle",
+            },
+            "saveJson": {
+                "label": "Save Json",
+            },
+            "saveMat": {
+                "label": "Save Mat",
+            },
+            "saveHDF5": {
+                "label": "Save HDF5",
+            },
+            "saveDpk": {
+                "label": "Save Dpk",
+            },
+            "saveDat": {
+                "label": "Save Dat",
+            },
+            "saveCsv": {
+                "label": "Save Csv",
+            },
+            "saveCellSecs": {
+                "label": "Save Cell Secs",
+            },
+            "saveCellConns": {
+                "label": "Save Cell Conns",
+            },
+            "checkError": {
+                "label": "Check Errors",
+            },
+        }
     }
 }

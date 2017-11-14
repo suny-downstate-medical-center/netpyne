@@ -258,7 +258,7 @@ class CellParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        success = elf.__rename__(old, new, label)
+        success = self.__rename__(old, new, label)
 
         try:
             # special case: renaming cellParams[x]['secs'] requires updating topology

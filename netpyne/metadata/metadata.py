@@ -90,7 +90,34 @@ metadata = {
                     }
                 }
             },
-
+            "cellParams": {
+                "label": "Cell Params",
+                "suggestions": "",
+                "help": "",
+                "hintText": "",
+                "children": {
+                    "conds": {
+                        "label": "Conds",
+                        "suggestions": "",
+                        "help": "",
+                        "hintText": "",
+                        "children": {
+                            "cellType": {
+                                "label": "Cell Type",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                            },
+                            "cellModel": {
+                                "label": "Cell Model",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                            },
+                        }
+                    }
+                }
+            }
         }
     },
     "simConfig": {

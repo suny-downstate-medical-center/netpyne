@@ -386,12 +386,17 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
     fontsiz=14
     ax1.set_color_cycle(colors)
     ax1.plot(avgs, marker='o')
-    ax1.set_xlabel('Time period', fontsize=fontsiz)
+    #ax1.set_xlabel('Time period', fontsize=fontsiz)
     ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
     ax1.set_xticks(range(len(timeRangeLabels)))
     ax1.set_xticklabels(timeRangeLabels)
     ax1.set_xlim(-0.5, len(avgs)-0.5)
     ax1.legend(include)
+
+    try:
+        plt.tight_layout()
+    except:
+        pass
 
     # save figure
     if saveFig: 
@@ -408,12 +413,17 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
     fig2,ax2 = plt.subplots(figsize=figSize)
     ax2.set_color_cycle(colors)
     ax2.plot(peaks, marker='o')
-    ax2.set_xlabel('Time period', fontsize=fontsiz)
+    #ax2.set_xlabel('Time period', fontsize=fontsiz)
     ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
     ax2.set_xticks(range(len(timeRangeLabels)))
     ax2.set_xticklabels(timeRangeLabels)
     ax2.set_xlim(-0.5, len(peaks)-0.5)
     ax2.legend(include)
+
+    try:
+        plt.tight_layout()
+    except:
+        pass
 
     # save figure
     if saveFig: 
@@ -988,7 +998,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             # rate stats
             if stat == 'rate':
                 toRate = 1e3/(timeRange[1]-timeRange[0])
-                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] 
+                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] #cellGids] #set(spkinds)] 
                 statData.insert(0, rates)
                 xlabel = 'Rate (Hz)'
 
@@ -1048,7 +1058,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 bp['whiskers'][i*2 + 1].set_linewidth(2)
                 bp['medians'][i].set_color(borderColor)
                 bp['medians'][i].set_linewidth(3)
-                #for f in bp['fliers']:
+                # for f in bp['fliers']:
                 #    f.set_color(colors[icolor])
                 #    print f
                 # and 4 caps to remove
@@ -1101,7 +1111,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, 
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, ylim = None, 
     popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
@@ -1144,6 +1154,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     fig,ax1 = plt.subplots(figsize=figSize)
     fontsiz = 12
     
+    allPower, allSignal, allFreqs=[], [], []
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
         cells, cellGids, netStimLabels = getCellsInclude([subset])
@@ -1197,12 +1208,17 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             signal = 10*np.log10(power[0])
         freqs = power[1]
 
+        allFreqs.append(freqs)
+        allPower.append(power)
+        allSignal.append(signal)
+
 
         plt.plot(freqs, signal, linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
         plt.xlim([0, (Fs/2)-1])
+        if ylim: plt.ylim(ylim)
 
     if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
         try:
@@ -1215,7 +1231,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         for i,subset in enumerate(include):
             color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
             plt.plot(0,0,color=color,label=str(subset))
-        plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+        plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
@@ -1238,14 +1254,14 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # show fig 
     if showFig: _showFigure()
 
-    return fig, power
+    return fig, allSignal, allPower, allFreqs
 
 
 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
-def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None,
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on',
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -1316,6 +1332,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(subGids),1,igid+1)
                         plt.ylabel(trace, fontsize=fontsiz)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.axis(axis)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
@@ -1348,6 +1365,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
+                    plt.axis(axis)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
@@ -1367,6 +1385,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         allPopGids = invertDictMapping(gidPops)
         for popLabel, popGids in allPopGids.iteritems():
             plotFigPerTrace(popGids)
+
 
     try:
         plt.tight_layout()
@@ -1594,6 +1613,7 @@ def plotLFP ():
     plt.ylabel('Power')
     h=plt.axes()
     h.set_yticklabels([])
+
 
     plt.show()
 

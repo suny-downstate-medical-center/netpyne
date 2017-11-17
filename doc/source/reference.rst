@@ -672,7 +672,7 @@ Related to the simulation and netpyne framework:
 * **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **cvode_active** - Use CVode variable time step (default: False)
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
-* **createNEURONObj** - Create HOC objects when instantiating network (default: True)
+* **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
 * **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)

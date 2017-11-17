@@ -12,8 +12,6 @@ import importlib
 
 h.load_file("stdrun.hoc") 
 
-
-
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
 

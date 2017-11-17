@@ -8,11 +8,23 @@
 
 - Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
 
+- Added analysis.calculateRate() func to calculate avg and peak rate of pop subset at time range
+
+- Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
+
 - Added cfg.compactConnFormat option to replace conns dict format with compact list format 
 
 - Added option to plotConn() and plot2Dnet() to load data from compact format json files 
 
 - Adapted python2 code so conversion to python3 via 2to3 command works straight away
+
+- Added 'instantiate' argument to sim.load function
+
+- Added 'dpi' argument to analysis.plotSpikeHist()
+
+- Replaced init() with stdinit() so h.v_init gets set
+
+- Fixed issue setting global variables when loading from json
 
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 

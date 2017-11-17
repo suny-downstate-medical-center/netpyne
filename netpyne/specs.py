@@ -16,6 +16,7 @@ class Dict(dict):
 
     __slots__ = []
 
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -60,6 +61,7 @@ class Dict(dict):
                 raise AttributeError(k)
         else:
             object.__delattr__(self, k)
+
 
     def todict(self):
         return self.undotify(self)
@@ -242,7 +244,7 @@ class PopParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -256,14 +258,18 @@ class CellParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        success = self.__rename__(old, new, label)
 
-        # special case: renaming cellParams[x]['secs'] requires updating topology
-        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
-            d = self[label[0]]
-            for sec in d['secs'].values():  # replace appearences in topol
-                if sec['topol'].get('parentSec') == old: 
-                    sec['topol']['parentSec'] = new
+        try:
+            # special case: renaming cellParams[x]['secs'] requires updating topology
+            if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
+                d = self[label[0]]
+                for sec in d['secs'].values():  # replace appearences in topol
+                    if sec['topol'].get('parentSec') == old: 
+                        sec['topol']['parentSec'] = new
+            return success
+        except:
+            return False
 
 
 class ConnParams (ODict):
@@ -278,7 +284,7 @@ class ConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SynMechParams (ODict):
@@ -293,7 +299,7 @@ class SynMechParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SubConnParams (ODict):
@@ -308,7 +314,7 @@ class SubConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimSourceParams (ODict):
@@ -323,7 +329,7 @@ class StimSourceParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimTargetParams (ODict):
@@ -338,7 +344,7 @@ class StimTargetParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 ###############################################################################
@@ -615,7 +621,7 @@ class SimConfig (object):
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
-        self.createNEURONObj = True  # create HOC objects when instantiating network
+        self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim

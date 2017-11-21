@@ -16,7 +16,7 @@ from neuron import h
 from netpyne import utils
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', 'cylinder']
-POP_NUMCELLS_PARAMS = ['density', 'numCells', 'gridSpacing']
+POP_NUMCELLS_PARAMS = ['density', 'numCells', 'gridSpacing', 'cellsList']
 VALID_GEOMETRIES = ['cm', 'L', 'diam', 'Ra', 'pt3d', 'nseg']
 VALID_GEOMETRIES_SUBSET = ['L', 'diam', 'Ra']
 PT_3D = 'pt3d'

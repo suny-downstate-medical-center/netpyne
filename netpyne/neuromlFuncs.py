@@ -1235,7 +1235,7 @@ if neuromlExists:
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
-    def importNeuroML2(fileName, simConfig):
+    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
 
         import sim
 
@@ -1371,14 +1371,18 @@ if neuromlExists:
         #conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
         simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-        sim.runSim()                      # run parallel Neuron simulation  
-        sim.gatherData()                  # gather spiking data and cell info from each node
-        sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
-        sim.analysis.plotData()               # plot spike raster
-        '''
-        h('forall psection()')
-        h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
-        h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
-        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
+        
+        if simulate:
+            sim.runSim()                      # run parallel Neuron simulation  
+            sim.gatherData()                  # gather spiking data and cell info from each node
+
+        if analyze:
+            sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+            sim.analysis.plotData()               # plot spike raster
+            '''
+            h('forall psection()')
+            h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
+            h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
+            h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids

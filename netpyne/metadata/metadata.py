@@ -126,6 +126,9 @@ metadata = {
         "help": "",
         "hintText": "",
         "children": {
+            "simLabel":{
+                "label": "Name of Simulation"
+            },
             "duration": {
                 "label": "Duration",
             },
@@ -177,7 +180,7 @@ metadata = {
             "saveDat": {
                 "label": "Save Dat",
             },
-            "saveCsv": {
+            "saveCSV": {
                 "label": "Save Csv",
             },
             "saveCellSecs": {
@@ -186,9 +189,16 @@ metadata = {
             "saveCellConns": {
                 "label": "Save Cell Conns",
             },
-            "checkError": {
+            "checkErrors": {
                 "label": "Check Errors",
             },
+            "checkErrorsVerbose": {
+                "label": "Check Errors Verbose",
+            },
+            "backupCfgFile": {
+                "label": "Copy of CFG file"
+            }
+            
         }
     }
 }

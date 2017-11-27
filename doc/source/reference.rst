@@ -668,7 +668,7 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'clamp_resist': 0.001})
+* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})
 * **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **cvode_active** - Use CVode variable time step (default: False)
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})

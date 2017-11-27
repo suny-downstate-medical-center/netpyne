@@ -893,7 +893,10 @@ def setGlobals ():
                         print "\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
                 else:
                     print "\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
-           
+    
+    # add tstop as global (for ease of transition with standard NEURON)
+    cellGlobs['tstop'] = sim.cfg.duration
+    
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:
         print '\nSetting h global variables ...'
@@ -936,9 +939,11 @@ def preRun ():
     # set h global params
     sim.setGlobals()
 
-    # time vars
+    # set h.dt
     h.dt = sim.cfg.dt
-    h.tstop = sim.cfg.duration
+
+    # set v_init if doesn't exist
+    if 'v_init' not in sim.cfg.hParams: sim.cfg.hParams['v_init'] = -65.0
 
     # parallelcontext vars
     sim.pc.set_maxstep(10)
@@ -988,8 +993,10 @@ def runSim ():
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
-    h.stdinit()
-    h.dt = sim.cfg.dt
+    
+    h.finitialize(float(sim.cfg.hParams['v_init']))
+    #h.stdinit()
+    #h.dt = sim.cfg.dt
 
     if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)

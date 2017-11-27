@@ -10,7 +10,7 @@ from numbers import Number
 from neuron import h
 import importlib
 
-h.load_file("stdrun.hoc") 
+#h.load_file("stdrun.hoc") 
 
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}

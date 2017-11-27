@@ -896,7 +896,7 @@ def setGlobals ():
     
     # add tstop as global (for ease of transition with standard NEURON)
     cellGlobs['tstop'] = sim.cfg.duration
-    
+
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:
         print '\nSetting h global variables ...'
@@ -995,8 +995,6 @@ def runSim ():
     preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
-    #h.stdinit()
-    #h.dt = sim.cfg.dt
 
     if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)

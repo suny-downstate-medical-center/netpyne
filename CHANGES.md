@@ -22,9 +22,9 @@
 
 - Added 'dpi' argument to analysis.plotSpikeHist()
 
-- Replaced init() with h.stdinit() so h.v_init gets set
+- Replaced init()/h.stdinit() with finitialize() so h.v_init and h.dt get set properly
 
-- Set h.dt after calling h.stdinit() so it gets set
+- Removed call to h.stdrun() but made v_init a global in cfg.hParams and initialized h.tstop to cfg.duration
 
 - Fixed issue setting global variables when loading from json
 

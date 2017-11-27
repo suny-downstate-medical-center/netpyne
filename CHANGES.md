@@ -26,6 +26,8 @@
 
 - Removed call to h.stdrun() but made v_init a global in cfg.hParams and initialized h.tstop to cfg.duration
 
+- Fixed bug setting globals that don't exist
+
 - Fixed issue setting global variables when loading from json
 
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)

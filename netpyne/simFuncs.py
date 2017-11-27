@@ -895,14 +895,14 @@ def setGlobals ():
                     print "\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v))
     
     # add tstop as global (for ease of transition with standard NEURON)
-    cellGlobs['tstop'] = sim.cfg.duration
+    cellGlobs['tstop'] = float(sim.cfg.duration)
 
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:
         print '\nSetting h global variables ...'
     for key,val in cellGlobs.iteritems():
         try:
-            setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+            h('%s=%s'%(key,val))
             if sim.cfg.verbose: print('  h.%s = %s' % (key, str(val)))
         except:
             print '\nError: could not set global %s = %s' % (key, str(val))

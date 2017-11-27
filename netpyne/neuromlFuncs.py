@@ -618,8 +618,7 @@ if neuromlExists:
                                    gen_saves_for_all_v = False,
                                    plot_all_segments = False, 
                                    gen_saves_for_only_populations = populations_vs_components.keys(),
-                                   save_all_segments = False,
-                                   seed=1234)
+                                   save_all_segments = False)
                                
                                
                 

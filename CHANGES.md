@@ -22,7 +22,9 @@
 
 - Added 'dpi' argument to analysis.plotSpikeHist()
 
-- Replaced init() with stdinit() so h.v_init gets set
+- Replaced init() with h.stdinit() so h.v_init gets set
+
+- Set h.dt after calling h.stdinit() so it gets set
 
 - Fixed issue setting global variables when loading from json
 

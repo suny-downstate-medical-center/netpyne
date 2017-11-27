@@ -990,7 +990,7 @@ def runSim ():
     preRun()
     h.stdinit()
     h.dt = sim.cfg.dt
-    
+
     if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
 

@@ -7287,6 +7287,20 @@ TypeError: 'AssertionError' object is not subscriptable
 ** solved
 was due to using getattr() instead of x.get() when setting global variables
 
+* 17Nov22 MPI error during gathering
+** forum link
+https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3770&sid=7945c6bfcb495b22a4b3e72c0850d885
+** testing
+tried on zn
+- 24 nodes gave error
+- trying with:
+simConfig.gatherOnlySimData = True
+simConfig.saveCellSecs = False
+simConfig.saveCellConns = False
+
+only a couple traces actually recorded so small simData -- maybe bug because empty?
+WORKED OK!
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials
@@ -7314,7 +7328,7 @@ Christian G. Fink, PhD
 Assistant Professor of Physics and Neuroscience
 Ohio Wesleyan University
 
-* Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
+** Learning, dendritic computations (Birgit Kriener, Einevoll lab, University of Oslo)
 ** Thalamocortical epilespy (Andrew Knox, Cincinatti)
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 
@@ -7327,6 +7341,8 @@ Ohio Wesleyan University
 ** CA1/CA3 (Mariane Bezaire, Boston University; Andras Ecker, HBP)
 ** EEG (Sam Neymotin, Boston)
 
+** Cerebellum (Sergio Solinas)
+** Cerebellum (Stefano Masoli, Univ Pavia)
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu
@@ -7359,6 +7375,8 @@ bwjmbb@mail.missouri.edu
 ali.taylor331@gmail.com
 aman.aberra@duke.edu
 marianne.bezaire@gmail.com
+smgsolinas@gmail.com
+bremen@fastwebnet.it
 
 * Related tools
 ** NEURON

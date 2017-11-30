@@ -2239,9 +2239,9 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "preConds"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for preConds not listed in pop parameters."]
+        testObj.messageText = ["ConnParams->'pop': Pop specified for preConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
+        self.testParamsMap["conn"]["preCondsPopTest"] = testObj
 
         # pop Labels test
         testObj = TestObj()
@@ -2249,9 +2249,9 @@ class SimTestObj(object):
         testObj.testParameterType = "string"
         testObj.testParameterValue = "postConds"
         testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for postConds not listed in pop parameters."]
+        testObj.messageText = ["ConnParams->'pop': Pop specified for postConds not listed in pop parameters."]
         testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
+        self.testParamsMap["conn"]["postCondsPopTest"] = testObj
 
         # condsTest test
         testObj = TestObj()

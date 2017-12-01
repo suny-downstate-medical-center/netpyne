@@ -193,6 +193,18 @@ def getCellsInclude(include):
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
+        elif isinstance(condition, list):
+            for subcond in condition:
+                if isinstance(subcond, int):  # cell gid 
+                    cellGids.append(subcond)
+        
+                elif isinstance(subcond, basestring):  # entire pop
+                    if subcond in allNetStimLabels:
+                        netStimLabels.append(subcond)
+                    else:
+                        cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
+
+
     cellGids = list(set(cellGids))  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])

@@ -11,12 +11,12 @@ netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 3, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 3, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 3, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 3, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 
 
 ## Cell property rules
@@ -71,10 +71,10 @@ simConfig.savePickle = False         # Save params, network and sim output to pi
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
 simConfig.saveJson=1
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotConn'] = True             # plot connectivity matrix
+#simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig.analysis['plotSpikeStats'] = {'include': [['E2','E4'], [15,16]]}      # Plot recorded traces for this list of cells
+#simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
+#simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

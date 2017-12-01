@@ -12,6 +12,8 @@
 
 - Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
 
+- Added option to include list of pops or cells in 'include' arguments e.g. include=[['E4','E2'], [1,3]]
+
 - Added cfg.compactConnFormat option to replace conns dict format with compact list format 
 
 - Added option to plotConn() and plot2Dnet() to load data from compact format json files 

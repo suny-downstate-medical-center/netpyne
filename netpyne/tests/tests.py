@@ -2233,25 +2233,25 @@ class SimTestObj(object):
 
         self.testParamsMap["conn"] = {}
 
-        # pop Labels test
-        testObj = TestObj()
-        testObj.testName = "popLabelsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "preConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'pop': Pop specified for preConds not listed in pop parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["preCondsPopTest"] = testObj
-
-        # pop Labels test
-        testObj = TestObj()
-        testObj.testName = "popLabelsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "postConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'pop': Pop specified for postConds not listed in pop parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["postCondsPopTest"] = testObj
+        # # pop Labels test
+        # testObj = TestObj()
+        # testObj.testName = "popLabelsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "preConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
+        # testObj.messageText = ["ConnParams->'pop': Pop specified for preConds not listed in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        # self.testParamsMap["conn"]["preCondsPopTest"] = testObj
+        #
+        # # pop Labels test
+        # testObj = TestObj()
+        # testObj.testName = "popLabelsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "postConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
+        # testObj.messageText = ["ConnParams->'pop': Pop specified for postConds not listed in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        # self.testParamsMap["conn"]["postCondsPopTest"] = testObj
 
         # condsTest test
         testObj = TestObj()

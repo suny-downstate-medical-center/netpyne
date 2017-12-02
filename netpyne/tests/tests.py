@@ -432,7 +432,7 @@ class TestTypeObj(object):
                             #assert geomValid is True
 
                             if PT_3D in values['geom']:
-                                if not isinstance ( values['geom'][PT_3D] , list ):
+                                if not isinstance ( values['geom'][PT_3D] , list ) and not isinstance ( values['geom'][PT_3D] , tuple ):
                                     errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': pt3D must be an array with each array element being a 4-element list or array of floats."
                                     geomValid = False
                                 elif len(values['geom'][PT_3D]) == 0:
@@ -444,7 +444,7 @@ class TestTypeObj(object):
                                 #assert geomValid is True
 
                                 for elem in values['geom'][PT_3D]:
-                                    if not isinstance ( elem , list ):
+                                    if not isinstance ( elem , list ) and not isinstance ( elem , tuple ):
                                         errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Type error. pt3D must be an array with each array element being a 4-element list or array of floats.Value specified is: '" + str(elem) + "'."
                                         geomValid = False
                                     elif len(elem) != 4:

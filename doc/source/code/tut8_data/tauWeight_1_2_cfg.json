@@ -1,0 +1,76 @@
+{
+    "simConfig": {
+        "addSynMechs": true, 
+        "analysis": {
+            "plotRaster": {
+                "saveFig": true
+            }, 
+            "plotTraces": {
+                "include": [
+                    20
+                ], 
+                "saveFig": true
+            }
+        }, 
+        "backupCfgFile": [], 
+        "cache_efficient": false, 
+        "checkErrors": false, 
+        "checkErrorsVerbose": false, 
+        "connWeight": 0.15, 
+        "createNEURONObj": true, 
+        "createPyStruct": true, 
+        "cvode_active": false, 
+        "cvode_atol": 0.001, 
+        "dt": 0.025, 
+        "duration": 1000.0, 
+        "filename": "tut8", 
+        "gatherOnlySimData": false, 
+        "hParams": {
+            "celsius": 6.3, 
+            "clamp_resist": 0.001
+        }, 
+        "includeParamsLabel": true, 
+        "printPopAvgRates": true, 
+        "printRunTime": false, 
+        "recordCells": [], 
+        "recordStep": 0.1, 
+        "recordStim": false, 
+        "recordTime": true, 
+        "recordTraces": {
+            "V_soma": {
+                "loc": 0.5, 
+                "sec": "soma", 
+                "var": "v"
+            }
+        }, 
+        "saveCSV": false, 
+        "saveCellConns": true, 
+        "saveCellSecs": true, 
+        "saveDat": false, 
+        "saveDataInclude": [
+            "netParams", 
+            "netCells", 
+            "netPops", 
+            "simConfig", 
+            "simData"
+        ], 
+        "saveDpk": false, 
+        "saveFolder": "tut8_data", 
+        "saveHDF5": false, 
+        "saveJson": true, 
+        "saveMat": false, 
+        "savePickle": false, 
+        "saveTiming": false, 
+        "seeds": {
+            "conn": 1, 
+            "loc": 1, 
+            "stim": 1
+        }, 
+        "simLabel": "tauWeight_1_2", 
+        "synMechTau2": 5.0, 
+        "timestampFilename": false, 
+        "timing": true, 
+        "tstop": 1000.0, 
+        "verbose": false
+    }
+}

@@ -1,3 +1,49 @@
+# Version 0.7.5
+
+- Improved NeuroML conversion support
+
+- Make cfg.checkErrors = True by default, but set to False if using multiple cores or batch
+
+- Added methods to rename netParams dict keys in a nested format (needed for GUI)
+
+- Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
+
+- Added analysis.calculateRate() func to calculate avg and peak rate of pop subset at time range
+
+- Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
+
+- Added option to include list of pops or cells in 'include' arguments e.g. include=[['E4','E2'], [1,3]]
+
+- Added cfg.compactConnFormat option to replace conns dict format with compact list format 
+
+- Added option to plotConn() and plot2Dnet() to load data from compact format json files 
+
+- Adapted python2 code so conversion to python3 via 2to3 command works straight away
+
+- Added 'instantiate' argument to sim.load function
+
+- Added 'dpi' argument to analysis.plotSpikeHist()
+
+- Replaced init()/h.stdinit() with finitialize() so h.v_init and h.dt get set properly
+
+- Removed call to h.stdrun() but made v_init a global in cfg.hParams and initialized h.tstop to cfg.duration
+
+- Fixed bug setting globals that don't exist
+
+- Fixed issue setting global variables when loading from json
+
+- Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
+
+- Fixed bug in colors of plotSpikeHist
+
+- Fixed bug in replaceDictODict() that lead to wrong results when importing cells
+
+- Fixed bug when using sim.gatherOnlySimData
+
+- Fixed bugs in saveLoadV1 example
+
+- Fixed bug when generating subConn with createNEURONObj=False
+
 # Version 0.7.4
 
 - Added polarity param to analysis.plotEPSPAmp() 
@@ -13,6 +59,7 @@
 - Fixed bug use int as argument to np.full in fixedInterval variable
 
 - Fixed bug that removed previously existing element from path during importCellParams()
+
 
 # Version 0.7.3
 

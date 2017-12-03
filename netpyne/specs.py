@@ -16,6 +16,7 @@ class Dict(dict):
 
     __slots__ = []
 
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -60,6 +61,7 @@ class Dict(dict):
                 raise AttributeError(k)
         else:
             object.__delattr__(self, k)
+
 
     def todict(self):
         return self.undotify(self)
@@ -195,6 +197,30 @@ class ODict(OrderedDict):
         else:
             return x
 
+    def __rename__(self, old, new, label=None):
+        '''
+        old (string): old dict key
+        new (string): new dict key
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
+        
+        returns: True if successful, False otherwse
+        '''
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+        
     def __getstate__ (self):
         return self.toOrderedDict()
 
@@ -216,6 +242,9 @@ class PopParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -228,6 +257,21 @@ class CellParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        success = self.__rename__(old, new, label)
+
+        try:
+            # special case: renaming cellParams[x]['secs'] requires updating topology
+            if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
+                d = self[label[0]]
+                for sec in d['secs'].values():  # replace appearences in topol
+                    if sec['topol'].get('parentSec') == old: 
+                        sec['topol']['parentSec'] = new
+            return success
+        except:
+            return False
+
+
 class ConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -238,6 +282,9 @@ class ConnParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
 
 
 class SynMechParams (ODict):
@@ -251,6 +298,10 @@ class SynMechParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
+
+
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -261,6 +312,9 @@ class SubConnParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
 
 
 class StimSourceParams (ODict):
@@ -274,6 +328,9 @@ class StimSourceParams (ODict):
 
         return True
 
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
+
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):
@@ -285,6 +342,9 @@ class StimTargetParams (ODict):
         d[param] = value
 
         return True
+
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
 
 
 ###############################################################################
@@ -407,6 +467,22 @@ class NetParams (object):
             self._labelid += 1
         self.stimTargetParams[label] = Dict(params)
 
+    # def rename(self, attr, old, new):
+    #     try:
+    #         obj = getattr(self, attr)
+    #     except:
+    #         print 'Error renaming: netParams does not contain %s' % (attr)
+    #         return False
+
+    #     if old not in obj:
+    #         print 'Error renaming: netParams.%s rule does not contain %s' % (attribute, old)
+    #         return False
+
+    #     obj[new] = obj.pop(old)  # replace
+
+    #     return True
+
+
     def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label:
@@ -480,19 +556,7 @@ class NetParams (object):
 
 
     def renameCellParamsSec(self, label, oldSec, newSec):
-        if label in self.cellParams:
-            cellRule = self.cellParams[label]
-        else:
-            print 'Error renaming section: netParams.cellParams does not contain %s' % (label)
-            return
-
-        if oldSec not in cellRule['secs']:
-            print 'Error renaming section: cellRule does not contain section %s' % (label)
-            return
-
-        cellRule['secs'][newSec] = cellRule['secs'].pop(oldSec)  # replace sec name
-        for sec in cellRule['secs'].values():  # replace appearences in topol
-            if sec['topol'].get('parentSec') == oldSec: sec['topol']['parentSec'] = newSec
+        self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
@@ -552,16 +616,19 @@ class SimConfig (object):
         # Simulation parameters
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
-        self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module
+        self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
-        self.createNEURONObj = True  # create HOC objects when instantiating network
+        self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
+        self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
+        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
@@ -589,11 +656,9 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
-        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
-        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters
+        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

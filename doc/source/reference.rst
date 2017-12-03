@@ -668,18 +668,20 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'clamp_resist': 0.001})
+* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})
 * **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **cvode_active** - Use CVode variable time step (default: False)
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
-* **createNEURONObj** - Create HOC objects when instantiating network (default: True)
+* **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
-* **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
-* **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
-* **printPopAvgRates** - Print population avg firing rates after run (default: False)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
+* **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
+* **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
+* **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
+* **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
+* **printPopAvgRates** - Print population avg firing rates after run (default: False)
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
@@ -782,7 +784,7 @@ Misc/utilities:
 
 * **sim.cellByGid()**
 * **sim.version()**
-* **sim.gitversion()**
+* **sim.gitChangeset()**
 
 
 .. _analysis_functions:
@@ -828,7 +830,23 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handle
-    
+
+
+* **analysis.plotSpikeStats** (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], popColors = [], figSize = (6,8), saveData = None, saveFig = None, showFig = True)
+     
+    Plot spike histogram. Optional arguments:
+
+    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *graphType*: Type of graph to use  ('boxplot')
+    - *stats*: List of types measure to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (['rate', |'isicv'| 'pairsync' |'sync'|])
+    - *popColors*: Dictionary with color (value) used for each population/key 
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
+    - *saveFig*: File name where to save the figure (None|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handle    
 
 * **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      
@@ -1001,6 +1019,9 @@ The figure show usage examples for the different analysis functions:
 	:width: 90%
 	:align: center
 
+.. image:: figs/spikestats.png
+	:width: 90%
+	:align: center
 
 
 .. _network_methods:

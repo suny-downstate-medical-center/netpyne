@@ -8,9 +8,9 @@ Contributors: salvador dura@gmail.com
 import os, sys
 from numbers import Number
 from neuron import h
-h.load_file("stdrun.hoc") 
+import importlib
 
-
+#h.load_file("stdrun.hoc") 
 
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
@@ -43,7 +43,7 @@ def importCellParams (fileName, labels, values, key = None):
             else:
                 removeFilePath = False
             moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-            exec('import '+ moduleName + ' as tempModule') in locals() # import module dynamically
+            tempModule = importlib.import_module(moduleName)
             modulePointer = tempModule
             paramLabels = getattr(modulePointer, labels) # tuple with labels
             paramValues = getattr(modulePointer, values)  # variable with paramValues
@@ -173,7 +173,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         else:
             removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
-        exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+        tempModule = importlib.import_module(moduleName)
         modulePointer = tempModule
         if isinstance(cellArgs, dict):
             cell = getattr(modulePointer, cellName)(**cellArgs) # create cell using template, passing dict with args
@@ -205,7 +205,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
 
 def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
     h.initnrn()
-
+    
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print 'Importing from .hoc network not yet supported'
@@ -228,7 +228,7 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         print '\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName)
         from neuron import load_mechanisms
         load_mechanisms(filePath)
-        exec('import ' + moduleName + ' as tempModule') in globals(), locals() # import module dynamically
+        tempModule = importlib.import_module(moduleName)
         modulePointer = tempModule
         if removeFilePath: sys.path.remove(filePath)
     else:
@@ -239,14 +239,16 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         print '\nImporting %s from %s ...'%(cellName, fileName)
         exec('cell = tempModule' + '.' + cellName)
         #cell = getattr(modulePointer, cellName) # get cell object
-        secs, secLists, synMechs = getCellParams(cell)
+        varList = mechVarList()
+        origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
+        secs, secLists, synMechs = getCellParams(cell, varList, origGlob)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
         netParams.addCellParams(label, cellRule)
         if importSynMechs:
             for synMech in synMechs: netParams.addSynMechParams(synMech.pop('label'), synMech)
 
 
-def getCellParams(cell, varList, origGlob):
+def getCellParams(cell, varList={}, origGlob={}):
     dirCell = dir(cell)
 
     if 'all_sec' in dirCell:
@@ -489,6 +491,6 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + ",\n'weight': " + str(weight)  # write prob
                 line = line + "})"  # add closing brackets
                 line = line + '\n\n' # new line after each conn rule
-                sim.write(line)  # write to file
+                f.write(line)  # write to file
                 
         

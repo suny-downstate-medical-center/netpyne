@@ -20,12 +20,14 @@ except:
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-import sim, specs
+import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
 def _convertNetworkRepresentation (net, gids_vs_pop_indices):
+
+    import sim
 
     nn = {}
 
@@ -120,6 +122,8 @@ if neuromlExists:
     ############################################################################### 
     def _export_synapses (net, nml_doc):
 
+        import sim
+
         syn_types = {}
         for id,syn in net.params.synMechParams.iteritems():
             syn_types[id]=syn['mod']
@@ -197,6 +201,8 @@ if neuromlExists:
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
     def exportNeuroML2 (reference, connections=True, stimulations=True):
+
+        import sim
 
         net = sim.net
         
@@ -612,8 +618,7 @@ if neuromlExists:
                                    gen_saves_for_all_v = False,
                                    plot_all_segments = False, 
                                    gen_saves_for_only_populations = populations_vs_components.keys(),
-                                   save_all_segments = False,
-                                   seed=1234)
+                                   save_all_segments = False)
                                
                                
                 
@@ -1230,7 +1235,9 @@ if neuromlExists:
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
-    def importNeuroML2(fileName, simConfig):
+    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
+
+        import sim
 
         netParams = specs.NetParams()
 
@@ -1364,14 +1371,18 @@ if neuromlExists:
         #conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
         simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-        sim.runSim()                      # run parallel Neuron simulation  
-        sim.gatherData()                  # gather spiking data and cell info from each node
-        sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
-        sim.analysis.plotData()               # plot spike raster
-        '''
-        h('forall psection()')
-        h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
-        h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
-        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
+        
+        if simulate:
+            sim.runSim()                      # run parallel Neuron simulation  
+            sim.gatherData()                  # gather spiking data and cell info from each node
+
+        if analyze:
+            sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+            sim.analysis.plotData()               # plot spike raster
+            '''
+            h('forall psection()')
+            h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
+            h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
+            h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids

@@ -737,4 +737,156 @@ The full tutorial code for this example is available here: :download:`tut7.py <c
 
 An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
+
+Running batch simulations (Tutorial 8)
+--------------------------------------------
+
+Here we are going to illustrate how to run batch simulations using the simple network in Tutorial 2. By batch simulations we mean modifying some parameter values within a given range and automatically running simulations for all combinations of these parameter values (also known as grid parameter search).
+
+The first thing we need to do is break up the tut2.py code into three different files -- although not needed for such small models, this will be very helpful for more complex and large models. The file organization should be as follows (click on filename to download):
+
+* :download:`tut8_netParams.py <code/tut8_netParams.py>` : Defines the network model (netParams object). Includes "fixed" parameter values of cells, synapses, connections, stimulation, etc. Changes to this file should only be made for relatively stable improvements of the model. Parameter values that will be varied systematically to explore or tune the model should be included here by referencing the appropiate variable in the simulation configuration (cfg) module. Only a single netParams file is required for each batch of simulations.
+
+* :download:`tut8_cfg.py <code/tut8_cfg.py>` : Simulation configuration (simConfig object). Includes parameter values for each simulation run such as duration, dt, recording parameters etc. Also includes the model parameters that are being varied to explore or tune the network. When running a batch, NetPyNE will automatically create one cfg file for each parameter configuration (using this one as a starting point).
+
+* :download:`tut8_init.py <code/tut8_init.py>` : Sequence of commands to run a single simulation. Can be executed via 'python init.py'. When running a batch, NetPyNE will call init.py multiple times, pass a different cfg file for each of the parameter configurations explored. 
+
+We will also need to add a new file to control the batch simulation:
+
+* :download:`tut8_batch.py <code/tut8_batch.py>` : Defines the parameters and parameter values to be explored in a batch of simulations, the run configuration -- e.g. whether to use MPI+Bulletin Board (for multicore machines) or SLURM/PBS Torque (for HPCs) --, and the command to run the batch.
+
+In summary, **netParams.py** for fixed (network) parameters, **cfg.py** for variable (simulation) parameters, **init.py** to run a simulation, and **batch.py** to run a batch of simulations exploring combinations of parameter values.
+
+Lets say we want to explore how the connection weight and the synaptic decay time constant affect the firing rate of the motor population. The first step would be to modify ``tut8_netParams.py`` so these parameters are variable, i.e. change in each simulation. Therefore, we will change them from having fixed values (e.g. 5.0 and 0.01) to depending on a variable from simConfig: ``cfg.synMechTau2`` and ``cfg.connWeight`` (note that for simplicity we renamed ``simConfig`` to ``cfg``)::
+
+	... 
+	
+	## Synaptic mechanism parameters
+	netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': cfg.synMechTau2, 'e': 0}  # excitatory synaptic mechanism
+
+	... 
+
+	## Cell connectivity rules
+	netParams.connParams['S->M'] = { 	#  S -> M label
+		'preConds': {'pop': 'S'}, 	# conditions of presyn cells
+		'postConds': {'pop': 'M'}, # conditions of postsyn cells
+		'probability': 0.5, 			# probability of connection
+		'weight': cfg.connWeight, 		# synaptic weight
+		'delay': 5,						# transmission delay (ms)
+		'synMech': 'exc'}   			# synaptic mechanism
+
+Therefore, this also requires changing  ``tut8_netParams.py`` to import the ``cfg`` module so that these 2 variables are available. The code will first attempt to load the ``cfg`` module from ``__main__``, which refers to the parent module which was initially executed by the user, in this case, ``tut8_init.py``. As mentioned before, ``tut8_init.py`` is responsible for loading both ``netParams`` and ``cfg`` and running the simulation. If that fails, the code will load ``cfg`` directly from the ``tut8_cfg.py`` file. To implement this we will add the following lines at the beginning of ``tut8_netParams.py``::
+
+	try:
+		from __main__ import cfg  # import SimConfig object with params from parent module
+	except:
+		from tut8_cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
+
+The next step is to add these two variables to the ``tut8_cfg.py`` so that they exist and can be used by netParams and modified in the batch simulation::
+
+	# Variable parameters (used in netParams)
+	cfg.synMechTau2 = 50
+	cfg.connWeight = 0.01
+
+Note we will also add to ``tut8_cfg.py`` the following line so that the average firing rates of each populations are printed in screen and saved to the output file::
+
+	cfg.printPopAvgRates = True
+
+
+The ``tut8_init.py`` will contain only three lines, and just one new line compared to ``tut2.py``. This new line calls the method ``readCmdLineArgs`` which takes care of reading arguments from the command line. This is required to run the batch simulations, since NetPyNE will create multiple cfg files with the different parameter combinations and run them using command line arguments of the form: ``python tut8_init.py simConfig=filepath netParams=filepath``. You do not need to worry about this, since this is done behind the scenes by NetPyNE. The ``tut8_init.py`` should look like this::
+
+	from netpyne import sim
+
+	# read cfg and netParams from command line arguments if available; otherwise use default
+	simConfig, netParams = sim.readCmdLineArgs(simConfigDefault='tut8_cfg.py', netParamsDefault='tut8_netParams.py')			
+
+	# Create network and run simulation
+	sim.createSimulateAnalyze(netParams=netParams, simConfig=simConfig)
+
+At this point you can run the simulation using e.g. ``python tut8_init.py`` and it should produce the same result as in Tutorial 2 (``tut2.py``).
+
+Now we will add the ``tut8_batch.py`` which contains all the information related to the batch simulations. We have defined a function ``batchTauWeight`` to explore this specific combination of parameters. We could later define other similar functions to create other batches. 
+
+The first thing we do is create an ordered dictionary ``params`` -- this will be of a special NetPyNE type (``specs.ODict``) but it essentially behaves like an ordered dictionary. Next we add the parameters to explore as keys of this dictionary -- ``synMechTau2`` and ``connWeight`` -- and add the list of parameter values to try in the batch simulation as the dictionary keys -- ``[3.0, 5.0, 7.0]`` and ``[0.005, 0.01, 0.15]``. Note that parameter names should coincide with the variables defined in ``cfg``.
+
+We then create an object ``b`` of the NetPyNE class ``Batch`` and pass as arguments the parameters to explore, and the files containing the netParams and simConfig modules. Finally, we customize some attributes of the ``Batch`` object, including the the batch label (``'tauWeight'``), used to create the output file; the folder where to save the data (``'tut8_data'``), the method used to explore parameters (``'grid'``), meaning all combinations of the parameter values; and the run configuration indicating we want to use ``'mpi'`` (this uses MPI and NEURON's Bulletin Board; other options are available for supercomputers), the ``'tut8_init.py'`` to run each sims, and to ``'skip'`` runs if the output files already exist. 
+
+At the end we just need to add the command to launch the batch simulation: ``b.run()``.
+
+The ``tut8_batch.py`` should look like this::
+ 
+
+	from netpyne import specs
+	from netpyne.batch import Batch 
+
+	def batchTauWeight():
+		# Create variable of type ordered dictionary (NetPyNE's customized version) 
+		params = specs.ODict()   
+
+		# fill in with parameters to explore and range of values (key has to coincide with a variable in simConfig) 
+		params['synMechTau2'] = [3.0, 5.0, 7.0]   
+		params['connWeight'] = [0.005, 0.01, 0.15]
+
+		# create Batch object with paramaters to modify, and specifying files to use
+		b = Batch(params=params, cfgFile='tut8_cfg.py', netParamsFile='tut8_netParams.py',)
+		
+		# Set output folder, grid method (all param combinations), and run configuration
+		b.batchLabel = 'tauWeight'
+		b.saveFolder = 'tut8_data'
+		b.method = 'grid'
+		b.runCfg = {'type': 'mpi', 
+					'script': 'tut8_init.py', 
+					'skip': True}
+
+		# Run batch simulations
+		b.run()
+
+	# Main code
+	if __name__ == '__main__':
+		batchTauWeight() 
+
+To run the batch simulations you will need to have MPI properly installed and NEURON configured to use MPI. Run the following command: ``mpiexec -np [num_cores] nrniv -python -mpi batch.py`` , where ``[num_cores]`` should be replaced with the number of processors you want to use. The minimum required is 2, since one will be uses to schedule the jobs (master node); e.g. if you select 4 processors, one will be used to schedule jobs, and the other 3 will run NEURON simulations with different parameter combinations. 
+
+Once the simulations are completed you should have a new folder ``tut8_data`` with the following files:
+
+* **tauWeight_netParams.py**: a copy of the original netParams file used (``tut8_netParams.py``)
+
+* **tauWeight_batchScript.py**:  a copy of the original batch file used (``tut8_batch.py``)
+
+* **tauWeight_batch.json**: a JSON file with the batch parameters and run option used.
+
+* For each combination of parameters (with x,y representing the indices of the parameter values):
+	
+	* **tauWeight_x_y_cfg.json**: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
+
+	* **tauWeight_x_y.json**: JSON file with the output data for this combination of batch parameters; output data will contain by default the ``netParams``, ``net``, ``simConfig`` and ``simData``.
+
+	* **tauWeight_x_y_raster.png** and **tauWeight_x_y_traces.png**: output figures for this combination of parameters.
+
+
+To analyze the output data you can download :download:`tut8_analysis.py <code/tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulation results. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. IMPORTANT: The analysis functions (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
+
+Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameter explored and the firing rate of the ``M`` populations:
+
+.. image:: figs/tut8_analysis.png
+	:width: 50%
+
+Notice how the rate initially increases as a function of connection weight, but then decreases due to depolarization blockade; and how the effect of the synaptic time decay constant (synMechTau2) depends on whether the cell is spiking normally or in blockade. Batch simulations and analyses facilitate exploration and understanding of these complex interactions.   
+
+.. note:: For the more advanced users, this is what NetPyNE does under the hood when you run a batch:
+
+	1) Copy netParams.py (or whatever file is specified) to batch data folder
+	
+	2) Load cfg (SimConfig object) from cfg.py (or whatever file is specified)
+	
+	3) Iterate parameter combinations:
+ 	
+ 		3a) Modify cfg (SimConfig object) with the parameter values
+ 	
+ 		3b) Save cfg to .json file
+ 	
+ 		3c) Run simulation by passing netParams.py and cfg.json files as arguments; this means the code in netParams.py is executed each time but cfg is just a set of fixed saved values.
+
+.. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.
+
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

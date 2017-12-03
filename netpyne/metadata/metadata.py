@@ -115,6 +115,44 @@ metadata = {
                                 "hintText": "",
                             },
                         }
+                    },
+                    "secs": {
+                        "label": "Secs",
+                        "suggestions": "",
+                        "help": "",
+                        "hintText": "",
+                        "children": {
+                            "geom": {
+                                "label": "Cell Type",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "diam": {
+                                        "label": "Diameter",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "L": {
+                                        "label": "Length",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "Ra": {
+                                        "label": "Ra",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                }
+                            }
+                           
+                        }
                     }
                 }
             }

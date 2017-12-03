@@ -432,7 +432,7 @@ class TestTypeObj(object):
                             #assert geomValid is True
 
                             if PT_3D in values['geom']:
-                                if not isinstance ( values['geom'][PT_3D] , list ):
+                                if not isinstance ( values['geom'][PT_3D] , list ) and not isinstance ( values['geom'][PT_3D] , tuple ):
                                     errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': pt3D must be an array with each array element being a 4-element list or array of floats."
                                     geomValid = False
                                 elif len(values['geom'][PT_3D]) == 0:
@@ -444,7 +444,7 @@ class TestTypeObj(object):
                                 #assert geomValid is True
 
                                 for elem in values['geom'][PT_3D]:
-                                    if not isinstance ( elem , list ):
+                                    if not isinstance ( elem , list ) and not isinstance ( elem , tuple ):
                                         errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom' -> 'pt3D':Type error. pt3D must be an array with each array element being a 4-element list or array of floats.Value specified is: '" + str(elem) + "'."
                                         geomValid = False
                                     elif len(elem) != 4:
@@ -2233,25 +2233,25 @@ class SimTestObj(object):
 
         self.testParamsMap["conn"] = {}
 
-        # pop Labels test
-        testObj = TestObj()
-        testObj.testName = "popLabelsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "preConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for preConds not listed in pop parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["preCondsPopLabelsTest"] = testObj
-
-        # pop Labels test
-        testObj = TestObj()
-        testObj.testName = "popLabelsTest"
-        testObj.testParameterType = "string"
-        testObj.testParameterValue = "postConds"
-        testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
-        testObj.messageText = ["ConnParams->'popLabel': Pop label specified for postConds not listed in pop parameters."]
-        testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
-        self.testParamsMap["conn"]["postCondsPopLabelsTest"] = testObj
+        # # pop Labels test
+        # testObj = TestObj()
+        # testObj.testName = "popLabelsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "preConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
+        # testObj.messageText = ["ConnParams->'pop': Pop specified for preConds not listed in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        # self.testParamsMap["conn"]["preCondsPopTest"] = testObj
+        #
+        # # pop Labels test
+        # testObj = TestObj()
+        # testObj.testName = "popLabelsTest"
+        # testObj.testParameterType = "string"
+        # testObj.testParameterValue = "postConds"
+        # testObj.testTypes = [TEST_TYPE_EXISTS_IN_POP]
+        # testObj.messageText = ["ConnParams->'pop': Pop specified for postConds not listed in pop parameters."]
+        # testObj.errorMessageLevel = [MESSAGE_TYPE_WARNING]
+        # self.testParamsMap["conn"]["postCondsPopTest"] = testObj
 
         # condsTest test
         testObj = TestObj()

@@ -518,16 +518,19 @@ class CompartCell (Cell):
         for conn in self.conns:
             # set postsyn target
             synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+
             if not synMech: 
                 synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
                 #continue  # go to next conn
+
             try:
                 postTarget = synMech['hSyn']
             except:
                 print '\nError: no synMech available for conn: ', conn
                 print ' cell tags: ',self.tags
                 print ' cell synMechs: ',self.secs[conn['sec']]['synMechs']
-                exit()
+                import sys
+                sys.exit()
 
             # create NetCon
             if conn['preGid'] == 'NetStim':

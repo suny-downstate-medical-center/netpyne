@@ -40,6 +40,9 @@
 
 - Fixed bug when using sim.gatherOnlySimData
 
+- Fixed bugs in saveLoadV1 example
+
+- Fixed bug when generating subConn with createNEURONObj=False
 
 # Version 0.7.4
 

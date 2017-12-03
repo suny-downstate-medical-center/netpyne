@@ -1333,7 +1333,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 12
+            fontsiz = 2
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]

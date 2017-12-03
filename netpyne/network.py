@@ -555,11 +555,12 @@ class Network (object):
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
             cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
-            for cell in cellsUpdate:
-                # Add synMechs, stim and conn NEURON objects
-                cell.addStimsNEURONObj()
-                #cell.addSynMechsNEURONObj()
-                cell.addConnsNEURONObj()
+            if sim.cfg.createNEURONObj:
+                for cell in cellsUpdate:
+                    # Add synMechs, stim and conn NEURON objects
+                    cell.addStimsNEURONObj()
+                    #cell.addSynMechsNEURONObj()
+                    cell.addConnsNEURONObj()
 
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
         nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   

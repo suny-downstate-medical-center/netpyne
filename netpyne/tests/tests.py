@@ -1133,11 +1133,15 @@ class TestTypeObj(object):
 
                         if 'orderBy' in plotRaster:
 
-                            if not isinstance( plotRaster['orderBy'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
-                            else:
-                                if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+                            # if not isinstance( plotRaster['orderBy'], list):
+                            #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+                            # else:
+                                # if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
+                                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+
+                            if plotRaster['orderBy'] not in ['gid', 'ynorm', 'y']:
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+
 
                         if 'orderInverse' in plotRaster:
 

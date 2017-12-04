@@ -53,18 +53,18 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 ## Cell connectivity rules
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
-  'probability': 0.1 ,                  # probability of connection
+  'convergence': 10 ,                  # probability of connection
   'weight': '0.005*post_ynorm',         # synaptic weight 
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'}                     # synaptic mechanism 
 
-netParams.connParams['I->E'] = {
-  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
-  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.001,   
-  'sec': ['soma', 'dend_1', 'dend_2'],                                   # synaptic weight 
-  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-  'synMech': 'inh'}                                     # synaptic mechanism 
+# netParams.connParams['I->E'] = {
+#   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
+#   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+#   'weight': 0.001,   
+#   'sec': ['soma', 'dend_1', 'dend_2'],                                   # synaptic weight 
+#   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
+#   'synMech': 'inh'}                                     # synaptic mechanism 
 
 
 # Simulation options

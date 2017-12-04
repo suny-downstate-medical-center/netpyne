@@ -1,7 +1,8 @@
 # Version 0.7.6
 
-- Fied bug in IClamp: 'delay' -> 'del'
+- Fixed bug in IClamp: 'delay' -> 'del'
 
+- Fixed bug calculating min convergece and divergence
 
 # Version 0.7.5
 

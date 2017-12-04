@@ -1470,6 +1470,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
     import sim
     from neuron import h, gui
 
+    print('Plotting 3D cell shape ...')
+
     if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
         from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox

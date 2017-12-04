@@ -586,7 +586,7 @@ Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a
 
 		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
 
-	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
+	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'del', 'dur' and 'amp')
 
 		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
@@ -623,7 +623,7 @@ The code below shows an example of how to create different types of stimulation 
 	# Stimulation parameters
 
 	## Stimulation sources parameters
-	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'del': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
 
 	netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
 

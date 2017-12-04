@@ -1,3 +1,8 @@
+# Version 0.7.6
+
+- Fied bug in IClamp: 'delay' -> 'del'
+
+
 # Version 0.7.5
 
 - Improved NeuroML conversion support

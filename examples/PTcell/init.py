@@ -1,7 +1,7 @@
 """
 init.py
 
-Starting script to run NetPyNE-based M1 model.
+Starting script to run NetPyNE-based PT model.
 
 Usage:
     python init.py # Run simulation, optionally plot a raster

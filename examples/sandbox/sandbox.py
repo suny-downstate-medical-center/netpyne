@@ -24,6 +24,13 @@ cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['dend_1'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['dend_1']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+cellRule['secs']['dend_1']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['dend_2'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['dend_2']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+cellRule['secs']['dend_2']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+
 netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
 
 cellRule = {'conds': {'cellType': 'I'},  'secs': {}}  # cell rule dict
@@ -54,7 +61,8 @@ netParams.connParams['E->all'] = {
 netParams.connParams['I->E'] = {
   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.001,                                      # synaptic weight 
+  'weight': 0.001,   
+  'sec': ['soma', 'dend_1', 'dend_2'],                                   # synaptic weight 
   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
   'synMech': 'inh'}                                     # synaptic mechanism 
 

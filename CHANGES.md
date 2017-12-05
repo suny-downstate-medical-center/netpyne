@@ -1,8 +1,13 @@
 # Version 0.7.6
 
+- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
+
+- Fixed bug loading from compactConnFormat
+
 - Fixed bug in IClamp: 'delay' -> 'del'
 
 - Fixed bug calculating min convergece and divergence
+
 
 # Version 0.7.5
 

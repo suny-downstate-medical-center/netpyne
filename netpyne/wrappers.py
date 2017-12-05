@@ -80,12 +80,13 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 ###############################################################################
 # Wrapper to load all, ready for simulation
 ###############################################################################
-def load (filename, simConfig=None, output=False, instantiate=True):
+def load (filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
     ''' Sequence of commands load, simulate and analyse network '''
     import sim
     sim.initialize()  # create network object and set cfg and net params
-    sim.loadAll(filename, instantiate=instantiate)
-    if simConfig: sim.setSimCfg(simConfig)
+    sim.cfg.createNEURONObj = createNEURONObj
+    sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
+    if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
     if len(sim.net.cells) == 0 and instantiate:
         pops = sim.net.createPops()                  # instantiate network populations
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations

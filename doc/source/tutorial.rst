@@ -77,7 +77,7 @@ We begin with an overview of the Python objects where you will define all your n
 Network parameters (Tutorial 2)
 -------------------------------
 
-The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 6 ordered dictionaries:
+The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 7 ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 

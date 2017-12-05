@@ -176,7 +176,8 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
         if sim.rank == 0:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
-            if compactConnFormat: compactToLongConnFormat(data['net']['cells'], compactConnFormat)
+            if compactConnFormat: 
+                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
             sim.net.allPops = data['net']['pops']
             sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -195,7 +196,13 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
                     # TO DO: assumes CompartCell -- add condition to load PointCell
                     cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
                     try:
-                        cell.secs = Dict(cellLoad['secs'])
+                        if sim.cfg.saveCellSecs:
+                            cell.secs = Dict(cellLoad['secs'])
+                        else:
+                            createNEURONObjorig = sim.cfg.createNEURONObj
+                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
+                            cell.create()
+                            sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
                         if sim.cfg.verbose: ' Unable to load cell secs'
 
@@ -275,13 +282,18 @@ def loadSimData (filename, data=None):
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename, data=None, instantiate=True):
+def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
     import sim 
 
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
+    sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
-    if hasattr(sim.cfg, 'compactConnFormat'): connFormat = sim.cfg.compactConnFormat
+    if hasattr(sim.cfg, 'compactConnFormat'): 
+        connFormat = sim.cfg.compactConnFormat
+    else:
+        print 'Error: no connFormat provided in simConfig'
+        sys.exit()
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
@@ -1606,7 +1618,11 @@ def compactConnFormat():
     import sim
 
     if type(sim.cfg.compactConnFormat) is not list:
-        sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+        if len(sim.net.params.stimTargetParams) > 0:  # if have stims, then require preLabel field
+            sim.cfg.compactConnFormat = ['preGid', 'preLabel', 'sec', 'loc', 'synMech', 'weight', 'delay']
+        else:
+            sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+    
 
     connFormat = sim.cfg.compactConnFormat
     for cell in sim.net.cells:

@@ -392,63 +392,66 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         avgs.append(avg)
         peaks.append(peak)
 
-    fig1,ax1 = plt.subplots(figsize=figSize)
+    if showFig or saveFig:
+        fig1,ax1 = plt.subplots(figsize=figSize)
 
-    # avg
-    fontsiz=14
-    ax1.set_color_cycle(colors)
-    ax1.plot(avgs, marker='o')
-    #ax1.set_xlabel('Time period', fontsize=fontsiz)
-    ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
-    ax1.set_xticks(range(len(timeRangeLabels)))
-    ax1.set_xticklabels(timeRangeLabels)
-    ax1.set_xlim(-0.5, len(avgs)-0.5)
-    ax1.legend(include)
+        # avg
+        fontsiz=14
+        ax1.set_color_cycle(colors)
+        ax1.plot(avgs, marker='o')
+        #ax1.set_xlabel('Time period', fontsize=fontsiz)
+        ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
+        ax1.set_xticks(range(len(timeRangeLabels)))
+        ax1.set_xticklabels(timeRangeLabels)
+        ax1.set_xlim(-0.5, len(avgs)-0.5)
+        ax1.legend(include)
 
-    try:
-        plt.tight_layout()
-    except:
-        pass
+        try:
+            plt.tight_layout()
+        except:
+            pass
 
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_'+'avgRates.png'
-        plt.savefig(filename)
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'avgRates.png'
+            plt.savefig(filename)
 
-    # show fig 
-    if showFig: _showFigure()
+        # show fig 
+        if showFig: _showFigure()
 
-    # peak
-    fig2,ax2 = plt.subplots(figsize=figSize)
-    ax2.set_color_cycle(colors)
-    ax2.plot(peaks, marker='o')
-    #ax2.set_xlabel('Time period', fontsize=fontsiz)
-    ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
-    ax2.set_xticks(range(len(timeRangeLabels)))
-    ax2.set_xticklabels(timeRangeLabels)
-    ax2.set_xlim(-0.5, len(peaks)-0.5)
-    ax2.legend(include)
+        # peak
+        fig2,ax2 = plt.subplots(figsize=figSize)
+        ax2.set_color_cycle(colors)
+        ax2.plot(peaks, marker='o')
+        #ax2.set_xlabel('Time period', fontsize=fontsiz)
+        ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
+        ax2.set_xticks(range(len(timeRangeLabels)))
+        ax2.set_xticklabels(timeRangeLabels)
+        ax2.set_xlim(-0.5, len(peaks)-0.5)
+        ax2.legend(include)
 
-    try:
-        plt.tight_layout()
-    except:
-        pass
+        try:
+            plt.tight_layout()
+        except:
+            pass
 
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_'+'peakRates.png'
-        plt.savefig(filename)
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'peakRates.png'
+            plt.savefig(filename)
 
-    # show fig 
-    if showFig: _showFigure()
+        # show fig 
+        if showFig: _showFigure()
+    else:
+        fig1, fig2 = None, None
 
-    
+        
     # save figure data
     if saveData:
         figData = {'includeList': includeList, 'timeRanges': timeRanges, 'avgs': avgs, 'peaks': peaks}

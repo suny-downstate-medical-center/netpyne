@@ -1,3 +1,9 @@
+# Version 0.7.6
+
+- Fixed bug in IClamp: 'delay' -> 'del'
+
+- Fixed bug calculating min convergece and divergence
+
 # Version 0.7.5
 
 - Improved NeuroML conversion support
@@ -12,6 +18,8 @@
 
 - Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
 
+- Added option to include list of pops or cells in 'include' arguments e.g. include=[['E4','E2'], [1,3]]
+
 - Added cfg.compactConnFormat option to replace conns dict format with compact list format 
 
 - Added option to plotConn() and plot2Dnet() to load data from compact format json files 
@@ -22,7 +30,11 @@
 
 - Added 'dpi' argument to analysis.plotSpikeHist()
 
-- Replaced init() with stdinit() so h.v_init gets set
+- Replaced init()/h.stdinit() with finitialize() so h.v_init and h.dt get set properly
+
+- Removed call to h.stdrun() but made v_init a global in cfg.hParams and initialized h.tstop to cfg.duration
+
+- Fixed bug setting globals that don't exist
 
 - Fixed issue setting global variables when loading from json
 
@@ -34,6 +46,9 @@
 
 - Fixed bug when using sim.gatherOnlySimData
 
+- Fixed bugs in saveLoadV1 example
+
+- Fixed bug when generating subConn with createNEURONObj=False
 
 # Version 0.7.4
 

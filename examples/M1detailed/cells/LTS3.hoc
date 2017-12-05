@@ -1,0 +1,158 @@
+//Interneuron for PFC - Calbindin/LTS interneuron
+//Written 25-10-2007 by Xenia Konstantoudaki
+
+
+begintemplate LTScell
+
+public soma, axon, dend
+
+create soma, axon, dend
+
+proc init () {
+
+create soma, axon, dend
+
+soma_nafcb=0.075
+soma_kdrin=0.018 
+soma_hin=0.000002 
+soma_kapcb=0.007*5
+soma_catcb=0.003 
+
+soma {
+     nseg=1
+     L=42
+     diam=42 
+
+	insert pas
+	cm=1.2            //microF/cm2
+	g_pas =1/40000
+	e_pas = v_initcb
+	v_initcb= -64
+	Ra=150
+
+
+
+     insert Nafx
+     gnafbar_Nafx= soma_nafcb
+
+     insert kdrin 
+     gkdrbar_kdrin= soma_kdrin
+
+     insert hin
+     gbar_hin= soma_hin
+
+     insert kapcb
+     gkabar_kapcb= soma_kapcb
+
+     insert catcb
+     gcatbar_catcb=soma_catcb
+
+     insert cadyn
+}
+
+axon {
+	nseg=1
+	L=113.22 
+	diam=1.1
+	insert pas
+	cm=1.2            //microF/cm2
+	g_pas =1/40000
+	e_pas = v_initcb
+	v_initcb= -64
+	Ra=150 
+	
+	insert Nafx
+	gnafbar_Nafx= soma_nafcb*10
+
+	insert kdrin
+	gkdrbar_kdrin= soma_kdrin*0.5
+}
+
+dend {
+	nseg=1
+	L=8*22
+	diam=7
+
+
+	insert pas
+	cm=1.2            //microF/cm2
+	g_pas =1/40000
+	e_pas = v_initcb
+	v_initcb= -64
+	Ra=150 
+	
+	insert Nafx
+	gnafbar_Nafx=0.018
+
+	insert kdrin
+	gkdrbar_kdrin=0.018*0.5
+
+  	insert kapcb
+    gkabar_kapcb=0.00875
+
+
+}
+
+	ko0_k_ion = 3.82   //mM
+ 	ki0_k_ion = 140    //mM
+	celsius   = 23
+	connect axon(0), soma(0.5)
+	connect dend(0), soma(0)
+}
+
+init()
+
+endtemplate LTScell
+
+//Creating new interneurons
+
+nCBcells = 1
+objref LTScell1
+
+LTScell1 = new LTScell()
+
+//Create list with segments
+objref cbsoma_list, cbcell_list
+
+cbsoma_list = new SectionList()
+LTScell1.soma cbsoma_list.append()
+
+
+cbcell_list = new SectionList()
+LTScell1.soma cbcell_list.append()
+LTScell1.axon cbcell_list.append()
+LTScell1.dend cbcell_list.append()
+
+
+proc current_balancecb() {
+
+  finitialize($1)
+  fcurrent()
+
+  printf("Balancing each compartment to %d mV\n", $1)
+
+  forsec cbcell_list{
+   for (x) {
+    	if (ismembrane("na_ion")) {e_pas(x)=v(x)+ina(x)/g_pas(x)} 
+   	if (ismembrane("k_ion")) {e_pas(x)=e_pas(x)+ik(x)/g_pas(x)} 
+
+      	if (ismembrane("ca_ion")) {e_pas(x)=e_pas(x)+ica(x)/g_pas(x)}
+//        if (ismembrane("Ca_ion")) {e_pas(x)=e_pas(x)+iCa(x)/g_pas(x)}
+        if (ismembrane("in_ion")) {e_pas(x)=e_pas(x)+in(x)/g_pas(x)} //ican
+       if (ismembrane("h")) {e_pas(x)=e_pas(x)+ihi(x)/g_pas(x)}
+
+//        d = distance(1,x)
+//	xdist = find_vector_distance_precise(secname(),x)    // calc. perpedicular distance      
+  //	 printf("x = %e, xdist = %e, d = %e, e_pas = %e mV, rm = %e mA/(mVcm2)\n", x,  xdist, d, e_pas(x), 1./g_pas(x))
+      //	fcurrent()
+    }
+  }
+}
+
+current_balancecb(-64)  
+
+
+
+
+
+

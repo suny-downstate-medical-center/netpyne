@@ -193,6 +193,18 @@ def getCellsInclude(include):
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
+        elif isinstance(condition, list):
+            for subcond in condition:
+                if isinstance(subcond, int):  # cell gid 
+                    cellGids.append(subcond)
+        
+                elif isinstance(subcond, basestring):  # entire pop
+                    if subcond in allNetStimLabels:
+                        netStimLabels.append(subcond)
+                    else:
+                        cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
+
+
     cellGids = list(set(cellGids))  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])
@@ -1321,7 +1333,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 12
+            fontsiz = 2
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
@@ -1457,6 +1469,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 
     import sim
     from neuron import h, gui
+
+    print('Plotting 3D cell shape ...')
 
     if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D

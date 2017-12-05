@@ -586,7 +586,7 @@ Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a
 
 		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
 
-	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp')
+	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'del', 'dur' and 'amp')
 
 		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
 
@@ -623,7 +623,7 @@ The code below shows an example of how to create different types of stimulation 
 	# Stimulation parameters
 
 	## Stimulation sources parameters
-	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'delay': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'del': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
 
 	netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
 
@@ -668,7 +668,7 @@ Related to the simulation and netpyne framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'clamp_resist': 0.001})
+* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})
 * **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **cvode_active** - Use CVode variable time step (default: False)
 * **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})

@@ -11,12 +11,12 @@ netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 3, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 3, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 3, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 3, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 
 
 ## Cell property rules
@@ -24,6 +24,13 @@ cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['dend_1'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['dend_1']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+cellRule['secs']['dend_1']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['dend_2'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['dend_2']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+cellRule['secs']['dend_2']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+
 netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
 
 cellRule = {'conds': {'cellType': 'I'},  'secs': {}}  # cell rule dict
@@ -46,17 +53,18 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 ## Cell connectivity rules
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
-  'probability': 0.1 ,                  # probability of connection
+  'convergence': 10 ,                  # probability of connection
   'weight': '0.005*post_ynorm',         # synaptic weight 
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'}                     # synaptic mechanism 
 
-netParams.connParams['I->E'] = {
-  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
-  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.001,                                      # synaptic weight 
-  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-  'synMech': 'inh'}                                     # synaptic mechanism 
+# netParams.connParams['I->E'] = {
+#   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
+#   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+#   'weight': 0.001,   
+#   'sec': ['soma', 'dend_1', 'dend_2'],                                   # synaptic weight 
+#   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
+#   'synMech': 'inh'}                                     # synaptic mechanism 
 
 
 # Simulation options
@@ -66,15 +74,14 @@ simConfig.dt = 0.025                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'model_output3'  # Set file output name
+simConfig.filename = 'tut5'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
-simConfig.saveJson=True
-simConfig.compactConnFormat = 1
+simConfig.saveJson=1
 
-# simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-# simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-# simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
+#simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig.analysis['plotSpikeStats'] = {'include': [['E2','E4'], [15,16]]}      # Plot recorded traces for this list of cells
+#simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
 #simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation

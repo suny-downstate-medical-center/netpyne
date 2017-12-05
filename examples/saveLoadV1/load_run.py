@@ -17,10 +17,10 @@ simConfig.recordTraces = {'V_soma': {'sec': 'soma_0', 'loc': 0.5, 'var': 'v'},
                         'V_dend6': {'sec': 'dend_6', 'loc': 0.5, 'var': 'v'}}   # Dict with traces to record
 
 # Analysis
-simConfig.addAnalysis('plotRaster', {'orderBy': 'y', 'orderInverse': True})      		# Plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [('L2_E', 0), ('L5_IF', 0)]})           # Plot recorded traces for this list of cells
-simConfig.addAnalysis('plot2Dnet', {'include': ['L2_E', 'L4_E']})                       # plot 2D visualization of cell positions and connections
-simConfig.addAnalysis('plotConn', True)                                               	# plot connectivity matrix
+simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      		# Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [('L2_E', 0), ('L5_IF', 0)]}           # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'include': ['L2_E', 'L4_E']}                       # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotConn'] = True                                               	# plot connectivity matrix
 
 
 ###############################################################################

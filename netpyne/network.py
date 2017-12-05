@@ -555,11 +555,12 @@ class Network (object):
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
             cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
-            for cell in cellsUpdate:
-                # Add synMechs, stim and conn NEURON objects
-                cell.addStimsNEURONObj()
-                #cell.addSynMechsNEURONObj()
-                cell.addConnsNEURONObj()
+            if sim.cfg.createNEURONObj:
+                for cell in cellsUpdate:
+                    # Add synMechs, stim and conn NEURON objects
+                    cell.addStimsNEURONObj()
+                    #cell.addSynMechsNEURONObj()
+                    cell.addConnsNEURONObj()
 
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
         nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
@@ -861,7 +862,7 @@ class Network (object):
         for postCellGid,postCellTags in postCellsTags.iteritems():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
-                convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
+                convergence = max(min(int(round(convergence)), len(preCellsTags)-1), 0)
                 self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
                 randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
                 preCellsSample = [preCellsTags.keys()[i] for i in randSample][0:convergence]  # selected gids of presyn cells
@@ -889,7 +890,7 @@ class Network (object):
 
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
-            divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
+            divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
             postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells

@@ -1100,10 +1100,10 @@ class TestTypeObj(object):
                     errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + ".")
                     return errorMessages
                 #print (" before ")
-                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
+                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
                 #print (" after ")
 
                 if 'plotRaster' in analysis:

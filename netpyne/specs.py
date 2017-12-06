@@ -621,6 +621,7 @@ class SimConfig (object):
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
+        self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not

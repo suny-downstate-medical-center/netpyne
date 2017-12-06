@@ -78,6 +78,8 @@ simConfig.filename = 'tut5'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
 simConfig.saveJson=1
+simConfig.rand123GlobalIndex = 2
+
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
 simConfig.analysis['plotSpikeStats'] = {'include': [['E2','E4'], [15,16]]}      # Plot recorded traces for this list of cells

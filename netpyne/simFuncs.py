@@ -974,7 +974,12 @@ def preRun ():
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
 
-    # reset all netstims so runs are always equivalent
+    # set global index used by all instances of the Random123 instances of Random
+    if sim.cfg.rand123GlobalIndex is not None: 
+        rand = h.Random()
+        rand.Random123_globalindex(int(sim.cfg.rand123GlobalIndex))
+
+    # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
             #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])

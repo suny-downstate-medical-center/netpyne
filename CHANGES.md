@@ -2,6 +2,8 @@
 
 - Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
 
+- Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
+
 - Fixed bug loading from compactConnFormat
 
 - Fixed bug in IClamp: 'delay' -> 'del'

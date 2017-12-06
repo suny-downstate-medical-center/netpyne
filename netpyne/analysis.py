@@ -1127,7 +1127,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 ## Plot spike histogram
 ######################################################################################################################################################
 def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, ylim = None, 
-    popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 

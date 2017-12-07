@@ -58,6 +58,7 @@ netParams.connParams['E->all'] = {
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
   'synMech': 'exc'}                     # synaptic mechanism 
 
+
 # netParams.connParams['I->E'] = {
 #   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
 #   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
@@ -78,11 +79,14 @@ simConfig.filename = 'tut5'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
 simConfig.saveJson=1
+simConfig.rand123GlobalIndex = 2
+
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotSpikeStats'] = {'include': [['E2','E4'], [15,16]]}      # Plot recorded traces for this list of cells
+#simConfig.analysis['plotSpikeStats'] = {'include': [['E2','E4'], [15,16]]}      # Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
 #simConfig.analysis['plotConn'] = True             # plot connectivity matrix
+simConfig.analysis['plotRatePSD'] = {'include': ['E2']}
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

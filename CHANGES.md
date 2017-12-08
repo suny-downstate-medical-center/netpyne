@@ -6,6 +6,8 @@
 
 - Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
 
+- plotTraces now plots any recorded cells if 'include' is None
+
 - Fixed bug loading from compactConnFormat
 
 - Fixed bug in IClamp: 'delay' -> 'del'

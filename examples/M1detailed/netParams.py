@@ -193,6 +193,8 @@ if 'SOM_simple' not in loadCellParams:
 ## load densities
 with open('cells/cellDensity.pkl', 'r') as fileObj: density = pickle.load(fileObj)['density']
 
+density = {k: [x * cfg.scaleDensity for x in v] for k,v in density.iteritems()}
+
 ## Local populations
 netParams.popParams['IT2']  =	{'cellModel': cfg.cellmod['IT2'],  'cellType': 'IT', 'ynormRange': layer['2'], 'density': density[('M1','E')][0]}
 netParams.popParams['SOM2'] =	{'cellModel': 'HH_simple',	 	   'cellType': 'SOM','ynormRange': layer['2'], 'density': density[('M1','SOM')][0]}

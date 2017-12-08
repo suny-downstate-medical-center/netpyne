@@ -125,8 +125,9 @@ cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
 cfg.addConn = 1
 cfg.scale = 1.0
 cfg.sizeY = 1350.0
-cfg.sizeX = 30.0
-cfg.sizeZ = 30.0
+cfg.sizeX = 300.0
+cfg.sizeZ = 300.0
+cfg.scaleDensity = 0.01
 
 cfg.EEGain = 1.0
 cfg.EIGain = 1.0

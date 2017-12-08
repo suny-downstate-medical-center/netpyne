@@ -1332,7 +1332,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     print('Plotting recorded cell traces ...')
 
-    if include is None: include = [] # If not defined, initialize as empty list
+    if include is None:  # if none, record from whatever was recorded
+        if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
+            include = sim.cfg.analysis['plotTraces']['include'] + sim.cfg.recordCells
+        else:
+            include = sim.cfg.recordCells
+            
     global colorList
     if isinstance(colors, list): 
         colorList2 = colors

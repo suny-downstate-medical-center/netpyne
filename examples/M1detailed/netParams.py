@@ -63,6 +63,14 @@ saveCellParams = False #True
 for ruleLabel in loadCellParams:
 	netParams.loadCellParamsRule(label=ruleLabel, fileName='cells/'+ruleLabel+'_cellParams.pkl')
 
+# Temporary fix to reduce size of axon for viewing purposes
+axons = [s for s in netParams.cellParams['IT5A_full']['secs'] if s in ['axon_2','axon_3','axon_4','axon_5','axon_6','axon_7','axon_8','axon_9','axon_10','axon_11','axon_12']]
+for sec in axons: del netParams.cellParams['IT5A_full']['secs'][sec]
+for ruleLabel in ['IT2_reduced', 'IT4_reduced', 'IT5A_reduced', 'IT5B_reduced',  'IT6_reduced', 'CT6_reduced']:
+	cellRule = netParams.cellParams[ruleLabel]
+	cellRule['secs']['axon']['geom']['pt3d'][1][1] = cellRule['secs']['axon']['geom']['pt3d'][1][1]*0.01
+	sec = cellRule['secs']['Bdend']
+	cellRule['secs']['Bdend']['geom']['pt3d'][1] = [0.5*sec['geom']['L'], -0.5*sec['geom']['L'], 0, sec['geom']['diam']]
 #------------------------------------------------------------------------------
 # Specification of cell rules not previously loaded
 # Includes importing from hoc template or python class, and setting additional params
@@ -103,10 +111,10 @@ for label, p in reducedCells.iteritems():  # create cell rules that were not loa
 					sec['geom']['pt3d'].append([offset+0, prevL, 0, sec['geom']['diam']])
 				if secName in ['Bdend']:  # set 3d geom of Bdend
 					sec['geom']['pt3d'].append([offset+0, 0, 0, sec['geom']['diam']])
-					sec['geom']['pt3d'].append([offset+sec['geom']['L'], 0, 0, sec['geom']['diam']])		
+					sec['geom']['pt3d'].append([offset+0.707*sec['geom']['L'], offset+0.707*sec['geom']['L'], 0, sec['geom']['diam']])		
 				if secName in ['axon']:  # set 3d geom of axon
 					sec['geom']['pt3d'].append([offset+0, 0, 0, sec['geom']['diam']])
-					sec['geom']['pt3d'].append([offset+0, -sec['geom']['L'], 0, sec['geom']['diam']])	
+					sec['geom']['pt3d'].append([offset+0, -sec['geom']['L'], 0, sec['geom']['diam']]) 
 
 		if saveCellParams: netParams.saveCellParamsRule(label=label, fileName='cells/'+label+'_cellParams.pkl')
 
@@ -146,6 +154,10 @@ if 'PT5B_full' not in loadCellParams:
 	# Remove Na (TTX)
 	if cfg.removeNa:
 		for secName in cellRule['secs']: cellRule['secs'][secName]['mechs']['nax']['gbar'] = 0.0
+	
+	# Temporary fix: reduce size of axon for viewing purposes
+	cellRule['secs']['axon']['geom']['pt3d'] = cellRule['secs']['axon']['geom']['pt3d'][0:1]
+
 	netParams.addCellParamsWeightNorm('PT5B_full', 'conn/PT5B_full_weightNorm.pkl', threshold=cfg.weightNormThreshold)  # load weight norm
 	netParams.saveCellParamsRule(label='PT5B_full', fileName='cells/PT5B_full_cellParams.pkl')
 

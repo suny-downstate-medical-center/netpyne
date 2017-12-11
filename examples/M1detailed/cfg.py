@@ -73,7 +73,7 @@ cfg.analysis['plotRaster'] = {'include': allpops, 'saveFig': True, 'showFig': Fa
 cfg.analysis['plotSpikeHist'] = {'include': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'timeRange': [0,500],
 								'saveFig': True, 'showFig': False, 'popColors': popColors, 'figSize': (10,4), 'dpi': 300} 
 
-cfg.analysis['plotConn'] = {'includePre': allpops, 'includePost': allpops, 'feature': 'strength', 'figSize': (10,10), 'groupBy': 'pop', \
+cfg.analysis['plotConn'] = {'includePre': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'includePost': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'feature': 'strength', 'figSize': (10,10), 'groupBy': 'pop', \
  						'graphType': 'matrix', 'synOrConn': 'conn', 'synMech': None, 'saveData': None, 'saveFig': 1, 'showFig': 0}
 
 #------------------------------------------------------------------------------
@@ -125,8 +125,8 @@ cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
 cfg.addConn = 1
 cfg.scale = 1.0
 cfg.sizeY = 1350.0
-cfg.sizeX = 300.0
-cfg.sizeZ = 300.0
+cfg.sizeX = 400.0
+cfg.sizeZ = 400.0
 cfg.scaleDensity = 0.01
 
 cfg.EEGain = 1.0

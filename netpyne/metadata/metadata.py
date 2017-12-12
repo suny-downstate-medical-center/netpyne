@@ -76,14 +76,70 @@ metadata = {
                     },
                     "zRange": {
                         "label": "Z Range",
-                        "help": "Range of neuron positions in z-axis (horizontal depth), specified2-elemnt list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                        "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "znormRange": {
                         "label": "Z Norm Range",
-                        "help": "Range of neuron positions in z-axis (horizontal depth), specified2-elemnt list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                        "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "interval": {
+                        "label": "Spike Interval",
+                        "help": "Spike interval in ms.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "rate": {
+                        "label": "Rate",
+                        "help": "Firing rate in Hz (note this is the inverse of the NetStim interval property).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "noise": {
+                        "label": "Noise",
+                        "help": "Fraction of noise in NetStim (0 = deterministic; 1 = completely random).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "start": {
+                        "label": "Start",
+                        "help": "Time of first spike in ms (default = 0).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "number": {
+                        "label": "Number",
+                        "help": "Max number of spikes generated (default = 1e12).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "seed": {
+                        "label": "Seed",
+                        "help": " Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "spkTimes": {
+                        "label": "Spike Times",
+                        "help": "Spike Times(only for ‘VecStim’) - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "pulses": {
+                        "label": "Pulses",
+                        "help": "(only for ‘VecStim’) - List of spiking pulses; each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
@@ -149,9 +205,112 @@ metadata = {
                                         "hintText": "",
                                         "type": "float"
                                     },
-                                }
-                            }
-                           
+                                    "cm": {
+                                        "label": "cm",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "pt3d": {
+                                        "label": "pt3d",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "nseg": {
+                                        "label": "nseg",
+                                        "suggestions": "",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                },
+                            "topol": {
+                                "label": "Topology",
+                                "suggestions": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section –child– location where to make connection).",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "mechs": {
+                                "label": "Mechanisms",
+                                "suggestions": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "ions": {
+                                "label": "Ions",
+                                "suggestions": "Dictionary of ions.he key contains the name of the ion (e.g. na or k) The value contains a dictionary with the properties of the ion (e.g. {'e': -70}).",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "mechs": {
+                                "label": "Mechanisms",
+                                "suggestions": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "pointps": {
+                                "label": "Point processes",
+                                "suggestions": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. ‘Izhi’) The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "mod": {
+                                        "label": "mod",
+                                        "suggestions": "the name of the NEURON mechanism, e.g. 'Izhi2007a'",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "loc": {
+                                        "label": "Length",
+                                        "suggestions": "section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "vref": {
+                                        "label": "vref (optional)",
+                                        "suggestions": "internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                    "synList": {
+                                        "label": "synList (optional)",
+                                        "suggestions": "list of internal mechanism synaptic mechanism labels, e.g. [‘AMPA’, ‘NMDA’, ‘GABAB’].",
+                                        "help": "",
+                                        "hintText": "",
+                                        "type": "float"
+                                    },
+                                },
+                            "vinit": {
+                                "label": "vinit",
+                                "suggestions": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "spikeGenLoc": {
+                                "label": "spikeGenLoc",
+                                "suggestions": "(optional) Indicates that this section is responsible for spike generation (instead of the default ‘soma’), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            "threshold": {
+                                "label": "threshold",
+                                "suggestions": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
+                                "help": "",
+                                "hintText": "",
+                                },
+                            },
+                        "secLists": {
+                            "label": "secLists - (optional) ",
+                            "suggestions": "Dictionary of sections lists (e.g. {‘all’: [‘soma’, ‘dend’]})",
+                            "help": "",
+                            "hintText": "",
+                            },
                         }
                     }
                 }
@@ -236,7 +395,7 @@ metadata = {
             "backupCfgFile": {
                 "label": "Copy of CFG file"
             }
-            
+
         }
     }
 }

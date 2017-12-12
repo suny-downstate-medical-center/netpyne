@@ -700,7 +700,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleNetwork(self, network_id, notes, temperature=None):
+        def handle_network(self, network_id, notes, temperature=None):
             if temperature:
                 print("\n****************\n   Need to set temperature to %s!!!\n********************"%temperature)
 
@@ -708,7 +708,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handlePopulation(self, population_id, component, size, component_obj):
+        def handle_population(self, population_id, component, size, component_obj, properties={}):
 
             if self.verbose: print("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
             
@@ -1121,8 +1121,8 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleLocation(self, id, population_id, component, x, y, z):
-            DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
+        def handle_location(self, id, population_id, component, x, y, z):
+            DefaultNetworkHandler.print_location_information(self,id, population_id, component, x, y, z)
 
             cellsList = self.popParams[population_id]['cellsList']
 
@@ -1133,7 +1133,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #
-        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
+        def handle_projection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
 
             if self.verbose: print("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
@@ -1142,7 +1142,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #  
-        def handleConnection(self, projName, id, prePop, postPop, synapseType, \
+        def handle_connection(self, projName, id, prePop, postPop, synapseType, \
                                                         preCellId, \
                                                         postCellId, \
                                                         preSegId = 0, \
@@ -1169,8 +1169,8 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleInputList(self, inputListId, population_id, component, size, input_comp_obj=None):
-            DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+        def handle_input_list(self, inputListId, population_id, component, size, input_comp_obj=None):
+            DefaultNetworkHandler.print_input_information(self,inputListId, population_id, component, size)
             
             import neuroml
             
@@ -1200,7 +1200,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #   
-        def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
+        def handle_single_input(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
             
             pop_id = self.popStimLists[inputListId]['conds']['pop']
             nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)

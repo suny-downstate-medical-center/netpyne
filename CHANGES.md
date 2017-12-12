@@ -1,8 +1,19 @@
 # Version 0.7.6
 
+- Added exception handling to analysis functions
+
+- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
+
+- Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
+
+- plotTraces now plots any recorded cells if 'include' is None
+
+- Fixed bug loading from compactConnFormat
+
 - Fixed bug in IClamp: 'delay' -> 'del'
 
 - Fixed bug calculating min convergece and divergence
+
 
 # Version 0.7.5
 

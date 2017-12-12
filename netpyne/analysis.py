@@ -16,6 +16,7 @@ import numpy as np
 from scipy import array, cumsum
 from numbers import Number
 import math
+import functools
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -24,6 +25,27 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
             [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
             [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]]*3
+
+
+######################################################################################################################################################
+## Exception decorator
+######################################################################################################################################################
+def exception(function):
+    """
+    A decorator that wraps the passed in function and prints exception should one occur
+    """
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as e:
+            # print 
+            err = "There was an exception in %s():"%(function.__name__)
+            print("%s \n %s"%(err,e))
+            return -1
+ 
+    return wrapper
+
 
 ######################################################################################################################################################
 ## Wrapper to run analysis functions in simConfig
@@ -287,6 +309,7 @@ def syncMeasure ():
 ######################################################################################################################################################
 ## Calculate avg and peak rate of different subsets of cells for specific time period
 ######################################################################################################################################################
+@exception
 def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = None): 
     ''' 
     Calculate avg and peak rate of different subsets of cells for specific time period
@@ -360,6 +383,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ######################################################################################################################################################
 ## Plot avg and peak rates at different time periods 
 ######################################################################################################################################################
+@exception
 def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
         saveFig = None, showFig = True):
     ''' 
@@ -392,63 +416,66 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         avgs.append(avg)
         peaks.append(peak)
 
-    fig1,ax1 = plt.subplots(figsize=figSize)
+    if showFig or saveFig:
+        fig1,ax1 = plt.subplots(figsize=figSize)
 
-    # avg
-    fontsiz=14
-    ax1.set_color_cycle(colors)
-    ax1.plot(avgs, marker='o')
-    #ax1.set_xlabel('Time period', fontsize=fontsiz)
-    ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
-    ax1.set_xticks(range(len(timeRangeLabels)))
-    ax1.set_xticklabels(timeRangeLabels)
-    ax1.set_xlim(-0.5, len(avgs)-0.5)
-    ax1.legend(include)
+        # avg
+        fontsiz=14
+        ax1.set_color_cycle(colors)
+        ax1.plot(avgs, marker='o')
+        #ax1.set_xlabel('Time period', fontsize=fontsiz)
+        ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
+        ax1.set_xticks(range(len(timeRangeLabels)))
+        ax1.set_xticklabels(timeRangeLabels)
+        ax1.set_xlim(-0.5, len(avgs)-0.5)
+        ax1.legend(include)
 
-    try:
-        plt.tight_layout()
-    except:
-        pass
+        try:
+            plt.tight_layout()
+        except:
+            pass
 
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_'+'avgRates.png'
-        plt.savefig(filename)
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'avgRates.png'
+            plt.savefig(filename)
 
-    # show fig 
-    if showFig: _showFigure()
+        # show fig 
+        if showFig: _showFigure()
 
-    # peak
-    fig2,ax2 = plt.subplots(figsize=figSize)
-    ax2.set_color_cycle(colors)
-    ax2.plot(peaks, marker='o')
-    #ax2.set_xlabel('Time period', fontsize=fontsiz)
-    ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
-    ax2.set_xticks(range(len(timeRangeLabels)))
-    ax2.set_xticklabels(timeRangeLabels)
-    ax2.set_xlim(-0.5, len(peaks)-0.5)
-    ax2.legend(include)
+        # peak
+        fig2,ax2 = plt.subplots(figsize=figSize)
+        ax2.set_color_cycle(colors)
+        ax2.plot(peaks, marker='o')
+        #ax2.set_xlabel('Time period', fontsize=fontsiz)
+        ax2.set_ylabel('Peak firing rate', fontsize=fontsiz)
+        ax2.set_xticks(range(len(timeRangeLabels)))
+        ax2.set_xticklabels(timeRangeLabels)
+        ax2.set_xlim(-0.5, len(peaks)-0.5)
+        ax2.legend(include)
 
-    try:
-        plt.tight_layout()
-    except:
-        pass
+        try:
+            plt.tight_layout()
+        except:
+            pass
 
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_'+'peakRates.png'
-        plt.savefig(filename)
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'peakRates.png'
+            plt.savefig(filename)
 
-    # show fig 
-    if showFig: _showFigure()
+        # show fig 
+        if showFig: _showFigure()
+    else:
+        fig1, fig2 = None, None
 
-    
+        
     # save figure data
     if saveData:
         figData = {'includeList': includeList, 'timeRanges': timeRanges, 'avgs': avgs, 'peaks': peaks}
@@ -463,6 +490,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 ######################################################################################################################################################
 ## Plot sync at different time periods 
 ######################################################################################################################################################
+@exception
 def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
         saveFig = None, showFig = True):
     ''' 
@@ -534,6 +562,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 ######################################################################################################################################################
 ## Raster plot 
 ######################################################################################################################################################
+@exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
         spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None, 
         showFig = True): 
@@ -779,6 +808,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
+@exception
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
     popColors = [], dpi = 100, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -923,6 +953,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
+@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
                  popColors = [], xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1123,8 +1154,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
+@exception
 def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, ylim = None, 
-    popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1273,6 +1305,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ######################################################################################################################################################
 ## Plot recorded cell traces (V, i, g, etc.)
 ######################################################################################################################################################
+@exception
 def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on',
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1299,7 +1332,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     print('Plotting recorded cell traces ...')
 
-    if include is None: include = [] # If not defined, initialize as empty list
+    if include is None:  # if none, record from whatever was recorded
+        if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
+            include = sim.cfg.analysis['plotTraces']['include'] + sim.cfg.recordCells
+        else:
+            include = sim.cfg.recordCells
+            
     global colorList
     if isinstance(colors, list): 
         colorList2 = colors
@@ -1441,6 +1479,7 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
+@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1595,6 +1634,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
+@exception
 def plotLFP ():
     import sim
 
@@ -2113,6 +2153,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
+@exception
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
             graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -2271,6 +2312,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 ######################################################################################################################################################
 ## Plot 2D representation of network cell positions and connections
 ######################################################################################################################################################
+@exception
 def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, 
                 tagsFile = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -2404,6 +2446,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
 ###################################################################################################################################################### 
+@exception
 def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells'], 
         tags=None, conns=None, tagsFile=None, connsFile=None):
 
@@ -2482,6 +2525,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
 ######################################################################################################################################################
 ## Calculate normalized transfer entropy
 ######################################################################################################################################################
+@exception
 def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30):
     ''' 
     Calculate normalized transfer entropy
@@ -2591,6 +2635,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 ######################################################################################################################################################
 ## Calculate granger causality
 ######################################################################################################################################################
+@exception
 def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2', timeRange = None, binSize=5, plotFig = True, 
     saveData = None, saveFig = None, showFig = True):
     ''' 
@@ -2727,6 +2772,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 ######################################################################################################################################################
 ## EPSPs amplitude
 ######################################################################################################################################################
+@exception
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
 
     import sim

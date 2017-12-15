@@ -132,14 +132,14 @@ metadata = {
                     },
                     "spkTimes": {
                         "label": "Spike Times",
-                        "help": "Spike Times(only for ‘VecStim’) - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list).",
+                        "help": "Spike Times(only for 'VecStim') - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "pulses": {
                         "label": "Pulses",
-                        "help": "(only for ‘VecStim’) - List of spiking pulses; each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
+                        "help": "(only for 'VecStim') - List of spiking pulses; each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
@@ -229,7 +229,7 @@ metadata = {
                                 },
                             "topol": {
                                 "label": "Topology",
-                                "help": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section –child– location where to make connection).",
+                                "help": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section child location where to make connection).",
                                 "suggestions": "",
                                 "hintText": "",
                                 },

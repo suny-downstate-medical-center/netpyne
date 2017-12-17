@@ -253,7 +253,7 @@ metadata = {
                                 },
                             "pointps": {
                                 "label": "Point processes",
-                                "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. ‘Izhi’) The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
+                                "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. 'Izhi') The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "children": {
@@ -280,7 +280,7 @@ metadata = {
                                     },
                                     "synList": {
                                         "label": "synList (optional)",
-                                        "help": "list of internal mechanism synaptic mechanism labels, e.g. [‘AMPA’, ‘NMDA’, ‘GABAB’].",
+                                        "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
                                         "suggestions": "",
                                         "hintText": "",
                                         "type": "float"
@@ -294,7 +294,7 @@ metadata = {
                                 },
                             "spikeGenLoc": {
                                 "label": "spikeGenLoc",
-                                "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default ‘soma’), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
+                                "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
                                 "suggestions": "",
                                 "hintText": "",
                                 },
@@ -307,7 +307,7 @@ metadata = {
                             },
                         "secLists": {
                             "label": "secLists - (optional) ",
-                            "help": "Dictionary of sections lists (e.g. {‘all’: [‘soma’, ‘dend’]})",
+                            "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
                             "suggestions": "",
                             "hintText": "",
                             },

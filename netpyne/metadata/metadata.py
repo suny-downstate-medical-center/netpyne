@@ -317,85 +317,85 @@ metadata = {
                     }
                 }
             }
-        },
-        "simConfig": {
-            "label": "Sim Config",
-            "suggestions": "",
-            "help": "",
-            "hintText": "",
-            "children": {
-                "simLabel": {
-                    "label": "Name of Simulation"
-                },
-                "duration": {
-                    "label": "Duration"
-                },
-                "dt": {
-                    "label": "Dt"
-                },
-                "seeds": {
-                    "label": "Seeds"
-                },
-                "addSynMechs": {
-                    "label": "Add Syn Mechs"
-                },
-                "includeParamsLabel": {
-                    "label": "Include Params Label"
-                },
-                "timing": {
-                    "label": "Timing"
-                },
-                "verbose": {
-                    "label": "Verbose"
-                },
-                "saveFolder": {
-                    "label": "Save Folder"
-                },
-                "filename": {
-                    "label": "File Name"
-                },
-                "saveDataInclude": {
-                    "label": "Save Data Include"
-                },
-                "timestampFilename": {
-                    "label": "Timestamp File Name"
-                },
-                "savePickle": {
-                    "label": "Save Pickle"
-                },
-                "saveJson": {
-                    "label": "Save Json"
-                },
-                "saveMat": {
-                    "label": "Save MAT"
-                },
-                "saveHDF5": {
-                    "label": "Save HDF5"
-                },
-                "saveDpk": {
-                    "label": "Save DPK"
-                },
-                "saveDat": {
-                    "label": "Save DAT"
-                },
-                "saveCSV": {
-                    "label": "Save CSV"
-                },
-                "saveCellSecs": {
-                    "label": "Save Cell Secs"
-                },
-                "saveCellConns": {
-                    "label": "Save Cell Conns"
-                },
-                "checkErrors": {
-                    "label": "Check Errors"
-                },
-                "checkErrorsVerbose": {
-                    "label": "Check Errors Verbose"
-                },
-                "backupCfgFile": {
-                    "label": "Copy of CFG file"
-                }
+        }
+    },
+    "simConfig": {
+        "label": "Sim Config",
+        "suggestions": "",
+        "help": "",
+        "hintText": "",
+        "children": {
+            "simLabel": {
+                "label": "Name of Simulation"
+            },
+            "duration": {
+                "label": "Duration"
+            },
+            "dt": {
+                "label": "Dt"
+            },
+            "seeds": {
+                "label": "Seeds"
+            },
+            "addSynMechs": {
+                "label": "Add Syn Mechs"
+            },
+            "includeParamsLabel": {
+                "label": "Include Params Label"
+            },
+            "timing": {
+                "label": "Timing"
+            },
+            "verbose": {
+                "label": "Verbose"
+            },
+            "saveFolder": {
+                "label": "Save Folder"
+            },
+            "filename": {
+                "label": "File Name"
+            },
+            "saveDataInclude": {
+                "label": "Save Data Include"
+            },
+            "timestampFilename": {
+                "label": "Timestamp File Name"
+            },
+            "savePickle": {
+                "label": "Save Pickle"
+            },
+            "saveJson": {
+                "label": "Save Json"
+            },
+            "saveMat": {
+                "label": "Save MAT"
+            },
+            "saveHDF5": {
+                "label": "Save HDF5"
+            },
+            "saveDpk": {
+                "label": "Save DPK"
+            },
+            "saveDat": {
+                "label": "Save DAT"
+            },
+            "saveCSV": {
+                "label": "Save CSV"
+            },
+            "saveCellSecs": {
+                "label": "Save Cell Secs"
+            },
+            "saveCellConns": {
+                "label": "Save Cell Conns"
+            },
+            "checkErrors": {
+                "label": "Check Errors"
+            },
+            "checkErrorsVerbose": {
+                "label": "Check Errors Verbose"
+            },
+            "backupCfgFile": {
+                "label": "Copy of CFG file"
             }
         }
     }

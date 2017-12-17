@@ -42,7 +42,11 @@ metadata = {
                     "cellModel": {
                         "label": "Cell Model",
                         "help": "Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich2007 point neuron model).",
-                        "suggestions": ['VecStim', 'NetStim', 'IntFire1'],
+                        "suggestions": [
+                            "VecStim",
+                            "NetStim",
+                            "IntFire1"
+                        ],
                         "type": "str"
                     },
                     "xRange": {
@@ -57,7 +61,10 @@ metadata = {
                         "help": "Range of neuron positions in x-axis (horizontal length), specified2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
-                        "default": [0, 1],
+                        "default": [
+                            0,
+                            1
+                        ],
                         "type": "list(float)"
                     },
                     "yRange": {
@@ -162,14 +169,14 @@ metadata = {
                                 "label": "Cell Type",
                                 "suggestions": "",
                                 "help": "",
-                                "hintText": "",
+                                "hintText": ""
                             },
                             "cellModel": {
                                 "label": "Cell Model",
                                 "suggestions": "",
                                 "help": "",
-                                "hintText": "",
-                            },
+                                "hintText": ""
+                            }
                         }
                     },
                     "secs": {
@@ -225,177 +232,171 @@ metadata = {
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
+                                    }
+                                },
+                                "topol": {
+                                    "label": "Topology",
+                                    "help": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section child location where to make connection).",
+                                    "suggestions": "",
+                                    "hintText": ""
+                                },
+                                "mechs": {
+                                    "label": "Mechanisms",
+                                    "help": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
+                                    "suggestions": "",
+                                    "hintText": ""
+                                },
+                                "ions": {
+                                    "label": "Ions",
+                                    "help": "Dictionary of ions.he key contains the name of the ion (e.g. na or k) The value contains a dictionary with the properties of the ion (e.g. {'e': -70}).",
+                                    "suggestions": "",
+                                    "hintText": ""
+                                },
+                                "pointps": {
+                                    "label": "Point processes",
+                                    "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. 'Izhi') The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
+                                    "suggestions": "",
+                                    "hintText": "",
+                                    "children": {
+                                        "mod": {
+                                            "label": "mod",
+                                            "help": "the name of the NEURON mechanism, e.g. 'Izhi2007a'",
+                                            "suggestions": "",
+                                            "hintText": "",
+                                            "type": "float"
+                                        },
+                                        "loc": {
+                                            "label": "Length",
+                                            "help": "section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
+                                            "suggestions": "",
+                                            "hintText": "",
+                                            "type": "float"
+                                        },
+                                        "vref": {
+                                            "label": "vref (optional)",
+                                            "help": "internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
+                                            "suggestions": "",
+                                            "hintText": "",
+                                            "type": "float"
+                                        },
+                                        "synList": {
+                                            "label": "synList (optional)",
+                                            "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
+                                            "suggestions": "",
+                                            "hintText": "",
+                                            "type": "float"
+                                        }
                                     },
-                                },
-                            "topol": {
-                                "label": "Topology",
-                                "help": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section child location where to make connection).",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "mechs": {
-                                "label": "Mechanisms",
-                                "help": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "ions": {
-                                "label": "Ions",
-                                "help": "Dictionary of ions.he key contains the name of the ion (e.g. na or k) The value contains a dictionary with the properties of the ion (e.g. {'e': -70}).",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "mechs": {
-                                "label": "Mechanisms",
-                                "help": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "pointps": {
-                                "label": "Point processes",
-                                "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. 'Izhi') The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
-                                "suggestions": "",
-                                "hintText": "",
-                                "children": {
-                                    "mod": {
-                                        "label": "mod",
-                                        "help": "the name of the NEURON mechanism, e.g. 'Izhi2007a'",
+                                    "vinit": {
+                                        "label": "vinit",
+                                        "help": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
                                         "suggestions": "",
-                                        "hintText": "",
-                                        "type": "float"
+                                        "hintText": ""
                                     },
-                                    "loc": {
-                                        "label": "Length",
-                                        "help": "section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
+                                    "spikeGenLoc": {
+                                        "label": "spikeGenLoc",
+                                        "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
                                         "suggestions": "",
-                                        "hintText": "",
-                                        "type": "float"
+                                        "hintText": ""
                                     },
-                                    "vref": {
-                                        "label": "vref (optional)",
-                                        "help": "internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
+                                    "threshold": {
+                                        "label": "threshold",
+                                        "help": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
                                         "suggestions": "",
-                                        "hintText": "",
-                                        "type": "float"
-                                    },
-                                    "synList": {
-                                        "label": "synList (optional)",
-                                        "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
-                                        "suggestions": "",
-                                        "hintText": "",
-                                        "type": "float"
-                                    },
+                                        "hintText": ""
+                                    }
                                 },
-                            "vinit": {
-                                "label": "vinit",
-                                "help": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "spikeGenLoc": {
-                                "label": "spikeGenLoc",
-                                "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            "threshold": {
-                                "label": "threshold",
-                                "help": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
-                                "suggestions": "",
-                                "hintText": "",
-                                },
-                            },
-                        "secLists": {
-                            "label": "secLists - (optional) ",
-                            "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
-                            "suggestions": "",
-                            "hintText": "",
-                            },
+                                "secLists": {
+                                    "label": "secLists - (optional) ",
+                                    "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
+                                    "suggestions": "",
+                                    "hintText": ""
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-    },
-    "simConfig": {
-        "label": "Sim Config",
-        "suggestions": "",
-        "help": "",
-        "hintText": "",
-        "children": {
-            "simLabel":{
-                "label": "Name of Simulation"
-            },
-            "duration": {
-                "label": "Duration",
-            },
-            "dt": {
-                "label": "Dt",
-            },
-            "seeds": {
-                "label": "Seeds",
-            },
-            "addSynMechs": {
-                "label": "Add Syn Mechs",
-            },
-            "includeParamsLabel": {
-                "label": "Include Params Label",
-            },
-            "timing": {
-                "label": "Timing",
-            },
-            "verbose": {
-                "label": "Verbose",
-            },
-            "saveFolder": {
-                "label": "Save Folder",
-            },
-            "filename": {
-                "label": "File Name",
-            },
-            "saveDataInclude": {
-                "label": "Save Data Include",
-            },
-            "timestampFilename": {
-                "label": "Timestamp File Name",
-            },
-            "savePickle": {
-                "label": "Save Pickle",
-            },
-            "saveJson": {
-                "label": "Save Json",
-            },
-            "saveMat": {
-                "label": "Save Mat",
-            },
-            "saveHDF5": {
-                "label": "Save HDF5",
-            },
-            "saveDpk": {
-                "label": "Save Dpk",
-            },
-            "saveDat": {
-                "label": "Save Dat",
-            },
-            "saveCSV": {
-                "label": "Save Csv",
-            },
-            "saveCellSecs": {
-                "label": "Save Cell Secs",
-            },
-            "saveCellConns": {
-                "label": "Save Cell Conns",
-            },
-            "checkErrors": {
-                "label": "Check Errors",
-            },
-            "checkErrorsVerbose": {
-                "label": "Check Errors Verbose",
-            },
-            "backupCfgFile": {
-                "label": "Copy of CFG file"
+        },
+        "simConfig": {
+            "label": "Sim Config",
+            "suggestions": "",
+            "help": "",
+            "hintText": "",
+            "children": {
+                "simLabel": {
+                    "label": "Name of Simulation"
+                },
+                "duration": {
+                    "label": "Duration"
+                },
+                "dt": {
+                    "label": "Dt"
+                },
+                "seeds": {
+                    "label": "Seeds"
+                },
+                "addSynMechs": {
+                    "label": "Add Syn Mechs"
+                },
+                "includeParamsLabel": {
+                    "label": "Include Params Label"
+                },
+                "timing": {
+                    "label": "Timing"
+                },
+                "verbose": {
+                    "label": "Verbose"
+                },
+                "saveFolder": {
+                    "label": "Save Folder"
+                },
+                "filename": {
+                    "label": "File Name"
+                },
+                "saveDataInclude": {
+                    "label": "Save Data Include"
+                },
+                "timestampFilename": {
+                    "label": "Timestamp File Name"
+                },
+                "savePickle": {
+                    "label": "Save Pickle"
+                },
+                "saveJson": {
+                    "label": "Save Json"
+                },
+                "saveMat": {
+                    "label": "Save MAT"
+                },
+                "saveHDF5": {
+                    "label": "Save HDF5"
+                },
+                "saveDpk": {
+                    "label": "Save DPK"
+                },
+                "saveDat": {
+                    "label": "Save DAT"
+                },
+                "saveCSV": {
+                    "label": "Save CSV"
+                },
+                "saveCellSecs": {
+                    "label": "Save Cell Secs"
+                },
+                "saveCellConns": {
+                    "label": "Save Cell Conns"
+                },
+                "checkErrors": {
+                    "label": "Check Errors"
+                },
+                "checkErrorsVerbose": {
+                    "label": "Check Errors Verbose"
+                },
+                "backupCfgFile": {
+                    "label": "Copy of CFG file"
+                }
             }
-
         }
     }
 }

@@ -200,7 +200,7 @@ if neuromlExists:
     ###############################################################################
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
-    def exportNeuroML2 (reference, connections=True, stimulations=True):
+    def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
 
         import sim
 
@@ -453,6 +453,10 @@ if neuromlExists:
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 comp_id = populations_vs_components[np_pop.tags['pop']]
                 pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
+                pop.properties.append(neuroml.Property('radius',default_cell_radius))
+                import random
+                pop.properties.append(neuroml.Property('color','%s %s %s'%(random.random(),random.random(),random.random())))
+                
                 nml_net.populations.append(pop)
 
                 for cell in net.cells:
@@ -598,8 +602,14 @@ if neuromlExists:
 
 
         nml_file_name = '%s.net.nml'%reference
+        
+        if format=='xml':
 
-        writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+            writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+        elif format=='hdf5':
+            
+            nml_file_name+='.h5'
+            writers.NeuroMLHdf5Writer.write(nml_doc, nml_file_name)
 
 
         import pyneuroml.lems

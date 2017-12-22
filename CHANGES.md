@@ -8,6 +8,8 @@
 
 - plotTraces now plots any recorded cells if 'include' is None
 
+- Made CVode object part of sim and simplified cvode calls
+
 - Fixed bug loading from compactConnFormat
 
 - Fixed bug in IClamp: 'delay' -> 'del'

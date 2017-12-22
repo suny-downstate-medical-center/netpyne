@@ -7301,6 +7301,238 @@ simConfig.saveCellConns = False
 only a couple traces actually recorded so small simData -- maybe bug because empty?
 WORKED OK!
 
+* 17Dec21 GUI
+** setup
+1) checkout and pull all branches:
+Pavos-MBP% python gitall.py branches
+NEURON_UI  development
+
+org.geppetto.frontend.jupyter  development
+
+org.geppetto.frontend  interface
+
+Geppetto Neuron  interface
+
+2) npm install from
+   /u/salvadord/Documents/ISB/Models/NEURON-UI/org.geppetto.frontend.jupyter/src/jupyter_geppetto/geppetto/src/main/webapp
+
+3) in /utilities/ python run-dev-server.py
+
+4) checkout and pull metadata branch in netpyne repo
+
+** Extend GUI
+- In browser open console + select "No cache" -- so changes in js take effect after reloading if run-dev-server.py running
+
+- using javascript REACT -- component based
+
+- start in:
+/u/salvadord/Documents/ISB/Models/NEURON-UI/org.geppetto.frontend.jupyter/src/jupyter_geppetto/geppetto/src/main/webapp/extensions/geppetto-neuron
+
+- render() method
+
+- check imports for other components
+
+* 17Dec22 Extracellular recording (LFP) from Allen BMTK Bionet
+** recxelectrode class 
+https://github.com/AllenInstitute/bmtk/blob/develop/bmtk/simulator/bionet/recxelectrode.py
+** simulation code
+https://github.com/AllenInstitute/bmtk/blob/a20b10af77563e2dbebb8c2db7c3c8878783d0f9/bmtk/simulator/bionet/simulation.py
+
+*** pre sim
+    def calculate_ecp(self, positions_file, ecp_output):
+        """Set recording of the ExtraCellular Potential
+        :param positions_file:
+        """
+        self._ecp_output = ecp_output
+        self._calc_ecp = True
+        self.rel = RecXElectrode(positions_file)
+        for gid in self.gids['biophysical']:
+            cell = self.net.cells[gid]
+            self.rel.calc_transfer_resistance(gid, cell.get_seg_coords())
+
+        self._rel_nsites = self.rel.nsites
+
+        h.cvode.use_fast_imem(1)  # make i_membrane_ a range variable
+        self.fih1 = h.FInitializeHandler(0, self.set_pointers)
+
+*** compute and save after sim
+
+   if self._calc_ecp:
+            nsites = self.rel.nsites
+            self.data_block['ecp'] = np.empty((nt_block, nsites))
+
+-----
+
+        # compute and save the ECP
+        if self._calc_ecp:
+            for gid in self.gids['biophysical']:  # compute ecp only from the biophysical cells
+                cell = self.net.cells[gid]    
+                im = cell.get_im()
+                tr = self.rel.get_transfer_resistance(gid)
+                ecp = np.dot(tr, im)
+     
+                if self.cell_variables and gid in self.gids['save_cell_vars']:
+                    cell_data_block = self.data_block['cells'][gid] 
+                    cell_data_block['ecp'][tstep_block-1, :] = ecp
+      
+                self.data_block['ecp'][tstep_block-1, :] += ecp
+
+
+        if calc_ecp:
+            self.im_ptr = h.PtrVector(self._nseg)  # pointer vector
+            self.im_ptr.ptr_update_callback(self.set_im_ptr)   # used for gathering an array of  i_membrane values from the pointer vector
+            self.imVec = h.Vector(self._nseg)
+
+
+    def set_im_ptr(self): 
+        """Set PtrVector to point to the i_membrane_"""
+        jseg = 0
+        for sec in self.hobj.all:  
+            for seg in sec:    
+                self.im_ptr.pset(jseg,seg._ref_i_membrane_)  # notice the underscore at the end
+                jseg += 1
+
+** cell methods required
+    def calc_seg_coords(self, morph_seg_coords):
+        """Calculate segment coordinates for individual cells"""
+        phi_y = self._props.rotation_angle_yaxis  # self._props['rotation_angle_yaxis']
+        phi_z = self._props.rotation_angle_zaxis  # self._props['rotation_angle_zaxis']
+
+        RotY = utils.rotation_matrix([0, 1, 0], phi_y)  # rotate segments around yaxis normal to pia
+        RotZ = utils.rotation_matrix([0, 0, 1], -phi_z) # rotate segments around zaxis to get a proper orientation
+        RotYZ = RotY.dot(RotZ)
+
+        # rotated coordinates around z axis first then shift relative to the soma
+        self._seg_coords['p0'] = self._pos_soma + np.dot(RotYZ, morph_seg_coords['p0'])
+        self._seg_coords['p1'] = self._pos_soma + np.dot(RotYZ, morph_seg_coords['p1'])
+
+    def get_seg_coords(self):
+        return self._seg_coords
+
+
+    def get_im(self):
+        """Gather membrane currents from PtrVector into imVec (does not need a loop!)"""
+        self.im_ptr.gather(self.imVec)
+        return self.imVec.as_numpy()  # (nA)
+
+** insights
+seg_coords['p0'] = array with the starting 3D point of each cell segment
+seg_coords['p1'] = array with the ending 3D point of each cell segment
+
+*
+
+
+
+* 17Dec23 LFP using Sam's simple method
+** classes
+from math import sqrt,pi
+
+class currsource:
+  def __init__ (self, ptr, x, y, z):
+    self.ptr = ptr
+    self.x = x
+    self.y = y
+    self.z = z
+  def getcurr (self, elx, ely, elz):
+    d = sqrt((elx - self.x)**2 + (ely - self.y)**2 + (elz - self.z)**2)
+    if d > 0:    
+      val = self.ptr[0]
+      return val / d
+    return 0.0 
+  def getcurrd (self, d):
+    if d > 0.0: return self.ptr[0] / d
+    return 0.0 
+
+class pointlfp:
+  def __init__ (self, elx, ely, elz, lcurr = [], sigma=1.0):
+    self.lcurr = lcurr
+    self.elx = elx
+    self.ely = ely
+    self.elz = elz
+    self.sigma = 1.0
+    self.vlfp = []
+    self.ld = []
+  def setld (self):
+    for currs in self.lcurr:
+      self.ld.append(sqrt((self.elx - currs.x)**2 + (self.ely - currs.y)**2 + (self.elz - currs.z)**2))
+  def calcv (self):
+    if len(self.ld) < 1: self.setld()
+    i = 0.0
+    for currs,d in zip(self.lcurr,self.ld): i += currs.getcurrd(d)
+    return i / (4.0*pi*self.sigma)
+  def reset (self):
+    self.vlfp = []
+    self.ld = []
+  def savev (self): self.vlfp.append(self.calcv())
+
+** main network code
+def pyrcurrsrc (cell,lcurrsrc):
+  for sec in [cell.Bdend, cell.soma, cell.Adend1, cell.Adend2, cell.Adend3]:
+    lcurrsrc.append(currsource(sec(0.5).pas._ref_i, cell.x, cell.y, getzpos(cell,sec)))
+    lcurrsrc.append(currsource(sec(0.5).nacurrent._ref_ina, cell.x, cell.y, getzpos(cell,sec)))
+    lcurrsrc.append(currsource(sec(0.5).kacurrent._ref_ika, cell.x, cell.y, getzpos(cell,sec)))
+    lcurrsrc.append(currsource(sec(0.5).kdrcurrent._ref_ik, cell.x, cell.y, getzpos(cell,sec)))
+    lcurrsrc.append(currsource(sec(0.5).hcurrent._ref_ih, cell.x, cell.y, getzpos(cell,sec)))
+    lcurrsrc.append(currsource(sec(0.5)._ref_i_cap, cell.x, cell.y, getzpos(cell,sec)))
+  lcurrsrc.append(currsource(cell.somaGABAf.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.soma)))
+  lcurrsrc.append(currsource(cell.somaAMPAf.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.soma)))
+  lcurrsrc.append(currsource(cell.BdendAMPA.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.Bdend)))
+  lcurrsrc.append(currsource(cell.BdendNMDA.syn._ref_iNMDA, cell.x, cell.y, getzpos(cell,cell.Bdend)))
+  lcurrsrc.append(currsource(cell.BdendNMDA.syn._ref_ica, cell.x, cell.y, getzpos(cell,cell.Bdend)))
+  lcurrsrc.append(currsource(cell.Adend3GABAs.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.Adend3)))
+  lcurrsrc.append(currsource(cell.Adend3GABAf.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.Adend3)))
+  lcurrsrc.append(currsource(cell.Adend3NMDA.syn._ref_iNMDA, cell.x, cell.y, getzpos(cell,cell.Adend3)))
+  lcurrsrc.append(currsource(cell.Adend3NMDA.syn._ref_ica, cell.x, cell.y, getzpos(cell,cell.Adend3)))
+  lcurrsrc.append(currsource(cell.Adend3AMPAf.syn._ref_i, cell.x, cell.y, getzpos(cell,cell.Adend3)))
+
+def allpyrcurrsrc ():
+  lcurrsrc = []
+  for cell in net.pyr.cell: pyrcurrsrc(cell,lcurrsrc)
+  return lcurrsrc
+
+def makepflp (elx,ely,elz):
+  plfp = pointlfp(elx,ely,elz,allpyrcurrsrc())
+  return plfp
+
+def recpyrcurr (cell,lrec,lx,ly,lz):
+  xpos,ypos = cell.x,cell.y;
+  for sec in [cell.Bdend, cell.soma, cell.Adend1, cell.Adend2, cell.Adend3]:
+    reccurr(lrec,sec(0.5).pas._ref_i); savepos(lx,ly,lz,cell,sec)
+    reccurr(lrec,sec(0.5).nacurrent._ref_ina); savepos(lx,ly,lz,cell,sec)
+    reccurr(lrec,sec(0.5).kacurrent._ref_ika); savepos(lx,ly,lz,cell,sec)
+    reccurr(lrec,sec(0.5).kdrcurrent._ref_ik); savepos(lx,ly,lz,cell,sec)
+    reccurr(lrec,sec(0.5).hcurrent._ref_ih); savepos(lx,ly,lz,cell,sec)
+    reccurr(lrec,sec(0.5)._ref_i_cap); savepos(lx,ly,lz,cell,sec)
+  reccurr(lrec,cell.somaGABAf.syn._ref_i); savepos(lx,ly,lz,cell,cell.soma)
+  reccurr(lrec,cell.somaAMPAf.syn._ref_i); savepos(lx,ly,lz,cell,cell.soma)
+  reccurr(lrec,cell.BdendAMPA.syn._ref_i); savepos(lx,ly,lz,cell,cell.Bdend)
+  reccurr(lrec,cell.BdendNMDA.syn._ref_iNMDA); savepos(lx,ly,lz,cell,cell.Bdend)
+  reccurr(lrec,cell.BdendNMDA.syn._ref_ica); savepos(lx,ly,lz,cell,cell.Bdend)
+  reccurr(lrec,cell.Adend3GABAs.syn._ref_i); savepos(lx,ly,lz,cell,cell.Adend3)
+  reccurr(lrec,cell.Adend3GABAf.syn._ref_i); savepos(lx,ly,lz,cell,cell.Adend3)
+  reccurr(lrec,cell.Adend3NMDA.syn._ref_iNMDA); savepos(lx,ly,lz,cell,cell.Adend3)
+  reccurr(lrec,cell.Adend3NMDA.syn._ref_ica); savepos(lx,ly,lz,cell,cell.Adend3)
+  reccurr(lrec,cell.Adend3AMPAf.syn._ref_i); savepos(lx,ly,lz,cell,cell.Adend3)
+  return lrec,lx,ly,lz
+
+def recallpyrcurr ():
+  lrec,lx,ly,lz = [],[],[],[]
+  for cell in net.pyr.cell: recpyrcurr(cell,lrec,lx,ly,lz)
+  return lrec,lx,ly,lz
+
+def genLFP (lrec,lx,ly,lz,elx,ely,elz):
+  vlfp = h.Vector(lrec[0].size()); vtmp=h.Vector(lrec[0].size())
+  for i,vec in enumerate(lrec):
+    vtmp.copy(vec)
+    d = sqrt((elx - lx[i])**2 + (ely - ly[i])**2 + (elz - lz[i])**2)
+    if d > 0:
+      vtmp.mul(1.0/d)
+      vlfp.add(vtmp)
+  sigma = 1.0 # arbitrary
+  vlfp.mul(1.0/(4.0*pi*sigma))
+  return vlfp
+  
+
 * Netpyne Models/Users
 ** Github examples folder
 ** Documentation tutorials

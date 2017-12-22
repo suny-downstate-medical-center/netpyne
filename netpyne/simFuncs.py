@@ -934,8 +934,9 @@ def preRun ():
     # cvode variables
     sim.cvode=h.CVode()
     sim.cvode.active(int(sim.cfg.cvode_active))
-    sim.cvode.active(int(sim.cfg.cache_efficient))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)
+
 
     # set h global params
     sim.setGlobals()

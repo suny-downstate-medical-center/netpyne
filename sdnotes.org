@@ -7313,12 +7313,12 @@ org.geppetto.frontend  interface
 
 Geppetto Neuron  interface
 
-2) npm install from
+1) npm install from
    /u/salvadord/Documents/ISB/Models/NEURON-UI/org.geppetto.frontend.jupyter/src/jupyter_geppetto/geppetto/src/main/webapp
 
-3) in /utilities/ python run-dev-server.py
+2) in /utilities/ python run-dev-server.py
 
-4) checkout and pull metadata branch in netpyne repo
+3) checkout and pull metadata branch in netpyne repo
 
 ** Extend GUI
 - In browser open console + select "No cache" -- so changes in js take effect after reloading if run-dev-server.py running

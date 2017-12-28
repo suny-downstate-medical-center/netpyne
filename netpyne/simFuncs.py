@@ -937,7 +937,6 @@ def preRun ():
     sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)
 
-
     # set h global params
     sim.setGlobals()
 

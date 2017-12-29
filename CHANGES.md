@@ -1,5 +1,7 @@
 # Version 0.7.6
 
+- Enable providing a 2D list of spike times to VecStim populations
+
 - Added exception handling to analysis functions
 
 - Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 

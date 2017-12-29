@@ -126,8 +126,17 @@ class Pop (object):
             cellTags['znorm'] = randLocs[i,2] # set z location (um)
             cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
             cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
-            cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
+            cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)            
+            if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
+                if isinstance(self.tags['spkTimes'][0], list):
+                    try:
+                        cellTags['params']['spkTimes'] = self.tags['spkTimes'][i] # 2D list
+                    except:
+                        pass
+                else:
+                    cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+
             if sim.cfg.verbose: print('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
         return cells
@@ -337,7 +346,7 @@ class Pop (object):
                     tmp = getattr(h, self.tags['cellModel'])
                     self.cellModelClass = sim.PointCell
                     excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
-                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref']
+                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes']
                     params = {k: v for k,v in self.tags.iteritems() if k not in excludeTags}
                     self.tags['params'] = params
                     for k in self.tags['params']: self.tags.pop(k)

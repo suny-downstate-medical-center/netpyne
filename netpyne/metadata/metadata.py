@@ -319,6 +319,52 @@ metadata = {
             }
         }
     },
+    "synMechParams": {
+        "label": "Syn Mech Params",
+        "suggestions": "",
+        "help": "",
+        "hintText": "",
+        "children": {
+            "mod": {
+                "label": "NMODL mechanism name",
+                "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "selfNetCon": {
+                "label": "NMODL mechanism name",
+                "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma')."
+                "suggestions": "",
+                "hintText": ""
+            },
+        }
+    },
+    "connParams": {
+        "label": "Connectivity Params",
+        "suggestions": "",
+        "help": "",
+        "hintText": "",
+        "children": {
+            "preConds": {
+                "label": "Conditions for the presynaptic cells",
+                "help": "Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "postConds": {
+                "label": "Conditions for the postsynaptic cells",
+                "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "sec": {
+                "label": "Conditions for the postsynaptic cells",
+                "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "suggestions": "",
+                "hintText": ""
+            },
+        }
+    },
     "simConfig": {
         "label": "Sim Config",
         "suggestions": "",

@@ -358,8 +358,44 @@ metadata = {
                 "hintText": ""
             },
             "sec": {
-                "label": "Conditions for the postsynaptic cells",
-                "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "label": "Target section",
+                "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "loc": {
+                "label": "Target synaptic mechanism",
+                "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1)."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "synMech": {
+                "label": "Target synaptic mechanism(s) on the postsynaptic neuron",
+                "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "synsPerConn": {
+                "label": "Number of individual synaptic connections",
+                "help": "Number of individual synaptic connections (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "weight": {
+                "label": "Strength of synaptic connection",
+                "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "delay": {
+                "label": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron",
+                "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "probability": {
+                "label": " Probability of connection between each pre- and postsynaptic cell",
+                "help": "Probability of connection between each pre- and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters."
                 "suggestions": "",
                 "hintText": ""
             },

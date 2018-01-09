@@ -394,8 +394,8 @@ metadata = {
                 "hintText": ""
             },
             "probability": {
-                "label": " Probability of connection between each pre- and postsynaptic cell",
-                "help": "Probability of connection between each pre- and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters."
+                "label": " Probability of connection between each pre and postsynaptic cell",
+                "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters."
                 "suggestions": "",
                 "hintText": ""
             },

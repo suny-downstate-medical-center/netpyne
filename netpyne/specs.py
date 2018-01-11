@@ -116,6 +116,9 @@ class Dict(dict):
         else:
             return False
 
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
+
     def __missing__(self, key):
         if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
@@ -243,6 +246,8 @@ class ODict(OrderedDict):
         else:
             return False
 
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
         
     def __getstate__ (self):
         return self.toOrderedDict()

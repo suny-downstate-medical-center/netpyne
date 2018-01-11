@@ -614,20 +614,25 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Order by
     if len(cellGids) > 0:
-        if orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+        if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
             orderBy = 'gid'
-        elif not isinstance(cells[0]['tags'][orderBy], Number): 
+        elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number): 
             orderBy = 'gid'
         ylabelText = 'Cells (ordered by %s)'%(orderBy)   
     
         if orderBy == 'gid': 
             yorder = [cell[orderBy] for cell in cells]
-        else:
+            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+        elif isinstance(orderBy, basestring):
             yorder = [cell['tags'][orderBy] for cell in cells]
+            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+        elif isinstance(orderBy, list) and len(orderBy) == 2:
+            yorders = [[popLabels.index(cell['tags'][orderElem]) if orderElem=='pop' else cell['tags'][orderElem] 
+                                    for cell in cells] for orderElem in orderBy] 
+            sortedGids = {gid:i for i, (y0, y1, gid) in enumerate(sorted(zip(yorders[0], yorders[1], cellGids)))}
 
-        #if orderInverse: yorder.reverse()
 
-        sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+        #sortedGids = {gid:i for i, (y, gid) in enumerate(sorted(zip(yorder, cellGids)))}
         spkinds = [sortedGids[gid]  for gid in spkgids]
 
     else:
@@ -1041,7 +1046,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             # rate stats
             if stat == 'rate':
                 toRate = 1e3/(timeRange[1]-timeRange[0])
-                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] #cellGids] #set(spkinds)] 
+                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
                 statData.insert(0, rates)
                 xlabel = 'Rate (Hz)'
 
@@ -1050,7 +1055,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 xlabel = 'Irregularity (ISI CV)'
                 spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] for gid in set(spkinds)]
                 isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
-                isicv = [np.std(x) / np.mean(x) for x in isimat if len(x)>0]
+                isicv = [np.std(x) / np.mean(x) for x in isimat if len(x)>0] if len(x)>0 else [0]
                 statData.insert(0, isicv) 
 
             # synchrony
@@ -1201,7 +1206,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     allPower, allSignal, allFreqs=[], [], []
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
-        cells, cellGids, netStimLabels = getCellsInclude([subset])
+        cells, cellGids, netStimLabels = getCellsInclude([subset])   
         numNetStims = 0
 
         # Select cells to include
@@ -1236,7 +1241,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
         histData.append(histoCount)
 
-        color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)] 
+        color = popColors[subset] if isinstance(subset, basestring) and subset in popColors else colorList[iplot%len(colorList)] 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
@@ -1273,7 +1278,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            color = popColors[subset] if subset in popColors else colorList[i%len(colorList)] 
+            color = popColors[subset] if isinstance(subset, basestring) and subset in popColors else colorList[i%len(colorList)] 
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))

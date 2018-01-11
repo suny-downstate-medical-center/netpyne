@@ -46,8 +46,15 @@ simConfig.saveJson = True
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotConn'] = True           # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotSpikeStats'] = True           # plot 2D visualization of cell positions and connections
+
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
-# import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+
+
+
+
+import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

@@ -932,21 +932,10 @@ def preRun ():
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    if not getattr(h, 'cvode', None):
-        h('objref cvode')
-        h('cvode = new CVode()')
-
-    if sim.cfg.cvode_active:
-        h.cvode.active(1)
-    else:
-        h.cvode.active(0)
-
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
-
-    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    sim.cvode=h.CVode()
+    sim.cvode.active(int(sim.cfg.cvode_active))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
+    sim.cvode.atol(sim.cfg.cvode_atol)
 
     # set h global params
     sim.setGlobals()
@@ -966,10 +955,8 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            h('objref cvode')
-            h('cvode = new CVode()')
             for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))

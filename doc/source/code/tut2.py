@@ -15,7 +15,7 @@ cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl':
 netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell params
 
 ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
+netParams.synMechParams['exc'] = {'mou1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatod': 'Exp2Syn', 'tary synaptic mechanism
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
@@ -45,16 +45,10 @@ simConfig.saveJson = True
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotConn'] = True           # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotSpikeStats'] = True           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 
-
-
-
-import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+#import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

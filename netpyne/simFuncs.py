@@ -539,7 +539,7 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 ###############################################################################
 def rename (obj, old, new, label=None):
     try:
-        return obj.replace(old, new, label)
+        return obj.rename(old, new, label)
     except:
         if type(obj) == dict and old in obj:
             obj[new] = obj.pop(old)  # replace

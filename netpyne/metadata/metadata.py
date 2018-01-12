@@ -336,7 +336,7 @@ metadata = {
                 "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma')."
                 "suggestions": "",
                 "hintText": ""
-            },
+            }
         }
     },
     "connParams": {
@@ -434,7 +434,85 @@ metadata = {
                 "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}."
                 "suggestions": "",
                 "hintText": ""
+            }
+        }
+    },
+    "stimSourceParams": {
+        "label": "Stimulation Source Params",
+        "suggestions": "",
+        "help": "",
+        "hintText": "",
+        "children": {
+            "type": {
+                "label": "Point process used as stimulator",
+                "help": "Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'. Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections."
+                "suggestions": "",
+                "hintText": ""
+
             },
+            "stim params": {
+                "label": "Stimulation parameters",
+                "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp’). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm')."
+                "suggestions": "",
+                "hintText": ""
+            }
+        }
+    },
+    "stimTargetParams": {
+        "label": "Stimulation Target Params",
+        "suggestions": "",
+        "help": "",
+        "hintText": "",
+        "children": {
+            "source": {
+                "label": "Label of the stimulation source",
+                "help": "Label of the stimulation source (e.g. 'electrode_current')."
+                "suggestions": "",
+                "hintText": ""
+
+            },
+            "conditions": {
+                "label": "Conditions of cells where the stim will be applied",
+                "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "sec": {
+                "label": "Target section",
+                "help": "Target section (default: 'soma')."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "loc": {
+                "label": "Target location ",
+                "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings)."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "synMech": {
+                "label": "Synaptic mechanism label to connect NetStim to",
+                "help": "Synaptic mechanism label to connect NetStim to. Optional; only for NetStims."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "weight": {
+                "label": "Weight of connection between NetStim and cell",
+                "help": "Weight of connection between NetStim and cell. Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "delay": {
+                "label": "Delay of connection between NetStim and cell",
+                "help": "Delay of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "suggestions": "",
+                "hintText": ""
+            },
+            "synsPerConn": {
+                "label": "Number of synapses of connection between NetStim and cell",
+                "help": "Number of synapses of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "suggestions": "",
+                "hintText": ""
+            }
         }
     },
     "simConfig": {

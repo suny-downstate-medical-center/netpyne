@@ -103,13 +103,13 @@ netParams.stimTargetParams['Input1->all'] = {'source': 'Input1', 'conds': {'ynor
 
 simConfig = specs.SimConfig()                       # object of class SimConfig to store simulation configuration
 
-simConfig.verbose = 0                               # Show detailed messages 
-simConfig.hParams['v_init'] = -90                   # Set v_init=-90
-simConfig.createNEURONObj = 0                       # create HOC objects when instantiating network
+simConfig.createNEURONObj = False                       # create HOC objects when instantiating network
 simConfig.createPyStruct = True                     # create Python structure (simulator-independent) when instantiating network
 
 # Saving
 simConfig.filename = 'V1'                        # Set file output name
-simConfig.saveDataInclude = ['netParams', 'net']    # data structures to save
+simConfig.saveDataInclude = ['netParams', 'net', 'simConfig']    # data structures to save
 simConfig.saveJson = True                           # Save params, network and sim output to pickle file
+simConfig.compactConnFormat = True
+simConfig.saveCellSecs = False
 

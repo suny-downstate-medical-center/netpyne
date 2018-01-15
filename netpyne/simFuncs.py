@@ -11,7 +11,8 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
-    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
+    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
+    'rename'])  # misc/utilities
 
 import sys
 import os
@@ -176,7 +177,8 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
         if sim.rank == 0:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
-            if compactConnFormat: compactToLongConnFormat(data['net']['cells'], compactConnFormat)
+            if compactConnFormat: 
+                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
             sim.net.allPops = data['net']['pops']
             sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -195,7 +197,13 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
                     # TO DO: assumes CompartCell -- add condition to load PointCell
                     cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
                     try:
-                        cell.secs = Dict(cellLoad['secs'])
+                        if sim.cfg.saveCellSecs:
+                            cell.secs = Dict(cellLoad['secs'])
+                        else:
+                            createNEURONObjorig = sim.cfg.createNEURONObj
+                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
+                            cell.create()
+                            sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
                         if sim.cfg.verbose: ' Unable to load cell secs'
 
@@ -275,13 +283,18 @@ def loadSimData (filename, data=None):
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename, data=None, instantiate=True):
+def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
     import sim 
 
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
+    sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
-    if hasattr(sim.cfg, 'compactConnFormat'): connFormat = sim.cfg.compactConnFormat
+    if hasattr(sim.cfg, 'compactConnFormat'): 
+        connFormat = sim.cfg.compactConnFormat
+    else:
+        print 'Error: no connFormat provided in simConfig'
+        sys.exit()
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
@@ -519,6 +532,21 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
             else:
                 objCopy[key] = val
     return objCopy
+
+
+###############################################################################
+### Rename objects
+###############################################################################
+def rename (obj, old, new, label=None):
+    try:
+        return obj.rename(old, new, label)
+    except:
+        if type(obj) == dict and old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
 
 
 ###############################################################################
@@ -920,21 +948,10 @@ def preRun ():
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    if not getattr(h, 'cvode', None):
-        h('objref cvode')
-        h('cvode = new CVode()')
-
-    if sim.cfg.cvode_active:
-        h.cvode.active(1)
-    else:
-        h.cvode.active(0)
-
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
-
-    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    sim.cvode=h.CVode()
+    sim.cvode.active(int(sim.cfg.cvode_active))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
+    sim.cvode.atol(sim.cfg.cvode_atol)
 
     # set h global params
     sim.setGlobals()
@@ -954,15 +971,18 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            h('objref cvode')
-            h('cvode = new CVode()')
             for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
 
-    # reset all netstims so runs are always equivalent
+    # set global index used by all instances of the Random123 instances of Random
+    if sim.cfg.rand123GlobalIndex is not None: 
+        rand = h.Random()
+        rand.Random123_globalindex(int(sim.cfg.rand123GlobalIndex))
+
+    # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
             #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
@@ -1606,7 +1626,11 @@ def compactConnFormat():
     import sim
 
     if type(sim.cfg.compactConnFormat) is not list:
-        sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+        if len(sim.net.params.stimTargetParams) > 0:  # if have stims, then require preLabel field
+            sim.cfg.compactConnFormat = ['preGid', 'preLabel', 'sec', 'loc', 'synMech', 'weight', 'delay']
+        else:
+            sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+    
 
     connFormat = sim.cfg.compactConnFormat
     for cell in sim.net.cells:

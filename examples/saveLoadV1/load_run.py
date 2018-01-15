@@ -10,6 +10,8 @@ simConfig.duration = 50                      # Duration of the simulation, in ms
 simConfig.dt = 0.01                           # Internal integration timestep, in ms
 simConfig.createNEURONObj = True             # create HOC objects when instantiating network
 simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
+simConfig.verbose = 0
+simConfig.hParams['v_init'] = -90 
 
 # Recording
 simConfig.recordStep = 0.1                                  # Step size in ms to save data (eg. V traces, LFP, etc)

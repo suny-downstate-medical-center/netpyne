@@ -1,3 +1,32 @@
+# Version 0.7.6
+
+- Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])
+
+- Enable providing a 2D list of spike times to VecStim populations
+
+- Added exception handling to analysis functions
+
+- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
+
+- Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
+
+- plotTraces now plots any recorded cells if 'include' is None
+
+- Made CVode object part of sim and simplified cvode calls
+
+- Added sim.rename() wrapper function
+
+- Added __rename__() method to dict class
+
+- Fixed bug loading from compactConnFormat
+
+- Fixed bug in IClamp: 'delay' -> 'del'
+
+- Fixed bug calculating min convergece and divergence
+
+- Fixed bug in plotRatePSD colors
+
+
 # Version 0.7.5
 
 - Improved NeuroML conversion support

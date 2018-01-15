@@ -93,6 +93,32 @@ class Dict(dict):
         else:
             return x
 
+    def __rename__(self, old, new, label=None):
+        '''
+        old (string): old dict key
+        new (string): new dict key
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
+        
+        returns: True if successful, False otherwse
+        '''
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
+
     def __missing__(self, key):
         if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
@@ -220,6 +246,8 @@ class ODict(OrderedDict):
         else:
             return False
 
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
         
     def __getstate__ (self):
         return self.toOrderedDict()
@@ -621,6 +649,7 @@ class SimConfig (object):
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
+        self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
@@ -658,7 +687,7 @@ class SimConfig (object):
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
+        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

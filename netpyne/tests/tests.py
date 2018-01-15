@@ -1100,10 +1100,10 @@ class TestTypeObj(object):
                     errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + ".")
                     return errorMessages
                 #print (" before ")
-                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger']
+                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger'. Keys specified are " + str(analysis.keys()) + ".")
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
                 #print (" after ")
 
                 if 'plotRaster' in analysis:
@@ -1133,11 +1133,15 @@ class TestTypeObj(object):
 
                         if 'orderBy' in plotRaster:
 
-                            if not isinstance( plotRaster['orderBy'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
-                            else:
-                                if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+                            # if not isinstance( plotRaster['orderBy'], list):
+                            #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Must be a list. Value provided is " + str(plotRaster['orderBy']) + ".")
+                            # else:
+                                # if any ( [x not in ['gid', 'ynorm', 'y'] for x in plotRaster['orderBy'] ] ):
+                                #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+
+                            if plotRaster['orderBy'] not in ['gid', 'ynorm', 'y']:
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'orderBy': Valid values are " + str(['gid', 'ynorm', 'y'])+ ". Value provided is " + str(plotRaster['orderBy']) + ".")
+
 
                         if 'orderInverse' in plotRaster:
 

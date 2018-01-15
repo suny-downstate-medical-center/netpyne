@@ -1264,7 +1264,6 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
 
-
         plt.plot(freqs, signal, linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
@@ -1272,11 +1271,11 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         plt.xlim([0, (Fs/2)-1])
         if ylim: plt.ylim(ylim)
 
-    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
-        try:
-            plt.tight_layout()
-        except:
-            pass
+    # if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+    #     try:
+    #         plt.tight_layout()
+    #     except:
+    #         pass
 
     # Add legend
     if overlay:
@@ -1285,7 +1284,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
-        plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
+        #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
 
     # save figure data

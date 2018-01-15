@@ -11,7 +11,8 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
-    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
+    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
+    'rename'])  # misc/utilities
 
 import sys
 import os
@@ -534,6 +535,21 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 
 
 ###############################################################################
+### Rename objects
+###############################################################################
+def rename (obj, old, new, label=None):
+    try:
+        return obj.rename(old, new, label)
+    except:
+        if type(obj) == dict and old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+
+
+###############################################################################
 ### Recursively remove items of an object (used to avoid mem leaks)
 ###############################################################################
 def clearObj (obj):
@@ -932,21 +948,10 @@ def preRun ():
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    if not getattr(h, 'cvode', None):
-        h('objref cvode')
-        h('cvode = new CVode()')
-
-    if sim.cfg.cvode_active:
-        h.cvode.active(1)
-    else:
-        h.cvode.active(0)
-
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
-
-    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    sim.cvode=h.CVode()
+    sim.cvode.active(int(sim.cfg.cvode_active))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
+    sim.cvode.atol(sim.cfg.cvode_atol)
 
     # set h global params
     sim.setGlobals()
@@ -966,10 +971,8 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            h('objref cvode')
-            h('cvode = new CVode()')
             for i in xrange(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))

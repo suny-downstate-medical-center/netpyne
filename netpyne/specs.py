@@ -93,6 +93,32 @@ class Dict(dict):
         else:
             return x
 
+    def __rename__(self, old, new, label=None):
+        '''
+        old (string): old dict key
+        new (string): new dict key
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
+        
+        returns: True if successful, False otherwse
+        '''
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
+
     def __missing__(self, key):
         if key and not key.startswith('_ipython'):
             value = self[key] = Dict()
@@ -220,6 +246,8 @@ class ODict(OrderedDict):
         else:
             return False
 
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
         
     def __getstate__ (self):
         return self.toOrderedDict()

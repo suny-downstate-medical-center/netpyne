@@ -352,7 +352,7 @@ Next we need to compile this .mod file so its ready to use by NEURON::
 
 Now we need to specify that we want to use the ``Izhi2007b`` ``cellModel`` for the ``S`` population::
 
-	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi2007b'} 
+	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi'} 
 
 And we need to create a new cell rule for the Izhikevich cell. But first we need to specify that the existing rule needs to apply only to 'HH' cell models::
 
@@ -360,7 +360,7 @@ And we need to create a new cell rule for the Izhikevich cell. But first we need
 
 Finally we can create the new rule for the Izhikevich cell model::
 
-	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007b'},  'secs': {}} 	# cell rule dict
+	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 	# cell rule dict
 	cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
 	cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
 	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 

@@ -771,7 +771,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
                 finalty = tyOffset + ty/2.0 - 0.01
             plt.text(tx, finalty, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
         maxLabelLen = min(6, max([len(l) for l in labels]))
-        plt.subplots_adjust(right=(1.0-0.011*maxLabelLen))
+        plt.subplots_adjust(right=(0.95-0.011*maxLabelLen))
 
     # Plot spike hist
     if spikeHist == 'overlay':
@@ -958,7 +958,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-@exception
+#@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
                  popColors = [], xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1041,7 +1041,10 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                         spkinds.extend(spkindsNew)
                         numNetStims += 1
 
-            spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) if timeRange[0] <= spkt <= timeRange[1]])
+            try:
+                spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) if timeRange[0] <= spkt <= timeRange[1]])
+            except:
+                pass
 
             # rate stats
             if stat == 'rate':
@@ -1055,7 +1058,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 xlabel = 'Irregularity (ISI CV)'
                 spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] for gid in set(spkinds)]
                 isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
-                isicv = [np.std(x) / np.mean(x) for x in isimat if len(x)>0] if len(x)>0 else [0]
+                isicv = [np.std(x) / np.mean(x) if len(x)>0 else [0] for x in isimat if len(x)>0] 
                 statData.insert(0, isicv) 
 
             # synchrony
@@ -1261,7 +1264,6 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
 
-
         plt.plot(freqs, signal, linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
@@ -1269,11 +1271,11 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         plt.xlim([0, (Fs/2)-1])
         if ylim: plt.ylim(ylim)
 
-    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
-        try:
-            plt.tight_layout()
-        except:
-            pass
+    # if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+    #     try:
+    #         plt.tight_layout()
+    #     except:
+    #         pass
 
     # Add legend
     if overlay:
@@ -1282,7 +1284,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
-        plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
+        #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
 
     # save figure data

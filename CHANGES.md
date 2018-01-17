@@ -14,6 +14,8 @@
 
 - Made CVode object part of sim and simplified cvode calls
 
+- Added sim.rename() wrapper function
+
 - Added __rename__() method to dict class
 
 - Fixed bug loading from compactConnFormat

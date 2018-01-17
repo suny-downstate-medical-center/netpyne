@@ -11,7 +11,8 @@ __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createPara
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
-    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
+    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
+    'rename'])  # misc/utilities
 
 import sys
 import os
@@ -531,6 +532,21 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
             else:
                 objCopy[key] = val
     return objCopy
+
+
+###############################################################################
+### Rename objects
+###############################################################################
+def rename (obj, old, new, label=None):
+    try:
+        return obj.rename(old, new, label)
+    except:
+        if type(obj) == dict and old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
 
 
 ###############################################################################

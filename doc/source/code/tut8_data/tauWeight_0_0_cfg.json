@@ -16,6 +16,7 @@
         "cache_efficient": false, 
         "checkErrors": false, 
         "checkErrorsVerbose": false, 
+        "compactConnFormat": false, 
         "connWeight": 0.005, 
         "createNEURONObj": true, 
         "createPyStruct": true, 
@@ -27,11 +28,13 @@
         "gatherOnlySimData": false, 
         "hParams": {
             "celsius": 6.3, 
-            "clamp_resist": 0.001
+            "clamp_resist": 0.001, 
+            "v_init": -65.0
         }, 
         "includeParamsLabel": true, 
         "printPopAvgRates": true, 
         "printRunTime": false, 
+        "rand123GlobalIndex": null, 
         "recordCells": [], 
         "recordStep": 0.1, 
         "recordStim": false, 

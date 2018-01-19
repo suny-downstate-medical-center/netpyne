@@ -219,7 +219,8 @@ class Network (object):
         params = sourceParams.copy()
         params.update(targetParams)
 
-        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams if param in params and isinstance(params[param], str)]  
+        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
+            if param in params and isinstance(params[param], str) and params[param] not in ['variable']]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}   

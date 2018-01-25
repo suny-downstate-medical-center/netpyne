@@ -1184,12 +1184,17 @@ class CompartCell (Cell):
         else:
             synMechSecs = secLabels
             synMechLocs = params['loc']
-            if isinstance(params['loc'], int) or isinstance(params['loc'], float): synMechLocs = [params['loc']]
-            # randomize the section to connect to and move it to beginning of list
-            pos = rand(0, len(synMechSecs))
-            synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
-            if len(synMechLocs)>1: synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
-            
+            if len(synMechSecs)>1:
+                # pick a section at random
+                pos = rand(0, len(synMechSecs))
+                # move picked section to front
+                synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
+                if isinstance(params['loc'], list):
+                    synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
+                else:
+                    synMechLocs = [params['loc']]
+            if not isinstance(synMechLocs, list): synMechLocs = [params['loc']]
+
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)]
 

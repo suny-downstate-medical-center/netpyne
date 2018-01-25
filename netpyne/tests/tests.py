@@ -716,10 +716,11 @@ class TestTypeObj(object):
 
             dimSynMechs = 1
             values = []
-            dimValues = 1
+            dimValues = 0
 
             if 'synMech' in paramValues:
                 synMechs = paramValues['synMech']
+
                 # print (" *** synmechs " + str(synMechs))
                 if isinstance(synMechs, list):
                     dimSynMechs = len(synMechs)

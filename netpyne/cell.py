@@ -1,7 +1,7 @@
 """
-cell.py 
+cell.py
 
-Contains Cell related classes 
+Contains Cell related classes
 
 Contributors: salvadordura@gmail.com
 """
@@ -16,16 +16,16 @@ import numpy as np
 
 ###############################################################################
 #
-# GENERIC CELL CLASS 
+# GENERIC CELL CLASS
 #
 ###############################################################################
 
 class Cell (object):
     ''' Generic class for neuron models '''
-    
+
     def __init__ (self, gid, tags):
-        self.gid = gid  # global cell id 
-        self.tags = tags  # dictionary of cell tags/attributes 
+        self.gid = gid  # global cell id
+        self.tags = tags  # dictionary of cell tags/attributes
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
 
@@ -36,7 +36,7 @@ class Cell (object):
         sim.simData['stims'].update({'cell_'+str(self.gid): Dict()})
         for conn in self.conns:
             if conn['preGid'] == 'NetStim':
-                stimSpikeVecs = h.Vector() # initialize vector to store 
+                stimSpikeVecs = h.Vector() # initialize vector to store
                 conn['hNetcon'].record(stimSpikeVecs)
                 sim.simData['stims']['cell_'+str(self.gid)].update({conn['preLabel']: stimSpikeVecs})
 
@@ -44,7 +44,7 @@ class Cell (object):
     # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
     def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
         from pylab import r_, convolve, shape, exp, zeros, hstack, array, rand
-        
+
         # Create event times
         timeres = 0.001 # Time resolution = 1 ms = 500 Hz (DJK to CK: 500...?)
         pulselength = 10 # Length of pulse in units of width
@@ -56,32 +56,32 @@ class Cell (object):
             # Note: The timeres/2 subtraction acts as an eps to avoid later int rounding errors.
             if currenttime>=0 and currenttime<timewindow-timeres/2: output.append(currenttime)
             currenttime = currenttime+isi+variation*(rand()-0.5)
-        
+
         # Create single pulse
         npts = pulselength*width/timeres
         x = (r_[0:npts]-npts/2+1)*timeres
-        if stimshape=='gaussian': 
+        if stimshape=='gaussian':
             pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
             pulse = pulse/max(pulse)
-        elif stimshape=='square': 
+        elif stimshape=='square':
             pulse = zeros(shape(x))
             pulse[int(npts/2):int(npts/2)+int(width/timeres)] = 1 # Start exactly on time
         else:
             raise Exception('Stimulus shape "%s" not recognized' % stimshape)
-        
+
         # Create full stimulus
         events = zeros((allpts))
         events[array(array(output)/timeres,dtype=int)] = 1
         fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
         fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
         fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
-        
+
         fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
         fulloutput = hstack((0,fulloutput,0)) # Set weight to zero at either end of the stimulus period
         events = hstack((0,events,0)) # Ditto
-        stimvecs = deepcopy([fulltime, fulloutput, events]) # Combine vectors into a matrix                   
-        
-        return stimvecs  
+        stimvecs = deepcopy([fulltime, fulloutput, events]) # Combine vectors into a matrix
+
+        return stimvecs
 
 
     def addNetStim (self, params, stimContainer=None):
@@ -92,7 +92,7 @@ class Cell (object):
             stimContainer = self.stims[-1]
 
             if sim.cfg.verbose: print('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
-        
+
         if sim.cfg.createNEURONObj:
             rand = h.Random()
             stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
@@ -108,18 +108,18 @@ class Cell (object):
                 else:
                     print 'Error: Unknown stimulation rate type: %s'%(h.params['rate'])
             else:
-                netstim = h.NetStim() 
+                netstim = h.NetStim()
                 netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
                 netstim.noise = params['noise'] # note: random number generator initialized via Random123() from sim.preRun()
                 netstim.start = params['start']
-            netstim.number = params['number']   
-                
+            netstim.number = params['number']
+
             stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
 
             return stimContainer['hNetStim']
 
 
-    def __getstate__ (self): 
+    def __getstate__ (self):
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         import sim
 
@@ -134,12 +134,12 @@ class Cell (object):
 
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.iteritems():
-            
+
             conditionsMet = 1
-            
+
             if 'conds' in params:
                 for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                    # choose what to comapare to 
+                    # choose what to comapare to
                     if condKey in ['gid']:  # CHANGE TO GID
                         compareTo = self.gid
                     else:
@@ -153,18 +153,18 @@ class Cell (object):
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
-                            break 
-                    elif compareTo != condVal: 
+                            break
+                    elif compareTo != condVal:
                         conditionsMet = 0
                         break
-                        
+
             if conditionsMet:
                 try:
                     ptr = None
                     if 'loc' in params:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            
+
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
@@ -177,7 +177,7 @@ class Cell (object):
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
                             ptr = [getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs]
                             secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
-                        else: 
+                        else:
                             ptr = []
                             secLocs = []
                             for secName,sec in self.secs.iteritems():
@@ -213,19 +213,19 @@ class Cell (object):
 
 ###############################################################################
 #
-# COMPARTMENTAL CELL CLASS 
+# COMPARTMENTAL CELL CLASS
 #
 ###############################################################################
 
 class CompartCell (Cell):
     ''' Class for section-based neuron models '''
-    
+
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(CompartCell, self).__init__(gid, tags)
         self.secs = Dict()  # dict of sections
         self.secLists = Dict()  # dict of sectionLists
 
-        if create: self.create()  # create cell 
+        if create: self.create()  # create cell
         if associateGid: self.associateGid() # register cell for this node
 
 
@@ -235,7 +235,7 @@ class CompartCell (Cell):
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
-                if isinstance(condVal, list): 
+                if isinstance(condVal, list):
                     if isinstance(condVal[0], Number):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
@@ -243,8 +243,8 @@ class CompartCell (Cell):
                     elif isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
-                            break 
-                elif self.tags.get(condKey) != condVal: 
+                            break
+                elif self.tags.get(condKey) != condVal:
                     conditionsMet = 0
                     break
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -268,7 +268,7 @@ class CompartCell (Cell):
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
                     break
-            elif isinstance(condVal, list): 
+            elif isinstance(condVal, list):
                 if isinstance(condVal[0], Number):
                     if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                         conditionsMet = 0
@@ -276,8 +276,8 @@ class CompartCell (Cell):
                 elif isinstance(condVal[0], basestring):
                     if self.tags.get(condKey) not in condVal:
                         conditionsMet = 0
-                        break 
-            elif self.tags.get(condKey) != condVal: 
+                        break
+            elif self.tags.get(condKey) != condVal:
                 conditionsMet = 0
                 break
 
@@ -290,29 +290,29 @@ class CompartCell (Cell):
 
     def createPyStruct (self, prop):
         # set params for all sections
-        for sectName,sectParams in prop['secs'].iteritems(): 
+        for sectName,sectParams in prop['secs'].iteritems():
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create section dict
             sec = self.secs[sectName]  # pointer to section
-            
-            # add distributed mechanisms 
+
+            # add distributed mechanisms
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].iteritems(): 
+                for mechName,mechParams in sectParams['mechs'].iteritems():
                     if 'mechs' not in sec:
                         sec['mechs'] = Dict()
-                    if mechName not in sec['mechs']: 
-                        sec['mechs'][mechName] = Dict()  
+                    if mechName not in sec['mechs']:
+                        sec['mechs'][mechName] = Dict()
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         sec['mechs'][mechName][mechParamName] = mechParamValue
-            
-            # add ion info 
+
+            # add ion info
             if 'ions' in sectParams:
-                for ionName,ionParams in sectParams['ions'].iteritems(): 
+                for ionName,ionParams in sectParams['ions'].iteritems():
                     if 'ions' not in sec:
                         sec['ions'] = Dict()
-                    if ionName not in sec['ions']: 
-                        sec['ions'][ionName] = Dict()  
+                    if ionName not in sec['ions']:
+                        sec['ions'][ionName] = Dict()
                     for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the ion
                         sec['ions'][ionName][ionParamName] = ionParamValue
 
@@ -325,19 +325,19 @@ class CompartCell (Cell):
 
             # add point processes
             if 'pointps' in sectParams:
-                for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
+                for pointpName,pointpParams in sectParams['pointps'].iteritems():
                     #if self.tags['cellModel'] == pointpName: # only required if want to allow setting various cell models in same rule
                     if 'pointps' not in sec:
                         sec['pointps'] = Dict()
-                    if pointpName not in sec['pointps']: 
-                        sec['pointps'][pointpName] = Dict()  
+                    if pointpName not in sec['pointps']:
+                        sec['pointps'][pointpName] = Dict()
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
-            # add geometry params 
+            # add geometry params
             if 'geom' in sectParams:
-                for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                for geomParamName,geomParamValue in sectParams['geom'].iteritems():
                     if 'geom' not in sec:
                         sec['geom'] = Dict()
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
@@ -345,7 +345,7 @@ class CompartCell (Cell):
 
                 # add 3d geometry
                 if 'pt3d' in sectParams['geom']:
-                    if 'pt3d' not in sec['geom']:  
+                    if 'pt3d' not in sec['geom']:
                         sec['geom']['pt3d'] = []
                     for pt3d in sectParams['geom']['pt3d']:
                         sec['geom']['pt3d'].append(pt3d)
@@ -354,7 +354,7 @@ class CompartCell (Cell):
             if 'topol' in sectParams:
                 if 'topol' not in sec:
                     sec['topol'] = Dict()
-                for topolParamName,topolParamValue in sectParams['topol'].iteritems(): 
+                for topolParamName,topolParamValue in sectParams['topol'].iteritems():
                     sec['topol'][topolParamName] = topolParamValue
 
             # add other params
@@ -375,7 +375,7 @@ class CompartCell (Cell):
             self.secLists.update(prop['secLists'])  # diction of section lists
 
 
-    def initV (self): 
+    def initV (self):
         for sec in self.secs.values():
             if 'vinit' in sec:
                 sec['hSec'].v = sec['vinit']
@@ -385,22 +385,22 @@ class CompartCell (Cell):
         import sim
 
         # set params for all sections
-        for sectName,sectParams in prop['secs'].iteritems(): 
+        for sectName,sectParams in prop['secs'].iteritems():
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]: 
+            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]:
                 self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
-            # set geometry params 
+            # set geometry params
             if 'geom' in sectParams:
-                for geomParamName,geomParamValue in sectParams['geom'].iteritems():  
+                for geomParamName,geomParamValue in sectParams['geom'].iteritems():
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
                         setattr(sec['hSec'], geomParamName, geomParamValue)
 
                 # set 3d geometry
-                if 'pt3d' in sectParams['geom']:  
+                if 'pt3d' in sectParams['geom']:
                     h.pt3dclear(sec=sec['hSec'])
                     x = self.tags['x']
                     y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
@@ -408,30 +408,30 @@ class CompartCell (Cell):
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
 
-            # add distributed mechanisms 
+            # add distributed mechanisms
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].iteritems(): 
-                    if mechName not in sec['mechs']: 
+                for mechName,mechParams in sectParams['mechs'].iteritems():
+                    if mechName not in sec['mechs']:
                         sec['mechs'][mechName] = Dict()
                     sec['hSec'].insert(mechName)
                     for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
-                            if type(mechParamValue) in [list]: 
+                            if type(mechParamValue) in [list]:
                                 mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
-                            
+
             # add ions
             if 'ions' in sectParams:
-                for ionName,ionParams in sectParams['ions'].iteritems(): 
-                    if ionName not in sec['ions']: 
+                for ionName,ionParams in sectParams['ions'].iteritems():
+                    if ionName not in sec['ions']:
                         sec['ions'][ionName] = Dict()
                     sec['hSec'].insert(ionName+'_ion')    # insert mechanism
                     for ionParamName,ionParamValue in ionParams.iteritems():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
-                            if type(ionParamValue) in [list]: 
+                            if type(ionParamValue) in [list]:
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
                                 setattr(seg, ionParamName+ionName, ionParamValueFinal)
@@ -441,7 +441,7 @@ class CompartCell (Cell):
                             elif ionParamName == 'i':
                                 setattr(seg, '%si'%ionName, ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
-                                
+
                     #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
                     #         (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
@@ -453,10 +453,10 @@ class CompartCell (Cell):
 
             # add point processes
             if 'pointps' in sectParams:
-                for pointpName,pointpParams in sectParams['pointps'].iteritems(): 
+                for pointpName,pointpParams in sectParams['pointps'].iteritems():
                     #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
                     if pointpName not in sec['pointps']:
-                        sec['pointps'][pointpName] = Dict() 
+                        sec['pointps'][pointpName] = Dict()
                     pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
@@ -465,7 +465,7 @@ class CompartCell (Cell):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
 
-        # set topology 
+        # set topology
         for sectName,sectParams in prop['secs'].iteritems():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
@@ -475,7 +475,7 @@ class CompartCell (Cell):
 
     def addSynMechsNEURONObj(self):
         # set params for all sections
-        for sectName,sectParams in self.secs.iteritems(): 
+        for sectName,sectParams in self.secs.iteritems():
             # add synMechs (only used when loading)
             if 'synMechs' in sectParams:
                 for synMech in sectParams['synMechs']:
@@ -489,29 +489,29 @@ class CompartCell (Cell):
         for stimParams in self.stims:
             if stimParams['type'] == 'NetStim':
                 self.addNetStim(stimParams, stimContainer=stimParams)
-       
+
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSec'](stimParams['loc']))
                 stimProps = {k:v for k,v in stimParams.iteritems() if k not in ['label', 'type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
                 for stimPropName, stimPropValue in stimProps.iteritems(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
-                        if stimPropName == 'amp': 
+                        if stimPropName == 'amp':
                             for i,val in enumerate(stimPropValue):
                                 stim.amp[i] = val
-                        elif stimPropName == 'dur': 
+                        elif stimPropName == 'dur':
                             for i,val in enumerate(stimPropValue):
                                 stim.dur[i] = val
                         #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                    else: 
+                    else:
                         setattr(stim, stimPropName, stimPropValue)
                 stimParams['h'+stimParams['type']] = stim  # add stim object to dict in stims list
-           
+
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
     def addConnsNEURONObj(self):
         # Note: loading connections to point process (eg. Izhi2007a) not yet supported
         # Note: assumes weight is in index 0 (netcon.weight[0])
-        
+
         import sim
 
         # assumes python structure exists
@@ -519,7 +519,7 @@ class CompartCell (Cell):
             # set postsyn target
             synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
 
-            if not synMech: 
+            if not synMech:
                 synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
                 #continue  # go to next conn
 
@@ -546,8 +546,8 @@ class CompartCell (Cell):
             netcon.delay = conn['delay']
             #netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
             conn['hNetcon'] = netcon
-            
-            # Add plasticity 
+
+            # Add plasticity
             if conn.get('plast'):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
@@ -556,7 +556,7 @@ class CompartCell (Cell):
         import sim
 
         if self.secs:
-            if sim.cfg.createNEURONObj: 
+            if sim.cfg.createNEURONObj:
                 sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
                 sec = next((secParams for secName,secParams in self.secs.iteritems() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
                 if sec:
@@ -571,9 +571,9 @@ class CompartCell (Cell):
                         if 'vref' in pointpParams:
                             nc = h.NetCon(getattr(sec['pointps'][pointpName]['hPointp'], '_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
                             break
-                if not nc:  # if still haven't created netcon  
+                if not nc:  # if still haven't created netcon
                     nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
-                if 'threshold' in sec: threshold = sec['threshold'] 
+                if 'threshold' in sec: threshold = sec['threshold']
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
@@ -602,9 +602,9 @@ class CompartCell (Cell):
             else:
                 synMech = None
 
-            if sim.cfg.createNEURONObj and sim.cfg.addSynMechs: 
-                # add synaptic mechanism NEURON objectes 
-                if not synMech:  # if pointer not created in createPyStruct, then check 
+            if sim.cfg.createNEURONObj and sim.cfg.addSynMechs:
+                # add synaptic mechanism NEURON objectes
+                if not synMech:  # if pointer not created in createPyStruct, then check
                     synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
@@ -642,7 +642,7 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif self.tags.get(condKey) != condVal: 
+                    elif self.tags.get(condKey) != condVal:
                         conditionsMet = 0
                         break
 
@@ -664,22 +664,22 @@ class CompartCell (Cell):
                             elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                                 if synMech.get(condKey) not in condVal:
                                     conditionsMet = 0
-                                    break 
-                            elif synMech.get(condKey) != condVal: 
+                                    break
+                            elif synMech.get(condKey) != condVal:
                                 conditionsMet = 0
                                 break
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
                         exclude = ['conds', 'cellConds', 'label', 'mod', 'selfNetCon', 'loc']
                         for synParamName,synParamValue in {k: v for k,v in params.iteritems() if k not in exclude}.iteritems():
-                            if sim.cfg.createPyStruct: 
+                            if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue
                             if sim.cfg.createNEURONObj:
-                                try: 
+                                try:
                                     setattr(synMech['hSyn'], synParamName, synParamValue)
                                 except:
                                     print 'Error setting %s=%s on synMech' % (synParamName, str(synParamValue))
-    
+
 
 
 
@@ -699,15 +699,15 @@ class CompartCell (Cell):
 
         # Get list of section labels
         secLabels = self._setConnSections(params)
-        if secLabels == -1: return  # if no section available exit func 
+        if secLabels == -1: return  # if no section available exit func
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
-        weightIndex = 0  # set default weight matrix index   
+        weightIndex = 0  # set default weight matrix index
 
         # Delays
         if isinstance(params['delay'],list):
-            delays = params['delay'] 
+            delays = params['delay']
         else:
             delays = [params['delay']] * params['synsPerConn']
 
@@ -722,13 +722,13 @@ class CompartCell (Cell):
 
             # Adapt weight based on section weightNorm (normalization based on section location)
             for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
-                if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list):
                     nseg = self.secs[sec]['geom']['nseg']
-                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
+                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1]
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -736,13 +736,13 @@ class CompartCell (Cell):
                 preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
-                if not getattr(sim.net, 'preGapJunctions', False): 
+                if not getattr(sim.net, 'preGapJunctions', False):
                     sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
                 preGapParams = {'gid': params['preGid'],
-                                'preGid': self.gid, 
-                                'sec': params.get('preSec', 'soma'), 
-                                'loc': params.get('preLoc', 0.5), 
-                                'weight': params['weight'], 
+                                'preGid': self.gid,
+                                'sec': params.get('preSec', 'soma'),
+                                'loc': params.get('preLoc', 0.5),
+                                'weight': params['weight'],
                                 'gapId': preGapId,
                                 'preGapId': postGapId,
                                 'synMech': params['synMech'],
@@ -751,7 +751,7 @@ class CompartCell (Cell):
 
             # Python Structure
             if sim.cfg.createPyStruct:
-                connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
+                connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']}
                 connParams['weight'] = weights[i]
                 connParams['delay'] = delays[i]
                 if not pointp:
@@ -764,7 +764,7 @@ class CompartCell (Cell):
                     connParams['gapId'] = postGapId
                     connParams['preGapId'] = preGapId
                     connParams['gapJunction'] = 'post'
-                self.conns.append(Dict(connParams))                
+                self.conns.append(Dict(connParams))
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
@@ -783,10 +783,10 @@ class CompartCell (Cell):
                     netcon = None
 
                 # connections using NetCons
-                else:  
+                else:
                     if pointp:
                         sec = self.secs[secLabels[0]]
-                        postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
+                        postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron
                     else:
                         sec = self.secs[synMechSecs[i]]
                         postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
@@ -795,33 +795,33 @@ class CompartCell (Cell):
                         netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                     else:
                         netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                    
+
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
                     #netcon.threshold = threshold  # set Netcon threshold
                     self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-            
+
 
                 # Add time-dependent weight shaping
                 if 'shape' in params and params['shape']:
-                    
+
                     temptimevecs = []
                     tempweightvecs = []
-                    
+
                     # Default shape
                     pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
                     pulsewidth = params['shape']['pulseWidth'] if 'pulseWidth' in params['shape'] else 100.0
                     pulseperiod = params['shape']['pulsePeriod'] if 'pulsePeriod' in params['shape'] else 100.0
-                    
+
                     # Determine on-off switching time pairs for stimulus, where default is always on
                     if 'switchOnOff' not in params['shape']:
                         switchtimes = [0, sim.cfg.duration]
                     else:
                         if not params['shape']['switchOnOff'] == sorted(params['shape']['switchOnOff']):
-                            raise Exception('On-off switching times for a particular stimulus are not monotonic')   
+                            raise Exception('On-off switching times for a particular stimulus are not monotonic')
                         switchtimes = deepcopy(params['shape']['switchOnOff'])
                         switchtimes.append(sim.cfg.duration)
-                    
+
                     switchiter = iter(switchtimes)
                     switchpairs = zip(switchiter,switchiter)
                     for pair in switchpairs:
@@ -829,7 +829,7 @@ class CompartCell (Cell):
                         stimvecs = self._shapeStim(width=float(pulsewidth)/1000.0, isi=float(pulseperiod)/1000.0, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
                         temptimevecs.extend(stimvecs[0])
                         tempweightvecs.extend(stimvecs[1])
-                    
+
                     self.conns[-1]['shapeTimeVec'] = h.Vector().from_python(temptimevecs)
                     self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
@@ -838,7 +838,7 @@ class CompartCell (Cell):
                 # Add plasticity
                 self._addConnPlasticity(params, sec, netcon, weightIndex)
 
-            if sim.cfg.verbose: 
+            if sim.cfg.verbose:
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
@@ -851,10 +851,10 @@ class CompartCell (Cell):
 
         for conn in self.conns:
             conditionsMet = 1
-            
+
             if 'conds' in params:
                 for (condKey,condVal) in params['conds'].iteritems():  # check if all conditions are met
-                    # choose what to comapare to 
+                    # choose what to comapare to
                     if condKey in ['postGid']:
                         compareTo = self.gid
                     else:
@@ -868,8 +868,8 @@ class CompartCell (Cell):
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
-                            break 
-                    elif compareTo != condVal: 
+                            break
+                    elif compareTo != condVal:
                         conditionsMet = 0
                         break
 
@@ -883,12 +883,12 @@ class CompartCell (Cell):
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
-                            break 
-                    elif self.tags.get(condKey) != condVal: 
+                            break
+                    elif self.tags.get(condKey) != condVal:
                         conditionsMet = 0
                         break
 
-            if conditionsMet and 'preConds' in params: 
+            if conditionsMet and 'preConds' in params:
                 print 'Warning: modifyConns() does not yet support conditions of presynaptic cells'
 
             if conditionsMet:  # if all conditions are met, set values for this cell
@@ -918,7 +918,7 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif self.tags.get(condKey) != condVal: 
+                    elif self.tags.get(condKey) != condVal:
                         conditionsMet = 0
                         break
 
@@ -936,8 +936,8 @@ class CompartCell (Cell):
                         elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                             if stim.get(condKey) not in condVal:
                                 conditionsMet = 0
-                                break 
-                        elif stim.get(condKey) != condVal: 
+                                break
+                        elif stim.get(condKey) != condVal:
                             conditionsMet = 0
                             break
 
@@ -958,10 +958,10 @@ class CompartCell (Cell):
                                         conn['hNetcon'].weight[0] = paramValue
                                     elif paramName in ['delay', 'threshold']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
-                                    elif paramName in ['rate']: 
+                                    elif paramName in ['rate']:
                                         stim['interval'] = 1.0/paramValue
                                         setattr(stim['hNetStim'], 'interval', stim['interval'])
-                                    elif paramName in ['interval']: 
+                                    elif paramName in ['interval']:
                                         stim['rate'] = 1.0/paramValue
                                         setattr(stim['hNetStim'], 'interval', stim['interval'])
                                     else:
@@ -976,33 +976,33 @@ class CompartCell (Cell):
     def addStim (self, params):
         import sim
 
-        if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
+        if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):
             if sim.cfg.verbose: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, self.secs.keys(),params)
-            if 'soma' in self.secs:  
+            if 'soma' in self.secs:
                 params['sec'] = 'soma'  # use 'soma' if exists
-            elif self.secs:  
+            elif self.secs:
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-            else:  
+            else:
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add stim'%(self.gid)
-                return 
+                return
 
-        if not 'loc' in params: params['loc'] = 0.5  # default stim location 
+        if not 'loc' in params: params['loc'] = 0.5  # default stim location
 
         if params['type'] == 'NetStim':
             if not 'start' in params: params['start'] = 0  # add default start time
-            if not 'number' in params: params['number'] = 1e9  # add default number 
+            if not 'number' in params: params['number'] = 1e9  # add default number
 
-            connParams = {'preGid': params['type'], 
-                'sec': params.get('sec'), 
-                'loc': params.get('loc'), 
-                'synMech': params.get('synMech'), 
+            connParams = {'preGid': params['type'],
+                'sec': params.get('sec'),
+                'loc': params.get('loc'),
+                'synMech': params.get('synMech'),
                 'weight': params.get('weight'),
                 'delay': params.get('delay'),
                 'synsPerConn': params.get('synsPerConn')}
 
-            if 'threshold' in params: connParams['threshold'] = params.get('threshold')    
-            if 'shape' in params: connParams['shape'] = params.get('shape')    
-            if 'plast' in params: connParams['plast'] = params.get('plast')    
+            if 'threshold' in params: connParams['threshold'] = params.get('threshold')
+            if 'shape' in params: connParams['shape'] = params.get('shape')
+            if 'plast' in params: connParams['plast'] = params.get('plast')
 
             netStimParams = {'source': params['source'],
                 'type': params['type'],
@@ -1011,9 +1011,9 @@ class CompartCell (Cell):
                 'number': params['number'],
                 'start': params['start'],
                 'seed': params['seed'] if 'seed' in params else sim.cfg.seeds['stim']}
-        
+
             self.addConn(connParams, netStimParams)
-       
+
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             sec = self.secs[params['sec']]
@@ -1022,14 +1022,14 @@ class CompartCell (Cell):
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.iteritems(): # set mechanism internal params
                 if isinstance(stimParamValue, list):
-                    if stimParamName == 'amp': 
+                    if stimParamName == 'amp':
                         for i,val in enumerate(stimParamValue):
                             stim.amp[i] = val
-                    elif stimParamName == 'dur': 
+                    elif stimParamName == 'dur':
                         for i,val in enumerate(stimParamValue):
                             stim.dur[i] = val
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                else: 
+                else:
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(Dict(params)) # add to python structure
@@ -1037,10 +1037,10 @@ class CompartCell (Cell):
 
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
-                
+
         else:
             if sim.cfg.verbose: print('Adding exotic stim (NeuroML 2 based?): %s'% params)
-            sec = self.secs[params['sec']]   
+            sec = self.secs[params['sec']]
             stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
             stimParams = {k:v for k,v in params.iteritems() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
@@ -1054,7 +1054,7 @@ class CompartCell (Cell):
 
                     rand = h.Random()
                     stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
-                    
+
                     # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
                     index_in_stim = int(stim_ref.split('_')[-2])
                     stim_id = stim_ref.split('_')[0]
@@ -1062,11 +1062,11 @@ class CompartCell (Cell):
                     rand.negexp(1)
                     stim.noiseFromRandom(rand)
                     params['h%s'%params['originalFormat']] = rand
-                else: 
+                else:
                     if stimParamName in ['weight']:
                         setattr(stim, stimParamName, stimParamValue)
                         stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
-                        
+
             self.stims.append(params) # add to python structure
             self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
@@ -1077,13 +1077,13 @@ class CompartCell (Cell):
         import sim
 
         # if no section specified or single section specified does not exist
-        if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
+        if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):
             if sim.cfg.verbose: print '  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid)
-            if 'soma' in self.secs:  
+            if 'soma' in self.secs:
                 params['sec'] = 'soma'  # use 'soma' if exists
-            elif self.secs:  
+            elif self.secs:
                 params['sec'] = self.secs.keys()[0]  # if no 'soma', use first sectiona available
-            else:  
+            else:
                 if sim.cfg.verbose: print '  Error: no Section available on cell gid=%d to add connection'%(self.gid)
                 sec = -1  # if no Sections available print error and exit
                 return sec
@@ -1094,8 +1094,8 @@ class CompartCell (Cell):
         elif isinstance(params.get('sec'), list) or params.get('sec') in self.secLists:
             secList = list(params['sec']) if isinstance(params['sec'], list) else list(self.secLists[params['sec']])
             secLabels = []
-            for i,section in enumerate(secList): 
-                if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
+            for i,section in enumerate(secList):
+                if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay
                     if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
@@ -1107,7 +1107,7 @@ class CompartCell (Cell):
         # if section is string
         else:
             secLabels = [params['sec']]
-        
+
         return secLabels
 
 
@@ -1126,7 +1126,7 @@ class CompartCell (Cell):
             if len(weights) == 1: weights = [weights[0]] * params['synsPerConn']
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
-        
+
         return weights
 
 
@@ -1140,7 +1140,7 @@ class CompartCell (Cell):
                 if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if 'synList' in pointpParams:
-                        if params.get('synMech') in pointpParams['synList']: 
+                        if params.get('synMech') in pointpParams['synList']:
                             if isinstance(params.get('synMech'), list):
                                 weightIndex = [pointpParams['synList'].index(synMech) for synMech in params.get('synMech')]
                             else:
@@ -1155,6 +1155,7 @@ class CompartCell (Cell):
 
     def _setConnSynMechs (self, params, secLabels):
         import sim
+        from numpy.random import randint as rand
 
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
@@ -1162,16 +1163,16 @@ class CompartCell (Cell):
                 synLabel = sim.net.params.synMechParams.keys()[0]  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
                 if sim.cfg.verbose: print '  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel)
-            else: # if no synaptic mechanism specified and no synMech params available 
+            else: # if no synaptic mechanism specified and no synMech params available
                 if sim.cfg.verbose: print '  Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid)
                 return -1  # if no Synapse available print error and exit
 
         # if desired synaptic mechanism specified in conn params
         if synsPerConn > 1:  # if more than 1 synapse
             if len(secLabels) == 1:  # if single section, create all syns there
-                synMechSecs = [secLabels[0]] * synsPerConn  # same section for all 
+                synMechSecs = [secLabels[0]] * synsPerConn  # same section for all
                 if isinstance(params['loc'], list):
-                    if len(params['loc']) == synsPerConn: 
+                    if len(params['loc']) == synsPerConn:
                         synMechLocs = params['loc']
                     else:
                         print "Error: The length of the list of locations does not match synsPerConn (distributing uniformly)"
@@ -1182,10 +1183,15 @@ class CompartCell (Cell):
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
         else:
             synMechSecs = secLabels
-            synMechLocs = [params['loc']]
-
+            synMechLocs = params['loc']
+            if isinstance(params['loc'], int) or isinstance(params['loc'], float): synMechLocs = [params['loc']]
+            # randomize the section to connect to and move it to beginning of list
+            pos = rand(0, len(synMechSecs))
+            synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
+            if len(synMechLocs)>1: synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
+            
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
-        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
+        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)]
 
         return synMechs, synMechSecs, synMechLocs
 
@@ -1200,14 +1206,14 @@ class CompartCell (Cell):
             secLengths = [self.secs[s]['hSec'].L for s in secList]
         else:
             secLengths = [1.0 for s in secList]
-            if sim.cfg.verbose: 
+            if sim.cfg.verbose:
                 print('  Section lengths not available to distribute synapses in cell %d'%self.gid)
-            
+
         try:
             totLength = sum(secLengths)
             cumLengths = list(cumsum(secLengths))
             absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
-            inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs] 
+            inds = [cumLengths.index(next(x for x in cumLengths if x >= absLoc)) for absLoc in absLocs]
             secs = [secList[ind] for ind in inds]
             locs = [(cumLengths[ind] - absLoc) / secLengths[ind] for absLoc,ind in zip(absLocs,inds)]
         except:
@@ -1249,9 +1255,9 @@ class CompartCell (Cell):
 
 class PointCell (Cell):
     '''
-    Point Neuron that doesn't use v from Section eg. NetStim, IntFire1, 
+    Point Neuron that doesn't use v from Section eg. NetStim, IntFire1,
     '''
-    
+
     def __init__ (self, gid, tags, create=True, associateGid=True):
         import sim
 
@@ -1261,7 +1267,7 @@ class PointCell (Cell):
             self.params = deepcopy(self.tags.pop('params'))
 
         if create and sim.cfg.createNEURONObj:
-            self.createNEURONObj()  # create cell 
+            self.createNEURONObj()  # create cell
         if associateGid: self.associateGid() # register cell for this node
 
 
@@ -1273,14 +1279,14 @@ class PointCell (Cell):
             self.hPointp = getattr(h, self.tags['cellModel'])()
         except:
             print "Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid)
-            return 
+            return
 
         # if rate is list with 2 items generate random value from uniform distribution
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
-            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer
             self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
- 
+
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.iteritems()}
         for paramName, paramValue in params.iteritems():
@@ -1296,42 +1302,42 @@ class PointCell (Cell):
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
             rand = h.Random()
-            self.hRandom = rand 
+            self.hRandom = rand
             if 'number' not in self.params:
-                params['number'] = 1e9 
-                setattr(self.hPointp, 'number', params['number']) 
-            if 'seed' not in self.params: 
+                params['number'] = 1e9
+                setattr(self.hPointp, 'number', params['number'])
+            if 'seed' not in self.params:
                 self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized from sim.preRun()
-        
+
 
         # VecStim - generate spike vector based on params
         if self.tags['cellModel'] == 'VecStim':
             # seed
-            if 'seed' not in self.params: 
+            if 'seed' not in self.params:
                 self.params['seed'] = sim.cfg.seeds['stim']
 
             # convert rate to interval
             if 'rate' in self.params:
-                self.params['interval'] = 1000.0/self.params['rate'] 
+                self.params['interval'] = 1000.0/self.params['rate']
 
             # if interval
             if 'interval' in self.params:
                 # set interval, start and noise params
-                interval = self.params['interval'] 
+                interval = self.params['interval']
                 start = self.params['start'] if 'start' in self.params else 0.0
                 noise = self.params['noise'] if 'noise' in self.params else 0.0
 
-                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
+                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility
 
-                # fixed interval of duration (1 - noise)*interval 
+                # fixed interval of duration (1 - noise)*interval
                 fixedInterval = np.full(int(((1+0.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval
-                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)    
+                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
                 if noise == 0.0:
                     vec = h.Vector(len(fixedInterval))
-                    spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
+                    spkTimes =  np.cumsum(fixedInterval) + (start - interval)
                 else:
                     # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                     rand = h.Random()
@@ -1341,18 +1347,18 @@ class PointCell (Cell):
                     # vec = h.Vector(numSpks)
                     # rand.negexp(noise*interval)
                     # vec.setrand(rand)
-                    # negexpInterval= np.array(vec)                     
+                    # negexpInterval= np.array(vec)
                     # #print negexpInterval
                     # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     if numSpks < 100:
                         # Method 2: vec length=1, slower but reproducible
-                        vec = h.Vector(1) 
+                        vec = h.Vector(1)
                         rand.negexp(noise*interval)
                         negexpInterval = []
                         for i in range(numSpks):
                             vec.setrand(rand)
-                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
+                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]
                         spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
 
                     elif numSpks < maxReproducibleSpks:
@@ -1360,7 +1366,7 @@ class PointCell (Cell):
                         vec = h.Vector(maxReproducibleSpks)
                         rand.negexp(noise*interval)
                         vec.setrand(rand)
-                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
+                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     else:
@@ -1375,7 +1381,7 @@ class PointCell (Cell):
                     return
                 spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
-            
+
             # missing params
             else:
                 print '\nError: VecStim requires interval, rate or spkTimes'
@@ -1384,10 +1390,10 @@ class PointCell (Cell):
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
                 for ipulse, pulse in enumerate(self.params['pulses']):
-                    
+
                     # check interval or rate params
                     if 'interval' in pulse:
-                        interval = pulse['interval'] 
+                        interval = pulse['interval']
                     elif 'rate' in pulse:
                         interval = 1000.0/pulse['rate']
                     else:
@@ -1395,7 +1401,7 @@ class PointCell (Cell):
                         return
 
                     # check start,end and noise params
-                    if any([x not in pulse for x in ['start', 'end']]):  
+                    if any([x not in pulse for x in ['start', 'end']]):
                         print 'Error: Vecstim pulse missing "start" and/or "end" parameter'
                         return
                     else:
@@ -1403,7 +1409,7 @@ class PointCell (Cell):
                         start = pulse['start']
                         end = pulse['end']
 
-                        # fixed interval of duration (1 - noise)*interval 
+                        # fixed interval of duration (1 - noise)*interval
                         fixedInterval = np.full(int(((1+1.5*noise)*(end-start)/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                         numSpks = len(fixedInterval)
 
@@ -1418,23 +1424,23 @@ class PointCell (Cell):
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
                             rand.Random123(ipulse, self.gid, self.params['seed'])
-                            
+
                             # Method 1: vec length depends on duration -- not reproducible
                             # vec = h.Vector(len(fixedInterval))
                             # rand.negexp(noise*interval)
                             # vec.setrand(rand)
-                            # negexpInterval = np.array(vec) 
+                            # negexpInterval = np.array(vec)
                             # pulseSpikes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                             # Method 2: vec length=1, slower but reproducible
-                            vec = h.Vector(1) 
+                            vec = h.Vector(1)
                             rand.negexp(noise*interval)
                             negexpInterval = []
                             for i in range(numSpks):
                                 vec.setrand(rand)
-                                negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                    
+                                negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]
                             pulseSpikes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
-     
+
                             pulseSpikes[pulseSpikes < start] = start
                             spkTimes = np.append(spkTimes, pulseSpikes[pulseSpikes <= end])
 
@@ -1448,7 +1454,7 @@ class PointCell (Cell):
     def associateGid (self, threshold = None):
         import sim
 
-        if sim.cfg.createNEURONObj: 
+        if sim.cfg.createNEURONObj:
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
                 nc = h.NetCon(getattr(self.hPointp, '_ref_'+self.tags['vref']), None)
@@ -1476,7 +1482,7 @@ class PointCell (Cell):
             weights = [scaleFactor * w for w in params['weight']]
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
-        
+
         return weights
 
 
@@ -1495,11 +1501,11 @@ class PointCell (Cell):
 
         # Weight
         weights = self._setConnWeights(params, netStimParams)
-        weightIndex = 0  # set default weight matrix index   
+        weightIndex = 0  # set default weight matrix index
 
         # Delays
         if isinstance(params['delay'],list):
-            delays = params['delay'] 
+            delays = params['delay']
         else:
             delays = [params['delay']] * params['synsPerConn']
 
@@ -1511,53 +1517,53 @@ class PointCell (Cell):
 
             # Python Structure
             if sim.cfg.createPyStruct:
-                connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
+                connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']}
                 connParams['weight'] = weights[i]
                 connParams['delay'] = delays[i]
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                self.conns.append(Dict(connParams))                
+                self.conns.append(Dict(connParams))
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 if 'vref' in self.tags:
-                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron 
-                else: 
+                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron
+                else:
                     postTarget = self.hPointp
 
                 if netStimParams:
                     netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                
+
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
                 #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
-        
+
 
                 # Add time-dependent weight shaping
                 if 'shape' in params and params['shape']:
                     temptimevecs = []
                     tempweightvecs = []
-                    
+
                     # Default shape
                     pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
                     pulsewidth = params['shape']['pulseWidth'] if 'pulseWidth' in params['shape'] else 100.0
                     pulseperiod = params['shape']['pulsePeriod'] if 'pulsePeriod' in params['shape'] else 100.0
-                    
+
                     # Determine on-off switching time pairs for stimulus, where default is always on
                     if 'switchOnOff' not in params['shape']:
                         switchtimes = [0, sim.cfg.duration]
                     else:
                         if not params['shape']['switchOnOff'] == sorted(params['shape']['switchOnOff']):
-                            raise Exception('On-off switching times for a particular stimulus are not monotonic')   
+                            raise Exception('On-off switching times for a particular stimulus are not monotonic')
                         switchtimes = deepcopy(params['shape']['switchOnOff'])
                         switchtimes.append(sim.cfg.duration)
-                    
+
                     switchiter = iter(switchtimes)
                     switchpairs = zip(switchiter,switchiter)
                     for pair in switchpairs:
@@ -1565,13 +1571,13 @@ class PointCell (Cell):
                         stimvecs = self._shapeStim(width=float(pulsewidth)/1000.0, isi=float(pulseperiod)/1000.0, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
                         temptimevecs.extend(stimvecs[0])
                         tempweightvecs.extend(stimvecs[1])
-                    
+
                     self.conns[-1]['shapeTimeVec'] = h.Vector().from_python(temptimevecs)
                     self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
 
 
-            if sim.cfg.verbose: 
+            if sim.cfg.verbose:
                 sec = params['sec']
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
@@ -1584,7 +1590,7 @@ class PointCell (Cell):
 
     def __getattr__(self, name):
         def wrapper(*args, **kwargs):
-            try: 
+            try:
                 name(*args,**kwargs)
             except:
                 print "Error: Function '%s' not yet implemented for Point Neurons" % name
@@ -1599,13 +1605,13 @@ class PointCell (Cell):
 
 ###############################################################################
 #
-# NeuroML2 CELL CLASS 
+# NeuroML2 CELL CLASS
 #
 ###############################################################################
 
 class NML2Cell (CompartCell):
     ''' Class for NeuroML2 neuron models: No different than CompartCell '''
-    
+
     ''' Might this be useful to show better name for cell when psection() called?
     def __str__():
         return "%s"%self.tags['cellType']
@@ -1614,7 +1620,7 @@ class NML2Cell (CompartCell):
 
 ###############################################################################
 #
-# NeuroML2 SPIKE SOURCE CLASS 
+# NeuroML2 SPIKE SOURCE CLASS
 #
 ###############################################################################
 
@@ -1623,33 +1629,32 @@ class NML2SpikeSource (CompartCell):
         but the NetCon connects to the mechanism on the one section whose NET_RECEIVE
         block will emit events
     '''
-        
+
     def associateGid (self, threshold = 10.0):
         import sim
-        
-        if sim.cfg.createNEURONObj: 
+
+        if sim.cfg.createNEURONObj:
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
-         
+
             nc = h.NetCon(self.secs['soma']['pointps'][self.tags['cellType']].hPointp, None)
-                
+
             #### nc.threshold = threshold  # not used....
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
             del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
-        
+
     def initRandom(self):
         import sim
-        
+
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object
         randContainer = self.stims[-1]
-        randContainer['hRandom'] = rand 
-        randContainer['type'] = self.tags['cellType'] 
+        randContainer['hRandom'] = rand
+        randContainer['type'] = self.tags['cellType']
         seed = sim.cfg.seeds['stim']
-        randContainer['seed'] = seed 
-        self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        randContainer['seed'] = seed
+        self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator
         sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
-    

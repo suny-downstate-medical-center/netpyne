@@ -716,10 +716,11 @@ class TestTypeObj(object):
 
             dimSynMechs = 1
             values = []
-            dimValues = 1
+            dimValues = 0
 
             if 'synMech' in paramValues:
                 synMechs = paramValues['synMech']
+
                 # print (" *** synmechs " + str(synMechs))
                 if isinstance(synMechs, list):
                     dimSynMechs = len(synMechs)
@@ -1100,7 +1101,7 @@ class TestTypeObj(object):
                     errorMessages.append("SimConfig->'analysis': Must be a dict. Value provided is " + str(simConfig.analysis) + ".")
                     return errorMessages
                 #print (" before ")
-                validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
+                validList = ['plotShape', 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
                     errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
@@ -1299,14 +1300,14 @@ class TestTypeObj(object):
 
                 if 'plotShape' in analysis:
 
-                    plotShapes = analysis['plotShapes']
+                    plotShapes = analysis['plotShape']
                     if not isinstance ( plotShapes, dict) and  not isinstance ( plotShapes, bool):
                         errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict or bool.  Value provided is " + str(plotShapes) + ".")
                     elif isinstance ( plotShapes, dict):
 
                         validList = ['showSyns', 'include', 'style', 'siz', 'figSize', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plotShape.keys()):
+                        if not all(x in validList for x in plotShapes.keys()):
                             errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotShape.keys()) + ".")
 
                         if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):

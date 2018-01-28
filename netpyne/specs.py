@@ -97,18 +97,18 @@ class Dict(dict):
         '''
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         '''
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -227,18 +227,18 @@ class ODict(OrderedDict):
         '''
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         '''
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -248,7 +248,7 @@ class ODict(OrderedDict):
 
     def rename(self, *args, **kwargs):
         self.__rename__(*args, **kwargs)
-        
+
     def __getstate__ (self):
         return self.toOrderedDict()
 
@@ -258,11 +258,11 @@ class ODict(OrderedDict):
 
 class PopParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
-        
+
         dimParams = ['numCells', 'density', 'gridSpacing']
         if param in dimParams:
             for removeParam in dimParams: d.pop(removeParam, None)  # remove other properties
@@ -273,10 +273,10 @@ class PopParams (ODict):
 
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
-    
+
 class CellParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -293,7 +293,7 @@ class CellParams (ODict):
             if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
                 d = self[label[0]]
                 for sec in d['secs'].values():  # replace appearences in topol
-                    if sec['topol'].get('parentSec') == old: 
+                    if sec['topol'].get('parentSec') == old:
                         sec['topol']['parentSec'] = new
             return success
         except:
@@ -302,7 +302,7 @@ class CellParams (ODict):
 
 class ConnParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -317,7 +317,7 @@ class ConnParams (ODict):
 
 class SynMechParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -332,7 +332,7 @@ class SynMechParams (ODict):
 
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -347,7 +347,7 @@ class SubConnParams (ODict):
 
 class StimSourceParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -362,7 +362,7 @@ class StimSourceParams (ODict):
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -465,11 +465,11 @@ class NetParams (object):
             self._labelid += 1
         self.popParams[label] = Dict(params)
 
-    def addSynMechParams(self, label=None, params=None):
+    def addSynMechParams(self, label=None, params=None, name=''):
         if not label:
             label = int(self._labelid)
             self._labelid += 1
-        self.synMechParams[label] = Dict(params)
+        self.synMechParams[label+name] = Dict(params)
 
     def addConnParams(self, label=None, params=None):
         if not label:
@@ -535,7 +535,11 @@ class NetParams (object):
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+            for synMech in synMechs:
+                if 'cellLabel' in conds:
+                    self.addSynMechParams(synMech.pop('label'), synMech, name=conds['cellLabel'])
+                else:
+                    self.addSynMechParams(synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 
@@ -574,7 +578,7 @@ class NetParams (object):
                         secList.append(secName)
                 elif somaDistY:
                     if y >= somaDistY[0] and y <= somaDistY[1]:
-                        secList.append(secName)                    
+                        secList.append(secName)
 
             else:
                 print 'Error adding secList: Sections do not contain 3d points'

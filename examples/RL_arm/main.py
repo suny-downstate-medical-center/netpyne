@@ -15,6 +15,7 @@ sim.initialize(
 sim.net.createPops()                  # instantiate network populations
 sim.net.createCells()                 # instantiate network cells based on defined populations
 sim.net.connectCells()                # create connections between cells based on params
+sim.net.addStims()
 sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 
 
@@ -78,7 +79,8 @@ sim.cfg.duration = sim.trainTime + sim.testTime
 sim.numTrials = ceil(sim.cfg.duration/1e3)
 sim.numTargets = 1
 sim.targetid = 3 # target to train+test
-sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
+#rint sim.targetid
+sim.trialTargets = [3,3,3]#*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
 
 # create Arm class and setup
 if sim.useArm:

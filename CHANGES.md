@@ -1,3 +1,7 @@
+# Version 0.7.7
+
+- Fixed bug using 'variable' NetStim (NSLOC)
+
 # Version 0.7.6
 
 - Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])

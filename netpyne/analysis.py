@@ -385,7 +385,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ######################################################################################################################################################
 @exception
 def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        saveFig = None, showFig = True):
+        ylim = None, saveFig = None, showFig = True):
     ''' 
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -426,8 +426,9 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         #ax1.set_xlabel('Time period', fontsize=fontsiz)
         ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
         ax1.set_xticks(range(len(timeRangeLabels)))
-        ax1.set_xticklabels(timeRangeLabels)
+        ax1.set_xticklabels(timeRangeLabels, fontsize=fontsiz)
         ax1.set_xlim(-0.5, len(avgs)-0.5)
+        if ylim: ax1.set_ylim(ylim)
         ax1.legend(include)
 
         try:
@@ -455,6 +456,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         ax2.set_xticks(range(len(timeRangeLabels)))
         ax2.set_xticklabels(timeRangeLabels)
         ax2.set_xlim(-0.5, len(peaks)-0.5)
+        if ylim: ax2.set_ylim(ylim)
         ax2.legend(include)
 
         try:
@@ -960,7 +962,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
-                 popColors = [], xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1007,7 +1009,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
     for stat in stats:
         # create fig
         fig,ax1 = plt.subplots(figsize=figSize)
-        fontsiz = 16
+        fontsiz = fontsize 
 
         statData = []
 
@@ -1264,7 +1266,6 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
 
-
         plt.plot(freqs, signal, linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
@@ -1272,11 +1273,11 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         plt.xlim([0, (Fs/2)-1])
         if ylim: plt.ylim(ylim)
 
-    if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
-        try:
-            plt.tight_layout()
-        except:
-            pass
+    # if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
+    #     try:
+    #         plt.tight_layout()
+    #     except:
+    #         pass
 
     # Add legend
     if overlay:
@@ -1285,7 +1286,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
-        plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
+        #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
 
     # save figure data
@@ -1605,7 +1606,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'O', 'siz':5}
         
         for cell in [c for c in sim.net.cells if c.gid in includePost or c.tags['pop'] in includePost]:
             for sec in cell.secs.values():

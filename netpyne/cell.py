@@ -1007,7 +1007,7 @@ class CompartCell (Cell):
             netStimParams = {'source': params['source'],
                 'type': params['type'],
                 'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
-                'noise': params['noise'],
+                'noise': params['noise'] if 'noise' in params else 0.0,
                 'number': params['number'],
                 'start': params['start'],
                 'seed': params['seed'] if 'seed' in params else sim.cfg.seeds['stim']}

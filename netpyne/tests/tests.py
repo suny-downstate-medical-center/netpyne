@@ -1103,7 +1103,7 @@ class TestTypeObj(object):
                 validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
                 #print (" after ")
 
                 if 'plotRaster' in analysis:
@@ -1150,16 +1150,16 @@ class TestTypeObj(object):
 
                         if 'labels' in plotRaster:
 
-                            if not isinstance( plotRaster['labels'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
-                            else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                            # if not isinstance( plotRaster['labels'], list):
+                            #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
+                            # else:
+                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
                         if 'popRates' in plotRaster:
 
-                            if not isinstance( plotRaster['popRates'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                            if not isinstance( plotRaster['popRates'], str) and not isinstance( plotRaster['popRates'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a string or boolean. Value provided is " + str(plotRaster['popRates']) + ".")
                             else:
                                 if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
                                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
@@ -1299,21 +1299,21 @@ class TestTypeObj(object):
 
                 if 'plotShape' in analysis:
 
-                    plotShapes = analysis['plotShapes']
+                    plotShape = analysis['plotShape']
                     if not isinstance ( plotShapes, dict) and  not isinstance ( plotShapes, bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict or bool.  Value provided is " + str(plotShapes) + ".")
-                    elif isinstance ( plotShapes, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotShape': Must be a dict or bool.  Value provided is " + str(plotShape) + ".")
+                    elif isinstance ( plotShape, dict):
 
                         validList = ['showSyns', 'include', 'style', 'siz', 'figSize', 'saveData', 'saveFig', 'showFig']
 
                         if not all(x in validList for x in plotShape.keys()):
                             errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotShape.keys()) + ".")
 
-                        if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
-                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+                        if 'showSyns' in plotShapes and not isinstance( plotShape['showSyns'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShape'->'showSyns': Must be boolean. Value provided is " + str(plotShape['showSyns']) + ".")
 
-                        if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
-                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
+                        if 'showFig' in plotShapes and not isinstance( plotShape['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShape'->'showFig': Must be boolean. Value provided is " + str(plotShape['showFig']) + ".")
 
                 if 'plotConn' in analysis:
 

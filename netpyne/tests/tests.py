@@ -1299,21 +1299,21 @@ class TestTypeObj(object):
 
                 if 'plotShape' in analysis:
 
-                    plotShapes = analysis['plotShapes']
+                    plotShape = analysis['plotShape']
                     if not isinstance ( plotShapes, dict) and  not isinstance ( plotShapes, bool):
-                        errorMessages.append("SimConfig->'analysis'->'plotShapes': Must be a dict or bool.  Value provided is " + str(plotShapes) + ".")
-                    elif isinstance ( plotShapes, dict):
+                        errorMessages.append("SimConfig->'analysis'->'plotShape': Must be a dict or bool.  Value provided is " + str(plotShape) + ".")
+                    elif isinstance ( plotShape, dict):
 
                         validList = ['showSyns', 'include', 'style', 'siz', 'figSize', 'saveData', 'saveFig', 'showFig']
 
                         if not all(x in validList for x in plotShape.keys()):
                             errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotShape.keys()) + ".")
 
-                        if 'showSyns' in plotShapes and not isinstance( plotShapes['showSyns'], bool):
-                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showSyns': Must be boolean. Value provided is " + str(plotShapes['showSyns']) + ".")
+                        if 'showSyns' in plotShapes and not isinstance( plotShape['showSyns'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShape'->'showSyns': Must be boolean. Value provided is " + str(plotShape['showSyns']) + ".")
 
-                        if 'showFig' in plotShapes and not isinstance( plotShapes['showFig'], bool):
-                                errorMessages.append("SimConfig->'analysis'->'plotShapes'->'showFig': Must be boolean. Value provided is " + str(plotShapes['showFig']) + ".")
+                        if 'showFig' in plotShapes and not isinstance( plotShape['showFig'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotShape'->'showFig': Must be boolean. Value provided is " + str(plotShape['showFig']) + ".")
 
                 if 'plotConn' in analysis:
 

@@ -1103,7 +1103,7 @@ class TestTypeObj(object):
                 validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
                 if not all ([x in validList for x in analysis.keys()]):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
                 #print (" after ")
 
                 if 'plotRaster' in analysis:
@@ -1150,16 +1150,16 @@ class TestTypeObj(object):
 
                         if 'labels' in plotRaster:
 
-                            if not isinstance( plotRaster['labels'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
-                            else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                            # if not isinstance( plotRaster['labels'], list):
+                            #     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Must be a list. Value provided is " + str(plotRaster['labels']) + ".")
+                            # else:
+                            if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['labels'] ] ):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'labels': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
                         if 'popRates' in plotRaster:
 
-                            if not isinstance( plotRaster['popRates'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                            if not isinstance( plotRaster['popRates'], str) and not isinstance( plotRaster['popRates'], bool):
+                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a string or boolean. Value provided is " + str(plotRaster['popRates']) + ".")
                             else:
                                 if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
                                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")

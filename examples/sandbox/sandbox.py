@@ -14,7 +14,7 @@ file = 'ssc-3_spikes.json'
 with open(file, 'r') as f: spks = json.load(f)
 print spks
 ## Population parameters
-#netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
 netParams.popParams['S2'] = {'cellModel': 'VecStim', 'numCells': 1000, 'spkTimes': spks} #[[50, 100, 200, 300], [150, 240, 412, 320],[55, 105, 210, 330]] }
 #netParams.popParams['S3'] = {'cellModel': 'VecStim', 'numCells': 3, 'cellsList': [{'spkTimes': [50, 100, 200, 300]},
 																				# {'spkTimes': [150, 240, 412, 320]},
@@ -34,15 +34,14 @@ netParams.cellParams['Erule'] = cellRule                          # add dict to 
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 
 
-# ## Cell connectivity rules
-# netParams.connParams['E->all'] = {
-#   'preConds': {'cellType': 'S2'}, 'postConds': {'pop': 'E2'},  # S2->E2
-#   'convergence': 10 ,                  # probability of connection
-#   'weight': '0.005*post_ynorm',         # synaptic weight 
-#   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-#   'synMech': 'exc'}                     # synaptic mechanism 
+## Cell connectivity rules
+netParams.connParams['E->all'] = {
+  'preConds': {'cellType': 'S2'}, 'postConds': {'pop': 'E2'},  # S2->E2
+  'weight': '0.005*post_ynorm',         # synaptic weight 
+  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
+  'synMech': 'exc'}                     # synaptic mechanism 
 
-#                             # synaptic mechanism 
+                            # synaptic mechanism 
 
 
 # Simulation options

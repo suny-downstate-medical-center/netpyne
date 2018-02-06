@@ -443,7 +443,7 @@ class NetParams (object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'netParams': self.__dict__}
+        dataSave = {'net': {'params': self.__dict__}}
 
         # Save to json file
         if ext == 'json':

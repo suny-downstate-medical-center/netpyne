@@ -191,6 +191,8 @@ Finally, it is possible to define a population composed of individually-defined 
 	netParams.popParams['IT_cells'] = {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
 
 
+.. note:: To use VecStim you need to download and compile (nrnivmodl) the `vecevent.mod file <https://raw.githubusercontent.com/Neurosim-lab/netpyne/development/doc/source/code/mod/vecevent.mod>`_ .
+
 .. _cell_property_rules:
 
 Cell property rules

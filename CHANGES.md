@@ -2,6 +2,9 @@
 
 - Fixed bug using 'variable' NetStim (NSLOC)
 
+- Fixed save method in NetParams to use ['net']['params']  
+
+
 # Version 0.7.6
 
 - Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])

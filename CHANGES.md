@@ -1,5 +1,7 @@
 # Version 0.7.7
 
+- Set default NetStim noise to 0.0
+
 - Fixed bug using 'variable' NetStim (NSLOC)
 
 - Fixed save method in NetParams to use ['net']['params']  

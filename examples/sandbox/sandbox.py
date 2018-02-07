@@ -26,7 +26,10 @@ cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-
+cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
+cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 	
 netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
 
 
@@ -39,6 +42,8 @@ netParams.connParams['E->all'] = {
   'preConds': {'pop': 'S2'}, 'postConds': {'pop': 'E2'},  # S2->E2
   'weight': 0.01,         # synaptic weight 
   'delay': 1,      # transmission delay (ms) 
+  'sec': ['soma','dend'],
+  'loc': [0.1, 0.3],
   'synMech': 'exc'}                     # synaptic mechanism 
 
                             # synaptic mechanism 
@@ -54,7 +59,7 @@ cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP
 cfg.filename = 'sim'  # Set file output name
 cfg.savePickle = False         # Save params, network and sim output to pickle file
 cfg.saveMat = False         # Save params, network and sim output to pickle file
-cfg.saveJson=1
+cfg.saveJson = 1
 cfg.checkErrors = 0
 
 cfg.analysis['plotRaster'] = {'saveFig': True, 'showFig': True, 'labels': 'overlay', 'popRates': True, 'orderInverse': True, 
@@ -68,12 +73,13 @@ cfg.analysis['plotTraces'] = {'include': [0]}
 
 
 # Create network and run simulation
-sim.saveDataInclude = ['netParams', 'simConfig']
-sim.initialize(netParams = netParams, simConfig = cfg)
-sim.saveData()
+# sim.saveDataInclude = ['netParams', 'simConfig']
+# sim.initialize(netParams = netParams, simConfig = cfg)
+# sim.saveData()
 
 #netParams.save()
 #simConfig.save()
-#sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)    
+
+sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)    
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

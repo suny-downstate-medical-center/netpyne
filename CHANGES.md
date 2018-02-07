@@ -7,6 +7,9 @@
 
 - Fix synMech overwrite when importing multiple hoc/py cell templates
 
+- Fixed bug importing multiple synMechs from hoc/py cell template
+
+
 - Fixed bug using 'variable' NetStim (NSLOC)
 
 - Fixed save method in NetParams to use ['net']['params']  

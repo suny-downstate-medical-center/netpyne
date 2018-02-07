@@ -953,7 +953,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
+* **analysis.plot2Dnet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 

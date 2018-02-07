@@ -1,8 +1,11 @@
 # Version 0.7.7
 
+
 - Connection sec and loc randomly chosen from list when synsPerConn=1 
 
 - Set default NetStim noise to 0.0
+
+- Fix synMech overwrite when importing multiple hoc/py cell templates
 
 - Fixed bug using 'variable' NetStim (NSLOC)
 

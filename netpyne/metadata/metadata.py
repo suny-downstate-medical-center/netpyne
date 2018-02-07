@@ -327,13 +327,13 @@ metadata = {
         "children": {
             "mod": {
                 "label": "NMODL mechanism name",
-                "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file."
+                "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.",
                 "suggestions": "",
                 "hintText": ""
             },
             "selfNetCon": {
                 "label": "NMODL mechanism name",
-                "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma')."
+                "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma').",
                 "suggestions": "",
                 "hintText": ""
             }
@@ -347,91 +347,91 @@ metadata = {
         "children": {
             "preConds": {
                 "label": "Conditions for the presynaptic cells",
-                "help": "Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "help": "Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
                 "suggestions": "",
                 "hintText": ""
             },
             "postConds": {
                 "label": "Conditions for the postsynaptic cells",
-                "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}."
+                "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
                 "suggestions": "",
                 "hintText": ""
             },
             "sec": {
                 "label": "Target section",
-                "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section."
+                "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.",
                 "suggestions": "",
                 "hintText": ""
             },
             "loc": {
                 "label": "Target synaptic mechanism",
-                "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1)."
+                "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1).",
                 "suggestions": "",
                 "hintText": ""
             },
             "synMech": {
                 "label": "Target synaptic mechanism(s) on the postsynaptic neuron",
-                "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided."
+                "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided.",
                 "suggestions": "",
                 "hintText": ""
             },
             "synsPerConn": {
                 "label": "Number of individual synaptic connections",
-                "help": "Number of individual synaptic connections (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1."
+                "help": "Number of individual synaptic connections (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1.",
                 "suggestions": "",
                 "hintText": ""
             },
             "weight": {
                 "label": "Strength of synaptic connection",
-                "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1."
+                "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                 "suggestions": "",
                 "hintText": ""
             },
             "delay": {
                 "label": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron",
-                "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1."
+                "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                 "suggestions": "",
                 "hintText": ""
             },
             "probability": {
                 "label": "Probability of connection between each pre and postsynaptic cell",
-                "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters."
+                "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
                 "suggestions": "",
                 "hintText": ""
             },
             "convergence": {
                 "label": "Number of pre-synaptic cells connected to each post-synaptic cell",
-                "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function)."
+                "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
                 "suggestions": "",
                 "hintText": ""
             },
             "divergence": {
                 "label": "Number of post-synaptic cells connected to each pre-synaptic cell",
-                "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function)."
+                "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
                 "suggestions": "",
                 "hintText": ""
             },
             "connList": {
                 "label": "Explicit list of connections between individual pre- and post-synaptic cells",
-                "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function)."
+                "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function).",
                 "suggestions": "",
                 "hintText": ""
             },
             "connFunc": {
                 "label": "Internal connectivity function to use",
-                "help": "Its automatically set to probConn, convConn, divConn or fromList, when the probability, convergence, divergence or connList parameters are included, respectively. Otherwise defaults to fullConn, ie. all-to-all connectivity."
+                "help": "Its automatically set to probConn, convConn, divConn or fromList, when the probability, convergence, divergence or connList parameters are included, respectively. Otherwise defaults to fullConn, ie. all-to-all connectivity.",
                 "suggestions": "",
                 "hintText": ""
             },
             "shape": {
                 "label": "Modifies the conn weight dynamically during the simulation based on the specified pattern",
-                "help": "Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse."
+                "help": "Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse.",
                 "suggestions": "",
                 "hintText": ""
             },
             "plasticity": {
                 "label": "Plasticity mechanism to use for this connections",
-                "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}."
+                "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}.",
                 "suggestions": "",
                 "hintText": ""
             }
@@ -445,14 +445,14 @@ metadata = {
         "children": {
             "type": {
                 "label": "Point process used as stimulator",
-                "help": "Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'. Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections."
+                "help": "Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'. Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.",
                 "suggestions": "",
                 "hintText": ""
 
             },
             "stim params": {
                 "label": "Stimulation parameters",
-                "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp’). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm')."
+                "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp’). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').",
                 "suggestions": "",
                 "hintText": ""
             }
@@ -466,50 +466,50 @@ metadata = {
         "children": {
             "source": {
                 "label": "Label of the stimulation source",
-                "help": "Label of the stimulation source (e.g. 'electrode_current')."
+                "help": "Label of the stimulation source (e.g. 'electrode_current').",
                 "suggestions": "",
                 "hintText": ""
 
             },
             "conditions": {
                 "label": "Conditions of cells where the stim will be applied",
-                "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})."
+                "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
                 "suggestions": "",
                 "hintText": ""
             },
             "sec": {
                 "label": "Target section",
-                "help": "Target section (default: 'soma')."
+                "help": "Target section (default: 'soma').",
                 "suggestions": "",
                 "hintText": ""
             },
             "loc": {
                 "label": "Target location ",
-                "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings)."
+                "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings).",
                 "suggestions": "",
                 "hintText": ""
             },
             "synMech": {
                 "label": "Synaptic mechanism label to connect NetStim to",
-                "help": "Synaptic mechanism label to connect NetStim to. Optional; only for NetStims."
+                "help": "Synaptic mechanism label to connect NetStim to. Optional; only for NetStims.",
                 "suggestions": "",
                 "hintText": ""
             },
             "weight": {
                 "label": "Weight of connection between NetStim and cell",
-                "help": "Weight of connection between NetStim and cell. Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "help": "Weight of connection between NetStim and cell. Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
                 "suggestions": "",
                 "hintText": ""
             },
             "delay": {
                 "label": "Delay of connection between NetStim and cell",
-                "help": "Delay of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "help": "Delay of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
                 "suggestions": "",
                 "hintText": ""
             },
             "synsPerConn": {
                 "label": "Number of synapses of connection between NetStim and cell",
-                "help": "Number of synapses of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings)."
+                "help": "Number of synapses of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
                 "suggestions": "",
                 "hintText": ""
             }

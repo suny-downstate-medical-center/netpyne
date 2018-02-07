@@ -922,9 +922,12 @@ class Network (object):
             connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
 
-        if isinstance(connParam['weight'], list): connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
-        if isinstance(connParam['delay'], list): connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
-        if isinstance(connParam['loc'], list): connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
+        if 'weight' in connParam and isinstance(connParam['weight'], list): 
+            connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
+        if 'delay' in connParam and isinstance(connParam['delay'], list): 
+            connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
+        if 'loc' in connParam and isinstance(connParam['loc'], list): 
+            connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
         
         orderedPreGids = sorted(preCellsTags.keys())
         orderedPostGids = sorted(postCellsTags.keys())

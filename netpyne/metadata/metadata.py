@@ -452,7 +452,7 @@ metadata = {
             },
             "stim params": {
                 "label": "Stimulation parameters",
-                "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp’). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').",
+                "help": "",
                 "suggestions": "",
                 "hintText": ""
             }

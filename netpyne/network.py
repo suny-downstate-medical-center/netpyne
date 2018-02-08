@@ -519,6 +519,8 @@ class Network (object):
             sim.cfg.createNEURONObj = False
             sim.cfg.addSynMechs = False
 
+        gapJunctions = False  # assume no gap junctions by default
+
         for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
             connParam['label'] = connParamLabel
@@ -544,21 +546,26 @@ class Network (object):
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # distribute info on presyn gap junctions across nodes
-        if not getattr(sim.net, 'preGapJunctions', False): 
-            sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
-        data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
-        data[sim.rank] = None
-        gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
-        sim.pc.barrier()
-        for dataNode in gather:
-            if dataNode: sim.net.preGapJunctions.extend(dataNode)
+            # check if gap junctions in any of the conn rules
+            if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
 
-        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
-                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
-                cell.addConn(preGapParams)
+        # add presynaptoc gap junctions
+        if gapJunctions:
+            # distribute info on presyn gap junctions across nodes
+            if not getattr(sim.net, 'preGapJunctions', False): 
+                sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+            data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
+            data[sim.rank] = None
+            gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+            sim.pc.barrier()
+            for dataNode in gather:
+                if dataNode: sim.net.preGapJunctions.extend(dataNode)
+
+            # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+            for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+                if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+                    cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                    cell.addConn(preGapParams)
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:

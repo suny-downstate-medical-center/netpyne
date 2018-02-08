@@ -220,7 +220,7 @@ class Network (object):
         params.update(targetParams)
 
         paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
-            if param in params and isinstance(params[param], str) and params[param] not in ['variable']]  
+            if param in params and isinstance(params[param], basestring) and params[param] not in ['variable']]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}   
@@ -655,7 +655,7 @@ class Network (object):
     ###############################################################################
     def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
-        paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+        paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  

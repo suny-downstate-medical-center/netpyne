@@ -14,6 +14,8 @@
 
 - Fixed bug using gap junctions with mpi (multiple cores)
 
+- Fixed bug when creating conns afger loading json -- needed basestring instead of str
+
 
 # Version 0.7.6
 

@@ -16,6 +16,8 @@
 
 - Fixed bug when creating conns afger loading json -- needed basestring instead of str
 
+- Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
+
 
 # Version 0.7.6
 

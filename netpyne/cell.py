@@ -733,7 +733,7 @@ class CompartCell (Cell):
                     netstim = self.addNetStim(netStimParams)
 
             if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
                 if not getattr(sim.net, 'preGapJunctions', False): 
@@ -748,7 +748,7 @@ class CompartCell (Cell):
                                 'synMech': params['synMech'],
                                 'gapJunction': 'pre'}
                 sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
-
+                
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 

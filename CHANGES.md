@@ -1,6 +1,5 @@
 # Version 0.7.7
 
-
 - Connection sec and loc randomly chosen from list when synsPerConn=1 
 
 - Set default NetStim noise to 0.0
@@ -9,10 +8,11 @@
 
 - Fixed bug importing multiple synMechs from hoc/py cell template
 
-
 - Fixed bug using 'variable' NetStim (NSLOC)
 
 - Fixed save method in NetParams to use ['net']['params']  
+
+- Fixed bug using gap junctions with mpi (multiple cores)
 
 
 # Version 0.7.6

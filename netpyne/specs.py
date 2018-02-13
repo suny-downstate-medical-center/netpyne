@@ -535,7 +535,7 @@ class NetParams (object):
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+            for synMech in synMechs: self.addSynMechParams(cellName+'_'+synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 

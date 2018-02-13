@@ -1,10 +1,22 @@
 # Version 0.7.7
 
+- Connection sec and loc randomly chosen from list when synsPerConn=1 
+
 - Set default NetStim noise to 0.0
+
+- Fix synMech overwrite when importing multiple hoc/py cell templates
+
+- Fixed bug importing multiple synMechs from hoc/py cell template
 
 - Fixed bug using 'variable' NetStim (NSLOC)
 
 - Fixed save method in NetParams to use ['net']['params']  
+
+- Fixed bug using gap junctions with mpi (multiple cores)
+
+- Fixed bug when creating conns afger loading json -- needed basestring instead of str
+
+- Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
 
 
 # Version 0.7.6

@@ -377,7 +377,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                         except:
                             print 'Could not read variable %s from synapse %s'%(varName,synMech['label'])
 
-                    if not [_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]:
+                    if not any([_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]):
                         synMechs.append(synMech)
                 
                 else: # assume its a non-synapse point process

@@ -716,7 +716,7 @@ class TestTypeObj(object):
 
             dimSynMechs = 1
             values = []
-            dimValues = 1
+            dimValues = 0
 
             if 'synMech' in paramValues:
                 synMechs = paramValues['synMech']

@@ -18,6 +18,7 @@
 
 - Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
 
+- Fixed bug saving to .mat during batch sims
 
 # Version 0.7.6
 

@@ -20,6 +20,7 @@
 
 - Fixed bug saving to .mat during batch sims
 
+
 # Version 0.7.6
 
 - Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])

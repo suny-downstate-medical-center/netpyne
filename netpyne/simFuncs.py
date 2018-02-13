@@ -857,6 +857,8 @@ def setupRecording ():
         print("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
 
 
+    #
+
     timing('stop', 'setrecordTime')
 
     return sim.simData

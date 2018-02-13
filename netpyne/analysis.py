@@ -208,14 +208,20 @@ def getCellsInclude(include):
             else:
                 cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==condition])
         
-        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+        # subset of a pop with relative indices
+        # when load from json gets converted to list (added as exception)
+        elif (isinstance(condition, tuple) 
+        or (isinstance(condition, list)  
+        and len(condition)==2 
+        and isinstance(condition[0], basestring) 
+        and isinstance(condition[1], (list,int)))):  
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
-        elif isinstance(condition, list):
+        elif isinstance(condition, list):  # subset
             for subcond in condition:
                 if isinstance(subcond, int):  # cell gid 
                     cellGids.append(subcond)

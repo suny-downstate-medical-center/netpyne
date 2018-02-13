@@ -3,70 +3,58 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.sizeX = 100 # x-dimension (horizontal length) size in um
-netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
-netParams.propVelocity = 100.0 # propagation velocity (um/ms)
-netParams.probLengthConst = 150.0 # length constant for conn probability (um)
-
-import json
-file = 'ssc-3_spikes.json'
-with open(file, 'r') as f: spks = json.load(f)
-print spks
 ## Population parameters
-#netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 3, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['S2'] = {'cellModel': 'VecStim', 'numCells': 1000, 'spkTimes': spks} #[[50, 100, 200, 300], [150, 240, 412, 320],[55, 105, 210, 330]] }
-#netParams.popParams['S3'] = {'cellModel': 'VecStim', 'numCells': 3, 'cellsList': [{'spkTimes': [50, 100, 200, 300]},
-																				# {'spkTimes': [150, 240, 412, 320]},
-																				# {'spkTimes': [55, 105, 210, 330]}]}
-
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
 
 ## Cell property rules
-cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-
-netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}  # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                        # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
+cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}                 # dend params dict
+cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}              # dend geometry
+cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}            # dend topology 
+cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                     # dend mechanisms
+netParams.cellParams['PYRrule'] = cellRule                          # add dict to list of cell parameters
 
 
 ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
+netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
+ 
+
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
+netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
 
 
-# ## Cell connectivity rules
-# netParams.connParams['E->all'] = {
-#   'preConds': {'cellType': 'S2'}, 'postConds': {'pop': 'E2'},  # S2->E2
-#   'convergence': 10 ,                  # probability of connection
-#   'weight': '0.005*post_ynorm',         # synaptic weight 
-#   'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-#   'synMech': 'exc'}                     # synaptic mechanism 
+## Cell connectivity rules
+netParams.connParams['S->M'] = {'preConds': {'pop': 'S'}, 'postConds': {'pop': 'M'},  #  S -> M
+  'connList': [[0,1],[1,1],[2,1],[3,1]],     # probability of connection
+  'weight': 0.01,       # synaptic weight 
+  'delay': 5,         # transmission delay (ms) 
+  'sec': ['soma','dend'],        # section to connect to
+  'synMech': 'exc'}       # target synaptic mechanism
 
-#                             # synaptic mechanism 
 
 
 # Simulation options
-cfg = specs.SimConfig()        # object of class cfg to store simulation configuration
-cfg.duration = 5*1e3           # Duration of the simulation, in ms
-cfg.dt = 0.025                # Internal integration timestep to use
-cfg.verbose = False            # Show detailed messages 
-cfg.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'ssc-3_sim'  # Set file output name
-cfg.savePickle = False         # Save params, network and sim output to pickle file
-cfg.saveMat = False         # Save params, network and sim output to pickle file
-cfg.saveJson=1
+simConfig = specs.SimConfig()   # object of class SimConfig to store simulation configuration
 
-cfg.analysis['plotRaster'] = { 'saveFig': True, 'showFig': False, 'labels': 'overlay', 'popRates': True, 'orderInverse': True, 
-							 'figSize': (12,10), 'lw': 0.3, 'markerSize':3, 'marker': '.', 'dpi': 300} 
+simConfig.duration = 1*1e3      # Duration of the simulation, in ms
+simConfig.dt = 0.025        # Internal integration timestep to use
+simConfig.verbose = False       # Show detailed messages 
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+simConfig.recordStep = 1      # Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.filename = 'model_output'  # Set file output name
+simConfig.savePickle = False    # Save params, network and sim output to pickle file
 
-cfg.analysis['plotSpikeHist'] = {'yaxis':'rate', 'binSize':5, 'graphType':'bar',
-								'saveFig': True, 'showFig': False, 'popColors': popColors, 'figSize': (10,4), 'dpi': 300} 
-cfg.analysis['plotSpikeStats'] = {'saveFig': True}
-cfg.analysis['plotRatePSD'] = {'saveFig': True}
+simConfig.analysis['plotRaster'] = True       # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [1]}       # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
-
+   
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

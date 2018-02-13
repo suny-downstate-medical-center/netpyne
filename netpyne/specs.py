@@ -443,7 +443,7 @@ class NetParams (object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'netParams': self.__dict__}
+        dataSave = {'net': {'params': self.__dict__}}
 
         # Save to json file
         if ext == 'json':
@@ -535,7 +535,7 @@ class NetParams (object):
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+            for synMech in synMechs: self.addSynMechParams(cellName+'_'+synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 

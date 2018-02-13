@@ -7575,6 +7575,11 @@ Ohio Wesleyan University
 
 ** Cerebellum (Sergio Solinas)
 ** Cerebellum (Stefano Masoli, Univ Pavia)
+** LFP in SUA vs MUA (Harry Tran) harrytran75005@gmail.com
+the relationship between the single unit activty (SUA) and the multi unit activity (MUA) - 
+so the LFP produced by a single neuron and its LFP in a population of neurons
+** EEE network and single cell (JOe, Sergio)
+** Ischemia with RxD
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu
@@ -7609,6 +7614,7 @@ aman.aberra@duke.edu
 marianne.bezaire@gmail.com
 smgsolinas@gmail.com
 bremen@fastwebnet.it
+harrytran75005@gmail.com
 
 * Related tools
 ** NEURON

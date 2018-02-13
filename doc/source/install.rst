@@ -36,7 +36,7 @@ This will install the version in the github "development" branch -- it will incl
 
 1) git clone https://github.com/Neurosim-lab/netpyne.git
 2) cd netpyne
-3) git checkout developmnet
+3) git checkout development
 4) pip install -e .
 
 pip will add a symlink in the default python packages folder to the cloned netpyne folder (so you don't need to modify PYTHONPATH). If new changes are available just need to pull from cloned netpyne repo.

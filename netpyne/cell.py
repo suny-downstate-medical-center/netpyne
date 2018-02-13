@@ -733,7 +733,7 @@ class CompartCell (Cell):
                     netstim = self.addNetStim(netStimParams)
 
             if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
                 if not getattr(sim.net, 'preGapJunctions', False): 
@@ -748,7 +748,7 @@ class CompartCell (Cell):
                                 'synMech': params['synMech'],
                                 'gapJunction': 'pre'}
                 sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
-
+                
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -1007,7 +1007,7 @@ class CompartCell (Cell):
             netStimParams = {'source': params['source'],
                 'type': params['type'],
                 'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
-                'noise': params['noise'],
+                'noise': params['noise'] if 'noise' in params else 0.0,
                 'number': params['number'],
                 'start': params['start'],
                 'seed': params['seed'] if 'seed' in params else sim.cfg.seeds['stim']}
@@ -1182,7 +1182,16 @@ class CompartCell (Cell):
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
         else:
             synMechSecs = secLabels
-            synMechLocs = [params['loc']]
+            synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
+
+            # randomize the section to connect to and move it to beginning of list
+            if len(synMechSecs)>1:
+                rand = h.Random()
+                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, params['preGid']) # initialize randomizer 
+                pos = int(rand.discunif(0, len(synMechSecs)-1))
+                synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
+                if len(synMechLocs)>1: 
+                    synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 

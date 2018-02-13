@@ -75,9 +75,9 @@ class Pop (object):
 
 
     def createCellsFixedNum (self):
+        ''' Create population cells based on fixed number of cells'''
         import sim
 
-        ''' Create population cells based on fixed number of cells'''
         cells = []
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
         self.rand.uniform(0, 1)
@@ -143,9 +143,9 @@ class Pop (object):
 
                 
     def createCellsDensity (self):
+        ''' Create population cells based on density'''
         import sim
 
-        ''' Create population cells based on density'''
         cells = []
         shape = sim.net.params.shape
         sizeX = sim.net.params.sizeX
@@ -259,9 +259,9 @@ class Pop (object):
 
 
     def createCellsList (self):
-        import sim
-
         ''' Create population cells based on list of individual cells'''
+        import sim
+        
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
@@ -288,9 +288,9 @@ class Pop (object):
 
 
     def createCellsGrid (self):
+        ''' Create population cells based on fixed number of cells'''
         import sim
 
-        ''' Create population cells based on fixed number of cells'''
         cells = []
         
         rangeLocs = [[0, getattr(sim.net.params, 'size'+coord)] for coord in ['X','Y','Z']]
@@ -328,8 +328,8 @@ class Pop (object):
         return cells
 
 
-
     def _setCellClass (self):
+        ''' Set cell class (CompartCell, PointCell, etc)'''
         import sim
         
         # Check whether it's a NeuroML2 based cell
@@ -366,4 +366,63 @@ class Pop (object):
         odict['cellModelClass'] = str(odict['cellModelClass'])
         del odict['rand']
         return odict
+
+
+    def calcRelativeSegCoords(self):   
+        """Calculate segment coordinates from 3d point coordinates
+        Used for LFP calc (one per population cell; assumes same morphology)"""
+        ix = 0  # segment index
+
+        p3dsoma = self.get_soma_pos()
+        self.psoma = p3dsoma
+        
+        p0 = np.zeros((3, self.nseg))  # hold the coordinates of segment starting points
+        p1 = np.zeros((3, self.nseg))  # hold the coordinates of segment end points
+        d0 = np.zeros(self.nseg) 
+        d1 = np.zeros(self.nseg) 
+
+        for sec in self.hobj.all:
+            n3d = int(h.n3d())  # get number of n3d points in each section
+            p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
+            l3d = np.zeros(n3d)  # to hold locations of 3D morphology for the current section
+            diam3d = np.zeros(n3d)  # to diameters
+
+            for i in range(n3d):
+                p3d[0, i] = h.x3d(i) - p3dsoma[0]
+                p3d[1, i] = h.y3d(i) - p3dsoma[1]  # shift coordinates such to place soma at the origin.
+                p3d[2, i] = h.z3d(i) - p3dsoma[2]
+                diam3d[i] = h.diam3d(i)
+                l3d[i] = h.arc3d(i)
+
+            l3d /= sec.L                  # normalize
+            nseg = sec.nseg
+            
+            l0 = np.zeros(nseg)     # keep range of segment starting point 
+            l1 = np.zeros(nseg)     # keep range of segment ending point 
+            
+            for iseg, seg in enumerate(sec):
+                l0[iseg] = seg.x - 0.5*1/nseg   # x (normalized distance along the section) for the beginning of the segment
+                l1[iseg] = seg.x + 0.5*1/nseg   # x for the end of the segment
+
+            p0[0, ix:ix+nseg] = np.interp(l0, l3d, p3d[0, :])
+            p0[1, ix:ix+nseg] = np.interp(l0, l3d, p3d[1, :])
+            p0[2, ix:ix+nseg] = np.interp(l0, l3d, p3d[2, :])
+            d0[ix:ix+nseg] = np.interp(l0, l3d, diam3d[:])
+
+            p1[0, ix:ix+nseg] = np.interp(l1, l3d, p3d[0, :])
+            p1[1, ix:ix+nseg] = np.interp(l1, l3d, p3d[1, :])
+            p1[2, ix:ix+nseg] = np.interp(l1, l3d, p3d[2, :])
+            d1[ix:ix+nseg] = np.interp(l1, l3d, diam3d[:])
+            ix += nseg
+
+
+        self.seg_coords = {}
+
+        self.seg_coords['p0'] = p0
+        self.seg_coords['p1'] = p1
+
+        self.seg_coords['d0'] = d0
+        self.seg_coords['d1'] = d1
+
+        return self.seg_coords
 

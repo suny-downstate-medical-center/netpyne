@@ -1106,6 +1106,16 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
 
 
+    ###############################################################################
+    ### Calculate segment coordinates from 3d point coordinates 
+    ###############################################################################
+    def calcSegCoords(self):   
+        # Calculate relative seg coords for 1 cell per pop, and abs seg coords for all cells
+        for pop in self.pops.values():
+            pop.calcRelativeSegCoords()
+
+        for cell in self.cells:
+            cell.calcAbsSegCoords()
 
 
 

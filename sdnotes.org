@@ -7449,6 +7449,9 @@ self.calc_seg_coords()  # use for computing the ECP
             for node in self._local_node_types[node_type_id]:
                 self._cells[node.node_id].calc_seg_coords(morph_seg_coords)
 
+- calc seg coords for each cell class (relative to each morphology, so don't repeat) - calculate for 1 cell of each pop
+- adapt to each cell by translating by x,y,z
+
 *** simFuncs
 if cfg.recordECP:
  set_ecp_recording()

@@ -787,6 +787,17 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
 
 ###############################################################################
+### Setup LFP Recording
+###############################################################################
+def setupRecordLFP():
+    for cell in sim.net.cells:
+        cell.calcSegCoords()
+        
+
+
+
+
+###############################################################################
 ### Setup Recording
 ###############################################################################
 def setupRecording ():
@@ -857,7 +868,9 @@ def setupRecording ():
         print("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
 
 
-    #
+    # set LFP recording
+    if sim.cfg.recordLFP:
+        setupRecordLFP()
 
     timing('stop', 'setrecordTime')
 

@@ -1248,6 +1248,25 @@ class CompartCell (Cell):
 
 
 
+    def getSomaPos(self):
+        ''' Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        n3dsoma = 0
+        r3dsoma = np.zeros(3)
+        for sec in [sec for secName, sec in self.secs.iteritems() if 'soma' in secName]:
+            pt3d = sec['geom']['pt3d']
+            n3d = len(pt3d)
+            r3d = np.zeros((3, n3d))
+            n3dsoma += n3d
+
+            for i in range(n3d):
+                r3dsoma[0] += pt3d[i][0]
+                r3dsoma[1] += pt3d[i][1]
+                r3dsoma[2] += pt3d[i][2]
+
+        r3dsoma /= n3dsoma
+        return r3dsoma
+
 
 
 ###############################################################################

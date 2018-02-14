@@ -1282,6 +1282,15 @@ class CompartCell (Cell):
         self._segCoords['p1'] = p3dsoma + morphSegCoords['p1'].T
 
 
+    def setImembranePointer(self): 
+        """Set PtrVector to point to the i_membrane_"""
+        jseg = 0
+        for sec in self.hobj.all:  
+            for seg in sec:    
+                self.im_ptr.pset(jseg,seg._ref_i_membrane_)  # notice the underscore at the end
+                jseg += 1
+
+
 ###############################################################################
 #
 # POINT CELL CLASS (no compartments/sections)

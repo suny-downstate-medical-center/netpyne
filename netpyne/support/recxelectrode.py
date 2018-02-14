@@ -50,16 +50,12 @@ class RecXElectrode(object):
             return -1
 
         self.nsites = self.pos.shape[1]
-        self.transfer_resistances = {}   # V_e = transfer_resistance*Im
-
-    def drift(self):
-        # will include function to model electrode drift
-        pass
+        self.transferResistances = {}   # V_e = transfer_resistance*Im
     
-    def get_transfer_resistance(self, gid):
-        return self.transfer_resistances[gid]
+    def getTransferResistance(self, gid):
+        return self.transferResistances[gid]
     
-    def calc_transfer_resistance(self, gid, seg_coords):
+    def calcTransferResistance(self, gid, seg_coords):
         """Precompute mapping from segment to electrode locations"""
         sigma = 0.3  # mS/mm
 
@@ -86,4 +82,4 @@ class RecXElectrode(object):
             tr[j, :] = np.log(num/den)/dlmag  # units of (um) use with im_ (total seg current)
 
         tr *= 1/(4*math.pi*sigma)
-        self.transfer_resistances[gid] = tr
+        self.transferResistances[gid] = tr

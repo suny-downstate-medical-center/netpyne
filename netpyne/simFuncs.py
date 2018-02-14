@@ -790,8 +790,26 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 ### Setup LFP Recording
 ###############################################################################
 def setupRecordLFP():
+    import sim
+    from netpyne.support.recxelectrode import RecXElectrode
+    
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+    sim.net.recXElectrode = RecXElectrode(sim.cfg)  # create exctracellular recording electrode
+    sim.cvode=h.CVode()
+        
     for cell in sim.net.cells:
-        cell.calcSegCoords()
+        sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+    
+        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.fih.append(h.FInitializeHandler(0, sim.setImembranePointers))
+
+###############################################################################
+### Set pointers to i_membrane in each cell (required for )      
+###############################################################################
+def setImembranPointers(self):
+    import sim           
+    for cell in sim.net.cells:
+        cell.set_im_ptr()
         
 
 
@@ -958,7 +976,6 @@ def preRun ():
     import sim
 
     # set initial v of cells
-    sim.fih = []
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 

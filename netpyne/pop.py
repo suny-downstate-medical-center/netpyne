@@ -424,13 +424,13 @@ class Pop (object):
             ix += nseg
             h.pop_section() 
 
-        self.seg_coords = {}
+        self._morphSegCoords = {}
 
-        self.seg_coords['p0'] = p0
-        self.seg_coords['p1'] = p1
+        self._morphSegCoords['p0'] = p0
+        self._morphSegCoords['p1'] = p1
 
-        self.seg_coords['d0'] = d0
-        self.seg_coords['d1'] = d1
+        self._morphSegCoords['d0'] = d0
+        self._morphSegCoords['d1'] = d1
 
-        return self.seg_coords
+        return self._morphSegCoords
 

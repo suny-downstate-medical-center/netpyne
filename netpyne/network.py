@@ -1110,10 +1110,11 @@ class Network (object):
     ### Calculate segment coordinates from 3d point coordinates 
     ###############################################################################
     def calcSegCoords(self):   
-        # Calculate relative seg coords for 1 cell per pop, and abs seg coords for all cells
+        # Calculate relative seg coords for 1 cell per pop, 
         for pop in self.pops.values():
             pop.calcRelativeSegCoords()
 
+        # Calculate abs seg coords for all cells
         for cell in self.cells:
             cell.calcAbsSegCoords()
 

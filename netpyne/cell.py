@@ -1267,6 +1267,19 @@ class CompartCell (Cell):
         r3dsoma /= n3dsoma
         return r3dsoma
 
+    
+    def calcAbsSegCoords(self):
+        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        import sim
+
+        p3dsoma = self.getSomaPos()
+        pop = self.tags['pop']
+        morphSegCoords = sim.net.pops[pop]._morphSegCoords
+
+        # rotated coordinates around z axis first then shift relative to the soma
+        self._segCoords = {}
+        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0'].T
+        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1'].T
 
 
 ###############################################################################

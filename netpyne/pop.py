@@ -372,7 +372,9 @@ class Pop (object):
         """Calculate segment coordinates from 3d point coordinates
         Used for LFP calc (one per population cell; assumes same morphology)"""
 
-        localPopGids = set(sim.lid2gid.values()).intersection(set(self.cellGids))
+        import sim
+
+        localPopGids = list(set(sim.net.lid2gid).intersection(set(self.cellGids)))
         cell = sim.net.cells[localPopGids[0]]
 
         ix = 0  # segment index
@@ -385,7 +387,9 @@ class Pop (object):
         d0 = np.zeros(nseg) 
         d1 = np.zeros(nseg) 
 
-        for sec in self.hobj.all:
+        for sec in cell.secs.values():
+            hSec = sec['hSec']
+            hSec.push()
             n3d = int(h.n3d())  # get number of n3d points in each section
             p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
             l3d = np.zeros(n3d)  # to hold locations of 3D morphology for the current section
@@ -398,13 +402,13 @@ class Pop (object):
                 diam3d[i] = h.diam3d(i)
                 l3d[i] = h.arc3d(i)
 
-            l3d /= sec.L                  # normalize
-            nseg = sec.nseg
+            l3d /= hSec.L                  # normalize
+            nseg = hSec.nseg
             
             l0 = np.zeros(nseg)     # keep range of segment starting point 
             l1 = np.zeros(nseg)     # keep range of segment ending point 
             
-            for iseg, seg in enumerate(sec):
+            for iseg, seg in enumerate(hSec):
                 l0[iseg] = seg.x - 0.5*1/nseg   # x (normalized distance along the section) for the beginning of the segment
                 l1[iseg] = seg.x + 0.5*1/nseg   # x for the end of the segment
 
@@ -418,7 +422,7 @@ class Pop (object):
             p1[2, ix:ix+nseg] = np.interp(l1, l3d, p3d[2, :])
             d1[ix:ix+nseg] = np.interp(l1, l3d, diam3d[:])
             ix += nseg
-
+            h.pop_section() 
 
         self.seg_coords = {}
 

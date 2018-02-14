@@ -7311,7 +7311,7 @@ org.geppetto.frontend.jupyter  development
 
 org.geppetto.frontend  interface
 
-Geppetto Neuron  interface
+Geppetto Neuron  interface 
 
 1) npm install from
    /u/salvadord/Documents/ISB/Models/NEURON-UI/org.geppetto.frontend.jupyter/src/jupyter_geppetto/geppetto/src/main/webapp
@@ -7321,7 +7321,7 @@ Geppetto Neuron  interface
 3) checkout and pull metadata branch in netpyne repo
 
 ** Extend GUI
-- In browser open console + select "No cache" -- so changes in js take effect after reloading if run-dev-server.py running
+- In browser open console + disable cache (eg. Network -> "Disable cache" with browser open) -- so changes in js take effect after reloading if run-dev-server.py running
 
 - using javascript REACT -- component based
 
@@ -7331,6 +7331,15 @@ Geppetto Neuron  interface
 - render() method
 
 - check imports for other components
+
+** to check can import tut example
+	
+from neuron_ui.tests.tut3 import netParams, simConfig
+netpyne_geppetto.netParams=netParams
+netpyne_geppetto.simConfig=simConfig
+neuron-ui
+
+** create branch and then PR
 
 * 17Dec22 Extracellular recording (LFP) from Allen BMTK Bionet
 ** recxelectrode class 

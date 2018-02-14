@@ -371,15 +371,19 @@ class Pop (object):
     def calcRelativeSegCoords(self):   
         """Calculate segment coordinates from 3d point coordinates
         Used for LFP calc (one per population cell; assumes same morphology)"""
+
+        localPopGids = set(sim.lid2gid.values()).intersection(set(self.cellGids))
+        cell = sim.net.cells[localPopGids[0]]
+
         ix = 0  # segment index
 
-        p3dsoma = self.get_soma_pos()
-        self.psoma = p3dsoma
+        p3dsoma = cell.getSomaPos()
+        nseg = sum([sec['geom']['nseg'] for sec in cell.secs.values()])
         
-        p0 = np.zeros((3, self.nseg))  # hold the coordinates of segment starting points
-        p1 = np.zeros((3, self.nseg))  # hold the coordinates of segment end points
-        d0 = np.zeros(self.nseg) 
-        d1 = np.zeros(self.nseg) 
+        p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
+        p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points
+        d0 = np.zeros(nseg) 
+        d1 = np.zeros(nseg) 
 
         for sec in self.hobj.all:
             n3d = int(h.n3d())  # get number of n3d points in each section

@@ -40,14 +40,16 @@ class RecXElectrode(object):
     def __init__(self, cfg):
         """Create an array"""
         self.cfg = cfg
-
+        
         try:
             self.pos = np.array(cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
             assert len(self.pos.shape) == 2
             assert self.pos.shape[0] == 3
-        else:
+            self.nsites = self.pos.shape[0]
+            self.transferResistances = {}
+        except:
             print 'Error creating extracellular electrode: cfg.recordLFP should contain a list of x,y,z locations'
-            return -1
+            return None
 
         self.nsites = self.pos.shape[1]
         self.transferResistances = {}   # V_e = transfer_resistance*Im

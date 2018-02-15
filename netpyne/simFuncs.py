@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
@@ -16,6 +16,7 @@ __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replac
 
 import sys
 import os
+import numpy as np
 from time import time
 from datetime import datetime
 import cPickle as pk
@@ -785,6 +786,27 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     return cfg, netParams
 
+###############################################################################
+### Calculate LFP (fucntion called at every time step)      
+###############################################################################
+def calculateLFP():
+    import sim    
+
+    # Set pointers to i_membrane in each cell (required form LFP calc )        
+    for cell in sim.net.cells:
+        cell.setImembPtr()
+
+    # compute 
+    saveStep = int(np.floor(h.t / sim.cfg.recordStep))
+    for cell in sim.net.cells: # compute ecp only from the biophysical cells
+        gid = cell.gid
+        im = cell.getImemb()
+        tr = sim.net.recXElectrode.getTransferResistance(gid)
+        ecp = np.dot(tr,im)
+        if sim.cfg.saveLFPCells: 
+            sim.simData['LFPCells'][gid][saveStep, :] = ecp  # contribution of individual cells (not currently stored)
+        sim.simData['LFP'][saveStep, :] += ecp  # sum of all cells
+
 
 ###############################################################################
 ### Setup LFP Recording
@@ -793,27 +815,26 @@ def setupRecordLFP():
     import sim
     from netpyne.support.recxelectrode import RecXElectrode
     
+    nsites = len(sim.cfg.recordLFP)
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['LFP'] = np.zeros((saveSteps, nsites))
+    if sim.cfg.saveLFPCells:
+        for c in sim.net.cells:
+            sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
+
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim.cfg)  # create exctracellular recording electrode
-    sim.cvode=h.CVode()
+    sim.cvode = h.CVode()
         
     for cell in sim.net.cells:
+        nseg = cell._segCoords['p0'].shape[1]
         sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
-    
-        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
-        sim.fih.append(h.FInitializeHandler(0, sim.setImembranePointers))
+        cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+        cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+        cell.imembVec = h.Vector(nseg)
 
-###############################################################################
-### Set pointers to i_membrane in each cell (required for )      
-###############################################################################
-def setImembranPointers(self):
-    import sim           
-    for cell in sim.net.cells:
-        cell.set_im_ptr()
+    sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
         
-
-
-
 
 ###############################################################################
 ### Setup Recording
@@ -1034,6 +1055,15 @@ def preRun ():
                     # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
                     if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
                         stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+
+    # handler for recording LFP
+    if sim.cfg.recordLFP:
+        def recordLFPHandler():
+            for i in np.arange(0, sim.cfg.duration, sim.cfg.recordStep):
+                sim.cvode.event(i, sim.calculateLFP)
+
+        sim.recordLFPHandler = recordLFPHandler
+        sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
 
 ###############################################################################

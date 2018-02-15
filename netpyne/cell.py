@@ -1278,18 +1278,26 @@ class CompartCell (Cell):
 
         # rotated coordinates around z axis first then shift relative to the soma
         self._segCoords = {}
-        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0'].T
-        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1'].T
+        p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
+        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
+        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
 
 
-    def setImembranePointer(self): 
+    def setImembPtr(self): 
         """Set PtrVector to point to the i_membrane_"""
         jseg = 0
-        for sec in self.hobj.all:  
-            for seg in sec:    
-                self.im_ptr.pset(jseg,seg._ref_i_membrane_)  # notice the underscore at the end
+        for sec in self.secs.values():
+            hSec = sec['hSec']
+            for iseg, seg in enumerate(hSec):
+                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end
+                # print seg.i_membrane_
                 jseg += 1
+                
 
+    def getImemb(self):
+        """Gather membrane currents from PtrVector into imVec (does not need a loop!)"""
+        self.imembPtr.gather(self.imembVec)
+        return self.imembVec.as_numpy()  # (nA)
 
 ###############################################################################
 #

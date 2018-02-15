@@ -1650,46 +1650,31 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 @exception
-def plotLFP ():
+def plotLFP (include = ['all'], figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot LFP
+        - include: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
+        when plotting connections (default: ['all'])
+        - includePost: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells to show shape of (default: ['all'])
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
     import sim
+    from neuron import h, gui
 
-    print('Plotting LFP power spectral density...')
+    print('Plotting LFP ...')
 
-    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
+    fig = figure(figsize=figSize)
+    plt.plot(sim.allSimData['LFP'])
 
-    lfpv=[[] for c in range(len(sim.lfppops))]    
-    # Get last modified .mat file if no input and plot
-    for c in range(len(sim.lfppops)):
-        lfpv[c] = sim.lfps[:,c]    
-    lfptot = sum(lfpv)
-        
-    # plot pops separately
-    plotPops = 0
-    if plotPops:    
-        plt.figure() # Open a new figure
-        for p in range(len(sim.lfppops)):
-            psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Power')
-            h=plt.axes()
-            h.set_yticklabels([])
-        plt.legend(['L2/3','L5A', 'L5B', 'L6'])
-
-    # plot overall psd
-    plt.figure() # Open a new figure
-    psd(lfptot,Fs=200, linewidth= 2)
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Power')
-    h=plt.axes()
-    h.set_yticklabels([])
-
-
-    plt.show()
-
-def _roundFigures(x, n):
-    """Returns x rounded to n significant figures."""
-    return round(x, int(n - math.ceil(math.np.log10(abs(x)))))
-
+    return 
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object

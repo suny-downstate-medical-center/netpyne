@@ -94,7 +94,7 @@ if 'PT5B_full' not in loadCellParams:
 #------------------------------------------------------------------------------
 # Population parameters
 #------------------------------------------------------------------------------
-netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':1}
+netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':2}
 
 #------------------------------------------------------------------------------
 # Synaptic mechanism parameters

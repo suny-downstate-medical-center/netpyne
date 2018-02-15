@@ -18,4 +18,4 @@ from netpyne import sim
 from cfg import cfg
 from netParams import netParams
 
-sim.create(netParams, cfg) #SimulateAnalyze(netParams, cfg)
+sim.createSimulate(netParams, cfg) #SimulateAnalyze(netParams, cfg)

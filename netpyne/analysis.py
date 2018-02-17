@@ -233,7 +233,7 @@ def getCellsInclude(include):
                         cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
 
 
-    cellGids = list(set(cellGids))  # unique values
+    cellGids = sim.unique(cellGids)  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])
 

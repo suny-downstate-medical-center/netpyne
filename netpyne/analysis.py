@@ -1664,7 +1664,10 @@ def plotLFP (include = ['all'], figSize = (10,8), saveData = None, saveFig = Non
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
+    
+    ADD OPTION IN PLOTSHAPE TO SHOW LFP RECORD SITES
     '''
+
 
     import sim
     from neuron import h, gui

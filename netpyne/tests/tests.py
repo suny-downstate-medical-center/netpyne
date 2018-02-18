@@ -1161,16 +1161,16 @@ class TestTypeObj(object):
                             if not isinstance( plotRaster['popRates'], str) and not isinstance( plotRaster['popRates'], bool):
                                 errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a string or boolean. Value provided is " + str(plotRaster['popRates']) + ".")
                             else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                                if (isinstance( plotRaster['popRates'], str) ) and (x not in ['legend', 'overlay'] ):
                                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
-                        if 'popRates' in plotRaster:
-
-                            if not isinstance( plotRaster['popRates'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
-                            else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                        # if 'popRates' in plotRaster:
+                        #
+                        #     if not isinstance( plotRaster['popRates'], list):
+                        #         errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                        #     else:
+                        #         if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                        #             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
                         if 'spikeHist' in plotRaster:
 

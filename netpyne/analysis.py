@@ -1649,11 +1649,11 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 #@exception
-def plotLFP (electrodes = ['sum', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, separation = 1.0, 
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, separation = 1.0, 
             figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
-        - electrodes (list): List of electrodes to include; 'sum'=sum of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
+        - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
         - plots (list): list of plot types to show (default: ['timeSeries', 'PSD', 'timeFreq', 'locations']) 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
@@ -1683,40 +1683,49 @@ def plotLFP (electrodes = ['sum', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         electrodes.extend(range(int(len(sim.cfg.recordLFP))))
 
     # plotting
-    fig = plt.figure(figsize=figSize)
+    figs = []
     fontsiz = 14
     ydisp = lfp.max() * separation
+    offset = 0.25*ydisp
     t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-    for i,elec in enumerate(electrodes):
-        if elec == 'sum':
-            lfpPlot = np.sum(lfp, axis=1)
-            color = 'k'
-            lw=1.5
-        elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
-            lfpPlot = lfp[:, elec]
-            color = 'k' #[0.1, 0.1, 0.6]
-            lw=1.0
-        plt.plot(t, lfpPlot+(i*ydisp), color=color, linewidth=lw)
-        plt.text(-0.07*timeRange[1], i*ydisp, elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
-
-    ax = plt.gca()
     
-    plt.text(-0.14*timeRange[1], i*ydisp/2.0, 'electrode', color='k', ha='left', va='top', fontsize=fontsiz, fontweight='bold', rotation=90)
-    ax.invert_yaxis()
-    plt.xlabel('time (ms)', fontsize=fontsiz)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
+    # time series
+    if 'timeSeries' in plots:
+        figs.append(plt.figure(figsize=figSize))
+        for i,elec in enumerate(electrodes):
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.0
+            plt.plot(t, lfpPlot+(i*ydisp)+offset, color=color, linewidth=lw)
+            plt.text(-0.07*timeRange[1], (i*ydisp)+offset, elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
 
-    #def round_to_1(x): return round(x, -int(np.floor(np.log10(abs(x)))))
-    round_to_n = lambda x, n,m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
-    scaley = 1000
-    sizey = round_to_n(0.2*ydisp*scaley, 1, 5.0) / scaley
-    print sizey*scaley
-    labely = '%s $\mu$V'%(str(sizey*scaley))
-    add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, loc=1,
-                     pad=1, borderpad=1, sep=5, prop=None, barcolor="black", barwidth=2)
-            
+        ax = plt.gca()
+        
+        plt.text(-0.14*timeRange[1], offset+(i*ydisp/2.0), 'LFP electrode', color='k', ha='left', va='top', fontsize=fontsiz, rotation=90)
+        ax.invert_yaxis()
+        plt.xlabel('time (ms)', fontsize=fontsiz)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+
+        #def round_to_1(x): return round(x, -int(np.floor(np.log10(abs(x)))))
+        round_to_n = lambda x, n,m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
+        scaley = 1000
+        try:
+            sizey = round_to_n(0.2*ydisp*scaley, 1, 1.0) / scaley
+        except:
+            sizey = 1
+        labely = '%s $\mu$V'%(str(sizey*scaley))
+        add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
+            loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+    
+
+
     #save figure data
     if saveData:
         figData = {'LFP': tracesData, 'electrodes': electrodes, 'timeRange': timeRange,

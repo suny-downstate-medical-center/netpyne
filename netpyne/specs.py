@@ -689,7 +689,7 @@ class SimConfig (object):
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
+        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

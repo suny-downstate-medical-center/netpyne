@@ -383,7 +383,7 @@ class Pop (object):
         ix = 0  # segment index
 
         p3dsoma = cell.getSomaPos()
-        nseg = sum([sec['geom']['nseg'] for sec in cell.secs.values()])
+        nseg = sum([sec['hSec'].nseg for sec in cell.secs.values()])
         
         p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
         p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points

@@ -1254,17 +1254,20 @@ class CompartCell (Cell):
         n3dsoma = 0
         r3dsoma = np.zeros(3)
         for sec in [sec for secName, sec in self.secs.iteritems() if 'soma' in secName]:
-            pt3d = sec['geom']['pt3d']
-            n3d = len(pt3d)
-            r3d = np.zeros((3, n3d))
+            sec['hSec'].push()
+            n3d = int(h.n3d())  # get number of n3d points in each section
+            r3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
             n3dsoma += n3d
 
             for i in range(n3d):
-                r3dsoma[0] += pt3d[i][0]
-                r3dsoma[1] += pt3d[i][1]
-                r3dsoma[2] += pt3d[i][2]
+                r3dsoma[0] += h.x3d(i)
+                r3dsoma[1] += h.y3d(i)
+                r3dsoma[2] += h.z3d(i)
 
+            h.pop_section() 
+        
         r3dsoma /= n3dsoma
+
         return r3dsoma
 
     

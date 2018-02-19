@@ -49,12 +49,10 @@ simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict w
 simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
-simConfig.recordLFP = [[50,50,50]]
+simConfig.recordLFP = [[50,20,50], [50,40,50]]
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cell positions and connections
-simConfig.analysis['']
+simConfig.analysis['plotLFP'] = True
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

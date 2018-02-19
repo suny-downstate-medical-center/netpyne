@@ -20,7 +20,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 0.1*1e3
+cfg.duration = 0.02*1e3
 cfg.dt = 0.05
 cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
 cfg.hParams = {'celsius': 34, 'v_init': -80}  
@@ -123,5 +123,5 @@ cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000
 #------------------------------------------------------------------------------
 cfg.addNetStim = 0
 
-cfg.NetStim1 = {'pop': 'PT5B', 'ynorm':[0,1], 'sec': 'soma', 'loc': 0.5, 'synMech': ['AMPA'], 'synMechWeightFactor': [1.0],
-				'start': 0, 'interval': 1000.0/20.0, 'noise': 0.0, 'number': 60.0, 'weight': 20.0, 'delay': 0}
+cfg.NetStim1 = {'pop': 'PT5B', 'ynorm':[0,1], 'sec': 'apic_5', 'loc': 0.5, 'synMech': ['AMPA'], 'synMechWeightFactor': [1.0],
+				'start': 0, 'interval': 1000.0/20.0, 'noise': 0.0, 'number': 60.0, 'weight': 10.0, 'delay': 0}

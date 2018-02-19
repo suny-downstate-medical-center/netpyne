@@ -374,8 +374,11 @@ class Pop (object):
 
         import sim
 
-        localPopGids = list(set(sim.net.lid2gid).intersection(set(self.cellGids)))
-        cell = sim.net.cells[localPopGids[0]]
+        localPopGids = list(set(sim.net.gid2lid.keys()).intersection(set(self.cellGids)))
+        if localPopGids: 
+            cell = sim.net.cells[sim.net.gid2lid[localPopGids[0]]]
+        else:
+            return -1
 
         ix = 0  # segment index
 

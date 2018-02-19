@@ -1206,6 +1206,12 @@ def gatherData ():
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
             
+    # convert LFP to list
+    # sim.simData['LFP'] = [0] # sim.simData['LFP'].tolist()
+    for cell in sim.net.cells:
+        del cell.imembVec
+        del cell.imembPtr
+
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
@@ -1225,7 +1231,10 @@ def gatherData ():
                 print '  Gathering only sim data...'
                 sim.allSimData = Dict()
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs: # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1234,7 +1243,7 @@ def gatherData ():
                 for node in gather:  # concatenate data from each node
                     for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector
                         if key in simDataVecs:          # simData dicts that contain Vectors
-                            if isinstance(val,dict):
+                            if isinstance(val, dict):
                                 for cell,val2 in val.iteritems():
                                     if isinstance(val2,dict):
                                         sim.allSimData[key].update(Dict({cell:Dict()}))
@@ -1244,6 +1253,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif key == 'LFP':
+                            sim.allSimData[k] += nodeData['simData'][key]
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1262,7 +1273,8 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.iteritems():
                 data[0][k] = v
-                
+            
+            #print data
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
             if sim.rank == 0:
@@ -1273,7 +1285,10 @@ def gatherData ():
                 sim.allSimData = Dict()
 
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs:  # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1296,6 +1311,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif key == 'LFP':
+                            sim.allSimData[k] += nodeData['simData'][key]
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1328,7 +1345,7 @@ def gatherData ():
         for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         sim.allSimData = Dict()
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
-                sim.allSimData[k] = Dict()
+            sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector
                 if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):
@@ -1342,7 +1359,7 @@ def gatherData ():
                     else:
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else:
-                    sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                    sim.allSimData[key] = val           # update simData dicts which are not Vectors
 
     ## Print statistics
     sim.pc.barrier()
@@ -1536,7 +1553,9 @@ def saveData (include = None):
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-        if 'simData' in include: dataSave['simData'] = sim.allSimData
+        if 'simData' in include: 
+            if 'LFP' in sim.allSimData: sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+            dataSave['simData'] = sim.allSimData
 
 
         if dataSave:

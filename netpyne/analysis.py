@@ -232,7 +232,6 @@ def getCellsInclude(include):
                     else:
                         cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
 
-
     cellGids = sim.unique(cellGids)  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])
@@ -1650,7 +1649,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 @exception
-def plotLFP (include = ['all'], figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotLFP (electrodes = ['all'], timeRange = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - include: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
@@ -1668,16 +1667,37 @@ def plotLFP (include = ['all'], figSize = (10,8), saveData = None, saveFig = Non
     ADD OPTION IN PLOTSHAPE TO SHOW LFP RECORD SITES
     '''
 
-
     import sim
-    from neuron import h, gui
 
     print('Plotting LFP ...')
 
-    fig = figure(figsize=figSize)
+    fig = plt.figure(figsize=figSize)
     plt.plot(sim.allSimData['LFP'])
 
-    return 
+    #save figure data
+    if saveData:
+        figData = {'LFP': tracesData, 'electrodes': electrodes, 'timeRange': timeRange,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'lfp')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'lfp.png'
+        if len(figs) > 1:
+            for figLabel, figObj in figs.iteritems():
+                plt.figure(figObj.number)
+                plt.savefig(filename[:-4]+figLabel+filename[-4:])
+        else:
+            plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object

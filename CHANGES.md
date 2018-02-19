@@ -20,7 +20,7 @@
 
 - Fixed bug saving to .mat during batch sims
 
-- Fixe bug in order of unique cell gids in analysis funcs 'include' param
+- Fixed bug in order of unique cell gids in analysis funcs 'include' param
 
 
 # Version 0.7.6

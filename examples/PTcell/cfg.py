@@ -20,7 +20,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 0.5*1e3
+cfg.duration = 0.1*1e3
 cfg.dt = 0.05
 cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
 cfg.hParams = {'celsius': 34, 'v_init': -80}  
@@ -47,7 +47,7 @@ cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 cfg.recordStim = False
 cfg.recordTime = False  
 cfg.recordStep = 0.1
-cfg.recordLFP =  [[150,500,150], [11,70,92]]
+cfg.recordLFP = [[150,500,150], [11,70,92]]
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ cfg.savePickle = False
 cfg.saveJson = True
 cfg.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
 cfg.backupCfgFile = None #['cfg.py', 'backupcfg/'] 
-cfg.gatherOnlySimData = False
+cfg.gatherOnlySimData = 1
 cfg.saveCellSecs = True
 cfg.saveCellConns = True
 
@@ -68,7 +68,7 @@ cfg.saveCellConns = True
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
 cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
-
+cfg.analysis['plotLFP'] = True
 
 #------------------------------------------------------------------------------
 # Cells

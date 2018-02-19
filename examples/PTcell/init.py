@@ -19,3 +19,4 @@ from cfg import cfg
 from netParams import netParams
 
 sim.createSimulate(netParams, cfg) #SimulateAnalyze(netParams, cfg)
+#sim.runSim()

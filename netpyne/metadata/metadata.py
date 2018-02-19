@@ -347,13 +347,53 @@ metadata = {
                         "label": "Conditions for the presynaptic cells",
                         "help": "Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "children": {
+                            "pop": {
+                                "label": "Populations (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "cellType": {
+                                "label": "Cell Type (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "cellModel": {
+                                "label": "Cell Model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            }
+                        }
                     },
                     "postConds": {
                         "label": "Conditions for the postsynaptic cells",
                         "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "children": {
+                            "pop": {
+                                "label": "Population (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "cellType": {
+                                "label": "Cell Type (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "cellModel": {
+                                "label": "Cell Model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            }
+                        }
                     },
                     "sec": {
                         "label": "Target section",

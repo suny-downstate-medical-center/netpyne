@@ -47,7 +47,7 @@ cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 cfg.recordStim = False
 cfg.recordTime = False  
 cfg.recordStep = 0.1
-cfg.recordLFP = [[150,500,150], [11,70,92]]
+cfg.recordLFP = [[100,100,100], [100,200,100], [150,300,150]]
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ cfg.saveCellConns = True
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
 cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
-cfg.analysis['plotLFP'] = True
+cfg.analysis['plotLFP'] = {'separation': 1.0}
 
 #------------------------------------------------------------------------------
 # Cells
@@ -121,7 +121,7 @@ cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000
 #------------------------------------------------------------------------------
 # NetStim inputs 
 #------------------------------------------------------------------------------
-cfg.addNetStim = 0
+cfg.addNetStim = 1
 
 cfg.NetStim1 = {'pop': 'PT5B', 'ynorm':[0,1], 'sec': 'apic_5', 'loc': 0.5, 'synMech': ['AMPA'], 'synMechWeightFactor': [1.0],
 				'start': 0, 'interval': 1000.0/20.0, 'noise': 0.0, 'number': 60.0, 'weight': 10.0, 'delay': 0}

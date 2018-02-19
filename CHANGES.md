@@ -22,6 +22,8 @@
 
 - Fixed bug in order of unique cell gids in analysis funcs 'include' param
 
+- Fixed bug gathering data using the cfg.gatherSimOnlyData option
+
 
 # Version 0.7.6
 

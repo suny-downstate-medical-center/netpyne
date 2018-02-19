@@ -1649,7 +1649,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 @exception
-def plotLFP (electrodes = ['all'], timeRange = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotLFP (electrodes = ['sum', 'all'], timeRange = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - include: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
@@ -1664,15 +1664,26 @@ def plotLFP (electrodes = ['all'], timeRange = None, figSize = (10,8), saveData 
 
         - Returns figure handles
     
-    ADD OPTION IN PLOTSHAPE TO SHOW LFP RECORD SITES
+    - ADD OPTION IN PLOTSHAPE TO SHOW LFP RECORD SITES
+    - SCALE BAR
+    - time series - ALL LINES IS SAME PLOT
+    - PSD
+    - time-frquency profile
     '''
 
     import sim
 
     print('Plotting LFP ...')
 
-    fig = plt.figure(figsize=figSize)
+    if 'all' in electrodes:
+        electrodes.pop('all')
+        electrodes.extend(range(len(sim.cfg.recordLFP)))
+
+    for elec in electrodes:
+        if elec == 'sum':
+
     plt.plot(sim.allSimData['LFP'])
+
 
     #save figure data
     if saveData:

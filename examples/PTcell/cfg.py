@@ -59,7 +59,7 @@ cfg.savePickle = False
 cfg.saveJson = True
 cfg.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
 cfg.backupCfgFile = None #['cfg.py', 'backupcfg/'] 
-cfg.gatherOnlySimData = 1
+cfg.gatherOnlySimData = False
 cfg.saveCellSecs = True
 cfg.saveCellConns = True
 

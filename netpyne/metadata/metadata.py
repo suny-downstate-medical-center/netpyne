@@ -365,7 +365,8 @@ metadata = {
                         "label": "Target synaptic mechanism",
                         "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1).",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "list(list(float))"
                     },
                     "synMech": {
                         "label": "Target synaptic mechanism(s) on the postsynaptic neuron",
@@ -389,7 +390,8 @@ metadata = {
                         "label": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron",
                         "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "list(float)"
                     },
                     "probability": {
                         "label": "Probability of connection between each pre and postsynaptic cell",

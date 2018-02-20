@@ -1269,7 +1269,6 @@ class CompartCell (Cell):
         r3dsoma /= n3dsoma
 
         return r3dsoma
-
     
     def calcAbsSegCoords(self):
         ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
@@ -1293,7 +1292,6 @@ class CompartCell (Cell):
             hSec = sec['hSec']
             for iseg, seg in enumerate(hSec):
                 self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end
-                # print seg.i_membrane_
                 jseg += 1
                 
 

@@ -14,6 +14,7 @@ if __gui__:
     from matplotlib import mlab
 import numpy as np
 from scipy import array, cumsum
+import scipy as sp
 from numbers import Number
 import math
 import functools
@@ -1649,8 +1650,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 #@exception
-def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, separation = 1.0, 
-            figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, Fs = 200, smooth = 0,
+    separation = 1.0, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
@@ -1685,13 +1686,15 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     # plotting
     figs = []
     fontsiz = 14
-    ydisp = lfp.max() * separation
-    offset = 1.0*ydisp
-    t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
     
     # time series
     if 'timeSeries' in plots:
+        ydisp = lfp.max() * separation
+        offset = 1.0*ydisp
+        t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+
         figs.append(plt.figure(figsize=figSize))
+
         for i,elec in enumerate(electrodes):
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
@@ -1707,7 +1710,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         ax = plt.gca()
 
         # format plot
-        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp+offset)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
         plt.ylim(-offset, (len(electrodes))*ydisp)
         ax.invert_yaxis()
         plt.xlabel('time (ms)', fontsize=fontsiz)
@@ -1742,7 +1745,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     # PSD
     if 'PSD' in plots:
         figs.append(plt.figure(figsize=figSize))
+        
+        import seaborn as sb
+
         for i,elec in enumerate(electrodes):
+            plt.subplot(len(electrodes),1,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
@@ -1752,36 +1759,38 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 color = colorList[i%len(colorList)]
                 lw=1.0
             
-            plt.plot(t, lfpPlot+(i*ydisp), color=color, linewidth=lw)
-            plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+                noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
 
-        ax = plt.gca()
+            if smooth:
+                signal = _smooth1d(10*np.log10(power[0]), smooth)
+            else:
+                signal = 10*np.log10(power[0])
+            freqs = power[1]
+
+            plt.plot(freqs, signal, linewidth=lw, color=color)
+            plt.xlim([0, (Fs/2)-1])
+            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz)
+            plt.ylabel('dB/Hz', fontsize=fontsiz)
+            #
+
+            # ALTERNATIVE PSD CALCULATION USING WELCH
+            # from scipy import signal as spsig
+            # f, psd = spsig.welch(lfpPlot, Fs, nperseg=1000.0/sim.cfg.recordStep)
+            # # Plot the power spectrum
+            # plt.semilogy(f,psd,'k')
+            # sb.despine()
+            # plt.xlim((0,(Fs/2)-1))
+            # plt.yticks(size=fontsiz)
+            # plt.xticks(size=fontsiz)
+            # plt.ylabel('power ($uV^{2}/Hz$)',size=fontsiz)
+            # plt.xlabel('frequency (Hz)',size=fontsiz)
 
         # format plot
-        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp+offset)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
-        plt.ylim(-offset, (len(electrodes))*ydisp)
-        ax.invert_yaxis()
-        plt.xlabel('time (ms)', fontsize=fontsiz)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_visible(False)
-        plt.subplots_adjust(bottom=0.1, top=1.0)
-
-        # calculate scalebar size and add scalebar
-        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
-        scaley = 1000.0
-        m = 10.0
-        sizey = 5/scaley
-        while sizey > 0.25*ydisp:
-            try:
-                sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
-            except:
-                sizey /= 10.0
-            m /= 10.0
-        labely = '%s $\mu$V'%(str(sizey*scaley))
-        add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
-            loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
-    
+        plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
+        plt.tight_layout()
+        plt.suptitle('Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
+        plt.subplots_adjust(bottom=0.08, top=0.9)
 
 
     #save figure data

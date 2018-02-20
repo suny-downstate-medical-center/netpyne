@@ -1686,7 +1686,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     figs = []
     fontsiz = 14
     ydisp = lfp.max() * separation
-    offset = 0.25*ydisp
+    offset = 1.0*ydisp
     t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
     
     # time series
@@ -1701,25 +1701,83 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
                 lw=1.0
-            plt.plot(t, lfpPlot+(i*ydisp)+offset, color=color, linewidth=lw)
-            plt.text(-0.07*timeRange[1], (i*ydisp)+offset, elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+            plt.plot(t, lfpPlot+(i*ydisp), color=color, linewidth=lw)
+            plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
 
         ax = plt.gca()
-        
-        plt.text(-0.14*timeRange[1], offset+(i*ydisp/2.0), 'LFP electrode', color='k', ha='left', va='top', fontsize=fontsiz, rotation=90)
+
+        # format plot
+        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp+offset)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+        plt.ylim(-offset, (len(electrodes))*ydisp)
         ax.invert_yaxis()
         plt.xlabel('time (ms)', fontsize=fontsiz)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_visible(False)
+        plt.subplots_adjust(bottom=0.1, top=1.0)
 
-        #def round_to_1(x): return round(x, -int(np.floor(np.log10(abs(x)))))
-        round_to_n = lambda x, n,m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
-        scaley = 1000
-        try:
-            sizey = round_to_n(0.2*ydisp*scaley, 1, 1.0) / scaley
-        except:
-            sizey = 1
+        # calculate scalebar size and add scalebar
+        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
+        scaley = 1000.0
+        m = 10.0
+        sizey = 5/scaley
+        while sizey > 0.25*ydisp:
+            try:
+                sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
+            except:
+                sizey /= 10.0
+            m /= 10.0
+        labely = '%s $\mu$V'%(str(sizey*scaley))
+        add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
+            loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+    
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp.png'
+            plt.savefig(filename)
+
+    # PSD
+    if 'PSD' in plots:
+        figs.append(plt.figure(figsize=figSize))
+        for i,elec in enumerate(electrodes):
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.0
+            
+            plt.plot(t, lfpPlot+(i*ydisp), color=color, linewidth=lw)
+            plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+
+        ax = plt.gca()
+
+        # format plot
+        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp+offset)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+        plt.ylim(-offset, (len(electrodes))*ydisp)
+        ax.invert_yaxis()
+        plt.xlabel('time (ms)', fontsize=fontsiz)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        plt.subplots_adjust(bottom=0.1, top=1.0)
+
+        # calculate scalebar size and add scalebar
+        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
+        scaley = 1000.0
+        m = 10.0
+        sizey = 5/scaley
+        while sizey > 0.25*ydisp:
+            try:
+                sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
+            except:
+                sizey /= 10.0
+            m /= 10.0
         labely = '%s $\mu$V'%(str(sizey*scaley))
         add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
             loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
@@ -1728,28 +1786,17 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
     #save figure data
     if saveData:
-        figData = {'LFP': tracesData, 'electrodes': electrodes, 'timeRange': timeRange,
+        figData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
         _saveFigData(figData, saveData, 'lfp')
  
-    # save figure
-    if saveFig: 
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename+'_'+'lfp.png'
-        if len(figs) > 1:
-            for figLabel, figObj in figs.iteritems():
-                plt.figure(figObj.number)
-                plt.savefig(filename[:-4]+figLabel+filename[-4:])
-        else:
-            plt.savefig(filename)
+
 
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return figs
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object

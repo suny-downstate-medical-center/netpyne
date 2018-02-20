@@ -821,8 +821,8 @@ def calculateLFP():
         tr = sim.net.recXElectrode.getTransferResistance(gid)
         ecp = np.dot(tr,im)
         if sim.cfg.saveLFPCells: 
-            sim.simData['LFPCells'][gid][saveStep, :] = ecp  # contribution of individual cells (not currently stored)
-        sim.simData['LFP'][saveStep, :] += ecp  # sum of all cells
+            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (not currently stored)
+        sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
 
 ###############################################################################
@@ -1077,7 +1077,7 @@ def preRun ():
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
-            for i in np.arange(0, sim.cfg.duration, sim.cfg.recordStep):
+            for i in np.arange(sim.cfg.recordStep, sim.cfg.duration+sim.cfg.recordStep, sim.cfg.recordStep):
                 sim.cvode.event(i, sim.calculateLFP)
 
         sim.recordLFPHandler = recordLFPHandler
@@ -1208,10 +1208,10 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    # sim.simData['LFP'] = [0] # sim.simData['LFP'].tolist()
-    for cell in sim.net.cells:
-        del cell.imembVec
-        del cell.imembPtr
+    if sim.cfg.recordLFP:
+        for cell in sim.net.cells:
+            del cell.imembVec
+            del cell.imembPtr
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     singleNodeVecs = ['t']

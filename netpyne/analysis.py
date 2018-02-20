@@ -1687,7 +1687,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     figs = []
     fontsiz = 14
     
-    # time series
+    # time series -----------------------------------------
     if 'timeSeries' in plots:
         ydisp = lfp.max() * separation
         offset = 1.0*ydisp
@@ -1742,7 +1742,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 filename = sim.cfg.filename+'_'+'lfp.png'
             plt.savefig(filename)
 
-    # PSD
+    # PSD ----------------------------------
     if 'PSD' in plots:
         figs.append(plt.figure(figsize=figSize))
         
@@ -1759,7 +1759,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 color = colorList[i%len(colorList)]
                 lw=1.0
             
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            Fs = int(1000.0/sim.cfg.recordStep)
+            maxFreq=100
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=512, detrend=mlab.detrend_none, window=mlab.window_hanning, 
                 noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
 
             if smooth:
@@ -1768,8 +1770,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 signal = 10*np.log10(power[0])
             freqs = power[1]
 
-            plt.plot(freqs, signal, linewidth=lw, color=color)
-            plt.xlim([0, (Fs/2)-1])
+            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color)
+            plt.xlim([0, maxFreq])
             plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
             #
@@ -1791,6 +1793,57 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         plt.tight_layout()
         plt.suptitle('Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
         plt.subplots_adjust(bottom=0.08, top=0.9)
+
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp_psd.png'
+            plt.savefig(filename)
+
+    # timeFreq ------------------------------
+    if 'timeFreq' in plots:
+        import matplotlib.cm as cm
+        figs.append(plt.figure(figsize=figSize))
+        #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+        for i,elec in enumerate(electrodes):
+            plt.subplot(len(electrodes),1,i+1)
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.0
+
+            import seaborn as sb
+            from scipy import signal as spsig
+
+            # creates spectrogram over a range of data
+            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=int(1000.0/sim.cfg.recordStep), window='hanning',
+            detrend=mlab.detrend_none, nperseg=32, noverlap=31, nfft=256,   mode='psd')
+            fmax = 100
+            x_mesh, y_mesh = np.meshgrid(t_spec, f[f<fmax])
+            plt.pcolormesh(x_mesh, y_mesh, np.log10(x_spec[f<fmax]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
+            plt.colorbar()
+            plt.ylabel('Hz')
+
+        plt.xlabel('time (ms)', fontsize=fontsiz)
+        plt.tight_layout()
+        plt.suptitle('LFP time-frequency profile', size=fontsiz, fontweight='bold')
+        plt.subplots_adjust(bottom=0.08, top=0.9)
+        
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
+            plt.savefig(filename)
+
 
 
     #save figure data

@@ -1761,7 +1761,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             
             Fs = int(1000.0/sim.cfg.recordStep)
             maxFreq=100
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=512, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
                 noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
 
             if smooth:
@@ -1774,19 +1774,19 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             plt.xlim([0, maxFreq])
             plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
-            #
+            
 
             # ALTERNATIVE PSD CALCULATION USING WELCH
             # from scipy import signal as spsig
-            # f, psd = spsig.welch(lfpPlot, Fs, nperseg=1000.0/sim.cfg.recordStep)
-            # # Plot the power spectrum
+            # Fs = int(1000.0/sim.cfg.recordStep)
+            # maxFreq=100
+            # f, psd = spsig.welch(lfpPlot, Fs, nperseg=100)
             # plt.semilogy(f,psd,'k')
             # sb.despine()
-            # plt.xlim((0,(Fs/2)-1))
+            # plt.xlim((0,maxFreq))
             # plt.yticks(size=fontsiz)
             # plt.xticks(size=fontsiz)
-            # plt.ylabel('power ($uV^{2}/Hz$)',size=fontsiz)
-            # plt.xlabel('frequency (Hz)',size=fontsiz)
+            # plt.ylabel('$uV^{2}/Hz$',size=fontsiz)
 
         # format plot
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
@@ -1824,7 +1824,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
             # creates spectrogram over a range of data
             f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=int(1000.0/sim.cfg.recordStep), window='hanning',
-            detrend=mlab.detrend_none, nperseg=32, noverlap=31, nfft=256,   mode='psd')
+            detrend=mlab.detrend_none, nperseg=100, noverlap=99, nfft=256,   mode='psd')
             fmax = 100
             x_mesh, y_mesh = np.meshgrid(t_spec, f[f<fmax])
             plt.pcolormesh(x_mesh, y_mesh, np.log10(x_spec[f<fmax]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)

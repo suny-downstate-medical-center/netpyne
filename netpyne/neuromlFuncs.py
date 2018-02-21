@@ -1192,7 +1192,7 @@ if neuromlExists:
             import neuroml
             
             format = 'NeuroML2'
-            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) :
                 format = 'NeuroML2_stochastic_input'
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
@@ -1230,7 +1230,7 @@ if neuromlExists:
                                         'type': self.popStimSources[inputListId]['type'], 
                                         'originalFormat': self.popStimSources[inputListId]['originalFormat']}
             if self.popStimSources[inputListId]['originalFormat'] == 'NeuroML2_stochastic_input':
-                self.stimSources[stimId]['stim_count'] = self.stochastic_input_count
+                #self.stimSources[stimId]['stim_count'] = self.stochastic_input_count
                 self.stochastic_input_count +=1
                 
             self.stimLists[stimId] = {'source': stimId, 

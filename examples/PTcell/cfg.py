@@ -67,8 +67,8 @@ cfg.saveCellConns = True
 # Analysis and plotting 
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
-cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
-cfg.analysis['plotLFP'] = {'separation': 1.0}
+#cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotLFP'] = {'separation': 1.0, 'plots': ['locations']}
 
 #------------------------------------------------------------------------------
 # Cells

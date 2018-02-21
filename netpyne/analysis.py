@@ -1171,7 +1171,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 ## Plot spike histogram
 ######################################################################################################################################################
 @exception
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, ylim = None, 
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, 
     popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
@@ -1179,7 +1179,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - binSize (int): Size in ms of spike bins (default: 5)
-        - Fs (float): PSD sampling frequency used to calculate the Fourier frequencies (default: 200)
+        - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
         - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
@@ -1259,8 +1260,9 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             title (str(subset), fontsize=fontsiz)
             color = 'blue'
         
-        power = mlab.psd(histoCount, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-            noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
+        Fs = 1000.0/binSize # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!
+        power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
         if smooth:
             signal = _smooth1d(10*np.log10(power[0]), smooth)
@@ -1272,11 +1274,11 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
 
-        plt.plot(freqs, signal, linewidth=1.5, color=color)
+        plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
-        plt.xlim([0, (Fs/2)-1])
+        plt.xlim([0, maxFreq])
         if ylim: plt.ylim(ylim)
 
     # if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
@@ -1494,8 +1496,8 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-@exception
-def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
+#@exception
+def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
@@ -1592,7 +1594,16 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
                 for sec in cellPost.secs.values():
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+        
+        if showElectrodes:
+            ax = plt.gca()
+            coords = np.array(sim.cfg.recordLFP)
+            ax.scatter(coords[0,:],coords[1,:],coords[2,:], s=60, c='red', marker='v')
+            # for elec in sim.cfg.recordLFP:
+            #     print elec
+            #     ax.scatter(elec[0],elec[1],elec[2],s=20, c='red')
                   
+
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
 
@@ -1650,8 +1661,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
 #@exception
-def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, Fs = 200, smooth = 0,
-    separation = 1.0, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
@@ -1760,9 +1771,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lw=1.0
             
             Fs = int(1000.0/sim.cfg.recordStep)
-            maxFreq=100
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-                noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+                noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
             if smooth:
                 signal = _smooth1d(10*np.log10(power[0]), smooth)
@@ -1823,11 +1833,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             from scipy import signal as spsig
 
             # creates spectrogram over a range of data
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=int(1000.0/sim.cfg.recordStep), window='hanning',
-            detrend=mlab.detrend_none, nperseg=100, noverlap=99, nfft=256,   mode='psd')
-            fmax = 100
-            x_mesh, y_mesh = np.meshgrid(t_spec, f[f<fmax])
-            plt.pcolormesh(x_mesh, y_mesh, np.log10(x_spec[f<fmax]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
+            fs = int(1000.0/sim.cfg.recordStep)
+            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
+            detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+            x_mesh, y_mesh = np.meshgrid(t_spec, f[f<maxFreq])
+            plt.pcolormesh(x_mesh, y_mesh, np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
             plt.colorbar()
             plt.ylabel('Hz')
 
@@ -1844,6 +1854,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
             plt.savefig(filename)
 
+    # locations ------------------------------
+    if 'locations' in plots:
+        fig = sim.analysis.plotShape(showElectrodes=1)
+        figs.append(fig)
 
 
     #save figure data

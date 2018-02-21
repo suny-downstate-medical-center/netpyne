@@ -1598,11 +1598,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         if showElectrodes:
             ax = plt.gca()
             coords = np.array(sim.cfg.recordLFP)
-            ax.scatter(coords[0,:],coords[1,:],coords[2,:], s=60, c='red', marker='v')
-            # for elec in sim.cfg.recordLFP:
-            #     print elec
-            #     ax.scatter(elec[0],elec[1],elec[2],s=20, c='red')
-                  
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=100, c='black', marker='v')
+            cb.set_label('segment total transfer resistance to electrodes (Mohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
@@ -1787,6 +1784,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             
 
             # ALTERNATIVE PSD CALCULATION USING WELCH
+            # from http://joelyancey.com/lfp-python-practice/
             # from scipy import signal as spsig
             # Fs = int(1000.0/sim.cfg.recordStep)
             # maxFreq=100
@@ -1832,7 +1830,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             import seaborn as sb
             from scipy import signal as spsig
 
-            # creates spectrogram over a range of data
+            # creates spectrogram over a range of data 
+            # from: http://joelyancey.com/lfp-python-practice/
             fs = int(1000.0/sim.cfg.recordStep)
             f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
             detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
@@ -1856,7 +1855,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
     # locations ------------------------------
     if 'locations' in plots:
-        fig = sim.analysis.plotShape(showElectrodes=1)
+        cvals = [] # transfer resistances!!
+        for cell in sim.net.cells:
+            cvals.extend(list(np.mean(sim.net.recXElectrode.getTransferResistance(cell.gid),axis=0)))
+        fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals)
         figs.append(fig)
 
 

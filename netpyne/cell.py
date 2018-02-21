@@ -1283,6 +1283,13 @@ class CompartCell (Cell):
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
         self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
         self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+        print self.tags
+        print p3dsoma
+        print morphSegCoords['p0']
+        print morphSegCoords['p1']
+        print self._segCoords['p0']
+        print self._segCoords['p1']
+
 
 
     def setImembPtr(self): 
@@ -1299,6 +1306,25 @@ class CompartCell (Cell):
         """Gather membrane currents from PtrVector into imVec (does not need a loop!)"""
         self.imembPtr.gather(self.imembVec)
         return self.imembVec.as_numpy()  # (nA)
+
+
+    def updateShape(self):
+        """Call after h.define_shape() to update cell coords"""
+        x = self.tags['x']
+        y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+        z = self.tags['z']
+                
+        for sec in self.secs.values():
+            if 'pt3d' not in sec['geom']: sec['geom']['pt3d'] = []
+            sec['hSec'].push()
+            n3d = int(h.n3d())  # get number of n3d points in each section
+            for i in range(n3d):
+                pt3d = [h.x3d(i), h.y3d(i), h.z3d(i), h.diam3d(i)]
+                sec['geom']['pt3d'].append(pt3d) 
+                h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+            h.pop_section() 
+
+        
 
 ###############################################################################
 #

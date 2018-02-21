@@ -1118,5 +1118,12 @@ class Network (object):
         for cell in self.cells:
             cell.calcAbsSegCoords()
 
-
+    ###############################################################################
+    ### Add 3D points to sections with simplified geometry
+    ###############################################################################
+    def defineCellShapes(self):
+        import sim
+        h.define_shape()
+        for cell in sim.net.cells:
+            cell.updateShape()
 

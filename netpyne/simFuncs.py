@@ -50,7 +50,8 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.nextHost = 0  # initialize next host
     sim.timingData = Dict()  # dict to store timing
 
-    sim.createParallelContext()  # iniitalize PC, nhosts and rank
+    sim.createParallelContext()  # inititalize PC, nhosts and rank
+    sim.cvode = h.CVode()
 
     sim.setSimCfg(simConfig)  # set simulation configuration
 
@@ -825,6 +826,7 @@ def calculateLFP():
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
 
+
 ###############################################################################
 ### Setup LFP Recording
 ###############################################################################
@@ -839,11 +841,11 @@ def setupRecordLFP():
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
 
-    h.define_shape()
+    sim.net.defineCellShapes()
+
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim.cfg)  # create exctracellular recording electrode
-    sim.cvode = h.CVode()
-        
+    
     for cell in sim.net.cells:
         nseg = cell._segCoords['p0'].shape[1]
         sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
@@ -1019,7 +1021,6 @@ def preRun ():
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    sim.cvode=h.CVode()
     sim.cvode.active(int(sim.cfg.cvode_active))
     sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)

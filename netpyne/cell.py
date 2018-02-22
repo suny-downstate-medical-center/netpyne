@@ -1312,7 +1312,8 @@ class CompartCell (Cell):
                 sec['hSec'].push()
                 n3d = int(h.n3d())  # get number of n3d points in each section
                 for i in range(n3d):
-                    pt3d = [h.y3d(i), h.x3d(i), h.z3d(i), h.diam3d(i)] # by default L is added in x-axis; shift to y-axis
+                    # by default L is added in x-axis; shift to y-axis; z increases 100um for each cell so set to 0
+                    pt3d = [h.y3d(i), h.x3d(i), 0, h.diam3d(i)] 
                     sec['geom']['pt3d'].append(pt3d) 
                     h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
                 h.pop_section() 

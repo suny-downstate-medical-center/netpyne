@@ -3,9 +3,13 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
+netParams.sizeX = 500
+netParams.sizeY = 500
+netParams.sizeZ = 500
+
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 1, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 1, 'cellModel': 'HH'} 
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH'}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH'} 
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
@@ -49,7 +53,7 @@ simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict w
 simConfig.recordStep = 1.0 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
-simConfig.recordLFP = [[50,-y,50] for y in range(20, 100, 20)]
+simConfig.recordLFP = [[netParams.sizeX/2,y,netParams.sizeZ/2] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
 
 #simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotLFP'] = True #{'plots': ['locations'], 'electrodes': ['avg', 'all'], 'NFFT': 512, 'noverlap': 16, 'nperseg': 32}#, 'plots': ['PSD', 'timeFreq'], 'smooth':4}#['True

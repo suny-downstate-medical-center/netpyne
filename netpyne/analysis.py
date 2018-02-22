@@ -1496,7 +1496,7 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 ## Plot cell shape
 ######################################################################################################################################################
-#@exception
+@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1580,7 +1580,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
         cmap=plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap, maxLineWidth=5.0)
+        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if not cvals==None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
@@ -1600,7 +1600,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             coords = sim.net.recXElectrode.pos.T
             ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1],
                 marker='v', depthshade=False, edgecolors='k')
-            cb.set_label('segment total transfer resistance to electrodes (Mohm)', rotation=90, fontsize=12)
+            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
@@ -1658,9 +1658,9 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
-#@exception
+@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
@@ -1726,11 +1726,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_visible(False)
-        plt.subplots_adjust(bottom=0.1, top=1.0)
+        plt.subplots_adjust(bottom=0.1, top=1.0, right=1.0)
 
         # calculate scalebar size and add scalebar
         round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
-        scaley = 1000.0
+        scaley = 1000.0  # values in mV but want to convert to uV
         m = 10.0
         sizey = 100/scaley
         while sizey > 0.25*ydisp:
@@ -1858,7 +1858,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     if 'locations' in plots:
         cvals = [] # used to store total transfer resistance
         for cell in sim.net.cells:
-            cvals.extend(list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid), axis=0)))
+            cvals.extend(list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)))  # convert from Mohm to kilohm
         fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals)
         figs.append(fig)
 

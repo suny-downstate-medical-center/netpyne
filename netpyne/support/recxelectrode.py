@@ -60,7 +60,7 @@ class RecXElectrode(object):
     
     def calcTransferResistance(self, gid, seg_coords):
         """Precompute mapping from segment to electrode locations"""
-        sigma = 0.3  # mS/mm  -> change to megohm um
+        sigma = 0.3  # mS/mm 
 
         # Value used in NEURON extracellular recording example ("extracellular_stim_and_rec")
         # rho = 35.4  # ohm cm, squid axon cytoplasm = 2.8249e-2 S/cm = 0.028 S/cm = 0.0028 S/mm = 2.8 mS/mm 

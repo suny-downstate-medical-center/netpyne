@@ -45,6 +45,7 @@ class RecXElectrode(object):
             self.pos = np.array(cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
             assert len(self.pos.shape) == 2
             assert self.pos.shape[0] == 3
+            self.pos[1,:] *= -1  # invert y-axis since by convention assume it refers to depth (eg cortical depth)
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
@@ -59,7 +60,7 @@ class RecXElectrode(object):
     
     def calcTransferResistance(self, gid, seg_coords):
         """Precompute mapping from segment to electrode locations"""
-        sigma = 0.3  # mS/mm
+        sigma = 0.3  # mS/mm  -> change to megohm · um
 
         r05 = (seg_coords['p0'] + seg_coords['p1'])/2
         dl = seg_coords['p1'] - seg_coords['p0']

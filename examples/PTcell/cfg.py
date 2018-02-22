@@ -47,7 +47,7 @@ cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 cfg.recordStim = False
 cfg.recordTime = False  
 cfg.recordStep = 0.1
-cfg.recordLFP = [[100,75,20], [100,150,20], [100,225,20]]
+cfg.recordLFP = [[50, y, 100] for y in range(100, 600, 100)]+[[10, 960, 90]]
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------
@@ -67,9 +67,8 @@ cfg.saveCellConns = True
 # Analysis and plotting 
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
-#cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
 cfg.analysis['plotLFP'] = {'separation': 1.0, 'plots': ['timeSeries','locations']}
-#cfg.analysis['plotShape'] = True
 
 #------------------------------------------------------------------------------
 # Cells
@@ -114,7 +113,7 @@ cfg.addSubConn = 1
 #------------------------------------------------------------------------------
 # Current inputs 
 #------------------------------------------------------------------------------
-cfg.addIClamp = 1
+cfg.addIClamp = 0
 
 cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000, 'amp': 0.50}
 

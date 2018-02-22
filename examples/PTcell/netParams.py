@@ -32,6 +32,10 @@ netParams.defaultThreshold = 0.0 # spike threshold, 10 mV is NetCon default, low
 netParams.defaultDelay = 2.0 # default conn delay (ms)
 netParams.propVelocity = 500.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
+netParams.sizeX = 100
+netParams.sizeY = 1350  # cortical depth (will be converted to negative values)
+netParams.sizeZ = 100
+
 
 #------------------------------------------------------------------------------
 # Cell parameters
@@ -94,7 +98,7 @@ if 'PT5B_full' not in loadCellParams:
 #------------------------------------------------------------------------------
 # Population parameters
 #------------------------------------------------------------------------------
-netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':2}
+netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':1}
 
 #------------------------------------------------------------------------------
 # Synaptic mechanism parameters

@@ -1597,8 +1597,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         
         if showElectrodes:
             ax = plt.gca()
-            coords = np.array(sim.cfg.recordLFP)
-            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:len(sim.cfg.recordLFP)+1], marker='v')
+            coords = sim.net.recXElectrode.pos.T
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1], marker='v')
             cb.set_label('segment total transfer resistance to electrodes (Mohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
@@ -1689,7 +1689,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     # electrode selection
     if 'all' in electrodes:
         electrodes.remove('all')
-        electrodes.extend(range(int(len(sim.cfg.recordLFP))))
+        electrodes.extend(range(int(sim.net.recXElectrode.nsites)))
 
     # plotting
     figs = []
@@ -1708,7 +1708,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
                 lw=1.0
-            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
                 lw=1.0
@@ -1762,7 +1762,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
                 lw=1.0
-            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
                 lw=1.0
@@ -1822,7 +1822,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
                 lw=1.0
-            elif isinstance(elec, Number) and elec <= len(sim.cfg.recordLFP):
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
                 lw=1.0

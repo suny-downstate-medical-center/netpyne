@@ -818,8 +818,8 @@ def calculateLFP():
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
     for cell in sim.net.cells: # compute ecp only from the biophysical cells
         gid = cell.gid
-        im = cell.getImemb()
-        tr = sim.net.recXElectrode.getTransferResistance(gid)
+        im = cell.getImemb() # in nA
+        tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
         ecp = np.dot(tr,im)
         if sim.cfg.saveLFPCells: 
             sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (not currently stored)

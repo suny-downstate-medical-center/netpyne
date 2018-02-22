@@ -1290,7 +1290,7 @@ class CompartCell (Cell):
         for sec in self.secs.values():
             hSec = sec['hSec']
             for iseg, seg in enumerate(hSec):
-                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end
+                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
                 jseg += 1
                 
 

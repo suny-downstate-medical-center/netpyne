@@ -60,7 +60,13 @@ class RecXElectrode(object):
     
     def calcTransferResistance(self, gid, seg_coords):
         """Precompute mapping from segment to electrode locations"""
-        sigma = 0.3  # mS/mm  -> change to megohm · um
+        sigma = 0.3  # mS/mm  -> change to megohm um
+
+        # Value used in NEURON extracellular recording example ("extracellular_stim_and_rec")
+        rho = 35.4*10  # ohm cm, squid axon cytoplasm = 2.8249e-2 S/cm = 0.028 S/cm = 0.0028 S/mm = 2.8 mS/mm 
+                    # rho_um = 35.4 * 0.01 = 35.4 / 1e6 * 1e4 = 0.354 Mohm um ~= 3 uS / um = 3000 uS / mm = 3 mS /mm
+                    # equivalent sigma value (~3) is 10x larger than Allen (0.3) 
+                    # if use same sigma value, results are consistent
 
         r05 = (seg_coords['p0'] + seg_coords['p1'])/2
         dl = seg_coords['p1'] - seg_coords['p0']
@@ -68,6 +74,7 @@ class RecXElectrode(object):
         nseg = r05.shape[1]
         
         tr = np.zeros((self.nsites,nseg))
+        tr_NEURON = np.zeros((self.nsites,nseg))
 
         for j in xrange(self.nsites):   # calculate mapping for each site on the electrode
             rel = np.expand_dims(self.pos[:, j], axis=1)   # coordinates of a j-th site on the electrode
@@ -84,5 +91,15 @@ class RecXElectrode(object):
             den = low + np.sqrt(low**2 + rT2)
             tr[j, :] = np.log(num/den)/dlmag  # units of (1/um) use with imemb_ (total seg current)
 
+
+            # Consistent with NEURON extracellular recording example
+            r = np.sqrt(rel_05[0,:]**2 + rel_05[1,:]**2 + rel_05[2,:]**2)
+            tr_NEURON[j, :] = (rho / 4 / math.pi)*(1/r)*0.01
+
+            
+
         tr *= 1/(4*math.pi*sigma)  # units: 1/um / (mS/mm) = mm/um / mS = 1e3 * kOhm = MOhm
-        self.transferResistances[gid] = tr
+        self.transferResistances[gid] = tr_NEURON
+
+        print tr
+        print tr_NEURON

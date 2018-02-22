@@ -1598,7 +1598,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         if showElectrodes:
             ax = plt.gca()
             coords = np.array(sim.cfg.recordLFP)
-            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=100, c='black', marker='v')
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:len(sim.cfg.recordLFP)+1], marker='v')
             cb.set_label('segment total transfer resistance to electrodes (Mohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
@@ -1731,7 +1731,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
         scaley = 1000.0
         m = 10.0
-        sizey = 5/scaley
+        sizey = 100/scaley
         while sizey > 0.25*ydisp:
             try:
                 sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley

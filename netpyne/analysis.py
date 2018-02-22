@@ -1580,7 +1580,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
         cmap=plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap, maxLineWidth=5.0)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if not cvals==None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
@@ -1598,7 +1598,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         if showElectrodes:
             ax = plt.gca()
             coords = sim.net.recXElectrode.pos.T
-            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1], marker='v')
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1],
+                marker='v', depthshade=False, edgecolors='k')
             cb.set_label('segment total transfer resistance to electrodes (Mohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
@@ -1855,9 +1856,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
     # locations ------------------------------
     if 'locations' in plots:
-        cvals = [] # transfer resistances!!
+        cvals = [] # used to store total transfer resistance
         for cell in sim.net.cells:
-            cvals.extend(list(np.mean(sim.net.recXElectrode.getTransferResistance(cell.gid),axis=0)))
+            cvals.extend(list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid), axis=0)))
         fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals)
         figs.append(fig)
 

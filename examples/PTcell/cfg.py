@@ -47,7 +47,7 @@ cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 cfg.recordStim = False
 cfg.recordTime = False  
 cfg.recordStep = 0.1
-cfg.recordLFP = [[10, 960, 150]] #[[50, y, 100] for y in range(600, 1200, 100)]+[[10, 960, 90]]
+cfg.recordLFP = [[30, 960, 100]] #[[50, y, 100] for y in range(600, 1200, 100)]+[[10, 960, 90]]
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------

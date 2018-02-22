@@ -1697,7 +1697,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     
     # time series -----------------------------------------
     if 'timeSeries' in plots:
-        ydisp = lfp.max() * separation
+        ydisp = np.absolute(lfp).max() * separation
         offset = 1.0*ydisp
         t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
@@ -1712,7 +1712,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
                 lw=1.0
-            plt.plot(t, lfpPlot+(i*ydisp), color=color, linewidth=lw)
+            plt.plot(t, -lfpPlot+(i*ydisp), color=color, linewidth=lw)
             plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
 
         ax = plt.gca()

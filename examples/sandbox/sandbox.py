@@ -52,9 +52,9 @@ simConfig.savePickle = False 		# Save params, network and sim output to pickle f
 simConfig.recordLFP = [[50,-y,50] for y in range(20, 100, 20)]
 
 #simConfig.analysis['plotRaster'] = True 			# Plot a raster
-#simConfig.analysis['plotLFP'] = {'plots': ['locations'], 'electrodes': ['avg', 'all'], 'NFFT': 512, 'noverlap': 16, 'nperseg': 32}#, 'plots': ['PSD', 'timeFreq'], 'smooth':4}#['True
+simConfig.analysis['plotLFP'] = True #{'plots': ['locations'], 'electrodes': ['avg', 'all'], 'NFFT': 512, 'noverlap': 16, 'nperseg': 32}#, 'plots': ['PSD', 'timeFreq'], 'smooth':4}#['True
 #simConfig.analysis['plotRatePSD'] = {'NFFT': 64, 'noverlap': 32}
-simConfig.analysis['plotShape'] = {'iv':0}
+#simConfig.analysis['plotShape'] = {'iv':0}
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

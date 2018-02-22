@@ -83,17 +83,5 @@ class RecXElectrode(object):
             den = low + np.sqrt(low**2 + rT2)
             tr[j, :] = np.log(num/den)/dlmag  # units of (1/um) use with imemb_ (total seg current)
 
-            print 'segcoords: ', seg_coords['p0']
-            print 'rel:', rel
-            print 'r05: ', r05
-            print 'dl: ',dl
-            print 'rel: ', rel
-            print 'rel05: ', rel_05
-            print 'r2: ', r2
-            print 'rlldl: ',rlldl
-            print 'dlmag: ',dlmag
-            print 'tr: ',tr
-            stop
-
         tr *= 1/(4*math.pi*sigma)  # units: 1/um / (mS/mm) = mm/um / mS = 1e3 * kOhm = MOhm
         self.transferResistances[gid] = tr

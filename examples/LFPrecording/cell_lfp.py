@@ -34,9 +34,8 @@ simConfig.filename = 'cell_lfp'  # Set file output name
 simConfig.recordLFP = [[x, y, 35] for y in range(280, 1000, 150) for x in [30, 90]]
 
 simConfig.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': True, 'figSize': (5,3),'saveFig': True}      # Plot recorded traces for this list of cells
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries',  'locations'], 'figSize': (5,9), 'saveFig': True} 
+simConfig.analysis['plotLFP'] = {'electrodes': [2,4,5], 'includeAxon': False, 'plots': ['timeSeries',  'locations'], 'figSize': (5,9), 'saveFig': True} 
 
 # Create network and run simulation
-sim.create(netParams = netParams, simConfig = simConfig)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 
-#SimulateAnalyze

@@ -1588,20 +1588,25 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
             if cvar: cb.set_label(cbLabels[cvar], rotation=90)
 
+        # Synapses
         if showSyns:
             synColor='red'
             for cellPost in cellsPost:
                 for sec in cellPost.secs.values():
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
-        
+        # Electrodes
         if showElectrodes:
             ax = plt.gca()
-            coords = sim.net.recXElectrode.pos.T
-            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1],
+            colorOffset = 0
+            if 'avg' in showElectrodes:
+                showElectrodes.remove('avg')
+                colorOffset = 1
+            coords = sim.net.recXElectrode.pos.T[np.array(showElectrodes).astype(int),:]
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[colorOffset:len(coords)+colorOffset],
                 marker='v', depthshade=False, edgecolors='k', linewidth=2)
             for i in range(coords.shape[0]):
-                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(i), fontweight='bold' )
+                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
             cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
@@ -1665,7 +1670,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
-        - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
+        - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
         - plots (list): list of plot types to show (default: ['timeSeries', 'PSD', 'timeFreq', 'locations']) 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
@@ -1829,7 +1834,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 color = colorList[i%len(colorList)]
                 lw=1.0
 
-            import seaborn as sb
+            #import seaborn as sb
             from scipy import signal as spsig
 
             # creates spectrogram over a range of data 
@@ -1872,7 +1877,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                     i+=nseg
             cvals.extend(trSegs)  
             
-        fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)
+        fig = sim.analysis.plotShape(showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)
         figs.append(fig)
 
 

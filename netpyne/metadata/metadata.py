@@ -571,7 +571,8 @@ metadata = {
                 "label": "Dt"
             },
             "seeds": {
-                "label": "Seeds"
+                "label": "Seeds",
+                "type": "dict"
             },
             "addSynMechs": {
                 "label": "Add Syn Mechs"

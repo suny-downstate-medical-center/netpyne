@@ -582,6 +582,26 @@ class NetParams (object):
 
         cellRule.secLists[secListName] = list(secList)
 
+    def swapCellParamsPt3d(self, label, origIndex, targetIndex):
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error swapping 3d pts: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if origIndex not in range(4) and targetIndex not in range(4): # check valid indices (x,y,z,d)
+            print 'Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)'
+            return
+
+        for sec in cellRule.secs.values():
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                for i,pt in enumerate(pt3d): pt3d[i] = list(pt)
+                for pt in pt3d:
+                    tmp = float(pt[origIndex])
+                    pt[origIndex] = float(pt[targetIndex])
+                    pt[targetIndex] = tmp
+
 
     def renameCellParamsSec(self, label, oldSec, newSec):
         self.cellParams.rename(oldSec, newSec, (label, 'secs'))
@@ -611,22 +631,36 @@ class NetParams (object):
 
 
     def saveCellParamsRule(self, label, fileName):
-        import pickle
+        import pickle, json, os
+
+        ext = os.path.basename(fileName).split('.')[1]
+
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
             print 'Error saving: netParams.cellParams does not contain %s' % (label)
             return
-        with open(fileName, 'w') as fileObj:
-            pickle.dump(cellRule, fileObj)
+
+        if ext == 'pkl':
+            with open(fileName, 'w') as fileObj:
+                pickle.dump(cellRule, fileObj)
+        elif ext == 'json':
+            with open(fileName, 'w') as fileObj:
+                cellRule = json.dump(cellRule, fileObj)
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle
-        with open(fileName, 'r') as fileObj:
-            cellRule = pickle.load(fileObj)
-        self.cellParams[label] = cellRule
+        import pickle, json, os
 
+        ext = os.path.basename(fileName).split('.')[1]
+        if ext == 'pkl':
+            with open(fileName, 'r') as fileObj:
+                cellRule = pickle.load(fileObj)
+        elif ext == 'json':
+            with open(fileName, 'r') as fileObj:
+                cellRule = json.load(fileObj)
+        
+        self.cellParams[label] = cellRule
 
 
     def todict(self):

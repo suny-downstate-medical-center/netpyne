@@ -20,7 +20,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 0.1*1e3
+cfg.duration = 0.5*1e3
 cfg.dt = 0.05
 cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
 cfg.hParams = {'celsius': 34, 'v_init': -80}  
@@ -47,7 +47,7 @@ cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 cfg.recordStim = False
 cfg.recordTime = False  
 cfg.recordStep = 0.1
-cfg.recordLFP = [[10, y, 90] for y in range(350, 1250, 100)] #+[[10, 960, 90]]
+cfg.recordLFP = [[10, y, 90] for y in range(450, 1250, 100)] 
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ cfg.saveCellConns = True
 # Analysis and plotting 
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
-cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,100], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
 cfg.analysis['plotLFP'] = {'separation': 1.0, 'plots': ['timeSeries', 'locations']}
 
 #------------------------------------------------------------------------------
@@ -115,13 +115,13 @@ cfg.addSubConn = 1
 #------------------------------------------------------------------------------
 cfg.addIClamp = 1
 
-cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000, 'amp': 0.50}
+cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000, 'amp': 0.40}
 
 
 #------------------------------------------------------------------------------
 # NetStim inputs 
 #------------------------------------------------------------------------------
-cfg.addNetStim = 0
+cfg.addNetStim = 1
 
 cfg.NetStim1 = {'pop': 'PT5B', 'ynorm':[0,1], 'sec': 'apic_5', 'loc': 0.5, 'synMech': ['AMPA'], 'synMechWeightFactor': [1.0],
 				'start': 0, 'interval': 1000.0/40.0, 'noise': 0.0, 'number': 1000.0, 'weight': 10.0, 'delay': 0}

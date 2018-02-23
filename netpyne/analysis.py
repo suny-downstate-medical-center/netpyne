@@ -1568,8 +1568,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
-        # if not includeAxon:         
-        #     secs = [sec for sec in secs if 'axon' not in sec.hname()]
+        if not includeAxon:         
+            secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
         cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
@@ -1599,7 +1599,9 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             ax = plt.gca()
             coords = sim.net.recXElectrode.pos.T
             ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[1:sim.net.recXElectrode.nsites+1],
-                marker='v', depthshade=False, edgecolors='k')
+                marker='v', depthshade=False, edgecolors='k', linewidth=2)
+            for i in range(coords.shape[0]):
+                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(i), fontweight='bold' )
             cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
@@ -1658,9 +1660,9 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved or power spectra)
 ######################################################################################################################################################
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['sum', 'all'])
@@ -1836,9 +1838,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             fs = int(1000.0/sim.cfg.recordStep)
             f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
             detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
-            x_mesh, y_mesh = np.meshgrid(t_spec, f[f<maxFreq])
-            plt.pcolormesh(x_mesh, y_mesh, np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
-            plt.colorbar()
+            x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+            plt.pcolormesh(x_mesh, y_mesh, 10*np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
+            plt.colorbar(label='dB/Hz')
             plt.ylabel('Hz')
 
         plt.xlabel('time (ms)', fontsize=fontsiz)
@@ -1857,9 +1859,23 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     # locations ------------------------------
     if 'locations' in plots:
         cvals = [] # used to store total transfer resistance
+        if not includeAxon:
+            axonIndices = []
+            for cell in sim.net.cells: # calculate indices of axon
+                i = 0
+                for secName, sec in cell.secs.iteritems():
+                    nseg = sec.geom.nseg
+                    if 'axon' in secName:
+                        axonIndices.extend(range(i,i+nseg))
+                    i+=nseg
+
         for cell in sim.net.cells:
-            cvals.extend(list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)))  # convert from Mohm to kilohm
-        fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals)
+            trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
+            if not includeAxon:
+                for i in axonIndices: del trSegs[i] 
+            cvals.extend(trSegs)  
+            
+        fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)
         figs.append(fig)
 
 
@@ -1869,7 +1885,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
         _saveFigData(figData, saveData, 'lfp')
- 
 
 
     # show fig 

@@ -37,20 +37,20 @@ class RecXElectrode(object):
     """Extracellular electrode
 
     """
-    def __init__(self, cfg):
+    def __init__(self, sim):
         """Create an array"""
-        self.cfg = cfg
+        self.cfg = sim.cfg
         
         try:
-            self.pos = np.array(cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
+            self.pos = np.array(sim.cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
             assert len(self.pos.shape) == 2
             assert self.pos.shape[0] == 3
             self.pos[1,:] *= -1  # invert y-axis since by convention assume it refers to depth (eg cortical depth)
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
-            print 'Error creating extracellular electrode: cfg.recordLFP should contain a list of x,y,z locations'
-            return None
+               print 'Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations'
+               return None
 
         self.nsites = self.pos.shape[1]
         self.transferResistances = {}   # V_e = transfer_resistance*Im

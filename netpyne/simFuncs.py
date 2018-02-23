@@ -822,7 +822,7 @@ def calculateLFP():
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
         ecp = np.dot(tr,im) # in mV (= R * I = MOhm * nA)
         if sim.cfg.saveLFPCells: 
-            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (not currently stored)
+            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (stored optionally)
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
 
@@ -844,7 +844,7 @@ def setupRecordLFP():
     sim.net.defineCellShapes()
 
     sim.net.calcSegCoords()  # calculate segment coords for each cell
-    sim.net.recXElectrode = RecXElectrode(sim.cfg)  # create exctracellular recording electrode
+    sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
     for cell in sim.net.cells:
         nseg = cell._segCoords['p0'].shape[1]

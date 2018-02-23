@@ -32,6 +32,8 @@
 
 - Fixed bug gathering data using the cfg.gatherSimOnlyData option
 
+- Fixed bug where empty sections where created when recording from non-existing sections
+
 
 # Version 0.7.6
 

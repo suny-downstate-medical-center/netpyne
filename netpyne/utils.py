@@ -262,7 +262,6 @@ def getCellParams(cell, varList={}, origGlob={}):
     else:
         secs = []
 
-
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
     for dirCellName in dirCell:

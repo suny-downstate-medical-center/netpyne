@@ -161,7 +161,7 @@ class Cell (object):
             if conditionsMet:
                 try:
                     ptr = None
-                    if 'loc' in params:
+                    if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
                             

@@ -1663,15 +1663,23 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
 
 ######################################################################################################################################################
-## Plot LFP (time-resolved or power spectra)
+## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-#@exception
+@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
         - plots (list): list of plot types to show (default: ['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - NFFT (int, power of 2): Number of data points used in each block for the PSD and time-freq FFT (default: 256)
+        - noverlap (int, <nperseg): Number of points of overlap between segments for PSD and time-freq (default: 128)
+        - maxFreq (float): Maximum frequency shown in plot for PSD and time-freq (default: 100 Hz)
+        - nperseg (int): Length of each segment for time-freq (default: 256)
+        - smooth (int): Window size for smoothing LFP; no smoothing if 0 (default: 0)
+        - separation (float): Separation factor between time-resolved LFP plots; multiplied by max LFP value (default: 1.0)
+        - includeAxon (boolean): Whether to show the axon in the location plot (default: True)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)

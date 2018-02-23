@@ -1757,18 +1757,18 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     if 'PSD' in plots:
         figs.append(plt.figure(figsize=figSize))
         
-        import seaborn as sb
+        #import seaborn as sb
 
         for i,elec in enumerate(electrodes):
             plt.subplot(len(electrodes),1,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
-                lw=1.0
+                lw=1.5
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colorList[i%len(colorList)]
-                lw=1.0
+                lw=1.5
             
             Fs = int(1000.0/sim.cfg.recordStep)
             power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
@@ -1782,7 +1782,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
             plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color)
             plt.xlim([0, maxFreq])
-            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz)
+            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
             
 
@@ -1804,7 +1804,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
         plt.tight_layout()
         plt.suptitle('Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
         plt.subplots_adjust(bottom=0.08, top=0.9)
-
 
         # save figure
         if saveFig: 
@@ -1842,6 +1841,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
             plt.pcolormesh(x_mesh, y_mesh, 10*np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
             plt.colorbar(label='dB/Hz')
             plt.ylabel('Hz')
+            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
 
         plt.xlabel('time (ms)', fontsize=fontsiz)
         plt.tight_layout()
@@ -1859,20 +1859,17 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
     # locations ------------------------------
     if 'locations' in plots:
         cvals = [] # used to store total transfer resistance
-        if not includeAxon:
-            axonIndices = []
-            for cell in sim.net.cells: # calculate indices of axon
-                i = 0
-                for secName, sec in cell.secs.iteritems():
-                    nseg = sec.geom.nseg
-                    if 'axon' in secName:
-                        axonIndices.extend(range(i,i+nseg))
-                    i+=nseg
 
         for cell in sim.net.cells:
             trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
             if not includeAxon:
-                for i in axonIndices: del trSegs[i] 
+                i = 0
+                axonIndices = []
+                for secName, sec in cell.secs.iteritems():
+                    nseg = sec.geom.nseg
+                    if 'axon' in secName:
+                        for j in range(i,i+nseg): del trSegs[j] 
+                    i+=nseg
             cvals.extend(trSegs)  
             
         fig = sim.analysis.plotShape(showElectrodes=1, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)

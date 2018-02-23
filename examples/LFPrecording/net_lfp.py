@@ -40,7 +40,7 @@ netParams.connParams['E->all'] = {
 netParams.connParams['I->E'] = {
   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
   'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.01,                                      # synaptic weight 
+  'weight': 1.0,                                      # synaptic weight 
   'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
   'synMech': 'inh'}                                     # synaptic mechanism 
 
@@ -50,15 +50,13 @@ simConfig = specs.SimConfig()        # object of class SimConfig to store simula
 simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
-simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0)]}      # Plot recorded traces for this list of cells
-
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,8), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
+
+simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
 
 
 # Create network and run simulation

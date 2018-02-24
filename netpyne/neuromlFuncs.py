@@ -5,7 +5,7 @@ Contains functions related to neuroml conversion (import from and export to)
 
 Contributors: salvadordura@gmail.com
 """
-
+from __future__ import print_function
 try:
     import neuroml
     from pyneuroml import pynml
@@ -200,11 +200,15 @@ if neuromlExists:
     ###############################################################################
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
-    def exportNeuroML2 (reference, connections=True, stimulations=True):
+    def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
 
         import sim
 
         net = sim.net
+        
+        import random
+        myrandom = random.Random(12345)
+
         
         print("Exporting network to NeuroML 2, reference: %s"%reference)
         
@@ -236,10 +240,10 @@ if neuromlExists:
                 for cond in cell_param_set0['conds']:
                     if len(cell_param_set0['conds'][cond])>0:
                         if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
-                            if sim.cfg.verbose: print "    Cond: %s matches..."%cond
+                            if sim.cfg.verbose: print("    Cond: %s matches..."%cond)
                             someMatches = True
                         else:
-                            if sim.cfg.verbose: print "    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???")
+                            if sim.cfg.verbose: print("    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???"))
                             someMisMatches = True
                 if someMatches and not someMisMatches:
                     if sim.cfg.verbose: print("   Matches: %s"%cell_param_set0)
@@ -453,6 +457,10 @@ if neuromlExists:
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 comp_id = populations_vs_components[np_pop.tags['pop']]
                 pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
+                pop.properties.append(neuroml.Property('radius',default_cell_radius))
+                
+                pop.properties.append(neuroml.Property('color','%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())))
+                
                 nml_net.populations.append(pop)
 
                 for cell in net.cells:
@@ -598,8 +606,14 @@ if neuromlExists:
 
 
         nml_file_name = '%s.net.nml'%reference
+        
+        if format=='xml':
 
-        writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+            writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+        elif format=='hdf5':
+            
+            nml_file_name+='.h5'
+            writers.NeuroMLHdf5Writer.write(nml_doc, nml_file_name)
 
 
         import pyneuroml.lems
@@ -656,8 +670,9 @@ if neuromlExists:
         next_gid = 0
         stochastic_input_count = 0
 
-        def __init__(self, netParams, verbose = False):
+        def __init__(self, netParams, simConfig=None, verbose = False):
             self.netParams = netParams
+            self.simConfig = simConfig
             self.verbose = verbose
 
         def finalise(self):
@@ -700,15 +715,16 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleNetwork(self, network_id, notes, temperature=None):
+        def handle_network(self, network_id, notes, temperature=None):
             if temperature:
-                print("\n****************\n   Need to set temperature to %s!!!\n********************"%temperature)
+                self.simConfig.hParams['celsius'] = pynml.convert_to_units(temperature,'degC')
+                print("Setting global temperature to %s"%self.simConfig.hParams['celsius'])
 
 
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handlePopulation(self, population_id, component, size, component_obj):
+        def handle_population(self, population_id, component, size, component_obj, properties={}):
 
             if self.verbose: print("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
             
@@ -721,6 +737,7 @@ if neuromlExists:
             popInfo['cellModel'] = component
             popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from abstract cells
             popInfo['cellsList'] = []
+            popInfo['numCells'] = size
             
             if population_id=='pop':
                 print("\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors in NetPyNE!\nGiving up...\n*****************************\n\n")
@@ -1121,8 +1138,8 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleLocation(self, id, population_id, component, x, y, z):
-            DefaultNetworkHandler.printLocationInformation(self,id, population_id, component, x, y, z)
+        def handle_location(self, id, population_id, component, x, y, z):
+            DefaultNetworkHandler.print_location_information(self,id, population_id, component, x, y, z)
 
             cellsList = self.popParams[population_id]['cellsList']
 
@@ -1133,7 +1150,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #
-        def handleProjection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
+        def handle_projection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
 
             if self.verbose: print("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
@@ -1142,7 +1159,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #  
-        def handleConnection(self, projName, id, prePop, postPop, synapseType, \
+        def handle_connection(self, projName, id, prePop, postPop, synapseType, \
                                                         preCellId, \
                                                         postCellId, \
                                                         preSegId = 0, \
@@ -1169,13 +1186,13 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #    
-        def handleInputList(self, inputListId, population_id, component, size, input_comp_obj=None):
-            DefaultNetworkHandler.printInputInformation(self,inputListId, population_id, component, size)
+        def handle_input_list(self, inputListId, population_id, component, size, input_comp_obj=None):
+            DefaultNetworkHandler.print_input_information(self,inputListId, population_id, component, size)
             
             import neuroml
             
             format = 'NeuroML2'
-            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse):
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) :
                 format = 'NeuroML2_stochastic_input'
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
@@ -1200,7 +1217,7 @@ if neuromlExists:
         #
         #  Overridden from DefaultNetworkHandler
         #   
-        def handleSingleInput(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
+        def handle_single_input(self, inputListId, id, cellId, segId = 0, fract = 0.5, weight=1.0):
             
             pop_id = self.popStimLists[inputListId]['conds']['pop']
             nrn_sec, nrn_fract = self._convert_to_nrn_section_location(pop_id,segId,fract)
@@ -1213,7 +1230,7 @@ if neuromlExists:
                                         'type': self.popStimSources[inputListId]['type'], 
                                         'originalFormat': self.popStimSources[inputListId]['originalFormat']}
             if self.popStimSources[inputListId]['originalFormat'] == 'NeuroML2_stochastic_input':
-                self.stimSources[stimId]['stim_count'] = self.stochastic_input_count
+                #self.stimSources[stimId]['stim_count'] = self.stochastic_input_count
                 self.stochastic_input_count +=1
                 
             self.stimLists[stimId] = {'source': stimId, 
@@ -1257,7 +1274,7 @@ if neuromlExists:
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-            nmlHandler = NetPyNEBuilder(netParams, verbose=verbose)     
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
 
             currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
@@ -1265,7 +1282,10 @@ if neuromlExists:
 
             nmlHandler.finalise()
 
-            print('Finished import of NeuroML2; populations vs gids NML has calculated: %s'%nmlHandler.gids)
+            print('Finished import of NeuroML2; populations vs gids NML has calculated: ')
+            for pop in nmlHandler.gids:
+                g = nmlHandler.gids[pop]
+                print('   %s: %s'%(pop, g if len(g)<10 else str(g[:8]).replace(']',', ..., %s]'%g[-1])))
             #print('Connections: %s'%nmlHandler.connections)
 
         if fileName.endswith(".h5"):
@@ -1275,7 +1295,7 @@ if neuromlExists:
 
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 
-            nmlHandler = NetPyNEBuilder(netParams, verbose=verbose)     
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
 
             currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 

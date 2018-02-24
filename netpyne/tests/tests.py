@@ -1050,6 +1050,8 @@ class TestTypeObj(object):
                 errorMessages.append(errorMessage)
             else:
                 allowedValues = mechVarList['pointps'][simType] + ['rate']
+                allowedValues += ['label'] # Required for NeuroML handling
+                allowedValues += ['originalFormat'] # Required for NeuroML handling
                 if any([x not in allowedValues for x in allKeys]):
                     errorMessage = "StimSourceParams: Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
                     errorMessages.append(errorMessage)

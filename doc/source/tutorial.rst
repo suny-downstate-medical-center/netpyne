@@ -889,4 +889,34 @@ Notice how the rate initially increases as a function of connection weight, but 
 
 .. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.
 
+
+Recording LFPs batch simulations (Tutorial 8)
+--------------------------------------------
+
+Two examples of how to record and analyze local field potentials (LFP) are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/lfp/examples/LFPrecording>`_
+
+To record LFP set ``simConfig.recordLFP = [[]]``
+The `simConfig` attribute `recordLFP` is used to specify the 3D locations of the LFP electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm (default: False). For more information on LFP see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
+
+
+Output stored in ``sim.allSimData['LFP']``
+
+``simConfig.recordLFPCells = True`` Output stored in ``sim.allSimData['LFP']``
+
+First example is single cell 
+
+:download:`lfp_cell.py <../../examples/LFPrecording/lfp_cell.py>`
+
+.. image:: ../../examples/LFPrecording/lfp_cell.png
+	:width: 90%
+
+Second example is network
+
+:download:`lfp_net.py <code/tut8_analysis.py>`
+
+.. image:: ../../examples/LFPrecording/lfp_net.png
+	:width: 90%
+
+
+
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

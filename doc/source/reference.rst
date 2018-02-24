@@ -696,7 +696,7 @@ Related to recording:
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
-* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP in each electrode is calculated by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 ms/mm (default: False).
+* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 ms/mm (default: False).
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:

@@ -889,6 +889,28 @@ Analysis-related functions
     - Returns figure handles
 
 
+* **analysis.plotLFP** (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
+        - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+        - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+        - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+        - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+        - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+        - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+        - *nperseg*: Length of each segment for time-freq (int)
+        - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+        - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+        - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+        - *figSize*: Size of figure ((width, heiight))
+        - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *showFig*: Whether to show the figure or not (True|False)
+
+        - Returns figure handles
+    
+
+
 * **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.

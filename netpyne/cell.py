@@ -418,7 +418,10 @@ class CompartCell (Cell):
                         mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
-                                mechParamValueFinal = mechParamValue[iseg]
+                                if len(mechParamValue) == 1: 
+                                    mechParamValueFinal = mechParamValue[0]
+                                else:
+                                    mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             

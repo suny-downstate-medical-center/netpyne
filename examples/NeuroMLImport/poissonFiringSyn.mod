@@ -63,6 +63,7 @@ PARAMETER {
 
 ASSIGNED {
     v (mV)
+    isi (ms)                    : Not a state variable as far as Neuron's concerned...
     
     syn0_g (uS)                            : derived variable
     
@@ -77,7 +78,6 @@ ASSIGNED {
 
 STATE {
     tsince (ms) 
-    isi (ms) 
     syn0_A  
     syn0_B  
     

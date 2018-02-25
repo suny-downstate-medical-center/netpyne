@@ -4,6 +4,8 @@
 
 - Added plotting of LFP time series, PSD, freq vs time and electrode locations
 
+- Updates to NeuroML conversion code.
+
 - ShapePlot now shows segment diameters as linewidths (Python version)
 
 - Added function to add 3D points (in NEURON+Python) from stylized geometry

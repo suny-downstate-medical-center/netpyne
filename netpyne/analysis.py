@@ -1666,7 +1666,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
 @exception
-def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
@@ -1826,8 +1826,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
                 filename = sim.cfg.filename+'_'+'lfp_psd.png'
             plt.savefig(filename)
 
-    # timeFreq ------------------------------
-    if 'timeFreq' in plots:
+    # Spectrogram ------------------------------
+    if 'spectrogram' in plots:
         import matplotlib.cm as cm
         figs.append(plt.figure(figsize=figSize))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
@@ -1858,7 +1858,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFre
 
         plt.xlabel('time (ms)', fontsize=fontsiz)
         plt.tight_layout()
-        plt.suptitle('LFP time-frequency profile', size=fontsiz, fontweight='bold')
+        plt.suptitle('LFP spectrogram', size=fontsiz, fontweight='bold')
         plt.subplots_adjust(bottom=0.08, top=0.9)
         
         # save figure

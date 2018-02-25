@@ -1,5 +1,13 @@
 # Version 0.7.7
 
+- Added LFP recording at arbitrary 3D locations
+
+- Added plotting of LFP time series, PSD, freq vs time and electrode locations
+
+- ShapePlot now shows segment diameters as linewidths (Python version)
+
+- Added function to add 3D points (in NEURON+Python) from stylized geometry
+
 - Connection sec and loc randomly chosen from list when synsPerConn=1 
 
 - Set default NetStim noise to 0.0
@@ -20,7 +28,11 @@
 
 - Fixed bug saving to .mat during batch sims
 
-- Fixe bug in order of unique cell gids in analysis funcs 'include' param
+- Fixed bug in order of unique cell gids in analysis funcs 'include' param
+
+- Fixed bug gathering data using the cfg.gatherSimOnlyData option
+
+- Fixed bug where empty sections where created when recording from non-existing sections
 
 
 # Version 0.7.6

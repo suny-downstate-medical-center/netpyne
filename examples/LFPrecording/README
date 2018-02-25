@@ -1,0 +1,33 @@
+# LFP recording
+## Description
+Two examples of using LFP recording in NetPyNE:
+1) In a single cell,
+
+![lfp_cell](https://github.com/Neurosim-lab/netpyne/raw/lfp/examples/LFPrecording/lfp_cell.png)
+
+2) In a network
+![lfp_net](https://github.com/Neurosim-lab/netpyne/raw/lfp/examples/LFPrecording/lfp_net.png)
+
+The `simConfig` attribute `recordLFP` is used to specify the 3D locations of the LFP electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm (default: False).
+
+For further details see Tutorial 9: http://neurosimlab.org/netpyne/tutorial.html#recording-and-plotting-lfps-tutorial-9
+
+## Setup and execution
+
+Requires NEURON with Python and MPI support. 
+
+1. Type `nrnivmodl mod` to create a directory called either i686 or x86_64, depending on your computer's architecture. 
+2. To run the single cell example type: `python lfp_cell.py` or `mpiexec -np [num_proc] nrniv -mpi lfp_cell.py`
+2. To run the network cell example type: `python lfp_net.py` or `mpiexec -np [num_proc] nrniv -mpi lfp_net.py`
+
+## Overview of file structure:
+
+* /init.py: Main executable; calls functions from other modules. Sets what parameter file to use.
+
+* /netParams.py: Network parameters
+
+* /cfg.py: Simulation configuration
+
+
+For further information please contact: salvadordura@gmail.com 
+

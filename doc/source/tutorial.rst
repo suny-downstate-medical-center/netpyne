@@ -893,15 +893,14 @@ Notice how the rate initially increases as a function of connection weight, but 
 Recording LFPs batch simulations (Tutorial 8)
 --------------------------------------------
 
-Two examples of how to record and analyze local field potentials (LFP) are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/lfp/examples/LFPrecording>`_
+Two examples of how to record and analyze local field potentials (LFP) are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/lfp/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
 To record LFP set ``simConfig.recordLFP = [[]]``
 The `simConfig` attribute `recordLFP` is used to specify the 3D locations of the LFP electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm (default: False). For more information on LFP see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
 
+Output stored in ``sim.allSimData['LFP']``. To plot use sim.analysis.plotLFP() method (see :ref:`analysis_functions` for the full list of arguments.) A 2D list of size timeSteps * numElectrodes e.g. sim.allSimData['LFP'][10][2] corresponds to the LFP value of electrode 2 at time step 10.
 
-Output stored in ``sim.allSimData['LFP']``
-
-``simConfig.recordLFPCells = True`` Output stored in ``sim.allSimData['LFP']``
+``simConfig.saveLFPCells = True`` Output stored in ``sim.allSimData['LFPCells']``
 
 First example is single cell 
 

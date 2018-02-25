@@ -826,7 +826,6 @@ def calculateLFP():
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
 
-
 ###############################################################################
 ### Setup LFP Recording
 ###############################################################################
@@ -1256,7 +1255,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += nodeData['simData'][key]
+                            sim.allSimData[k] += np.array(nodeData['simData'][key])
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1314,7 +1313,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += nodeData['simData'][key]
+                            sim.allSimData[k] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 

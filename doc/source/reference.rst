@@ -697,7 +697,7 @@ Related to recording:
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
-# **recordLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
+# **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:

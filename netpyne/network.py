@@ -219,7 +219,8 @@ class Network (object):
         params = sourceParams.copy()
         params.update(targetParams)
 
-        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams if param in params and isinstance(params[param], str)]  
+        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
+            if param in params and isinstance(params[param], basestring) and params[param] not in ['variable']]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}   
@@ -518,6 +519,8 @@ class Network (object):
             sim.cfg.createNEURONObj = False
             sim.cfg.addSynMechs = False
 
+        gapJunctions = False  # assume no gap junctions by default
+
         for connParamLabel,connParamTemp in self.params.connParams.iteritems():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
             connParam['label'] = connParamLabel
@@ -543,11 +546,26 @@ class Network (object):
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
-                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
-                cell.addConn(preGapParams)
+            # check if gap junctions in any of the conn rules
+            if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
+
+        # add presynaptoc gap junctions
+        if gapJunctions:
+            # distribute info on presyn gap junctions across nodes
+            if not getattr(sim.net, 'preGapJunctions', False): 
+                sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+            data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
+            data[sim.rank] = None
+            gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+            sim.pc.barrier()
+            for dataNode in gather:
+                if dataNode: sim.net.preGapJunctions.extend(dataNode)
+
+            # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+            for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+                if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+                    cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                    cell.addConn(preGapParams)
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
@@ -637,7 +655,7 @@ class Network (object):
     ###############################################################################
     def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
         # list of params that have a function passed in as a string
-        paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+        paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}  
@@ -921,9 +939,12 @@ class Network (object):
             connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()})  
                     for preGid,preCellTags in preCellsTags.iteritems() for postGid,postCellTags in postCellsTags.iteritems()}
 
-        if isinstance(connParam['weight'], list): connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
-        if isinstance(connParam['delay'], list): connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
-        if isinstance(connParam['loc'], list): connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
+        if 'weight' in connParam and isinstance(connParam['weight'], list): 
+            connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
+        if 'delay' in connParam and isinstance(connParam['delay'], list): 
+            connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
+        if 'loc' in connParam and isinstance(connParam['loc'], list): 
+            connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
         
         orderedPreGids = sorted(preCellsTags.keys())
         orderedPostGids = sorted(postCellsTags.keys())
@@ -1085,6 +1106,24 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
 
 
+    ###############################################################################
+    ### Calculate segment coordinates from 3d point coordinates 
+    ###############################################################################
+    def calcSegCoords(self):   
+        # Calculate relative seg coords for 1 cell per pop, 
+        for pop in self.pops.values():
+            pop.calcRelativeSegCoords()
 
+        # Calculate abs seg coords for all cells
+        for cell in self.cells:
+            cell.calcAbsSegCoords()
 
+    ###############################################################################
+    ### Add 3D points to sections with simplified geometry
+    ###############################################################################
+    def defineCellShapes(self):
+        import sim
+        h.define_shape()
+        for cell in sim.net.cells:
+            cell.updateShape()
 

@@ -161,7 +161,7 @@ class Cell (object):
             if conditionsMet:
                 try:
                     ptr = None
-                    if 'loc' in params:
+                    if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
                             
@@ -418,7 +418,10 @@ class CompartCell (Cell):
                         mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
-                                mechParamValueFinal = mechParamValue[iseg]
+                                if len(mechParamValue) == 1: 
+                                    mechParamValueFinal = mechParamValue[0]
+                                else:
+                                    mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
@@ -733,7 +736,7 @@ class CompartCell (Cell):
                     netstim = self.addNetStim(netStimParams)
 
             if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                preGapId = 10e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
                 if not getattr(sim.net, 'preGapJunctions', False): 
@@ -748,7 +751,7 @@ class CompartCell (Cell):
                                 'synMech': params['synMech'],
                                 'gapJunction': 'pre'}
                 sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
-
+                
             # Python Structure
             if sim.cfg.createPyStruct:
                 connParams = {k:v for k,v in params.iteritems() if k not in ['synsPerConn']} 
@@ -1007,7 +1010,7 @@ class CompartCell (Cell):
             netStimParams = {'source': params['source'],
                 'type': params['type'],
                 'rate': params['rate'] if 'rate' in params else 1000.0/params['interval'],
-                'noise': params['noise'],
+                'noise': params['noise'] if 'noise' in params else 0.0,
                 'number': params['number'],
                 'start': params['start'],
                 'seed': params['seed'] if 'seed' in params else sim.cfg.seeds['stim']}
@@ -1182,7 +1185,16 @@ class CompartCell (Cell):
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
         else:
             synMechSecs = secLabels
-            synMechLocs = [params['loc']]
+            synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
+
+            # randomize the section to connect to and move it to beginning of list
+            if len(synMechSecs)>1:
+                rand = h.Random()
+                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, params['preGid']) # initialize randomizer 
+                pos = int(rand.discunif(0, len(synMechSecs)-1))
+                synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
+                if len(synMechLocs)>1: 
+                    synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
@@ -1239,7 +1251,77 @@ class CompartCell (Cell):
 
 
 
+    def getSomaPos(self):
+        ''' Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        n3dsoma = 0
+        r3dsoma = np.zeros(3)
+        for sec in [sec for secName, sec in self.secs.iteritems() if 'soma' in secName]:
+            sec['hSec'].push()
+            n3d = int(h.n3d())  # get number of n3d points in each section
+            r3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
+            n3dsoma += n3d
 
+            for i in range(n3d):
+                r3dsoma[0] += h.x3d(i)
+                r3dsoma[1] += h.y3d(i)
+                r3dsoma[2] += h.z3d(i)
+
+            h.pop_section() 
+        
+        r3dsoma /= n3dsoma
+
+        return r3dsoma
+    
+    def calcAbsSegCoords(self):
+        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        import sim
+
+        p3dsoma = self.getSomaPos()
+        pop = self.tags['pop']
+        morphSegCoords = sim.net.pops[pop]._morphSegCoords
+
+        # rotated coordinates around z axis first then shift relative to the soma
+        self._segCoords = {}
+        p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
+        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
+        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+
+    def setImembPtr(self): 
+        """Set PtrVector to point to the i_membrane_"""
+        jseg = 0
+        for sec in self.secs.values():
+            hSec = sec['hSec']
+            for iseg, seg in enumerate(hSec):
+                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                jseg += 1
+                
+
+    def getImemb(self):
+        """Gather membrane currents from PtrVector into imVec (does not need a loop!)"""
+        self.imembPtr.gather(self.imembVec)
+        return self.imembVec.as_numpy()  # (nA)
+
+
+    def updateShape(self):
+        """Call after h.define_shape() to update cell coords"""
+        x = self.tags['x']
+        y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+        z = self.tags['z']
+                
+        for sec in self.secs.values():
+            if 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
+                sec['geom']['pt3d'] = []
+                sec['hSec'].push()
+                n3d = int(h.n3d())  # get number of n3d points in each section
+                for i in range(n3d):
+                    # by default L is added in x-axis; shift to y-axis; z increases 100um for each cell so set to 0
+                    pt3d = [h.y3d(i), h.x3d(i), 0, h.diam3d(i)] 
+                    sec['geom']['pt3d'].append(pt3d) 
+                    h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+                h.pop_section() 
+
+        
 
 ###############################################################################
 #

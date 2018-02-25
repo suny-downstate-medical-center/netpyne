@@ -126,8 +126,8 @@ The value consists in turn of a dictionary with the parameters of the population
 	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
 
 * **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified 2-element list [min, max]. 
-	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]).
-
+	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]). Note: The NEURON objects 3d points (pt3d) ``y`` coordinates will have opposite sign to the NetPyNE/Python ``tags.y`` value, in order to correctly employ and represent the y-axis as a depth coordinate, e.g. if ``cell.tags.y = 500`` then ``cell.secs.soma.geom.pt3d[0][1] = -500`` ([0] refers to the 1st pt3d, and [1] refers to the y coordinate)
+ 
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
@@ -190,6 +190,8 @@ Finally, it is possible to define a population composed of individually-defined 
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
 	netParams.popParams['IT_cells'] = {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
 
+
+.. note:: To use VecStim you need to download and compile (nrnivmodl) the `vecevent.mod file <https://raw.githubusercontent.com/Neurosim-lab/netpyne/development/doc/source/code/mod/vecevent.mod>`_ .
 
 .. _cell_property_rules:
 
@@ -320,7 +322,10 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.
 
-	If ``synsPerConn`` > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+
+	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
 	If omitted, defaults to 0.5.
@@ -331,7 +336,9 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
 
-	The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	If ``synsPerConn`` == 1, and list of locs is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+
+	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
 
 
 * **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
@@ -689,6 +696,8 @@ Related to recording:
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
+* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
@@ -882,6 +891,29 @@ Analysis-related functions
     - Returns figure handles
 
 
+* **analysis.plotLFP** (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
+    
+        - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+        - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+        - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+        - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+        - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+        - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+        - *nperseg*: Length of each segment for time-freq (int)
+        - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+        - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+        - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+        - *figSize*: Size of figure ((width, heiight))
+        - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *showFig*: Whether to show the figure or not (True|False)
+
+        - Returns figure handles
+    
+
+
 * **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
@@ -946,7 +978,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
+* **analysis.plot2Dnet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 

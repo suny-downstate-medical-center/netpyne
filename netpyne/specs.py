@@ -443,7 +443,7 @@ class NetParams (object):
             if not os.path.exists(folder):
                 print ' Could not create', folder
 
-        dataSave = {'netParams': self.__dict__}
+        dataSave = {'net': {'params': self.__dict__}}
 
         # Save to json file
         if ext == 'json':
@@ -535,7 +535,7 @@ class NetParams (object):
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+            for synMech in synMechs: self.addSynMechParams(cellName+'_'+synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 
@@ -582,6 +582,26 @@ class NetParams (object):
 
         cellRule.secLists[secListName] = list(secList)
 
+    def swapCellParamsPt3d(self, label, origIndex, targetIndex):
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print 'Error swapping 3d pts: netParams.cellParams does not contain %s' % (label)
+            return
+
+        if origIndex not in range(4) and targetIndex not in range(4): # check valid indices (x,y,z,d)
+            print 'Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)'
+            return
+
+        for sec in cellRule.secs.values():
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                for i,pt in enumerate(pt3d): pt3d[i] = list(pt)
+                for pt in pt3d:
+                    tmp = float(pt[origIndex])
+                    pt[origIndex] = float(pt[targetIndex])
+                    pt[targetIndex] = tmp
+
 
     def renameCellParamsSec(self, label, oldSec, newSec):
         self.cellParams.rename(oldSec, newSec, (label, 'secs'))
@@ -611,22 +631,36 @@ class NetParams (object):
 
 
     def saveCellParamsRule(self, label, fileName):
-        import pickle
+        import pickle, json, os
+
+        ext = os.path.basename(fileName).split('.')[1]
+
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
             print 'Error saving: netParams.cellParams does not contain %s' % (label)
             return
-        with open(fileName, 'w') as fileObj:
-            pickle.dump(cellRule, fileObj)
+
+        if ext == 'pkl':
+            with open(fileName, 'w') as fileObj:
+                pickle.dump(cellRule, fileObj)
+        elif ext == 'json':
+            with open(fileName, 'w') as fileObj:
+                cellRule = json.dump(cellRule, fileObj)
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle
-        with open(fileName, 'r') as fileObj:
-            cellRule = pickle.load(fileObj)
-        self.cellParams[label] = cellRule
+        import pickle, json, os
 
+        ext = os.path.basename(fileName).split('.')[1]
+        if ext == 'pkl':
+            with open(fileName, 'r') as fileObj:
+                cellRule = pickle.load(fileObj)
+        elif ext == 'json':
+            with open(fileName, 'r') as fileObj:
+                cellRule = json.load(fileObj)
+        
+        self.cellParams[label] = cellRule
 
 
     def todict(self):
@@ -668,6 +702,8 @@ class SimConfig (object):
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
         self.recordStim = False  # record spikes of cell stims
+        self.recordLFP = [] # list of 3D locations to record LFP from
+        self.saveLFPCells = False  # Store LFP generate individually by each cell 
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 
@@ -687,7 +723,7 @@ class SimConfig (object):
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
+        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

@@ -7311,7 +7311,7 @@ org.geppetto.frontend.jupyter  development
 
 org.geppetto.frontend  interface
 
-Geppetto Neuron  interface
+Geppetto Neuron  interface 
 
 1) npm install from
    /u/salvadord/Documents/ISB/Models/NEURON-UI/org.geppetto.frontend.jupyter/src/jupyter_geppetto/geppetto/src/main/webapp
@@ -7321,7 +7321,7 @@ Geppetto Neuron  interface
 3) checkout and pull metadata branch in netpyne repo
 
 ** Extend GUI
-- In browser open console + select "No cache" -- so changes in js take effect after reloading if run-dev-server.py running
+- In browser open console + disable cache (eg. Network -> "Disable cache" with browser open) -- so changes in js take effect after reloading if run-dev-server.py running
 
 - using javascript REACT -- component based
 
@@ -7332,13 +7332,22 @@ Geppetto Neuron  interface
 
 - check imports for other components
 
+** to check can import tut example
+	
+from neuron_ui.tests.tut3 import netParams, simConfig
+netpyne_geppetto.netParams=netParams
+netpyne_geppetto.simConfig=simConfig
+neuron-ui
+
+** create branch and then PR
+
 * 17Dec22 Extracellular recording (LFP) from Allen BMTK Bionet
 ** recxelectrode class 
 https://github.com/AllenInstitute/bmtk/blob/develop/bmtk/simulator/bionet/recxelectrode.py
 ** simulation code
 https://github.com/AllenInstitute/bmtk/blob/a20b10af77563e2dbebb8c2db7c3c8878783d0f9/bmtk/simulator/bionet/simulation.py
 
-*** pre sim
+*** pre sim (deprecated?)
     def calculate_ecp(self, positions_file, ecp_output):
         """Set recording of the ExtraCellular Potential
         :param positions_file:
@@ -7354,6 +7363,7 @@ https://github.com/AllenInstitute/bmtk/blob/a20b10af77563e2dbebb8c2db7c3c8878783
 
         h.cvode.use_fast_imem(1)  # make i_membrane_ a range variable
         self.fih1 = h.FInitializeHandler(0, self.set_pointers)
+
 
 *** compute and save after sim
 
@@ -7419,9 +7429,77 @@ https://github.com/AllenInstitute/bmtk/blob/a20b10af77563e2dbebb8c2db7c3c8878783
 seg_coords['p0'] = array with the starting 3D point of each cell segment
 seg_coords['p1'] = array with the ending 3D point of each cell segment
 
-*
+
+** implementation
+*** specs.py
+cfg.recordECP = True
+
+*** cell.py
+if cfg.recordECP:
+ self.im_ptr = h.PtrVector(self._nseg)  # pointer vector
+ self.im_ptr.ptr_update_callback(self.set_im_ptr)   # used for gathering an array of  i_membrane values from the pointer vector
+
+    def set_im_ptr(self): 
+        """Set PtrVector to point to the i_membrane_"""
+        jseg = 0
+        for sec in self.hobj.all:  
+            for seg in sec:    
+                self.im_ptr.pset(jseg,seg._ref_i_membrane_)  # notice the underscore at the end
+                jseg += 1
+
+*** network.py (or simFuncs.py?)
+self.calc_seg_coords()  # use for computing the ECP
+
+    def calc_seg_coords(self): -- call method in each cell
+        """Needed for the ECP calculations"""
+        for node_type_id, morphology in self.__morphologies_cache.items():
+            morph_seg_coords = morphology.calc_seg_coords()   # needed for ECP calculations
+
+            for node in self._local_node_types[node_type_id]:
+                self._cells[node.node_id].calc_seg_coords(morph_seg_coords)
+
+- calc seg coords for each cell class (relative to each morphology, so don't repeat) - calculate for 1 cell of each pop
+- adapt to each cell by translating by x,y,z
+
+*** simFuncs
+if cfg.recordECP:
+ set_ecp_recording()
+
+    def set_ecp_recording(self):
+
+        '''
+        Set recording of the ExtraCellular Potential
+        '''
+
+        self.rel = RecXElectrode(self.conf)
+        
+        for gid in self.gids['biophysical']:
+            cell = self.net.cells[gid]
+            self.rel.calc_transfer_resistance(gid, cell.get_seg_coords())
+        
+        h.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        self.fih1 = h.FInitializeHandler(0, self.set_pointers)
+
+    def set_pointers(self):    # set pointers to i_membrane in each cell             
+        for gid, cell in self.net.cells.items():
+            cell.set_im_ptr()
+
+- calcualte ECP:
+            for gid in self.gids['biophysical']: # compute ecp only from the biophysical cells
+                 
+                cell = self.net.cells[gid]    
+                im = cell.get_im()
+                tr = self.rel.get_transfer_resistance(gid)
+                ecp = np.dot(tr,im)
+     
+                if self.conf['run']['save_cell_vars'] and gid in self.gids['save_cell_vars'] :
+                    cell_data_block = self.data_block['cells'][gid] 
+                    cell_data_block['ecp'][tstep_block-1,:] = ecp
+      
+                self.data_block['ecp'][tstep_block-1,:] += ecp
 
 
+- store ECP in simData
 
 * 17Dec23 LFP using Sam's simple method
 ** classes
@@ -7565,6 +7643,7 @@ Ohio Wesleyan University
 ** Cortex, Schizophrenia (Cristoph Metzner, Hertfordshire)
 
 ** Spinal cord circuits (Vittorio Caggiano, IBM Watson)
+
 ** Convert hoc models (Ben Latimer, Missouri)
 ** Thalamocortical stimulation (Brenyn Jungmann, Nahir lab,Missouri)
 ** Fear circuits (Aliyah Taylor, Princeton/Missouri)
@@ -7575,6 +7654,11 @@ Ohio Wesleyan University
 
 ** Cerebellum (Sergio Solinas)
 ** Cerebellum (Stefano Masoli, Univ Pavia)
+** LFP in SUA vs MUA (Harry Tran) harrytran75005@gmail.com
+the relationship between the single unit activty (SUA) and the multi unit activity (MUA) - 
+so the LFP produced by a single neuron and its LFP in a population of neurons
+** EEE network and single cell (JOe, Sergio)
+** Ischemia with RxD
 ** EMAIL LIST
 salvadordura@gmail.com
 billl@neurosim.downstate.edu
@@ -7609,6 +7693,7 @@ aman.aberra@duke.edu
 marianne.bezaire@gmail.com
 smgsolinas@gmail.com
 bremen@fastwebnet.it
+harrytran75005@gmail.com
 
 * Related tools
 ** NEURON

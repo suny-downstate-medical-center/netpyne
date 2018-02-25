@@ -14,6 +14,7 @@ if __gui__:
     from matplotlib import mlab
 import numpy as np
 from scipy import array, cumsum
+import scipy as sp
 from numbers import Number
 import math
 import functools
@@ -208,14 +209,20 @@ def getCellsInclude(include):
             else:
                 cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==condition])
         
-        elif isinstance(condition, tuple):  # subset of a pop with relative indices
+        # subset of a pop with relative indices
+        # when load from json gets converted to list (added as exception)
+        elif (isinstance(condition, tuple) 
+        or (isinstance(condition, list)  
+        and len(condition)==2 
+        and isinstance(condition[0], basestring) 
+        and isinstance(condition[1], (list,int)))):  
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
-        elif isinstance(condition, list):
+        elif isinstance(condition, list):  # subset
             for subcond in condition:
                 if isinstance(subcond, int):  # cell gid 
                     cellGids.append(subcond)
@@ -226,8 +233,7 @@ def getCellsInclude(include):
                     else:
                         cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
 
-
-    cellGids = list(set(cellGids))  # unique values
+    cellGids = sim.unique(cellGids)  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
     cells = sorted(cells, key=lambda k: k['gid'])
 
@@ -385,7 +391,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ######################################################################################################################################################
 @exception
 def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        saveFig = None, showFig = True):
+        ylim = None, saveFig = None, showFig = True):
     ''' 
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -426,8 +432,9 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         #ax1.set_xlabel('Time period', fontsize=fontsiz)
         ax1.set_ylabel('Avg firing rate', fontsize=fontsiz)
         ax1.set_xticks(range(len(timeRangeLabels)))
-        ax1.set_xticklabels(timeRangeLabels)
+        ax1.set_xticklabels(timeRangeLabels, fontsize=fontsiz)
         ax1.set_xlim(-0.5, len(avgs)-0.5)
+        if ylim: ax1.set_ylim(ylim)
         ax1.legend(include)
 
         try:
@@ -455,6 +462,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         ax2.set_xticks(range(len(timeRangeLabels)))
         ax2.set_xticklabels(timeRangeLabels)
         ax2.set_xlim(-0.5, len(peaks)-0.5)
+        if ylim: ax2.set_ylim(ylim)
         ax2.legend(include)
 
         try:
@@ -960,7 +968,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
-                 popColors = [], xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1007,7 +1015,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
     for stat in stats:
         # create fig
         fig,ax1 = plt.subplots(figsize=figSize)
-        fontsiz = 16
+        fontsiz = fontsize 
 
         statData = []
 
@@ -1163,7 +1171,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 ## Plot spike histogram
 ######################################################################################################################################################
 @exception
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, smooth = 0, overlay=True, ylim = None, 
+def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, 
     popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot firing rate power spectral density (PSD)
@@ -1171,7 +1179,8 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - binSize (int): Size in ms of spike bins (default: 5)
-        - Fs (float): PSD sampling frequency used to calculate the Fourier frequencies (default: 200)
+        - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
         - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
         - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
@@ -1251,8 +1260,9 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             title (str(subset), fontsize=fontsiz)
             color = 'blue'
         
-        power = mlab.psd(histoCount, Fs=Fs, NFFT=256, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-            noverlap=0, pad_to=None, sides='default', scale_by_freq=None)
+        Fs = 1000.0/binSize # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!
+        power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+            noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
         if smooth:
             signal = _smooth1d(10*np.log10(power[0]), smooth)
@@ -1264,11 +1274,11 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
 
-        plt.plot(freqs, signal, linewidth=1.5, color=color)
+        plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=1.5, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
-        plt.xlim([0, (Fs/2)-1])
+        plt.xlim([0, maxFreq])
         if ylim: plt.ylim(ylim)
 
     # if len(include) < 5:  # if apply tight_layout with many subplots it inverts the y-axis
@@ -1487,7 +1497,7 @@ def invertDictMapping(d):
 ## Plot cell shape
 ######################################################################################################################################################
 @exception
-def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
+def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
     includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
@@ -1558,8 +1568,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
                 cvals = np.array(cvals)
 
         if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
-        # if not includeAxon:         
-        #     secs = [sec for sec in secs if 'axon' not in sec.hname()]
+        if not includeAxon:         
+            secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
         cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
@@ -1578,13 +1588,27 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
             if cvar: cb.set_label(cbLabels[cvar], rotation=90)
 
+        # Synapses
         if showSyns:
             synColor='red'
             for cellPost in cellsPost:
                 for sec in cellPost.secs.values():
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
-                  
+        # Electrodes
+        if showElectrodes:
+            ax = plt.gca()
+            colorOffset = 0
+            if 'avg' in showElectrodes:
+                showElectrodes.remove('avg')
+                colorOffset = 1
+            coords = sim.net.recXElectrode.pos.T[np.array(showElectrodes).astype(int),:]
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[colorOffset:len(coords)+colorOffset],
+                marker='v', depthshade=False, edgecolors='k', linewidth=2)
+            for i in range(coords.shape[0]):
+                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
+            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
+
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
 
@@ -1604,7 +1628,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2}
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'O', 'siz':5}
         
         for cell in [c for c in sim.net.cells if c.gid in includePost or c.tags['pop'] in includePost]:
             for sec in cell.secs.values():
@@ -1639,49 +1663,244 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sy
 
 
 ######################################################################################################################################################
-## Plot LFP (time-resolved or power spectra)
+## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
 @exception
-def plotLFP ():
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    ''' 
+    Plot LFP
+        - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
+        - plots (list): list of plot types to show (default: ['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - NFFT (int, power of 2): Number of data points used in each block for the PSD and time-freq FFT (default: 256)
+        - noverlap (int, <nperseg): Number of points of overlap between segments for PSD and time-freq (default: 128)
+        - maxFreq (float): Maximum frequency shown in plot for PSD and time-freq (default: 100 Hz)
+        - nperseg (int): Length of each segment for time-freq (default: 256)
+        - smooth (int): Window size for smoothing LFP; no smoothing if 0 (default: 0)
+        - separation (float): Separation factor between time-resolved LFP plots; multiplied by max LFP value (default: 1.0)
+        - includeAxon (boolean): Whether to show the axon in the location plot (default: True)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    
+    '''
+
     import sim
+    from support.scalebar import add_scalebar
 
-    print('Plotting LFP power spectral density...')
+    print('Plotting LFP ...')
 
-    colorspsd=array([[0.42,0.67,0.84],[0.42,0.83,0.59],[0.90,0.76,0.00],[0.90,0.32,0.00],[0.34,0.67,0.67],[0.42,0.82,0.83],[0.90,0.59,0.00],[0.33,0.67,0.47],[1.00,0.85,0.00],[0.71,0.82,0.41],[0.57,0.67,0.33],[1.00,0.38,0.60],[0.5,0.2,0.0],[0.0,0.2,0.5]]) 
+    lfp = np.array(sim.allSimData['LFP'])
 
-    lfpv=[[] for c in range(len(sim.lfppops))]    
-    # Get last modified .mat file if no input and plot
-    for c in range(len(sim.lfppops)):
-        lfpv[c] = sim.lfps[:,c]    
-    lfptot = sum(lfpv)
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    # electrode selection
+    if 'all' in electrodes:
+        electrodes.remove('all')
+        electrodes.extend(range(int(sim.net.recXElectrode.nsites)))
+
+    # plotting
+    figs = []
+    fontsiz = 14
+    
+    # time series -----------------------------------------
+    if 'timeSeries' in plots:
+        ydisp = np.absolute(lfp).max() * separation
+        offset = 1.0*ydisp
+        t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+
+        figs.append(plt.figure(figsize=figSize))
+
+        for i,elec in enumerate(electrodes):
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.0
+            plt.plot(t, -lfpPlot+(i*ydisp), color=color, linewidth=lw)
+            plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+
+        ax = plt.gca()
+
+        # format plot
+        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+        plt.ylim(-offset, (len(electrodes))*ydisp)
+        ax.invert_yaxis()
+        plt.xlabel('time (ms)', fontsize=fontsiz)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        plt.subplots_adjust(bottom=0.1, top=1.0, right=1.0)
+
+        # calculate scalebar size and add scalebar
+        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
+        scaley = 1000.0  # values in mV but want to convert to uV
+        m = 10.0
+        sizey = 100/scaley
+        while sizey > 0.25*ydisp:
+            try:
+                sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
+            except:
+                sizey /= 10.0
+            m /= 10.0
+        labely = '%s $\mu$V'%(str(sizey*scaley))
+        add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
+            loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+    
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp.png'
+            plt.savefig(filename)
+
+    # PSD ----------------------------------
+    if 'PSD' in plots:
+        figs.append(plt.figure(figsize=figSize))
         
-    # plot pops separately
-    plotPops = 0
-    if plotPops:    
-        plt.figure() # Open a new figure
-        for p in range(len(sim.lfppops)):
-            psd(lfpv[p],Fs=200, linewidth= 2,color=colorspsd[p])
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Power')
-            h=plt.axes()
-            h.set_yticklabels([])
-        plt.legend(['L2/3','L5A', 'L5B', 'L6'])
+        #import seaborn as sb
 
-    # plot overall psd
-    plt.figure() # Open a new figure
-    psd(lfptot,Fs=200, linewidth= 2)
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Power')
-    h=plt.axes()
-    h.set_yticklabels([])
+        for i,elec in enumerate(electrodes):
+            plt.subplot(len(electrodes),1,i+1)
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.5
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.5
+            
+            Fs = int(1000.0/sim.cfg.recordStep)
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+                noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+
+            if smooth:
+                signal = _smooth1d(10*np.log10(power[0]), smooth)
+            else:
+                signal = 10*np.log10(power[0])
+            freqs = power[1]
+
+            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color)
+            plt.xlim([0, maxFreq])
+            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
+            plt.ylabel('dB/Hz', fontsize=fontsiz)
+            
+
+            # ALTERNATIVE PSD CALCULATION USING WELCH
+            # from http://joelyancey.com/lfp-python-practice/
+            # from scipy import signal as spsig
+            # Fs = int(1000.0/sim.cfg.recordStep)
+            # maxFreq=100
+            # f, psd = spsig.welch(lfpPlot, Fs, nperseg=100)
+            # plt.semilogy(f,psd,'k')
+            # sb.despine()
+            # plt.xlim((0,maxFreq))
+            # plt.yticks(size=fontsiz)
+            # plt.xticks(size=fontsiz)
+            # plt.ylabel('$uV^{2}/Hz$',size=fontsiz)
+
+        # format plot
+        plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
+        plt.tight_layout()
+        plt.suptitle('Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
+        plt.subplots_adjust(bottom=0.08, top=0.9)
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp_psd.png'
+            plt.savefig(filename)
+
+    # Spectrogram ------------------------------
+    if 'spectrogram' in plots:
+        import matplotlib.cm as cm
+        figs.append(plt.figure(figsize=figSize))
+        #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+        for i,elec in enumerate(electrodes):
+            plt.subplot(len(electrodes),1,i+1)
+            if elec == 'avg':
+                lfpPlot = np.mean(lfp, axis=1)
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                lfpPlot = lfp[:, elec]
+                color = colorList[i%len(colorList)]
+                lw=1.0
+
+            #import seaborn as sb
+            from scipy import signal as spsig
+
+            # creates spectrogram over a range of data 
+            # from: http://joelyancey.com/lfp-python-practice/
+            fs = int(1000.0/sim.cfg.recordStep)
+            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
+            detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+            x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+            plt.pcolormesh(x_mesh, y_mesh, 10*np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
+            plt.colorbar(label='dB/Hz')
+            plt.ylabel('Hz')
+            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
+
+        plt.xlabel('time (ms)', fontsize=fontsiz)
+        plt.tight_layout()
+        plt.suptitle('LFP spectrogram', size=fontsiz, fontweight='bold')
+        plt.subplots_adjust(bottom=0.08, top=0.9)
+        
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
+            plt.savefig(filename)
+
+    # locations ------------------------------
+    if 'locations' in plots:
+        cvals = [] # used to store total transfer resistance
+
+        for cell in sim.net.cells:
+            trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
+            if not includeAxon:
+                i = 0
+                axonIndices = []
+                for secName, sec in cell.secs.iteritems():
+                    nseg = sec.geom.nseg
+                    if 'axon' in secName:
+                        for j in range(i,i+nseg): del trSegs[j] 
+                    i+=nseg
+            cvals.extend(trSegs)  
+            
+        fig = sim.analysis.plotShape(showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)
+        figs.append(fig)
 
 
-    plt.show()
+    #save figure data
+    if saveData:
+        figData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'lfp')
 
-def _roundFigures(x, n):
-    """Returns x rounded to n significant figures."""
-    return round(x, int(n - math.ceil(math.np.log10(abs(x)))))
 
+    # show fig 
+    if showFig: _showFigure()
+
+    return figs
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object

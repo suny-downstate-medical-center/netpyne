@@ -145,7 +145,7 @@ def _delete_module(modname):
         except:
             pass
 
-def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
+def importCell (fileName, cellName, cellArgs = None, s = False):
     h.initnrn()
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
@@ -155,7 +155,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
-        if not cellInstance:
+        if not s:
             if isinstance(cellArgs, dict):
                 cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
             else:
@@ -261,7 +261,6 @@ def getCellParams(cell, varList={}, origGlob={}):
         secs = [cell.soma]
     else:
         secs = []
-
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
@@ -377,7 +376,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                         except:
                             print 'Could not read variable %s from synapse %s'%(varName,synMech['label'])
 
-                    if not [_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]:
+                    if not any([_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]):
                         synMechs.append(synMech)
                 
                 else: # assume its a non-synapse point process

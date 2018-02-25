@@ -1,3 +1,42 @@
+# Version 0.7.7
+
+- Added LFP recording at arbitrary 3D locations
+
+- Added plotting of LFP time series, PSD, freq vs time and electrode locations
+
+- Updates to NeuroML conversion code.
+
+- ShapePlot now shows segment diameters as linewidths (Python version)
+
+- Added function to add 3D points (in NEURON+Python) from stylized geometry
+
+- Connection sec and loc randomly chosen from list when synsPerConn=1 
+
+- Set default NetStim noise to 0.0
+
+- Fix synMech overwrite when importing multiple hoc/py cell templates
+
+- Fixed bug importing multiple synMechs from hoc/py cell template
+
+- Fixed bug using 'variable' NetStim (NSLOC)
+
+- Fixed save method in NetParams to use ['net']['params']  
+
+- Fixed bug using gap junctions with mpi (multiple cores)
+
+- Fixed bug when creating conns afger loading json -- needed basestring instead of str
+
+- Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
+
+- Fixed bug saving to .mat during batch sims
+
+- Fixed bug in order of unique cell gids in analysis funcs 'include' param
+
+- Fixed bug gathering data using the cfg.gatherSimOnlyData option
+
+- Fixed bug where empty sections where created when recording from non-existing sections
+
+
 # Version 0.7.6
 
 - Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])

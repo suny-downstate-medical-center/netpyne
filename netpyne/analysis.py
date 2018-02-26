@@ -630,18 +630,22 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     
         if orderBy == 'gid': 
             yorder = [cell[orderBy] for cell in cells]
-            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+            #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+            sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
+
         elif isinstance(orderBy, basestring):
             yorder = [cell['tags'][orderBy] for cell in cells]
-            sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+            #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
+            sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
         elif isinstance(orderBy, list) and len(orderBy) == 2:
             yorders = [[popLabels.index(cell['tags'][orderElem]) if orderElem=='pop' else cell['tags'][orderElem] 
                                     for cell in cells] for orderElem in orderBy] 
-            sortedGids = {gid:i for i, (y0, y1, gid) in enumerate(sorted(zip(yorders[0], yorders[1], cellGids)))}
+            #sortedGids = {gid:i for i,  in enumerate(sorted(zip(yorders[0], yorders[1], cellGids)))}
+            sortedGids = [gid for (y0, y1, gid) in sorted(zip(yorders[0], yorders[1], cellGids))]
 
 
         #sortedGids = {gid:i for i, (y, gid) in enumerate(sorted(zip(yorder, cellGids)))}
-        spkinds = [sortedGids[gid]  for gid in spkgids]
+        spkinds = [sortedGids.index(gid)  for gid in spkgids]
 
     else:
         spkts = []
@@ -730,7 +734,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
                 if numCellSpks == 0:
                     avgRates[pop] = 0
                 else:
-                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/popNum/tsecs
+                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[sortedGids[int(spkid)]]['tags']['pop']==pop])/popNum/tsecs
         if numNetStims:
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in spkinds[numCellSpks:]])/numNetStims/tsecs 

@@ -1,3 +1,7 @@
+# Version 0.7.8
+
+- Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
+
 # Version 0.7.7
 
 - Added LFP recording at arbitrary 3D locations

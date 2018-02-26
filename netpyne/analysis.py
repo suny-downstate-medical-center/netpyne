@@ -970,7 +970,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-#@exception
+@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
                  popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 

@@ -11,7 +11,7 @@ NetPyNE is a python package to facilitate the development, parallel simulation a
 Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.
 
 .. image:: figs/schematic.png
-	:width: 80%	
+	:width: 70%	
 	:align: center
 
 

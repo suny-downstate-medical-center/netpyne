@@ -809,12 +809,12 @@ def calculateLFP():
     import sim    
 
     # Set pointers to i_membrane in each cell (required form LFP calc )        
-    for cell in sim.net.cells:
+    for cell in sim.net.compartCells:
         cell.setImembPtr()
 
     # compute 
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
-    for cell in sim.net.cells: # compute ecp only from the biophysical cells
+    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
         gid = cell.gid
         im = cell.getImemb() # in nA
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
@@ -838,12 +838,13 @@ def setupRecordLFP():
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
 
+    sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+    
     sim.net.defineCellShapes()
-
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
-    for cell in sim.net.cells:
+    for cell in sim.net.compartCells:
         nseg = cell._segCoords['p0'].shape[1]
         sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
         cell.imembPtr = h.PtrVector(nseg)  # pointer vector
@@ -1207,7 +1208,7 @@ def gatherData ():
             
     # convert LFP to list
     if sim.cfg.recordLFP:
-        for cell in sim.net.cells:
+        for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr
 

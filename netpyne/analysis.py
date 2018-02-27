@@ -1714,6 +1714,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # plotting
     figs = []
     fontsiz = 14
+    maxPlots = 8
     
     # time series -----------------------------------------
     if 'timeSeries' in plots:
@@ -1772,12 +1773,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     # PSD ----------------------------------
     if 'PSD' in plots:
-        figs.append(plt.figure(figsize=figSize))
-        
+        numCols = (len(electrodes) / maxPlots) + 1
+        figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #import seaborn as sb
 
         for i,elec in enumerate(electrodes):
-            plt.subplot(len(electrodes),1,i+1)
+            plt.subplot(len(electrodes)/numCols, numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
@@ -1833,10 +1834,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # Spectrogram ------------------------------
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
-        figs.append(plt.figure(figsize=figSize))
+        numCols = (len(electrodes) / maxPlots) + 1
+        figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+            
         for i,elec in enumerate(electrodes):
-            plt.subplot(len(electrodes),1,i+1)
+            plt.subplot(len(electrodes)/numCols, numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
@@ -1877,11 +1880,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     if 'locations' in plots:
         cvals = [] # used to store total transfer resistance
 
-        for cell in sim.net.cells:
+        for cell in sim.net.compartCells:
             trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
             if not includeAxon:
                 i = 0
-                axonIndices = []
                 for secName, sec in cell.secs.iteritems():
                     nseg = sec.geom.nseg
                     if 'axon' in secName:

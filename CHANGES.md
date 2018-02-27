@@ -2,6 +2,8 @@
 
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
+- Fixed bug so LFP recording only applied to compartmental cells
+
 # Version 0.7.7
 
 - Added LFP recording at arbitrary 3D locations

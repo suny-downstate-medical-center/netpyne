@@ -1110,12 +1110,15 @@ class Network (object):
     ### Calculate segment coordinates from 3d point coordinates 
     ###############################################################################
     def calcSegCoords(self):   
+        import sim
+
         # Calculate relative seg coords for 1 cell per pop, 
         for pop in self.pops.values():
-            pop.calcRelativeSegCoords()
+            if pop.cellModelClass == sim.CompartCell:
+                pop.calcRelativeSegCoords()
 
         # Calculate abs seg coords for all cells
-        for cell in self.cells:
+        for cell in sim.net.compartCells:
             cell.calcAbsSegCoords()
 
     ###############################################################################
@@ -1124,6 +1127,6 @@ class Network (object):
     def defineCellShapes(self):
         import sim
         h.define_shape()
-        for cell in sim.net.cells:
+        for cell in sim.net.compartCells:
             cell.updateShape()
 

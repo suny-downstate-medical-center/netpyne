@@ -1,8 +1,6 @@
 """
 simFunc.py
-
 Contains functions related to the simulation (eg. setupRecording, runSim)
-
 Contributors: salvadordura@gmail.com
 """
 
@@ -164,7 +162,7 @@ def compactToLongConnFormat(cells, connFormat):
                 cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
         return cells
     except:
-        print "Error converting conns from compact to long format"
+        print("Error converting conns from compact to long format")
         return cells
 
 
@@ -207,17 +205,17 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
                             cell.create()
                             sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell secs'
+                        if sim.cfg.verbose: print(' Unable to load cell secs')
 
                     try:
                         cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell conns'
+                        if sim.cfg.verbose: print(' Unable to load cell conns')
 
                     try:
                         cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell stims'
+                        if sim.cfg.verbose: print(' Unable to load cell stims')
 
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))

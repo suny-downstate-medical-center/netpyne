@@ -126,8 +126,8 @@ The value consists in turn of a dictionary with the parameters of the population
 	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
 
 * **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified 2-element list [min, max]. 
-	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]).
-
+	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]). Note: The NEURON objects 3d points (pt3d) ``y`` coordinates will have opposite sign to the NetPyNE/Python ``tags.y`` value, in order to correctly employ and represent the y-axis as a depth coordinate, e.g. if ``cell.tags.y = 500`` then ``cell.secs.soma.geom.pt3d[0][1] = -500`` ([0] refers to the 1st pt3d, and [1] refers to the y coordinate)
+ 
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
@@ -696,6 +696,8 @@ Related to recording:
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordStim** - Record spikes of cell stims (default: False)
+* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
@@ -887,6 +889,29 @@ Analysis-related functions
     - *showFig*: Whether to show the figure or not (True|False)
 
     - Returns figure handles
+
+
+* **analysis.plotLFP** (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
+    
+        - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+        - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+        - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+        - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+        - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+        - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+        - *nperseg*: Length of each segment for time-freq (int)
+        - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+        - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+        - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+        - *figSize*: Size of figure ((width, heiight))
+        - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+        - *showFig*: Whether to show the figure or not (True|False)
+
+        - Returns figure handles
+    
 
 
 * **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 

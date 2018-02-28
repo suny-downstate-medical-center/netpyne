@@ -1,13 +1,11 @@
 """
 simFunc.py
-
 Contains functions related to the simulation (eg. setupRecording, runSim)
-
 Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
@@ -16,6 +14,7 @@ __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replac
 
 import sys
 import os
+import numpy as np
 from time import time
 from datetime import datetime
 import cPickle as pk
@@ -49,7 +48,8 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.nextHost = 0  # initialize next host
     sim.timingData = Dict()  # dict to store timing
 
-    sim.createParallelContext()  # iniitalize PC, nhosts and rank
+    sim.createParallelContext()  # inititalize PC, nhosts and rank
+    sim.cvode = h.CVode()
 
     sim.setSimCfg(simConfig)  # set simulation configuration
 
@@ -162,7 +162,7 @@ def compactToLongConnFormat(cells, connFormat):
                 cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
         return cells
     except:
-        print "Error converting conns from compact to long format"
+        print("Error converting conns from compact to long format")
         return cells
 
 
@@ -205,17 +205,17 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
                             cell.create()
                             sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell secs'
+                        if sim.cfg.verbose: print(' Unable to load cell secs')
 
                     try:
                         cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell conns'
+                        if sim.cfg.verbose: print(' Unable to load cell conns')
 
                     try:
                         cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell stims'
+                        if sim.cfg.verbose: print(' Unable to load cell stims')
 
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))
@@ -802,6 +802,57 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     return cfg, netParams
 
+###############################################################################
+### Calculate LFP (fucntion called at every time step)      
+###############################################################################
+def calculateLFP():
+    import sim    
+
+    # Set pointers to i_membrane in each cell (required form LFP calc )        
+    for cell in sim.net.compartCells:
+        cell.setImembPtr()
+
+    # compute 
+    saveStep = int(np.floor(h.t / sim.cfg.recordStep))
+    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
+        gid = cell.gid
+        im = cell.getImemb() # in nA
+        tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
+        ecp = np.dot(tr,im) # in mV (= R * I = MOhm * nA)
+        if sim.cfg.saveLFPCells: 
+            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (stored optionally)
+        sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
+
+
+###############################################################################
+### Setup LFP Recording
+###############################################################################
+def setupRecordLFP():
+    import sim
+    from netpyne.support.recxelectrode import RecXElectrode
+    
+    nsites = len(sim.cfg.recordLFP)
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['LFP'] = np.zeros((saveSteps, nsites))
+    if sim.cfg.saveLFPCells:
+        for c in sim.net.cells:
+            sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
+
+    sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+    
+    sim.net.defineCellShapes()
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+    sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
+    
+    for cell in sim.net.compartCells:
+        nseg = cell._segCoords['p0'].shape[1]
+        sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+        cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+        cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+        cell.imembVec = h.Vector(nseg)
+
+    sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        
 
 ###############################################################################
 ### Setup Recording
@@ -873,6 +924,10 @@ def setupRecording ():
                 total+=1
         print("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
 
+
+    # set LFP recording
+    if sim.cfg.recordLFP:
+        setupRecordLFP()
 
     timing('stop', 'setrecordTime')
 
@@ -960,12 +1015,10 @@ def preRun ():
     import sim
 
     # set initial v of cells
-    sim.fih = []
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    sim.cvode=h.CVode()
     sim.cvode.active(int(sim.cfg.cvode_active))
     sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)
@@ -1019,6 +1072,15 @@ def preRun ():
                     # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
                     if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
                         stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+
+    # handler for recording LFP
+    if sim.cfg.recordLFP:
+        def recordLFPHandler():
+            for i in np.arange(sim.cfg.recordStep, sim.cfg.duration+sim.cfg.recordStep, sim.cfg.recordStep):
+                sim.cvode.event(i, sim.calculateLFP)
+
+        sim.recordLFPHandler = recordLFPHandler
+        sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
 
 ###############################################################################
@@ -1144,6 +1206,12 @@ def gatherData ():
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
             
+    # convert LFP to list
+    if sim.cfg.recordLFP:
+        for cell in sim.net.compartCells:
+            del cell.imembVec
+            del cell.imembPtr
+
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
@@ -1163,7 +1231,10 @@ def gatherData ():
                 print '  Gathering only sim data...'
                 sim.allSimData = Dict()
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs: # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1172,7 +1243,7 @@ def gatherData ():
                 for node in gather:  # concatenate data from each node
                     for key,val in node['simData'].iteritems():  # update simData dics of dics of h.Vector
                         if key in simDataVecs:          # simData dicts that contain Vectors
-                            if isinstance(val,dict):
+                            if isinstance(val, dict):
                                 for cell,val2 in val.iteritems():
                                     if isinstance(val2,dict):
                                         sim.allSimData[key].update(Dict({cell:Dict()}))
@@ -1182,6 +1253,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif key == 'LFP':
+                            sim.allSimData[k] += np.array(nodeData['simData'][key])
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1200,7 +1273,8 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.iteritems():
                 data[0][k] = v
-                
+            
+            #print data
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
             if sim.rank == 0:
@@ -1211,7 +1285,10 @@ def gatherData ():
                 sim.allSimData = Dict()
 
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs:  # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1234,6 +1311,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif key == 'LFP':
+                            sim.allSimData[k] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1266,7 +1345,7 @@ def gatherData ():
         for popLabel,pop in sim.net.pops.iteritems(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         sim.allSimData = Dict()
         for k in sim.simData.keys():  # initialize all keys of allSimData dict
-                sim.allSimData[k] = Dict()
+            sim.allSimData[k] = Dict()
         for key,val in sim.simData.iteritems():  # update simData dics of dics of h.Vector
                 if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):
@@ -1280,7 +1359,7 @@ def gatherData ():
                     else:
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else:
-                    sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                    sim.allSimData[key] = val           # update simData dicts which are not Vectors
 
     ## Print statistics
     sim.pc.barrier()
@@ -1315,7 +1394,7 @@ def gatherData ():
             print('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell))
         if 'runTime' in sim.timingData:
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
-            if sim.cfg.printPopAvgRates:
+            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
                 sim.allSimData['popRates'] = sim.popAvgRates()
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
@@ -1474,7 +1553,9 @@ def saveData (include = None):
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-        if 'simData' in include: dataSave['simData'] = sim.allSimData
+        if 'simData' in include: 
+            if 'LFP' in sim.allSimData: sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+            dataSave['simData'] = sim.allSimData
 
 
         if dataSave:

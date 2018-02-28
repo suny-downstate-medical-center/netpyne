@@ -161,7 +161,7 @@ class Cell (object):
             if conditionsMet:
                 try:
                     ptr = None
-                    if 'loc' in params:
+                    if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
                             
@@ -418,7 +418,10 @@ class CompartCell (Cell):
                         mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
-                                mechParamValueFinal = mechParamValue[iseg]
+                                if len(mechParamValue) == 1: 
+                                    mechParamValueFinal = mechParamValue[0]
+                                else:
+                                    mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
@@ -1248,7 +1251,77 @@ class CompartCell (Cell):
 
 
 
+    def getSomaPos(self):
+        ''' Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        n3dsoma = 0
+        r3dsoma = np.zeros(3)
+        for sec in [sec for secName, sec in self.secs.iteritems() if 'soma' in secName]:
+            sec['hSec'].push()
+            n3d = int(h.n3d())  # get number of n3d points in each section
+            r3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
+            n3dsoma += n3d
 
+            for i in range(n3d):
+                r3dsoma[0] += h.x3d(i)
+                r3dsoma[1] += h.y3d(i)
+                r3dsoma[2] += h.z3d(i)
+
+            h.pop_section() 
+        
+        r3dsoma /= n3dsoma
+
+        return r3dsoma
+    
+    def calcAbsSegCoords(self):
+        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        import sim
+
+        p3dsoma = self.getSomaPos()
+        pop = self.tags['pop']
+        morphSegCoords = sim.net.pops[pop]._morphSegCoords
+
+        # rotated coordinates around z axis first then shift relative to the soma
+        self._segCoords = {}
+        p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
+        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
+        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+
+    def setImembPtr(self): 
+        """Set PtrVector to point to the i_membrane_"""
+        jseg = 0
+        for sec in self.secs.values():
+            hSec = sec['hSec']
+            for iseg, seg in enumerate(hSec):
+                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                jseg += 1
+                
+
+    def getImemb(self):
+        """Gather membrane currents from PtrVector into imVec (does not need a loop!)"""
+        self.imembPtr.gather(self.imembVec)
+        return self.imembVec.as_numpy()  # (nA)
+
+
+    def updateShape(self):
+        """Call after h.define_shape() to update cell coords"""
+        x = self.tags['x']
+        y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+        z = self.tags['z']
+                
+        for sec in self.secs.values():
+            if 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
+                sec['geom']['pt3d'] = []
+                sec['hSec'].push()
+                n3d = int(h.n3d())  # get number of n3d points in each section
+                for i in range(n3d):
+                    # by default L is added in x-axis; shift to y-axis; z increases 100um for each cell so set to 0
+                    pt3d = [h.y3d(i), h.x3d(i), 0, h.diam3d(i)] 
+                    sec['geom']['pt3d'].append(pt3d) 
+                    h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+                h.pop_section() 
+
+        
 
 ###############################################################################
 #

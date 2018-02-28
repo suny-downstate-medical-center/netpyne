@@ -1106,6 +1106,27 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
 
 
+    ###############################################################################
+    ### Calculate segment coordinates from 3d point coordinates 
+    ###############################################################################
+    def calcSegCoords(self):   
+        import sim
 
+        # Calculate relative seg coords for 1 cell per pop, 
+        for pop in self.pops.values():
+            if pop.cellModelClass == sim.CompartCell:
+                pop.calcRelativeSegCoords()
 
+        # Calculate abs seg coords for all cells
+        for cell in sim.net.compartCells:
+            cell.calcAbsSegCoords()
+
+    ###############################################################################
+    ### Add 3D points to sections with simplified geometry
+    ###############################################################################
+    def defineCellShapes(self):
+        import sim
+        h.define_shape()
+        for cell in sim.net.compartCells:
+            cell.updateShape()
 

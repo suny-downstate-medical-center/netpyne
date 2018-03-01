@@ -1011,7 +1011,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'synsPerConn': finalParam['synsPerConn']}
 
-            if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')    
+            # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
             if 'shape' in connParam: params['shape'] = connParam.get('shape')    
             if 'plast' in connParam: params['plast'] = connParam.get('plast')    
             if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')

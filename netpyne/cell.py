@@ -689,7 +689,7 @@ class CompartCell (Cell):
     def addConn (self, params, netStimParams = None):
         import sim
 
-        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
+        # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
@@ -949,7 +949,7 @@ class CompartCell (Cell):
                         conn = next((conn for conn in self.conns if conn['source'] == stim['source']), None)
                     if sim.cfg.createPyStruct:
                         for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
-                            if stim['type'] == 'NetStim' and paramName in ['weight', 'delay', 'threshold']:
+                            if stim['type'] == 'NetStim' and paramName in ['weight', 'delay']:
                                 conn[paramName] = paramValue
                             else:
                                 stim[paramName] = paramValue
@@ -959,7 +959,7 @@ class CompartCell (Cell):
                                 if stim['type'] == 'NetStim':
                                     if paramName == 'weight':
                                         conn['hNetcon'].weight[0] = paramValue
-                                    elif paramName in ['delay', 'threshold']:
+                                    elif paramName in ['delay']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
                                     elif paramName in ['rate']: 
                                         stim['interval'] = 1.0/paramValue
@@ -1003,7 +1003,7 @@ class CompartCell (Cell):
                 'delay': params.get('delay'),
                 'synsPerConn': params.get('synsPerConn')}
 
-            if 'threshold' in params: connParams['threshold'] = params.get('threshold')    
+            # if 'threshold' in params: connParams['threshold'] = params.get('threshold')   # depreacted, set threshold in preSyn cell   
             if 'shape' in params: connParams['shape'] = params.get('shape')    
             if 'plast' in params: connParams['plast'] = params.get('plast')    
 
@@ -1657,8 +1657,8 @@ class PointCell (Cell):
                 sec = params['sec']
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i],params['threshold']))
+                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'%
+                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
 
 
     def initV (self):

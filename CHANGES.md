@@ -2,7 +2,10 @@
 
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
-- Fixed bug so LFP recording only applied to compartmental cells
+- Fixed bug LFP recording only applied to compartmental cells
+
+- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
+
 
 # Version 0.7.7
 

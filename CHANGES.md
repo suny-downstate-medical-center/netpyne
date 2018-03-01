@@ -1,5 +1,7 @@
 # Version 0.7.8
 
+- Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
+
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
 - Fixed bug LFP recording only applied to compartmental cells

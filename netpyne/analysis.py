@@ -970,7 +970,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################
-@exception
+#@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
                  popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -978,7 +978,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - graphType ('boxplot'): Type of graph to use (default: 'boxplot')
+        - graphType ('boxplot', 'histogram'): Type of graph to use (default: 'boxplot')
         - stats (['rate', |'isicv'| 'sync'| 'pairsync']): Measure to plot stats on (default: ['rate', 'isicv'])
         - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
@@ -1140,6 +1140,24 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             ax.grid(axis='x', color="0.9", linestyle='-', linewidth=1)
             ax.set_axisbelow(True)
             if xlim: ax.set_xlim(xlim)
+
+
+        elif graphType == 'histogram':
+
+            import seaborn as sb
+            #bp=plt.hist(statData) #, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
+                        #whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
+            for data in statData:
+                sb.distplot(data)
+            plt.xlabel('Frequency', fontsize=fontsiz)
+            plt.ylabel(xlabel, fontsize=fontsiz) 
+            if xlim: ax.set_xlim(xlim)
+
+
+            # pyplot.hist(x, bins, alpha=0.5, label='x', edgecolor=)
+            # pyplot.hist(y, bins, alpha=0.5, label='y', edgecolor=)
+            # pyplot.legend(loc='upper right')
+            # pyplot.show()
         
         # elif graphType == 'bar':
         #     print range(1, len(statData)+1), statData
@@ -1532,13 +1550,18 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
     print('Plotting 3D cell shape ...')
 
+    cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
+    cellsPost = sim.getCellsList(includePost)
+
+    if not hasattr('compartCells', sim.net): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
+    sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
+
     if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
         from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
         
         # create secList from include
-        cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
-        cellsPost = sim.getCellsList(includePost)
+        
         secs = None
 
         # Set cvals and secs
@@ -1634,7 +1657,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         if not ivprops:
             ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'O', 'siz':5}
         
-        for cell in [c for c in sim.net.cells if c.gid in includePost or c.tags['pop'] in includePost]:
+        for cell in [c for c in cellsPost]: 
             for sec in cell.secs.values():
                 if 'axon' in sec['hSec'].hname() and not includeAxon: continue
                 sec['hSec'].push()

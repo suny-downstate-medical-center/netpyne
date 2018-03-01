@@ -971,7 +971,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ## Plot spike histogram
 ######################################################################################################################################################
 #@exception
-def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], 
+def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
@@ -980,6 +980,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - graphType ('boxplot', 'histogram'): Type of graph to use (default: 'boxplot')
         - stats (['rate', |'isicv'| 'sync'| 'pairsync']): Measure to plot stats on (default: ['rate', 'isicv'])
+        - bins (int or list of edges): Number of bins (if integer) of edges (if list) for histogram (default: 50)
         - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
@@ -1101,6 +1102,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             colors.insert(len(include), (0.5,0.5,0.5))  # if allCells is at top make its color=black
             del colors[0]
 
+        # boxplot
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             bp=plt.boxplot(statData, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
@@ -1141,24 +1143,22 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             ax.set_axisbelow(True)
             if xlim: ax.set_xlim(xlim)
 
-
+        # histogram
         elif graphType == 'histogram':
-
-            import seaborn as sb
-            #bp=plt.hist(statData) #, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
-                        #whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
-            for data in statData:
-                sb.distplot(data)
-            plt.xlabel('Frequency', fontsize=fontsiz)
-            plt.ylabel(xlabel, fontsize=fontsiz) 
+            from matplotlib import colors as mcolors
+            for i,data in enumerate(statData):
+                n,binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], linewidth=1.5)
+                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0) #, label=include[i])
+                plt.hist([-1], bins=bins, fc=((colors[i][0],colors[i][1],colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=include[i])
+            plt.xlabel(xlabel, fontsize=fontsiz)
+            plt.ylabel('Frequency', fontsize=fontsiz)
+            plt.xlim(0, binedges[-1])
+            plt.ylim(min(n), max(n)) #min(n[n>=0]), max(n[n>=0]))
+            leg = plt.legend(fontsize=fontsiz)
+                
             if xlim: ax.set_xlim(xlim)
 
 
-            # pyplot.hist(x, bins, alpha=0.5, label='x', edgecolor=)
-            # pyplot.hist(y, bins, alpha=0.5, label='y', edgecolor=)
-            # pyplot.legend(loc='upper right')
-            # pyplot.show()
-        
         # elif graphType == 'bar':
         #     print range(1, len(statData)+1), statData
         #     plt.bar(range(1, len(statData)+1), statData, tick_label=include[::-1], orientation='horizontal', colors=colors)
@@ -1177,9 +1177,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
-                filename = saveFig+'_'+'spikeStat_'+stat+'.png'
+                filename = saveFig+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
             else:
-                filename = sim.cfg.filename+'_'+'spikeStat_'+stat+'.png'
+                filename = sim.cfg.filename+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
             plt.savefig(filename)
 
         # show fig 

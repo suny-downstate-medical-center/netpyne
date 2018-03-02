@@ -845,8 +845,12 @@ class CompartCell (Cell):
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i], threshold))
+                try:
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
+                        synMech=%s, weight=%.4g, delay=%.2f' 
+                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                except:
+                    print('  Created connection preGid=%s' % (preGid))
 
 
     def modifyConns (self, params):
@@ -1657,8 +1661,13 @@ class PointCell (Cell):
                 sec = params['sec']
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                try:
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
+                        synMech=%s, weight=%.4g, delay=%.2f'
+                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                except:
+                    print('  Created connection preGid=%s' % (preGid))
+
 
 
     def initV (self):

@@ -1152,7 +1152,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 plt.hist([-1], bins=bins, fc=((colors[i][0],colors[i][1],colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=include[i])
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Frequency', fontsize=fontsiz)
-            plt.xlim(0, binedges[-1])
+            plt.xlim(0, binedges[-1])  # CHANGE!
             plt.ylim(min(n), max(n)) #min(n[n>=0]), max(n[n>=0]))
             leg = plt.legend(fontsize=fontsiz)
                 

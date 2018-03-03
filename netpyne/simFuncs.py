@@ -844,14 +844,15 @@ def setupRecordLFP():
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
-    for cell in sim.net.compartCells:
-        nseg = cell._segCoords['p0'].shape[1]
-        sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
-        cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-        cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
-        cell.imembVec = h.Vector(nseg)
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            nseg = cell._segCoords['p0'].shape[1]
+            sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
 
-    sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
         
 
 ###############################################################################
@@ -1207,7 +1208,7 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    if sim.cfg.recordLFP:
+    if sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr

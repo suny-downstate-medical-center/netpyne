@@ -969,7 +969,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
 ######################################################################################################################################################
 ## Plot spike histogram
-######################################################################################################################################################
+######################################################################################################################################################3
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
@@ -1023,6 +1023,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         fontsiz = fontsize 
 
         statData = []
+        gidsData = []
+        ynormsData = []
 
         # Calculate data for each entry in include
         for iplot,subset in enumerate(include):
@@ -1033,7 +1035,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             # Select cells to include
             if len(cellGids) > 0:
                 try:
-                    spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+                    spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in 
+                        zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
                 except:
                     spkinds,spkts = [],[]
             else: 
@@ -1045,7 +1048,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             if 'stims' in sim.allSimData:
                 for netStimLabel in netStimLabels:
                     netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
-                    for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
+                    for stimLabel,stimSpks in stims.iteritems() 
+                        for spk in stimSpks if stimLabel == netStimLabel]
                     if len(netStimSpks) > 0:
                         lastInd = max(spkinds) if len(spkinds)>0 else 0
                         spktsNew = netStimSpks 
@@ -1053,23 +1057,32 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                         spkts.extend(spktsNew)
                         spkinds.extend(spkindsNew)
                         numNetStims += 1
-
             try:
-                spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) if timeRange[0] <= spkt <= timeRange[1]])
+                spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) 
+                    if timeRange[0] <= spkt <= timeRange[1]])
             except:
                 pass
+
+            # if scatter get gids and ynorm
+            if graphType == 'scatter':
+                gids = set(spkinds)
+                ynorms = [sim.net.allCells[int(gid)]['tags']['ynorm'] for gid in gids]
+                gidsData.insert(0, gids)
+                ynormsData.insert(0, ynorms)
 
             # rate stats
             if stat == 'rate':
                 toRate = 1e3/(timeRange[1]-timeRange[0])
-                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
+                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
+                    if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
                 statData.insert(0, rates)
                 xlabel = 'Rate (Hz)'
 
             # Inter-spike interval (ISI) coefficient of variation (CV) stats
             elif stat == 'isicv':
                 xlabel = 'Irregularity (ISI CV)'
-                spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] for gid in set(spkinds)]
+                spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
+                    for gid in set(spkinds)]
                 isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
                 isicv = [np.std(x) / np.mean(x) if len(x)>0 else [0] for x in isimat if len(x)>0] 
                 statData.insert(0, isicv) 
@@ -1079,28 +1092,40 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 try: 
                     import pyspike  
                 except:
-                    print "Error: plotSpikeStats() requires the PySpike python package to calculate synchrony (try: pip install pyspike)"
+                    print "Error: plotSpikeStats() requires the PySpike python package \
+                        to calculate synchrony (try: pip install pyspike)"
                     return 0
-
                 
-                spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid], timeRange) for gid in set(spkinds)]
+                spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) 
+                    if spkind==gid], timeRange) for gid in set(spkinds)]
                 if stat == 'sync':
-                    xlabel = 'Synchrony'# (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    xlabel = 'Synchrony'
                     syncMat = [pyspike.spike_sync(spkmat)]
                     #graphType = 'bar'
                 elif stat == 'pairsync':
-                    xlabel = 'Pairwise synchrony'# (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                    xlabel = 'Pairwise synchrony'
                     syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
                     
 
                 statData.insert(0, syncMat)
 
-            colors.insert(0, popColors[subset] if subset in popColors else colorList[iplot%len(colorList)])
+            if graphType == 'boxplot':
+                colors.insert(0, popColors[subset] if subset in popColors 
+                    else colorList[iplot%len(colorList)])  # colors in inverse order
+            else:
+                colors.append(popColors[subset] if subset in popColors 
+                    else colorList[iplot%len(colorList)])  # colors in inverse order  
 
-        # plotting
-        if include[0] == 'allCells': 
-            colors.insert(len(include), (0.5,0.5,0.5))  # if allCells is at top make its color=black
-            del colors[0]
+        # if 'allCells' included make it black
+        if include[0] == 'allCells':
+            if graphType == 'boxplot':
+                colors.insert(len(include), (0.5,0.5,0.5))  # 
+                del colors[0]
+            else:
+                colors.append((0.5,0.5,0.5))  # if allCells is at top make its color=black
+                del colors[-1]
 
         # boxplot
         if graphType == 'boxplot':
@@ -1145,23 +1170,39 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 
         # histogram
         elif graphType == 'histogram':
-            from matplotlib import colors as mcolors
+            nmax = 0
+            binmax = 0
             for i,data in enumerate(statData):
-                n,binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], linewidth=1.5)
-                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0) #, label=include[i])
-                plt.hist([-1], bins=bins, fc=((colors[i][0],colors[i][1],colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=include[i])
+                n, binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], 
+                    linewidth=1.5)
+                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0) 
+                plt.hist([-10], bins=bins, fc=((colors[i][0],colors[i][1],colors[i][2],0.25)), 
+                    edgecolor=colors[i], linewidth=1.5, label=include[i])
+                nmax = max(nmax, max(n))
+                binmax = max(binmax, binedges[-1])
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Frequency', fontsize=fontsiz)
-            plt.xlim(0, binedges[-1])  # CHANGE!
-            plt.ylim(min(n), max(n)) #min(n[n>=0]), max(n[n>=0]))
-            leg = plt.legend(fontsize=fontsiz)
+            xmin = 0  # if max(n)==0 else binedges[list(n).index(min(n[n>0]))]
+            xmax = binmax
+            plt.xlim(xmin, xmax)
+            plt.ylim(0, np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
+            plt.legend(fontsize=fontsiz)
                 
             if xlim: ax.set_xlim(xlim)
 
+        # scatter
+        elif graphType == 'scatter':
+            for i,(ynorms,data) in enumerate(zip(ynormsData, statData)):
+                print len(ynorms), len(data)
+                plt.scatter(ynorms, data, color=colors[i], label=include[i])
+            plt.xlabel('normalized y location (um)', fontsize=fontsiz)
+            plt.ylabel(xlabel, fontsize=fontsiz)
+            plt.legend(fontsize=fontsiz)
 
         # elif graphType == 'bar':
         #     print range(1, len(statData)+1), statData
-        #     plt.bar(range(1, len(statData)+1), statData, tick_label=include[::-1], orientation='horizontal', colors=colors)
+        #     plt.bar(range(1, len(statData)+1), statData, tick_label=include[::-1], 
+        #       orientation='horizontal', colors=colors)
 
         try:
             plt.tight_layout()
@@ -1692,7 +1733,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1737,7 +1778,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # plotting
     figs = []
     fontsiz = 14
-    maxPlots = 8
+    maxPlots = 8.0
     
     # time series -----------------------------------------
     if 'timeSeries' in plots:
@@ -1796,12 +1837,13 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     # PSD ----------------------------------
     if 'PSD' in plots:
-        numCols = (len(electrodes) / maxPlots) + 1
+        numCols = np.ceil(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #import seaborn as sb
 
         for i,elec in enumerate(electrodes):
-            plt.subplot(len(electrodes)/numCols, numCols,i+1)
+            print i+1
+            plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
@@ -1857,12 +1899,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # Spectrogram ------------------------------
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
-        numCols = (len(electrodes) / maxPlots) + 1
+        numCols = np.ceil(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
             
         for i,elec in enumerate(electrodes):
-            plt.subplot(len(electrodes)/numCols, numCols,i+1)
+            plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'

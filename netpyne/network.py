@@ -1111,22 +1111,23 @@ class Network (object):
     ###############################################################################
     def calcSegCoords(self):   
         import sim
+        if sim.cfg.createNEURONObj:
+            # Calculate relative seg coords for 1 cell per pop, 
+            for pop in self.pops.values():
+                if pop.cellModelClass == sim.CompartCell:
+                    pop.calcRelativeSegCoords()
 
-        # Calculate relative seg coords for 1 cell per pop, 
-        for pop in self.pops.values():
-            if pop.cellModelClass == sim.CompartCell:
-                pop.calcRelativeSegCoords()
-
-        # Calculate abs seg coords for all cells
-        for cell in sim.net.compartCells:
-            cell.calcAbsSegCoords()
+            # Calculate abs seg coords for all cells
+            for cell in sim.net.compartCells:
+                cell.calcAbsSegCoords()
 
     ###############################################################################
     ### Add 3D points to sections with simplified geometry
     ###############################################################################
     def defineCellShapes(self):
         import sim
-        h.define_shape()
-        for cell in sim.net.compartCells:
-            cell.updateShape()
+        if sim.cfg.createNEURONObj:
+            h.define_shape()
+            for cell in sim.net.compartCells:
+                cell.updateShape()
 

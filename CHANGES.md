@@ -10,6 +10,8 @@
 
 - Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
 
+- Fixed bug when deleting sections -- needed sec.push() before
+
 
 # Version 0.7.7
 

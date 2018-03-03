@@ -192,6 +192,7 @@ def importCell (fileName, cellName, cellArgs = None, s = False):
     elif fileName.endswith('.hoc'):
         for sec in h.allsec():
             try:
+                sec.push()
                 h.delete_section(sec=sec)
                 h.pop_section()
             except:

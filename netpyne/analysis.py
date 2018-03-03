@@ -1594,7 +1594,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
     cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
     cellsPost = sim.getCellsList(includePost)
 
-    if not hasattr('compartCells', sim.net): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
+    if not hasattr(sim.net, 'compartCells'): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
     sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
 
     if not iv: # plot using Python instead of interviews

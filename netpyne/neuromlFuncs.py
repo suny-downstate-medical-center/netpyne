@@ -9,8 +9,15 @@ from __future__ import print_function
 try:
     import neuroml
     from pyneuroml import pynml
+    from pyneuroml import __version__ as pynml_ver
+    from distutils.version import StrictVersion
+    min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
+    
+    if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
+        raise Exception('Error: pyNeuroML version %s is installed but at least v%s is required!'%(pynml_ver,min_pynml_ver_required))
+    
     neuromlExists = True
-except:
+except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if int(pc.id()) == 0:  # only print for master node

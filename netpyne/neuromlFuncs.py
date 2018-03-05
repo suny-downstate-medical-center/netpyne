@@ -899,6 +899,28 @@ if neuromlExists:
                             if not cellRule['secs'][section_name]['ions'].has_key(ion):
                                 cellRule['secs'][section_name]['ions'][ion] = {}
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_v_shifts:
+                              
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
+                        if cm.ion_channel=='pas':
+                            mech = {'g':gmax}
+                        else:
+                            mech = {'gmax':gmax}
+                        erev = pynml.convert_to_units(cm.erev,'mV')
+                        
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
+                        
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
+                            mech['e'] = erev
+                        else:
+                            if not cellRule['secs'][section_name]['ions'].has_key(ion):
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+                            cellRule['secs'][section_name]['ions'][ion]['e'] = erev
+                        mech['vShift'] = pynml.convert_to_units(cm.v_shift,'mV')
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
                     group = 'all' if not cm.segment_groups else cm.segment_groups

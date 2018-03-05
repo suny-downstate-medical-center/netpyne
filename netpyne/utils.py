@@ -145,7 +145,7 @@ def _delete_module(modname):
         except:
             pass
 
-def importCell (fileName, cellName, cellArgs = None, s = False):
+def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
@@ -155,7 +155,7 @@ def importCell (fileName, cellName, cellArgs = None, s = False):
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
-        if not s:
+        if not cellInstance:
             if isinstance(cellArgs, dict):
                 cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
             else:

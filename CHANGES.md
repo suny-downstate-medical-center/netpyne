@@ -18,6 +18,8 @@
 
 - Fixed bug in shapePlot figSize option
 
+- Fixed format of git changeset stored -- removed 'g' prefix
+
 
 # Version 0.7.7
 

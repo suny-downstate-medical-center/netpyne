@@ -1212,17 +1212,18 @@ class CompartCell (Cell):
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
         else:
             synMechSecs = secLabels
-            synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
+            synMechLocs = [params['loc']]
+            # synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 
-            # randomize the section to connect to and move it to beginning of list
-            if len(synMechSecs)>1:
-                rand = h.Random()
-                preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
-                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
-                pos = int(rand.discunif(0, len(synMechSecs)-1))
-                synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
-                if len(synMechLocs)>1: 
-                    synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
+            # # randomize the section to connect to and move it to beginning of list
+            # if len(synMechSecs)>1:
+            #     rand = h.Random()
+            #     preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+            #     rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
+            #     pos = int(rand.discunif(0, len(synMechSecs)-1))
+            #     synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
+            #     if len(synMechLocs)>1: 
+            #         synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 

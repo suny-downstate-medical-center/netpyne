@@ -1,8 +1,12 @@
 # Version 0.7.8
 
+- Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
+
 - Added 'histogram' option to plotSpikeStats
 
 - Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
+
+- Added showElectrodes and bkgColor options to shapePlot
 
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
@@ -11,6 +15,8 @@
 - Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
 
 - Fixed bug when deleting sections -- needed sec.push() before
+
+- Fixed bug in shapePlot figSize option
 
 
 # Version 0.7.7

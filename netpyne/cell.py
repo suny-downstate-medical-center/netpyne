@@ -12,6 +12,7 @@ from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import numpy as np
+from math import sin, cos
 
 
 ###############################################################################
@@ -232,6 +233,17 @@ class CompartCell (Cell):
     def create (self):
         import sim
 
+        # generate random rotation angle for each cell
+        if sim.net.params.rotateCellsRandomly:
+            if isinstance(sim.net.params.rotateCellsRandomly, list):
+                [rotMin, rotMax] = sim.net.params.rotateCellsRandomly
+            else:
+                [rotMin, rotMax] = 0, 6.2832
+            rand = h.Random()
+            rand.Random123(self.gid)
+            self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
+
+
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
@@ -289,6 +301,8 @@ class CompartCell (Cell):
 
 
     def createPyStruct (self, prop):
+        import sim
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
@@ -347,7 +361,16 @@ class CompartCell (Cell):
                 if 'pt3d' in sectParams['geom']:
                     if 'pt3d' not in sec['geom']:  
                         sec['geom']['pt3d'] = []
-                    for pt3d in sectParams['geom']['pt3d']:
+                    for ipt, pt3d in enumerate(sectParams['geom']['pt3d']):
+                        if sim.net.params.rotateCellsRandomly == True:
+                            """Rotate the cell about the Z axis."""
+                            x = pt3d[0]
+                            z = pt3d[2]
+                            c = cos(self.randRotationAngle)
+                            s = sin(self.randRotationAngle)
+                            pt3d = (x * c - z * s, pt3d[1], x * s + z * c, pt3d[3])
+                            sectParams['geom']['pt3d'][ipt] = pt3d
+
                         sec['geom']['pt3d'].append(pt3d)
 
             # add topolopgy params
@@ -1194,7 +1217,8 @@ class CompartCell (Cell):
             # randomize the section to connect to and move it to beginning of list
             if len(synMechSecs)>1:
                 rand = h.Random()
-                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, params['preGid']) # initialize randomizer 
+                preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
                 pos = int(rand.discunif(0, len(synMechSecs)-1))
                 synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
                 if len(synMechLocs)>1: 

@@ -32,16 +32,16 @@ netParams.defaultThreshold = 0.0 # spike threshold, 10 mV is NetCon default, low
 netParams.defaultDelay = 2.0 # default conn delay (ms)
 netParams.propVelocity = 500.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
-netParams.sizeX = 500
+netParams.sizeX = 100
 netParams.sizeY = 1350  # cortical depth (will be converted to negative values)
-netParams.sizeZ = 20
+netParams.sizeZ = 100
 
 
 #------------------------------------------------------------------------------
 # Cell parameters
 #------------------------------------------------------------------------------
 cellModels = ['HH_simple', 'HH_reduced', 'HH_full']
-layer = {'2': [0.12,0.31], '4': [0.31,0.42], '5A': [0.42,0.52], '45A':[0.31,0.52], '5B': [0.73,0.77], '6': [0.77,1.0], 'long': [2.0,3.0]}  # normalized layer boundaries
+layer = {'2': [0.12,0.31], '4': [0.31,0.42], '5A': [0.42,0.52], '45A':[0.31,0.52], '5B': [0.52,0.77], '6': [0.77,1.0], 'long': [2.0,3.0]}  # normalized layer boundaries
 
 #------------------------------------------------------------------------------
 ## Load cell rules previously saved using netpyne format
@@ -98,8 +98,7 @@ if 'PT5B_full' not in loadCellParams:
 #------------------------------------------------------------------------------
 # Population parameters
 #------------------------------------------------------------------------------
-cellsList = [{'x': x} for x in [20, 37, 45, 60, 87, 90, 119, 135, 160, 188, 202, 205, 238, 265, 275]]
-netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'cellsList': cellsList} # numCells':20}
+netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':1}
 
 #------------------------------------------------------------------------------
 # Synaptic mechanism parameters

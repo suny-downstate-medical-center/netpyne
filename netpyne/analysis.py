@@ -1560,13 +1560,15 @@ def invertDictMapping(d):
 ## Plot cell shape
 ######################################################################################################################################################
 @exception
-def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None,
-    includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
+    iv=False, ivprops=None, includeAxon=True, bkgColor = None,  figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
         when plotting connections (default: ['all'])
         - includePost: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells to show shape of (default: ['all'])
+        - showSyns (True|False): Show synaptic connections in 3D view (default: False)
+        - showElectrodes (True|False): Show LFP electrodes in 3D view (default: False)
         - synStyle: Style of marker to show synapses (default: '.') 
         - dist: 3D distance (like zoom) (default: 0.6)
         - synSize: Size of marker to show synapses (default: 3)
@@ -1575,7 +1577,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         - iv: Use NEURON Interviews (instead of matplotlib) to show shape plot (default: None)
         - ivprops: Dict of properties to plot using Interviews (default: None)
         - includeAxon: Include axon in shape plot (default: True)
-        - showSyns (True|False): Show synaptic connections in 3D 
+        - bkgColor (list/tuple with 4 floats): RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (default: None) 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -1641,13 +1643,13 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         # Plot shapeplot
         cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
-        fig=plt.figure(figsize=(10,10))
+        fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
-        cmap=plt.cm.jet #YlOrBr_r
+        cmap=plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if not cvals==None and len(cvals)>0: 
@@ -1655,6 +1657,12 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
             if cvar: cb.set_label(cbLabels[cvar], rotation=90)
+
+        if bkgColor:
+            shapeax.w_xaxis.set_pane_color(bkgColor)
+            shapeax.w_yaxis.set_pane_color(bkgColor)
+            shapeax.w_zaxis.set_pane_color(bkgColor)
+        #shapeax.grid(False)
 
         # Synapses
         if showSyns:
@@ -1686,7 +1694,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=dpi)
 
         # show fig 
         if showFig: _showFigure()

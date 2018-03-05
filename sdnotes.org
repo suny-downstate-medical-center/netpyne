@@ -7341,6 +7341,10 @@ neuron-ui
 
 ** create branch and then PR
 
+** set background color
+CanvasContainer.setBackgroundColor('#000')
+** set cell cylinders
+network.PT5B[0].setGeometryType('cylinders')
 * 17Dec22 Extracellular recording (LFP) from Allen BMTK Bionet
 ** recxelectrode class 
 https://github.com/AllenInstitute/bmtk/blob/develop/bmtk/simulator/bionet/recxelectrode.py

@@ -83,6 +83,8 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **sizeZ**: z-dimension (horizontal depth) network size in um (default: 100)
 
+* **rotateCellsRandomly**: Rrandom rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
+
 * **defaultWeight**: Default connection weight, in ms (default: 1)
 
 * **defaultDelay**: Default connection delay, in ms (default: 1)
@@ -923,6 +925,7 @@ Analysis-related functions
     
        - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
         - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+        - *showSyns*: Show synaptic connections in 3D (True|False) 
         - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
         - *dist*: 3D distance (like zoom)  
         - *synSize*: Size of marker to show synapses 
@@ -931,7 +934,9 @@ Analysis-related functions
         - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
         - *ivprops*: Dict of properties to plot using Interviews (dict)
         - *includeAxon*: Include axon in shape plot (True|False)
-        - *showSyns*: Show synaptic connections in 3D (True|False) 
+        - *showSyns*: Show synaptic connections in 3D view (True|False) 
+        - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
+        - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
         - *figSize*: Size of figure ((width, height))
         - *saveData*: File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (None|True|'fileName')

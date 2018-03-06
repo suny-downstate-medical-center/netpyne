@@ -1084,7 +1084,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
                     for gid in set(spkinds)]
                 isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
-                isicv = [np.std(x) / np.mean(x) if len(x)>0 else [0] for x in isimat if len(x)>0] 
+                isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
                 statData.insert(0, isicv) 
 
             # synchrony
@@ -1192,10 +1192,14 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 
         # scatter
         elif graphType == 'scatter':
+            from scipy import stats
             for i,(ynorms,data) in enumerate(zip(ynormsData, statData)):
-                print len(ynorms), len(data)
-                plt.scatter(ynorms, data, color=colors[i], label=include[i])
+                avg, binedges, _ = stats.binned_statistic(ynorms, data, 'mean', bins=bins)
+                iqr, binedges, _ = stats.binned_statistic(ynorms, data, np.std, bins=bins)
+                plt.scatter(ynorms, data, color=colors[i], label=include[i], s=5)
+                plt.errorbar(binedges[1:], avg, yerr=[iqr/2,iqr/2], fmt = 'go-')
             plt.xlabel('normalized y location (um)', fontsize=fontsiz)
+            #plt.xlabel('avg rate (Hz)', fontsize=fontsiz)
             plt.ylabel(xlabel, fontsize=fontsiz)
             plt.legend(fontsize=fontsiz)
 

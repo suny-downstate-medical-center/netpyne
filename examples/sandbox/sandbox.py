@@ -58,7 +58,23 @@ simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
-simConfig.analysis['plotSpikeStats'] = {'graphType': 'scatter', 'figSize': (10,6)}
+#simConfig.analysis['plotSpikeStats'] = {'include': ['allCells', 'E4'] ,'graphType': 'scatter', 'figSize': (10,6)}
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+
+sim.initialize(
+    simConfig = simConfig,  
+    netParams = netParams)          # create network object and set cfg and net params
+sim.net.createPops()                    # instantiate network populations
+sim.net.createCells()                   # instantiate network cells based on defined populations
+sim.net.addStims()              # add network stimulation
+sim.cfg.createPyStruct = 0
+sim.net.connectCells()                  # create connections between cells based on params
+sim.setupRecording()                    # setup variables to record for each cell (spikes, V traces, etc)
+sim.runSim()                            # run parallel Neuron simulation  
+sim.gatherData()                        # gather spiking data and cell info from each node
+sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
+sim.analysis.plotData()               # plot spike raster etc
+
+

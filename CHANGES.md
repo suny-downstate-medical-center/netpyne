@@ -8,6 +8,8 @@
 
 - Added showElectrodes and bkgColor options to shapePlot
 
+- Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
+
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
 - Fixed bug LFP recording only applied to compartmental cells
@@ -19,6 +21,7 @@
 - Fixed bug in shapePlot figSize option
 
 - Fixed format of git changeset stored -- removed 'g' prefix
+
 
 
 # Version 0.7.7

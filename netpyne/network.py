@@ -581,7 +581,10 @@ class Network (object):
                     cell.addConnsNEURONObj()
 
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
-        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        if sim.cfg.createPyStruct:
+            nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        else:
+            nodeConnections = nodeSynapses
 
         print('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections))
         if nodeSynapses != nodeConnections:

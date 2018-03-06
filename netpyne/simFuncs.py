@@ -1371,11 +1371,14 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        if sim.cfg.compactConnFormat:
-            preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
-            sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
         else:
-            sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+            sim.totalConnections = sim.totalSynapses
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:

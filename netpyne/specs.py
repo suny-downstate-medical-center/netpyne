@@ -691,6 +691,7 @@ class SimConfig (object):
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
         self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process

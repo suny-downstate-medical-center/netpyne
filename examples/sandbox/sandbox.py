@@ -58,7 +58,7 @@ simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
-#simConfig.analysis['plotSpikeStats'] = {'include': ['allCells', 'E4'] ,'graphType': 'scatter', 'figSize': (10,6)}
+simConfig.analysis['plotSpikeStats'] = {'include': ['E2', 'E4', ['E2', 'E4']] , 'stats': ['rate'], 'graphType': 'histogram', 'figSize': (10,6)}
 
 # Create network and run simulation
 #sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

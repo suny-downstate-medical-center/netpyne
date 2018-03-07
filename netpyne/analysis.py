@@ -211,18 +211,17 @@ def getCellsInclude(include):
         
         # subset of a pop with relative indices
         # when load from json gets converted to list (added as exception)
-        elif (isinstance(condition, tuple) 
-        or (isinstance(condition, list)  
+        elif (isinstance(condition, (list,tuple))  
         and len(condition)==2 
         and isinstance(condition[0], basestring) 
-        and isinstance(condition[1], (list,int)))):  
+        and isinstance(condition[1], (list,int))):  
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
-        elif isinstance(condition, list):  # subset
+        elif isinstance(condition, (list,tuple)):  # subset
             for subcond in condition:
                 if isinstance(subcond, int):  # cell gid 
                     cellGids.append(subcond)
@@ -972,7 +971,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################3
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], fontsize=14, xlim = None, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], normed = False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1111,21 +1110,21 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
 
                 statData.insert(0, syncMat)
 
-            if graphType == 'boxplot':
-                colors.insert(0, popColors[subset] if subset in popColors 
-                    else colorList[iplot%len(colorList)])  # colors in inverse order
-            else:
-                colors.append(popColors[subset] if subset in popColors 
-                    else colorList[iplot%len(colorList)])  # colors in inverse order  
+            #if graphType == 'boxplot':
+            colors.insert(0, popColors[subset] if subset in popColors 
+                else colorList[iplot%len(colorList)])  # colors in inverse order
+            #else:
+            #    colors.append(popColors[subset] if subset in popColors 
+            #        else colorList[iplot%len(colorList)])  # colors in inverse order  
 
         # if 'allCells' included make it black
         if include[0] == 'allCells':
-            if graphType == 'boxplot':
-                colors.insert(len(include), (0.5,0.5,0.5))  # 
-                del colors[0]
-            else:
-                colors.append((0.5,0.5,0.5))  # if allCells is at top make its color=black
-                del colors[-1]
+            #if graphType == 'boxplot':
+            colors.insert(len(include), (0.5,0.5,0.5))  # 
+            del colors[0]
+            #else:
+            #    colors.append((0.5,0.5,0.5))  # if allCells is at top make its color=black
+            #    del colors[-1]
 
         # boxplot
         if graphType == 'boxplot':
@@ -1173,19 +1172,18 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             nmax = 0
             binmax = 0
             for i,data in enumerate(statData):
-                n, binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], 
-                    linewidth=1.5)
-                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0) 
-                plt.hist([-10], bins=bins, fc=((colors[i][0],colors[i][1],colors[i][2],0.25)), 
-                    edgecolor=colors[i], linewidth=1.5, label=include[i])
+                n, binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], linewidth=1.5, density=normed)
+                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0, density=normed) 
+                label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
+                plt.hist([-10], bins=bins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
                 nmax = max(nmax, max(n))
                 binmax = max(binmax, binedges[-1])
             plt.xlabel(xlabel, fontsize=fontsiz)
-            plt.ylabel('Frequency', fontsize=fontsiz)
+            plt.ylabel('Probability of occurrence' if normed else 'Frequency', fontsize=fontsiz)
             xmin = 0  # if max(n)==0 else binedges[list(n).index(min(n[n>0]))]
             xmax = binmax
             plt.xlim(xmin, xmax)
-            plt.ylim(0, np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
+            plt.ylim(0, 1.1*nmax if normed else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
             plt.legend(fontsize=fontsiz)
                 
             if xlim: ax.set_xlim(xlim)
@@ -1194,10 +1192,23 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         elif graphType == 'scatter':
             from scipy import stats
             for i,(ynorms,data) in enumerate(zip(ynormsData, statData)):
-                avg, binedges, _ = stats.binned_statistic(ynorms, data, 'mean', bins=bins)
-                iqr, binedges, _ = stats.binned_statistic(ynorms, data, np.std, bins=bins)
-                plt.scatter(ynorms, data, color=colors[i], label=include[i], s=5)
-                plt.errorbar(binedges[1:], avg, yerr=[iqr/2,iqr/2], fmt = 'go-')
+                mean, binedges, _ = stats.binned_statistic(ynorms, data, 'mean', bins=bins)
+                median, binedges, _ = stats.binned_statistic(ynorms, data, 'median', bins=bins)
+                #p25 = lambda x: np.percentile(x, 25)
+                #p75 = lambda x: np.percentile(x, 75)
+                
+                std, binedges, _ = stats.binned_statistic(ynorms, data, 'std', bins=bins)
+                #per25, binedges, _ = stats.binned_statistic(ynorms, data, p25, bins=bins)
+                #per75, binedges, _ = stats.binned_statistic(ynorms, data, p75, bins=bins)
+                
+                label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
+                plt.scatter(ynorms, data, color=colors[i], label=label, s=10)
+                binstep = binedges[1]-binedges[0]
+                bincenters = [b+binstep/2 for b in binedges[:-1]] 
+                plt.errorbar(bincenters, mean, yerr=std, fmt = 'go-',capthick=1, capsize=5)
+                #plt.errorbar(bincenters, mean, yerr=[mean-per25,per75-mean], fmt='go-',capthick=1, capsize=5)
+            ylims=plt.ylim()
+            plt.ylim(0,ylims[1])
             plt.xlabel('normalized y location (um)', fontsize=fontsiz)
             #plt.xlabel('avg rate (Hz)', fontsize=fontsiz)
             plt.ylabel(xlabel, fontsize=fontsiz)
@@ -1225,7 +1236,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
                 filename = saveFig+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
             else:
                 filename = sim.cfg.filename+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=dpi)
 
         # show fig 
         if showFig: _showFigure()
@@ -1413,6 +1424,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - Returns figure handles
     '''
     import sim
+    from support.scalebar import add_scalebar
 
     print('Plotting recorded cell traces ...')
 
@@ -1466,11 +1478,15 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(subGids),1,igid+1)
                         plt.ylabel(trace, fontsize=fontsiz)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    plt.axis(axis)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.axis(axis)
+                    if 'axis' == 'off':  # if no axis, add scalebar
+                        ax = plt.gca()
+                        add_scalebar(ax, hidex=False, hidey=True, matchx=True, matchy=True, labelx=None, labely=None, sizex=None, sizey=None, 
+                            unitsx=' ms', unitsy=' mV', scalex=1, scaley=1, loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
@@ -1499,12 +1515,16 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
-                    plt.axis(axis)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.axis(axis)
+                    if 'axis' == 'off':  # if no axis, add scalebar
+                        ax = plt.gca()
+                        add_scalebar(ax, hidex=False, hidey=True, matchx=True, matchy=True, labelx=None, labely=None, sizex=None, sizey=None, 
+                            unitsx=' ms', unitsy=' mV', scalex=1, scaley=1, loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)                    
                     if overlay: 
                         #maxLabelLen = 10
                         #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
@@ -1854,7 +1874,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         #import seaborn as sb
 
         for i,elec in enumerate(electrodes):
-            print i+1
             plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)

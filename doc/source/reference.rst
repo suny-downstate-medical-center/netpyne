@@ -83,7 +83,7 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **sizeZ**: z-dimension (horizontal depth) network size in um (default: 100)
 
-* **rotateCellsRandomly**: Rrandom rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
+* **rotateCellsRandomly**: Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
 
 * **defaultWeight**: Default connection weight, in ms (default: 1)
 
@@ -326,7 +326,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
 
-	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
@@ -340,7 +340,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If ``synsPerConn`` == 1, and list of locs is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
 
-	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. To enforce using always the first location from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
@@ -687,6 +687,7 @@ Related to the simulation and netpyne framework:
 * **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
+* **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 

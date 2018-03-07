@@ -10,6 +10,8 @@
 
 - Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
 
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
 - Fixed bug LFP recording only applied to compartmental cells

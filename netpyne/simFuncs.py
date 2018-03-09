@@ -1543,7 +1543,7 @@ def saveData (include = None):
                 print ' Could not create target folder: %s' % (targetFolder)
 
         # saving data
-        if not include: include = sim.cfg.saveDataInclude
+        if not include: include = sim.cfg.Include
         dataSave = {}
         net = {}
 
@@ -1772,16 +1772,18 @@ def version (show=True):
 def gitChangeset (show=True):
     import sim
     import netpyne, os, subprocess 
-    currentPath = os.getcwd()
+    
     try:
+        currentPath = os.getcwd()
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
         changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
+        os.chdir(currentPath)
     except: 
         changeset = ''
-    os.chdir(currentPath)
+    
 
     return changeset
 

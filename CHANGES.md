@@ -24,6 +24,7 @@
 
 - Fixed format of git changeset stored -- removed 'g' prefix
 
+- Fixed bug in Windows trying to get git changeset
 
 
 # Version 0.7.7

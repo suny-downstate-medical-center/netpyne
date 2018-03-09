@@ -971,7 +971,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################3
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], normed = False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], histlogx = False, density = False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1172,18 +1172,24 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
             nmax = 0
             binmax = 0
             for i,data in enumerate(statData):
-                n, binedges,_ = plt.hist(data, bins=bins, histtype='step', color=colors[i], linewidth=1.5, density=normed)
-                plt.hist(data, bins=bins, alpha=0.25, color=colors[i], linewidth=0, density=normed) 
+                if histlogx:
+                    histbins = np.logspace(np.log10(0.01), np.log10(max(data)), bins)
+                else:
+                    histbins = bins
+                n, binedges,_ = plt.hist(data, bins=histbins, histtype='step', color=colors[i], linewidth=1.5, density=density)
+                plt.hist(data, bins=histbins, alpha=0.25, color=colors[i], linewidth=0, density=density) 
                 label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
-                plt.hist([-10], bins=bins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
+                plt.hist([-10], bins=histbins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
                 nmax = max(nmax, max(n))
                 binmax = max(binmax, binedges[-1])
             plt.xlabel(xlabel, fontsize=fontsiz)
-            plt.ylabel('Probability of occurrence' if normed else 'Frequency', fontsize=fontsiz)
-            xmin = 0  # if max(n)==0 else binedges[list(n).index(min(n[n>0]))]
+            plt.ylabel('Probability of occurrence' if density else 'Frequency', fontsize=fontsiz)
+            xmin = 0.01 if histlogx else 0.0  # if max(n)==0 else binedges[list(n).index(min(n[n>0]))]
             xmax = binmax
             plt.xlim(xmin, xmax)
-            plt.ylim(0, 1.1*nmax if normed else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
+            if histlogx:
+                plt.gca().set_xscale("log")
+            plt.ylim(0, 1.1*nmax if density else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
             plt.legend(fontsize=fontsiz)
                 
             if xlim: ax.set_xlim(xlim)
@@ -1483,10 +1489,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     if ylim: plt.ylim(ylim)
                     plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.axis(axis)
-                    if 'axis' == 'off':  # if no axis, add scalebar
-                        ax = plt.gca()
-                        add_scalebar(ax, hidex=False, hidey=True, matchx=True, matchy=True, labelx=None, labely=None, sizex=None, sizey=None, 
-                            unitsx=' ms', unitsy=' mV', scalex=1, scaley=1, loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+            if axis == 'off':  # if no axis, add scalebar
+                ax = plt.gca()
+                sizex =  (timeRange[1]-timeRange[0])/20.0
+                # yl = plt.ylim()
+                # plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
+                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, labelx=None, labely=None, sizex=sizex, sizey=None, 
+                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=3, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)    
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
@@ -1521,15 +1530,19 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.axis(axis)
-                    if 'axis' == 'off':  # if no axis, add scalebar
-                        ax = plt.gca()
-                        add_scalebar(ax, hidex=False, hidey=True, matchx=True, matchy=True, labelx=None, labely=None, sizex=None, sizey=None, 
-                            unitsx=' ms', unitsy=' mV', scalex=1, scaley=1, loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)                    
-                    if overlay: 
-                        #maxLabelLen = 10
-                        #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
-                        plt.legend()#fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+            if overlay: 
+                #maxLabelLen = 10
+                #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
+                plt.legend()#fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
+            if axis == 'off':  # if no axis, add scalebar
+                ax = plt.gca()
+                sizex =  timeRange[1]-timeRange[0]/20
+                yl = plt.ylim()
+                plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
+                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, labelx=None, labely=None, sizex=sizex, sizey=None, 
+                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)                    
+            
     # Plot one fig per trace
     elif oneFigPer == 'trace':
         plotFigPerTrace(cellGids)
@@ -1767,7 +1780,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 #@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -1796,11 +1809,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     print('Plotting LFP ...')
 
-    lfp = np.array(sim.allSimData['LFP'])
-
     # time range
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
+
+    lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
     # electrode selection
     if 'all' in electrodes:
@@ -1830,13 +1843,17 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 color = colorList[i%len(colorList)]
                 lw=1.0
             plt.plot(t, -lfpPlot+(i*ydisp), color=color, linewidth=lw)
-            plt.text(-0.07*timeRange[1], (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+            if len(electrodes) > 1:
+                plt.text(timeRange[0]-0.07*(timeRange[1]-timeRange[0]), (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
 
         ax = plt.gca()
 
         # format plot
-        plt.text(-0.14*timeRange[1], (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
-        plt.ylim(-offset, (len(electrodes))*ydisp)
+        if len(electrodes) > 1:
+            plt.text(timeRange[0]-0.14*(timeRange[1]-timeRange[0]), (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+            plt.ylim(-offset, (len(electrodes))*ydisp)
+        else:       
+            plt.suptitle('LFP Signal', fontsize=fontsiz, fontweight='bold')
         ax.invert_yaxis()
         plt.xlabel('time (ms)', fontsize=fontsiz)
         ax.spines['top'].set_visible(False)
@@ -1855,21 +1872,24 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             except:
                 sizey /= 10.0
             m /= 10.0
-        labely = '%s $\mu$V'%(str(sizey*scaley))
-        add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, labelx=None, sizey=sizey, labely=labely, unitsy=' $\mu$V', scaley=scaley, 
-            loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
-    
+        labely = '%.3g $\mu$V'%(sizey*scaley)#)[1:]
+        if len(electrodes) > 1:
+            add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
+                loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+        else:
+            add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
+                unitsx='ms', loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp.png'
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=dpi)
 
     # PSD ----------------------------------
     if 'PSD' in plots:
-        numCols = np.ceil(len(electrodes) / maxPlots) + 1
+        numCols = np.round(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #import seaborn as sb
 
@@ -1896,7 +1916,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
             plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color)
             plt.xlim([0, maxFreq])
-            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
+            if len(electrodes) > 1:
+                plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
             
 
@@ -1916,8 +1937,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         # format plot
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.tight_layout()
-        plt.suptitle('Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
-        plt.subplots_adjust(bottom=0.08, top=0.9)
+        plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
+        #plt.subplots_adjust(bottom=0.08, top=0.9)
 
         # save figure
         if saveFig: 
@@ -1925,12 +1946,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_psd.png'
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=dpi)
 
     # Spectrogram ------------------------------
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
-        numCols = np.ceil(len(electrodes) / maxPlots) + 1
+        numCols = np.round(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
             
@@ -1957,12 +1978,13 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             plt.pcolormesh(x_mesh, y_mesh, 10*np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
             plt.colorbar(label='dB/Hz')
             plt.ylabel('Hz')
-            plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
+            if len(electrodes) > 1:
+                plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
 
         plt.xlabel('time (ms)', fontsize=fontsiz)
         plt.tight_layout()
         plt.suptitle('LFP spectrogram', size=fontsiz, fontweight='bold')
-        plt.subplots_adjust(bottom=0.08, top=0.9)
+        #plt.subplots_adjust(bottom=0.08, top=0.9)
         
         # save figure
         if saveFig: 
@@ -1970,7 +1992,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
-            plt.savefig(filename)
+            plt.savefig(filename, dpi=dpi)
 
     # locations ------------------------------
     if 'locations' in plots:
@@ -1987,7 +2009,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                     i+=nseg
             cvals.extend(trSegs)  
             
-        fig = sim.analysis.plotShape(showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, saveFig=saveFig, showFig=showFig, figSize=figSize)
+        fig = sim.analysis.plotShape(showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)
         figs.append(fig)
 
 

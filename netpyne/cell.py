@@ -869,8 +869,7 @@ class CompartCell (Cell):
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 try:
-                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
-                        synMech=%s, weight=%.4g, delay=%.2f' 
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f' 
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
                 except:
                     print('  Created connection preGid=%s' % (preGid))
@@ -1686,8 +1685,7 @@ class PointCell (Cell):
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 try:
-                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
-                        synMech=%s, weight=%.4g, delay=%.2f'
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
                 except:
                     print('  Created connection preGid=%s' % (preGid))

@@ -1543,7 +1543,7 @@ def saveData (include = None):
                 print ' Could not create target folder: %s' % (targetFolder)
 
         # saving data
-        if not include: include = sim.cfg.Include
+        if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}
 

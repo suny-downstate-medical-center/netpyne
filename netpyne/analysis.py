@@ -1778,7 +1778,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-#@exception
+@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -2009,7 +2009,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                     i+=nseg
             cvals.extend(trSegs)  
             
-        fig = sim.analysis.plotShape(showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)
+        includePost = [c.gid for c in sim.net.compartCells]
+        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)
         figs.append(fig)
 
 

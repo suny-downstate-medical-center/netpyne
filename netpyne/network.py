@@ -1130,6 +1130,7 @@ class Network (object):
     def defineCellShapes(self):
         import sim
         if sim.cfg.createNEURONObj:
+            sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
             h.define_shape()
             for cell in sim.net.compartCells:
                 cell.updateShape()

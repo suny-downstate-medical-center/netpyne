@@ -837,8 +837,6 @@ def setupRecordLFP():
     if sim.cfg.saveLFPCells:
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
-
-    sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
     
     sim.net.defineCellShapes()
     sim.net.calcSegCoords()  # calculate segment coords for each cell

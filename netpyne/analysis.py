@@ -18,6 +18,7 @@ import scipy as sp
 from numbers import Number
 import math
 import functools
+from support.scalebar import add_scalebar
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -636,12 +637,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell['tags'][orderBy] for cell in cells]
             #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
             sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
+            print yorder
         elif isinstance(orderBy, list) and len(orderBy) == 2:
             yorders = [[popLabels.index(cell['tags'][orderElem]) if orderElem=='pop' else cell['tags'][orderElem] 
                                     for cell in cells] for orderElem in orderBy] 
             #sortedGids = {gid:i for i,  in enumerate(sorted(zip(yorders[0], yorders[1], cellGids)))}
             sortedGids = [gid for (y0, y1, gid) in sorted(zip(yorders[0], yorders[1], cellGids))]
-
 
         #sortedGids = {gid:i for i, (y, gid) in enumerate(sorted(zip(yorder, cellGids)))}
         spkinds = [sortedGids.index(gid)  for gid in spkgids]
@@ -651,6 +652,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkinds = []
         spkgidColors = []
         ylabelText = ''
+
 
     # Add NetStim spikes
     spkts,spkgidColors = list(spkts), list(spkgidColors)
@@ -826,7 +828,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ######################################################################################################################################################
 @exception
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
-    popColors = [], dpi = 100, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+    popColors = [], dpi = 100, figSize = (10,8), axis = 'on', saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -943,6 +945,15 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
+    # Set axis or scaleber
+    
+    if axis == 'off':
+        ax = plt.gca()
+        round_to_n = lambda x, n, m: int(np.round(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
+        sizex = round_to_n((timeRange[1]-timeRange[0])/10.0, 1, 50)
+        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, 
+                    unitsx='ms', unitsy='Hz', scalex=1, scaley=1, loc=7, pad=2, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)  
+        plt.axis(axis)
 
     # save figure data
     if saveData:
@@ -969,7 +980,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################3
-#@exception
+@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], histlogx = False, density = False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1337,7 +1348,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
         histData.append(histoCount)
 
-        color = popColors[subset] if isinstance(subset, basestring) and subset in popColors else colorList[iplot%len(colorList)] 
+        color = popColors[subset] if isinstance(subset, (basestring, tuple)) and subset in popColors else colorList[iplot%len(colorList)] 
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
@@ -1420,6 +1431,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
         - colors (list): List of normalized RGB colors to use for traces
         - ylim (list): Y-axis limits
+        - axis ('on'|'off'): Whether to show axis or not; if not, then a scalebar is included (default: 'on')
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -1430,7 +1442,6 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - Returns figure handles
     '''
     import sim
-    from support.scalebar import add_scalebar
 
     print('Plotting recorded cell traces ...')
 
@@ -1488,14 +1499,15 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    plt.axis(axis)
+                    
             if axis == 'off':  # if no axis, add scalebar
                 ax = plt.gca()
                 sizex =  (timeRange[1]-timeRange[0])/20.0
                 # yl = plt.ylim()
                 # plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, labelx=None, labely=None, sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=3, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)    
+                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, 
+                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=3, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
+                plt.axis(axis) 
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
@@ -1529,7 +1541,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    plt.axis(axis)
+                    
             if overlay: 
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
@@ -1537,11 +1549,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
             if axis == 'off':  # if no axis, add scalebar
                 ax = plt.gca()
-                sizex =  timeRange[1]-timeRange[0]/20
+                sizex = timeRange[1]-timeRange[0]/20
                 yl = plt.ylim()
-                plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, labelx=None, labely=None, sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)                    
+                plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])  # leave space for scalebar?
+                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True,  sizex=sizex, sizey=None, 
+                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)   
+                plt.axis(axis)                 
             
     # Plot one fig per trace
     elif oneFigPer == 'trace':
@@ -1598,7 +1611,7 @@ def invertDictMapping(d):
 ######################################################################################################################################################
 @exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
-    iv=False, ivprops=None, includeAxon=True, bkgColor = None,  figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
+    iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 

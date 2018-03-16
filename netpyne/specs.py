@@ -698,6 +698,7 @@ class SimConfig (object):
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
+        self.printSynsAfterRule = False  # print total of connections after each conn rule is applied 
         self.verbose = False  # show detailed messages
 
         # Recording

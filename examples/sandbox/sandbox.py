@@ -10,12 +10,12 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 20, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 20, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 20, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 20, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 20, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 20, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 5, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 5, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 5, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 5, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 5, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 5, 'ynormRange': [1.0,2.0], 'cellModel': 'VecStim'}
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='CellRule', fileName='IT2_reduced_cellParams.json')
@@ -47,17 +47,17 @@ netParams.connParams['I->E'] = {
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 0.1*1e3           # Duration of the simulation, in ms
+simConfig.duration = 0.5*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
 
-simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
+#simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
+simConfig.analysis['plotRaster'] = {'include': ['I5', 'E2', 'I2', 'E4'],'orderBy': ['pop','y'], 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'plots': ['timeSeries'], 'NFFT': 256*2, 'noverlap': 128*2, 'nperseg': 132*2, 'saveFig': True} 
+#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'plots': ['timeSeries'], 'NFFT': 256*2, 'noverlap': 128*2, 'nperseg': 132*2, 'saveFig': True} 
 #simConfig.analysis['plotSpikeStats'] = {'include': ['E2', 'E4', ['E2', 'E4']] , 'stats': ['rate'], 'graphType': 'histogram', 'figSize': (10,6)}
 
 # Create network and run simulation

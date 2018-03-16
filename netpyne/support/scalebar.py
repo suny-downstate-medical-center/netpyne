@@ -56,11 +56,11 @@ def add_scalebar(ax, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=''
     if matchx: kwargs['sizex'] = f(ax.xaxis)      
     if matchy: kwargs['sizey'] = f(ax.yaxis)
 
-    if 'labelx' not in kwargs:
+    if 'labelx' not in kwargs or kwargs['labelx'] is None:
         kwargs['labelx'] = '%.3g %s'%(kwargs['sizex']*scalex,unitsx)
-    if 'labely' not in kwargs:
+    if 'labely' not in kwargs or kwargs['labely'] is None:
         kwargs['labely'] = '%.3g %s'%(kwargs['sizey']*scaley,unitsy)
-        
+
     sb = AnchoredScaleBar(ax.transData, **kwargs)
     ax.add_artist(sb)
 

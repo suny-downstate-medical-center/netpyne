@@ -692,6 +692,7 @@ Related to the simulation and netpyne framework:
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
 * **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **printSynsAfterRule** - Print total connections after each conn rule is applied 
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:

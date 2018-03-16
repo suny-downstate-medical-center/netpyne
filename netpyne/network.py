@@ -549,6 +549,11 @@ class Network (object):
             # check if gap junctions in any of the conn rules
             if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
 
+            if sim.cfg.printSynsAfterRule:
+                nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
+                print('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses))
+
+
         # add presynaptoc gap junctions
         if gapJunctions:
             # distribute info on presyn gap junctions across nodes

@@ -52,7 +52,7 @@ simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
-
+simConfig.printSynsAfterRule = True
 #simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
 
 simConfig.analysis['plotRaster'] = {'include': ['I5', 'E2', 'I2', 'E4'],'orderBy': ['pop','y'], 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster

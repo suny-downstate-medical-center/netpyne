@@ -28,6 +28,8 @@
 
 - Fixed bug in Windows trying to get git changeset
 
+- Fixed bug gathering LFP data
+
 
 # Version 0.7.7
 

@@ -83,5 +83,7 @@ simConfig.analysis['plotRaster'] = True  # Plot raster
 simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
 simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
+simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
+simConfig.analysis['plotLFP'] = True
 
 

@@ -11,15 +11,27 @@ netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
 netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 5, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 5, 'yRange': [100,300], 'cellModel': 'HH'}
+netParams.popParams['I2'] = {'cellType': 'SOM_simple', 'numCells': 5, 'yRange': [100,300], 'cellModel': 'HH_simple'}
 netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 5, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 5, 'yRange': [300,600], 'cellModel': 'HH'}
+netParams.popParams['I4'] = {'cellType': 'PV_simple', 'numCells': 5, 'yRange': [300,600], 'cellModel': 'HH_simple'}
 netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 5, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 5, 'ynormRange': [1.0,2.0], 'cellModel': 'VecStim'}
+netParams.popParams['I5'] = {'cellType': 'SOM', 'numCells': 5, 'ynormRange': [1.0,2.0], 'cellModel': 'HH_simple'}
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='CellRule', fileName='IT2_reduced_cellParams.json')
 netParams.cellParams['CellRule']['conds'] = {'cellType': ['E','I']}
+
+#------------------------------------------------------------------------------
+## PV cell params (3-comp)
+cellRule = netParams.importCellParams(label='PV_simple', conds={'cellType':'PV', 'cellModel':'HH_simple'}, 
+  fileName='cells/FS3.hoc', cellName='FScell1', cellInstance = True)
+
+
+#------------------------------------------------------------------------------
+## SOM cell params (3-comp)
+cellRule = netParams.importCellParams(label='SOM_simple', conds={'cellType':'SOM', 'cellModel':'HH_simple'}, 
+  fileName='cells/LTS3.hoc', cellName='LTScell1', cellInstance = True)
+
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism

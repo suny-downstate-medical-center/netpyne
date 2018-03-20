@@ -637,7 +637,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             yorder = [cell['tags'][orderBy] for cell in cells]
             #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
             sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
-            print yorder
         elif isinstance(orderBy, list) and len(orderBy) == 2:
             yorders = [[popLabels.index(cell['tags'][orderElem]) if orderElem=='pop' else cell['tags'][orderElem] 
                                     for cell in cells] for orderElem in orderBy] 

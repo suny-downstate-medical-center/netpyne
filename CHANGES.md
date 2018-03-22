@@ -14,6 +14,8 @@
 
 - Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
 
+- Fixed bug to ensure VecStim random streams are independent of simulation duration
+
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
 - Fixed bug LFP recording only applied to compartmental cells

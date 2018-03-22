@@ -1221,8 +1221,14 @@ if neuromlExists:
             import neuroml
             
             format = 'NeuroML2'
-            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) :
+            
+            #TODO Make better check for stoch/poisson/noisy inputs!
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) \
+              or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) \
+              or 'noisy' in component.lower()\
+              or 'poisson' in component.lower():
                 format = 'NeuroML2_stochastic_input'
+                
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
                         'conds': {'pop':population_id}}

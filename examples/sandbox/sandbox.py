@@ -62,7 +62,7 @@ netParams.cellParams['CellRule']['conds'] = {'cellType': ['E','I']}
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 0.5*1e3           # Duration of the simulation, in ms
+simConfig.duration = 1.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V traces, LFP, etc)

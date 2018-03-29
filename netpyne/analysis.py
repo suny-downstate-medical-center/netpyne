@@ -28,6 +28,10 @@ colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.
             [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
             [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]]*3
 
+# jet graded colors
+# import matplotlib
+# cmap = matplotlib.cm.get_cmap('jet')
+# colorList = [cmap(x) for x in np.linspace(0,1,12)]
 
 ######################################################################################################################################################
 ## Exception decorator
@@ -1790,9 +1794,9 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, overlay=False, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -1901,12 +1905,16 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     # PSD ----------------------------------
     if 'PSD' in plots:
-        numCols = np.round(len(electrodes) / maxPlots) + 1
-        figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
-        #import seaborn as sb
+        if overlay:
+            figs.append(plt.figure(figsize=figSize))
+        else:
+            numCols = np.round(len(electrodes) / maxPlots) + 1
+            figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
+            #import seaborn as sb
 
         for i,elec in enumerate(electrodes):
-            plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
+            if not overlay:
+                plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
@@ -1926,9 +1934,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 signal = 10*np.log10(power[0])
             freqs = power[1]
 
-            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color)
+            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color, label='Electrode %s'%(str(elec)))
             plt.xlim([0, maxFreq])
-            if len(electrodes) > 1:
+            if len(electrodes) > 1 and not overlay:
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
             
@@ -1948,6 +1956,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # format plot
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
+        if overlay:
+            plt.legend(fontsize=fontsiz)
         plt.tight_layout()
         plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
         #plt.subplots_adjust(bottom=0.08, top=0.9)

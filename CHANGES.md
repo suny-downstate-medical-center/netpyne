@@ -2,6 +2,8 @@
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
 
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+
 - Added 'histogram' option to plotSpikeStats
 
 - Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default

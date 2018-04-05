@@ -984,8 +984,9 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ## Plot spike histogram
 ######################################################################################################################################################3
 @exception
-def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], histlogx = False, density = False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
+                 popColors = [], histlogx = False, density = False, includeRate0=False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), 
+                 saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1021,6 +1022,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         }
     plt.rcParams.update(params)
 
+    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', ' pairsync': 'Pairwise synchrony'}
+
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
         include.remove('eachPop')
@@ -1034,6 +1037,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         # create fig
         fig,ax1 = plt.subplots(figsize=figSize)
         fontsiz = fontsize 
+        xlabel = xlabels[stat]
 
         statData = []
         gidsData = []
@@ -1042,103 +1046,104 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         # Calculate data for each entry in include
         for iplot,subset in enumerate(include):
 
-            cells, cellGids, netStimLabels = getCellsInclude([subset])
-            numNetStims = 0
+            if stat in statDataIn:
+                statData = statDataIn[stat]['statData']
+                gidsData = statDataIn[stat].get('gidsData', [])
+                ynormsData = statDataIn[stat].get('ynormsData', [])
 
-            # Select cells to include
-            if len(cellGids) > 0:
-                try:
-                    spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in 
-                        zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
-                except:
+            else:
+                cells, cellGids, netStimLabels = getCellsInclude([subset])
+                numNetStims = 0
+
+                # Select cells to include
+                if len(cellGids) > 0:
+                    try:
+                        spkinds,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in 
+                            zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+                    except:
+                        spkinds,spkts = [],[]
+                else: 
                     spkinds,spkts = [],[]
-            else: 
-                spkinds,spkts = [],[]
 
-            # Add NetStim spikes
-            spkts, spkinds = list(spkts), list(spkinds)
-            numNetStims = 0
-            if 'stims' in sim.allSimData:
-                for netStimLabel in netStimLabels:
-                    netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
-                    for stimLabel,stimSpks in stims.iteritems() 
-                        for spk in stimSpks if stimLabel == netStimLabel]
-                    if len(netStimSpks) > 0:
-                        lastInd = max(spkinds) if len(spkinds)>0 else 0
-                        spktsNew = netStimSpks 
-                        spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
-                        spkts.extend(spktsNew)
-                        spkinds.extend(spkindsNew)
-                        numNetStims += 1
-            try:
-                spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) 
-                    if timeRange[0] <= spkt <= timeRange[1]])
-            except:
-                pass
-
-            # if scatter get gids and ynorm
-            if graphType == 'scatter':
-                gids = set(spkinds)
-                ynorms = [sim.net.allCells[int(gid)]['tags']['ynorm'] for gid in gids]
-                gidsData.insert(0, gids)
-                ynormsData.insert(0, ynorms)
-
-            # rate stats
-            if stat == 'rate':
-                toRate = 1e3/(timeRange[1]-timeRange[0])
-                rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
-                    if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
-                statData.insert(0, rates)
-                xlabel = 'Rate (Hz)'
-
-            # Inter-spike interval (ISI) coefficient of variation (CV) stats
-            elif stat == 'isicv':
-                xlabel = 'Irregularity (ISI CV)'
-                spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
-                    for gid in set(spkinds)]
-                isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
-                isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
-                statData.insert(0, isicv) 
-
-            # synchrony
-            elif stat in ['sync', 'pairsync']:
-                try: 
-                    import pyspike  
+                # Add NetStim spikes
+                spkts, spkinds = list(spkts), list(spkinds)
+                numNetStims = 0
+                if 'stims' in sim.allSimData:
+                    for netStimLabel in netStimLabels:
+                        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
+                        for stimLabel,stimSpks in stims.iteritems() 
+                            for spk in stimSpks if stimLabel == netStimLabel]
+                        if len(netStimSpks) > 0:
+                            lastInd = max(spkinds) if len(spkinds)>0 else 0
+                            spktsNew = netStimSpks 
+                            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                            spkts.extend(spktsNew)
+                            spkinds.extend(spkindsNew)
+                            numNetStims += 1
+                try:
+                    spkts,spkinds = zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) 
+                        if timeRange[0] <= spkt <= timeRange[1]])
                 except:
-                    print "Error: plotSpikeStats() requires the PySpike python package \
-                        to calculate synchrony (try: pip install pyspike)"
-                    return 0
-                
-                spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) 
-                    if spkind==gid], timeRange) for gid in set(spkinds)]
-                if stat == 'sync':
-                    # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
-                    xlabel = 'Synchrony'
-                    syncMat = [pyspike.spike_sync(spkmat)]
-                    #graphType = 'bar'
-                elif stat == 'pairsync':
-                    # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
-                    xlabel = 'Pairwise synchrony'
-                    syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
+                    pass
+
+                # if scatter get gids and ynorm
+                if graphType == 'scatter':
+                    gids = set(spkinds)
+                    ynorms = [sim.net.allCells[int(gid)]['tags']['ynorm'] for gid in gids]
+                    gidsData.insert(0, gids)
+                    ynormsData.insert(0, ynorms)
+
+                # rate stats
+                if stat == 'rate':
+                    toRate = 1e3/(timeRange[1]-timeRange[0])
+                    if includeRate0:
+                        rates = [spkinds.count(gid)*toRate for gid in cellGids] \
+                            if len(spkinds)>0 else [0]*len(cellGids) #cellGids] #set(spkinds)] 
+                    else:
+                        rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
+                            if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
+
+                    statData.insert(0, rates)
+
+
+                # Inter-spike interval (ISI) coefficient of variation (CV) stats
+                elif stat == 'isicv':
+                    spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
+                        for gid in set(spkinds)]
+                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
+                    isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
+                    statData.insert(0, isicv) 
+
+                # synchrony
+                elif stat in ['sync', 'pairsync']:
+                    try: 
+                        import pyspike  
+                    except:
+                        print "Error: plotSpikeStats() requires the PySpike python package \
+                            to calculate synchrony (try: pip install pyspike)"
+                        return 0
                     
+                    spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) 
+                        if spkind==gid], timeRange) for gid in set(spkinds)]
+                    if stat == 'sync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = [pyspike.spike_sync(spkmat)]
+                        #graphType = 'bar'
+                    elif stat == 'pairsync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
+                        
 
-                statData.insert(0, syncMat)
+                    statData.insert(0, syncMat)
 
-            #if graphType == 'boxplot':
             colors.insert(0, popColors[subset] if subset in popColors 
                 else colorList[iplot%len(colorList)])  # colors in inverse order
-            #else:
-            #    colors.append(popColors[subset] if subset in popColors 
-            #        else colorList[iplot%len(colorList)])  # colors in inverse order  
 
         # if 'allCells' included make it black
         if include[0] == 'allCells':
             #if graphType == 'boxplot':
             colors.insert(len(include), (0.5,0.5,0.5))  # 
             del colors[0]
-            #else:
-            #    colors.append((0.5,0.5,0.5))  # if allCells is at top make its color=black
-            #    del colors[-1]
 
         # boxplot
         if graphType == 'boxplot':
@@ -1261,7 +1266,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], timeRange = None, graphTy
         # show fig 
         if showFig: _showFigure()
 
-    return fig, statData
+    return fig, statData, gidsData, ynormsData
 
 
 

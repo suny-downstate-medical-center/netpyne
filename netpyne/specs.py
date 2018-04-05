@@ -390,6 +390,7 @@ class NetParams (object):
         self.sizeZ = 100 # z-dimension (horizontal depth) size in um
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
+        self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
 
 
         ## General connectivity parameters

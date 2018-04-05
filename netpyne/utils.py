@@ -149,6 +149,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(varList['mechs'].keys()+varList['pointps'].keys())
+    origGlob['v_init'] = -65  # add by hand since won't be set unless load h.load_file('stdrun')
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
@@ -185,6 +186,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
+    
     if fileName.endswith('.py'):
         _delete_module(moduleName)
         _delete_module('tempModule')
@@ -430,6 +432,7 @@ def getCellParams(cell, varList={}, origGlob={}):
         del tmp
 
     import gc; gc.collect()
+
 
     return secDic, secListDic, synMechs, globs
 

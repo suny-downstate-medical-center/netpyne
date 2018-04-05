@@ -34,6 +34,7 @@
 
 - Fixed bug gathering LFP data
 
+- Fixed bug importing global v_init from multiple cell files
 
 # Version 0.7.7
 

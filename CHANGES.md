@@ -36,6 +36,8 @@
 
 - Fixed bug importing global v_init from multiple cell files
 
+- Fixed bug so gitChangeset() returns to orig folder even when git not installed
+
 # Version 0.7.7
 
 - Added LFP recording at arbitrary 3D locations

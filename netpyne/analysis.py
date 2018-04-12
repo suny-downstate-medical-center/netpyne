@@ -1087,9 +1087,13 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                     pass
 
                 # if scatter get gids and ynorm
-                if graphType == 'scatter':
-                    gids = set(spkinds)
+                if graphType == 'scatter':    
+                    if includeRate0:
+                        gids = cellGids
+                    else:
+                        gids = set(spkinds)
                     ynorms = [sim.net.allCells[int(gid)]['tags']['ynorm'] for gid in gids]
+
                     gidsData.insert(0, gids)
                     ynormsData.insert(0, ynorms)
 

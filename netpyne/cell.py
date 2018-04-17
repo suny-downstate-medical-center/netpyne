@@ -869,8 +869,7 @@ class CompartCell (Cell):
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 try:
-                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
-                        synMech=%s, weight=%.4g, delay=%.2f' 
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f' 
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
                 except:
                     print('  Created connection preGid=%s' % (preGid))
@@ -1215,7 +1214,7 @@ class CompartCell (Cell):
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 
             # randomize the section to connect to and move it to beginning of list
-            if len(synMechSecs)>1:
+            if sim.cfg.connRandomSecFromList and len(synMechSecs)>1:
                 rand = h.Random()
                 preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
                 rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
@@ -1434,7 +1433,7 @@ class PointCell (Cell):
                 maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
                 # fixed interval of duration (1 - noise)*interval 
-                fixedInterval = np.full(int(((1+0.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                fixedInterval = np.full(int(((1+1.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+1.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval
@@ -1473,8 +1472,10 @@ class PointCell (Cell):
                         negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
+
+
                     else:
-                        print '\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks)
+                        print '\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks)
                         return
 
             # if spkTimess
@@ -1686,8 +1687,7 @@ class PointCell (Cell):
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
                 try:
-                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, \
-                        synMech=%s, weight=%.4g, delay=%.2f'
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
                 except:
                     print('  Created connection preGid=%s' % (preGid))

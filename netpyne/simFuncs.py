@@ -837,10 +837,8 @@ def setupRecordLFP():
     if sim.cfg.saveLFPCells:
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
-
-    sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
     
-    sim.net.defineCellShapes()
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
@@ -1255,7 +1253,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(nodeData['simData'][key])
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1313,7 +1311,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(val)
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1371,11 +1369,14 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        if sim.cfg.compactConnFormat:
-            preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
-            sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
         else:
-            sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+            sim.totalConnections = sim.totalSynapses
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -1769,6 +1770,7 @@ def version (show=True):
 def gitChangeset (show=True):
     import sim
     import netpyne, os, subprocess 
+    
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
@@ -1778,6 +1780,7 @@ def gitChangeset (show=True):
         changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
     except: 
         changeset = ''
+
     os.chdir(currentPath)
 
     return changeset

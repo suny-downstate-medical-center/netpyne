@@ -2,11 +2,21 @@
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
 
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+
 - Added 'histogram' option to plotSpikeStats
 
 - Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
 
 - Added showElectrodes and bkgColor options to shapePlot
+
+- Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
+
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+
+- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
+
+- Fixed bug to ensure VecStim random streams are independent of simulation duration
 
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
@@ -20,6 +30,13 @@
 
 - Fixed format of git changeset stored -- removed 'g' prefix
 
+- Fixed bug in Windows trying to get git changeset
+
+- Fixed bug gathering LFP data
+
+- Fixed bug importing global v_init from multiple cell files
+
+- Fixed bug so gitChangeset() returns to orig folder even when git not installed
 
 # Version 0.7.7
 

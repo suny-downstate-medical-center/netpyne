@@ -80,6 +80,11 @@ def plotData ():
             if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)         
                 print('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
 
+######################################################################################################################################################
+## Round to n sig figures
+######################################################################################################################################################
+def _roundFigures(x, n):
+    return round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) 
 
 ######################################################################################################################################################
 ## show figure
@@ -2190,9 +2195,10 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
 
             for conn in cellConns:
                 if conn[preGidIndex] != 'NetStim' and conn[preGidIndex] in cellIndsPre:
-                    if feature in ['weight', 'delay']: 
+                    if feature in ['weight', 'delay']:
+                        featureIndex = weightIndex if feature == 'weight' else delayIndex
                         if conn[preGidIndex] in cellIndsPre:
-                            connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[feature]
+                            connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[featureIndex]
                     countMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += 1
 
         if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 

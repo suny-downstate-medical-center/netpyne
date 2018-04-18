@@ -38,6 +38,8 @@
 
 - Fixed bug so gitChangeset() returns to orig folder even when git not installed
 
+- Fixed bug in plotConn -- missing func to round to significant figures
+
 # Version 0.7.7
 
 - Added LFP recording at arbitrary 3D locations

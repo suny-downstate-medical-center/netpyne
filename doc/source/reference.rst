@@ -902,22 +902,22 @@ Analysis-related functions
     
     Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
     
-        - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
-        - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
-        - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-        - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
-        - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
-        - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
-        - *nperseg*: Length of each segment for time-freq (int)
-        - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
-        - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
-        - *includeAxon*:  Whether to show the axon in the location plot (boolean)
-        - *figSize*: Size of figure ((width, heiight))
-        - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
-        - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
-        - *showFig*: Whether to show the figure or not (True|False)
+    - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+    - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+    - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+    - *nperseg*: Length of each segment for time-freq (int)
+    - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+    - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+    - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+    - *figSize*: Size of figure ((width, heiight))
+    - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
 
-        - Returns figure handles
+    - Returns figure handles
     
 
 
@@ -925,28 +925,28 @@ Analysis-related functions
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-       - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *showSyns*: Show synaptic connections in 3D (True|False) 
-        - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
-        - *dist*: 3D distance (like zoom)  
-        - *synSize*: Size of marker to show synapses 
-        - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
-        - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
-        - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
-        - *ivprops*: Dict of properties to plot using Interviews (dict)
-        - *includeAxon*: Include axon in shape plot (True|False)
-        - *showSyns*: Show synaptic connections in 3D view (True|False) 
-        - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
-        - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
-        - *figSize*: Size of figure ((width, height))
-        - *saveData*: File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *saveFig*: File name where to save the figure;
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *showFig*: Whether to show the figure or not (True|False)
+    - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *showSyns*: Show synaptic connections in 3D (True|False) 
+    - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+    - *dist*: 3D distance (like zoom)  
+    - *synSize*: Size of marker to show synapses 
+    - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
+    - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
+    - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
+    - *ivprops*: Dict of properties to plot using Interviews (dict)
+    - *includeAxon*: Include axon in shape plot (True|False)
+    - *showSyns*: Show synaptic connections in 3D view (True|False) 
+    - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
+    - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure; 
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure;
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
 
-        - Returns figure handles
+    - Returns figure handles
 
     Examples of plotShape():
 

@@ -13,8 +13,7 @@ if __gui__:
     from matplotlib import gridspec
     from matplotlib import mlab
 import numpy as np
-from scipy import array, cumsum
-import scipy as sp
+import scipy
 from numbers import Number
 import math
 import functools
@@ -776,7 +775,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         tx = 1.01
         margin = 1.0/numCells/2
         tys = [(float(popLen)/numCells)*(1-2*margin) for popLen in popNumCells]
-        tysOffset = list(cumsum(tys))[:-1]
+        tysOffset = list(scipy.cumsum(tys))[:-1]
         tysOffset.insert(0, 0)
         labels = popLabelRates if popRates else popLabels
         for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):
@@ -949,7 +948,6 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
     # Set axis or scaleber
-    
     if axis == 'off':
         ax = plt.gca()
         round_to_n = lambda x, n, m: int(np.round(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
@@ -985,8 +983,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################3
 @exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], histlogx = False, density = False, includeRate0=False, legendLabels = None, fontsize=14, xlim = None, dpi = 100, figSize = (6,8), 
-                 saveData = None, saveFig = None, showFig = True): 
+                 popColors = [], histlogy = False, histlogx = False, histmin = None, density = False, includeRate0=False, legendLabels = None, normfit = False,
+                 fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1192,30 +1190,71 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
         # histogram
         elif graphType == 'histogram':
+            
             nmax = 0
             binmax = 0
-            for i,data in enumerate(statData):
+            for i,data in enumerate(statData):  # fix 
                 if histlogx:
-                    histbins = np.logspace(np.log10(0.01), np.log10(max(data)), bins)
+                    histbins = np.logspace(np.log10(histmin), np.log10(max(data)), bins)
                 else:
                     histbins = bins
-                n, binedges,_ = plt.hist(data, bins=histbins, histtype='step', color=colors[i], linewidth=1.5, density=density)
-                plt.hist(data, bins=histbins, alpha=0.25, color=colors[i], linewidth=0, density=density) 
+
+                if histmin: # min value 
+                    data = np.array(data)
+                    data = data[data>histmin]
+                
+                # if histlogy:
+                #     data = [np.log10(x) for x in data]
+
+                if density:
+                    weights = np.ones_like(data)/float(len(data)) 
+                else: 
+                    weights = np.ones_like(data)
+
+                n, binedges,_ = plt.hist(data,  bins=histbins, histtype='step', color=colors[i], linewidth=1.5, weights=weights)#, normed=1)#, normed=density)# weights=weights)
+                if histShading:
+                    plt.hist(data, bins=histbins, alpha=0.25, color=colors[i], linewidth=0, weights=weights) 
                 label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
-                plt.hist([-10], bins=histbins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
+                if histShading:
+                    plt.hist([-10], bins=histbins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
+                else:
+                    plt.hist([-10], bins=histbins, edgecolor=colors[i], linewidth=1.5, label=label)
                 nmax = max(nmax, max(n))
                 binmax = max(binmax, binedges[-1])
+                if histlogx: 
+                    plt.xscale('log')
+
+                # if normfit:
+                #     (shape, loc, scale) = scipy.stats.lognorm.fit(data, loc=0)  
+                #     mu = np.log(scale)
+                #     sigma = shape
+                #     x=np.linspace(0, 25, 400)
+                #     x=binedges
+                #     y = scipy.stats.lognorm.pdf(x, shape, loc=0, scale=scale)
+                #     plt.plot(x, y, '--', color = colors[i], linewidth=2)
+                #     print binedges, y
+                #     print shape, scale
+                #     print mu, sigma
+                #     if histlogx:
+                #         plt.xscale('log')
+
+                    # check normality of distribution
+                    #W, p = scipy.stats.shapiro(data)
+                    #print 'Pop %s rate: mean = %f, std = %f, normality (Shapiro-Wilk test) = %f, p-value = %f' % (include[i], mu, sigma, W, p)
+
+
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Probability of occurrence' if density else 'Frequency', fontsize=fontsiz)
-            xmin = 0.01 if histlogx else 0.0  # if max(n)==0 else binedges[list(n).index(min(n[n>0]))]
             xmax = binmax
-            plt.xlim(xmin, xmax)
-            if histlogx:
-                plt.gca().set_xscale("log")
+            plt.xlim(histmin, xmax)
             plt.ylim(0, 1.1*nmax if density else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
             plt.legend(fontsize=fontsiz)
-                
+
+            #plt.show() # REMOVE!
+
             if xlim: ax.set_xlim(xlim)
+
+            #from IPython import embed; embed()
 
         # scatter
         elif graphType == 'scatter':
@@ -1537,7 +1576,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     if isinstance(fullTrace, dict):
                         data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in fullTrace.keys()]
                         lenData = len(data[0])
-                        data = np.transpose(array(data))
+                        data = np.transpose(np.array(data))
                     else:
                         data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
                         lenData = len(data)
@@ -1803,7 +1842,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-#@exception
+@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, overlay=False, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -1949,7 +1988,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
             plt.ylabel('dB/Hz', fontsize=fontsiz)
             
-
             # ALTERNATIVE PSD CALCULATION USING WELCH
             # from http://joelyancey.com/lfp-python-practice/
             # from scipy import signal as spsig
@@ -1969,7 +2007,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             plt.legend(fontsize=fontsiz)
         plt.tight_layout()
         plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
-        #plt.subplots_adjust(bottom=0.08, top=0.9)
+        plt.subplots_adjust(bottom=0.08, top=0.95)
 
         # save figure
         if saveFig: 
@@ -2015,7 +2053,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         plt.xlabel('time (ms)', fontsize=fontsiz)
         plt.tight_layout()
         plt.suptitle('LFP spectrogram', size=fontsiz, fontweight='bold')
-        #plt.subplots_adjust(bottom=0.08, top=0.9)
+        plt.subplots_adjust(bottom=0.08, top=0.90)
         
         # save figure
         if saveFig: 
@@ -2610,9 +2648,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             popsPre, popsPost = pre, post
 
             for ipop, pop in enumerate(popsPre):
-                plt.plot(array([0,len(popsPre)])-0.5,array([ipop,ipop])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([0,len(popsPre)])-0.5,np.array([ipop,ipop])-0.5,'-',c=(0.7,0.7,0.7))
             for ipop, pop in enumerate(popsPost):
-                plt.plot(array([ipop,ipop])-0.5,array([0,len(popsPost)])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([ipop,ipop])-0.5,np.array([0,len(popsPost)])-0.5,'-',c=(0.7,0.7,0.7))
 
             # Make pretty
             h.set_xticks(range(len(popsPost)))
@@ -2627,9 +2665,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             groupsPre, groupsPost = pre, post
 
             for igroup, group in enumerate(groupsPre):
-                plt.plot(array([0,len(groupsPre)])-0.5,array([igroup,igroup])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([0,len(groupsPre)])-0.5,np.array([igroup,igroup])-0.5,'-',c=(0.7,0.7,0.7))
             for igroup, group in enumerate(groupsPost):
-                plt.plot(array([igroup,igroup])-0.5,array([0,len(groupsPost)])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([igroup,igroup])-0.5,np.array([0,len(groupsPost)])-0.5,'-',c=(0.7,0.7,0.7))
 
             # Make pretty
             h.set_xticks([i-0.5 for i in range(len(groupsPost))])

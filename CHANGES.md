@@ -38,7 +38,7 @@
 
 - Fixed bug so gitChangeset() returns to orig folder even when git not installed
 
-- Fixed bug in plotConn -- missing func to round to significant figures
+- Fixed bugs in plotConn -- missing rounding func and grouping by y interval
 
 # Version 0.7.7
 

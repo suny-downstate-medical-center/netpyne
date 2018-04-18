@@ -2105,7 +2105,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 ## Support function for plotConn() - calculate conn using data from sim object
 ######################################################################################################################################################
 
-def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech):
+def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech):
 
     import sim
 
@@ -2286,29 +2286,29 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
     
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
-        if not isinstance(groupByInterval, Number):
-            print 'groupByInterval not specified'
+        if not isinstance(groupByIntervalPre, Number) or not isinstance(groupByIntervalPost, Number):
+            print 'groupByIntervalPre or groupByIntervalPost not specified'
             return
-  
+
         # group cells by 'groupBy' feature (eg. 'y') in intervals of 'groupByInterval')
         cellValuesPre = [cell['tags'][groupBy] for cell in cellsPre]
-        minValuePre = _roundFigures(groupByInterval * np.floor(min(cellValuesPre) / groupByInterval), 3)
-        maxValuePre  = _roundFigures(groupByInterval * np.ceil(max(cellValuesPre) / groupByInterval), 3)        
-        groupsPre = np.arange(minValuePre, maxValuePre, groupByInterval)
+        minValuePre = _roundFigures(groupByIntervalPre * np.floor(min(cellValuesPre) / groupByIntervalPre), 3)
+        maxValuePre  = _roundFigures(groupByIntervalPre * np.ceil(max(cellValuesPre) / groupByIntervalPre), 3)        
+        groupsPre = np.arange(minValuePre, maxValuePre, groupByIntervalPre)
         groupsPre = [_roundFigures(x,3) for x in groupsPre]
 
         if includePre == includePost:
             groupsPost = groupsPre       
         else:
             cellValuesPost = [cell['tags'][groupBy] for cell in cellsPost]
-            minValuePost = _roundFigures(groupByInterval * np.floor(min(cellValuesPost) / groupByInterval), 3)
-            maxValuePost  = _roundFigures(groupByInterval * np.ceil(max(cellValuesPost) / groupByInterval), 3)        
-            groupsPre = np.arange(minValuePost, maxValuePost, groupByInterval)
-            groupsPre = [_roundFigures(x,3) for x in groupsPost]
+            minValuePost = _roundFigures(groupByIntervalPost * np.floor(min(cellValuesPost) / groupByIntervalPost), 3)
+            maxValuePost  = _roundFigures(groupByIntervalPost * np.ceil(max(cellValuesPost) / groupByIntervalPost), 3)        
+            groupsPost = np.arange(minValuePost, maxValuePost, groupByIntervalPost)
+            groupsPost = [_roundFigures(x,3) for x in groupsPost]
 
 
         if len(groupsPre) < 2 or len(groupsPost) < 2: 
-            print 'groupBy %s with groupByInterval %s results in <2 groups'%(str(groupBy), str(groupByInterval))
+            print 'groupBy %s with groupByIntervalPre %s and groupByIntervalPost %s results in <2 groups'%(str(groupBy), str(groupByIntervalPre), str(groupByIntervalPre))
             return
         groupIndsPre = {group: ind for ind,group in enumerate(groupsPre)}
         groupIndsPost = {group: ind for ind,group in enumerate(groupsPost)}
@@ -2323,14 +2323,14 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
         # calculate max num conns per pre and post pair of pops
         numCellsGroupPre = {}
         for groupPre in groupsPre:
-            numCellsGroupPre[groupPre] = len([cell for cell in cellsPre if groupPre <= cell['tags'][groupBy] < (groupPre+groupByInterval)])
+            numCellsGroupPre[groupPre] = len([cell for cell in cellsPre if groupPre <= cell['tags'][groupBy] < (groupPre+groupByIntervalPre)])
         
         if includePre == includePost:
             numCellsGroupPost = numCellsGroupPre  
         else:
             numCellsGroupPost = {}
             for groupPost in groupsPost:
-                numCellsGroupPost[groupPost] = len([cell for cell in cellsPost if groupPost <= cell['tags'][groupBy] < (groupPost+groupByInterval)])
+                numCellsGroupPost[groupPost] = len([cell for cell in cellsPost if groupPost <= cell['tags'][groupBy] < (groupPost+groupByIntervalPost)])
 
 
         maxConnMatrix = np.zeros((len(groupsPre), len(groupsPost)))
@@ -2357,13 +2357,13 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
                 if conn[preGidIndex] == 'NetStim':
                     prePopLabel = -1  # maybe add in future
                 else:
-                    preCell = next((c for c in cellsPre if cell['gid']==conn[preGidIndex]), None)
+                    preCell = next((c for c in cellsPre if c['gid']==conn[preGidIndex]), None)
                     if preCell:
-                        preGroup = _roundFigures(groupByInterval * np.floor(preCell['tags'][groupBy] / groupByInterval), 3)
+                        preGroup = _roundFigures(groupByIntervalPre * np.floor(preCell['tags'][groupBy] / groupByIntervalPre), 3)
                     else:
                         None
 
-                postGroup = _roundFigures(groupByInterval * np.floor(cell['tags'][groupBy] / groupByInterval), 3)
+                postGroup = _roundFigures(groupByIntervalPost * np.floor(cell['tags'][groupBy] / groupByIntervalPost), 3)
 
                 #print groupInds
                 if preGroup in groupIndsPre:
@@ -2372,6 +2372,9 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
                     elif feature == 'delay': 
                         delayMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[delayIndex] 
                     countMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += 1   
+
+  
+        #from IPython import embed; embed()
 
         pre, post = groupsPre, groupsPost 
 
@@ -2403,7 +2406,7 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
 ## Support function for plotConn() - calculate conn using data from files with short format (no keys)
 ######################################################################################################################################################
 
-def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech, connsFile, tagsFile):
+def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile):
     
     import sim
     import json
@@ -2579,8 +2582,8 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
-@exception
-def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByInterval = None, 
+#@exception
+def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None,
             graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
@@ -2609,9 +2612,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     print('Plotting connectivity matrix...')
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech, connsFile, tagsFile)
+        connMatrix, pre, post = __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile)
     else:
-        connMatrix, pre, post = __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByInterval, synOrConn, synMech)
+        connMatrix, pre, post = __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech)
 
 
     if connMatrix is None:

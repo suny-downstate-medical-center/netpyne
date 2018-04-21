@@ -2584,7 +2584,7 @@ def __plotConnCalculateFromFile__(includePre, includePost, feature, orderBy, gro
 ######################################################################################################################################################
 ## Plot connectivity
 ######################################################################################################################################################
-#@exception
+@exception
 def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None,
             graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
     ''' 

@@ -334,6 +334,24 @@ metadata = {
                         "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma').",
                         "suggestions": "",
                         "hintText": ""
+                    },
+                    "tau1": {
+                        "label": "Time constant for Exponential 1 [mSec]",
+                        "help": "Define the time constant for the first exponential.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "tau2": {
+                        "label": "Time constant for Exponential 2 [mSec]",
+                        "help": "Define the time constant for the first exponential.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "e": {
+                        "label": "Reference Voltage [mV]",
+                        "help": "Define the Voltage reference.",
+                        "suggestions": "",
+                        "hintText": ""
                     }
                 }
             },
@@ -494,6 +512,114 @@ metadata = {
                         "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp'). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').",
                         "suggestions": "",
                         "hintText": ""
+                    },
+                    "dur": {
+                        "label": "Duration [msec]",
+                        "help": "Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2]. When clamp is off the injected current is 0. Do not insert several instances of this model at the same location in order to make level changes. That is equivalent to independent clamps and they will have incompatible internal state values.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "amp": {
+                        "label": "Stimulation Amplitud",
+                        "help": "Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2]. When clamp is off the injected current is 0. Do not insert several instances of this model at the same location in order to make level changes. That is equivalent to independent clamps and they will have incompatible internal state values.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "del": {
+                        "label": "Stimulation delay",
+                        "help": "Define the stimulation delay.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "interval": {
+                        "label": "Time between spikes",
+                        "help": "Define the mean time interval between spike.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "rstim": {
+                        "label": "Stimulation resistance",
+                        "help": "Define the resistan to the cell.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "gain": {
+                        "label": "Amplifier gain",
+                        "help": "Define amplifier gain.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "number": {
+                        "label": "Number of Spikes ",
+                        "help": "Define the total number of spikes.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "start": {
+                        "label": "Start time for the first spike ",
+                        "help": "Define the start time for the first spike.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "noise": {
+                        "label": "Noise level ",
+                        "help": "Fractional noise, 0 <= noise <= 1, means that an interval between spikes consists of a fixed interval of duration (1 - noise)*interval plus a negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "tau1": {
+                        "label": "Time response for the read voltage.",
+                        "help": "Set the time response for the voltage read from cell.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "tau2": {
+                        "label": "Time response for the voltage inserted into the cell",
+                        "help": ".",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "i": {
+                        "label": "Current [nA]",
+                        "help": "Inyected current in nA.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "onset": {
+                        "label": "Time delay for alpha conductance application ",
+                        "help": ".",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "tau": {
+                        "label": "Alpha function time response",
+                        "help": "Define time response for the Alpha function.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "gmax": {
+                        "label": "Maximum Conductance",
+                        "help": "Define the maximum conductance for the alpha function.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "e": {
+                        "label": "Reference Voltage",
+                        "help": "Define the reference voltage.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "rs": {
+                        "label": "Resistance [MOhm]",
+                        "help": "Define the resistance between the reference voltage and the cell.",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
+                    "vc": {
+                        "label": "Reference Voltage [mV]",
+                        "help": "Define the reference Voltage.",
+                        "suggestions": "",
+                        "hintText": ""
                     }
                 }
             },
@@ -509,11 +635,90 @@ metadata = {
                         "suggestions": "",
                         "hintText": ""
                     },
-                    "conditions": {
+                    "conds": {
                         "label": "Conditions of cells where the stim will be applied",
                         "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "children": {
+                            "pop": {
+                                "label": "Target Population",
+                                "help": "Select the population targets.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "cellType": {
+                                "label": "Target Cell Type",
+                                "suggestions": "",
+                                "help": "Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)",
+                                "hintText": "",
+                                "type": "str"
+                            }, 
+                            "cellModel": {
+                                "label": "Target Cell Model",
+                                "help": "Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich2007 point neuron model).",
+                                "suggestions": [
+                                    "HH",
+                                    "IntFire1"
+                                ],
+                                "type": "str"
+                            },
+                            "xRange": {
+                                "label": "Target X Range",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1, 0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "xnormRange": {
+                                "label": "Target X Norm Range",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "default": [
+                                    0,
+                                    1
+                                ],
+                                "type": "list(float)"
+                            },
+                            "yRange": {
+                                "label": "Target Y Range",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified2-element list[min, max].yRange for absolute value in um (e.g.[100,200]), or ynormRange for normalized value between0 and1 as fraction of sizeY (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "ynormRange": {
+                                "label": "Target Y Norm Range",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified2-element list[min, max]. yRange for absolute value in um (e.g.[100,200]), or ynormRange for normalized value between0 and1 as fraction of sizeY (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "zRange": {
+                                "label": "Target Z Range",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "znormRange": {
+                                "label": "Target Z Norm Range",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "cellList": {
+                                "label": "Target Cell Index",
+                                "help": "Indices of neuron to be included in the application of this stimulation.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            
+                        }
                     },
                     "sec": {
                         "label": "Target section",

@@ -1,8 +1,6 @@
 """
 simFunc.py
-
 Contains functions related to the simulation (eg. setupRecording, runSim)
-
 Contributors: salvadordura@gmail.com
 """
 
@@ -164,7 +162,7 @@ def compactToLongConnFormat(cells, connFormat):
                 cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
         return cells
     except:
-        print "Error converting conns from compact to long format"
+        print("Error converting conns from compact to long format")
         return cells
 
 
@@ -207,17 +205,17 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
                             cell.create()
                             sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell secs'
+                        if sim.cfg.verbose: print(' Unable to load cell secs')
 
                     try:
                         cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell conns'
+                        if sim.cfg.verbose: print(' Unable to load cell conns')
 
                     try:
                         cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell stims'
+                        if sim.cfg.verbose: print(' Unable to load cell stims')
 
                     sim.net.cells.append(cell)
                 print('  Created %d cells' % (len(sim.net.cells)))
@@ -811,12 +809,12 @@ def calculateLFP():
     import sim    
 
     # Set pointers to i_membrane in each cell (required form LFP calc )        
-    for cell in sim.net.cells:
+    for cell in sim.net.compartCells:
         cell.setImembPtr()
 
     # compute 
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
-    for cell in sim.net.cells: # compute ecp only from the biophysical cells
+    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
         gid = cell.gid
         im = cell.getImemb() # in nA
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
@@ -839,20 +837,20 @@ def setupRecordLFP():
     if sim.cfg.saveLFPCells:
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
-
-    sim.net.defineCellShapes()
-
+    
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
-    for cell in sim.net.cells:
-        nseg = cell._segCoords['p0'].shape[1]
-        sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
-        cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-        cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
-        cell.imembVec = h.Vector(nseg)
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            nseg = cell._segCoords['p0'].shape[1]
+            sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
 
-    sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
         
 
 ###############################################################################
@@ -1208,8 +1206,8 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    if sim.cfg.recordLFP:
-        for cell in sim.net.cells:
+    if sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr
 
@@ -1255,7 +1253,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(nodeData['simData'][key])
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1313,7 +1311,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(val)
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1371,11 +1369,14 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        if sim.cfg.compactConnFormat:
-            preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
-            sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
         else:
-            sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+            sim.totalConnections = sim.totalSynapses
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -1769,15 +1770,17 @@ def version (show=True):
 def gitChangeset (show=True):
     import sim
     import netpyne, os, subprocess 
+    
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
-        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
     except: 
         changeset = ''
+
     os.chdir(currentPath)
 
     return changeset

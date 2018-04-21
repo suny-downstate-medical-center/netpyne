@@ -12,6 +12,7 @@ from time import sleep
 from neuron import h # Import NEURON
 from specs import Dict
 import numpy as np
+from math import sin, cos
 
 
 ###############################################################################
@@ -232,6 +233,17 @@ class CompartCell (Cell):
     def create (self):
         import sim
 
+        # generate random rotation angle for each cell
+        if sim.net.params.rotateCellsRandomly:
+            if isinstance(sim.net.params.rotateCellsRandomly, list):
+                [rotMin, rotMax] = sim.net.params.rotateCellsRandomly
+            else:
+                [rotMin, rotMax] = 0, 6.2832
+            rand = h.Random()
+            rand.Random123(self.gid)
+            self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
+
+
         for propLabel, prop in sim.net.params.cellParams.iteritems():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
@@ -289,6 +301,8 @@ class CompartCell (Cell):
 
 
     def createPyStruct (self, prop):
+        import sim
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].iteritems(): 
             # create section
@@ -347,7 +361,16 @@ class CompartCell (Cell):
                 if 'pt3d' in sectParams['geom']:
                     if 'pt3d' not in sec['geom']:  
                         sec['geom']['pt3d'] = []
-                    for pt3d in sectParams['geom']['pt3d']:
+                    for ipt, pt3d in enumerate(sectParams['geom']['pt3d']):
+                        if sim.net.params.rotateCellsRandomly == True:
+                            """Rotate the cell about the Z axis."""
+                            x = pt3d[0]
+                            z = pt3d[2]
+                            c = cos(self.randRotationAngle)
+                            s = sin(self.randRotationAngle)
+                            pt3d = (x * c - z * s, pt3d[1], x * s + z * c, pt3d[3])
+                            sectParams['geom']['pt3d'][ipt] = pt3d
+
                         sec['geom']['pt3d'].append(pt3d)
 
             # add topolopgy params
@@ -689,7 +712,7 @@ class CompartCell (Cell):
     def addConn (self, params, netStimParams = None):
         import sim
 
-        threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
+        # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
@@ -845,8 +868,11 @@ class CompartCell (Cell):
                 sec = params['sec'] if pointp else synMechSecs[i]
                 loc = params['loc'] if pointp else synMechLocs[i]
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i], threshold))
+                try:
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f' 
+                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                except:
+                    print('  Created connection preGid=%s' % (preGid))
 
 
     def modifyConns (self, params):
@@ -949,7 +975,7 @@ class CompartCell (Cell):
                         conn = next((conn for conn in self.conns if conn['source'] == stim['source']), None)
                     if sim.cfg.createPyStruct:
                         for paramName, paramValue in {k: v for k,v in params.iteritems() if k not in ['conds','cellConds']}.iteritems():
-                            if stim['type'] == 'NetStim' and paramName in ['weight', 'delay', 'threshold']:
+                            if stim['type'] == 'NetStim' and paramName in ['weight', 'delay']:
                                 conn[paramName] = paramValue
                             else:
                                 stim[paramName] = paramValue
@@ -959,7 +985,7 @@ class CompartCell (Cell):
                                 if stim['type'] == 'NetStim':
                                     if paramName == 'weight':
                                         conn['hNetcon'].weight[0] = paramValue
-                                    elif paramName in ['delay', 'threshold']:
+                                    elif paramName in ['delay']:
                                         setattr(conn['hNetcon'], paramName, paramValue)
                                     elif paramName in ['rate']: 
                                         stim['interval'] = 1.0/paramValue
@@ -1003,7 +1029,7 @@ class CompartCell (Cell):
                 'delay': params.get('delay'),
                 'synsPerConn': params.get('synsPerConn')}
 
-            if 'threshold' in params: connParams['threshold'] = params.get('threshold')    
+            # if 'threshold' in params: connParams['threshold'] = params.get('threshold')   # depreacted, set threshold in preSyn cell   
             if 'shape' in params: connParams['shape'] = params.get('shape')    
             if 'plast' in params: connParams['plast'] = params.get('plast')    
 
@@ -1188,9 +1214,10 @@ class CompartCell (Cell):
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 
             # randomize the section to connect to and move it to beginning of list
-            if len(synMechSecs)>1:
+            if sim.cfg.connRandomSecFromList and len(synMechSecs)>1:
                 rand = h.Random()
-                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, params['preGid']) # initialize randomizer 
+                preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
                 pos = int(rand.discunif(0, len(synMechSecs)-1))
                 synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
                 if len(synMechLocs)>1: 
@@ -1406,7 +1433,7 @@ class PointCell (Cell):
                 maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
 
                 # fixed interval of duration (1 - noise)*interval 
-                fixedInterval = np.full(int(((1+0.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
+                fixedInterval = np.full(int(((1+1.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+1.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval
@@ -1445,8 +1472,10 @@ class PointCell (Cell):
                         negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
+
+
                     else:
-                        print '\nError: VecStim num spks per cell > %d' % (maxReproducibleSpks)
+                        print '\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks)
                         return
 
             # if spkTimess
@@ -1657,8 +1686,12 @@ class PointCell (Cell):
                 sec = params['sec']
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f, threshold=%s'%
-                    (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i],params['threshold']))
+                try:
+                    print('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
+                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+                except:
+                    print('  Created connection preGid=%s' % (preGid))
+
 
 
     def initV (self):

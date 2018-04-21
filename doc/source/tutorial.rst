@@ -893,7 +893,7 @@ Notice how the rate initially increases as a function of connection weight, but 
 Recording and plotting LFPs (Tutorial 9)
 --------------------------------------------
 
-Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/lfp/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
+Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
 To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
 

@@ -316,7 +316,10 @@ def shapeplot(h,ax,sections=None,order='pre',cvals=None,\
 
         for (j,path) in enumerate(seg_paths):
             line, = plt.plot(path[:,0], path[:,1], path[:,2], '-k', **kwargs)
-            line.set_linewidth(linewidths[j])
+            try:
+                line.set_linewidth(linewidths[j])
+            except:
+                pass
             if cvals is not None:
                 if isinstance(cvals[i], numbers.Number):
                     # map number to colormap

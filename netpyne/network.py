@@ -76,7 +76,10 @@ class Network (object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))    
+            if sim.rank==0 and sim.cfg.verbose: print('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))  
+
+        if self.params.defineCellShapes: self.defineCellShapes()
+  
         print('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
@@ -549,6 +552,11 @@ class Network (object):
             # check if gap junctions in any of the conn rules
             if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
 
+            if sim.cfg.printSynsAfterRule:
+                nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
+                print('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses))
+
+
         # add presynaptoc gap junctions
         if gapJunctions:
             # distribute info on presyn gap junctions across nodes
@@ -581,7 +589,10 @@ class Network (object):
                     cell.addConnsNEURONObj()
 
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
-        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        if sim.cfg.createPyStruct:
+            nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        else:
+            nodeConnections = nodeSynapses
 
         print('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections))
         if nodeSynapses != nodeConnections:
@@ -1011,7 +1022,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'synsPerConn': finalParam['synsPerConn']}
 
-            if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')    
+            # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
             if 'shape' in connParam: params['shape'] = connParam.get('shape')    
             if 'plast' in connParam: params['plast'] = connParam.get('plast')    
             if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
@@ -1110,20 +1121,25 @@ class Network (object):
     ### Calculate segment coordinates from 3d point coordinates 
     ###############################################################################
     def calcSegCoords(self):   
-        # Calculate relative seg coords for 1 cell per pop, 
-        for pop in self.pops.values():
-            pop.calcRelativeSegCoords()
+        import sim
+        if sim.cfg.createNEURONObj:
+            # Calculate relative seg coords for 1 cell per pop, 
+            for pop in self.pops.values():
+                if pop.cellModelClass == sim.CompartCell:
+                    pop.calcRelativeSegCoords()
 
-        # Calculate abs seg coords for all cells
-        for cell in self.cells:
-            cell.calcAbsSegCoords()
+            # Calculate abs seg coords for all cells
+            for cell in sim.net.compartCells:
+                cell.calcAbsSegCoords()
 
     ###############################################################################
     ### Add 3D points to sections with simplified geometry
     ###############################################################################
     def defineCellShapes(self):
         import sim
-        h.define_shape()
-        for cell in sim.net.cells:
-            cell.updateShape()
+        if sim.cfg.createNEURONObj:
+            sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+            h.define_shape()
+            for cell in sim.net.compartCells:
+                cell.updateShape()
 

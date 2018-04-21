@@ -83,6 +83,8 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **sizeZ**: z-dimension (horizontal depth) network size in um (default: 100)
 
+* **rotateCellsRandomly**: Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
+
 * **defaultWeight**: Default connection weight, in ms (default: 1)
 
 * **defaultDelay**: Default connection delay, in ms (default: 1)
@@ -324,7 +326,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
 
-	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
@@ -338,7 +340,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If ``synsPerConn`` == 1, and list of locs is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
 
-	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. To enforce using always the first location from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
@@ -685,10 +687,12 @@ Related to the simulation and netpyne framework:
 * **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
+* **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
 * **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **printSynsAfterRule** - Print total connections after each conn rule is applied 
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
@@ -857,14 +861,17 @@ Analysis-related functions
 
     - Returns figure handle    
 
-* **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+* **analysis.plotRatePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      
     Plot spikes power spectral density (PSD). Optional arguments:
 
     - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *binSize*: Size in ms of each bin (int)
-    - *Fs*: PSD sampling frequency used to calculate the Fourier frequencies (float)
+    - maxFreq: Maximum frequency to show in plot (float)
+    - NFFT: The number of data points used in each block for the FFT (power of 2) (float)
+    - *noverlap*: Number of points of overlap between segments (int, < nperseg)
+    - *smooth*: Window size for smoothing; no smoothing if 0 (int)
     - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
@@ -895,22 +902,22 @@ Analysis-related functions
     
     Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
     
-        - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
-        - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
-        - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-        - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
-        - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
-        - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
-        - *nperseg*: Length of each segment for time-freq (int)
-        - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
-        - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
-        - *includeAxon*:  Whether to show the axon in the location plot (boolean)
-        - *figSize*: Size of figure ((width, heiight))
-        - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
-        - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
-        - *showFig*: Whether to show the figure or not (True|False)
+    - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+    - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+    - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+    - *nperseg*: Length of each segment for time-freq (int)
+    - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+    - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+    - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+    - *figSize*: Size of figure ((width, heiight))
+    - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
 
-        - Returns figure handles
+    - Returns figure handles
     
 
 
@@ -918,25 +925,28 @@ Analysis-related functions
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-       - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
-        - *dist*: 3D distance (like zoom)  
-        - *synSize*: Size of marker to show synapses 
-        - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
-        - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
-        - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
-        - *ivprops*: Dict of properties to plot using Interviews (dict)
-        - *includeAxon*: Include axon in shape plot (True|False)
-        - *showSyns*: Show synaptic connections in 3D (True|False) 
-        - *figSize*: Size of figure ((width, height))
-        - *saveData*: File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *saveFig*: File name where to save the figure;
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *showFig*: Whether to show the figure or not (True|False)
+    - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *showSyns*: Show synaptic connections in 3D (True|False) 
+    - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+    - *dist*: 3D distance (like zoom)  
+    - *synSize*: Size of marker to show synapses 
+    - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
+    - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
+    - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
+    - *ivprops*: Dict of properties to plot using Interviews (dict)
+    - *includeAxon*: Include axon in shape plot (True|False)
+    - *showSyns*: Show synaptic connections in 3D view (True|False) 
+    - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
+    - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure; 
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure;
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
 
-        - Returns figure handles
+    - Returns figure handles
 
     Examples of plotShape():
 

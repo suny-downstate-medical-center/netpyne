@@ -4,7 +4,7 @@ NetPyNE Overview
 What is NetPyNE?
 ----------------
 
-NetPyNE (**Net**work development **Py**thon package for **NE**URON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
+NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
 Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
 For a more detailed overview of NetPyNE see:
@@ -97,7 +97,7 @@ NetPyNE is currently being developed and supported by the Neurosim lab (http://n
 
 NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
 
-For questions or suggestions please use the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
+For questions or suggestions please use the `Google NetPyNE QA forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
 For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes.
 

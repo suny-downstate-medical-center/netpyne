@@ -1,3 +1,3 @@
 
-__version__ = '0.7.7' 
+__version__ = '0.7.8' 
 __gui__ = True  # global option to enable/disable graphics

@@ -2307,9 +2307,12 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             groupsPost = [_roundFigures(x,3) for x in groupsPost]
 
 
-        if len(groupsPre) < 2 or len(groupsPost) < 2: 
-            print 'groupBy %s with groupByIntervalPre %s and groupByIntervalPost %s results in <2 groups'%(str(groupBy), str(groupByIntervalPre), str(groupByIntervalPre))
-            return
+        # only allow matrix sizes >= 2x2 [why?]
+        # if len(groupsPre) < 2 or len(groupsPost) < 2: 
+        #     print 'groupBy %s with groupByIntervalPre %s and groupByIntervalPost %s results in <2 groups'%(str(groupBy), str(groupByIntervalPre), str(groupByIntervalPre))
+        #     return
+
+        # set indices for pre and post groups
         groupIndsPre = {group: ind for ind,group in enumerate(groupsPre)}
         groupIndsPost = {group: ind for ind,group in enumerate(groupsPost)}
         
@@ -2340,8 +2343,8 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             for postGroup in groupsPost: 
                 if numCellsGroupPre[preGroup] == -1: numCellsGroupPre[preGroup] = numCellsGroupPost[postGroup]
                 maxConnMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] = numCellsGroupPre[preGroup]*numCellsGroupPost[postGroup]
-                if feature == 'convergence': maxPostConnMatrix[groupIndsPre[prePop], groupIndsPost[postGroup]] = numCellsPopPost[postGroup]
-                if feature == 'divergence': maxPreConnMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] = numCellsPopPre[preGroup]
+                if feature == 'convergence': maxPostConnMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] = numCellsGroupPost[postGroup]
+                if feature == 'divergence': maxPreConnMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] = numCellsGroupPre[preGroup]
         
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
@@ -2361,21 +2364,17 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
                     if preCell:
                         preGroup = _roundFigures(groupByIntervalPre * np.floor(preCell['tags'][groupBy] / groupByIntervalPre), 3)
                     else:
-                        None
+                        preGroup = None
 
                 postGroup = _roundFigures(groupByIntervalPost * np.floor(cell['tags'][groupBy] / groupByIntervalPost), 3)
-
-                #print groupInds
                 if preGroup in groupIndsPre:
                     if feature in ['weight', 'strength']: 
                         weightMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[weightIndex]
                     elif feature == 'delay': 
                         delayMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[delayIndex] 
-                    countMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += 1   
+                    countMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += 1  
 
   
-        #from IPython import embed; embed()
-
         pre, post = groupsPre, groupsPost 
 
     # no valid groupBy
@@ -2383,6 +2382,7 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
         print 'groupBy (%s) is not valid'%(str(groupBy))
         return
 
+    # normalize by number of postsyn cells
     if groupBy != 'cell':
         if feature == 'weight': 
             connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning) 
@@ -2398,6 +2398,8 @@ def __plotConnCalculateFromSim__(includePre, includePost, feature, orderBy, grou
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
             connMatrix = countMatrix / maxPreConnMatrix
+
+
 
     return connMatrix, pre, post
 

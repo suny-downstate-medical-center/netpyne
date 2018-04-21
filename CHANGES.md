@@ -40,6 +40,7 @@
 
 - Fixed bugs in plotConn -- missing rounding func and grouping by y interval
 
+
 # Version 0.7.7
 
 - Added LFP recording at arbitrary 3D locations

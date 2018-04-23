@@ -507,7 +507,7 @@ metadata = {
                         "suggestions": "",
                         "hintText": ""
                     },
-                    "stim params": {
+                    "stimParams": {
                         "label": "Stimulation parameters",
                         "help": "These will depend on the type of stimulator (e.g. for 'IClamp' will have 'delay', 'dur' and 'amp'). Can be defined as a function (see Functions as strings). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').",
                         "suggestions": "",
@@ -517,19 +517,22 @@ metadata = {
                         "label": "Duration [msec]",
                         "help": "Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2]. When clamp is off the injected current is 0. Do not insert several instances of this model at the same location in order to make level changes. That is equivalent to independent clamps and they will have incompatible internal state values.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "list(float)"
                     },
                     "amp": {
                         "label": "Stimulation Amplitud",
                         "help": "Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2]. When clamp is off the injected current is 0. Do not insert several instances of this model at the same location in order to make level changes. That is equivalent to independent clamps and they will have incompatible internal state values.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "list(float)"
                     },
                     "del": {
                         "label": "Stimulation delay",
                         "help": "Define the stimulation delay.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "list(float)"
                     },
                     "interval": {
                         "label": "Time between spikes",

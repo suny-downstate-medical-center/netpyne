@@ -129,6 +129,9 @@ class Cell (object):
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 
+    # Required if locations (0 to 1) get saved/reloaded as float & are not precisely the same
+    def _locs_equal(self, loc_a, loc_b):
+        return abs(loc_a-loc_b) <= 1e-6
 
     def recordTraces (self):
         import sim
@@ -165,10 +168,13 @@ class Cell (object):
                     if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            
+                        elif 'stim' in params:  # eg. soma(0.5).pulseGen._ref_i
+                            sec = self.secs[params['sec']]
+                            stim = next((stim for stim in self.stims if stim['type']==params['stim'] and stim['sec']==params['sec'] and self._locs_equal(stim['loc'],params['loc'])), None)
+                            ptr = getattr(stim['h%s'%stim['type']], '_ref_'+params['var'])
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
-                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
+                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and self._locs_equal(synMech['loc'],params['loc'])), None)
                             ptr = getattr(synMech['hSyn'], '_ref_'+params['var'])
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hSec'](params['loc']), '_ref_'+params['var'])
@@ -203,8 +209,8 @@ class Cell (object):
                             sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                             sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
                         if sim.cfg.verbose: print '  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
-                except:
-                    if sim.cfg.verbose: print '  Cannot record ', key, 'from cell ', self.gid
+                except Exception as e:
+                    if sim.cfg.verbose: print '  Cannot record ', key, 'from cell ', self.gid, "; exception: %s"%e
             else:
                 if sim.cfg.verbose: print '  Conditions preclude recording ', key, ' from cell ', self.gid
         #else:

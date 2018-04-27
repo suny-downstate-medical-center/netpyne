@@ -688,6 +688,9 @@ class Network (object):
         dictVars['dist_3D']    = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
                                 (preConds['y'] - postConds['y'])**2 + 
                                 (preConds['z'] - postConds['z'])**2)
+        dictVars['dist_3D_border'] = lambda preConds,postConds: sqrt((abs(preConds['x'] - postConds['x']) - postConds['borderCorrect'][0])**2 +
+                                (abs(preConds['y'] - postConds['y']) - postConds['borderCorrect'][1])**2 + 
+                                (abs(preConds['z'] - postConds['z']) - postConds['borderCorrect'][2])**2)
         dictVars['dist_2D']     = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
                                 (preConds['z'] - postConds['z'])**2)
         dictVars['dist_xnorm']  = lambda preConds,postConds: abs(preConds['xnorm'] - postConds['xnorm'])

@@ -1,3 +1,7 @@
+# Version 0.7.9
+
+- Added netParams.correctBorder to compensate distance-dependent connectivity border effect
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

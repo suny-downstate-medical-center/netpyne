@@ -391,7 +391,7 @@ class NetParams (object):
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
         self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
-
+        self.correctBorderDist = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150] 
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)

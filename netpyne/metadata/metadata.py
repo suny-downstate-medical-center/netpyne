@@ -838,6 +838,963 @@ metadata = {
             },
             "backupCfgFile": {
                 "label": "Copy of CFG file"
+            },
+            "analysis": {
+                "label": "Analysis",
+                "suggestions": "",
+                "help": "",
+                "hintText": "",
+                "children": {
+                    "plotRaster": {
+                        "label": "Raster Plot",
+                        "suggestions": "",
+                        "help": "Plot raster (spikes over time) of network cells.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cells by index) to raster",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "timeRange": {
+                                "label": "time Range",
+                                "suggestions": "",
+                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list(int)"
+                            },
+                            "maxSpikes": {
+                                "label": "maximum number of spikes",
+                                "suggestions": "",
+                                "help": "maximum number of spikes that will be plotted (int).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "orderBy": {
+                                "label": "order by",
+                                "suggestions": "",
+                                "help": "Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "orderInverse": {
+                                "label": "invert y-axis",
+                                "suggestions": "",
+                                "help": "Invert the y-axis order (True|False)",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "labels": {
+                                "label": "labels",
+                                "suggestions": "",
+                                "help": "Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "popRates": {
+                                "label": "include rates",
+                                "suggestions": "",
+                                "help": "Include population rates ('legend'|'overlay')",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "spikeHist": {
+                                "label": "overlay spike histogram",
+                                "suggestions": "",
+                                "help": "overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "spikeHistBin": {
+                                "label": "bin size for histogram",
+                                "suggestions": "",
+                                "help": "Size of bin in ms to use for histogram (int)",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "syncLines": {
+                                "label": "synchronize lines",
+                                "suggestions": "",
+                                "help": "calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotSpikeHist": {
+                        "label": "Plot Spike Histogram",
+                        "suggestions": "",
+                        "help": "Plot spike histogram.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cells by index) to histogram",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "time Range",
+                                "suggestions": "",
+                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "binSize": {
+                                "label": "bin size for histogram",
+                                "suggestions": "",
+                                "help": "Size of bin in ms to use for histogram (int)",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "overlay": {
+                                "label": "show overlay",
+                                "suggestions": "",
+                                "help": "Whether to overlay the data lines or plot in separate subplots (True|False)",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "graphType": {
+                                "label": "type of Graph",
+                                "suggestions": "",
+                                "help": " Type of graph to use (line graph or bar plot) ('line'|'bar')",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "yaxis": {
+                                "label": "axis units",
+                                "suggestions": "",
+                                "help": "Units of y axis (firing rate in Hz, or spike count) ('rate'|'count')",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotRatePSD": {
+                        "label": "Plot Rate PSD",
+                        "suggestions": "",
+                        "help": "Plot spikes power spectral density (PSD).",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cell by index) to RatePSD",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "Time Range",
+                                "suggestions": "",
+                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "binSize": {
+                                "label": "Bin size",
+                                "suggestions": "",
+                                "help": "Size of bin in ms to use (int)",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "maxFreq": {
+                                "label": "maximum frequency",
+                                "suggestions": "",
+                                "help": " Maximum frequency to show in plot (float).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "NFFT": {
+                                "label": "Number of point",
+                                "suggestions": "",
+                                "help": "The number of data points used in each block for the FFT (power of 2) (float)",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "noverlap": {
+                                "label": "Number of overlap points",
+                                "suggestions": "",
+                                "help": "Number of points of overlap between segments (int, < nperseg).",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "smooth": {
+                                "label": "Window size",
+                                "suggestions": "",
+                                "help": "Window size for smoothing; no smoothing if 0 (int).",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "overlay": {
+                                "label": "Overlay data",
+                                "suggestions": "",
+                                "help": "Whether to overlay the data lines or plot in separate subplots (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotSpikeStats": {
+                        "label": "Plot Spike Statistics",
+                        "suggestions": "",
+                        "help": "Plot spike histogram.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cell by index) to SpikeStats",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "time range",
+                                "suggestions": "",
+                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "graphType": {
+                                "label": "type of graph",
+                                "suggestions": "",
+                                "help": "Type of graph to use ('boxplot').",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "stats": {
+                                "label": "meassure type to calculate stats",
+                                "suggestions": "",
+                                "help": "List of types measure to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (['rate', |'isicv'| 'pairsync' |'sync'|]).",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "popColors": {
+                                "label": "color for each population",
+                                "suggestions": "",
+                                "help": "Dictionary with color (value) used for each population/key.",
+                                "hintText": "",
+                                "type": "dict"
+                            },
+                            "figSize": {
+                                "label": "figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height)).",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotTraces": {
+                        "label": "Plot Traces",
+                        "suggestions": "",
+                        "help": "Plot recorded traces (specified in simConfig.recordTraces).",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "trace ",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "time Range",
+                                "suggestions": "",
+                                "help": "Time range for shown Traces ; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "overlay": {
+                                "label": "overlay data",
+                                "suggestions": "",
+                                "help": "Whether to overlay the data lines or plot in separate subplots (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "oneFigPer": {
+                                "label": "one figure per cell",
+                                "suggestions": "",
+                                "help": "Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace').",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "rerun": {
+                                "label": "re-run simulation",
+                                "suggestions": "",
+                                "help": "rerun simulation so new set of cells gets recorded (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotLFP": {
+                        "label": "Plot LFP",
+                        "suggestions": "",
+                        "help": "Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations).",
+                        "hintText": "",
+                        "children": {
+                            "electrodes": {
+                                "label": "electrode",
+                                "suggestions": "",
+                                "help": " List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "plots": {
+                                "label": "type of plot.",
+                                "suggestions": "",
+                                "help": "list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']).",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "timeRange": {
+                                "label": "time Range",
+                                "suggestions": "",
+                                "help": "Time range for shown Traces ; if None shows all ([start:stop])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "NFFT": {
+                                "label": "number of point",
+                                "suggestions": "",
+                                "help": "The number of data points used in each block for the FFT (power of 2) (float)",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "noverlap": {
+                                "label": "number of overlap points",
+                                "suggestions": "",
+                                "help": "Number of points of overlap between segments (int, < nperseg).",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "maxFreq": {
+                                "label": "maximum Frequency",
+                                "suggestions": "",
+                                "help": "Maximum frequency shown in plot for PSD and time-freq (float).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "nperseg": {
+                                "label": "lenght per segment",
+                                "suggestions": "",
+                                "help": "Length of each segment for time-freq (int).",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "smooth": {
+                                "label": "window size",
+                                "suggestions": "",
+                                "help": "Window size for smoothing; no smoothing if 0 (int).",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "separation": {
+                                "label": "separation Factor",
+                                "suggestions": "",
+                                "help": "Separation factor between time-resolved LFP plots; multiplied by max LFP value (float).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "includeAxon": {
+                                "label": "include Axon",
+                                "suggestions": "",
+                                "help": "Whether to show the axon in the location plot (boolean).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotShape": {
+                        "label": "Plot Shape",
+                        "suggestions": "",
+                        "help": "",
+                        "hintText": "Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.",
+                        "children": {
+                            "includePre": {
+                                "label": "population (or cell by index) to presyn",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "includePost": {
+                                "label": "population (or cell by index) to postsyn",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "synStyle": {
+                                "label": "synaptic marker style",
+                                "suggestions": "",
+                                "help": "Style of marker to show synapses (Matplotlib markers).",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "dist": {
+                                "label": "3D distance",
+                                "suggestions": "",
+                                "help": "3D distance (like zoom).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "synSize": {
+                                "label": "synapses marker size",
+                                "suggestions": "",
+                                "help": "Size of marker to show synapses.",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "cvar": {
+                                "label": "variable to represent in shape plot",
+                                "suggestions": "",
+                                "help": "Variable to represent in shape plot ('numSyns'|'weightNorm').",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "cvals": {
+                                "label": "value to represent in shape plot",
+                                "suggestions": "",
+                                "help": "List of values to represent in shape plot; must be same as num segments (list of size num segments; ).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "iv": {
+                                "label": "use NEURON iv",
+                                "suggestions": "",
+                                "help": "Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "ivprops": {
+                                "label": "properties for iv",
+                                "suggestions": "",
+                                "help": "Dict of properties to plot using Interviews (dict).",
+                                "hintText": "",
+                                "type": "dict"
+                            },
+                            "showSyns": {
+                                "label": "show synaptic connections in 3D",
+                                "suggestions": "",
+                                "help": "Show synaptic connections in 3D (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "bkgColor": {
+                                "label": "background color",
+                                "suggestions": "",
+                                "help": "RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats).",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "showElectrodes": {
+                                "label": "show electrodes",
+                                "suggestions": "",
+                                "help": "Show electrodes in 3D (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "includeAxon": {
+                                "label": "include Axon in shape plot",
+                                "suggestions": "",
+                                "help": "Include axon in shape plot (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plot2Dnet": {
+                        "label": "Plot 2D net",
+                        "suggestions": "",
+                        "help": "Plot 2D representation of network cell positions and connections.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cell by index) to 2Dnet",
+                                "suggestions": "",
+                                "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "showConns": {
+                                "label": "show connections",
+                                "suggestions": "",
+                                "help": "Whether to show connections or not (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "view": {
+                                "label": "perspective view",
+                                "suggestions": "",
+                                "help": "Perspective view, either front ('xy') or top-down ('xz').",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "plotConn": {
+                        "label": "Plot Connectivity",
+                        "suggestions": "",
+                        "help": "Plot network connectivity.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "population (or cells by index) to connectivity",
+                                "suggestions": "",
+                                "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "feature": {
+                                "label": "feature to show",
+                                "suggestions": "",
+                                "help": "Feature to show in connectivity matrix; the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns'; 'strength' = weight * probability ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence')g.",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "groupBy": {
+                                "label": "group by",
+                                "suggestions": "",
+                                "help": "Show matrix for individual cells or populations ('pop'|'cell').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "orderBy": {
+                                "label": "order by",
+                                "suggestions": "",
+                                "help": "Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') ('gid'|'y'|'ynorm'|...).",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "granger": {
+                        "label": "Granger",
+                        "suggestions": "",
+                        "help": "Calculate and optionally plot Granger Causality.",
+                        "hintText": "",
+                        "children": {
+                            "cells1": {
+                                "label": "population (or cell by index) to subset 1",
+                                "suggestions": "",
+                                "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "cells2": {
+                                "label": "population (or cell by index cell) to subset 2",
+                                "suggestions": "",
+                                "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "spks1": {
+                                "label": "spike times to train 1",
+                                "suggestions": "",
+                                "help": "Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "spks2": {
+                                "label": "spike times to train 2",
+                                "suggestions": "",
+                                "help": "Spike train 2; list of spike times; if omitted then obtains spikes from cells1 (list).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "time Range",
+                                "suggestions": "",
+                                "help": "Range of time to calculate nTE in ms ([min, max]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "binSize": {
+                                "label": "bin size",
+                                "suggestions": "",
+                                "help": "Bin size used to convert spike times into histogram (int).",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "label1": {
+                                "label": "label for train 1",
+                                "suggestions": "",
+                                "help": "Label for spike train 1 to use in plot (string).",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "label2": {
+                                "label": "label for train 2",
+                                "suggestions": "",
+                                "help": "Label for spike train 2 to use in plot (string).",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": ""
+                            }
+                        }
+                    },
+                    "nTE": {
+                        "label": "Normalize Transfer Entropy",
+                        "suggestions": "",
+                        "help": "Calculate normalized transfer entropy.",
+                        "hintText": "",
+                        "children": {
+                            "cell1": {
+                                "label": "Cell Subset 1",
+                                "suggestions": "",
+                                "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "cell2": {
+                                "label": "Cell Subset 2",
+                                "suggestions": "",
+                                "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "spks1": {
+                                "label": "Spike train 1",
+                                "suggestions": "",
+                                "help": "Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "spks2": {
+                                "label": "Spike train 2",
+                                "suggestions": "",
+                                "help": "Spike train 2; list of spike times; if omitted then obtains spikes from cells1 (list).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "timeRange": {
+                                "label": "Time Range",
+                                "suggestions": "",
+                                "help": "Range of time to calculate nTE in ms ([min, max]).",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "binSize": {
+                                "label": "Bin size",
+                                "suggestions": "",
+                                "help": "Bin size used to convert spike times into histogram (int).",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "numShuffle": {
+                                "label": "Number of Shuffles",
+                                "suggestions": "",
+                                "help": "Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (int).",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": ""
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "saveFig": {
+                                "label": "Figure Name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": "str"
+                            }
+                        }
+                    }
+                }
             }
         }
     }

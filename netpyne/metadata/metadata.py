@@ -643,10 +643,10 @@ metadata = {
                         "children": {
                             "pop": {
                                 "label": "Target Population",
-                                "help": "Select the population targets.",
+                                "help": "Select the population targets e.g. {'pop': ['Exc1', 'Exc2']}",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "list(float)"
+                                "type": "str"
                             },
                             "cellType": {
                                 "label": "Target Cell Type",
@@ -709,7 +709,7 @@ metadata = {
                             },
                             "cellList": {
                                 "label": "Target Cell Index",
-                                "help": "Indices of neuron to be included in the application of this stimulation.",
+                                "help": "Indices of neuron to be included in the application of this stimulation. ([1, 8, 12])",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
@@ -858,7 +858,7 @@ metadata = {
                             "timeRange": {
                                 "label": "time Range",
                                 "suggestions": "",
-                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
                                 "type": "list(int)"
                             },
@@ -964,9 +964,9 @@ metadata = {
                             "timeRange": {
                                 "label": "time Range",
                                 "suggestions": "",
-                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "binSize": {
                                 "label": "bin size for histogram",
@@ -1042,9 +1042,9 @@ metadata = {
                             "timeRange": {
                                 "label": "Time Range",
                                 "suggestions": "",
-                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "binSize": {
                                 "label": "Bin size",
@@ -1134,9 +1134,9 @@ metadata = {
                             "timeRange": {
                                 "label": "time range",
                                 "suggestions": "",
-                                "help": "Time range of spikes shown; if None shows all ([start:stop])",
+                                "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "graphType": {
                                 "label": "type of graph",
@@ -1205,9 +1205,9 @@ metadata = {
                             "timeRange": {
                                 "label": "time Range",
                                 "suggestions": "",
-                                "help": "Time range for shown Traces ; if None shows all ([start:stop])",
+                                "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "overlay": {
                                 "label": "overlay data",
@@ -1283,9 +1283,9 @@ metadata = {
                             "timeRange": {
                                 "label": "time Range",
                                 "suggestions": "",
-                                "help": "Time range for shown Traces ; if None shows all ([start:stop])",
+                                "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "NFFT": {
                                 "label": "number of point",
@@ -1653,7 +1653,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "binSize": {
                                 "label": "bin size",
@@ -1745,7 +1745,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(int)"
                             },
                             "binSize": {
                                 "label": "Bin size",

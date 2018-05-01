@@ -727,13 +727,15 @@ metadata = {
                         "label": "Target section",
                         "help": "Target section (default: 'soma').",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "str"
                     },
                     "loc": {
                         "label": "Target location ",
                         "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings).",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
                     },
                     "synMech": {
                         "label": "Synaptic mechanism label to connect NetStim to",

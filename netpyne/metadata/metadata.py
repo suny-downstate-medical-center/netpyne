@@ -767,74 +767,214 @@ metadata = {
                 "label": "Name of Simulation"
             },
             "duration": {
-                "label": "Duration"
+                "label": "Duration",
+                "help": "simulation duration in ms (default: 1000)",
+                "type": "float"
             },
             "dt": {
-                "label": "Dt"
+                "label": "Dt",
+                "help": "simulation time step in ms (default: 0.1)",
+                "type": "float"
             },
             "seeds": {
                 "label": "Seeds",
+                "help": "Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1}).",
                 "type": "dict"
             },
             "addSynMechs": {
-                "label": "Add Syn Mechs"
+                "label": "Add Syn Mechs",
+                "help": "Whether to add synaptich mechanisms or not (default: True).",
+                "type": "bool"
             },
             "includeParamsLabel": {
-                "label": "Include Params Label"
+                "label": "Include Params Label",
+                "help": " Include label of param rule that created that cell, conn or stim (default: True).",
+                "type": "bool"
             },
             "timing": {
-                "label": "Timing"
+                "label": "Timing",
+                "help": "Show and record timing of each process (default: True).",
+                "type": "bool"
             },
             "verbose": {
-                "label": "Verbose"
+                "label": "Verbose",
+                "help": "Show detailed messages (default: False).",
+                "type": "bool"
             },
             "saveFolder": {
-                "label": "Save Folder"
+                "label": "Save Folder",
+                "help": "Path where to save output data (default: '')",
+                "type": "str"
             },
             "filename": {
-                "label": "File Name"
+                "label": "File Name",
+                "help": "Name of file to save model output (default: 'model_output')",
+                "type": "str"
             },
             "saveDataInclude": {
-                "label": "Save Data Include"
+                "label": "Save Data Include",
+                "help": "Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])",
+                "type": "list(str)"
             },
             "timestampFilename": {
-                "label": "Timestamp File Name"
+                "label": "add timestamp to file name",
+                "help": "Add timestamp to filename to avoid overwriting (default: False)",
+                "type": "bool"
             },
             "savePickle": {
-                "label": "Save Pickle"
+                "label": "Save Pickle",
+                "help": "Save data to pickle file (default: False).",
+                "type": "bool"
             },
             "saveJson": {
-                "label": "Save Json"
+                "label": "Save Json",
+                "help": "Save dat to json file (default: False).",
+                "type": "bool"
             },
             "saveMat": {
-                "label": "Save MAT"
+                "label": "Save MAT",
+                "help": " Save data to mat file (default: False).",
+                "type": "bool"
             },
             "saveHDF5": {
-                "label": "Save HDF5"
+                "label": "Save HDF5",
+                "help": "Save data to save to HDF5 file (default: False).",
+                "type": "bool"
             },
             "saveDpk": {
-                "label": "Save DPK"
-            },
-            "saveDat": {
-                "label": "Save DAT"
-            },
-            "saveCSV": {
-                "label": "Save CSV"
-            },
-            "saveCellSecs": {
-                "label": "Save Cell Secs"
-            },
-            "saveCellConns": {
-                "label": "Save Cell Conns"
+                "label": "Save DPK",
+                "help": " Save data to .dpk pickled file (default: False).",
+                "type": "bool"
             },
             "checkErrors": {
-                "label": "Check Errors"
+                "label": "Check Errors",
+                "help": "check for errors (default: False).",
+                "type": "bool"
             },
             "checkErrorsVerbose": {
-                "label": "Check Errors Verbose"
+                "label": "Check Errors Verbose",
+                "help": "check errors vervose (default: False)",
+                "type": "bool"
             },
             "backupCfgFile": {
-                "label": "Copy of CFG file"
+                "label": "Copy config file to folder:",
+                "help": "Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: []).",
+                "type": "list(str)"
+            },
+            "recordCells": {
+                "label": "record cells",
+                "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
+                "type": "list(list)"
+            },
+            "saveCSV": {
+                "label": "save .cvs file",
+                "help": "save cvs file (default: False)",
+                "type": "bool"
+            },
+            "saveDat": {
+                "label": "save .dat file",
+                "help": "save .dat file (default: False)",
+                "type": "bool"
+            },
+            "saveCellSecs": {
+                "label": "save cell secs",
+                "help": "save cell secs (default: True)",
+                "type": "bool"
+            },
+            "saveCellConns": {
+                "label": "save cell conns",
+                "help": "save cell connections. (default: True)",
+                "type": "bool"
+            },
+            "recordStim": {
+                "label": "record spikes of cell stims",
+                "help": "Record spikes of cell stims (default: False).",
+                "type": "bool"
+            },
+            "recordTraces": {
+                "label": "record traces",
+                "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
+                "type": "dict"
+            },
+            "recordLFP": {
+                "label": "record LFP",
+                "help": " 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
+                "type": "list(list(float))"
+            },
+            "saveLFPCells": {
+                "label": "Store LFP",
+                "help": "Store LFP generated individually by each cell in sim.allSimData['LFPCells'].",
+                "type": "bool"
+            },
+            "recordStep": {
+                "label": "step size for data recording",
+                "help": "Step size in ms for data recording (default: 0.1).",
+                "type": "float"
+            },
+            "printRunTime": { 
+                "label": "print run time at intervals:",
+                "help": "Print run time at interval (in sec) specified here (eg. 0.1) (default: False).",
+                "type": "float"
+            },
+            "printSynsAfterRule": { 
+                "label": "print total connections",
+                "help": "Print total connections after each conn rule is applied.",
+                "type": "bool"
+            },
+            "printPopAvgRates": {
+                "label": "print pop average firing rates",
+                "help": "Print population avg firing rates after run (default: False).",
+                "type": "bool"
+            },
+            "connRandomSecFromList": {
+                "label": "select sections at random",
+                "help": "{Select random section (and location) from list even when synsPerConn=1 (default: True).",
+                "type": "bool"
+            },
+            "compactConnFormat": {
+                "label": "replace dict format with compact list for conns",
+                "help": "Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False).",
+                "type": "bool"
+            },
+            "gatherOnlySimData": {
+                "label": "gather only sim data",
+                "help": "Omits gathering of net and cell data thus reducing gatherData time (default: False).",
+                "type": "bool"
+            },
+            "createPyStruct": {
+                "label": "create python structure",
+                "help": "Create Python structure (simulator-independent) when instantiating network (default: True).",
+                "type": "bool"
+            },
+            "createNEURONObj": {
+                "label": "create NEURON object",
+                "help": "Create runnable network in NEURON when instantiating netpyne network metadata (default: True).",
+                "type": "bool"
+            },
+            "cvode_active": {
+                "label": "use CVode",
+                "help": "Use CVode variable time step (default: False).",
+                "type": "bool"
+            },
+            "cache_efficient": {
+                "label": "use CVode cache_efficient",
+                "help": "Use CVode cache_efficient option to optimize load when running on many cores (default: False).",
+                "type": "bool"
+            },
+            "hParams": {
+                "label": "define temperature, initial voltage, etc",
+                "help": "Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001}).",
+                "type": "dict"
+            },
+            "saveTxt": {
+                "label": "Save txt",
+                "help": "Save data to txt file (default: False)",
+                "type": "bool"
+            },
+            "saveTiming": {
+                "label": "Save timing to pickle file",
+                "help": " Save timing data to pickle file (default: False).",
+                "type": "bool"
             },
             "analysis": {
                 "label": "Analysis",

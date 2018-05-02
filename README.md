@@ -79,3 +79,5 @@ Please cite as: "Salvador Dura-Bernal, Padraig Gleeson, Cliff C Kerr, Samuel Ney
 
 For further information please contact: salvadordura@gmail.com 
 
+[![Build Status](https://travis-ci.org/Neurosim-lab/netpyne.svg?branch=development)](https://travis-ci.org/Neurosim-lab/netpyne)
+

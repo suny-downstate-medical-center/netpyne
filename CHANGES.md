@@ -1,8 +1,49 @@
+# Version 0.7.9
+
+- Added netParams.correctBorder to compensate distance-dependent connectivity border effect
+
 # Version 0.7.8
+
+- Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
+
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+
+- Added 'histogram' option to plotSpikeStats
+
+- Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
+
+- Added showElectrodes and bkgColor options to shapePlot
+
+- Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
+
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+
+- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
+
+- Fixed bug to ensure VecStim random streams are independent of simulation duration
 
 - Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
 
-- Fixed bug so LFP recording only applied to compartmental cells
+- Fixed bug LFP recording only applied to compartmental cells
+
+- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
+
+- Fixed bug when deleting sections -- needed sec.push() before
+
+- Fixed bug in shapePlot figSize option
+
+- Fixed format of git changeset stored -- removed 'g' prefix
+
+- Fixed bug in Windows trying to get git changeset
+
+- Fixed bug gathering LFP data
+
+- Fixed bug importing global v_init from multiple cell files
+
+- Fixed bug so gitChangeset() returns to orig folder even when git not installed
+
+- Fixed bugs in plotConn -- missing rounding func and grouping by y interval
+
 
 # Version 0.7.7
 

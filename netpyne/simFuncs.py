@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
     'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
     'rename'])  # misc/utilities
@@ -837,21 +837,20 @@ def setupRecordLFP():
     if sim.cfg.saveLFPCells:
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
-
-    sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
     
-    sim.net.defineCellShapes()
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
     
-    for cell in sim.net.compartCells:
-        nseg = cell._segCoords['p0'].shape[1]
-        sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
-        cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-        cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
-        cell.imembVec = h.Vector(nseg)
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            nseg = cell._segCoords['p0'].shape[1]
+            sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
 
-    sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
         
 
 ###############################################################################
@@ -1207,7 +1206,7 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    if sim.cfg.recordLFP:
+    if sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr
@@ -1254,7 +1253,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(nodeData['simData'][key])
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1312,7 +1311,7 @@ def gatherData ():
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif key == 'LFP':
-                            sim.allSimData[k] += np.array(val)
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1370,11 +1369,14 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        if sim.cfg.compactConnFormat:
-            preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
-            sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
         else:
-            sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+            sim.totalConnections = sim.totalSynapses
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -1494,6 +1496,43 @@ def _gatherCells ():
 
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+
+
+###############################################################################
+### Save distributed data using HDF5 (only conns for now)
+###############################################################################
+def distributedSaveHDF5():
+    import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'saveTimeHDF5')
+
+    sim.compactConnFormat()
+    conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
+    conns = sim.copyReplaceItemObj(conns, keystart='h', newval=[]) 
+    connFormat = ['postGid']+sim.cfg.compactConnFormat
+    with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
+        hf.create_dataset('conns', data = conns)
+        hf.create_dataset('connsFormat', data = connFormat)
+
+    if sim.rank == 0: timing('stop', 'saveTimeHDF5')
+
+###############################################################################
+### load HDF5 (conns for now)
+###############################################################################
+def loadHDF5(filename):
+    import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'loadTimeHDF5')
+
+    connsh5 = h5py.File(filename, 'r')
+    conns = [list(x) for x in connsh5['conns']]
+    connsFormat = list(connsh5['connsFormat'])
+
+    if sim.rank == 0: timing('stop', 'loadTimeHDF5')
+
+    return conns, connsFormat
 
 
 ###############################################################################
@@ -1768,15 +1807,17 @@ def version (show=True):
 def gitChangeset (show=True):
     import sim
     import netpyne, os, subprocess 
+    
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
-        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
     except: 
         changeset = ''
+
     os.chdir(currentPath)
 
     return changeset

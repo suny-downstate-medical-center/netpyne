@@ -9,8 +9,15 @@ from __future__ import print_function
 try:
     import neuroml
     from pyneuroml import pynml
+    from pyneuroml import __version__ as pynml_ver
+    from distutils.version import StrictVersion
+    min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
+    
+    if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
+        raise Exception('Error: pyNeuroML version %s is installed but at least v%s is required!'%(pynml_ver,min_pynml_ver_required))
+    
     neuromlExists = True
-except:
+except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if int(pc.id()) == 0:  # only print for master node
@@ -899,6 +906,28 @@ if neuromlExists:
                             if not cellRule['secs'][section_name]['ions'].has_key(ion):
                                 cellRule['secs'][section_name]['ions'][ion] = {}
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
+                
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_v_shifts:
+                              
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
+                        if cm.ion_channel=='pas':
+                            mech = {'g':gmax}
+                        else:
+                            mech = {'gmax':gmax}
+                        erev = pynml.convert_to_units(cm.erev,'mV')
+                        
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
+                        
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
+                            mech['e'] = erev
+                        else:
+                            if not cellRule['secs'][section_name]['ions'].has_key(ion):
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+                            cellRule['secs'][section_name]['ions'][ion]['e'] = erev
+                        mech['vShift'] = pynml.convert_to_units(cm.v_shift,'mV')
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
@@ -1192,8 +1221,14 @@ if neuromlExists:
             import neuroml
             
             format = 'NeuroML2'
-            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) :
+            
+            #TODO Make better check for stoch/poisson/noisy inputs!
+            if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) \
+              or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) \
+              or 'noisy' in component.lower()\
+              or 'poisson' in component.lower():
                 format = 'NeuroML2_stochastic_input'
+                
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
             self.popStimLists[inputListId] = {'source': inputListId, 
                         'conds': {'pop':population_id}}

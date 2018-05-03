@@ -646,7 +646,7 @@ metadata = {
                                 "help": "Select the population targets e.g. {'pop': ['Exc1', 'Exc2']}",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "list(float)"
                             },
                             "cellType": {
                                 "label": "Target Cell Type",

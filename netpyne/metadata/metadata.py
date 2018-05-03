@@ -1014,6 +1014,11 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)",
                                 "hintText": "",
+                                "options": [
+                                    "gid",
+                                    "y",
+                                    "ynorm"
+                                ],
                                 "type": "str"
                             },
                             "orderInverse": {
@@ -1035,6 +1040,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Include population rates ('legend'|'overlay')",
                                 "hintText": "",
+                                "options": [
+                                    "legend",
+                                    "overlay"
+                                ],
                                 "type": "str"
                             },
                             "spikeHist": {
@@ -1042,6 +1051,11 @@ metadata = {
                                 "suggestions": "",
                                 "help": "overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')",
                                 "hintText": "",
+                                "options": [
+                                    "None",
+                                    "overlay",
+                                    "subplot"
+                                ],
                                 "type": "str"
                             },
                             "spikeHistBin": {
@@ -1127,6 +1141,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": " Type of graph to use (line graph or bar plot) ('line'|'bar')",
                                 "hintText": "",
+                                "options": [
+                                    "line",
+                                    "bar"
+                                ],
                                 "type": "bool"
                             },
                             "yaxis": {
@@ -1134,6 +1152,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Units of y axis (firing rate in Hz, or spike count) ('rate'|'count')",
                                 "hintText": "",
+                                "options": [
+                                    "rate",
+                                    "count"
+                                ],
                                 "type": "str"
                             },
                             "figSize": {
@@ -1283,6 +1305,9 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Type of graph to use ('boxplot').",
                                 "hintText": "",
+                                "options": [
+                                    "boxplot"
+                                ],
                                 "type": "str"
                             },
                             "stats": {
@@ -1290,6 +1315,12 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of types measure to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (['rate', |'isicv'| 'pairsync' |'sync'|]).",
                                 "hintText": "",
+                                "options": [
+                                    "rate",
+                                    "isicv",
+                                    "pairsync",
+                                    "sync"
+                                ],
                                 "type": "str"
                             },
                             "popColors": {
@@ -1361,6 +1392,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace').",
                                 "hintText": "",
+                                "options": [
+                                    "cell",
+                                    "traces"
+                                ],
                                 "type": "str"
                             },
                             "rerun": {
@@ -1414,10 +1449,16 @@ metadata = {
                                 "type": "list"
                             },
                             "plots": {
-                                "label": "type of plot.",
+                                "label": "plot types to show",
                                 "suggestions": "",
                                 "help": "list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']).",
                                 "hintText": "",
+                                "options": [
+                                    "timeSeries", 
+                                    "PSD", 
+                                    "timeFreq", 
+                                    "location"
+                                ],
                                 "type": "str"
                             },
                             "timeRange": {
@@ -1552,6 +1593,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Variable to represent in shape plot ('numSyns'|'weightNorm').",
                                 "hintText": "",
+                                "options": [
+                                    "numSyns",
+                                    "weightNorm"
+                                ],
                                 "type": "str"
                             },
                             "cvals": {
@@ -1658,6 +1703,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Perspective view, either front ('xy') or top-down ('xz').",
                                 "hintText": "",
+                                "options": [
+                                    "xy",
+                                    "xz"
+                                ],
                                 "type": "str"
                             },
                             "figSize": {
@@ -1708,6 +1757,15 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Feature to show in connectivity matrix; the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns'; 'strength' = weight * probability ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence')g.",
                                 "hintText": "",
+                                "options": [
+                                    "weight",
+                                    "delay",
+                                    "numConns",
+                                    "probability",
+                                    "strength",
+                                    "convergency",
+                                    "divergency"
+                                ],
                                 "type": "str"
                             },
                             "groupBy": {
@@ -1715,6 +1773,10 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Show matrix for individual cells or populations ('pop'|'cell').",
                                 "hintText": "",
+                                "options": [
+                                    "pop", 
+                                    "cell"
+                                ],
                                 "type": ""
                             },
                             "orderBy": {
@@ -1722,6 +1784,11 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') ('gid'|'y'|'ynorm'|...).",
                                 "hintText": "",
+                                "options": [
+                                    "gid", 
+                                    "y", 
+                                    "ynorm"
+                                ],
                                 "type": ""
                             },
                             "figSize": {

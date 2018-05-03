@@ -658,7 +658,10 @@ metadata = {
                             "cellModel": {
                                 "label": "Target Cell Model",
                                 "help": "Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich2007 point neuron model).",
-                                "suggestions": '',
+                                "suggestions": [
+                                    "HH",
+                                    "IntFire1"
+                                ],
                                 "type": "str"
                             },
                             "xRange": {

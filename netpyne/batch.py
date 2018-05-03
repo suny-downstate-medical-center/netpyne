@@ -14,6 +14,7 @@ from time import sleep
 import imp
 from netpyne import specs
 from neuron import h
+
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
 

@@ -389,7 +389,9 @@ class NetParams (object):
         self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
         self.sizeZ = 100 # z-dimension (horizontal depth) size in um
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
-
+        self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
+        self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
+        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150] 
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
@@ -690,12 +692,14 @@ class SimConfig (object):
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
         self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
+        self.printSynsAfterRule = False  # print total of connections after each conn rule is applied 
         self.verbose = False  # show detailed messages
 
         # Recording

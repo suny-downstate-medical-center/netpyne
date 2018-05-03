@@ -11,6 +11,8 @@ addons:
     - python-matplotlib 
     - python-tk
     - python-sympy
+    - python-tornado
+    - python-pandas
     - python-tables 
 
 language: python

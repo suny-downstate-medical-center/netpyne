@@ -165,6 +165,13 @@ metadata = {
                         "help": "",
                         "hintText": "",
                         "children": {
+                            "pop": {
+                                "label": "Populations",
+                                "help": "Apply this cell rule only to the population defined in this text field.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
                             "cellType": {
                                 "label": "Cell Type",
                                 "suggestions": "",
@@ -757,6 +764,56 @@ metadata = {
                         "hintText": ""
                     }
                 }
+            },
+            "importCellParams": {
+                "label": "Import .hoc or .py templates",
+                "suggestions": "",
+                "help": "",
+                "hintText": "",
+                "children": {
+                    "fileName": {
+                        "label": "absolute path to file",
+                        "help": "Absolute path to .hoc or .py template file.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "str"
+                    },
+                    "cellName": {
+                        "label": "template name",
+                        "help": "Template name defined inside .hoc or .py file",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "str"
+                    },
+                    "label": {
+                        "label": "cell rule label",
+                        "help": "Give a name to this cell rule.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "str"
+                    },
+                    "importSynMechs": {
+                        "label": "import synaptic mechanisms",
+                        "help": "If true, synaptic mechanisms will also be imported. (default: False)",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "bool"
+                    },
+                    "compileMod": {
+                        "label": "compile mod files",
+                        "help": "If true, mod files will be compiled before importing the cell. (default: false)",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "bool"
+                    },
+                    "modFolder": {
+                        "label": "path to mod folder",
+                        "help": "Define the absolute path to the folder containing the mod files.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "str"
+                    },
+                }
             }
         }
     },
@@ -767,7 +824,9 @@ metadata = {
         "hintText": "",
         "children": {
             "simLabel": {
-                "label": "Name of Simulation"
+                "label": "simulation name",
+                "help": "Choose a name for this simulation",
+                "type": "str"
             },
             "duration": {
                 "label": "Duration",
@@ -862,7 +921,7 @@ metadata = {
             "backupCfgFile": {
                 "label": "Copy config file to folder:",
                 "help": "Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: []).",
-                "type": "list(str)"
+                "type": "list(float)"
             },
             "recordCells": {
                 "label": "record cells",

@@ -26,14 +26,14 @@ metadata = {
                         "type": "int"
                     },
                     "density": {
-                        "label": "Cell density",
+                        "label": "Cell density (neurons/mm^3)",
                         "suggestions": "",
                         "help": "The cell density in neurons/mm3. The volume occupied by each population can be customized (see xRange, yRange and zRange); otherwise the full network volume will be used (defined in netParams: sizeX, sizeY, sizeZ). density can be expressed as a function of normalized location (xnorm, ynorm or znorm), by providing a string with the variable and any common Python mathematical operators/functions. e.g. '1e5 * exp(-ynorm/2)'. ",
                         "hintText": "density in neurons/mm3",
                         "type": "str"
                     },
                     "gridSpacing": {
-                        "label": "Grid spacing",
+                        "label": "Grid spacing (um)",
                         "suggestions": "",
                         "help": "Fixed grid spacing between cells (in um). Cells will be placed in a grid, with the total number of cells be determined based on spacing and sizeX, sizeY, sizeZ. e.g. a spacing of 20 with sizeX=sizeY=sizeZ=100 will lead to 5*5*5=125 cells.",
                         "hintText": "fixed grid spacing",
@@ -50,14 +50,14 @@ metadata = {
                         "type": "str"
                     },
                     "xRange": {
-                        "label": "X-axis range",
+                        "label": "X-axis range (um)",
                         "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "xnormRange": {
-                        "label": "X-axis normalized range",
+                        "label": "X-axis normalized range (0-1)",
                         "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
@@ -68,85 +68,85 @@ metadata = {
                         "type": "list(float)"
                     },
                     "yRange": {
-                        "label": "Y-axis range",
+                        "label": "Y-axis range (um)",
                         "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "ynormRange": {
-                        "label": "Y-axis normalized range",
+                        "label": "Y-axis normalized range (0-1)",
                         "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "zRange": {
-                        "label": "Z-axis range",
+                        "label": "Z-axis range (um)",
                         "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "znormRange": {
-                        "label": "Z-axis normalized range",
+                        "label": "Z-axis normalized range (0-1)",
                         "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "interval": {
-                        "label": "Spike interval",
+                        "label": "Spike interval (ms)",
                         "help": "Spike interval in ms.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "rate": {
-                        "label": "Firing rate",
+                        "label": "Firing rate (Hz)",
                         "help": "Firing rate in Hz (note this is the inverse of the NetStim interval property).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "noise": {
-                        "label": "Noise fraction",
+                        "label": "Noise fraction (0-1)",
                         "help": "Fraction of noise in NetStim (0 = deterministic; 1 = completely random).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "start": {
-                        "label": "Start",
+                        "label": "Start time (ms)",
                         "help": "Time of first spike in ms (default = 0).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "number": {
-                        "label": "Number",
+                        "label": "Max number of spikes",
                         "help": "Max number of spikes generated (default = 1e12).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "seed": {
-                        "label": "Seed",
+                        "label": "Randomizer seed (optional)",
                         "help": " Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "spkTimes": {
-                        "label": "Spike Times",
-                        "help": "Spike Times(only for 'VecStim') - List of spike times (e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list).",
+                        "label": "Spike times",
+                        "help": "List of spike times (only for 'VecStim') e.g. [1, 10, 40, 50], range(1,500,10), or any variable containing a Python list.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "pulses": {
                         "label": "Pulses",
-                        "help": "(only for 'VecStim') - List of spiking pulses; each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
+                        "help": "List of spiking pulses (only for 'VecStim'); each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
@@ -154,7 +154,7 @@ metadata = {
                 }
             },
             "cellParams": {
-                "label": "Cell Params",
+                "label": "Cell Parameters",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
@@ -166,28 +166,30 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "pop": {
-                                "label": "Populations",
-                                "help": "Apply this cell rule only to the population defined in this text field.",
+                                "label": "Population",
+                                "help": "Apply the cell rule only to the cells belonging to this population (or list of populations).",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "list(str)"
                             },
                             "cellType": {
-                                "label": "Cell Type",
-                                "suggestions": "",
+                                "label": "Cell type",
+                                "suggestions": "Apply the cell rule only to the cells with this cell type attribute/tag.",
                                 "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(str)"
                             },
                             "cellModel": {
-                                "label": "Cell Model",
-                                "suggestions": "",
+                                "label": "Cell model",
+                                "suggestions": "Apply the cell rule only to the cells with this cell model attribute/tag",
                                 "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(str)"
                             }
                         }
                     },
                     "secs": {
-                        "label": "Secs",
+                        "label": "Sections",
                         "suggestions": "",
                         "help": "",
                         "hintText": "",

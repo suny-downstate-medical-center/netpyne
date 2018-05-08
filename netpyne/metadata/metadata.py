@@ -195,48 +195,48 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "geom": {
-                                "label": "Cell Type",
+                                "label": "Cell geometry",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": "",
                                 "children": {
                                     "diam": {
-                                        "label": "Diameter",
+                                        "label": "Diameter (um)",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
                                     },
                                     "L": {
-                                        "label": "Length",
+                                        "label": "Length (um)",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
                                     },
                                     "Ra": {
-                                        "label": "Ra",
+                                        "label": "Axial resistance, Ra (ohm-cm)",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
                                     },
                                     "cm": {
-                                        "label": "cm",
+                                        "label": "Membrane capacitance, cm (uF/cm2)",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
                                     },
                                     "pt3d": {
-                                        "label": "pt3d",
+                                        "label": "3D points",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
                                         "type": "float"
                                     },
                                     "nseg": {
-                                        "label": "nseg",
+                                        "label": "Number of segments, nseg",
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
@@ -245,19 +245,19 @@ metadata = {
                                 },
                                 "topol": {
                                     "label": "Topology",
-                                    "help": "Dictionary with topology properties.Includes parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section child location where to make connection).",
+                                    "help": "Topological properties, including parentSec (label of parent section), parentX (parent location where to make connection) and childX (current section child location where to make connection).",
                                     "suggestions": "",
                                     "hintText": ""
                                 },
                                 "mechs": {
                                     "label": "Mechanisms",
-                                    "help": "Dictionary of density/distributed mechanisms.The key contains the name of the mechanism (e.g. hh or pas) The value contains a dictionary with the properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
+                                    "help": "Dictionary of density/distributed mechanisms, including the name of the mechanism (e.g. hh or pas) and a list of properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
                                     "suggestions": "",
                                     "hintText": ""
                                 },
                                 "ions": {
                                     "label": "Ions",
-                                    "help": "Dictionary of ions.he key contains the name of the ion (e.g. na or k) The value contains a dictionary with the properties of the ion (e.g. {'e': -70}).",
+                                    "help": "Dictionary of ions, including the name of the ion (e.g. hh or pas) and a list of properties of the ion (e.g. {'e': -70}).",
                                     "suggestions": "",
                                     "hintText": ""
                                 },
@@ -268,28 +268,28 @@ metadata = {
                                     "hintText": "",
                                     "children": {
                                         "mod": {
-                                            "label": "mod",
+                                            "label": "Point process name",
                                             "help": "the name of the NEURON mechanism, e.g. 'Izhi2007a'",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
                                         },
                                         "loc": {
-                                            "label": "Length",
+                                            "label": "Location (0-1)",
                                             "help": "section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
                                         },
                                         "vref": {
-                                            "label": "vref (optional)",
+                                            "label": "Point process variable for voltage (optional)",
                                             "help": "internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
                                         },
                                         "synList": {
-                                            "label": "synList (optional)",
+                                            "label": "Point process list of synapses (optional)",
                                             "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
                                             "suggestions": "",
                                             "hintText": "",
@@ -297,26 +297,26 @@ metadata = {
                                         }
                                     },
                                     "vinit": {
-                                        "label": "vinit",
+                                        "label": "Initial membrance voltage, vinit (mV)",
                                         "help": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
                                         "suggestions": "",
                                         "hintText": ""
                                     },
                                     "spikeGenLoc": {
-                                        "label": "spikeGenLoc",
+                                        "label": "Spike generation location (0-1)",
                                         "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
                                         "suggestions": "",
                                         "hintText": ""
                                     },
                                     "threshold": {
-                                        "label": "threshold",
+                                        "label": "Spike threshold voltage (mV)",
                                         "help": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
                                         "suggestions": "",
                                         "hintText": ""
                                     }
                                 },
                                 "secLists": {
-                                    "label": "secLists - (optional) ",
+                                    "label": "Section lists (optional) ",
                                     "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
                                     "suggestions": "",
                                     "hintText": ""
@@ -327,7 +327,7 @@ metadata = {
                 }
             },
             "synMechParams": {
-                "label": "Syn Mech Params",
+                "label": "Synaptic mechanism parameters",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
@@ -339,25 +339,25 @@ metadata = {
                         "hintText": ""
                     },
                     "selfNetCon": {
-                        "label": "NMODL mechanism name",
+                        "label": "Self NetCon parameters",
                         "help": "Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. 'selfNetCon': {'sec': 'soma' , threshold: -15, 'weight': -1, 'delay': 0} (by default the source section, 'sec' = 'soma').",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau1": {
-                        "label": "Time constant for Exponential 1 [mSec]",
+                        "label": "Time constant for exponential 1 (ms)",
                         "help": "Define the time constant for the first exponential.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau2": {
-                        "label": "Time constant for Exponential 2 [mSec]",
+                        "label": "Time constant for Exponential 2 (ms)",
                         "help": "Define the time constant for the first exponential.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "e": {
-                        "label": "Reference Voltage [mV]",
+                        "label": "Reference Voltage (mV)",
                         "help": "Define the Voltage reference.",
                         "suggestions": "",
                         "hintText": ""
@@ -365,7 +365,7 @@ metadata = {
                 }
             },
             "connParams": {
-                "label": "Connectivity Params",
+                "label": "Connectivity parameters",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",

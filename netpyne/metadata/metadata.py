@@ -527,50 +527,50 @@ metadata = {
                         "hintText": ""
                     },
                     "delay": {
-                        "label": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron",
+                        "label": "Connection delay (ms)",
                         "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(float)"
                     },
                     "probability": {
-                        "label": "Probability of connection between each pre and postsynaptic cell",
+                        "label": "Probability of connection (0-1)",
                         "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "convergence": {
-                        "label": "Number of pre-synaptic cells connected to each post-synaptic cell",
+                        "label": "Convergence",
                         "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "divergence": {
-                        "label": "Number of post-synaptic cells connected to each pre-synaptic cell",
+                        "label": "Divergence",
                         "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "connList": {
-                        "label": "Explicit list of connections between individual pre- and post-synaptic cells",
+                        "label": "Explicit list of one-to-one connections",
                         "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "connFunc": {
-                        "label": "Internal connectivity function to use",
-                        "help": "Its automatically set to probConn, convConn, divConn or fromList, when the probability, convergence, divergence or connList parameters are included, respectively. Otherwise defaults to fullConn, ie. all-to-all connectivity.",
+                        "label": "Internal connectivity function to use (not required)",
+                        "help": "Automatically set to probConn, convConn, divConn or fromList, when the probability, convergence, divergence or connList parameters are included, respectively. Otherwise defaults to fullConn, ie. all-to-all connectivity.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "shape": {
-                        "label": "Modifies the conn weight dynamically during the simulation based on the specified pattern",
-                        "help": "Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse.",
+                        "label": "Weight shape",
+                        "help": "Modifies the conn weight dynamically during the simulation based on the specified pattern. Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "plasticity": {
-                        "label": "Plasticity mechanism to use for this connections",
+                        "label": "Plasticity mechanism to use for this connection",
                         "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}.",
                         "suggestions": "",
                         "hintText": ""

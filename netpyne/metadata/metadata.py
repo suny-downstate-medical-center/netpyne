@@ -351,14 +351,14 @@ metadata = {
                         "hintText": ""
                     },
                     "tau2": {
-                        "label": "Time constant for Exponential 2 (ms)",
-                        "help": "Define the time constant for the first exponential.",
+                        "label": "Time constant for exponential 2 (ms)",
+                        "help": "Define the time constant for the second exponential.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "e": {
-                        "label": "Reference Voltage (mV)",
-                        "help": "Define the Voltage reference.",
+                        "label": "Reversal potential (mV)",
+                        "help": "Reversal potential of the synaptic receptors.",
                         "suggestions": "",
                         "hintText": ""
                     }
@@ -372,28 +372,65 @@ metadata = {
                 "children": {
                     "preConds": {
                         "label": "Conditions for the presynaptic cells",
-                        "help": "Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
+                        "help": "Presynaptic cell conditions defined using attributes/tags and the required value e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
                         "suggestions": "",
                         "hintText": "",
                         "children": {
                             "pop": {
-                                "label": "Populations (multiple selection available)",
+                                "label": "Population (multiple selection available)",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": ""
                             },
                             "cellType": {
-                                "label": "Cell Type (multiple selection available)",
+                                "label": "Cell type (multiple selection available)",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": ""
                             },
                             "cellModel": {
-                                "label": "Cell Model (multiple selection available)",
+                                "label": "Cell model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": ""
                             }
+
                         }
                     },
                     "postConds": {
@@ -409,13 +446,49 @@ metadata = {
                                 "hintText": ""
                             },
                             "cellType": {
-                                "label": "Cell Type (multiple selection available)",
+                                "label": "Cell type (multiple selection available)",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": ""
                             },
                             "cellModel": {
-                                "label": "Cell Model (multiple selection available)",
+                                "label": "Cell model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": ""
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
                                 "help": "",
                                 "hintText": ""
@@ -423,27 +496,27 @@ metadata = {
                         }
                     },
                     "sec": {
-                        "label": "Target section",
+                        "label": "Postsynaptic neuron section",
                         "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "loc": {
-                        "label": "Target synaptic mechanism",
+                        "label": "Postsynaptic neuron location (0-1)",
                         "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "list(list(float))"
                     },
                     "synMech": {
-                        "label": "Target synaptic mechanism(s) on the postsynaptic neuron",
+                        "label": "Postsynaptic neuron synaptic mechanism",
                         "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "synsPerConn": {
-                        "label": "Number of individual synaptic connections",
-                        "help": "Number of individual synaptic connections (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1.",
+                        "label": "Number of individual synaptic contacts per connection",
+                        "help": "Number of individual synaptic contacts (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1.",
                         "suggestions": "",
                         "hintText": ""
                     },
@@ -676,51 +749,41 @@ metadata = {
                                 ],
                                 "type": "str"
                             },
-                            "xRange": {
-                                "label": "Target X Range",
-                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1, 0.2]).",
+                            "x": {
+                                "label": "Range of x-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
-                            "xnormRange": {
-                                "label": "Target X Norm Range",
-                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list[min, max]. xRange for absolute value in um (e.g.[100, 200]), or xnormRange for normalized value between0 and1 as fraction of sizeX (e.g.[0.1,0.2]).",
+                            "y": {
+                                "label": "Range of y-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "default": [
-                                    0,
-                                    1
-                                ],
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
-                            "yRange": {
-                                "label": "Target Y Range",
-                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list[min, max].yRange for absolute value in um (e.g.[100,200]), or ynormRange for normalized value between0 and1 as fraction of sizeY (e.g.[0.1,0.2]).",
+                            "z": {
+                                "label": "Range of z-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
-                            "ynormRange": {
-                                "label": "Target Y Norm Range",
-                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified2-element list[min, max]. yRange for absolute value in um (e.g.[100,200]), or ynormRange for normalized value between0 and1 as fraction of sizeY (e.g.[0.1,0.2]).",
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
-                            "zRange": {
-                                "label": "Target Z Range",
-                                "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
-                            "znormRange": {
-                                "label": "Target Z Norm Range",
-                                "help": "Range of neuron positions in z-axis (horizontal depth), specified2-element list[min, max]. zRange for absolute value in um (e.g.[100,200]), or znormRange for normalized value between0 and1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
-                                "hintText": "",
-                                "type": "list(float)"
+                                "help": "",
+                                "hintText": ""
                             },
                             "cellList": {
                                 "label": "Target Cell Index",

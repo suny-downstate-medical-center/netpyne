@@ -1,4 +1,8 @@
 metadata = {
+
+# ---------------------------------------------------------------------------------------------------------------------
+# netParams
+# ---------------------------------------------------------------------------------------------------------------------
     "netParams": {
         "label": "Network Parameters",
         "suggestions": "",
@@ -153,6 +157,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.cellParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "cellParams": {
                 "label": "Cell Parameters",
                 "suggestions": "",
@@ -326,6 +334,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.synMechParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "synMechParams": {
                 "label": "Synaptic mechanism parameters",
                 "suggestions": "",
@@ -364,6 +376,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.connParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "connParams": {
                 "label": "Connectivity parameters",
                 "suggestions": "",
@@ -577,6 +593,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.stimSourceParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "stimSourceParams": {
                 "label": "Stimulation source parameters",
                 "suggestions": "",
@@ -623,8 +643,8 @@ metadata = {
                         "hintText": ""
                     },
                     "gain": {
-                        "label": "Amplifier gain",
-                        "help": "Define amplifier gain.",
+                        "label": "Voltage clamp amplifier gain",
+                        "help": "Voltage clamp amplifier gain.",
                         "suggestions": "",
                         "hintText": ""
                     },
@@ -635,108 +655,112 @@ metadata = {
                         "hintText": ""
                     },
                     "start": {
-                        "label": "Start time for the first spike ",
+                        "label": "Start time of first spike",
                         "help": "Define the start time for the first spike.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "noise": {
-                        "label": "Noise level ",
+                        "label": "Noise/randomness fraction (0-1)",
                         "help": "Fractional noise, 0 <= noise <= 1, means that an interval between spikes consists of a fixed interval of duration (1 - noise)*interval plus a negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau1": {
-                        "label": "Time response for the read voltage.",
-                        "help": "Set the time response for the voltage read from cell.",
+                        "label": "Voltage clamp tau1",
+                        "help": "Voltage clamp tau1.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau2": {
-                        "label": "Time response for the voltage inserted into the cell",
-                        "help": ".",
+                        "label": "Voltage clamp tau2",
+                        "help": "Voltage clamp tau2.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "i": {
-                        "label": "Current [nA]",
-                        "help": "Inyected current in nA.",
+                        "label": "Voltage clamp current (nA)",
+                        "help": "Voltage clamp injected current in nA.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "onset": {
-                        "label": "Time delay for alpha conductance application ",
-                        "help": ".",
+                        "label": "Alpha synapse onset time (ms)",
+                        "help": "Alpha synapse onset time.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau": {
-                        "label": "Alpha function time response",
-                        "help": "Define time response for the Alpha function.",
+                        "label": "Alpha synapse time constant (ms)",
+                        "help": "Alpha synapse time constant (ms).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "gmax": {
-                        "label": "Maximum Conductance",
-                        "help": "Define the maximum conductance for the alpha function.",
+                        "label": "Alpha synapse maximum conductance",
+                        "help": "Alpha synapse maximum conductance.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "e": {
-                        "label": "Reference Voltage",
-                        "help": "Define the reference voltage.",
+                        "label": "Alpha synapse equilibrium potential",
+                        "help": "Alpha synapse equilibrium potential.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "rs": {
-                        "label": "Resistance [MOhm]",
-                        "help": "Define the resistance between the reference voltage and the cell.",
+                        "label": "Voltage clamp resistance (MOhm)",
+                        "help": "Voltage clamp resistance (MOhm).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "vc": {
-                        "label": "Reference Voltage [mV]",
-                        "help": "Define the reference Voltage.",
+                        "label": "Voltage clamp reference voltage (mV)",
+                        "help": "Voltage clamp reference voltage (mV).",
                         "suggestions": "",
                         "hintText": ""
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.stimTargetParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "stimTargetParams": {
-                "label": "Stimulation Target Params",
+                "label": "Stimulation target parameters",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
                 "children": {
                     "source": {
-                        "label": "Label of the stimulation source",
+                        "label": "Stimulation source",
                         "help": "Label of the stimulation source (e.g. 'electrode_current').",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "conds": {
-                        "label": "Conditions of cells where the stim will be applied",
-                        "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
+                        "label": "Conditions of cells where the stimulation will be applied",
+                        "help": "Conditions of cells where the stimulation will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
                         "suggestions": "",
                         "hintText": "",
                         "children": {
                             "pop": {
-                                "label": "Target Population",
-                                "help": "Select the population targets e.g. {'pop': ['Exc1', 'Exc2']}",
+                                "label": "Target population",
+                                "help": "Populations that will receive the stimulation e.g. {'pop': ['Exc1', 'Exc2']}",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
                             },
                             "cellType": {
-                                "label": "Target Cell Type",
-                                "suggestions": "",
-                                "help": "Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)",
+                                "label": "Target cell type",
+                                "suggestions": "Cell types that will receive the stimulation",
+                                "help": "",
                                 "hintText": "",
                                 "type": "str"
                             }, 
                             "cellModel": {
-                                "label": "Target Cell Model",
-                                "help": "Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich2007 point neuron model).",
+                                "label": "Target cell model",
+                                "help": "Cell models that will receive the stimulation.",
                                 "suggestions": [
                                     "HH",
                                     "IntFire1"
@@ -746,42 +770,42 @@ metadata = {
                             "x": {
                                 "label": "Range of x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within this x-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "y": {
                                 "label": "Range of y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within this y-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "z": {
                                 "label": "Range of z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within this z-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "xnorm": {
                                 "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells withing this normalized x-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "ynorm": {
                                 "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within this normalized y-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "znorm": {
                                 "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within this normalized z-axis locations will receive stimulation",
                                 "hintText": ""
                             },
                             "cellList": {
-                                "label": "Target Cell Index",
-                                "help": "Indices of neuron to be included in the application of this stimulation. ([1, 8, 12])",
+                                "label": "Target cell global indices (gids)",
+                                "help": "Global indices (gids) of neurons to receive stimulation. ([1, 8, 12])",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
@@ -797,14 +821,14 @@ metadata = {
                         "type": "str"
                     },
                     "loc": {
-                        "label": "Target location ",
+                        "label": "Target location",
                         "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "float"
                     },
                     "synMech": {
-                        "label": "Synaptic mechanism label to connect NetStim to",
+                        "label": "Target synaptic mechanism",
                         "help": "Synaptic mechanism label to connect NetStim to. Optional; only for NetStims.",
                         "suggestions": "",
                         "hintText": ""
@@ -822,13 +846,17 @@ metadata = {
                         "hintText": ""
                     },
                     "synsPerConn": {
-                        "label": "Number of synapses of connection between NetStim and cell",
-                        "help": "Number of synapses of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
+                        "label": "Number of synaptic contacts per connection between NetStim and cell",
+                        "help": "Number of synaptic contacts of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
                         "suggestions": "",
                         "hintText": ""
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.importCellParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "importCellParams": {
                 "label": "Import .hoc or .py templates",
                 "suggestions": "",
@@ -881,6 +909,10 @@ metadata = {
             }
         }
     },
+
+# ---------------------------------------------------------------------------------------------------------------------
+# simConfig
+# ---------------------------------------------------------------------------------------------------------------------
     "simConfig": {
         "label": "Sim Config",
         "suggestions": "",
@@ -1102,6 +1134,10 @@ metadata = {
                 "help": " Save timing data to pickle file (default: False).",
                 "type": "bool"
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # simConfig.analysis
+    # ---------------------------------------------------------------------------------------------------------------------
             "analysis": {
                 "label": "Analysis",
                 "suggestions": "",

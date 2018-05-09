@@ -525,7 +525,7 @@ metadata = {
                         "type": "list(list(float))"
                     },
                     "synMech": {
-                        "label": "Postsynaptic neuron synaptic mechanism",
+                        "label": "Synaptic mechanism",
                         "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided.",
                         "suggestions": "",
                         "hintText": ""

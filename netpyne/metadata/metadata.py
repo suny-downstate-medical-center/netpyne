@@ -241,7 +241,7 @@ metadata = {
                                         "suggestions": "",
                                         "help": "",
                                         "hintText": "",
-                                        "type": "float"
+                                        "type": "list(list(float))"
                                     },
                                     "nseg": {
                                         "label": "Number of segments, nseg",

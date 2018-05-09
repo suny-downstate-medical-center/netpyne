@@ -537,7 +537,7 @@ metadata = {
                         "hintText": ""
                     },
                     "weight": {
-                        "label": "Strength of synaptic connection",
+                        "label": "Weight of synaptic connection",
                         "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                         "suggestions": "",
                         "hintText": ""
@@ -580,13 +580,13 @@ metadata = {
                         "hintText": ""
                     },
                     "shape": {
-                        "label": "Weight cshape",
+                        "label": "Weight shape",
                         "help": "Modifies the conn weight dynamically during the simulation based on the specified pattern. Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "plasticity": {
-                        "label": "Plasticity mechanism to use for this connection",
+                        "label": "Plasticity mechanism",
                         "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}.",
                         "suggestions": "",
                         "hintText": ""

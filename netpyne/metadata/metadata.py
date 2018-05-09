@@ -922,216 +922,259 @@ metadata = {
             "simLabel": {
                 "label": "Simulation label",
                 "help": "Choose a label for this simulation",
+                "suggestions": "",
                 "type": "str"
             },
             "duration": {
                 "label": "Duration (ms)",
                 "help": "Simulation duration in ms (default: 1000)",
+                "suggestions": "",
                 "type": "float"
             },
             "dt": {
                 "label": "Time step, dt",
                 "help": "simulation time step in ms (default: 0.1)",
+                "suggestions": "",
                 "type": "float"
             },
             "seeds": {
                 "label": "Randomizer seeds",
                 "help": "Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1}).",
+                "suggestions": "",
                 "type": "dict"
             },
             "addSynMechs": {
                 "label": "Add synaptic mechanisms",
                 "help": "Whether to add synaptich mechanisms or not (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "includeParamsLabel": {
                 "label": "Include parameter rule label",
                 "help": " Include label of parameters rule that created that cell, conn or stim (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "timing": {
                 "label": "Show timing",
                 "help": "Show and record timing of each process (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "verbose": {
                 "label": "Verbose mode",
                 "help": "Show detailed messages (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveFolder": {
                 "label": "Output folder",
                 "help": "Path where to save output data (default: '')",
+                "suggestions": "",
                 "type": "str"
             },
             "filename": {
                 "label": "Output file name",
                 "help": "Name of file to save model output (default: 'model_output')",
+                "suggestions": "",
                 "type": "str"
             },
             "saveDataInclude": {
                 "label": "Data to include in output file",
                 "help": "Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])",
+                "suggestions": "",
                 "type": "list(str)"
             },
             "timestampFilename": {
                 "label": "Add timestamp to file name",
                 "help": "Add timestamp to filename to avoid overwriting (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "savePickle": {
                 "label": "Save as Pickle",
                 "help": "Save data to pickle file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveJson": {
                 "label": "Save as JSON",
                 "help": "Save dat to json file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveMat": {
                 "label": "Save as MAT",
                 "help": "Save data to mat file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveHDF5": {
                 "label": "Save as HDF5",
                 "help": "Save data to save to HDF5 file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveDpk": {
                 "label": "Save as DPK",
                 "help": "Save data to .dpk pickled file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "checkErrors": {
                 "label": "Check parameter errors",
                 "help": "check for errors (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "checkErrorsVerbose": {
                 "label": "Check parameter errors verbose mode",
                 "help": "check errors vervose (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "backupCfgFile": {
                 "label": "Copy simulation configuration file to this folder:",
                 "help": "Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: []).",
+                "suggestions": "",
                 "type": "list(float)"
             },
             "recordCells": {
                 "label": "Cells to record traces from",
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
+                "suggestions": "",
                 "type": "list(list)"
             },
             "saveCSV": {
                 "label": "Save as CVS",
                 "help": "save cvs file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveDat": {
                 "label": "Save as DAT ",
                 "help": "save .dat file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveCellSecs": {
                 "label": "Store cell sections after simulation",
                 "help": "Save cell sections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveCellConns": {
                 "label": "Store cell connections after simulation",
                 "help": "Save cell connections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordStim": {
                 "label": "Record spikes of artificial stimulators (NetStims and VecStims)",
                 "help": "Record spikes of NetStims and VecStims (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordTraces": {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
+                "suggestions": "",
                 "type": "dict"
             },
             "recordLFP": {
                 "label": "Record LFP electrode locations",
                 "help": "3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
+                "suggestions": "",
                 "type": "list(list(float))"
             },
             "saveLFPCells": {
                 "label": "Store LFP of individual cells",
                 "help": "Store LFP generated individually by each cell in sim.allSimData['LFPCells'].",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordStep": {
                 "label": "Time step for data recording (ms)",
                 "help": "Step size in ms for data recording (default: 0.1).",
+                "suggestions": "",
                 "type": "float"
             },
             "printRunTime": { 
                 "label": "Interval to print run time at (s)",
                 "help": "Print run time at interval (in sec) specified here (eg. 0.1) (default: False).",
+                "suggestions": "",
                 "type": "float"
             },
             "printSynsAfterRule": { 
                 "label": "Print total connections",
                 "help": "Print total connections after each conn rule is applied.",
+                "suggestions": "",
                 "type": "bool"
             },
             "printPopAvgRates": {
                 "label": "Print population average firing rates",
                 "help": "Print population avg firing rates after run (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "connRandomSecFromList": {
                 "label": "Select random sections from list for connection",
                 "help": "Select random section (and location) from list even when synsPerConn=1 (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "compactConnFormat": {
                 "label": "Use compact connection format (list instead of dicT)",
                 "help": "Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "gatherOnlySimData": {
                 "label": "Gather only simulation output data",
                 "help": "Omits gathering of net and cell data thus reducing gatherData time (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "createPyStruct": {
                 "label": "Create Python structure",
                 "help": "Create Python structure (simulator-independent) when instantiating network (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "createNEURONObj": {
                 "label": "Create NEURON objects",
                 "help": "Create runnable network in NEURON when instantiating netpyne network metadata (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "cvode_active": {
                 "label": "use CVode",
                 "help": "Use CVode variable time step (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "cache_efficient": {
                 "label": "use CVode cache_efficient",
                 "help": "Use CVode cache_efficient option to optimize load when running on many cores (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "hParams": {
                 "label": "Set global parameters (temperature, initial voltage, etc)",
                 "help": "Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001}).",
+                "suggestions": "",
                 "type": "dict"
             },
             "saveTxt": {
                 "label": "Save as TXT",
                 "help": "Save data to txt file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveTiming": {
                 "label": "Save timing data to file",
                 "help": " Save timing data to pickle file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
 
@@ -1152,6 +1195,7 @@ metadata = {
                         "children": {
                             "include": {
                                 "label": "Cells to include",
+                                "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "str"
@@ -1527,7 +1571,9 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "Cells to include",                               "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "label": "Cells to include",           
+                                "suggestions": "",                    
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },

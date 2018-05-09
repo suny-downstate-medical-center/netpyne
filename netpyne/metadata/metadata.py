@@ -858,48 +858,48 @@ metadata = {
     # netParams.importCellParams
     # ---------------------------------------------------------------------------------------------------------------------
             "importCellParams": {
-                "label": "Import .hoc or .py templates",
+                "label": "Import cell from .hoc or .py templates",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
                 "children": {
                     "fileName": {
-                        "label": "absolute path to file",
+                        "label": "Absolute path to file",
                         "help": "Absolute path to .hoc or .py template file.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "cellName": {
-                        "label": "template name",
-                        "help": "Template name defined inside .hoc or .py file",
+                        "label": "Cell template/class name",
+                        "help": "Template or class name defined inside the .hoc or .py file",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "label": {
-                        "label": "cell rule label",
+                        "label": "Cell rule label",
                         "help": "Give a name to this cell rule.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "importSynMechs": {
-                        "label": "import synaptic mechanisms",
-                        "help": "If true, synaptic mechanisms will also be imported. (default: False)",
+                        "label": "Import synaptic mechanisms",
+                        "help": "If true, synaptic mechanisms will also be imported from the file. (default: False)",
                         "suggestions": "",
                         "hintText": "",
                         "type": "bool"
                     },
                     "compileMod": {
-                        "label": "compile mod files",
+                        "label": "Compile mod files",
                         "help": "If true, mod files will be compiled before importing the cell. (default: false)",
                         "suggestions": "",
                         "hintText": "",
                         "type": "bool"
                     },
                     "modFolder": {
-                        "label": "path to mod folder",
+                        "label": "Path to mod folder",
                         "help": "Define the absolute path to the folder containing the mod files.",
                         "suggestions": "",
                         "hintText": "",
@@ -914,198 +914,198 @@ metadata = {
 # simConfig
 # ---------------------------------------------------------------------------------------------------------------------
     "simConfig": {
-        "label": "Sim Config",
+        "label": "Simulation Configuration",
         "suggestions": "",
         "help": "",
         "hintText": "",
         "children": {
             "simLabel": {
-                "label": "simulation name",
-                "help": "Choose a name for this simulation",
+                "label": "Simulation label",
+                "help": "Choose a label for this simulation",
                 "type": "str"
             },
             "duration": {
-                "label": "Duration",
-                "help": "simulation duration in ms (default: 1000)",
+                "label": "Duration (ms)",
+                "help": "Simulation duration in ms (default: 1000)",
                 "type": "float"
             },
             "dt": {
-                "label": "Dt",
+                "label": "Time step, dt",
                 "help": "simulation time step in ms (default: 0.1)",
                 "type": "float"
             },
             "seeds": {
-                "label": "Seeds",
+                "label": "Randomizer seeds",
                 "help": "Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1}).",
                 "type": "dict"
             },
             "addSynMechs": {
-                "label": "Add Syn Mechs",
+                "label": "Add synaptic mechanisms",
                 "help": "Whether to add synaptich mechanisms or not (default: True).",
                 "type": "bool"
             },
             "includeParamsLabel": {
-                "label": "Include Params Label",
-                "help": " Include label of param rule that created that cell, conn or stim (default: True).",
+                "label": "Include parameter rule label",
+                "help": " Include label of parameters rule that created that cell, conn or stim (default: True).",
                 "type": "bool"
             },
             "timing": {
-                "label": "Timing",
+                "label": "Show timing",
                 "help": "Show and record timing of each process (default: True).",
                 "type": "bool"
             },
             "verbose": {
-                "label": "Verbose",
+                "label": "Verbose mode",
                 "help": "Show detailed messages (default: False).",
                 "type": "bool"
             },
             "saveFolder": {
-                "label": "Save Folder",
+                "label": "Output folder",
                 "help": "Path where to save output data (default: '')",
                 "type": "str"
             },
             "filename": {
-                "label": "File Name",
+                "label": "Output file name",
                 "help": "Name of file to save model output (default: 'model_output')",
                 "type": "str"
             },
             "saveDataInclude": {
-                "label": "Save Data Include",
+                "label": "Data to include in output file",
                 "help": "Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])",
                 "type": "list(str)"
             },
             "timestampFilename": {
-                "label": "add timestamp to file name",
+                "label": "Add timestamp to file name",
                 "help": "Add timestamp to filename to avoid overwriting (default: False)",
                 "type": "bool"
             },
             "savePickle": {
-                "label": "Save Pickle",
+                "label": "Save as Pickle",
                 "help": "Save data to pickle file (default: False).",
                 "type": "bool"
             },
             "saveJson": {
-                "label": "Save Json",
+                "label": "Save as JSON",
                 "help": "Save dat to json file (default: False).",
                 "type": "bool"
             },
             "saveMat": {
-                "label": "Save MAT",
-                "help": " Save data to mat file (default: False).",
+                "label": "Save as MAT",
+                "help": "Save data to mat file (default: False).",
                 "type": "bool"
             },
             "saveHDF5": {
-                "label": "Save HDF5",
+                "label": "Save as HDF5",
                 "help": "Save data to save to HDF5 file (default: False).",
                 "type": "bool"
             },
             "saveDpk": {
-                "label": "Save DPK",
-                "help": " Save data to .dpk pickled file (default: False).",
+                "label": "Save as DPK",
+                "help": "Save data to .dpk pickled file (default: False).",
                 "type": "bool"
             },
             "checkErrors": {
-                "label": "Check Errors",
+                "label": "Check parameter errors",
                 "help": "check for errors (default: False).",
                 "type": "bool"
             },
             "checkErrorsVerbose": {
-                "label": "Check Errors Verbose",
+                "label": "Check parameter errors verbose mode",
                 "help": "check errors vervose (default: False)",
                 "type": "bool"
             },
             "backupCfgFile": {
-                "label": "Copy config file to folder:",
+                "label": "Copy simulation configuration file to this folder:",
                 "help": "Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: []).",
                 "type": "list(float)"
             },
             "recordCells": {
-                "label": "record cells",
+                "label": "Cells to record traces from",
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
                 "type": "list(list)"
             },
             "saveCSV": {
-                "label": "save .cvs file",
+                "label": "Save as CVS",
                 "help": "save cvs file (default: False)",
                 "type": "bool"
             },
             "saveDat": {
-                "label": "save .dat file",
+                "label": "Save as DAT ",
                 "help": "save .dat file (default: False)",
                 "type": "bool"
             },
             "saveCellSecs": {
-                "label": "save cell secs",
-                "help": "save cell secs (default: True)",
+                "label": "Store cell sections after simulation",
+                "help": "Save cell sections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
                 "type": "bool"
             },
             "saveCellConns": {
-                "label": "save cell conns",
-                "help": "save cell connections. (default: True)",
+                "label": "Store cell connections after simulation",
+                "help": "Save cell connections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
                 "type": "bool"
             },
             "recordStim": {
-                "label": "record spikes of cell stims",
-                "help": "Record spikes of cell stims (default: False).",
+                "label": "Record spikes of artificial stimulators (NetStims and VecStims)",
+                "help": "Record spikes of NetStims and VecStims (default: False).",
                 "type": "bool"
             },
             "recordTraces": {
-                "label": "record traces",
+                "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
                 "type": "dict"
             },
             "recordLFP": {
-                "label": "record LFP",
-                "help": " 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
+                "label": "Record LFP electrode locations",
+                "help": "3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
                 "type": "list(list(float))"
             },
             "saveLFPCells": {
-                "label": "Store LFP",
+                "label": "Store LFP of individual cells",
                 "help": "Store LFP generated individually by each cell in sim.allSimData['LFPCells'].",
                 "type": "bool"
             },
             "recordStep": {
-                "label": "step size for data recording",
+                "label": "Time step for data recording (ms)",
                 "help": "Step size in ms for data recording (default: 0.1).",
                 "type": "float"
             },
             "printRunTime": { 
-                "label": "print run time at intervals:",
+                "label": "Interval to print run time at (s)",
                 "help": "Print run time at interval (in sec) specified here (eg. 0.1) (default: False).",
                 "type": "float"
             },
             "printSynsAfterRule": { 
-                "label": "print total connections",
+                "label": "Print total connections",
                 "help": "Print total connections after each conn rule is applied.",
                 "type": "bool"
             },
             "printPopAvgRates": {
-                "label": "print pop average firing rates",
+                "label": "Print population average firing rates",
                 "help": "Print population avg firing rates after run (default: False).",
                 "type": "bool"
             },
             "connRandomSecFromList": {
-                "label": "select sections at random",
-                "help": "{Select random section (and location) from list even when synsPerConn=1 (default: True).",
+                "label": "Select random sections from list for connection",
+                "help": "Select random section (and location) from list even when synsPerConn=1 (default: True).",
                 "type": "bool"
             },
             "compactConnFormat": {
-                "label": "replace dict format with compact list for conns",
+                "label": "Use compact connection format (list instead of dicT)",
                 "help": "Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False).",
                 "type": "bool"
             },
             "gatherOnlySimData": {
-                "label": "gather only sim data",
+                "label": "Gather only simulation output data",
                 "help": "Omits gathering of net and cell data thus reducing gatherData time (default: False).",
                 "type": "bool"
             },
             "createPyStruct": {
-                "label": "create python structure",
+                "label": "Create Python structure",
                 "help": "Create Python structure (simulator-independent) when instantiating network (default: True).",
                 "type": "bool"
             },
             "createNEURONObj": {
-                "label": "create NEURON object",
+                "label": "Create NEURON objects",
                 "help": "Create runnable network in NEURON when instantiating netpyne network metadata (default: True).",
                 "type": "bool"
             },
@@ -1120,17 +1120,17 @@ metadata = {
                 "type": "bool"
             },
             "hParams": {
-                "label": "define temperature, initial voltage, etc",
+                "label": "Set global parameters (temperature, initial voltage, etc)",
                 "help": "Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001}).",
                 "type": "dict"
             },
             "saveTxt": {
-                "label": "Save txt",
+                "label": "Save as TXT",
                 "help": "Save data to txt file (default: False)",
                 "type": "bool"
             },
             "saveTiming": {
-                "label": "Save timing to pickle file",
+                "label": "Save timing data to file",
                 "help": " Save timing data to pickle file (default: False).",
                 "type": "bool"
             },
@@ -1145,34 +1145,33 @@ metadata = {
                 "hintText": "",
                 "children": {
                     "plotRaster": {
-                        "label": "Raster Plot",
+                        "label": "Raster plot",
                         "suggestions": "",
                         "help": "Plot raster (spikes over time) of network cells.",
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to raster",
-                                "suggestions": "",
+                                "label": "Cells to include",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "str"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
                                 "type": "list(int)"
                             },
                             "maxSpikes": {
-                                "label": "maximum number of spikes",
+                                "label": "Maximum number of spikes to plot",
                                 "suggestions": "",
                                 "help": "maximum number of spikes that will be plotted (int).",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "orderBy": {
-                                "label": "order by",
+                                "label": "Order by",
                                 "suggestions": "",
                                 "help": "Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)",
                                 "hintText": "",
@@ -1184,21 +1183,21 @@ metadata = {
                                 "type": "str"
                             },
                             "orderInverse": {
-                                "label": "invert y-axis",
+                                "label": "Invert y-axis",
                                 "suggestions": "",
                                 "help": "Invert the y-axis order (True|False)",
                                 "hintText": "",
                                 "type": "bool"
                             },
                             "labels": {
-                                "label": "labels",
+                                "label": "Population labels",
                                 "suggestions": "",
                                 "help": "Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))",
                                 "hintText": "",
                                 "type": "str"
                             },
                             "popRates": {
-                                "label": "include rates",
+                                "label": "Include population rates",
                                 "suggestions": "",
                                 "help": "Include population rates ('legend'|'overlay')",
                                 "hintText": "",
@@ -1209,7 +1208,7 @@ metadata = {
                                 "type": "str"
                             },
                             "spikeHist": {
-                                "label": "overlay spike histogram",
+                                "label": "Overlay spike histogram",
                                 "suggestions": "",
                                 "help": "overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')",
                                 "hintText": "",
@@ -1221,14 +1220,14 @@ metadata = {
                                 "type": "str"
                             },
                             "spikeHistBin": {
-                                "label": "bin size for histogram",
+                                "label": "Bin size for histogram",
                                 "suggestions": "",
                                 "help": "Size of bin in ms to use for histogram (int)",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "syncLines": {
-                                "label": "synchronize lines",
+                                "label": "Synchronization lines",
                                 "suggestions": "",
                                 "help": "calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)",
                                 "hintText": "",
@@ -1249,7 +1248,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1271,14 +1270,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to histogram",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1335,7 +1334,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1357,14 +1356,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to RatePSD",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "Time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1427,7 +1426,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1449,14 +1448,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to SpikeStats",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1507,7 +1506,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName').",
                                 "hintText": "",
@@ -1529,14 +1528,12 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "trace ",
-                                "suggestions": "",
-                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "label": "Cells to include",                               "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1582,7 +1579,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1624,7 +1621,7 @@ metadata = {
                                 "type": "str"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1694,7 +1691,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1825,7 +1822,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1847,7 +1844,7 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to 2Dnet",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
@@ -1886,7 +1883,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1908,7 +1905,7 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to connectivity",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
@@ -1968,7 +1965,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -2018,7 +2015,7 @@ metadata = {
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
@@ -2060,7 +2057,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -2110,7 +2107,7 @@ metadata = {
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "Time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
@@ -2145,7 +2142,7 @@ metadata = {
                                 "type": "str"
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",

@@ -1248,7 +1248,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Save figure file name",name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1335,7 +1335,6 @@ metadata = {
                             },
                             "saveFig": {
                                 "label": "Save figure file name",
-                                "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
                                 "type": ""

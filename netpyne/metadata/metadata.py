@@ -1,4 +1,8 @@
 metadata = {
+
+# ---------------------------------------------------------------------------------------------------------------------
+# netParams
+# ---------------------------------------------------------------------------------------------------------------------
     "netParams": {
         "label": "Network Parameters",
         "suggestions": "",
@@ -153,6 +157,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.cellParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "cellParams": {
                 "label": "Cell Parameters",
                 "suggestions": "",
@@ -279,7 +287,7 @@ metadata = {
                                         "help": "initial x, y, z, Diam and then final x, y, z, Diam",
                                         "suggestions": "",
                                         "hintText": "",
-                                        "type": "list(int)"
+                                        "type": "list(list(float))"
                                     },
                                     "nseg": {
                                         "label": "Number of segments, nseg",
@@ -372,6 +380,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.synMechParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "synMechParams": {
                 "label": "Synaptic mechanism parameters",
                 "suggestions": "",
@@ -410,6 +422,10 @@ metadata = {
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.connParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "connParams": {
                 "label": "Connectivity parameters",
                 "suggestions": "",
@@ -574,7 +590,7 @@ metadata = {
                         "type": "list(list(float))"
                     },
                     "synMech": {
-                        "label": "Postsynaptic neuron synaptic mechanism",
+                        "label": "Synaptic mechanism",
                         "help": "Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. 'AMPA' or ['AMPA', 'NMDA']). If omitted employs first synaptic mechanism in the cell synaptic mechanisms list. If have list, a separate connection is created to each synMech; and a list of weights, delays and or locs can be provided.",
                         "suggestions": "",
                         "hintText": ""
@@ -586,7 +602,7 @@ metadata = {
                         "hintText": ""
                     },
                     "weight": {
-                        "label": "Strength of synaptic connection",
+                        "label": "Weight of synaptic connection",
                         "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                         "suggestions": "",
                         "hintText": ""
@@ -629,19 +645,23 @@ metadata = {
                         "hintText": ""
                     },
                     "shape": {
-                        "label": "Weight cshape",
+                        "label": "Weight shape",
                         "help": "Modifies the conn weight dynamically during the simulation based on the specified pattern. Contains a dictionary with the following fields: 'switchOnOff' - times at which to switch on and off the weight, 'pulseType' - type of pulse to generate; either 'square' or 'gaussian', 'pulsePeriod' - period (in ms) of the pulse, 'pulseWidth' - width (in ms) of the pulse.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "plasticity": {
-                        "label": "Plasticity mechanism to use for this connection",
+                        "label": "Plasticity mechanism",
                         "help": "Requires 2 fields: mech to specifiy the name of the plasticity mechanism, and params containing a dictionary with the parameters of the mechanism, e.g. {'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}.",
                         "suggestions": "",
                         "hintText": ""
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.stimSourceParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "stimSourceParams": {
                 "label": "Stimulation source parameters",
                 "suggestions": "",
@@ -688,8 +708,8 @@ metadata = {
                         "hintText": ""
                     },
                     "gain": {
-                        "label": "Amplifier gain",
-                        "help": "Define amplifier gain.",
+                        "label": "Voltage clamp amplifier gain",
+                        "help": "Voltage clamp amplifier gain.",
                         "suggestions": "",
                         "hintText": ""
                     },
@@ -700,108 +720,112 @@ metadata = {
                         "hintText": ""
                     },
                     "start": {
-                        "label": "Start time for the first spike ",
+                        "label": "Start time of first spike",
                         "help": "Define the start time for the first spike.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "noise": {
-                        "label": "Noise level ",
+                        "label": "Noise/randomness fraction (0-1)",
                         "help": "Fractional noise, 0 <= noise <= 1, means that an interval between spikes consists of a fixed interval of duration (1 - noise)*interval plus a negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau1": {
-                        "label": "Time response for the read voltage.",
-                        "help": "Set the time response for the voltage read from cell.",
+                        "label": "Voltage clamp tau1",
+                        "help": "Voltage clamp tau1.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau2": {
-                        "label": "Time response for the voltage inserted into the cell",
-                        "help": ".",
+                        "label": "Voltage clamp tau2",
+                        "help": "Voltage clamp tau2.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "i": {
-                        "label": "Current [nA]",
-                        "help": "Inyected current in nA.",
+                        "label": "Voltage clamp current (nA)",
+                        "help": "Voltage clamp injected current in nA.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "onset": {
-                        "label": "Time delay for alpha conductance application ",
-                        "help": ".",
+                        "label": "Alpha synapse onset time (ms)",
+                        "help": "Alpha synapse onset time.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "tau": {
-                        "label": "Alpha function time response",
-                        "help": "Define time response for the Alpha function.",
+                        "label": "Alpha synapse time constant (ms)",
+                        "help": "Alpha synapse time constant (ms).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "gmax": {
-                        "label": "Maximum Conductance",
-                        "help": "Define the maximum conductance for the alpha function.",
+                        "label": "Alpha synapse maximum conductance",
+                        "help": "Alpha synapse maximum conductance.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "e": {
-                        "label": "Reference Voltage",
-                        "help": "Define the reference voltage.",
+                        "label": "Alpha synapse equilibrium potential",
+                        "help": "Alpha synapse equilibrium potential.",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "rs": {
-                        "label": "Resistance [MOhm]",
-                        "help": "Define the resistance between the reference voltage and the cell.",
+                        "label": "Voltage clamp resistance (MOhm)",
+                        "help": "Voltage clamp resistance (MOhm).",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "vc": {
-                        "label": "Reference Voltage [mV]",
-                        "help": "Define the reference Voltage.",
+                        "label": "Voltage clamp reference voltage (mV)",
+                        "help": "Voltage clamp reference voltage (mV).",
                         "suggestions": "",
                         "hintText": ""
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.stimTargetParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "stimTargetParams": {
-                "label": "Stimulation Target Params",
+                "label": "Stimulation target parameters",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
                 "children": {
                     "source": {
-                        "label": "Label of the stimulation source",
+                        "label": "Stimulation source",
                         "help": "Label of the stimulation source (e.g. 'electrode_current').",
                         "suggestions": "",
                         "hintText": ""
                     },
                     "conds": {
-                        "label": "Conditions of cells where the stim will be applied",
-                        "help": "Conditions of cells where the stim will be applied. Dictionary with conditions of cells where the stim will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
+                        "label": "Conditions of cells where the stimulation will be applied",
+                        "help": "Conditions of cells where the stimulation will be applied. Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]}).",
                         "suggestions": "",
                         "hintText": "",
                         "children": {
                             "pop": {
-                                "label": "Target Population",
-                                "help": "Select the population targets e.g. {'pop': ['Exc1', 'Exc2']}",
+                                "label": "Target population",
+                                "help": "Populations that will receive the stimulation e.g. {'pop': ['Exc1', 'Exc2']}",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
                             },
                             "cellType": {
-                                "label": "Target Cell Type",
-                                "suggestions": "",
-                                "help": "Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)",
+                                "label": "Target cell type",
+                                "suggestions": "Cell types that will receive the stimulation",
+                                "help": "",
                                 "hintText": "",
                                 "type": "str"
                             }, 
                             "cellModel": {
-                                "label": "Target Cell Model",
-                                "help": "Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich2007 point neuron model).",
+                                "label": "Target cell model",
+                                "help": "Cell models that will receive the stimulation.",
                                 "suggestions": [
                                     "HH",
                                     "IntFire1"
@@ -810,14 +834,13 @@ metadata = {
                             },
                             "xRange": {
                                 "label": "X-axis range (um)",
-                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
                                 "suggestions": "",
+                                "help": "Cells within this x-axis locations will receive stimulation",
                                 "hintText": "",
                                 "type": "list(float)"
                             },
                             "xnormRange": {
                                 "label": "X-axis normalized range (0-1)",
-                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "default": [
@@ -825,38 +848,39 @@ metadata = {
                                     1
                                 ],
                                 "type": "list(float)"
+                                "help": "Cells within this y-axis locations will receive stimulation",
                             },
                             "yRange": {
                                 "label": "Y-axis range (um)",
-                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
+                                "help": "Cells within this z-axis locations will receive stimulation",
                             },
                             "ynormRange": {
                                 "label": "Y-axis normalized range (0-1)",
-                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
+                                "help": "Cells withing this normalized x-axis locations will receive stimulation",
                             },
                             "zRange": {
                                 "label": "Z-axis range (um)",
-                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
+                                "help": "Cells within this normalized y-axis locations will receive stimulation",
                             },
                             "znormRange": {
                                 "label": "Z-axis normalized range (0-1)",
-                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
+                                "help": "Cells within this normalized z-axis locations will receive stimulation",
                             },
                             "cellList": {
-                                "label": "Target Cell Index",
-                                "help": "Indices of neuron to be included in the application of this stimulation. ([1, 8, 12])",
+                                "label": "Target cell global indices (gids)",
+                                "help": "Global indices (gids) of neurons to receive stimulation. ([1, 8, 12])",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(float)"
@@ -872,14 +896,14 @@ metadata = {
                         "type": "str"
                     },
                     "loc": {
-                        "label": "Target location ",
+                        "label": "Target location",
                         "help": "Target location (default: 0.5). Can be defined as a function (see Functions as strings).",
                         "suggestions": "",
                         "hintText": "",
                         "type": "float"
                     },
                     "synMech": {
-                        "label": "Synaptic mechanism label to connect NetStim to",
+                        "label": "Target synaptic mechanism",
                         "help": "Synaptic mechanism label to connect NetStim to. Optional; only for NetStims.",
                         "suggestions": "",
                         "hintText": ""
@@ -897,56 +921,60 @@ metadata = {
                         "hintText": ""
                     },
                     "synsPerConn": {
-                        "label": "Number of synapses of connection between NetStim and cell",
-                        "help": "Number of synapses of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
+                        "label": "Number of synaptic contacts per connection between NetStim and cell",
+                        "help": "Number of synaptic contacts of connection between NetStim and cell (default: 1). Optional; only for NetStims. Can be defined as a function (see Functions as strings).",
                         "suggestions": "",
                         "hintText": ""
                     }
                 }
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # netParams.importCellParams
+    # ---------------------------------------------------------------------------------------------------------------------
             "importCellParams": {
-                "label": "Import .hoc or .py templates",
+                "label": "Import cell from .hoc or .py templates",
                 "suggestions": "",
                 "help": "",
                 "hintText": "",
                 "children": {
                     "fileName": {
-                        "label": "absolute path to file",
+                        "label": "Absolute path to file",
                         "help": "Absolute path to .hoc or .py template file.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "cellName": {
-                        "label": "template name",
-                        "help": "Template name defined inside .hoc or .py file",
+                        "label": "Cell template/class name",
+                        "help": "Template or class name defined inside the .hoc or .py file",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "label": {
-                        "label": "cell rule label",
+                        "label": "Cell rule label",
                         "help": "Give a name to this cell rule.",
                         "suggestions": "",
                         "hintText": "",
                         "type": "str"
                     },
                     "importSynMechs": {
-                        "label": "import synaptic mechanisms",
-                        "help": "If true, synaptic mechanisms will also be imported. (default: False)",
+                        "label": "Import synaptic mechanisms",
+                        "help": "If true, synaptic mechanisms will also be imported from the file. (default: False)",
                         "suggestions": "",
                         "hintText": "",
                         "type": "bool"
                     },
                     "compileMod": {
-                        "label": "compile mod files",
+                        "label": "Compile mod files",
                         "help": "If true, mod files will be compiled before importing the cell. (default: false)",
                         "suggestions": "",
                         "hintText": "",
                         "type": "bool"
                     },
                     "modFolder": {
-                        "label": "path to mod folder",
+                        "label": "Path to mod folder",
                         "help": "Define the absolute path to the folder containing the mod files.",
                         "suggestions": "",
                         "hintText": "",
@@ -956,227 +984,278 @@ metadata = {
             }
         }
     },
+
+# ---------------------------------------------------------------------------------------------------------------------
+# simConfig
+# ---------------------------------------------------------------------------------------------------------------------
     "simConfig": {
-        "label": "Sim Config",
+        "label": "Simulation Configuration",
         "suggestions": "",
         "help": "",
         "hintText": "",
         "children": {
             "simLabel": {
-                "label": "simulation name",
-                "help": "Choose a name for this simulation",
+                "label": "Simulation label",
+                "help": "Choose a label for this simulation",
+                "suggestions": "",
                 "type": "str"
             },
             "duration": {
-                "label": "Duration",
-                "help": "simulation duration in ms (default: 1000)",
+                "label": "Duration (ms)",
+                "help": "Simulation duration in ms (default: 1000)",
+                "suggestions": "",
                 "type": "float"
             },
             "dt": {
-                "label": "Dt",
+                "label": "Time step, dt",
                 "help": "simulation time step in ms (default: 0.1)",
+                "suggestions": "",
                 "type": "float"
             },
             "seeds": {
-                "label": "Seeds",
+                "label": "Randomizer seeds",
                 "help": "Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1}).",
+                "suggestions": "",
                 "type": "dict"
             },
             "addSynMechs": {
-                "label": "Add Syn Mechs",
+                "label": "Add synaptic mechanisms",
                 "help": "Whether to add synaptich mechanisms or not (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "includeParamsLabel": {
-                "label": "Include Params Label",
-                "help": " Include label of param rule that created that cell, conn or stim (default: True).",
+                "label": "Include parameter rule label",
+                "help": " Include label of parameters rule that created that cell, conn or stim (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "timing": {
-                "label": "Timing",
+                "label": "Show timing",
                 "help": "Show and record timing of each process (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "verbose": {
-                "label": "Verbose",
+                "label": "Verbose mode",
                 "help": "Show detailed messages (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveFolder": {
-                "label": "Save Folder",
+                "label": "Output folder",
                 "help": "Path where to save output data (default: '')",
+                "suggestions": "",
                 "type": "str"
             },
             "filename": {
-                "label": "File Name",
+                "label": "Output file name",
                 "help": "Name of file to save model output (default: 'model_output')",
+                "suggestions": "",
                 "type": "str"
             },
             "saveDataInclude": {
-                "label": "Save Data Include",
+                "label": "Data to include in output file",
                 "help": "Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])",
+                "suggestions": "",
                 "type": "list(str)"
             },
             "timestampFilename": {
-                "label": "add timestamp to file name",
+                "label": "Add timestamp to file name",
                 "help": "Add timestamp to filename to avoid overwriting (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "savePickle": {
-                "label": "Save Pickle",
+                "label": "Save as Pickle",
                 "help": "Save data to pickle file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveJson": {
-                "label": "Save Json",
+                "label": "Save as JSON",
                 "help": "Save dat to json file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveMat": {
-                "label": "Save MAT",
-                "help": " Save data to mat file (default: False).",
+                "label": "Save as MAT",
+                "help": "Save data to mat file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveHDF5": {
-                "label": "Save HDF5",
+                "label": "Save as HDF5",
                 "help": "Save data to save to HDF5 file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveDpk": {
-                "label": "Save DPK",
-                "help": " Save data to .dpk pickled file (default: False).",
+                "label": "Save as DPK",
+                "help": "Save data to .dpk pickled file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "checkErrors": {
-                "label": "Check Errors",
+                "label": "Check parameter errors",
                 "help": "check for errors (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "checkErrorsVerbose": {
-                "label": "Check Errors Verbose",
+                "label": "Check parameter errors verbose mode",
                 "help": "check errors vervose (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "backupCfgFile": {
-                "label": "Copy config file to folder:",
+                "label": "Copy simulation configuration file to this folder:",
                 "help": "Copy cfg file to folder, eg. ['cfg.py', 'backupcfg/'] (default: []).",
+                "suggestions": "",
                 "type": "list(float)"
             },
             "recordCells": {
-                "label": "record cells",
+                "label": "Cells to record traces from",
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
+                "suggestions": "",
                 "type": "list(list)"
             },
             "saveCSV": {
-                "label": "save .cvs file",
+                "label": "Save as CVS",
                 "help": "save cvs file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveDat": {
-                "label": "save .dat file",
+                "label": "Save as DAT ",
                 "help": "save .dat file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveCellSecs": {
-                "label": "save cell secs",
-                "help": "save cell secs (default: True)",
+                "label": "Store cell sections after simulation",
+                "help": "Save cell sections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveCellConns": {
-                "label": "save cell conns",
-                "help": "save cell connections. (default: True)",
+                "label": "Store cell connections after simulation",
+                "help": "Save cell connections after gathering data from nodes post simulation; set to False to reduce memory required (default: True)",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordStim": {
-                "label": "record spikes of cell stims",
-                "help": "Record spikes of cell stims (default: False).",
+                "label": "Record spikes of artificial stimulators (NetStims and VecStims)",
+                "help": "Record spikes of NetStims and VecStims (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordTraces": {
-                "label": "record traces",
+                "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
+                "suggestions": "",
                 "type": "dict"
             },
             "recordLFP": {
-                "label": "record LFP",
-                "help": " 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
+                "label": "Record LFP electrode locations",
+                "help": "3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200]] (default: False).",
+                "suggestions": "",
                 "type": "list(list(float))"
             },
             "saveLFPCells": {
-                "label": "Store LFP",
+                "label": "Store LFP of individual cells",
                 "help": "Store LFP generated individually by each cell in sim.allSimData['LFPCells'].",
+                "suggestions": "",
                 "type": "bool"
             },
             "recordStep": {
-                "label": "step size for data recording",
+                "label": "Time step for data recording (ms)",
                 "help": "Step size in ms for data recording (default: 0.1).",
+                "suggestions": "",
                 "type": "float"
             },
             "printRunTime": { 
-                "label": "print run time at intervals:",
+                "label": "Interval to print run time at (s)",
                 "help": "Print run time at interval (in sec) specified here (eg. 0.1) (default: False).",
+                "suggestions": "",
                 "type": "float"
             },
             "printSynsAfterRule": { 
-                "label": "print total connections",
+                "label": "Print total connections",
                 "help": "Print total connections after each conn rule is applied.",
+                "suggestions": "",
                 "type": "bool"
             },
             "printPopAvgRates": {
-                "label": "print pop average firing rates",
+                "label": "Print population average firing rates",
                 "help": "Print population avg firing rates after run (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "connRandomSecFromList": {
-                "label": "select sections at random",
-                "help": "{Select random section (and location) from list even when synsPerConn=1 (default: True).",
+                "label": "Select random sections from list for connection",
+                "help": "Select random section (and location) from list even when synsPerConn=1 (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "compactConnFormat": {
-                "label": "replace dict format with compact list for conns",
+                "label": "Use compact connection format (list instead of dicT)",
                 "help": "Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "gatherOnlySimData": {
-                "label": "gather only sim data",
+                "label": "Gather only simulation output data",
                 "help": "Omits gathering of net and cell data thus reducing gatherData time (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "createPyStruct": {
-                "label": "create python structure",
+                "label": "Create Python structure",
                 "help": "Create Python structure (simulator-independent) when instantiating network (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "createNEURONObj": {
-                "label": "create NEURON object",
+                "label": "Create NEURON objects",
                 "help": "Create runnable network in NEURON when instantiating netpyne network metadata (default: True).",
+                "suggestions": "",
                 "type": "bool"
             },
             "cvode_active": {
                 "label": "use CVode",
                 "help": "Use CVode variable time step (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "cache_efficient": {
                 "label": "use CVode cache_efficient",
                 "help": "Use CVode cache_efficient option to optimize load when running on many cores (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
             "hParams": {
-                "label": "define temperature, initial voltage, etc",
+                "label": "Set global parameters (temperature, initial voltage, etc)",
                 "help": "Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001}).",
+                "suggestions": "",
                 "type": "dict"
             },
             "saveTxt": {
-                "label": "Save txt",
+                "label": "Save as TXT",
                 "help": "Save data to txt file (default: False)",
+                "suggestions": "",
                 "type": "bool"
             },
             "saveTiming": {
-                "label": "Save timing to pickle file",
+                "label": "Save timing data to file",
                 "help": " Save timing data to pickle file (default: False).",
+                "suggestions": "",
                 "type": "bool"
             },
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    # simConfig.analysis
+    # ---------------------------------------------------------------------------------------------------------------------
             "analysis": {
                 "label": "Analysis",
                 "suggestions": "",
@@ -1184,34 +1263,34 @@ metadata = {
                 "hintText": "",
                 "children": {
                     "plotRaster": {
-                        "label": "Raster Plot",
+                        "label": "Raster plot",
                         "suggestions": "",
                         "help": "Plot raster (spikes over time) of network cells.",
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to raster",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "str"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
                                 "type": "list(int)"
                             },
                             "maxSpikes": {
-                                "label": "maximum number of spikes",
+                                "label": "Maximum number of spikes to plot",
                                 "suggestions": "",
                                 "help": "maximum number of spikes that will be plotted (int).",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "orderBy": {
-                                "label": "order by",
+                                "label": "Order by",
                                 "suggestions": "",
                                 "help": "Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)",
                                 "hintText": "",
@@ -1223,21 +1302,21 @@ metadata = {
                                 "type": "str"
                             },
                             "orderInverse": {
-                                "label": "invert y-axis",
+                                "label": "Invert y-axis",
                                 "suggestions": "",
                                 "help": "Invert the y-axis order (True|False)",
                                 "hintText": "",
                                 "type": "bool"
                             },
                             "labels": {
-                                "label": "labels",
+                                "label": "Population labels",
                                 "suggestions": "",
                                 "help": "Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))",
                                 "hintText": "",
                                 "type": "str"
                             },
                             "popRates": {
-                                "label": "include rates",
+                                "label": "Include population rates",
                                 "suggestions": "",
                                 "help": "Include population rates ('legend'|'overlay')",
                                 "hintText": "",
@@ -1248,7 +1327,7 @@ metadata = {
                                 "type": "str"
                             },
                             "spikeHist": {
-                                "label": "overlay spike histogram",
+                                "label": "Overlay spike histogram",
                                 "suggestions": "",
                                 "help": "overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')",
                                 "hintText": "",
@@ -1260,14 +1339,14 @@ metadata = {
                                 "type": "str"
                             },
                             "spikeHistBin": {
-                                "label": "bin size for histogram",
+                                "label": "Bin size for histogram",
                                 "suggestions": "",
                                 "help": "Size of bin in ms to use for histogram (int)",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "syncLines": {
-                                "label": "synchronize lines",
+                                "label": "Synchronization lines",
                                 "suggestions": "",
                                 "help": "calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)",
                                 "hintText": "",
@@ -1288,7 +1367,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1310,14 +1389,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to histogram",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1374,8 +1453,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
-                                "suggestions": "",
+                                "label": "Save figure file name",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
                                 "type": ""
@@ -1396,14 +1474,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to RatePSD",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "Time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1466,7 +1544,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1488,14 +1566,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to SpikeStats",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range of spikes shown; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1546,7 +1624,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName').",
                                 "hintText": "",
@@ -1568,14 +1646,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "trace ",
-                                "suggestions": "",
+                                "label": "Cells to include",           
+                                "suggestions": "",                    
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1621,7 +1699,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1663,7 +1741,7 @@ metadata = {
                                 "type": "str"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Time range for shown Traces ; if None shows all ([start,stop])",
                                 "hintText": "",
@@ -1733,7 +1811,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1864,7 +1942,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1886,7 +1964,7 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cell by index) to 2Dnet",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
@@ -1925,7 +2003,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -1947,7 +2025,7 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "population (or cells by index) to connectivity",
+                                "label": "Cells to include",
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
@@ -2007,7 +2085,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -2057,7 +2135,7 @@ metadata = {
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
@@ -2099,7 +2177,7 @@ metadata = {
                                 "type": ""
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
@@ -2149,7 +2227,7 @@ metadata = {
                                 "type": "list"
                             },
                             "timeRange": {
-                                "label": "Time Range",
+                                "label": "Time range [min,max] (ms)",
                                 "suggestions": "",
                                 "help": "Range of time to calculate nTE in ms ([min, max]).",
                                 "hintText": "",
@@ -2184,7 +2262,7 @@ metadata = {
                                 "type": "str"
                             },
                             "saveFig": {
-                                "label": "Figure Name",
+                                "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",

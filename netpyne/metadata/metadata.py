@@ -174,17 +174,63 @@ metadata = {
                             },
                             "cellType": {
                                 "label": "Cell type",
-                                "suggestions": "Apply the cell rule only to the cells with this cell type attribute/tag.",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell type attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
                             },
                             "cellModel": {
                                 "label": "Cell model",
-                                "suggestions": "Apply the cell rule only to the cells with this cell model attribute/tag",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell model attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
+                            },
+                            "xRange": {
+                                "label": "X-axis range (um)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "xnormRange": {
+                                "label": "X-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "default": [
+                                    0,
+                                    1
+                                ],
+                                "type": "list(float)"
+                            },
+                            "yRange": {
+                                "label": "Y-axis range (um)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "ynormRange": {
+                                "label": "Y-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "zRange": {
+                                "label": "Z-axis range (um)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "znormRange": {
+                                "label": "Z-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(float)"
                             }
                         }
                     },
@@ -230,10 +276,10 @@ metadata = {
                                     },
                                     "pt3d": {
                                         "label": "3D points",
+                                        "help": "initial x, y, z, Diam and then final x, y, z, Diam",
                                         "suggestions": "",
-                                        "help": "",
                                         "hintText": "",
-                                        "type": "float"
+                                        "type": "list(int)"
                                     },
                                     "nseg": {
                                         "label": "Number of segments, nseg",
@@ -394,43 +440,52 @@ metadata = {
                                 "help": "",
                                 "hintText": ""
                             },
-                            "x": {
-                                "label": "Range of x-axis locations",
+                            "xRange": {
+                                "label": "X-axis range (um)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "y": {
-                                "label": "Range of y-axis locations",
+                            "xnormRange": {
+                                "label": "X-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "default": [
+                                    0,
+                                    1
+                                ],
+                                "type": "list(float)"
                             },
-                            "z": {
-                                "label": "Range of z-axis locations",
+                            "yRange": {
+                                "label": "Y-axis range (um)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "xnorm": {
-                                "label": "Range of normalized x-axis locations",
+                            "ynormRange": {
+                                "label": "Y-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "ynorm": {
-                                "label": "Range of normalized y-axis locations",
+                            "zRange": {
+                                "label": "Z-axis range (um)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "znorm": {
-                                "label": "Range of normalized z-axis locations",
+                            "znormRange": {
+                                "label": "Z-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             }
-
                         }
                     },
                     "postConds": {
@@ -457,41 +512,51 @@ metadata = {
                                 "help": "",
                                 "hintText": ""
                             },
-                            "x": {
-                                "label": "Range of x-axis locations",
+                            "xRange": {
+                                "label": "X-axis range (um)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "y": {
-                                "label": "Range of y-axis locations",
+                            "xnormRange": {
+                                "label": "X-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "default": [
+                                    0,
+                                    1
+                                ],
+                                "type": "list(float)"
                             },
-                            "z": {
-                                "label": "Range of z-axis locations",
+                            "yRange": {
+                                "label": "Y-axis range (um)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "xnorm": {
-                                "label": "Range of normalized x-axis locations",
+                            "ynormRange": {
+                                "label": "Y-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "ynorm": {
-                                "label": "Range of normalized y-axis locations",
+                            "zRange": {
+                                "label": "Z-axis range (um)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "znorm": {
-                                "label": "Range of normalized z-axis locations",
+                            "znormRange": {
+                                "label": "Z-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             }
                         }
                     },
@@ -743,41 +808,51 @@ metadata = {
                                 ],
                                 "type": "str"
                             },
-                            "x": {
-                                "label": "Range of x-axis locations",
+                            "xRange": {
+                                "label": "X-axis range (um)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using absolute values in um (e.g.[100, 200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "y": {
-                                "label": "Range of y-axis locations",
+                            "xnormRange": {
+                                "label": "X-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in x-axis (horizontal length), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeX (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "default": [
+                                    0,
+                                    1
+                                ],
+                                "type": "list(float)"
                             },
-                            "z": {
-                                "label": "Range of z-axis locations",
+                            "yRange": {
+                                "label": "Y-axis range (um)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as 2-element list [min, max] using absolute values in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "xnorm": {
-                                "label": "Range of normalized x-axis locations",
+                            "ynormRange": {
+                                "label": "Y-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in y-axis (vertical height=cortical depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeY (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "ynorm": {
-                                "label": "Range of normalized y-axis locations",
+                            "zRange": {
+                                "label": "Z-axis range (um)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using absolute value in um (e.g.[100,200]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
-                            "znorm": {
-                                "label": "Range of normalized z-axis locations",
+                            "znormRange": {
+                                "label": "Z-axis normalized range (0-1)",
+                                "help": "Range of neuron positions in z-axis (horizontal depth), specified as a 2-element list [min, max] using normalized values between 0 and 1 as fraction of sizeZ (e.g.[0.1,0.2]).",
                                 "suggestions": "",
-                                "help": "",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "cellList": {
                                 "label": "Target Cell Index",

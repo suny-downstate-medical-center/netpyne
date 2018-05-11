@@ -182,17 +182,53 @@ metadata = {
                             },
                             "cellType": {
                                 "label": "Cell type",
-                                "suggestions": "Apply the cell rule only to the cells with this cell type attribute/tag.",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell type attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
                             },
                             "cellModel": {
                                 "label": "Cell model",
-                                "suggestions": "Apply the cell rule only to the cells with this cell model attribute/tag",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell model attribute/tag",
                                 "hintText": "",
                                 "type": "list(str)"
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this x-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this y-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this z-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells withing this normalized x-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this normalized y-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this normalized z-axis locations will receive stimulation",
+                                "hintText": ""
                             }
                         }
                     },
@@ -753,18 +789,15 @@ metadata = {
                             },
                             "cellType": {
                                 "label": "Target cell type",
-                                "suggestions": "Cell types that will receive the stimulation",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Cell types that will receive the stimulation",
                                 "hintText": "",
                                 "type": "str"
                             }, 
                             "cellModel": {
                                 "label": "Target cell model",
                                 "help": "Cell models that will receive the stimulation.",
-                                "suggestions": [
-                                    "HH",
-                                    "IntFire1"
-                                ],
+                                "suggestions": "",
                                 "type": "str"
                             },
                             "x": {

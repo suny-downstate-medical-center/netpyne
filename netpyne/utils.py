@@ -109,7 +109,10 @@ def getGlobals (mechNames, origGlob={}):
 
 def setGlobals (glob):
     for k,v in glob.iteritems():
-        setattr(h, k, v)
+        try:
+            setattr(h, k, v)
+        except:
+            pass
 
     # # remove vars are not in glob ?
     # for k in [x for x in dir(h) if x not in exclude]:

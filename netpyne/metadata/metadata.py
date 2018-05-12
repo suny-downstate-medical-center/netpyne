@@ -157,7 +157,103 @@ metadata = {
                     }
                 }
             },
-
+            "scale": {
+                "label": "scale factor",
+                "help": ": Scale factor multiplier for number of cells (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "shape": {
+                "label": "network shape",
+                "help": ": Shape of network: 'cuboid', 'cylinder' or 'ellipsoid' (default: 'cuboid')",
+                "suggestions": "",
+                "hintText": "",
+                "options": [
+                    "cuboid",
+                    "cylinder",
+                    "ellipsoid"
+                ],
+                "type": "str"
+            },
+            "sizeX": {
+                "label": "x-dimension",
+                "help": "x-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "sizeY": {
+                "label": "y-dimension",
+                "help": "y-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "sizeZ": {
+                "label": "z-dimension",
+                "help": "z-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "rotateCellsRandomly": {
+                "label": "random rotation",
+                "help": "Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "list(float)"
+            },
+            "defaultWeight": {
+                "label": "default weight connection",
+                "help": "Default connection weight, in ms (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "defaultDelay": {
+                "label": "default delay",
+                "help": "Default connection delay, in ms (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "propVelocity": {
+                "label": "conduction velocity",
+                "help": "Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeight": {
+                "label": "connection weight scale factor",
+                "help": ": Connection weight scale factor (excludes NetStims) (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeightNetStims": {
+                "label": "connection weight scale factor for NetStims",
+                "help": ": Connection weight scale factor for NetStims (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeightModels": {
+                "label": "Connection weight scale factor for each cell model",
+                "help": "Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})",
+                "suggestions": "",
+                "hintText": "",
+                "type": "dict"
+            },
+            "popTagsCopiedToCells": {
+                "label": "",
+                "help": ": List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])}",
+                "suggestions": "",
+                "hintText": "",
+                "type": "list(float)"
+            },
+            
     # ---------------------------------------------------------------------------------------------------------------------
     # netParams.cellParams
     # ---------------------------------------------------------------------------------------------------------------------
@@ -182,17 +278,53 @@ metadata = {
                             },
                             "cellType": {
                                 "label": "Cell type",
-                                "suggestions": "Apply the cell rule only to the cells with this cell type attribute/tag.",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell type attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
                             },
                             "cellModel": {
                                 "label": "Cell model",
-                                "suggestions": "Apply the cell rule only to the cells with this cell model attribute/tag",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Apply the cell rule only to the cells with this cell model attribute/tag",
                                 "hintText": "",
                                 "type": "list(str)"
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this x-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this y-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this z-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells withing this normalized x-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this normalized y-axis locations will receive stimulation",
+                                "hintText": ""
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within this normalized z-axis locations will receive stimulation",
+                                "hintText": ""
                             }
                         }
                     },
@@ -348,7 +480,12 @@ metadata = {
                         "label": "NMODL mechanism name",
                         "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.",
                         "suggestions": "",
-                        "hintText": ""
+                        "options": [
+                            "ExpSyn",
+                            "Exp2Syn"
+                        ],
+                        "hintText": "",
+                        "type": "str"
                     },
                     "selfNetCon": {
                         "label": "Self NetCon parameters",
@@ -360,19 +497,29 @@ metadata = {
                         "label": "Time constant for exponential 1 (ms)",
                         "help": "Define the time constant for the first exponential.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
                     },
                     "tau2": {
                         "label": "Time constant for exponential 2 (ms)",
                         "help": "Define the time constant for the second exponential.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
                     },
                     "e": {
                         "label": "Reversal potential (mV)",
                         "help": "Reversal potential of the synaptic receptors.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
+                    },
+                    "i": {
+                        "label": "synaptic current (nA)",
+                        "help": "Synaptic current in nA.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "float"
                     }
                 }
             },
@@ -753,18 +900,15 @@ metadata = {
                             },
                             "cellType": {
                                 "label": "Target cell type",
-                                "suggestions": "Cell types that will receive the stimulation",
-                                "help": "",
+                                "suggestions": "",
+                                "help": "Cell types that will receive the stimulation",
                                 "hintText": "",
                                 "type": "str"
                             }, 
                             "cellModel": {
                                 "label": "Target cell model",
                                 "help": "Cell models that will receive the stimulation.",
-                                "suggestions": [
-                                    "HH",
-                                    "IntFire1"
-                                ],
+                                "suggestions": "",
                                 "type": "str"
                             },
                             "x": {

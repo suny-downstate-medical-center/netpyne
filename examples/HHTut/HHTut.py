@@ -79,24 +79,7 @@ simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
-# simConfig.analysis['plotRaster'] = True  # Plot raster
-# simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
-# simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
-
-simConfig.recordLFP = [[10,10,10]]
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 64, 'noverlap': 12, 'nperseg': 16, 'saveFig': True} 
-
-
-from netpyne import sim
-
-sim.initialize (netParams = netParams, simConfig = simConfig)
-sim.saveData()
-
-sim.create(netParams, simConfig)
-#sim.net.defineCellShapes()  # creates 3d pt for cells with stylized geometries
-sim.gatherData(gatherLFP=0)
-sim.simulate()
-args = simConfig.analysis['plotLFP']
-args['plots'] = ['spectrogram']
-sim.analysis.plotLFP(**args)
+simConfig.analysis['plotRaster'] = True  # Plot raster
+simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 

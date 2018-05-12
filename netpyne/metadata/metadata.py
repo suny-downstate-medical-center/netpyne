@@ -103,7 +103,7 @@ metadata = {
                         "label": "Spike interval (ms)",
                         "help": "Spike interval in ms.",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "50",
                         "type": "list(float)"
                     },
                     "rate": {
@@ -117,14 +117,14 @@ metadata = {
                         "label": "Noise fraction (0-1)",
                         "help": "Fraction of noise in NetStim (0 = deterministic; 1 = completely random).",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "0.5",
                         "type": "list(float)"
                     },
                     "start": {
                         "label": "Start time (ms)",
                         "help": "Time of first spike in ms (default = 0).",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "0",
                         "type": "list(float)"
                     },
                     "number": {
@@ -342,30 +342,33 @@ metadata = {
                                 "children": {
                                     "diam": {
                                         "label": "Diameter (um)",
+                                        "default": 10,
                                         "suggestions": "",
                                         "help": "",
-                                        "hintText": "",
+                                        "hintText": "10",
                                         "type": "float"
                                     },
                                     "L": {
                                         "label": "Length (um)",
+                                        "default": 50,
                                         "suggestions": "",
                                         "help": "",
-                                        "hintText": "",
+                                        "hintText": "50",
                                         "type": "float"
                                     },
                                     "Ra": {
                                         "label": "Axial resistance, Ra (ohm-cm)",
+                                        "default": 100,
                                         "suggestions": "",
                                         "help": "",
-                                        "hintText": "",
+                                        "hintText": "100",
                                         "type": "float"
                                     },
                                     "cm": {
                                         "label": "Membrane capacitance, cm (uF/cm2)",
                                         "suggestions": "",
                                         "help": "",
-                                        "hintText": "",
+                                        "hintText": "1",
                                         "type": "float"
                                     },
                                     "pt3d": {
@@ -377,9 +380,10 @@ metadata = {
                                     },
                                     "nseg": {
                                         "label": "Number of segments, nseg",
+                                        "default": 1,
                                         "suggestions": "",
                                         "help": "",
-                                        "hintText": "",
+                                        "hintText": "1",
                                         "type": "float"
                                     }
                                 },
@@ -497,21 +501,21 @@ metadata = {
                         "label": "Time constant for exponential 1 (ms)",
                         "help": "Define the time constant for the first exponential.",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "1",
                         "type": "float"
                     },
                     "tau2": {
                         "label": "Time constant for exponential 2 (ms)",
                         "help": "Define the time constant for the second exponential.",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "5",
                         "type": "float"
                     },
                     "e": {
                         "label": "Reversal potential (mV)",
                         "help": "Reversal potential of the synaptic receptors.",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "0",
                         "type": "float"
                     },
                     "i": {
@@ -662,13 +666,13 @@ metadata = {
                         "label": "Postsynaptic neuron section",
                         "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "soma"
                     },
                     "loc": {
                         "label": "Postsynaptic neuron location (0-1)",
                         "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1).",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "0.5",
                         "type": "list(list(float))"
                     },
                     "synMech": {

@@ -1182,7 +1182,7 @@ def _gatherAllCellConnPreGids ():
 ###############################################################################
 ### Gather data from nodes
 ###############################################################################
-def gatherData ():
+def gatherData (gatherLFP = True):
     import sim
 
     timing('start', 'gatherTime')
@@ -1206,7 +1206,7 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    if sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+    if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr
@@ -1230,7 +1230,7 @@ def gatherData ():
                 print '  Gathering only sim data...'
                 sim.allSimData = Dict()
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    if k == 'LFP':
+                    if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
                     else:
                         sim.allSimData[k] = {}
@@ -1252,7 +1252,7 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        elif key == 'LFP':
+                        elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -1284,7 +1284,7 @@ def gatherData ():
                 sim.allSimData = Dict()
 
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    if k == 'LFP':
+                    if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
                     else:
                         sim.allSimData[k] = {}
@@ -1310,7 +1310,7 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        elif key == 'LFP':
+                        elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors

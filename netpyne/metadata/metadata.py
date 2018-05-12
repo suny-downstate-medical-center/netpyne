@@ -480,7 +480,12 @@ metadata = {
                         "label": "NMODL mechanism name",
                         "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.",
                         "suggestions": "",
-                        "hintText": ""
+                        "options": [
+                            "ExpSyn",
+                            "Exp2Syn"
+                        ],
+                        "hintText": "",
+                        "type": "str"
                     },
                     "selfNetCon": {
                         "label": "Self NetCon parameters",
@@ -492,19 +497,29 @@ metadata = {
                         "label": "Time constant for exponential 1 (ms)",
                         "help": "Define the time constant for the first exponential.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
                     },
                     "tau2": {
                         "label": "Time constant for exponential 2 (ms)",
                         "help": "Define the time constant for the second exponential.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
                     },
                     "e": {
                         "label": "Reversal potential (mV)",
                         "help": "Reversal potential of the synaptic receptors.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
+                    },
+                    "i": {
+                        "label": "synaptic current (nA)",
+                        "help": "Synaptic current in nA.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "float"
                     }
                 }
             },

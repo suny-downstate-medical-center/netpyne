@@ -703,19 +703,19 @@ metadata = {
                     "probability": {
                         "label": "Probability of connection (0-1)",
                         "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
-                        "suggestions": "",
+                        "suggestions": "0.1",
                         "hintText": ""
                     },
                     "convergence": {
                         "label": "Convergence",
                         "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
-                        "suggestions": "",
+                        "suggestions": "5",
                         "hintText": ""
                     },
                     "divergence": {
                         "label": "Divergence",
                         "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
-                        "suggestions": "",
+                        "suggestions": "5",
                         "hintText": ""
                     },
                     "connList": {
@@ -757,34 +757,34 @@ metadata = {
                     "type": {
                         "label": "Point process used as stimulator",
                         "help": "Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'. Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.",
-                        "suggestions": "",
+                        "suggestions": ["IClamp", "VClamp", "SEClamp", "NetStim", "AlphaSynapse"],
                         "hintText": ""
                     },
                     "dur": {
                         "label": "Current clamp duration (ms)",
                         "help": "Duration of current clamp injection in ms",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "1",
                         "type": "list(float)"
                     },
                     "amp": {
                         "label": "Current clamp amplitude (nA)",
                         "help": "Amplitude of current injection in nA",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "0.1",
                         "type": "float"
                     },
                     "del": {
                         "label": "Current clamp delay (ms)",
                         "help": "Delay (time when turned on after simulation starts) of current clamp in ms.",
                         "suggestions": "",
-                        "hintText": "",
+                        "hintText": "1",
                         "type": "list(float)"
                     },
                     "interval": {
-                        "label": "Interval  between spikes",
+                        "label": "Interval  between spikes (ms)",
                         "help": "Define the mean time interval between spike.",
-                        "suggestions": "",
+                        "suggestions": "20",
                         "hintText": ""
                     },
                     "rstim": {
@@ -808,13 +808,13 @@ metadata = {
                     "start": {
                         "label": "Start time of first spike",
                         "help": "Define the start time for the first spike.",
-                        "suggestions": "",
+                        "suggestions": "0",
                         "hintText": ""
                     },
                     "noise": {
                         "label": "Noise/randomness fraction (0-1)",
                         "help": "Fractional noise, 0 <= noise <= 1, means that an interval between spikes consists of a fixed interval of duration (1 - noise)*interval plus a negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.",
-                        "suggestions": "",
+                        "suggestions": "0.5",
                         "hintText": ""
                     },
                     "tau1": {

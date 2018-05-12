@@ -96,5 +96,7 @@ sim.create(netParams, simConfig)
 #sim.net.defineCellShapes()  # creates 3d pt for cells with stylized geometries
 sim.gatherData(gatherLFP=0)
 sim.simulate()
-sim.analyze()
+args = simConfig.analysis['plotLFP']
+args['plots'] = ['spectrogram']
+sim.analysis.plotLFP(**args)
 

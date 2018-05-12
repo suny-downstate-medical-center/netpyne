@@ -1794,14 +1794,14 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "electrodes": {
-                                "label": "electrode",
+                                "label": "electrode to show",
                                 "suggestions": "",
                                 "help": " List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...]).",
                                 "hintText": "",
                                 "type": "list"
                             },
                             "plots": {
-                                "label": "plot types to show",
+                                "label": "Plot types to show",
                                 "suggestions": "",
                                 "help": "list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']).",
                                 "hintText": "",
@@ -1821,49 +1821,49 @@ metadata = {
                                 "type": "list(int)"
                             },
                             "NFFT": {
-                                "label": "number of point",
+                                "label": "NFFT",
                                 "suggestions": "",
                                 "help": "The number of data points used in each block for the FFT (power of 2) (float)",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "noverlap": {
-                                "label": "number of overlap points",
+                                "label": "Overlap",
                                 "suggestions": "",
                                 "help": "Number of points of overlap between segments (int, < nperseg).",
                                 "hintText": "",
                                 "type": ""
                             },
                             "maxFreq": {
-                                "label": "maximum Frequency",
+                                "label": "Maximum Frequency",
                                 "suggestions": "",
                                 "help": "Maximum frequency shown in plot for PSD and time-freq (float).",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "nperseg": {
-                                "label": "lenght per segment",
+                                "label": "Segment length (nperseg)",
                                 "suggestions": "",
                                 "help": "Length of each segment for time-freq (int).",
                                 "hintText": "",
                                 "type": "int"
                             },
                             "smooth": {
-                                "label": "window size",
+                                "label": "Window size",
                                 "suggestions": "",
                                 "help": "Window size for smoothing; no smoothing if 0 (int).",
                                 "hintText": "",
                                 "type": "int"
                             },
                             "separation": {
-                                "label": "separation Factor",
+                                "label": "Separation factor",
                                 "suggestions": "",
                                 "help": "Separation factor between time-resolved LFP plots; multiplied by max LFP value (float).",
                                 "hintText": "",
                                 "type": "float"
                             },
                             "includeAxon": {
-                                "label": "include Axon",
+                                "label": "Include axon",
                                 "suggestions": "",
                                 "help": "Whether to show the axon in the location plot (boolean).",
                                 "hintText": "",

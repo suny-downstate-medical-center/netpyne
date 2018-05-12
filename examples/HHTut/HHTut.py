@@ -25,7 +25,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 20} # add dict with params for this pop 
 
 
 # Cell parameters
@@ -79,11 +79,13 @@ simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = True  # Plot raster
-simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
-simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
+# simConfig.analysis['plotRaster'] = True  # Plot raster
+# simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
+# simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
 
-simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/5, netParams.sizeY, netParams.sizeY/5)]
-simConfig.analysis['plotLFP'] = True
+simConfig.recordLFP = [[10,10,10]]
+#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 64, 'noverlap': 12, 'nperseg': 16, 'saveFig': True} 
+
 
 

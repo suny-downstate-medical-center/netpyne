@@ -1847,7 +1847,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
     nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, overlay=False, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -2077,7 +2077,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if not includeAxon:
                 i = 0
                 for secName, sec in cell.secs.iteritems():
-                    nseg = sec.geom.nseg
+                    nseg = sec['hSec'].nseg #.geom.nseg
                     if 'axon' in secName:
                         for j in range(i,i+nseg): del trSegs[j] 
                     i+=nseg

@@ -157,7 +157,103 @@ metadata = {
                     }
                 }
             },
-
+            "scale": {
+                "label": "scale factor",
+                "help": ": Scale factor multiplier for number of cells (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "shape": {
+                "label": "network shape",
+                "help": ": Shape of network: 'cuboid', 'cylinder' or 'ellipsoid' (default: 'cuboid')",
+                "suggestions": "",
+                "hintText": "",
+                "options": [
+                    "cuboid",
+                    "cylinder",
+                    "ellipsoid"
+                ],
+                "type": "str"
+            },
+            "sizeX": {
+                "label": "x-dimension",
+                "help": "x-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "sizeY": {
+                "label": "y-dimension",
+                "help": "y-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "sizeZ": {
+                "label": "z-dimension",
+                "help": "z-dimension (horizontal length) network size in um (default: 100)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "rotateCellsRandomly": {
+                "label": "random rotation",
+                "help": "Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "list(float)"
+            },
+            "defaultWeight": {
+                "label": "default weight connection",
+                "help": "Default connection weight, in ms (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "defaultDelay": {
+                "label": "default delay",
+                "help": "Default connection delay, in ms (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "propVelocity": {
+                "label": "conduction velocity",
+                "help": "Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeight": {
+                "label": "connection weight scale factor",
+                "help": ": Connection weight scale factor (excludes NetStims) (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeightNetStims": {
+                "label": "connection weight scale factor for NetStims",
+                "help": ": Connection weight scale factor for NetStims (default: 1)",
+                "suggestions": "",
+                "hintText": "",
+                "type": "float"
+            },
+            "scaleConnWeightModels": {
+                "label": "Connection weight scale factor for each cell model",
+                "help": "Connection weight scale factor for each cell model, e.g. {'HH': 0.1, 'Izhi': 0.2} (default: {})",
+                "suggestions": "",
+                "hintText": "",
+                "type": "dict"
+            },
+            "popTagsCopiedToCells": {
+                "label": "",
+                "help": ": List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])}",
+                "suggestions": "",
+                "hintText": "",
+                "type": "list(float)"
+            },
+            
     # ---------------------------------------------------------------------------------------------------------------------
     # netParams.cellParams
     # ---------------------------------------------------------------------------------------------------------------------

@@ -43,12 +43,12 @@ netParams.connParams['input->I'] = {
   'sec': 'soma'}                     # synaptic mechanism 
 
 
-# All->I; apical dendrites (no sCRACM)
-netParams.subConnParams['All->I'] = {
-  'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 
-  'postConds': {'cellType': ['SOM', 'PV']},  
-  'sec': ['soma','dend'],
-  'density': 'uniform'} 
+# # All->I; apical dendrites (no sCRACM)
+# netParams.subConnParams['All->I'] = {
+#   'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 
+#   'postConds': {'cellType': ['SOM', 'PV']},  
+#   'sec': ['soma','dend'],
+#   'density': 'uniform'} 
 
 
 # Simulation configuration
@@ -61,12 +61,13 @@ simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.printSynsAfterRule = True
 simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
 
+
 lfp=0
 if lfp:
   #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'plots': ['timeSeries'], 'NFFT': 256*2, 'noverlap': 128*2, 'nperseg': 132*2, 'saveFig': True} 
   simConfig.recordLFP = [[10,10,10]]
 
-simConfig.analysis['plotRaster'] = {'popRates':1, 'orderBy': ['pop','y'], 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
+#simConfig.analysis['plotRaster'] = {'popRates':1, 'orderBy': ['pop','y'], 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 #simConfig.analysis['plotTraces'] ={'include':[0]}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
 #simConfig.analysis['plotSpikeStats'] = {'include': ['E2', 'E4', ['E2', 'E4']] , 'stats': ['rate'], 'graphType': 'histogram', 'figSize': (10,6)}
@@ -79,15 +80,15 @@ sim.initialize(
     netParams = netParams)          # create network object and set cfg and net params
 sim.net.createPops()                    # instantiate network populations
 sim.net.createCells()                   # instantiate network cells based on defined populations
-
 sim.net.addStims()              # add network stimulation
-#sim.cfg.createPyStruct = 0
 sim.net.connectCells()                  # create connections between cells based on params
-sim.setupRecording()                    # setup variables to record for each cell (spikes, V traces, etc)
-#sim.net.defineCellShapes()
-sim.runSim()                            # run parallel Neuron simulation  
-sim.gatherData()                        # gather spiking data and cell info from each node
-sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
-sim.analysis.plotData()               # plot spike raster etc
+#sim.setupRecording()                    # setup variables to record for each cell (spikes, V traces, etc)
+#sim.runSim()                            # run parallel Neuron simulation  
+sim.distributedSaveHDF5()
+#sim.gatherData()                        # gather spiking data and cell info from each node
+#sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
+#sim.analysis.plotData()               # plot spike raster etc
 
-
+conns, connFormat = sim.loadHDF5(sim.cfg.filename+'.h5')
+print len(conns)
+print sim.timingData

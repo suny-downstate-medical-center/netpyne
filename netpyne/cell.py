@@ -25,10 +25,16 @@ class Cell (object):
     ''' Generic class for neuron models '''
     
     def __init__ (self, gid, tags):
+        import sim
+
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
+
+        # calculate border distance correction to avoid conn border effect
+        if sim.net.params.correctBorder:
+            self.calculateCorrectBorderDist()
 
 
     def recordStimSpikes (self):
@@ -41,6 +47,31 @@ class Cell (object):
                 conn['hNetcon'].record(stimSpikeVecs)
                 sim.simData['stims']['cell_'+str(self.gid)].update({conn['preLabel']: stimSpikeVecs})
 
+
+    def calculateCorrectBorderDist (self):
+        import sim
+
+        pop = self.tags['pop']
+        popParams = sim.net.params.popParams
+        coords = ['x', 'y', 'z']
+        borderCorrect = [0,0,0]
+        for icoord,coord in enumerate(coords):
+            # calculate borders
+            size = getattr(sim.net.params, 'size'+coord.upper())
+            borders = [0, size]
+            if coord+'borders' in sim.net.params.correctBorder:
+                borders = [b*size for b in sim.net.params.correctBorder[coord+'borders']]
+            elif coord+'Range' in popParams[pop]:
+                borders = popParams[pop][coord+'Range']
+            elif coord+'normRange' in popParams[pop]:
+                borders = [popParams[pop][coord+'normRange'][0] * size,
+                        popParams[pop][coord+'normRange'][1] * size]
+            
+            # calcualte distance to border
+            borderDist = min([abs(self.tags[coord] - border) for border in borders])
+            borderThreshold = sim.net.params.correctBorder['threshold'][icoord]
+            borderCorrect[icoord] = max(0, borderThreshold - borderDist)
+        self.tags['borderCorrect'] = borderCorrect
 
     # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
     def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
@@ -120,18 +151,10 @@ class Cell (object):
             return stimContainer['hNetStim']
 
 
-    def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        import sim
-
-        odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
-        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
-        return odict
-
     # Required if locations (0 to 1) get saved/reloaded as float & are not precisely the same
     def _locs_equal(self, loc_a, loc_b):
         return abs(loc_a-loc_b) <= 1e-6
+
 
     def recordTraces (self):
         import sim
@@ -216,6 +239,16 @@ class Cell (object):
         #else:
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 
+
+
+    def __getstate__ (self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        import sim
+
+        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
+        return odict
 
 
 ###############################################################################

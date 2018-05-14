@@ -7,7 +7,7 @@ Contributors: salvadordura@gmail.com
 __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat']) # saving and loading
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
 __all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
     'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
     'rename'])  # misc/utilities
@@ -1182,7 +1182,7 @@ def _gatherAllCellConnPreGids ():
 ###############################################################################
 ### Gather data from nodes
 ###############################################################################
-def gatherData ():
+def gatherData (gatherLFP = True):
     import sim
 
     timing('start', 'gatherTime')
@@ -1206,7 +1206,7 @@ def gatherData ():
         sim.compactConnFormat()
             
     # convert LFP to list
-    if sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+    if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             del cell.imembVec
             del cell.imembPtr
@@ -1230,7 +1230,7 @@ def gatherData ():
                 print '  Gathering only sim data...'
                 sim.allSimData = Dict()
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    if k == 'LFP':
+                    if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
                     else:
                         sim.allSimData[k] = {}
@@ -1252,7 +1252,7 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        elif key == 'LFP':
+                        elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -1284,7 +1284,7 @@ def gatherData ():
                 sim.allSimData = Dict()
 
                 for k in gather[0]['simData'].keys():  # initialize all keys of allSimData dict
-                    if k == 'LFP':
+                    if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
                     else:
                         sim.allSimData[k] = {}
@@ -1310,7 +1310,7 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        elif key == 'LFP':
+                        elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -1496,6 +1496,43 @@ def _gatherCells ():
 
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+
+
+###############################################################################
+### Save distributed data using HDF5 (only conns for now)
+###############################################################################
+def distributedSaveHDF5():
+    import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'saveTimeHDF5')
+
+    sim.compactConnFormat()
+    conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
+    conns = sim.copyReplaceItemObj(conns, keystart='h', newval=[]) 
+    connFormat = ['postGid']+sim.cfg.compactConnFormat
+    with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
+        hf.create_dataset('conns', data = conns)
+        hf.create_dataset('connsFormat', data = connFormat)
+
+    if sim.rank == 0: timing('stop', 'saveTimeHDF5')
+
+###############################################################################
+### load HDF5 (conns for now)
+###############################################################################
+def loadHDF5(filename):
+    import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'loadTimeHDF5')
+
+    connsh5 = h5py.File(filename, 'r')
+    conns = [list(x) for x in connsh5['conns']]
+    connsFormat = list(connsh5['connsFormat'])
+
+    if sim.rank == 0: timing('stop', 'loadTimeHDF5')
+
+    return conns, connsFormat
 
 
 ###############################################################################

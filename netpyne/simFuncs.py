@@ -73,7 +73,7 @@ def initialize (netParams = None, simConfig = None, net = None):
             simTestObj.runTests()
         except:
             print("\nAn exception occurred during the error checking process...")
-
+            
     sim.timing('stop', 'initialTime')
 
 

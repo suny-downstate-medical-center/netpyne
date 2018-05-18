@@ -10,12 +10,6 @@ NetPyNE is a python package to facilitate the development, parallel simulation a
 
 Check out our new `NetPyNE GUI teaser video <http://www.youtube.com/watch?v=Y8Aow9zwu3E>`_! The GUI will be released July 2018, ready for our `Tutorial at CNS18 <http://www.cnsorg.org/cns-2018-tutorials#T2>`_ ! 
 
-Hello |teaser_video| 
-
-.. |teaser_video| raw:: html
-
-   <a href="http://www.youtube.com/watch?v=Y8Aow9zwu3E" target="_blank">NetPyNE GUI teaser video </a>
-
 Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.
 
 .. image:: figs/schematic.png

@@ -15,7 +15,7 @@ For a more detailed overview of NetPyNE see:
 
 |
 
-.. image:: figs/overview.png
+.. image:: figs/netpyne_gui.png
 	:width: 70%	
 	:align: center
 
@@ -33,7 +33,7 @@ NetPyNE has been used to develop a variety of multiscale models: primary motor c
 NetPyNE structure
 -----------------
 
-.. image:: figs/structure.png
+.. image:: figs/schematic.png
 	:width: 80%	
 	:align: center
 

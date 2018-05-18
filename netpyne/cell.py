@@ -435,6 +435,22 @@ class CompartCell (Cell):
                 sec['hSec'].v = sec['vinit']
 
 
+    # Create dictionary of section names with entries to scale section lengths to length along z-axis
+    def __dipoleGetSecLength (self, secName):
+        # basal_2 and basal_3 at 45 degree angle to z-axis.
+        if 'basal_2' in secName:
+            L = np.sqrt(2) / 2.
+        elif 'basal_3' in secName:
+            L = np.sqrt(2) / 2.
+        # apical_oblique at 90 perpendicular to z-axis
+        elif 'apical_oblique' in secName:
+            L = 0.
+        # All basalar dendrites extend along negative z-axis
+        if 'basal' in secName:
+            L = -L
+        return L
+
+
     def createNEURONObj (self, prop):
         import sim
 

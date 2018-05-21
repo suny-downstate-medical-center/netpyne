@@ -303,6 +303,24 @@ wait
                             #subprocess.call
                             proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
                             (output, input) = (proc.stdin, proc.stdout)
+
+
+                        # single job via mpi (useful to use batch.py setup for single job)
+                        # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
+                        elif self.runCfg.get('type',None) == 'mpi_single':
+                            jobName = self.saveFolder+'/'+simLabel     
+                            print 'Running job ',jobName
+                            cores = self.runCfg.get('cores', 1)
+                            folder = self.runCfg.get('folder', '.')
+                            script = self.runCfg.get('script', 'init.py')
+                            mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
+
+                            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
+                            
+                            print command+'\n'
+                            proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+                            print proc.stdout.read()
+                            
                             
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py

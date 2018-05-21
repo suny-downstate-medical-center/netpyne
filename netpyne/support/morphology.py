@@ -259,8 +259,15 @@ def get_section_path(h,sec):
     xyz = np.array(xyz)
     return xyz
 
+def get_section_diams(h,sec):
+    n3d = int(h.n3d(sec=sec))
+    diams = []
+    for i in range(0,n3d):
+        diams.append(h.diam3d(i,sec=sec))
+    return diams
+
 def shapeplot(h,ax,sections=None,order='pre',cvals=None,\
-              clim=None,cmap=cm.YlOrBr_r, legend=True, **kwargs):
+              clim=None,cmap=cm.YlOrBr_r, legend=True,  **kwargs):  # meanLineWidth=1.0, maxLineWidth=10.0,
     """
     Plots a 3D shapeplot
 
@@ -294,12 +301,25 @@ def shapeplot(h,ax,sections=None,order='pre',cvals=None,\
     lines = []
     i = 0
 
+    allDiams = []
     for sec in sections:
+        allDiams.append(get_section_diams(h,sec))
+    #maxDiams = max([max(d) for d in allDiams])
+    #meanDiams = np.mean([np.mean(d) for d in allDiams])
+
+    for isec,sec in enumerate(sections):
         xyz = get_section_path(h,sec)
         seg_paths = interpolate_jagged(xyz,sec.nseg)
+        diams = allDiams[isec]  # represent diams as linewidths
+        linewidths = diams # linewidth is in points so can use actual diams to plot
+        # linewidths = [min(d/meanDiams*meanLineWidth, maxLineWidth) for d in diams]  # use if want to scale size 
 
         for (j,path) in enumerate(seg_paths):
-            line, = plt.plot(path[:,0], path[:,1], path[:,2], '-k',**kwargs)
+            line, = plt.plot(path[:,0], path[:,1], path[:,2], '-k', **kwargs)
+            try:
+                line.set_linewidth(linewidths[j])
+            except:
+                pass
             if cvals is not None:
                 if isinstance(cvals[i], numbers.Number):
                     # map number to colormap

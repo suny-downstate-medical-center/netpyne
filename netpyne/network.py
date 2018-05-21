@@ -76,7 +76,10 @@ class Network (object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))    
+            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))  
+
+        if self.params.defineCellShapes: self.defineCellShapes()
+  
         print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))) 
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
@@ -219,7 +222,8 @@ class Network (object):
         params = sourceParams.copy()
         params.update(targetParams)
 
-        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams if param in params and isinstance(params[param], str)]  
+        paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
+            if param in params and isinstance(params[param], str) and params[param] not in ['variable']]  
 
         # dict to store correspondence between string and actual variable
         dictVars = {}   
@@ -518,6 +522,8 @@ class Network (object):
             sim.cfg.createNEURONObj = False
             sim.cfg.addSynMechs = False
 
+        gapJunctions = False  # assume no gap junctions by default
+
         for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
             connParam = connParamTemp.copy()
             connParam['label'] = connParamLabel
@@ -543,11 +549,31 @@ class Network (object):
                 self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
                 connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
-                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
-                cell.addConn(preGapParams)
+            # check if gap junctions in any of the conn rules
+            if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
+
+            if sim.cfg.printSynsAfterRule:
+                nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
+                print(('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses)))
+
+
+        # add presynaptoc gap junctions
+        if gapJunctions:
+            # distribute info on presyn gap junctions across nodes
+            if not getattr(sim.net, 'preGapJunctions', False): 
+                sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+            data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
+            data[sim.rank] = None
+            gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
+            sim.pc.barrier()
+            for dataNode in gather:
+                if dataNode: sim.net.preGapJunctions.extend(dataNode)
+
+            # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+            for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+                if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+                    cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                    cell.addConn(preGapParams)
 
         # apply subcellular connectivity params (distribution of synaspes)
         if self.params.subConnParams:
@@ -555,14 +581,18 @@ class Network (object):
             sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
             sim.cfg.addSynMechs = origAddSynMechs # set to original value
             cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
-            for cell in cellsUpdate:
-                # Add synMechs, stim and conn NEURON objects
-                cell.addStimsNEURONObj()
-                #cell.addSynMechsNEURONObj()
-                cell.addConnsNEURONObj()
+            if sim.cfg.createNEURONObj:
+                for cell in cellsUpdate:
+                    # Add synMechs, stim and conn NEURON objects
+                    cell.addStimsNEURONObj()
+                    #cell.addSynMechsNEURONObj()
+                    cell.addConnsNEURONObj()
 
         nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
-        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        if sim.cfg.createPyStruct:
+            nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        else:
+            nodeConnections = nodeSynapses
 
         print(('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections)))
         if nodeSynapses != nodeConnections:
@@ -658,6 +688,9 @@ class Network (object):
         dictVars['dist_3D']    = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
                                 (preConds['y'] - postConds['y'])**2 + 
                                 (preConds['z'] - postConds['z'])**2)
+        dictVars['dist_3D_border'] = lambda preConds,postConds: sqrt((abs(preConds['x'] - postConds['x']) - postConds['borderCorrect'][0])**2 +
+                                (abs(preConds['y'] - postConds['y']) - postConds['borderCorrect'][1])**2 + 
+                                (abs(preConds['z'] - postConds['z']) - postConds['borderCorrect'][2])**2)
         dictVars['dist_2D']     = lambda preConds,postConds: sqrt((preConds['x'] - postConds['x'])**2 +
                                 (preConds['z'] - postConds['z'])**2)
         dictVars['dist_xnorm']  = lambda preConds,postConds: abs(preConds['xnorm'] - postConds['xnorm'])
@@ -861,7 +894,7 @@ class Network (object):
         for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
-                convergence = max(min(int(round(convergence)), len(preCellsTags)), 0)
+                convergence = max(min(int(round(convergence)), len(preCellsTags)-1), 0)
                 self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
                 randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
                 preCellsSample = [list(preCellsTags.keys())[i] for i in randSample][0:convergence]  # selected gids of presyn cells
@@ -889,7 +922,7 @@ class Network (object):
 
         for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
-            divergence = max(min(int(round(divergence)), len(postCellsTags)), 0)
+            divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
             postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
@@ -920,9 +953,12 @@ class Network (object):
             connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
                     for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
 
-        if isinstance(connParam['weight'], list): connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
-        if isinstance(connParam['delay'], list): connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
-        if isinstance(connParam['loc'], list): connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
+        if 'weight' in connParam and isinstance(connParam['weight'], list): 
+            connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
+        if 'delay' in connParam and isinstance(connParam['delay'], list): 
+            connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
+        if 'loc' in connParam and isinstance(connParam['loc'], list): 
+            connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
         
         orderedPreGids = sorted(preCellsTags.keys())
         orderedPostGids = sorted(postCellsTags.keys())
@@ -989,7 +1025,7 @@ class Network (object):
             'delay': finalParam['delaySynMech'],
             'synsPerConn': finalParam['synsPerConn']}
 
-            if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')    
+            # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
             if 'shape' in connParam: params['shape'] = connParam.get('shape')    
             if 'plast' in connParam: params['plast'] = connParam.get('plast')    
             if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
@@ -1084,6 +1120,29 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print(('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime']))
 
 
+    ###############################################################################
+    ### Calculate segment coordinates from 3d point coordinates 
+    ###############################################################################
+    def calcSegCoords(self):   
+        from . import sim
+        if sim.cfg.createNEURONObj:
+            # Calculate relative seg coords for 1 cell per pop, 
+            for pop in list(self.pops.values()):
+                if pop.cellModelClass == sim.CompartCell:
+                    pop.calcRelativeSegCoords()
 
+            # Calculate abs seg coords for all cells
+            for cell in sim.net.compartCells:
+                cell.calcAbsSegCoords()
 
+    ###############################################################################
+    ### Add 3D points to sections with simplified geometry
+    ###############################################################################
+    def defineCellShapes(self):
+        from . import sim
+        if sim.cfg.createNEURONObj:
+            sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+            h.define_shape()
+            for cell in sim.net.compartCells:
+                cell.updateShape()
 

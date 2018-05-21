@@ -1,20 +1,20 @@
 """
 simFunc.py
-
 Contains functions related to the simulation (eg. setupRecording, runSim)
-
 Contributors: salvadordura@gmail.com
 """
 
 __all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'clearAll', 'setGlobals']) # init and setup
+__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 'readCmdLineArgs', 'getCellsList', 'cellByGid',\
-'timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique'])  # misc/utilities
+__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
+    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
+    'rename'])  # misc/utilities
 
 import sys
 import os
+import numpy as np
 from time import time
 from datetime import datetime
 import pickle as pk
@@ -48,7 +48,8 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.nextHost = 0  # initialize next host
     sim.timingData = Dict()  # dict to store timing
 
-    sim.createParallelContext()  # iniitalize PC, nhosts and rank
+    sim.createParallelContext()  # inititalize PC, nhosts and rank
+    sim.cvode = h.CVode()
 
     sim.setSimCfg(simConfig)  # set simulation configuration
 
@@ -150,9 +151,25 @@ def loadNetParams (filename, data=None, setLoaded=True):
 
 
 ###############################################################################
+# Convert compact (list-based) to long (dict-based) conn format
+###############################################################################
+def compactToLongConnFormat(cells, connFormat):
+    
+    formatIndices = {key: connFormat.index(key) for key in connFormat}
+    try:
+        for cell in cells:
+            for iconn, conn in enumerate(cell['conns']):
+                cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.items()}
+        return cells
+    except:
+        print("Error converting conns from compact to long format")
+        return cells
+
+
+###############################################################################
 # Load cells and pops from file and create NEURON objs
 ###############################################################################
-def loadNet (filename, data=None, instantiate=True):
+def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
     from . import sim
 
     if not data: data = _loadFile(filename)
@@ -160,11 +177,16 @@ def loadNet (filename, data=None, instantiate=True):
         if sim.rank == 0:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
+            if compactConnFormat: 
+                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
             sim.net.allPops = data['net']['pops']
             sim.net.allCells = data['net']['cells']
         if instantiate:
             # calculate cells to instantiate in this node
-            cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
+            if isinstance(instantiate, list):
+                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+            else:
+                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
             if sim.cfg.createPyStruct:
                 for popLoadLabel, popLoad in data['net']['pops'].items():
                     pop = sim.Pop(popLoadLabel, popLoad['tags'])
@@ -175,19 +197,25 @@ def loadNet (filename, data=None, instantiate=True):
                     # TO DO: assumes CompartCell -- add condition to load PointCell
                     cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
                     try:
-                        cell.secs = Dict(cellLoad['secs'])
+                        if sim.cfg.saveCellSecs:
+                            cell.secs = Dict(cellLoad['secs'])
+                        else:
+                            createNEURONObjorig = sim.cfg.createNEURONObj
+                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
+                            cell.create()
+                            sim.cfg.createNEURONObj = createNEURONObjorig
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell secs'
+                        if sim.cfg.verbose: print(' Unable to load cell secs')
 
                     try:
                         cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell conns'
+                        if sim.cfg.verbose: print(' Unable to load cell conns')
 
                     try:
                         cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                     except:
-                        if sim.cfg.verbose: ' Unable to load cell stims'
+                        if sim.cfg.verbose: print(' Unable to load cell stims')
 
                     sim.net.cells.append(cell)
                 print(('  Created %d cells' % (len(sim.net.cells))))
@@ -255,11 +283,19 @@ def loadSimData (filename, data=None):
 ###############################################################################
 # Load all data in file
 ###############################################################################
-def loadAll (filename, data=None):
+def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
+    from . import sim 
+
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
+    sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
-    loadNet(filename, data=data)
+    if hasattr(sim.cfg, 'compactConnFormat'): 
+        connFormat = sim.cfg.compactConnFormat
+    else:
+        print('Error: no connFormat provided in simConfig')
+        sys.exit()
+    loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
 
@@ -331,6 +367,23 @@ def _loadFile (filename):
     from . import sim
     import os
 
+    def _byteify(data, ignore_dicts = False):
+        # if this is a unicode string, return its string representation
+        if isinstance(data, str):
+            return data.encode('utf-8')
+        # if this is a list of values, return list of byteified values
+        if isinstance(data, list):
+            return [ _byteify(item, ignore_dicts=True) for item in data ]
+        # if this is a dictionary, return dictionary of byteified keys and values
+        # but only if we haven't already byteified it
+        if isinstance(data, dict) and not ignore_dicts:
+            return OrderedDict({
+                _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+                for key, value in data.items()
+            })
+        # if it's anything else, return it in its original form
+        return data
+
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
     ext = os.path.basename(filename).split('.')[1]
 
@@ -354,7 +407,7 @@ def _loadFile (filename):
         import json
         print(('Loading file %s ... ' % (filename)))
         with open(filename, 'r') as fileObj:
-            data = json.load(fileObj, object_pairs_hook=OrderedDict)
+            data = json.load(fileObj, object_hook=_byteify)
 
     # load mat file
     elif ext == 'mat':
@@ -496,6 +549,21 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
             else:
                 objCopy[key] = val
     return objCopy
+
+
+###############################################################################
+### Rename objects
+###############################################################################
+def rename (obj, old, new, label=None):
+    try:
+        return obj.rename(old, new, label)
+    except:
+        if type(obj) == dict and old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
 
 
 ###############################################################################
@@ -734,6 +802,56 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     return cfg, netParams
 
+###############################################################################
+### Calculate LFP (fucntion called at every time step)      
+###############################################################################
+def calculateLFP():
+    from . import sim    
+
+    # Set pointers to i_membrane in each cell (required form LFP calc )        
+    for cell in sim.net.compartCells:
+        cell.setImembPtr()
+
+    # compute 
+    saveStep = int(np.floor(h.t / sim.cfg.recordStep))
+    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
+        gid = cell.gid
+        im = cell.getImemb() # in nA
+        tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
+        ecp = np.dot(tr,im) # in mV (= R * I = MOhm * nA)
+        if sim.cfg.saveLFPCells: 
+            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (stored optionally)
+        sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
+
+
+###############################################################################
+### Setup LFP Recording
+###############################################################################
+def setupRecordLFP():
+    from . import sim
+    from netpyne.support.recxelectrode import RecXElectrode
+    
+    nsites = len(sim.cfg.recordLFP)
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['LFP'] = np.zeros((saveSteps, nsites))
+    if sim.cfg.saveLFPCells:
+        for c in sim.net.cells:
+            sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
+    
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+    sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
+    
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            nseg = cell._segCoords['p0'].shape[1]
+            sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
+
+        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        
 
 ###############################################################################
 ### Setup Recording
@@ -806,6 +924,10 @@ def setupRecording ():
         print(("Recording %s traces of %s types on node %i"%(total, cat, sim.rank)))
 
 
+    # set LFP recording
+    if sim.cfg.recordLFP:
+        setupRecordLFP()
+
     timing('stop', 'setrecordTime')
 
     return sim.simData
@@ -858,26 +980,28 @@ def setGlobals ():
     # iterate globals dic in each cellParams
     cellGlobs = {k:v for k,v in hParams.items()}
     for cellRuleName, cellRule in sim.net.params.cellParams.items():
-        for k,v in getattr(cellRule, 'globals', {}).items():
+        for k,v in cellRule.get('globals', {}).items():
             if k not in cellGlobs:
                 cellGlobs[k] = v
-            elif k in ['celsius', 'v_init', 'clamp_resist'] and cellGlobs[k] != v:  # exception
+            elif cellGlobs[k] != v and sim.cfg.verbose:
                 if k == 'v_init':
-                    wrongVinit = [s['v_init'] for s in cellRule['secs'] if 'v_init' in s and s['v_init'] != v] # check if set inside secs
-                    if len(wrongVinit) > 0:
-                        print('\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v)))
+                    wrongVinit = [s['vinit'] for s in list(cellRule['secs'].values()) if 'vinit' in s and s['vinit'] == v and s['vinit'] != cellGlobs[k]] # check if set inside secs (set by default during import)
+                    if len(wrongVinit) == len(cellRule['secs']):
+                        print("\nWarning: global variable %s=%s differs from that set for each section in cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
+                    else: # no need since v_inits set in each sec during import
+                        print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
                 else:
-                    print('\nWarning: global variable %s=%s, but cellParams rule %s requires %s=%s' % (k, str(cellGlobs[k]), cellRuleName, k, str(v)))
-            elif k in cellGlobs and cellGlobs[k] != v:
-                print('\nError: global variable %s has different values (%s vs %s) in two cellParams rules' % (k, str(v), str(cellGlobs[k])))
-                sys.exit()
+                    print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
+    
+    # add tstop as global (for ease of transition with standard NEURON)
+    cellGlobs['tstop'] = float(sim.cfg.duration)
 
     # h global params
     if sim.cfg.verbose and len(cellGlobs) > 0:
         print('\nSetting h global variables ...')
     for key,val in cellGlobs.items():
         try:
-            setattr(h, key, val) # set other h global vars (celsius, clamp_resist)
+            h('%s=%s'%(key,val))
             if sim.cfg.verbose: print(('  h.%s = %s' % (key, str(val))))
         except:
             print('\nError: could not set global %s = %s' % (key, str(val)))
@@ -890,33 +1014,22 @@ def preRun ():
     from . import sim
 
     # set initial v of cells
-    sim.fih = []
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
-    if not getattr(h, 'cvode', None):
-        h('objref cvode')
-        h('cvode = new CVode()')
-
-    if sim.cfg.cvode_active:
-        h.cvode.active(1)
-    else:
-        h.cvode.active(0)
-
-    if sim.cfg.cache_efficient:
-        h.cvode.cache_efficient(1)
-    else:
-        h.cvode.cache_efficient(0)
-
-    h.cvode.atol(sim.cfg.cvode_atol)  # set absoulute error tolerance
+    sim.cvode.active(int(sim.cfg.cvode_active))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
+    sim.cvode.atol(sim.cfg.cvode_atol)
 
     # set h global params
     sim.setGlobals()
 
-    # time vars
+    # set h.dt
     h.dt = sim.cfg.dt
-    h.tstop = sim.cfg.duration
+
+    # set v_init if doesn't exist
+    if 'v_init' not in sim.cfg.hParams: sim.cfg.hParams['v_init'] = -65.0
 
     # parallelcontext vars
     sim.pc.set_maxstep(10)
@@ -927,15 +1040,18 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            h('objref cvode')
-            h('cvode = new CVode()')
             for i in range(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                h.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
 
-    # reset all netstims so runs are always equivalent
+    # set global index used by all instances of the Random123 instances of Random
+    if sim.cfg.rand123GlobalIndex is not None: 
+        rand = h.Random()
+        rand.Random123_globalindex(int(sim.cfg.rand123GlobalIndex))
+
+    # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
             #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
@@ -956,6 +1072,15 @@ def preRun ():
                     if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
                         stim['hNetStim'].noiseFromRandom(stim['hRandom'])
 
+    # handler for recording LFP
+    if sim.cfg.recordLFP:
+        def recordLFPHandler():
+            for i in np.arange(sim.cfg.recordStep, sim.cfg.duration+sim.cfg.recordStep, sim.cfg.recordStep):
+                sim.cvode.event(i, sim.calculateLFP)
+
+        sim.recordLFPHandler = recordLFPHandler
+        sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
+
 
 ###############################################################################
 ### Run Simulation
@@ -966,7 +1091,8 @@ def runSim ():
     sim.pc.barrier()
     timing('start', 'runTime')
     preRun()
-    init()
+    
+    h.finitialize(float(sim.cfg.hParams['v_init']))
 
     if sim.rank == 0: print(('\nRunning simulation for %s ms...'%sim.cfg.duration))
     sim.pc.psolve(sim.cfg.duration)
@@ -1056,7 +1182,7 @@ def _gatherAllCellConnPreGids ():
 ###############################################################################
 ### Gather data from nodes
 ###############################################################################
-def gatherData ():
+def gatherData (gatherLFP = True):
     from . import sim
 
     timing('start', 'gatherTime')
@@ -1074,7 +1200,17 @@ def gatherData ():
     if not sim.cfg.saveCellConns:
         for cell in sim.net.cells:
             cell.conns = []
+
+    # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
+    elif sim.cfg.compactConnFormat:
+        sim.compactConnFormat()
             
+    # convert LFP to list
+    if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            del cell.imembVec
+            del cell.imembPtr
+
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
@@ -1094,7 +1230,10 @@ def gatherData ():
                 print('  Gathering only sim data...')
                 sim.allSimData = Dict()
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if gatherLFP and k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs: # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1103,7 +1242,7 @@ def gatherData ():
                 for node in gather:  # concatenate data from each node
                     for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
                         if key in simDataVecs:          # simData dicts that contain Vectors
-                            if isinstance(val,dict):
+                            if isinstance(val, dict):
                                 for cell,val2 in val.items():
                                     if isinstance(val2,dict):
                                         sim.allSimData[key].update(Dict({cell:Dict()}))
@@ -1113,6 +1252,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif gatherLFP and key == 'LFP':
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1131,7 +1272,8 @@ def gatherData ():
             data[0] = {}
             for k,v in nodeData.items():
                 data[0][k] = v
-                
+            
+            #print data
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
             if sim.rank == 0:
@@ -1142,7 +1284,10 @@ def gatherData ():
                 sim.allSimData = Dict()
 
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
-                    sim.allSimData[k] = {}
+                    if gatherLFP and k == 'LFP':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    else:
+                        sim.allSimData[k] = {}
 
                 for key in singleNodeVecs:  # store single node vectors (eg. 't')
                     sim.allSimData[key] = list(nodeData['simData'][key])
@@ -1165,6 +1310,8 @@ def gatherData ():
                                         sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                        elif gatherLFP and key == 'LFP':
+                            sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
@@ -1197,7 +1344,7 @@ def gatherData ():
         for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         sim.allSimData = Dict()
         for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
-                sim.allSimData[k] = Dict()
+            sim.allSimData[k] = Dict()
         for key,val in sim.simData.items():  # update simData dics of dics of h.Vector
                 if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                     if isinstance(val,dict):
@@ -1211,7 +1358,7 @@ def gatherData ():
                     else:
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else:
-                    sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                    sim.allSimData[key] = val           # update simData dicts which are not Vectors
 
     ## Print statistics
     sim.pc.barrier()
@@ -1222,7 +1369,14 @@ def gatherData ():
         print('\nAnalyzing...')
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+        else:
+            sim.totalConnections = sim.totalSynapses
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
@@ -1242,7 +1396,7 @@ def gatherData ():
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
         if 'runTime' in sim.timingData:
             print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
-            if sim.cfg.printPopAvgRates:
+            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
                 sim.allSimData['popRates'] = sim.popAvgRates()
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
@@ -1345,6 +1499,43 @@ def _gatherCells ():
 
 
 ###############################################################################
+### Save distributed data using HDF5 (only conns for now)
+###############################################################################
+def distributedSaveHDF5():
+    from . import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'saveTimeHDF5')
+
+    sim.compactConnFormat()
+    conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
+    conns = sim.copyReplaceItemObj(conns, keystart='h', newval=[]) 
+    connFormat = ['postGid']+sim.cfg.compactConnFormat
+    with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
+        hf.create_dataset('conns', data = conns)
+        hf.create_dataset('connsFormat', data = connFormat)
+
+    if sim.rank == 0: timing('stop', 'saveTimeHDF5')
+
+###############################################################################
+### load HDF5 (conns for now)
+###############################################################################
+def loadHDF5(filename):
+    from . import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'loadTimeHDF5')
+
+    connsh5 = h5py.File(filename, 'r')
+    conns = [list(x) for x in connsh5['conns']]
+    connsFormat = list(connsh5['connsFormat'])
+
+    if sim.rank == 0: timing('stop', 'loadTimeHDF5')
+
+    return conns, connsFormat
+
+
+###############################################################################
 ### Save data
 ###############################################################################
 def saveData (include = None):
@@ -1401,7 +1592,9 @@ def saveData (include = None):
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-        if 'simData' in include: dataSave['simData'] = sim.allSimData
+        if 'simData' in include: 
+            if 'LFP' in sim.allSimData: sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+            dataSave['simData'] = sim.allSimData
 
 
         if dataSave:
@@ -1536,15 +1729,15 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
         elif loadTags:
             print('Storing tags ...')
             if tagFormat:
-                tags = {int(cell['gid']): {param: cell['tags'][param] for param in tagFormat} for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+                tags.update({int(cell['gid']): [cell['tags'][param] for param in tagFormat] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
             else:
-                tags = {int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange}
+                tags.update({int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
         elif loadConns:             
             print('Storing conns...')
             if connFormat:
-                conns = {int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+                conns.update({int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
             else:
-                conns = {int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange}
+                conns.update({int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
 
         print('time ellapsed (s): ', time() - start)
 
@@ -1561,6 +1754,27 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
         with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
 
     return tags, conns
+
+
+###############################################################################
+### Convet connections in long dict format to compact list format 
+###############################################################################
+def compactConnFormat():
+    from . import sim
+
+    if type(sim.cfg.compactConnFormat) is not list:
+        if len(sim.net.params.stimTargetParams) > 0:  # if have stims, then require preLabel field
+            sim.cfg.compactConnFormat = ['preGid', 'preLabel', 'sec', 'loc', 'synMech', 'weight', 'delay']
+        else:
+            sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+    
+
+    connFormat = sim.cfg.compactConnFormat
+    for cell in sim.net.cells:
+        newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
+        del cell.conns
+        cell.conns = newConns
+ 
 
 
 ###############################################################################
@@ -1593,15 +1807,17 @@ def version (show=True):
 def gitChangeset (show=True):
     from . import sim
     import netpyne, os, subprocess 
+    
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
-        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][:-1]
+        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
     except: 
         changeset = ''
+
     os.chdir(currentPath)
 
     return changeset

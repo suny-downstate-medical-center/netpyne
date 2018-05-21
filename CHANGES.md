@@ -1,3 +1,122 @@
+# Version 0.7.9
+
+- Added netParams.correctBorder to compensate distance-dependent connectivity border effect
+
+- Added support for HNN
+
+- Fixed bug setting v_init
+
+# Version 0.7.8
+
+- Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
+
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+
+- Added 'histogram' option to plotSpikeStats
+
+- Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
+
+- Added showElectrodes and bkgColor options to shapePlot
+
+- Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
+
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+
+- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
+
+- Fixed bug to ensure VecStim random streams are independent of simulation duration
+
+- Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
+
+- Fixed bug LFP recording only applied to compartmental cells
+
+- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
+
+- Fixed bug when deleting sections -- needed sec.push() before
+
+- Fixed bug in shapePlot figSize option
+
+- Fixed format of git changeset stored -- removed 'g' prefix
+
+- Fixed bug in Windows trying to get git changeset
+
+- Fixed bug gathering LFP data
+
+- Fixed bug importing global v_init from multiple cell files
+
+- Fixed bug so gitChangeset() returns to orig folder even when git not installed
+
+- Fixed bugs in plotConn -- missing rounding func and grouping by y interval
+
+
+# Version 0.7.7
+
+- Added LFP recording at arbitrary 3D locations
+
+- Added plotting of LFP time series, PSD, freq vs time and electrode locations
+
+- Updates to NeuroML conversion code.
+
+- ShapePlot now shows segment diameters as linewidths (Python version)
+
+- Added function to add 3D points (in NEURON+Python) from stylized geometry
+
+- Connection sec and loc randomly chosen from list when synsPerConn=1 
+
+- Set default NetStim noise to 0.0
+
+- Fix synMech overwrite when importing multiple hoc/py cell templates
+
+- Fixed bug importing multiple synMechs from hoc/py cell template
+
+- Fixed bug using 'variable' NetStim (NSLOC)
+
+- Fixed save method in NetParams to use ['net']['params']  
+
+- Fixed bug using gap junctions with mpi (multiple cores)
+
+- Fixed bug when creating conns afger loading json -- needed basestring instead of str
+
+- Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
+
+- Fixed bug saving to .mat during batch sims
+
+- Fixed bug in order of unique cell gids in analysis funcs 'include' param
+
+- Fixed bug gathering data using the cfg.gatherSimOnlyData option
+
+- Fixed bug where empty sections where created when recording from non-existing sections
+
+
+# Version 0.7.6
+
+- Added option to order raster spike trains by multipe tags (eg. ['pop', 'y'])
+
+- Enable providing a 2D list of spike times to VecStim populations
+
+- Added exception handling to analysis functions
+
+- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
+
+- Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
+
+- plotTraces now plots any recorded cells if 'include' is None
+
+- Made CVode object part of sim and simplified cvode calls
+
+- Added sim.rename() wrapper function
+
+- Added __rename__() method to dict class
+
+- Fixed bug loading from compactConnFormat
+
+- Fixed bug in IClamp: 'delay' -> 'del'
+
+- Fixed bug calculating min convergece and divergence
+
+- Fixed bug in plotRatePSD colors
+
+
 # Version 0.7.5
 
 - Improved NeuroML conversion support
@@ -8,6 +127,30 @@
 
 - Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
 
+- Added analysis.calculateRate() func to calculate avg and peak rate of pop subset at time range
+
+- Added analysis.plotRates() func to plot avg and peak rate of different pop subsets at time range
+
+- Added option to include list of pops or cells in 'include' arguments e.g. include=[['E4','E2'], [1,3]]
+
+- Added cfg.compactConnFormat option to replace conns dict format with compact list format 
+
+- Added option to plotConn() and plot2Dnet() to load data from compact format json files 
+
+- Adapted python2 code so conversion to python3 via 2to3 command works straight away
+
+- Added 'instantiate' argument to sim.load function
+
+- Added 'dpi' argument to analysis.plotSpikeHist()
+
+- Replaced init()/h.stdinit() with finitialize() so h.v_init and h.dt get set properly
+
+- Removed call to h.stdrun() but made v_init a global in cfg.hParams and initialized h.tstop to cfg.duration
+
+- Fixed bug setting globals that don't exist
+
+- Fixed issue setting global variables when loading from json
+
 - Fixed issue to make convergence+divergence connections randomization more robust and efficient (issue #254)
 
 - Fixed bug in colors of plotSpikeHist
@@ -16,6 +159,9 @@
 
 - Fixed bug when using sim.gatherOnlySimData
 
+- Fixed bugs in saveLoadV1 example
+
+- Fixed bug when generating subConn with createNEURONObj=False
 
 # Version 0.7.4
 

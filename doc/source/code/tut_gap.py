@@ -41,7 +41,8 @@ netParams.connParams['bg->PYR1'] = {
 
 netParams.connParams['PYR1->PYR2'] = {
     'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'PYR2'}, # PYR1 -> PYR2 (gap junction)
-    'weight': 200.0,              
+    'weight': 200.0,  
+    'delay': 0.1,            
     'synMech': 'esyn',                   
     'gapJunction': True,
     'sec': 'soma',
@@ -73,6 +74,7 @@ simConfig.analysis['plotRaster'] = True
 ###############################################################################
 
 sim.createSimulateAnalyze()
+
 
 
 

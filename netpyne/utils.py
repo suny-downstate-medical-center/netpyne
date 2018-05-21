@@ -10,9 +10,7 @@ from numbers import Number
 from neuron import h
 import importlib
 
-h.load_file("stdrun.hoc") 
-
-
+#h.load_file("stdrun.hoc") 
 
 def getSecName (sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
@@ -111,7 +109,10 @@ def getGlobals (mechNames, origGlob={}):
 
 def setGlobals (glob):
     for k,v in glob.items():
-        setattr(h, k, v)
+        try:
+            setattr(h, k, v)
+        except:
+            pass
 
     # # remove vars are not in glob ?
     # for k in [x for x in dir(h) if x not in exclude]:
@@ -151,6 +152,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     h.initnrn()
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
+    origGlob['v_init'] = -65  # add by hand since won't be set unless load h.load_file('stdrun')
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
@@ -187,6 +189,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
+    
     if fileName.endswith('.py'):
         _delete_module(moduleName)
         _delete_module('tempModule')
@@ -194,6 +197,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     elif fileName.endswith('.hoc'):
         for sec in h.allsec():
             try:
+                sec.push()
                 h.delete_section(sec=sec)
                 h.pop_section()
             except:
@@ -207,7 +211,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
 
 def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
     h.initnrn()
-
+    
     ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print('Importing from .hoc network not yet supported')
@@ -241,14 +245,16 @@ def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList
         print('\nImporting %s from %s ...'%(cellName, fileName))
         exec('cell = tempModule' + '.' + cellName)
         #cell = getattr(modulePointer, cellName) # get cell object
-        secs, secLists, synMechs = getCellParams(cell)
+        varList = mechVarList()
+        origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
+        secs, secLists, synMechs = getCellParams(cell, varList, origGlob)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists}
         netParams.addCellParams(label, cellRule)
         if importSynMechs:
             for synMech in synMechs: netParams.addSynMechParams(synMech.pop('label'), synMech)
 
 
-def getCellParams(cell, varList, origGlob):
+def getCellParams(cell, varList={}, origGlob={}):
     dirCell = dir(cell)
 
     if 'all_sec' in dirCell:
@@ -261,7 +267,6 @@ def getCellParams(cell, varList, origGlob):
         secs = [cell.soma]
     else:
         secs = []
-
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
@@ -377,7 +382,7 @@ def getCellParams(cell, varList, origGlob):
                         except:
                             print('Could not read variable %s from synapse %s'%(varName,synMech['label']))
 
-                    if not [_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]:
+                    if not any([_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]):
                         synMechs.append(synMech)
                 
                 else: # assume its a non-synapse point process
@@ -430,6 +435,7 @@ def getCellParams(cell, varList, origGlob):
         del tmp
 
     import gc; gc.collect()
+
 
     return secDic, secListDic, synMechs, globs
 

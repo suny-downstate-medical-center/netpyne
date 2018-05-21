@@ -80,13 +80,14 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 ###############################################################################
 # Wrapper to load all, ready for simulation
 ###############################################################################
-def load (filename, simConfig=None, output=False):
+def load (filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
     ''' Sequence of commands load, simulate and analyse network '''
     from . import sim
     sim.initialize()  # create network object and set cfg and net params
-    sim.loadAll(filename)
-    if simConfig: sim.setSimCfg(simConfig)
-    if len(sim.net.cells) == 0:
+    sim.cfg.createNEURONObj = createNEURONObj
+    sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
+    if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+    if len(sim.net.cells) == 0 and instantiate:
         pops = sim.net.createPops()                  # instantiate network populations
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations
         conns = sim.net.connectCells()                # create connections between cells based on params
@@ -125,7 +126,7 @@ def loadSimulateAnalyze (filename, simConfig=None, output=False):
 ###############################################################################
 # Wrapper to create and export network to NeuroML2
 ###############################################################################
-def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False):
+def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False, format='xml'):
     ''' Sequence of commands to create and export network to NeuroML2 '''
     from . import sim
     import __main__ as top
@@ -138,7 +139,7 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
     conns = sim.net.connectCells()                # create connections between cells based on params
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    sim.exportNeuroML2(reference,connections,stimulations)     # export cells and connectivity to NeuroML 2 format
+    sim.exportNeuroML2(reference,connections,stimulations,format)     # export cells and connectivity to NeuroML 2 format
 
     if output: return (pops, cells, conns, stims, simData)
     
@@ -149,4 +150,4 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
 def importNeuroML2SimulateAnalyze(fileName, simConfig):
     from . import sim
         
-    return sim.importNeuroML2(fileName, simConfig)
+    return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)

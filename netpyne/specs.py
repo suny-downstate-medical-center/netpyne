@@ -16,6 +16,7 @@ class Dict(dict):
 
     __slots__ = []
 
+
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -61,6 +62,7 @@ class Dict(dict):
         else:
             object.__delattr__(self, k)
 
+
     def todict(self):
         return self.undotify(self)
 
@@ -90,6 +92,32 @@ class Dict(dict):
             return type(x)( self.undotify(v) for v in x )
         else:
             return x
+
+    def __rename__(self, old, new, label=None):
+        '''
+        old (string): old dict key
+        new (string): new dict key
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
+        
+        returns: True if successful, False otherwse
+        '''
+        obj = self
+        if isinstance(label, (tuple, list)):
+            for ip in range(len(label)):
+                try:
+                    obj = obj[label[ip]] 
+                except:
+                    return False 
+
+        if old in obj:
+            obj[new] = obj.pop(old)  # replace
+            return True
+        else:
+            return False
+
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
 
     def __missing__(self, key):
         if key and not key.startswith('_ipython'):
@@ -218,6 +246,8 @@ class ODict(OrderedDict):
         else:
             return False
 
+    def rename(self, *args, **kwargs):
+        self.__rename__(*args, **kwargs)
         
     def __getstate__ (self):
         return self.toOrderedDict()
@@ -242,7 +272,7 @@ class PopParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -256,14 +286,18 @@ class CellParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        success = self.__rename__(old, new, label)
 
-        # special case: renaming cellParams[x]['secs'] requires updating topology
-        if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
-            d = self[label[0]]
-            for sec in list(d['secs'].values()):  # replace appearences in topol
-                if sec['topol'].get('parentSec') == old: 
-                    sec['topol']['parentSec'] = new
+        try:
+            # special case: renaming cellParams[x]['secs'] requires updating topology
+            if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
+                d = self[label[0]]
+                for sec in list(d['secs'].values()):  # replace appearences in topol
+                    if sec['topol'].get('parentSec') == old: 
+                        sec['topol']['parentSec'] = new
+            return success
+        except:
+            return False
 
 
 class ConnParams (ODict):
@@ -278,7 +312,7 @@ class ConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SynMechParams (ODict):
@@ -293,7 +327,7 @@ class SynMechParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class SubConnParams (ODict):
@@ -308,7 +342,7 @@ class SubConnParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimSourceParams (ODict):
@@ -323,7 +357,7 @@ class StimSourceParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 class StimTargetParams (ODict):
@@ -338,7 +372,7 @@ class StimTargetParams (ODict):
         return True
 
     def rename(self, old, new, label=None):
-        self.__rename__(old, new, label)
+        return self.__rename__(old, new, label)
 
 
 ###############################################################################
@@ -355,7 +389,9 @@ class NetParams (object):
         self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
         self.sizeZ = 100 # z-dimension (horizontal depth) size in um
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
-
+        self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
+        self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
+        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150] 
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
@@ -409,7 +445,7 @@ class NetParams (object):
             if not os.path.exists(folder):
                 print(' Could not create', folder)
 
-        dataSave = {'netParams': self.__dict__}
+        dataSave = {'net': {'params': self.__dict__}}
 
         # Save to json file
         if ext == 'json':
@@ -501,7 +537,7 @@ class NetParams (object):
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(synMech.pop('label'), synMech)
+            for synMech in synMechs: self.addSynMechParams(cellName+'_'+synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 
@@ -548,6 +584,26 @@ class NetParams (object):
 
         cellRule.secLists[secListName] = list(secList)
 
+    def swapCellParamsPt3d(self, label, origIndex, targetIndex):
+        if label in self.cellParams:
+            cellRule = self.cellParams[label]
+        else:
+            print('Error swapping 3d pts: netParams.cellParams does not contain %s' % (label))
+            return
+
+        if origIndex not in list(range(4)) and targetIndex not in list(range(4)): # check valid indices (x,y,z,d)
+            print('Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)')
+            return
+
+        for sec in list(cellRule.secs.values()):
+            if 'pt3d' in sec['geom']:
+                pt3d = sec['geom']['pt3d']
+                for i,pt in enumerate(pt3d): pt3d[i] = list(pt)
+                for pt in pt3d:
+                    tmp = float(pt[origIndex])
+                    pt[origIndex] = float(pt[targetIndex])
+                    pt[targetIndex] = tmp
+
 
     def renameCellParamsSec(self, label, oldSec, newSec):
         self.cellParams.rename(oldSec, newSec, (label, 'secs'))
@@ -577,22 +633,36 @@ class NetParams (object):
 
 
     def saveCellParamsRule(self, label, fileName):
-        import pickle
+        import pickle, json, os
+
+        ext = os.path.basename(fileName).split('.')[1]
+
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
             print('Error saving: netParams.cellParams does not contain %s' % (label))
             return
-        with open(fileName, 'w') as fileObj:
-            pickle.dump(cellRule, fileObj)
+
+        if ext == 'pkl':
+            with open(fileName, 'w') as fileObj:
+                pickle.dump(cellRule, fileObj)
+        elif ext == 'json':
+            with open(fileName, 'w') as fileObj:
+                cellRule = json.dump(cellRule, fileObj)
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle
-        with open(fileName, 'r') as fileObj:
-            cellRule = pickle.load(fileObj)
-        self.cellParams[label] = cellRule
+        import pickle, json, os
 
+        ext = os.path.basename(fileName).split('.')[1]
+        if ext == 'pkl':
+            with open(fileName, 'r') as fileObj:
+                cellRule = pickle.load(fileObj)
+        elif ext == 'json':
+            with open(fileName, 'r') as fileObj:
+                cellRule = json.load(fileObj)
+        
+        self.cellParams[label] = cellRule
 
 
     def todict(self):
@@ -610,26 +680,34 @@ class SimConfig (object):
         # Simulation parameters
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
-        self.hParams = Dict({'celsius': 6.3, 'clamp_resist': 0.001})  # parameters of h module
+        self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
-        self.createNEURONObj = True  # create HOC objects when instantiating network
+        self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
+        self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
+        self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
+        self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
+        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
+        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
+        self.printSynsAfterRule = False  # print total of connections after each conn rule is applied 
         self.verbose = False  # show detailed messages
 
         # Recording
         self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
         self.recordStim = False  # record spikes of cell stims
+        self.recordLFP = [] # list of 3D locations to record LFP from
+        self.saveLFPCells = False  # Store LFP generate individually by each cell 
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 
@@ -647,11 +725,9 @@ class SimConfig (object):
         self.saveHDF5 = False # save to HDF5 file
         self.saveDat = False # save traces to .dat file(s)
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
-        self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
-        self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
 
         # error checking
-        self.checkErrors = True # whether to validate the input parameters (will be turned off if num processors > 1)
+        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 

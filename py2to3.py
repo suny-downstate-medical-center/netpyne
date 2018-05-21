@@ -2,7 +2,7 @@
 from subprocess import call
 
 py2_root = '../netpyne_py2_temp'
-py2_branch = 'py2to3_easy'
+py2_branch = 'dipole'
 folders = ['netpyne', 'doc', 'examples']
 files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
 

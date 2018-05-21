@@ -41,11 +41,6 @@ cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}       
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['E2_simple'] = cellRule                                                        # add cell params rule
 
-# Set vinit for all sections of all cells
-for cellRule in list(netParams.cellParams.values()):
-    for sec in list(cellRule['secs'].values()):
-        sec['vinit'] = -90.0
-
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # excitatory synaptic mechanism
@@ -85,15 +80,14 @@ netParams.connParams['I->all'] = {
 netParams.subConnParams['all->E'] = {
     'preConds': {'ynorm': [0,1]},                                           # presyn: all
     'postConds': {'cellType': ['E2', 'E4', 'E5']},                          # postsyn: E
-    'sec': ['all'],                                                         # target all sections
-    'somaPathDist': [0, 100.0],                                             # path distance from soma
-    'distribut': 'uniform'}                                                 # distribute syns uninformly
+    'sec': 'apical',                                                         # target all sections                                           # path distance from soma
+    'density': 'uniform'}                                                 # distribute syns uninformly
 
 netParams.subConnParams['E->upperI'] = {                                    
     'preConds': {'cellType': ['E2', 'E4', 'E5']},                           # presyn: all
     'postConds': {'cellType': ['IF', 'IL'], 'ynorm': [0.2, 0.5]},           # postsyn: I, 0.2-0.5
-    'sec': ['basal', 'somatic'],                                            # target all basal and somatic sections
-    'dsitribute': 'random'}                                                 # distribute syns randomly 
+    'sec': 'basal',                                            # target all basal and somatic sections
+    'density': 'uniform'}                                                 # distribute syns randomly 
 
 
 ## Stimulation parameters
@@ -109,12 +103,13 @@ netParams.stimTargetParams['Input1->all'] = {'source': 'Input1', 'conds': {'ynor
 
 simConfig = specs.SimConfig()                       # object of class SimConfig to store simulation configuration
 
-simConfig.verbose = 0                               # Show detailed messages 
-simConfig.createNEURONObj = 0                       # create HOC objects when instantiating network
+simConfig.createNEURONObj = False                       # create HOC objects when instantiating network
 simConfig.createPyStruct = True                     # create Python structure (simulator-independent) when instantiating network
 
 # Saving
 simConfig.filename = 'V1'                        # Set file output name
-simConfig.saveDataInclude = ['netParams', 'net']    # data structures to save
+simConfig.saveDataInclude = ['netParams', 'net', 'simConfig']    # data structures to save
 simConfig.saveJson = True                           # Save params, network and sim output to pickle file
+simConfig.compactConnFormat = True
+simConfig.saveCellSecs = False
 

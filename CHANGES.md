@@ -2,6 +2,10 @@
 
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
+- Added support for HNN
+
+- Fixed bug setting v_init
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

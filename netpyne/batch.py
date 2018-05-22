@@ -318,8 +318,8 @@ wait
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
                             
                             print command+'\n'
-                            proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-                            print proc.stdout.read()
+                            proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
+                            #print proc.stdout.read()
                             
                             
                         # pc bulletin board job submission (master/slave) via mpi

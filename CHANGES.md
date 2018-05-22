@@ -4,6 +4,7 @@
 
 - Added option to run single job on multiple mpi cores via Batch class 
 
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

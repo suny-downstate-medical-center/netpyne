@@ -305,9 +305,9 @@ wait
                             (output, input) = (proc.stdin, proc.stdout)
 
 
-                        # single job via mpi (useful to use batch.py setup for single job)
-                        # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-                        elif self.runCfg.get('type',None) == 'mpi_single':
+                        # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
+                        # eg. usage: python batch.py
+                        elif self.runCfg.get('type',None) == 'mpi_direct':
                             jobName = self.saveFolder+'/'+simLabel     
                             print 'Running job ',jobName
                             cores = self.runCfg.get('cores', 1)
@@ -324,7 +324,7 @@ wait
                             
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-                        elif self.runCfg.get('type',None) == 'mpi':
+                        elif self.runCfg.get('type',None) == 'mpi_bulletin':
                             jobName = self.saveFolder+'/'+simLabel     
                             print 'Submitting job ',jobName
                             # master/slave bulletin board schedulling of jobs

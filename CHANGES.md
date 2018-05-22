@@ -2,7 +2,7 @@
 
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
-- Added option to run single job on multiple mpi cores via Batch class 
+- Added option to run jobs directly on multiple mpi cores via Batch class 
 
 
 # Version 0.7.8

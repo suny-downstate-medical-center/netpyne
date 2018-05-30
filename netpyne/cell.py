@@ -378,7 +378,7 @@ class CompartCell (Cell):
                         sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
                         if pointpParamValue == 'gid': 
-                            pointpParamValue == self.gid
+                            pointpParamValue == float(self.gid)
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
@@ -521,7 +521,7 @@ class CompartCell (Cell):
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
                         if pointpParamValue == 'gid': 
-                            pointpParamValue == self.gid
+                            pointpParamValue == float(self.gid)
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 

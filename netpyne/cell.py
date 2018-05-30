@@ -520,6 +520,8 @@ class CompartCell (Cell):
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue == self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 

@@ -6,6 +6,7 @@
 
 - Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
 
+- Fixed rasterPlot pop label automated spacing
 
 # Version 0.7.8
 

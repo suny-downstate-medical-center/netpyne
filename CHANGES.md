@@ -4,6 +4,8 @@
 
 - Added option to run jobs directly on multiple mpi cores via Batch class 
 
+- Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
+
 
 # Version 0.7.8
 

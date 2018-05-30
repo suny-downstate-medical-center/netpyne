@@ -377,6 +377,8 @@ class CompartCell (Cell):
                     if pointpName not in sec['pointps']: 
                         sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue == self.gid
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 

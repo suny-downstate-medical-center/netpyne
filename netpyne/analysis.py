@@ -987,9 +987,9 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 ######################################################################################################################################################
 ## Plot spike histogram
 ######################################################################################################################################################3
-@exception
+#@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], histlogy = False, histlogx = False, histmin = None, density = False, includeRate0=False, legendLabels = None, normfit = False,
+                 popColors = [], histlogy = False, histlogx = False, histmin = 0.0, density = False, includeRate0=False, legendLabels = None, normfit = False,
                  fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
@@ -1196,7 +1196,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
         # histogram
         elif graphType == 'histogram':
-            
+            import numpy as np
             nmax = 0
             binmax = 0
             for i,data in enumerate(statData):  # fix 

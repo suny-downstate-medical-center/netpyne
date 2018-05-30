@@ -288,6 +288,7 @@ echo $PBS_O_WORKDIR
 #SBATCH --mail-user=%s
 #SBATCH --mail-type=end
 %s
+%s
 
 source ~/.bashrc
 cd %s

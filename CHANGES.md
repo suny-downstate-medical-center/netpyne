@@ -8,6 +8,8 @@
 
 - Fixed rasterPlot pop label automated spacing
 
+- Updated rcParams text.fontsize to font.size
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

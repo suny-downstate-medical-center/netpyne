@@ -1018,7 +1018,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     colors = []
     params = {
         'axes.labelsize': 14,
-        'text.fontsize': 14,
+        'font.size': 14,
         'legend.fontsize': 14,
         'xtick.labelsize': 14,
         'ytick.labelsize': 14,

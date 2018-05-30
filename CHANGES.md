@@ -4,6 +4,8 @@
 
 - Added option to run jobs directly on multiple mpi cores via Batch class 
 
+- Added option for custom text in PBS or SLURM scripts to submit batch jobs
+
 - Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
 
 - Fixed rasterPlot pop label automated spacing

@@ -221,6 +221,7 @@ class Batch(object):
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
+                            custom = self.runCfg.get('custom', '')
                             numproc = nodes*ppn
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
@@ -233,10 +234,11 @@ class Batch(object):
 #PBS -l %s
 #PBS -o %s.run
 #PBS -e %s.err
+%s
 cd $PBS_O_WORKDIR
 echo $PBS_O_WORKDIR
 %s
-                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
                            # Send job_string to qsub
                             print 'Submitting job ',jobName
@@ -266,6 +268,7 @@ echo $PBS_O_WORKDIR
                             mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             reservation = self.runCfg.get('reservation', None)
+                            custom = self.runCfg.get('custom', '')
                             if reservation:
                                 res = '#SBATCH --res=%s'%(reservation)
                             else:  
@@ -290,7 +293,7 @@ source ~/.bashrc
 cd %s
 %s
 wait
-                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, folder, command)
+                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
                             # Send job_string to qsub
                             print 'Submitting job ',jobName

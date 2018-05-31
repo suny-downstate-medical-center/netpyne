@@ -1205,11 +1205,20 @@ def gatherData (gatherLFP = True):
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
             
-    # convert LFP to list
+    # remove data structures used to calculate LFP 
     if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
-            del cell.imembVec
-            del cell.imembPtr
+            try:
+                del cell.imembVec
+                del cell.imembPtr
+                del cell._segCoords
+            except:
+                pass
+        for pop in sim.net.pops.values():
+            try:
+                del pop._morphSegCoords
+            except:
+                pass
 
     simDataVecs = ['spkt','spkid','stims']+sim.cfg.recordTraces.keys()
     singleNodeVecs = ['t']
@@ -1593,7 +1602,8 @@ def saveData (include = None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: 
-            if 'LFP' in sim.allSimData: sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+            if 'LFP' in sim.allSimData: 
+                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
             dataSave['simData'] = sim.allSimData
 
 

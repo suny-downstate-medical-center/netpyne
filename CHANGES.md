@@ -8,9 +8,11 @@
 
 - Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
 
+- Fixed bug: removed cell.\_segCoords and pop.\_morphSegCoords before saving to file
+
 - Fixed rasterPlot pop label automated spacing
 
-- Updated rcParams text.fontsize to font.size
+- Fixed bug: updated rcParams text.fontsize to font.size
 
 # Version 0.7.8
 

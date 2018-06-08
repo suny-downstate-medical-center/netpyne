@@ -1160,7 +1160,7 @@ class CompartCell (Cell):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])

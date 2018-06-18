@@ -60,7 +60,7 @@ simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V tra
 simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.printSynsAfterRule = True
 simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
-
+simConfig.saveJson=1
 
 lfp=0
 if lfp:

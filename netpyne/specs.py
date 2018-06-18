@@ -16,7 +16,6 @@ class Dict(dict):
 
     __slots__ = []
 
-
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -256,6 +255,10 @@ class ODict(OrderedDict):
         self = self.fromOrderedDict(d)
 
 
+###############################################################################
+# PopParams class
+###############################################################################
+
 class PopParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -273,6 +276,11 @@ class PopParams (ODict):
 
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
+
+
+###############################################################################
+# CellParams class
+###############################################################################
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -300,6 +308,10 @@ class CellParams (ODict):
             return False
 
 
+###############################################################################
+# ConnParams class
+###############################################################################
+
 class ConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -314,6 +326,10 @@ class ConnParams (ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+
+###############################################################################
+# SynMechParams class
+###############################################################################
 
 class SynMechParams (ODict):
     def setParam(self, label, param, value):
@@ -330,6 +346,10 @@ class SynMechParams (ODict):
         return self.__rename__(old, new, label)
 
 
+###############################################################################
+# SubConnParams class
+###############################################################################
+
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -345,6 +365,10 @@ class SubConnParams (ODict):
         return self.__rename__(old, new, label)
 
 
+###############################################################################
+# StimSourceParams class
+###############################################################################
+
 class StimSourceParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -359,6 +383,10 @@ class StimSourceParams (ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+
+###############################################################################
+# StimTargetParams class
+###############################################################################
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):

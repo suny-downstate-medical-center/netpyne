@@ -836,7 +836,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ######################################################################################################################################################
 @exception
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
-    popColors = [], dpi = 100, figSize = (10,8), axis = 'on', saveData = None, saveFig = None, showFig = True): 
+    popColors = [], norm = False, dpi = 100, figSize = (10,8), smooth=None, filtFreq = False, filtOrder=3, axis = 'on', saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -867,11 +867,20 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         for pop in sim.net.allPops: include.append(pop)
 
     # Y-axis label
-    if yaxis == 'rate': yaxisLabel = 'Avg cell firing rate (Hz)'
-    elif yaxis == 'count': yaxisLabel = 'Spike count'
+    if yaxis == 'rate': 
+        if norm:
+            yaxisLabel = 'Normalized firing rate'
+        else:
+            yaxisLabel = 'Avg cell firing rate (Hz)'
+    elif yaxis == 'count': 
+        if norm:
+            yaxisLabel = 'Normalized spike count'
+        else:
+            yaxisLabel = 'Spike count'
     else:
         print 'Invalid yaxis value %s', (yaxis)
         return
+
 
     # time range
     if timeRange is None:
@@ -916,9 +925,28 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         histoT = histo[1][:-1]+binSize/2
         histoCount = histo[0] 
 
-        histData.append(histoCount)
+        if yaxis=='rate': 
+            histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
-        if yaxis=='rate': histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
+        if filtFreq:
+            from scipy import signal
+            fs = 1000.0/binSize
+            nyquist = fs/2.0    
+            if isinstance(filtFreq, list): # bandpass
+                Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+                b, a = signal.butter(filtOrder, Wn, btype='bandpass')
+            elif isinstance(filtFreq, Number): # lowpass
+                Wn = filtFreq/nyquist
+                b, a = signal.butter(filtOrder, Wn)
+            histoCount = signal.filtfilt(b, a, histoCount)
+
+        if norm:
+            histoCount /= max(histoCount)
+
+        if smooth:
+            histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
+            
+        histData.append(histoCount)
 
         color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)] 
 
@@ -980,7 +1008,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return fig, histData, histoT
 
 
 
@@ -1116,11 +1144,13 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
                 # Inter-spike interval (ISI) coefficient of variation (CV) stats
                 elif stat == 'isicv':
+                    import numpy as np
                     spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
                         for gid in set(spkinds)]
-                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat]
+                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
                     isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
                     statData.insert(0, isicv) 
+
 
                 # synchrony
                 elif stat in ['sync', 'pairsync']:
@@ -1156,7 +1186,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # boxplot
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
-            bp=plt.boxplot(statData, labels=include[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
+            labels = legendLabels if legendLabels else include
+            bp=plt.boxplot(statData, labels=labels, notch=False, sym='k+', meanprops=meanpointprops, 
                         whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
@@ -1197,7 +1228,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # histogram
         elif graphType == 'histogram':
             import numpy as np
+
             nmax = 0
+            pdfmax = 0
             binmax = 0
             for i,data in enumerate(statData):  # fix 
                 if histlogx:
@@ -1217,32 +1250,41 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                 else: 
                     weights = np.ones_like(data)
 
-                n, binedges,_ = plt.hist(data,  bins=histbins, histtype='step', color=colors[i], linewidth=1.5, weights=weights)#, normed=1)#, normed=density)# weights=weights)
+                n, binedges,_ = plt.hist(data,  bins=histbins, histtype='step', color=colors[i], linewidth=2, weights=weights)#, normed=1)#, normed=density)# weights=weights)
                 if histShading:
-                    plt.hist(data, bins=histbins, alpha=0.25, color=colors[i], linewidth=0, weights=weights) 
+                    plt.hist(data, bins=histbins, alpha=0.05, color=colors[i], linewidth=0, weights=weights) 
                 label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
                 if histShading:
-                    plt.hist([-10], bins=histbins, fc=((colors[i][0], colors[i][1], colors[i][2],0.25)), edgecolor=colors[i], linewidth=1.5, label=label)
+                    plt.hist([-10], bins=histbins, fc=((colors[i][0], colors[i][1], colors[i][2],0.05)), edgecolor=colors[i], linewidth=2, label=label)
                 else:
-                    plt.hist([-10], bins=histbins, edgecolor=colors[i], linewidth=1.5, label=label)
+                    plt.hist([-10], bins=histbins, fc=((1,1,1),0), edgecolor=colors[i], linewidth=2, label=label)
                 nmax = max(nmax, max(n))
                 binmax = max(binmax, binedges[-1])
                 if histlogx: 
                     plt.xscale('log')
 
-                # if normfit:
-                #     (shape, loc, scale) = scipy.stats.lognorm.fit(data, loc=0)  
-                #     mu = np.log(scale)
-                #     sigma = shape
-                #     x=np.linspace(0, 25, 400)
-                #     x=binedges
-                #     y = scipy.stats.lognorm.pdf(x, shape, loc=0, scale=scale)
-                #     plt.plot(x, y, '--', color = colors[i], linewidth=2)
-                #     print binedges, y
-                #     print shape, scale
-                #     print mu, sigma
-                #     if histlogx:
-                #         plt.xscale('log')
+                if normfit:
+                    def lognorm(meaninput, stdinput, binedges, n, popLabel, color):
+                        from scipy import stats 
+                        M = float(meaninput) # Geometric mean == median
+                        s = float(stdinput) # Geometric standard deviation
+                        mu = np.log10(M) # Mean of log(X)
+                        sigma = np.log10(s) # Standard deviation of log(X)                        
+                        shape = sigma # Scipy's shape parameter
+                        scale = np.power(10, mu) # Scipy's scale parameter
+                        x = [(binedges[i]+binedges[i+1])/2.0 for i in range(len(binedges)-1)]  #np.linspace(histmin, 30, num=400) # values for x-axis
+                        pdf = stats.lognorm.pdf(x, shape, loc=0, scale=scale) # probability distribution
+                        R, p = scipy.stats.pearsonr(n, pdf)
+                        print '    Pop %s rate: mean=%f, std=%f, lognorm mu=%f, lognorm sigma=%f, R=%.2f (p-value=%.2f)' % (popLabel, M, s, mu, sigma, R, p)
+                        plt.semilogx(x, pdf, color=color, ls='dashed')
+                        return pdf
+
+
+                    fitmean = np.mean(data)
+                    fitstd = np.std(data)
+                    pdf=lognorm(fitmean, fitstd, binedges, n, label, colors[i])
+                    pdfmax = max(pdfmax, max(pdf))
+                    nmax = max(nmax, pdfmax)
 
                     # check normality of distribution
                     #W, p = scipy.stats.shapiro(data)
@@ -1256,9 +1298,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             plt.ylim(0, 1.1*nmax if density else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
             plt.legend(fontsize=fontsiz)
 
-            #plt.show() # REMOVE!
+            # plt.show() # REMOVE!
 
-            if xlim: ax.set_xlim(xlim)
+            # if xlim: ax.set_xlim(xlim)
 
             #from IPython import embed; embed()
 
@@ -1276,10 +1318,10 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                 #per75, binedges, _ = stats.binned_statistic(ynorms, data, p75, bins=bins)
                 
                 label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
-                plt.scatter(ynorms, data, color=colors[i], label=label, s=10)
+                plt.scatter(ynorms, data, color=[0/255.0,215/255.0,255/255.0], label=label, s=2) #[88/255.0,204/255.0,20/255.0]
                 binstep = binedges[1]-binedges[0]
                 bincenters = [b+binstep/2 for b in binedges[:-1]] 
-                plt.errorbar(bincenters, mean, yerr=std, fmt = 'go-',capthick=1, capsize=5)
+                plt.errorbar(bincenters, mean, yerr=std, color=[6/255.0,70/255.0,163/255.0], fmt = 'o-',capthick=1, capsize=5) #[44/255.0,53/255.0,127/255.0]
                 #plt.errorbar(bincenters, mean, yerr=[mean-per25,per75-mean], fmt='go-',capthick=1, capsize=5)
             ylims=plt.ylim()
             plt.ylim(0,ylims[1])
@@ -1563,8 +1605,9 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 # yl = plt.ylim()
                 # plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
                 add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=3, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
+                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
                 plt.axis(axis) 
+
             if overlay:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
@@ -1848,9 +1891,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 ######################################################################################################################################################
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, dpi = 200, overlay=False, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False,
+    colors = None, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -1879,11 +1923,38 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     print('Plotting LFP ...')
 
+    if not colors: colors = colorList
+
     # time range
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
 
     lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+
+    if filtFreq:
+        from scipy import signal
+        fs = 1000.0/sim.cfg.recordStep
+        nyquist = fs/2.0    
+        if isinstance(filtFreq, list): # bandpass
+            Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+            b, a = signal.butter(filtOrder, Wn, btype='bandpass')
+        elif isinstance(filtFreq, Number): # lowpass
+            Wn = filtFreq/nyquist
+            b, a = signal.butter(filtOrder, Wn)
+        for i in range(lfp.shape[1]):
+            lfp[:,i] = signal.filtfilt(b, a, lfp[:,i])
+
+    if detrend:
+        from scipy import signal
+        for i in range(lfp.shape[1]):
+            lfp[:,i] = signal.detrend(lfp[:,i])
+
+    if norm:
+        for i in range(lfp.shape[1]):
+            offset = min(lfp[:,i])
+            if offset <= 0:
+                lfp[:,i] += abs(offset)
+            lfp[:,i] /= max(lfp[:,i])
 
     # electrode selection
     if 'all' in electrodes:
@@ -1895,13 +1966,16 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     fontsiz = 14
     maxPlots = 8.0
     
+    data = {'lfp':lfp}  # returned data
+
     # time series -----------------------------------------
     if 'timeSeries' in plots:
         ydisp = np.absolute(lfp).max() * separation
         offset = 1.0*ydisp
         t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
-        figs.append(plt.figure(figsize=figSize))
+        if figSize:
+            figs.append(plt.figure(figsize=figSize))
 
         for i,elec in enumerate(electrodes):
             if elec == 'avg':
@@ -1910,13 +1984,17 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 lw=1.0
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
-                color = colorList[i%len(colorList)]
+                color = colors[i%len(colors)]
                 lw=1.0
             plt.plot(t, -lfpPlot+(i*ydisp), color=color, linewidth=lw)
             if len(electrodes) > 1:
                 plt.text(timeRange[0]-0.07*(timeRange[1]-timeRange[0]), (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
 
         ax = plt.gca()
+
+        data['lfpPlot'] = lfpPlot
+        data['ydisp'] =  ydisp
+        data['t'] = t
 
         # format plot
         if len(electrodes) > 1:
@@ -1945,10 +2023,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         labely = '%.3g $\mu$V'%(sizey*scaley)#)[1:]
         if len(electrodes) > 1:
             add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
-                loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+                loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         else:
             add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
-                unitsx='ms', loc=4, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+                unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
@@ -1966,6 +2044,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
             #import seaborn as sb
 
+        allFreqs = []
+        allSignal = []
+        data['allFreqs'] = allFreqs
+        data['allSignal'] = allSignal
+
         for i,elec in enumerate(electrodes):
             if not overlay:
                 plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
@@ -1975,7 +2058,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 lw=1.5
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
-                color = colorList[i%len(colorList)]
+                color = colors[i%len(colors)]
                 lw=1.5
             
             Fs = int(1000.0/sim.cfg.recordStep)
@@ -1987,6 +2070,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             else:
                 signal = 10*np.log10(power[0])
             freqs = power[1]
+
+            allFreqs.append(freqs)
+            allSignal.append(signal)
 
             plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color, label='Electrode %s'%(str(elec)))
             plt.xlim([0, maxFreq])
@@ -2013,7 +2099,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             plt.legend(fontsize=fontsiz)
         plt.tight_layout()
         plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
-        plt.subplots_adjust(bottom=0.08, top=0.95)
+        plt.subplots_adjust(bottom=0.08, top=0.92)
 
         # save figure
         if saveFig: 
@@ -2030,29 +2116,42 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
             
+        from scipy import signal as spsig
+        logx_spec = []
+        
         for i,elec in enumerate(electrodes):
-            plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
-                color = 'k'
-                lw=1.0
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
-                color = colorList[i%len(colorList)]
-                lw=1.0
-
-            #import seaborn as sb
-            from scipy import signal as spsig
-
             # creates spectrogram over a range of data 
             # from: http://joelyancey.com/lfp-python-practice/
             fs = int(1000.0/sim.cfg.recordStep)
             f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
             detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
             x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            plt.pcolormesh(x_mesh, y_mesh, 10*np.log10(x_spec[f<maxFreq]), cmap=cm.jet)#, vmin=vmin, vmax=vmax)
+            logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+
+        vmin = np.array(logx_spec).min()
+        vmax = np.array(logx_spec).max()
+        for i,elec in enumerate(electrodes):
+            plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
+            if elec == 'avg':
+                color = 'k'
+                lw=1.0
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                color = colorList[i%len(colorList)]
+                lw=1.0
+            plt.pcolormesh(x_mesh, y_mesh, logx_spec[i], cmap=cm.jet, vmin=vmin, vmax=vmax)
             plt.colorbar(label='dB/Hz')
-            plt.ylabel('Hz')
+            if logy:
+                plt.yscale('log')
+                plt.ylabel('Log-frequency (Hz)')
+                if isinstance(logy, list):
+                    yticks = tuple(logy)
+                    plt.yticks(yticks, yticks)
+            else:
+                plt.ylabel('Frequency (Hz)')
             if len(electrodes) > 1:
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
 
@@ -2100,7 +2199,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs
+    return figs, data
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object

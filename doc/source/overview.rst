@@ -9,9 +9,9 @@ Although NEURON already enables multiscale simulation ranging from the molecular
 
 For a more detailed overview of NetPyNE see:
 
-- `SLIDES for Computational Neuroscience conference CNS17 <http://neurosimlab.org/salvadord/netpyne.pdf>`_
+- `SLIDES for Computational Neuroscience conference CNS17 <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_
 
-- `POSTER for Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ 
+- `POSTER for Computational Neuroscience conference CNS16 <http://it.neurosim.downstate.edu/salvadord/CNS16_poster.pdf>`_ 
 
 |
 

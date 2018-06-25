@@ -691,20 +691,23 @@ metadata = {
                         "label": "Weight of synaptic connection",
                         "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                         "suggestions": "",
-                        "hintText": "float/str"
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "delay": {
                         "label": "Connection delay (ms)",
                         "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                         "suggestions": "",
                         "hintText": "",
+                        "type": "",
                         "type": "float/str"
                     },
                     "probability": {
                         "label": "Probability of connection (0-1)",
                         "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
                         "suggestions": "0.1",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "convergence": {
                         "label": "Convergence",
@@ -717,13 +720,14 @@ metadata = {
                         "label": "Divergence",
                         "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
                         "suggestions": "5",
-                        "hintText": "float/str"
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "connList": {
                         "label": "Explicit list of one-to-one connections",
                         "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function).",
                         "suggestions": "",
-                        "hintText": "float/str"
+                        "hintText": "list(list(float))"
                     },
                     "connFunc": {
                         "label": "Internal connectivity function to use (not required)",

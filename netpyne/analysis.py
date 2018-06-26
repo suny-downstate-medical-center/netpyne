@@ -836,7 +836,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ######################################################################################################################################################
 @exception
 def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', 
-    popColors = [], norm = False, dpi = 100, figSize = (10,8), smooth=None, filtFreq = False, filtOrder=3, axis = 'on', saveData = None, saveFig = None, showFig = True): 
+    popColors = [], norm = False, dpi = 100, figSize = (10,8), smooth=None, filtFreq = False, filtOrder=3, axis = 'on', saveData = None, 
+    saveFig = None, showFig = True, **kwargs): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -984,10 +985,11 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Set axis or scaleber
     if axis == 'off':
         ax = plt.gca()
+        scalebarLoc = kwargs.get('scalebarLoc', 7)
         round_to_n = lambda x, n, m: int(np.round(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m 
         sizex = round_to_n((timeRange[1]-timeRange[0])/10.0, 1, 50)
         add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='Hz', scalex=1, scaley=1, loc=7, pad=2, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)  
+                    unitsx='ms', unitsy='Hz', scalex=1, scaley=1, loc=scalebarLoc, pad=2, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)  
         plt.axis(axis)
 
     # save figure data
@@ -1018,7 +1020,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 #@exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], histlogy = False, histlogx = False, histmin = 0.0, density = False, includeRate0=False, legendLabels = None, normfit = False,
-                 fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True): 
+                 fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True, **kwargs): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1318,7 +1320,13 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                 #per75, binedges, _ = stats.binned_statistic(ynorms, data, p75, bins=bins)
                 
                 label = legendLabels[-i-1] if legendLabels else str(include[-i-1])
-                plt.scatter(ynorms, data, color=[0/255.0,215/255.0,255/255.0], label=label, s=2) #[88/255.0,204/255.0,20/255.0]
+                if kwargs.get('differentColor', None):
+                    threshold = kwargs['differentColor'][0]
+                    newColor = kwargs['differentColor'][1] #
+                    plt.scatter(ynorms[:threshold], data[:threshold], color=[6/255.0,8/255.0,(64+30)/255.0], label=label, s=2) #, [0/255.0,215/255.0,255/255.0], [88/255.0,204/255.0,20/255.0]
+                    plt.scatter(ynorms[threshold:], data[threshold:], color=newColor, alpha= 0.2, s=2) #[88/255.0,204/255.0,20/255.0]
+                else:
+                    plt.scatter(ynorms, data, color=[0/255.0,215/255.0,255/255.0], label=label, s=2) #[88/255.0,204/255.0,20/255.0]
                 binstep = binedges[1]-binedges[0]
                 bincenters = [b+binstep/2 for b in binedges[:-1]] 
                 plt.errorbar(bincenters, mean, yerr=std, color=[6/255.0,70/255.0,163/255.0], fmt = 'o-',capthick=1, capsize=5) #[44/255.0,53/255.0,127/255.0]
@@ -1329,6 +1337,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             #plt.xlabel('avg rate (Hz)', fontsize=fontsiz)
             plt.ylabel(xlabel, fontsize=fontsiz)
             plt.legend(fontsize=fontsiz)
+
+            #from IPython import embed; embed()
 
         # elif graphType == 'bar':
         #     print range(1, len(statData)+1), statData
@@ -1893,7 +1903,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 ######################################################################################################################################################
 #@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False,
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False,
     colors = None, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
@@ -2100,6 +2110,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         plt.tight_layout()
         plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
         plt.subplots_adjust(bottom=0.08, top=0.92)
+
+
+        if logx:
+            pass
+        #from IPython import embed; embed()
 
         # save figure
         if saveFig: 

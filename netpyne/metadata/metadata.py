@@ -253,7 +253,7 @@ metadata = {
                 "hintText": "",
                 "type": "list(float)"
             },
-            
+
     # ---------------------------------------------------------------------------------------------------------------------
     # netParams.cellParams
     # ---------------------------------------------------------------------------------------------------------------------
@@ -691,38 +691,43 @@ metadata = {
                         "label": "Weight of synaptic connection",
                         "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "delay": {
                         "label": "Connection delay (ms)",
                         "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "list(float)"
+                        "type": "",
+                        "type": "float/str"
                     },
                     "probability": {
                         "label": "Probability of connection (0-1)",
                         "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
                         "suggestions": "0.1",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "convergence": {
                         "label": "Convergence",
                         "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
                         "suggestions": "5",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "divergence": {
                         "label": "Divergence",
                         "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
                         "suggestions": "5",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float/str"
                     },
                     "connList": {
                         "label": "Explicit list of one-to-one connections",
                         "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function).",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "list(list(float))"
                     },
                     "connFunc": {
                         "label": "Internal connectivity function to use (not required)",
@@ -908,7 +913,7 @@ metadata = {
                                 "help": "Cell types that will receive the stimulation",
                                 "hintText": "",
                                 "type": "str"
-                            }, 
+                            },
                             "cellModel": {
                                 "label": "Target cell model",
                                 "help": "Cell models that will receive the stimulation.",
@@ -958,7 +963,7 @@ metadata = {
                                 "hintText": "",
                                 "type": "list(float)"
                             },
-                            
+
                         }
                     },
                     "sec": {
@@ -1247,13 +1252,13 @@ metadata = {
                 "suggestions": "",
                 "type": "float"
             },
-            "printRunTime": { 
+            "printRunTime": {
                 "label": "Interval to print run time at (s)",
                 "help": "Print run time at interval (in sec) specified here (eg. 0.1) (default: False).",
                 "suggestions": "",
                 "type": "float"
             },
-            "printSynsAfterRule": { 
+            "printSynsAfterRule": {
                 "label": "Print total connections",
                 "help": "Print total connections after each conn rule is applied.",
                 "suggestions": "",
@@ -1719,8 +1724,8 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "include": {
-                                "label": "Cells to include",           
-                                "suggestions": "",                    
+                                "label": "Cells to include",
+                                "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
                                 "type": "list"
@@ -1806,9 +1811,9 @@ metadata = {
                                 "help": "list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']).",
                                 "hintText": "",
                                 "options": [
-                                    "timeSeries", 
-                                    "PSD", 
-                                    "timeFreq", 
+                                    "timeSeries",
+                                    "PSD",
+                                    "timeFreq",
                                     "location"
                                 ],
                                 "type": "str"
@@ -2126,7 +2131,7 @@ metadata = {
                                 "help": "Show matrix for individual cells or populations ('pop'|'cell').",
                                 "hintText": "",
                                 "options": [
-                                    "pop", 
+                                    "pop",
                                     "cell"
                                 ],
                                 "type": ""
@@ -2137,8 +2142,8 @@ metadata = {
                                 "help": "Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') ('gid'|'y'|'ynorm'|...).",
                                 "hintText": "",
                                 "options": [
-                                    "gid", 
-                                    "y", 
+                                    "gid",
+                                    "y",
                                     "ynorm"
                                 ],
                                 "type": ""

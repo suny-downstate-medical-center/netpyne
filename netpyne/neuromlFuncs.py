@@ -465,10 +465,31 @@ if neuromlExists:
             type = 'populationList'
             if not np_pop.tags['cellModel'] ==  'NetStim':
                 comp_id = populations_vs_components[np_pop.tags['pop']]
-                pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
+                pop_id = np_pop.tags['pop']
+                pop = neuroml.Population(id=pop_id,component=comp_id, type=type)
                 pop.properties.append(neuroml.Property('radius',default_cell_radius))
                 
-                pop.properties.append(neuroml.Property('color','%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())))
+                color = '%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())
+                
+                try:
+                    import opencortex.utils.color as occ
+                    interneuron = 'SOM' in pop_id or 'PV' in pop_id
+                    if 'L23' in pop_id:
+                        color = occ.L23_INTERNEURON if interneuron else occ.L23_PRINCIPAL_CELL
+                        pop.properties.append(neuroml.Property('region','L23'))
+                    if 'L4' in pop_id:
+                        color = occ.L4_INTERNEURON if interneuron else occ.L4_PRINCIPAL_CELL
+                        pop.properties.append(neuroml.Property('region','L4'))
+                    if 'L5' in pop_id:
+                        color = occ.L5_INTERNEURON if interneuron else occ.L5_PRINCIPAL_CELL
+                        pop.properties.append(neuroml.Property('region','L5'))
+                    if 'L6' in pop_id:
+                        color = occ.L6_INTERNEURON if interneuron else occ.L6_PRINCIPAL_CELL
+                        pop.properties.append(neuroml.Property('region','L6'))
+                except:
+                    pass # Don't add anything, not a problem...
+                    
+                pop.properties.append(neuroml.Property('color',color))
                 
                 nml_net.populations.append(pop)
 

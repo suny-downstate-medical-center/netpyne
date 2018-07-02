@@ -2,6 +2,18 @@
 
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
+- Added option to run jobs directly on multiple mpi cores via Batch class 
+
+- Added option for custom text in PBS or SLURM scripts to submit batch jobs
+
+- Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
+
+- Fixed bug: removed cell.\_segCoords and pop.\_morphSegCoords before saving to file
+
+- Fixed rasterPlot pop label automated spacing
+
+- Fixed bug: updated rcParams text.fontsize to font.size
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

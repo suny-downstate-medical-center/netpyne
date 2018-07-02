@@ -385,6 +385,8 @@ class CompartCell (Cell):
                     if pointpName not in sec['pointps']: 
                         sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
@@ -526,6 +528,8 @@ class CompartCell (Cell):
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
@@ -1164,7 +1168,7 @@ class CompartCell (Cell):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])

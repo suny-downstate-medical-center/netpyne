@@ -1867,15 +1867,15 @@ metadata = {
                                 "type": "list"
                             },
                             "plots": {
-                                "label": "Plot types to show",
+                                "label": "Select plot types to show (multiple selection available)",
                                 "suggestions": "",
                                 "help": "list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']).",
                                 "hintText": "",
                                 "options": [
                                     "timeSeries",
                                     "PSD",
-                                    "timeFreq",
-                                    "location"
+                                    "spectrogram",
+                                    "locations"
                                 ],
                                 "type": "str"
                             },

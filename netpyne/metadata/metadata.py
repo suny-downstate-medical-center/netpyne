@@ -723,7 +723,7 @@ metadata = {
                         "help": "Strength of synaptic connection (e.g. 0.01). Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultWeight = 1.",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "float/str"
+                        "type": "func"
                     },
                     "delay": {
                         "label": "Connection delay (ms)",
@@ -731,28 +731,28 @@ metadata = {
                         "suggestions": "",
                         "hintText": "",
                         "type": "",
-                        "type": "float/str"
+                        "type": "func"
                     },
                     "probability": {
                         "label": "Probability of connection (0-1)",
                         "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
                         "suggestions": "0.1",
                         "hintText": "",
-                        "type": "float/str"
+                        "type": "func"
                     },
                     "convergence": {
                         "label": "Convergence",
                         "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
                         "suggestions": "5",
                         "hintText": "",
-                        "type": "float/str"
+                        "type": "func"
                     },
                     "divergence": {
                         "label": "Divergence",
                         "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
                         "suggestions": "5",
                         "hintText": "",
-                        "type": "float/str"
+                        "type": "func"
                     },
                     "connList": {
                         "label": "Explicit list of one-to-one connections",

@@ -159,14 +159,14 @@ metadata = {
             },
             "scale": {
                 "label": "scale factor",
-                "help": ": Scale factor multiplier for number of cells (default: 1)",
+                "help": "Scale factor multiplier for number of cells (default: 1)",
                 "suggestions": "",
                 "hintText": "",
                 "type": "float"
             },
             "shape": {
                 "label": "network shape",
-                "help": ": Shape of network: 'cuboid', 'cylinder' or 'ellipsoid' (default: 'cuboid')",
+                "help": "Shape of network: 'cuboid', 'cylinder' or 'ellipsoid' (default: 'cuboid')",
                 "suggestions": "",
                 "hintText": "",
                 "options": [
@@ -227,14 +227,14 @@ metadata = {
             },
             "scaleConnWeight": {
                 "label": "connection weight scale factor",
-                "help": ": Connection weight scale factor (excludes NetStims) (default: 1)",
+                "help": "Connection weight scale factor (excludes NetStims) (default: 1)",
                 "suggestions": "",
                 "hintText": "",
                 "type": "float"
             },
             "scaleConnWeightNetStims": {
                 "label": "connection weight scale factor for NetStims",
-                "help": ": Connection weight scale factor for NetStims (default: 1)",
+                "help": "Connection weight scale factor for NetStims (default: 1)",
                 "suggestions": "",
                 "hintText": "",
                 "type": "float"
@@ -248,7 +248,7 @@ metadata = {
             },
             "popTagsCopiedToCells": {
                 "label": "",
-                "help": ": List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])}",
+                "help": "List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])}",
                 "suggestions": "",
                 "hintText": "",
                 "type": "list(float)"
@@ -271,7 +271,7 @@ metadata = {
                         "children": {
                             "pop": {
                                 "label": "Population",
-                                "help": "Apply the cell rule only to the cells belonging to this population (or list of populations).",
+                                "help": "Apply the cell rule only to cells belonging to this population (or list of populations).",
                                 "suggestions": "",
                                 "hintText": "",
                                 "type": "list(str)"
@@ -279,51 +279,51 @@ metadata = {
                             "cellType": {
                                 "label": "Cell type",
                                 "suggestions": "",
-                                "help": "Apply the cell rule only to the cells with this cell type attribute/tag.",
+                                "help": "Apply the cell rule only to cells with this cell type attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
                             },
                             "cellModel": {
                                 "label": "Cell model",
                                 "suggestions": "",
-                                "help": "Apply the cell rule only to the cells with this cell model attribute/tag",
+                                "help": "Apply the cell rule only to cells with this cell model attribute/tag.",
                                 "hintText": "",
                                 "type": "list(str)"
                             },
                             "x": {
                                 "label": "Range of x-axis locations",
                                 "suggestions": "",
-                                "help": "Cells within this x-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these x-axis locations.",
                                 "hintText": ""
                             },
                             "y": {
                                 "label": "Range of y-axis locations",
                                 "suggestions": "",
-                                "help": "Cells within this y-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these y-axis locations.",
                                 "hintText": ""
                             },
                             "z": {
                                 "label": "Range of z-axis locations",
                                 "suggestions": "",
-                                "help": "Cells within this z-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these z-axis locations.",
                                 "hintText": ""
                             },
                             "xnorm": {
                                 "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
-                                "help": "Cells withing this normalized x-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these normalized x-axis locations.",
                                 "hintText": ""
                             },
                             "ynorm": {
                                 "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
-                                "help": "Cells within this normalized y-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these normalized y-axis locations.",
                                 "hintText": ""
                             },
                             "znorm": {
                                 "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
-                                "help": "Cells within this normalized z-axis locations will receive stimulation",
+                                "help": "Apply the cell rule only to cells within these normalized z-axis locations.",
                                 "hintText": ""
                             }
                         }
@@ -407,21 +407,21 @@ metadata = {
                                     "children": {
                                         "mod": {
                                             "label": "Point process name",
-                                            "help": "the name of the NEURON mechanism, e.g. 'Izhi2007a'",
+                                            "help": "The name of the NEURON mechanism, e.g. 'Izhi2007a'",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
                                         },
                                         "loc": {
                                             "label": "Location (0-1)",
-                                            "help": "section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
+                                            "help": "Section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
                                         },
                                         "vref": {
                                             "label": "Point process variable for voltage (optional)",
-                                            "help": "internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
+                                            "help": "Internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
                                             "suggestions": "",
                                             "hintText": "",
                                             "type": "float"
@@ -513,7 +513,7 @@ metadata = {
                 "children": {
                     "mod": {
                         "label": "NMODL mechanism name",
-                        "help": "the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.",
+                        "help": "The NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.",
                         "suggestions": "",
                         "options": [
                             "ExpSyn",
@@ -577,55 +577,55 @@ metadata = {
                             "pop": {
                                 "label": "Population (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells belonging to this population (or list of populations) will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "cellType": {
                                 "label": "Cell type (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Ccells with this cell type attribute/tag will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "cellModel": {
                                 "label": "Cell model (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells with this cell model attribute/tag will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "x": {
                                 "label": "Range of x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these x-axis locations will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "y": {
                                 "label": "Range of y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these y-axis locations will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "z": {
                                 "label": "Range of z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these z-axis locations will be connected pre-synaptically..",
                                 "hintText": ""
                             },
                             "xnorm": {
                                 "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized x-axis locations will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "ynorm": {
                                 "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized y-axis locations will be connected pre-synaptically.",
                                 "hintText": ""
                             },
                             "znorm": {
                                 "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized z-axis locations will be connected pre-synaptically.",
                                 "hintText": ""
                             }
 
@@ -640,55 +640,55 @@ metadata = {
                             "pop": {
                                 "label": "Population (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells belonging to this population (or list of populations) will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "cellType": {
                                 "label": "Cell type (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Ccells with this cell type attribute/tag will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "cellModel": {
                                 "label": "Cell model (multiple selection available)",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells with this cell model attribute/tag will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "x": {
                                 "label": "Range of x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these x-axis locations will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "y": {
                                 "label": "Range of y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these y-axis locations will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "z": {
                                 "label": "Range of z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these z-axis locations will be connected post-synaptically..",
                                 "hintText": ""
                             },
                             "xnorm": {
                                 "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized x-axis locations will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "ynorm": {
                                 "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized y-axis locations will be connected post-synaptically.",
                                 "hintText": ""
                             },
                             "znorm": {
                                 "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
-                                "help": "",
+                                "help": "Cells within these normalized z-axis locations will be connected post-synaptically.",
                                 "hintText": ""
                             }
                         }
@@ -730,33 +730,32 @@ metadata = {
                         "help": "Time (in ms) for the presynaptic spike to reach the postsynaptic neuron. Can be defined as a function (see Functions as strings). If omitted, defaults to netParams.defaultDelay = 1.",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "",
                         "type": "func"
                     },
                     "probability": {
                         "label": "Probability of connection (0-1)",
-                        "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be defined as a function (see Functions as strings). Sets connFunc to probConn (internal probabilistic connectivity function). Overrides the convergence, divergence and fromList parameters.",
+                        "help": "Probability of connection between each pre and postsynaptic cell (0 to 1). Can be a string that defines as a function, e.g. '0.1*dist_3D+uniform(0.2,0.4)' (see Documentation on 'Functions as strings'). Overrides the convergence, divergence and fromList parameters.",
                         "suggestions": "0.1",
                         "hintText": "",
                         "type": "func"
                     },
                     "convergence": {
                         "label": "Convergence",
-                        "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be defined as a function (see Functions as strings).Sets connFunc to convConn (internal convergence connectivity function).",
+                        "help": "Number of pre-synaptic cells connected to each post-synaptic cell. Can be a string that defines as a function, e.g. '2*dist_3D+uniform(2,4)' (see Documentation on 'Functions as strings'). Overrides the divergence and fromList parameters.",
                         "suggestions": "5",
                         "hintText": "",
                         "type": "func"
                     },
                     "divergence": {
                         "label": "Divergence",
-                        "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be defined as a function (see Functions as strings). Sets connFunc to divConn (internal divergence connectivity function).",
+                        "help": "Number of post-synaptic cells connected to each pre-synaptic cell. Can be a string that defines as a function, e.g. '2*dist_3D+uniform(2,4)' (see Documentation on 'Functions as strings'). Overrides the fromList parameter.",
                         "suggestions": "5",
                         "hintText": "",
                         "type": "func"
                     },
                     "connList": {
                         "label": "Explicit list of one-to-one connections",
-                        "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList). Sets connFunc to fromList (explicit list connectivity function).",
+                        "help": "Each connection is indicated with relative ids of cell in pre and post populations, e.g. [[0,1],[3,1]] creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1. Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList).",
                         "suggestions": "",
                         "hintText": "list(list(float))"
                     },
@@ -1147,7 +1146,7 @@ metadata = {
             },
             "dt": {
                 "label": "Time step, dt",
-                "help": "simulation time step in ms (default: 0.1)",
+                "help": "Simulation time step in ms (default: 0.1)",
                 "suggestions": "",
                 "type": "float"
             },
@@ -1159,13 +1158,13 @@ metadata = {
             },
             "addSynMechs": {
                 "label": "Add synaptic mechanisms",
-                "help": "Whether to add synaptich mechanisms or not (default: True).",
+                "help": "Whether to add synaptic mechanisms or not (default: True).",
                 "suggestions": "",
                 "type": "bool"
             },
             "includeParamsLabel": {
                 "label": "Include parameter rule label",
-                "help": " Include label of parameters rule that created that cell, conn or stim (default: True).",
+                "help": "Include label of parameters rule that created that cell, conn or stim (default: True).",
                 "suggestions": "",
                 "type": "bool"
             },
@@ -1225,7 +1224,7 @@ metadata = {
             },
             "saveHDF5": {
                 "label": "Save as HDF5",
-                "help": "Save data to save to HDF5 file (default: False).",
+                "help": "Save data to save to HDF5 file (under development) (default: False).",
                 "suggestions": "",
                 "type": "bool"
             },
@@ -1260,8 +1259,8 @@ metadata = {
                 "type": "list(str)"
             },
             "saveCSV": {
-                "label": "Save as CVS",
-                "help": "save cvs file (default: False)",
+                "label": "Save as CSV",
+                "help": "save cvs file (under development) (default: False)",
                 "suggestions": "",
                 "type": "bool"
             },
@@ -1381,7 +1380,7 @@ metadata = {
             },
             "saveTxt": {
                 "label": "Save as TXT",
-                "help": "Save data to txt file (default: False)",
+                "help": "Save data to txt file (under development) (default: False)",
                 "suggestions": "",
                 "type": "bool"
             },

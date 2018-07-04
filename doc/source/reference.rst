@@ -903,7 +903,7 @@ Analysis-related functions
     Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
     
     - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
-    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'spectrogram', 'locations']) 
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
     - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)

@@ -162,6 +162,7 @@ metadata = {
                 "help": "Scale factor multiplier for number of cells (default: 1)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "1",
                 "type": "float"
             },
             "shape": {
@@ -174,6 +175,7 @@ metadata = {
                     "cylinder",
                     "ellipsoid"
                 ],
+                "default": "cuboid",
                 "type": "str"
             },
             "sizeX": {
@@ -181,6 +183,7 @@ metadata = {
                 "help": "x-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "100",
                 "type": "float"
             },
             "sizeY": {
@@ -188,6 +191,7 @@ metadata = {
                 "help": "y-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "100",
                 "type": "float"
             },
             "sizeZ": {
@@ -195,6 +199,7 @@ metadata = {
                 "help": "z-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "100",
                 "type": "float"
             },
             "rotateCellsRandomly": {
@@ -209,6 +214,7 @@ metadata = {
                 "help": "Default connection weight (default: 1)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "1",
                 "type": "float"
             },
             "defaultDelay": {
@@ -216,6 +222,7 @@ metadata = {
                 "help": "Default connection delay, in ms (default: 1)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "1",
                 "type": "float"
             },
             "propVelocity": {
@@ -223,6 +230,7 @@ metadata = {
                 "help": "Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "500",
                 "type": "float"
             },
             "scaleConnWeight": {
@@ -230,6 +238,7 @@ metadata = {
                 "help": "Connection weight scale factor (excludes NetStims) (default: 1)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "1",
                 "type": "float"
             },
             "scaleConnWeightNetStims": {
@@ -237,6 +246,7 @@ metadata = {
                 "help": "Connection weight scale factor for NetStims (default: 1)",
                 "suggestions": "",
                 "hintText": "",
+                "default": "1",
                 "type": "float"
             },
             "scaleConnWeightModels": {
@@ -1142,12 +1152,14 @@ metadata = {
                 "label": "Duration (ms)",
                 "help": "Simulation duration in ms (default: 1000)",
                 "suggestions": "",
+                "default": "1000",
                 "type": "float"
             },
             "dt": {
                 "label": "Time step, dt",
                 "help": "Simulation time step in ms (default: 0.1)",
                 "suggestions": "",
+                "default": "0.025",
                 "type": "float"
             },
             "seeds": {
@@ -1190,6 +1202,7 @@ metadata = {
                 "label": "Output file name",
                 "help": "Name of file to save model output (default: 'model_output')",
                 "suggestions": "",
+                "default": "model_output",
                 "type": "str"
             },
             "saveDataInclude": {
@@ -1310,6 +1323,7 @@ metadata = {
                 "label": "Time step for data recording (ms)",
                 "help": "Step size in ms for data recording (default: 0.1).",
                 "suggestions": "",
+                "default": "0.1",
                 "type": "float"
             },
             "printRunTime": {

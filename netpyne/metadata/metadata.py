@@ -714,7 +714,7 @@ metadata = {
                         "help": "Location of target synaptic mechanism (e.g. 0.3). If omitted, defaults to 0.5. Can be single value, or list (if have synsPerConn > 1) or list of lists (If have both a list of synMechs and synsPerConn > 1).",
                         "suggestions": "",
                         "hintText": "0.5",
-                        "type": "list(list(float))"
+                        "type": "list(float)"
                     },
                     "synMech": {
                         "label": "Synaptic mechanism",

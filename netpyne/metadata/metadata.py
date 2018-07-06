@@ -707,7 +707,8 @@ metadata = {
                         "label": "Postsynaptic neuron section",
                         "help": "Name of target section on the postsynaptic neuron (e.g. 'soma'). If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list. If synsPerConn > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.",
                         "suggestions": "",
-                        "hintText": "soma"
+                        "hintText": "soma",
+                        "type": "list(str)"
                     },
                     "loc": {
                         "label": "Postsynaptic neuron location (0-1)",
@@ -1305,7 +1306,7 @@ metadata = {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
                 "suggestions": "",
-                "type": "dict"
+                "type": "dict(dict())"
             },
             "recordLFP": {
                 "label": "Record LFP electrode locations",

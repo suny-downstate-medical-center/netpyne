@@ -1305,7 +1305,7 @@ metadata = {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
                 "suggestions": "",
-                "type": "dict"
+                "type": "dict(dict())"
             },
             "recordLFP": {
                 "label": "Record LFP electrode locations",

@@ -401,7 +401,8 @@ metadata = {
                                     "label": "Mechanisms",
                                     "help": "Dictionary of density/distributed mechanisms, including the name of the mechanism (e.g. hh or pas) and a list of properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
                                     "suggestions": "",
-                                    "hintText": ""
+                                    "hintText": "",
+                                    "type": "float"
                                 },
                                 "ions": {
                                     "label": "Ions",
@@ -1270,7 +1271,7 @@ metadata = {
                 "label": "Cells to record traces from",
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
                 "suggestions": "",
-                "type": "list(str)"
+                "type": "list(float)"
             },
             "saveCSV": {
                 "label": "Save as CSV",

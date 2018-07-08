@@ -14,6 +14,9 @@
 
 - Fixed bug: updated rcParams text.fontsize to font.size
 
+- Fixed bug: missing update of list-based loc in connList connections
+
+
 # Version 0.7.8
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis

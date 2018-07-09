@@ -1,5 +1,9 @@
 # Version 0.7.9
 
+- Extended metadata structure to interact with NetPyNE-UI
+
+- Added preliminary data structures to support NEURON RxD
+
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
 - Added option to run jobs directly on multiple mpi cores via Batch class 

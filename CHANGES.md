@@ -4,21 +4,35 @@
 
 - Added preliminary data structures to support NEURON RxD
 
+- Added plot RxD concentration to analysis
+
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
 - Added option to run jobs directly on multiple mpi cores via Batch class 
 
 - Added option for custom text in PBS or SLURM scripts to submit batch jobs
 
+- Added option to filter LFP signal before ploting PSD
+
 - Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
+
+- Relaxed pyneuroml requirement so just shows a warning message 
+
+- Preliminary function to save conns distributedly using HDF5
+
+- Added function to validate string-based expressions
 
 - Fixed bug: removed cell.\_segCoords and pop.\_morphSegCoords before saving to file
 
 - Fixed rasterPlot pop label automated spacing
 
+- Fixed bug: removed pandas requirement from LFP electrode module
+
 - Fixed bug: updated rcParams text.fontsize to font.size
 
 - Fixed bug: missing update of list-based loc in connList connections
+
+- Fixed bug: delete sections after import cell only if section exists
 
 
 # Version 0.7.8

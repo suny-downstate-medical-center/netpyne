@@ -1750,7 +1750,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
     '''
 
     import sim
-    from neuron import h, gui
+    from neuron import h
 
     print('Plotting 3D cell shape ...')
 
@@ -1862,6 +1862,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
     else:  # Plot using Interviews
         # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
+        from neuron import gui
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:

@@ -1804,7 +1804,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "list(float)"
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",

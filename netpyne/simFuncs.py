@@ -24,7 +24,6 @@ from copy import copy
 from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
-from neuron import crxd as rxd
 import specs
 
 ###############################################################################

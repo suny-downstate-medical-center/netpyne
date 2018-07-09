@@ -24,6 +24,7 @@ from copy import copy
 from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
+from neuron import crxd as rxd
 import specs
 
 ###############################################################################
@@ -63,6 +64,14 @@ def initialize (netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
+
+    if sim.cfg.enableRxD:
+        try:
+            global rxd
+            from neuron import crxd as rxd 
+            sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
+        except:
+            print 'cRxD module not available'
 
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 

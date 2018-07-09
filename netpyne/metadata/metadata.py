@@ -104,14 +104,14 @@ metadata = {
                         "help": "Spike interval in ms.",
                         "suggestions": "",
                         "hintText": "50",
-                        "type": "list(float)"
+                        "type": "float"
                     },
                     "rate": {
                         "label": "Firing rate (Hz)",
                         "help": "Firing rate in Hz (note this is the inverse of the NetStim interval property).",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "list(float)"
+                        "type": "float"
                     },
                     "noise": {
                         "label": "Noise fraction (0-1)",
@@ -848,7 +848,15 @@ metadata = {
                         "label": "Interval  between spikes (ms)",
                         "help": "Define the mean time interval between spike.",
                         "suggestions": "10",
-                        "hintText": ""
+                        "hintText": "",
+                        "type": "float"
+                    },
+                    "rate": {
+                        "label": "Firing rate (Hz)",
+                        "help": "Firing rate in Hz (note this is the inverse of the NetStim interval property).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "float"
                     },
                     "rstim": {
                         "label": "Voltage clamp stimulation resistance",
@@ -1272,6 +1280,12 @@ metadata = {
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
                 "suggestions": "",
                 "type": "list(float)"
+            },    
+            "recordTraces": {
+                "label": "Traces to record from cells",
+                "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
+                "suggestions": "",
+                "type": "dict(dict())"
             },
             "saveCSV": {
                 "label": "Save as CSV",
@@ -1302,12 +1316,6 @@ metadata = {
                 "help": "Record spikes of NetStims and VecStims (default: False).",
                 "suggestions": "",
                 "type": "bool"
-            },
-            "recordTraces": {
-                "label": "Traces to record from cells",
-                "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
-                "suggestions": "",
-                "type": "dict(dict())"
             },
             "recordLFP": {
                 "label": "Record LFP electrode locations",

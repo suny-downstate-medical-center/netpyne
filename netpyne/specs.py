@@ -16,7 +16,6 @@ class Dict(dict):
 
     __slots__ = []
 
-
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
@@ -256,6 +255,10 @@ class ODict(OrderedDict):
         self = self.fromOrderedDict(d)
 
 
+###############################################################################
+# PopParams class
+###############################################################################
+
 class PopParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -273,6 +276,11 @@ class PopParams (ODict):
 
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
+
+
+###############################################################################
+# CellParams class
+###############################################################################
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -300,6 +308,10 @@ class CellParams (ODict):
             return False
 
 
+###############################################################################
+# ConnParams class
+###############################################################################
+
 class ConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -314,6 +326,10 @@ class ConnParams (ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+
+###############################################################################
+# SynMechParams class
+###############################################################################
 
 class SynMechParams (ODict):
     def setParam(self, label, param, value):
@@ -330,6 +346,10 @@ class SynMechParams (ODict):
         return self.__rename__(old, new, label)
 
 
+###############################################################################
+# SubConnParams class
+###############################################################################
+
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -345,6 +365,10 @@ class SubConnParams (ODict):
         return self.__rename__(old, new, label)
 
 
+###############################################################################
+# StimSourceParams class
+###############################################################################
+
 class StimSourceParams (ODict):
     def setParam(self, label, param, value):
         if label in self: 
@@ -359,6 +383,10 @@ class StimSourceParams (ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+
+###############################################################################
+# StimTargetParams class
+###############################################################################
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):
@@ -391,7 +419,7 @@ class NetParams (object):
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
         self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
-
+        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150] 
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
@@ -688,6 +716,7 @@ class SimConfig (object):
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
+        self.enableRxD = False  # import rxd module
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time

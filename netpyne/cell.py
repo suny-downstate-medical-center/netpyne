@@ -25,10 +25,16 @@ class Cell (object):
     ''' Generic class for neuron models '''
     
     def __init__ (self, gid, tags):
+        import sim
+
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
         self.conns = []  # list of connections
         self.stims = []  # list of stimuli
+
+        # calculate border distance correction to avoid conn border effect
+        if sim.net.params.correctBorder:
+            self.calculateCorrectBorderDist()
 
 
     def recordStimSpikes (self):
@@ -41,6 +47,31 @@ class Cell (object):
                 conn['hNetcon'].record(stimSpikeVecs)
                 sim.simData['stims']['cell_'+str(self.gid)].update({conn['preLabel']: stimSpikeVecs})
 
+
+    def calculateCorrectBorderDist (self):
+        import sim
+
+        pop = self.tags['pop']
+        popParams = sim.net.params.popParams
+        coords = ['x', 'y', 'z']
+        borderCorrect = [0,0,0]
+        for icoord,coord in enumerate(coords):
+            # calculate borders
+            size = getattr(sim.net.params, 'size'+coord.upper())
+            borders = [0, size]
+            if coord+'borders' in sim.net.params.correctBorder:
+                borders = [b*size for b in sim.net.params.correctBorder[coord+'borders']]
+            elif coord+'Range' in popParams[pop]:
+                borders = popParams[pop][coord+'Range']
+            elif coord+'normRange' in popParams[pop]:
+                borders = [popParams[pop][coord+'normRange'][0] * size,
+                        popParams[pop][coord+'normRange'][1] * size]
+            
+            # calcualte distance to border
+            borderDist = min([abs(self.tags[coord] - border) for border in borders])
+            borderThreshold = sim.net.params.correctBorder['threshold'][icoord]
+            borderCorrect[icoord] = max(0, borderThreshold - borderDist)
+        self.tags['borderCorrect'] = borderCorrect
 
     # Custom code for time-dependently shaping the weight of a NetCon corresponding to a NetStim.
     def _shapeStim(self, isi=1, variation=0, width=0.05, weight=10, start=0, finish=1, stimshape='gaussian'):
@@ -120,16 +151,6 @@ class Cell (object):
             return stimContainer['hNetStim']
 
 
-    def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        import sim
-
-        odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
-        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
-        return odict
-
-
     def recordTraces (self):
         import sim
 
@@ -165,7 +186,7 @@ class Cell (object):
                     if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            
+                            #print params['var'], ptr
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
@@ -210,6 +231,16 @@ class Cell (object):
         #else:
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 
+
+
+    def __getstate__ (self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        import sim
+
+        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
+        return odict
 
 
 ###############################################################################
@@ -346,6 +377,8 @@ class CompartCell (Cell):
                     if pointpName not in sec['pointps']: 
                         sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the mechanism
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
@@ -487,6 +520,8 @@ class CompartCell (Cell):
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.iteritems():  # add params of the point process
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
@@ -1125,7 +1160,7 @@ class CompartCell (Cell):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid)
+                    if sim.cfg.verbose: print '  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid)
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])

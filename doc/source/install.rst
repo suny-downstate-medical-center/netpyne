@@ -40,3 +40,8 @@ This will install the version in the github "development" branch -- it will incl
 4) pip install -e .
 
 pip will add a symlink in the default python packages folder to the cloned netpyne folder (so you don't need to modify PYTHONPATH). If new changes are available just need to pull from cloned netpyne repo.
+
+Install NetPyNE GUI (alpha version)
+--------------------------------------
+
+You can install the tool via `pip <https://github.com/MetaCell/NetPyNE-UI/wiki/Pip-installation>`_ (requires `NEURON <https://github.com/MetaCell/NetPyNE-UI/wiki/Installing-NEURON-crxd-Version>`_ ), or using our pre-packaged `Docker <https://github.com/MetaCell/NetPyNE-UI/wiki/Docker-installation>`_ or `Virtual Machine <https://github.com/MetaCell/NetPyNE-UI/wiki/Virtual-Machine-Installation>`_.

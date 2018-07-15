@@ -8,7 +8,7 @@ Welcome to NetPyNE's documentation!
 
 NetPyNE is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
 
-We have also released an alpha version of the NetPyNE GUI -- `see video here (open in new tab) <https://www.youtube.com/watch?v=Hck_bLKm7v8>`_! See here `install instructions :ref:`install` and a `step-by-step tutorial <http://bit.ly/netpyne-ui-tut>`_! 
+We have also released an alpha version of the NetPyNE GUI -- `see video here <https://www.youtube.com/watch?v=Hck_bLKm7v8>`_ (open in new tab)! See a `step-by-step tutorial <http://bit.ly/netpyne-ui-tut>`_! 
 
 Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.
 

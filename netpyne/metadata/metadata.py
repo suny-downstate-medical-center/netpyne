@@ -955,6 +955,27 @@ metadata = {
                         "suggestions": "",
                         "hintText": "",
                         "type": "float"
+                    },
+                    "SECdur": {
+                        "label": "Single electrode voltage clamp duration (mV)",
+                        "help": "Single electrode voltage clamp duration in 3 steps (mV).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "SECamp": {
+                        "label": "Single electrode voltage clamp amplitude (mV)",
+                        "help": "Single electrode voltage clamp amplitud in 3 steps (mV).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "list(float)"
+                    },
+                    "SECrs": {
+                        "label": "Single electrode resistance (MOhm)",
+                        "help": "Single electrode contact resistance (MOhm).",
+                        "suggestions": "",
+                        "hintText": "",
+                        "type": "float"
                     }
                 }
             },

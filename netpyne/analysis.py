@@ -41,12 +41,13 @@ def exception(function):
     """
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
+        import sys
         try:
             return function(*args, **kwargs)
         except Exception as e:
             # print 
             err = "There was an exception in %s():"%(function.__name__)
-            print("%s \n %s"%(err,e))
+            print("%s \n %s \n%s"%(err,e,sys.exc_info()))
             return -1
  
     return wrapper
@@ -189,7 +190,7 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ######################################################################################################################################################
 def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
     '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
-    import pandas as pd
+    import pandas as pd, sim
     df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
     if timeRange:
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
@@ -625,7 +626,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
-
     import sim
 
     print('Plotting raster...')
@@ -643,6 +643,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         try:
             spkgids,spkts = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
+            import sys
+            print(sys.exc_info())
             spkgids, spkts = [], []
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
 

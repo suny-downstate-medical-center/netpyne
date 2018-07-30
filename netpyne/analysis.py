@@ -200,7 +200,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')
-    return sel['spkt'].tolist(), sel['spkid'].tolist()
+    return sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
 ######################################################################################################################################################
@@ -629,8 +629,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     import sim
 
     print('Plotting raster...')
-
-    global cells, cellGids, netStimLabels, selectedPops, spkgids, spkts
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)

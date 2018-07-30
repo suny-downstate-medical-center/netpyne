@@ -630,6 +630,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     print('Plotting raster...')
 
+    global cells, cellGids, netStimLabels, selectedPops, spkgids, spkts
+
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
     selectedPops = [cell['tags']['pop'] for cell in cells]
@@ -641,13 +643,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            spkgids,spkts = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
+            spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
             import sys
             print(sys.exc_info())
             spkgids, spkts = [], []
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
-
     # Order by
     if len(cellGids) > 0:
         if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid

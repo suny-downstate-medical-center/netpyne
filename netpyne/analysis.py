@@ -200,7 +200,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')
-    return sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
+    return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
 ######################################################################################################################################################
@@ -641,7 +641,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
+            sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
             import sys
             print(sys.exc_info())

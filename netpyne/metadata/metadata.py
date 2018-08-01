@@ -304,37 +304,43 @@ metadata = {
                                 "label": "Range of x-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these x-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "y": {
                                 "label": "Range of y-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these y-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "z": {
                                 "label": "Range of z-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these z-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "xnorm": {
                                 "label": "Range of normalized x-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these normalized x-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "ynorm": {
                                 "label": "Range of normalized y-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these normalized y-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             },
                             "znorm": {
                                 "label": "Range of normalized z-axis locations",
                                 "suggestions": "",
                                 "help": "Apply the cell rule only to cells within these normalized z-axis locations.",
-                                "hintText": ""
+                                "hintText": "",
+                                "type": "list(float)"
                             }
                         }
                     },
@@ -831,14 +837,14 @@ metadata = {
                         "type": "float"
                     },
                     "vClampAmp": {
-                        "label": "Current clamp amplitude (nA)",
+                        "label": "Voltage clamp amplitude (nA)",
                         "help": "Voltage clamp with three levels. Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2].",
                         "suggestions": "",
                         "hintText": "10",
                         "type": "list(float)"
                     },
                     "vClampDur": {
-                        "label": "Current clamp delay (ms)",
+                        "label": "Voltage clamp duration (ms)",
                         "help": "Voltage clamp with three levels. Clamp is on at time 0, and off at time dur[0]+dur[1]+dur[2].",
                         "suggestions": "",
                         "hintText": "5",

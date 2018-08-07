@@ -7614,6 +7614,50 @@ def genLFP (lrec,lx,ly,lz,elx,ely,elz):
   vlfp.mul(1.0/(4.0*pi*sigma))
   return vlfp
   
+* 18dec02 Implementing RxD
+** celParams data model (inside cellParams)
+- cellParams['rule1'] (dict)
+-- ['rxd'] (dict)
+--- ['Species'] (dict)
+---- [label] (dict)
+----- ['d': , 'name': , 'charge': ,...]
+--- ['Region'] (dict)
+---- [label] (dict)
+----- ['secs': ]
+--- ['Reaction'] (dict)
+--- ['Rate'] (dict)
+--- ['MultiCompartmentReaction'] (dict)
+--- ['Extracellular'] (dict)
+
+** cell instance data model (inside cell)
+- Cell (object)
+-- rxd (dict)
+--- ['Species'] (dict)
+---- [label] (dict)
+----- ['d': , 'name': , 'charge': ,...]
+--- ['Region'] (dict)
+---- [label] (dict)
+----- ['secs': ]
+--- ['Reaction'] (dict)
+--- ['Rate'] (dict)
+--- ['MultiCompartmentReaction'] (dict)
+--- ['Extracellular'] (dict)
+
+** rxdParams data model (new attribute of netParams)
+- rxdParams (dict)
+-- ['Species'] (dict)
+--- [label] (dict)
+---- ['d': , 'name': , 'charge': ,...]
+-- ['Region'] (dict)
+--- [label] (dict)
+---- ['secs': ]  % conditions to define cells that sections apply to
+-- ['Reaction'] (dict)
+-- ['Rate'] (dict)
+-- ['MultiCompartmentReaction'] (dict)
+-- ['Extracellular'] (dict)
+
+
+
 * Steps to release new version
 - Update CHANGES.md
 - /netpyne/__init__.py __version__='0.7.8'
@@ -7622,6 +7666,7 @@ def genLFP (lrec,lx,ly,lz,elx,ely,elz):
 - make sure no conflicts and Travis tests pass 
 - merge PR
 - bnp (to build documentation)
+- npr (to release on pip)
 - Announce new release:
 -- in github: https://github.com/Neurosim-lab/netpyne/releases
 -- in NEURON forum: https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e

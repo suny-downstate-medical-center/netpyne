@@ -14,10 +14,6 @@ from .specs import Dict
 import numpy as np
 from math import sin, cos
 
-# --- Temporarily copied from hnn code; improve so doesn't use h globals ---  
-# global variables for dipole calculation, should be node-independent 
-h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
-
 
 ###############################################################################
 #
@@ -190,7 +186,7 @@ class Cell (object):
                     if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            
+                            #print params['var'], ptr
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
@@ -381,6 +377,8 @@ class CompartCell (Cell):
                     if pointpName not in sec['pointps']: 
                         sec['pointps'][pointpName] = Dict()  
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the mechanism
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         sec['pointps'][pointpName][pointpParamName] = pointpParamValue
 
 
@@ -439,82 +437,8 @@ class CompartCell (Cell):
                 sec['hSec'].v = sec['vinit']
 
 
-    # Create dictionary of section names with entries to scale section lengths to length along z-axis
-    def __dipoleGetSecLength (self, secName):
-        L = 1
-        # basal_2 and basal_3 at 45 degree angle to z-axis.
-        if 'basal_2' in secName:
-            L = np.sqrt(2) / 2.
-        elif 'basal_3' in secName:
-            L = np.sqrt(2) / 2.
-        # apical_oblique at 90 perpendicular to z-axis
-        elif 'apical_oblique' in secName:
-            L = 0.
-        # All basalar dendrites extend along negative z-axis
-        if 'basal' in secName:
-            L = -L
-        return L
-
-    # insert dipole in section
-    def __dipoleInsert(self, secName, sec):
-        # insert dipole mech (dipole.mod)
-        try:
-            sec['hSec'].insert('dipole')
-        except:
-            print('Error inserting dipole mechanism')
-            return -1
-
-        # insert Dipole point process (dipole_pp.mod)
-        try: 
-            sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hSec'])
-        except:
-            print('Error inserting Dipole point process')
-            return -1
-        dpp = sec['hDipole_pp']
-        # assign internal resistance values to dipole point process (dpp)
-        dpp.ri = h.ri(1, sec=sec['hSec'])
-        # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
-        h.setpointer(sec['hSec'](0.99)._ref_v, 'pv', dpp)
-        if self.tags['cellType'].startswith('L2'):
-            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
-        elif self.tags['cellType'].startswith('L5'):
-            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
-
-        # gives INTERNAL segments of the section, non-endpoints
-        # creating this because need multiple values simultaneously
-        loc = np.array([seg.x for seg in sec['hSec']])
-        # these are the positions, including 0 but not L
-        pos = np.array([seg.x for seg in sec['hSec'].allseg()])
-        # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
-        y_scale = (self.__dipoleGetSecLength(secName) * sec['hSec'].L) * pos
-        # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
-        # diff values calculate length between successive section points
-        y_diff = np.diff(y_scale)
-        for i in range(len(loc)):
-            # assign the ri value to the dipole
-            sec['hSec'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hSec'])
-            # range variable 'dipole'
-            # set pointers to previous segment's voltage, with boundary condition
-            if i > 0:
-                h.setpointer(sec['hSec'](loc[i-1])._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
-            else:
-                h.setpointer(sec['hSec'](0)._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
-            # set aggregate pointers
-            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hSec'](loc[i]).dipole)
-            if self.tags['cellType'].startswith('L2'):
-                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hSec'](loc[i]).dipole)
-            elif self.tags['cellType'].startswith('L5'):
-                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hSec'](loc[i]).dipole)
-            # add ztan values
-            sec['hSec'](loc[i]).dipole.ztan = y_diff[i]
-        # set the pp dipole's ztan value to the last value from y_diff
-        dpp.ztan = y_diff[-1]
-
-
     def createNEURONObj (self, prop):
         from . import sim
-
-        excludeMechs = ['dipole']  # dipole is special case 
 
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
@@ -543,20 +467,19 @@ class CompartCell (Cell):
             # add distributed mechanisms 
             if 'mechs' in sectParams:
                 for mechName,mechParams in sectParams['mechs'].items(): 
-                    if mechName not in excludeMechs: 
-                        if mechName not in sec['mechs']: 
-                            sec['mechs'][mechName] = Dict()
-                        sec['hSec'].insert(mechName)
-                        for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                            mechParamValueFinal = mechParamValue
-                            for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
-                                if type(mechParamValue) in [list]: 
-                                    if len(mechParamValue) == 1: 
-                                        mechParamValueFinal = mechParamValue[0]
-                                    else:
-                                        mechParamValueFinal = mechParamValue[iseg]
-                                if mechParamValueFinal is not None:  # avoid setting None values
-                                    setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                    if mechName not in sec['mechs']: 
+                        sec['mechs'][mechName] = Dict()
+                    sec['hSec'].insert(mechName)
+                    for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
+                        mechParamValueFinal = mechParamValue
+                        for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
+                            if type(mechParamValue) in [list]: 
+                                if len(mechParamValue) == 1: 
+                                    mechParamValueFinal = mechParamValue[0]
+                                else:
+                                    mechParamValueFinal = mechParamValue[iseg]
+                            if mechParamValueFinal is not None:  # avoid setting None values
+                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
             # add ions
             if 'ions' in sectParams:
@@ -597,6 +520,8 @@ class CompartCell (Cell):
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
                     sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
+                        if pointpParamValue == 'gid': 
+                            pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
@@ -607,13 +532,6 @@ class CompartCell (Cell):
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
-
-        # add dipoles
-        for sectName,sectParams in prop['secs'].items():
-            pass
-            sec = self.secs[sectName]
-            if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-               self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
 
     def addSynMechsNEURONObj(self):
@@ -1242,7 +1160,7 @@ class CompartCell (Cell):
             secLabels = []
             for i,section in enumerate(secList): 
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay 
-                    if sim.cfg.verbose: print('  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(self.gid))
+                    if sim.cfg.verbose: print('  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid))
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])

@@ -1,8 +1,8 @@
 # py2to3.py - convert netpyne py2 to py3
 from subprocess import call
 
-py2_root = '../netpyne_py2_temp'
-py2_branch = 'dipole'
+py2_root = '../netpyne_temp'
+py2_branch = 'master'
 folders = ['netpyne', 'doc', 'examples']
 files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
 

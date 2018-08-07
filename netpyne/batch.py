@@ -221,6 +221,7 @@ class Batch(object):
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             queueName = self.runCfg.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
+                            custom = self.runCfg.get('custom', '')
                             numproc = nodes*ppn
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
@@ -233,10 +234,11 @@ class Batch(object):
 #PBS -l %s
 #PBS -o %s.run
 #PBS -e %s.err
+%s
 cd $PBS_O_WORKDIR
 echo $PBS_O_WORKDIR
 %s
-                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, command)
+                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
                            # Send job_string to qsub
                             print('Submitting job ',jobName)
@@ -266,6 +268,7 @@ echo $PBS_O_WORKDIR
                             mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
                             walltime = self.runCfg.get('walltime', '00:30:00')
                             reservation = self.runCfg.get('reservation', None)
+                            custom = self.runCfg.get('custom', '')
                             if reservation:
                                 res = '#SBATCH --res=%s'%(reservation)
                             else:  
@@ -285,12 +288,13 @@ echo $PBS_O_WORKDIR
 #SBATCH --mail-user=%s
 #SBATCH --mail-type=end
 %s
+%s
 
 source ~/.bashrc
 cd %s
 %s
 wait
-                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, folder, command)
+                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
                             # Send job_string to qsub
                             print('Submitting job ',jobName)
@@ -303,10 +307,28 @@ wait
                             #subprocess.call
                             proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
                             (output, input) = (proc.stdin, proc.stdout)
+
+
+                        # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
+                        # eg. usage: python batch.py
+                        elif self.runCfg.get('type',None) == 'mpi_direct':
+                            jobName = self.saveFolder+'/'+simLabel     
+                            print('Running job ',jobName)
+                            cores = self.runCfg.get('cores', 1)
+                            folder = self.runCfg.get('folder', '.')
+                            script = self.runCfg.get('script', 'init.py')
+                            mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
+
+                            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
+                            
+                            print(command+'\n')
+                            proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
+                            #print proc.stdout.read()
+                            
                             
                         # pc bulletin board job submission (master/slave) via mpi
                         # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-                        elif self.runCfg.get('type',None) == 'mpi':
+                        elif self.runCfg.get('type',None) == 'mpi_bulletin':
                             jobName = self.saveFolder+'/'+simLabel     
                             print('Submitting job ',jobName)
                             # master/slave bulletin board schedulling of jobs

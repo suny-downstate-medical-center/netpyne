@@ -18,10 +18,12 @@ version = netpyne.__version__
 import sys
 if 'upload_via_twine' in sys.argv:
     system('twine upload dist/netpyne-'+version+'-py3-none-any.whl')
+elif 'upload_via_twine_testpypi' in sys.argv:
+    system('twine upload --repository pypitest dist/netpyne-'+version+'-py3-none-any.whl')
 else:
     
     setup(
-        name = 'netpyne',
+        name = 'netpyne_py3',
         
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',

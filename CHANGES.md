@@ -1,3 +1,8 @@
+# Version 0.8.0
+
+- Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
+
+
 # Version 0.7.9
 
 - Extended metadata structure to interact with NetPyNE-UI

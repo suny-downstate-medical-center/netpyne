@@ -164,7 +164,7 @@ class Batch(object):
                     indexCombGroups = [(0,)]
 
             # if using pc bulletin board, initialize all workers
-            if self.runCfg.get('type', None) == 'mpi':
+            if self.runCfg.get('type', None) == 'mpi_bulletin':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 

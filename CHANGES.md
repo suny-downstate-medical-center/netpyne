@@ -34,6 +34,8 @@
 
 - Fixed bug: delete sections after import cell only if section exists
 
+- Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
+
 
 # Version 0.7.8
 

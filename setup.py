@@ -17,9 +17,9 @@ version = netpyne.__version__
 
 import sys
 if 'upload_via_twine' in sys.argv:
-    system('twine upload dist/netpyne-'+version+'-py3-none-any.whl')
+    system('twine upload dist/netpyne_py3-'+version+'-py3-none-any.whl')
 elif 'upload_via_twine_testpypi' in sys.argv:
-    system('twine upload --repository pypitest dist/netpyne-'+version+'-py3-none-any.whl')
+    system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-py3-none-any.whl')
 else:
     
     setup(

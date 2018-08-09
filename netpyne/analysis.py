@@ -41,12 +41,13 @@ def exception(function):
     """
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
+        import sys
         try:
             return function(*args, **kwargs)
         except Exception as e:
             # print 
             err = "There was an exception in %s():"%(function.__name__)
-            print("%s \n %s"%(err,e))
+            print("%s \n %s \n%s"%(err,e,sys.exc_info()))
             return -1
  
     return wrapper
@@ -182,6 +183,24 @@ def _smooth1d(x,window_len=11,window='hanning'):
 
     y=numpy.convolve(w/w.sum(),s,mode='valid')
     return y[(window_len/2-1):-(window_len/2)]
+
+
+######################################################################################################################################################
+## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
+######################################################################################################################################################
+def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
+    '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
+    import pandas as pd, sim
+    df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    if timeRange:
+        min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
+    else: # timeRange None or empty list means all times
+        min, max = 0, len(df)
+    if len(cellGids)==0 or allCells: # get all by either using flag or giving empty list -- can get rid of the flag
+        sel = df[min:max]
+    else:
+        sel = df[min:max].query('spkid in @cellGids')
+    return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
 ######################################################################################################################################################
@@ -596,7 +615,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - lw (integer): Line width for each spike (default: 2)
         - marker (char): Marker for each spike (default: '|')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - dpi (int): Dots per inch to save fig (default: 100)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
@@ -607,7 +626,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
-
     import sim
 
     print('Plotting raster...')
@@ -623,11 +641,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            spkgids,spkts = zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids])
+            sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
+            import sys
+            print(sys.exc_info())
             spkgids, spkts = [], []
         spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
-
     # Order by
     if len(cellGids) > 0:
         if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid

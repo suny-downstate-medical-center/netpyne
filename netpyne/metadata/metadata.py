@@ -1862,7 +1862,7 @@ metadata = {
                                 "hintText": "",
                                 "options": [
                                     "cell",
-                                    "traces"
+                                    "trace"
                                 ],
                                 "type": "str"
                             },

@@ -820,14 +820,14 @@ metadata = {
                         "help": "Duration of current clamp injection in ms",
                         "suggestions": "",
                         "hintText": "10",
-                        "type": "float"
+                        "type": "list(float)"
                     },
                     "amp": {
                         "label": "Current clamp amplitude (nA)",
                         "help": "Amplitude of current injection in nA",
                         "suggestions": "",
                         "hintText": "10",
-                        "type": "float"
+                        "type": "list(float)"
                     },
                     "del": {
                         "label": "Current clamp delay (ms)",

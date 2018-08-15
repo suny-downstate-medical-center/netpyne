@@ -769,10 +769,18 @@ def cellByGid (gid):
 def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     import sim
     import imp, __main__
+    # try to convert to int or float
+    def str2int(string):
+        try:
+            return int(string)
+        except:
+            try:
+                return float(string)
+            except:
+                return string
 
     if len(sys.argv) > 1:
-        print '\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]'
-
+        print '\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath] [argi=valuei]'
     cfgPath = None
     netParamsPath = None
 
@@ -781,6 +789,13 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
         if arg.startswith('simConfig='):
             cfgPath = arg.split('simConfig=')[1]
             cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
+            # modify simConfig values with candidate params 
+            # (only for evolutionary algorithm)
+            if len(sys.argv)>3:
+                for arg2 in sys.argv:
+                    if not any([arg2.startswith(value) for value in ['simConfig', 'netParams', 'init']]):
+                        key, value = arg2.split("=")
+                        setattr(cfg, key, str2int(value))
             __main__.cfg = cfg
         elif arg.startswith('netParams='):
             netParamsPath = arg.split('netParams=')[1]

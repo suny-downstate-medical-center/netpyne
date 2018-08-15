@@ -6,14 +6,23 @@ Class to setup and run batch simulations
 Contributors: salvadordura@gmail.com
 """
 
-
+import imp
+import json
+import logging
 import datetime
+from neuron import h
+from netpyne import specs
+from random import Random
+from time import sleep, time
 from itertools import izip, product
 from subprocess import Popen, PIPE
-from time import sleep
-import imp
-from netpyne import specs
-from neuron import h
+from inspyred.ec import Bounder
+from inspyred.ec import EvolutionaryComputation
+from inspyred.ec.terminators import generation_termination
+from inspyred.ec.replacers import generational_replacement
+from inspyred.ec.variators import uniform_crossover, mutator
+from inspyred.ec.observers import stats_observer, file_observer
+from inspyred.ec.selectors import default_selection, tournament_selection
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -43,15 +52,121 @@ def tupleToStr (obj):
     #print 'after:', obj
     return obj
 
+###############################################################################
+### Parallel evaluation
+###############################################################################
+def evaluator(candidates, args):
+    global ngen
+    ngen += 1
+    # read params or set default
+    simDataFolder = args.get('simDataFolder')
+    # read batch params declared in runCfg
+    script = args.get('batch').get('script')
+    mpiCmd = args.get('batch').get('mpiCommand')
+    paramNames = args.get('batch').get('paramNames')
+    # fitness function as expression
+    fitness_expression = args.get('evolve').get('fitness')
+    default_fitness = args.get('evolve').get('default_fitness')
+    
+    total_jobs = 0
+    #run slurm jobs
+    for candidate_index, canditate in enumerate(candidates):
+        # required for slurm
+        sleep(args.get('sleepInterval', 1))
+        jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
+        simDataPath = simDataFolder + '/' + jobName
+        # script to run with mpi
+        command = '%s -np %d nrniv -python -mpi %s netParams=%s simConfig=%s filename=%s ' % (mpiCmd, numproc, script, args.get('netParamPath'), args.get('simConfigPath'), simDataPath)
+        # add candidate values to command as argv
+        for param, param_label in zip(candidate, pNames): 
+            command += ' %s=%r' % (paramlabel, param)
+             
+        # file to save bash script
+        bashFile = simDataPath + ".sh"
+        # generate slurm-bash file
+        with open(bashFile, 'w') as file:
+            file.write('#!/bin/bash\n')
+            file.write('--job-name=%s\n' %(jobName))
+            for key, value in args.get('SBATCH').iteritems():
+                file.write('#SBATCH %s=%s\n' %(key, value if key not in ['--output', '--error'] else simDataPath+value))
+            for key, value in args.get('bash').iteritems():
+                file.write('%s\n' %(value))
+            file.write('source ~/.bashrc\n')
+            file.write('cd %s\n' %(simDataFolder))
+            file.write('%s\n' %(command))
+            file.write('wait\n')
+        
+        # subprocess.call
+        proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
+        (output, input) = (proc.stdin, proc.stdout)
+        total_jobs += 1
+        sleep(0.1)
 
+    #read results from file
+    targetFitness = [None for cand in candidates]
+    jobs_completed = 0
+    num_iters = 0
+    # print outfilestem
+    print "jobs submitted for generation: %d/%d..." %(ngen, args.get('evolve').get('max_generations'))
+    # start fitness calculation
+    while jobs_completed < total_jobs:
+        unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
+        for canditade_index in unfinished:
+            try: # load simData and evaluate fitness
+                simDataPath = simDataFolder + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
+                with open('%s.json'% (simDataPath)) as file:
+                    simData = json.load(file)['simData']
+                    targetFitness[candidate_index] = eval(fitness_expression)
+                    jobs_completed += 1
+            except:
+                pass
+        num_iters += 1
+        if num_iters >= args.get('maxiter_wait', 5000): 
+            print "max iterations reached -- remaining jobs set to default fitness"
+            for canditade_index in unfinished:
+                targetFitness[canditade_index] = default_fitness
+                jobs_completed += 1
+                
+        sleep(args.get('time_sleep', 5))
+    print "DONE"
+    # fitness is computed when simData is accessed
+    return targetFitness
+    
+###############################################################################
+### Generator for first population candidates
+###############################################################################
+def generator(random, args):
+    # generate initial values for candidates
+    return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
+    
+###############################################################################
+### mutate candidates
+###############################################################################
+@mutator
+def mutate(random, candidate, args):
+    # if mutation_strenght is < 1, mutation will move closer to candidate
+    # if mutation_strenght is >1, mutation will move further away from candidate
+    # not bound required. otherwise: bounder = args.get('_ec').bounder
+    mutant = [i for i in candidate]
+    exponent = args.get('mutation_strength', 0.65)
+    for i, (c, lo, hi) in enumerate(zip(candidate, args.get('lower_bound'), args.get('upper_bound'))):
+        if random.random() <= args.get('mutation_rate', 0.2):
+            if random.random() < 0.5:
+                new_value = c + (hi - c) * (1.0 - random.random() ** exponent)
+            else:
+                new_value = c - (c - lo) * (1.0 - random.random() ** exponent)
+        mutant[i] = new_value
+        
+    return mutant
+    
 class Batch(object):
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
-        self.saveFolder = '/'+self.batchLabel
+        self.saveFolder = '/' + self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
         self.params = []
@@ -99,28 +214,50 @@ class Batch(object):
         else:
             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
 
-    def run(self):
-        if self.method in ['grid','list']:
-            # create saveFolder
-            import os,glob
+    def saveScripts(self):
+        import os
+        # create Folder to save simulation
+        if not os.path.exists(self.simDataFolder):
             try:
-                os.mkdir(self.saveFolder)
+                os.mkdir(self.simDataFolder)
             except OSError:
-                if not os.path.exists(self.saveFolder):
-                    print ' Could not create', self.saveFolder
-            
-            # save Batch dict as json
-            targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
-            self.save(targetFile)
+                print ' Could not create %s' %(self.simDataFolder)
+        
+        # save Batch dict as json
+        self.save(self.saveFolder+'/'+self.batchLabel+'_batch.json')
+        
+        # copy this batch script to folder, netParams and simConfig
+        os.system('cp ' + self.netParamsFile + ' ' + self.simDataFolder + '/_netParams.py')
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.simDataFolder + '/_batchScript.py')
+        
+        # save initial seed
+        with open(self.simDataFolder + '/_seed.seed', 'w') as seed_file:
+            if not self.seed: self.seed = int(time())
+            seed_file.write(self.seed)
 
-            # copy this batch script to folder
-            targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-            os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
- 
-            # copy netParams source to folder
-            netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
-            
+    def openFiles2SaveStats(self):
+        stat_file_name = '%s/%s_stats.cvs' %(self.simDataFolder, self.batchlabel)
+        stat_file_name = '%s/%s_stats_indiv.cvs' %(self.simDataFolder, self.batchlabel)
+        
+        return open(stat_file_name, 'w'), open(ind_file_name, 'w')
+    
+    def createLogger(self):
+        logger = logging.getLogger('inspyred.ec')
+        logger.setLevel(logging.DEBUG)
+        file_handler = logging.FileHandler(self.simDataFolder+'inspyred.log', mode='w')
+        file_handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        
+        return logger
+
+    def run(self):
+        # create main sim directory and save scripts
+        self.saveScripts()
+        
+        if self.method in ['grid','list']:
+            import glob
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
@@ -346,5 +483,51 @@ wait
 
             sleep(10) # give time for last job to get on queue    
 
-
-
+        elif self.method=='evolutionary_algorithm_with_gcp':
+            global ngen
+            ngen = 0
+            
+            # log for simulation
+            logger = self.createLogger()
+            
+            # create randomizer instance
+            rand = Random()
+            rand.seed(self.seed) 
+            
+            # create Inspyred.evolutionary_computation instance
+            ea = EvolutionaryComputation(rand)
+            # selects all elements in population
+            ea.selector = default_selection
+            # applied one after another in pipeline fashion
+            ea.variator = [uniform_crossover, mutate]
+            # replace all parents except for elit_num if fitness is bigger
+            ea.replacer = generational_replacement
+            # all elements will be called in secuence
+            ea.observer = [stats_observer, file_observer]
+            # create file handlers for observers
+            stats_file, ind_stats_file = self.openFiles2SaveStats()
+            # all elements will be combined via logical "or" operation
+            ea.terminator = [generation_termination]
+            
+            # gather **kwargs
+            kwargs = {'seed': self.seed}
+            kwargs['bash'] = self.runCfg['bash']
+            kwargs['batch'] = self.runCfg['batch']
+            kwargs['sbatch'] = self.runCfg['SBATCH']
+            kwargs['statistics_file'] = stats_file
+            kwargs['individuals_file'] = ind_stats_file
+            kwargs['simConfigPath'] = self.simConfigPath
+            kwargs['netParamPath'] = self.netParamsFile
+            kwargs['simDataFolder'] = self.simDataFolder
+            for key, value in self.runCfg['evolve'].iteritems(): 
+                self.kwargs[key] = value
+            
+            # evolve
+            output = ea.evolve( generator=generator, evaluator=evaluator, 
+                                bounder=Bounder, **kwargs)
+            # close file
+            stat_file.close()
+            ind_stats_file.close()
+            # print best and finish
+            print('Best Solution: \n{0}'.format(str(max(final_pop))))
+            print "JOB FINISHED"

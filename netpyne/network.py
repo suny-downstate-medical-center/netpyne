@@ -970,6 +970,7 @@ class Network (object):
                 
                 if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn] 
                 if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
+                if 'locFromList' in connParam: connParam['loc'] = connParam['locFromList'][iconn]
         
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection

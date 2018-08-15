@@ -26,6 +26,8 @@ else:
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
         long_description = long_description,
+
+        python_requires='==2.7.*',
         
         # The project's main homepage.
         url = 'https://github.com/Neurosim-lab/netpyne',
@@ -43,7 +45,7 @@ else:
             #   3 - Alpha
             #   4 - Beta
             #   5 - Production/Stable
-            'Development Status :: 2 - Pre-Alpha',
+            'Development Status :: 4 - Beta',
 
             # Indicate who your project is intended for
             'Intended Audience :: Science/Research',

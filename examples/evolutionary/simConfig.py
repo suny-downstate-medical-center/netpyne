@@ -11,9 +11,10 @@ simConfig.saveJson = True
 simConfig.filename = 'output_file'
 
 simConfig.recordStep = 0.1
-simConfig.recordCells = [20]
+simConfig.recordCells = [1]
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
 
 # Variable parameters (used in netParams)
-simConfig.synMechTau2 = 5
-simConfig.connWeight = 0.01
+simConfig.prop = 0.2
+simConfig.weight = 0.025
+simConfig.delay = 2

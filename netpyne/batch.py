@@ -58,17 +58,19 @@ def tupleToStr (obj):
 def evaluator(candidates, args):
     global ngen
     ngen += 1
+    total_jobs = 0
+    
     # read params or set default
     simDataFolder = args.get('simDataFolder')
     # read batch params declared in runCfg
     script = args.get('batch').get('script')
+    numproc = args.get('batch').get('numproc')
     mpiCmd = args.get('batch').get('mpiCommand')
     paramNames = args.get('batch').get('paramNames')
     # fitness function as expression
-    fitness_expression = args.get('evolve').get('fitness')
-    default_fitness = args.get('evolve').get('default_fitness')
+    fitness_expression = args.get('fitness')
+    default_fitness = args.get('default_fitness')
     
-    total_jobs = 0
     #run slurm jobs
     for candidate_index, canditate in enumerate(candidates):
         # required for slurm
@@ -78,15 +80,15 @@ def evaluator(candidates, args):
         # script to run with mpi
         command = '%s -np %d nrniv -python -mpi %s netParams=%s simConfig=%s filename=%s ' % (mpiCmd, numproc, script, args.get('netParamPath'), args.get('simConfigPath'), simDataPath)
         # add candidate values to command as argv
-        for param, param_label in zip(candidate, pNames): 
-            command += ' %s=%r' % (paramlabel, param)
-             
+        for param, param_label in zip(canditate, paramNames): 
+            command += ' %s=%r' % (param_label, param)
+        
         # file to save bash script
         bashFile = simDataPath + ".sh"
         # generate slurm-bash file
         with open(bashFile, 'w') as file:
             file.write('#!/bin/bash\n')
-            file.write('--job-name=%s\n' %(jobName))
+            file.write('#SBATCH --job-name=%s\n' %(jobName))
             for key, value in args.get('SBATCH').iteritems():
                 file.write('#SBATCH %s=%s\n' %(key, value if key not in ['--output', '--error'] else simDataPath+value))
             for key, value in args.get('bash').iteritems():
@@ -96,6 +98,7 @@ def evaluator(candidates, args):
             file.write('%s\n' %(command))
             file.write('wait\n')
         
+        print(bashFile)
         # subprocess.call
         proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
         (output, input) = (proc.stdin, proc.stdout)
@@ -107,7 +110,7 @@ def evaluator(candidates, args):
     jobs_completed = 0
     num_iters = 0
     # print outfilestem
-    print "jobs submitted for generation: %d/%d..." %(ngen, args.get('evolve').get('max_generations'))
+    print "jobs submitted for generation: %d/%d..." %(ngen, args.get('max_generations'))
     # start fitness calculation
     while jobs_completed < total_jobs:
         unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
@@ -166,10 +169,11 @@ class Batch(object):
         self.cfgFile = cfgFile
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
-        self.saveFolder = '/' + self.batchLabel
+        self.saveFolder = './' + self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
         self.params = []
+        self.seed = seed
         if params:
             for k,v in params.iteritems():
                 self.params.append({'label': k, 'values': v})
@@ -217,34 +221,34 @@ class Batch(object):
     def saveScripts(self):
         import os
         # create Folder to save simulation
-        if not os.path.exists(self.simDataFolder):
+        if not os.path.exists(self.saveFolder):
             try:
-                os.mkdir(self.simDataFolder)
+                os.mkdir(self.saveFolder)
             except OSError:
-                print ' Could not create %s' %(self.simDataFolder)
+                print ' Could not create %s' %(self.saveFolder)
         
         # save Batch dict as json
         self.save(self.saveFolder+'/'+self.batchLabel+'_batch.json')
         
         # copy this batch script to folder, netParams and simConfig
-        os.system('cp ' + self.netParamsFile + ' ' + self.simDataFolder + '/_netParams.py')
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.simDataFolder + '/_batchScript.py')
+        os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/_netParams.py')
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/_batchScript.py')
         
         # save initial seed
-        with open(self.simDataFolder + '/_seed.seed', 'w') as seed_file:
+        with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
-            seed_file.write(self.seed)
+            seed_file.write(str(self.seed))
 
     def openFiles2SaveStats(self):
-        stat_file_name = '%s/%s_stats.cvs' %(self.simDataFolder, self.batchlabel)
-        stat_file_name = '%s/%s_stats_indiv.cvs' %(self.simDataFolder, self.batchlabel)
+        stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
+        ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
         
         return open(stat_file_name, 'w'), open(ind_file_name, 'w')
     
     def createLogger(self):
         logger = logging.getLogger('inspyred.ec')
         logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.simDataFolder+'inspyred.log', mode='w')
+        file_handler = logging.FileHandler(self.saveFolder+'inspyred.log', mode='w')
         file_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
@@ -513,14 +517,14 @@ wait
             kwargs = {'seed': self.seed}
             kwargs['bash'] = self.runCfg['bash']
             kwargs['batch'] = self.runCfg['batch']
-            kwargs['sbatch'] = self.runCfg['SBATCH']
+            kwargs['SBATCH'] = self.runCfg['SBATCH']
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
-            kwargs['simConfigPath'] = self.simConfigPath
+            kwargs['simConfigPath'] = self.cfgFile
             kwargs['netParamPath'] = self.netParamsFile
-            kwargs['simDataFolder'] = self.simDataFolder
+            kwargs['simDataFolder'] = self.saveFolder
             for key, value in self.runCfg['evolve'].iteritems(): 
-                self.kwargs[key] = value
+                kwargs[key] = value
             
             # evolve
             output = ea.evolve( generator=generator, evaluator=evaluator, 

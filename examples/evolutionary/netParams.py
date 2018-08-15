@@ -20,7 +20,7 @@ cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl':
 netParams.cellParams['PYRrule'] = cellRule
 
 # Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': simConfig.synMechTau2, 'e': 0}
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5, 'e': 0}
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
@@ -30,8 +30,8 @@ netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType':
 netParams.connParams['S->M'] = {
 	'preConds': {'pop': 'S'},
 	'postConds': {'pop': 'M'},
-	'probability': 0.5,
-	'weight': simConfig.connWeight,
-	'delay': 5,
+	'probability': simConfig.prob,
+	'weight': simConfig.weight,
+	'delay': simConfig.delay,
 	'synMech': 'exc'
 }

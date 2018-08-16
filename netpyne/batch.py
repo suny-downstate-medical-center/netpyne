@@ -57,55 +57,95 @@ def tupleToStr (obj):
                 obj[str(key)] = obj.pop(key) 
     #print 'after:', obj
     return obj
-
-
+    
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Parallel evaluation
 # -------------------------------------------------------------------------------
 def evaluator(candidates, args):
+    import os
     global ngen
     ngen += 1
     total_jobs = 0
+    # read params or set defaults
+    sleepInterval = args.get('sleepInterval', 1)
     
-    # read params or set default
-    simDataFolder = args.get('simDataFolder')
-    # read batch params declared in runCfg
-    script = args.get('batch').get('script')
-    numproc = args.get('batch').get('numproc')
-    mpiCmd = args.get('batch').get('mpiCommand')
-    paramNames = args.get('batch').get('paramNames')
-    # fitness function as expression
+    # paths to required scripts
+    script = '../' + args.get('script', 'init.py')
+    cfgSavePath = '../' + args.get('cfgSavePath')
+    netParamsSavePath = '../' + args.get('netParamsSavePath')
+    simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
+    
+    
+    # mpi command setup
+    nodes = args.get('nodes', 1)
+    paramNames = args.get('paramNames')
+    coresPerNode = args.get('coresPerNode', 1)
+    mpiCommand = args.get('mpiCommand', 'ibrun')
+    numproc = nodes*coresPerNode
+    
+    # slurm setup
+    custom = args.get('custom', '')
+    folder = args.get('folder', '.')
+    email = args.get('email', 'a@b.c')
+    walltime = args.get('walltime', '00:30:00')
+    reservation = args.get('reservation', None)
+    allocation = args.get('allocation', 'csd403') # NSG account
+    if reservation:
+        res = '#SBATCH --res=%s'%(reservation)
+    else:  
+        res = ''
+        
+    # fitness function
     fitness_expression = args.get('fitness')
     default_fitness = args.get('default_fitness')
     
-    #run slurm jobs
+    # create a folder for this generation
+    if not os.path.exists(simDataFolder):
+        try:
+            os.mkdir(simDataFolder)
+        except OSError:
+            print ' Could not create %s' %(simDataFolder)
+    
+    # create a job for each candidate
     for candidate_index, canditate in enumerate(candidates):
         # required for slurm
-        sleep(args.get('sleepInterval', 1))
+        sleep(sleepInterval)
         jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
         simDataPath = simDataFolder + '/' + jobName
         # script to run with mpi
-        command = '%s -np %d nrniv -python -mpi %s netParams=%s simConfig=%s filename=%s ' % (mpiCmd, numproc, script, args.get('netParamPath'), args.get('simConfigPath'), simDataPath)
+        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s filename=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath, simDataPath)
         # add candidate values to command as argv
         for param, param_label in zip(canditate, paramNames): 
             command += ' %s=%r' % (param_label, param)
-        
-        # file to save bash script
-        bashFile = simDataPath + ".sh"
-        # generate slurm-bash file
-        with open(bashFile, 'w') as file:
-            file.write('#!/bin/bash\n')
-            file.write('#SBATCH --job-name=%s\n' %(jobName))
-            for key, value in args.get('SBATCH').iteritems():
-                file.write('#SBATCH %s=%s\n' %(key, value if key not in ['--output', '--error'] else simDataPath+value))
-            for key, value in args.get('bash').iteritems():
-                file.write('%s\n' %(value))
-            file.write('source ~/.bashrc\n')
-            file.write('cd %s\n' %(simDataFolder))
-            file.write('%s\n' %(command))
-            file.write('wait\n')
-        
-        print(bashFile)
+
+        jobString = """#!/bin/bash 
+#SBATCH --job-name=%s
+#SBATCH -A %s
+#SBATCH -t %s
+#SBATCH --nodes=%d
+#SBATCH --ntasks-per-node=%d
+#SBATCH -o %s.run
+#SBATCH -e %s.err
+#SBATCH --mail-user=%s
+#SBATCH --mail-type=end
+%s
+%s
+
+source ~/.bashrc
+cd %s
+%s
+wait
+        """  % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
+
+        # Send job_string to qsub
+        print 'Submitting job ',jobName
+        print jobString + '\n'
+
+        batchfile = '%s.sbatch' % (simDataPath)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
+
+        print(batchfile)
         # subprocess.call
         #proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
         #(output, input) = (proc.stdin, proc.stdout)
@@ -150,7 +190,6 @@ def generator(random, args):
     # generate initial values for candidates
     return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
 
-    
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Mutation of candidates
 # -------------------------------------------------------------------------------
@@ -185,6 +224,7 @@ class Batch(object):
         self.saveFolder = './' + self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
+        self.evolCfg = {}
         self.params = []
         self.seed = seed
         if params:
@@ -364,7 +404,7 @@ class Batch(object):
                     elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
                         print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
                     else:
-                        # save simConfig json to saveFolder                        
+                        # save simConfig json to saveFolder
                         self.cfg.simLabel = simLabel
                         self.cfg.saveFolder = self.saveFolder
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
@@ -540,20 +580,19 @@ wait
             ea.terminator = [generation_termination]
             
             # gather **kwargs
-            kwargs = {'seed': self.seed}
-            kwargs['bash'] = self.runCfg['bash']
-            kwargs['batch'] = self.runCfg['batch']
-            kwargs['SBATCH'] = self.runCfg['SBATCH']
+            kwargs = {}
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
-            kwargs['simConfigPath'] = self.cfgFile
-            kwargs['netParamPath'] = self.netParamsFile
+            kwargs['cfgSavePath'] = self.cfgFile
             kwargs['simDataFolder'] = self.saveFolder
-            for key, value in self.runCfg['evolve'].iteritems(): 
+            kwargs['netParamsSavePath'] = self.netParamsFile
+            for key, value in self.evolCfg.iteritems(): 
+                kwargs[key] = value
+            for key, value in self.runCfg.iteritems(): 
                 kwargs[key] = value
             
             # evolve
-            output = ea.evolve( generator=generator, evaluator=evaluator, 
+            final_pop = ea.evolve( generator=generator, evaluator=evaluator, 
                                 bounder=Bounder, **kwargs)
             # close file
             stat_file.close()

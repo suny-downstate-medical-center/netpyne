@@ -1,14 +1,14 @@
 from netpyne import specs
 from netpyne.batch import Batch 
 
-def dentateGyrus():
+def batchEvol():
 	# create Batch object with paramaters to modify, and specifying files to use
-	dGyrus = Batch(cfgFile='simConfig.py', netParamsFile='netParams.py')
+	b = Batch(cfgFile='simConfig.py', netParamsFile='netParams.py')
 	
 	# Set output folder, grid method (all param combinations), and run configuration
-	dGyrus.batchLabel = 'dentateGyrus'
-	dGyrus.method = 'evolutionary_algorithm_with_gcp'
-	dGyrus.runCfg = {
+	b.batchLabel = 'dentateGyrus'
+	b.method = 'evol'
+	b.runCfg = {
 		'batch': {
 			'script': 'init.py',
 			'mpiCommand': 'mpiexec',
@@ -45,8 +45,8 @@ def dentateGyrus():
 		}
 	}
 	# Run batch simulations
-	dGyrus.run()
+	b.run()
 
 # Main code
 if __name__ == '__main__':
-	dentateGyrus() 
+	batchEvol() 

@@ -27,7 +27,9 @@ from inspyred.ec.selectors import default_selection, tournament_selection
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
 
+# -------------------------------------------------------------------------------
 # function to run single job using ParallelContext bulletin board (master/slave) 
+# -------------------------------------------------------------------------------
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
     
@@ -37,6 +39,10 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
+
+# -------------------------------------------------------------------------------
+# function to convert tuples to strings (avoids erro when saving/loading)
+# -------------------------------------------------------------------------------
 def tupleToStr (obj):
     #print '\nbefore:', obj
     if type(obj) == list:
@@ -52,9 +58,10 @@ def tupleToStr (obj):
     #print 'after:', obj
     return obj
 
-###############################################################################
-### Parallel evaluation
-###############################################################################
+
+# -------------------------------------------------------------------------------
+# Evolutionary optimization: Parallel evaluation
+# -------------------------------------------------------------------------------
 def evaluator(candidates, args):
     global ngen
     ngen += 1
@@ -100,8 +107,8 @@ def evaluator(candidates, args):
         
         print(bashFile)
         # subprocess.call
-        proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
-        (output, input) = (proc.stdin, proc.stdout)
+        #proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
+        #(output, input) = (proc.stdin, proc.stdout)
         total_jobs += 1
         sleep(0.1)
 
@@ -135,16 +142,18 @@ def evaluator(candidates, args):
     # fitness is computed when simData is accessed
     return targetFitness
     
-###############################################################################
-### Generator for first population candidates
-###############################################################################
+
+# -------------------------------------------------------------------------------
+# Evolutionary optimization: Generation of first population candidates
+# -------------------------------------------------------------------------------
 def generator(random, args):
     # generate initial values for candidates
     return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
+
     
-###############################################################################
-### mutate candidates
-###############################################################################
+# -------------------------------------------------------------------------------
+# Evolutionary optimization: Mutation of candidates
+# -------------------------------------------------------------------------------
 @mutator
 def mutate(random, candidate, args):
     # if mutation_strenght is < 1, mutation will move closer to candidate
@@ -161,7 +170,11 @@ def mutate(random, candidate, args):
         mutant[i] = new_value
         
     return mutant
-    
+
+
+# -------------------------------------------------------------------------------
+# Batch class
+# -------------------------------------------------------------------------------
 class Batch(object):
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
@@ -181,6 +194,7 @@ class Batch(object):
             for p in self.params:
                 if p['label'] in groupedParams: p['group'] = True
     
+
     def save(self, filename):
         import os
         from copy import deepcopy
@@ -218,6 +232,7 @@ class Batch(object):
         else:
             setattr(self.cfg, paramLabel, paramVal) # set simConfig params
 
+
     def saveScripts(self):
         import os
         # create Folder to save simulation
@@ -239,13 +254,16 @@ class Batch(object):
             if not self.seed: self.seed = int(time())
             seed_file.write(str(self.seed))
 
+
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
         
         return open(stat_file_name, 'w'), open(ind_file_name, 'w')
+
     
     def createLogger(self):
+        # Logger for evolutionary optimization
         logger = logging.getLogger('inspyred.ec')
         logger.setLevel(logging.DEBUG)
         file_handler = logging.FileHandler(self.saveFolder+'inspyred.log', mode='w')
@@ -256,10 +274,14 @@ class Batch(object):
         
         return logger
 
+
     def run(self):
         # create main sim directory and save scripts
         self.saveScripts()
         
+        # -------------------------------------------------------------------------------
+        # Evolutionary optimization
+        # -------------------------------------------------------------------------------
         if self.method in ['grid','list']:
             import glob
             # import cfg
@@ -487,7 +509,11 @@ wait
 
             sleep(10) # give time for last job to get on queue    
 
-        elif self.method=='evolutionary_algorithm_with_gcp':
+
+        # -------------------------------------------------------------------------------
+        # Evolutionary optimization
+        # -------------------------------------------------------------------------------
+        elif self.method=='evol':
             global ngen
             ngen = 0
             

@@ -341,7 +341,7 @@ class Batch(object):
         # Logger for evolutionary optimization
         logger = logging.getLogger('inspyred.ec')
         logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.saveFolder+'inspyred.log', mode='w')
+        file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='w')
         file_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)

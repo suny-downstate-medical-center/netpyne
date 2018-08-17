@@ -75,7 +75,6 @@ def evaluator(candidates, args):
     netParamsSavePath = '../' + args.get('netParamsSavePath')
     simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
     
-    
     # mpi command setup
     nodes = args.get('nodes', 1)
     paramNames = args.get('paramNames')
@@ -189,6 +188,7 @@ wait
 def generator(random, args):
     # generate initial values for candidates
     return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
+
 
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Mutation of candidates
@@ -306,7 +306,7 @@ class Batch(object):
         # Logger for evolutionary optimization
         logger = logging.getLogger('inspyred.ec')
         logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.saveFolder+'inspyred.log', mode='w')
+        file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='w')
         file_handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)

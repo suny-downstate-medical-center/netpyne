@@ -214,6 +214,7 @@ def generator(random, args):
     # generate initial values for candidates
     return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
 
+
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Mutation of candidates
 # -------------------------------------------------------------------------------

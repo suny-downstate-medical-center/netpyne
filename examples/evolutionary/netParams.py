@@ -1,9 +1,9 @@
 from netpyne import specs, sim
 
 try:
-	from __main__ import simConfig
+	from __main__ import cfg
 except:
-	from simConfig import simConfig
+	from simConfig import cfg
 
 # Network parameters
 netParams = specs.NetParams()
@@ -30,8 +30,8 @@ netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType':
 netParams.connParams['S->M'] = {
 	'preConds': {'pop': 'S'},
 	'postConds': {'pop': 'M'},
-	'probability': simConfig.prob,
-	'weight': simConfig.weight,
-	'delay': simConfig.delay,
+	'probability': cfg.prob,
+	'weight': cfg.weight,
+	'delay': cfg.delay,
 	'synMech': 'exc'
 }

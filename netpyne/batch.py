@@ -66,6 +66,19 @@ def evaluator(candidates, args):
     global ngen
     ngen += 1
     total_jobs = 0
+    
+    def setCfgNestedParam(cfg, paramLabel, paramVal):
+        if isinstance(paramLabel, tuple):
+            container = cfg
+            for ip in range(len(paramLabel)-1):
+                if isinstance(container, specs.SimConfig):
+                    container = getattr(container, paramLabel[ip])
+                else:
+                    container = container[paramLabel[ip]]
+            container[paramLabel[-1]] = paramVal
+        else:
+            setattr(cfg, paramLabel, paramVal) # set simConfig params
+
     # read params or set defaults
     sleepInterval = args.get('sleepInterval', 1)
     
@@ -75,10 +88,9 @@ def evaluator(candidates, args):
     netParamsSavePath = '../' + args.get('netParamsSavePath')
     simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
     
-    
     # mpi command setup
     nodes = args.get('nodes', 1)
-    paramNames = args.get('paramNames')
+    paramLabels = args.get('paramLabels')
     coresPerNode = args.get('coresPerNode', 1)
     mpiCommand = args.get('mpiCommand', 'ibrun')
     numproc = nodes*coresPerNode
@@ -94,29 +106,42 @@ def evaluator(candidates, args):
         res = '#SBATCH --res=%s'%(reservation)
     else:  
         res = ''
-        
+
+    # modules and functions
+    cfg = args.get('cfg')
+
     # fitness function
     fitness_expression = args.get('fitness')
     default_fitness = args.get('default_fitness')
-    
+
     # create a folder for this generation
     if not os.path.exists(simDataFolder):
         try:
             os.mkdir(simDataFolder)
         except OSError:
             print ' Could not create %s' %(simDataFolder)
-    
+
     # create a job for each candidate
-    for candidate_index, canditate in enumerate(candidates):
+    for candidate_index, candidate in enumerate(candidates):
         # required for slurm
         sleep(sleepInterval)
+        # modify cfg instance with candidate values
+        for label, value in zip(paramLabels, candidate):
+            setCfgNestedParam(cfg, label, value)
+            print str(label) + ' = ' + str(value)
+
+        # name and path
         jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
         simDataPath = simDataFolder + '/' + jobName
+
+        # save cfg instance to file
+        cfg.simLabel = jobName
+        cfgPath = jobName + '_cfg.json'
+        cfg.save(simDataPath + '_cfg.json')
+
+        #######################
         # script to run with mpi
-        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s filename=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath, simDataPath)
-        # add candidate values to command as argv
-        for param, param_label in zip(canditate, paramNames): 
-            command += ' %s=%r' % (param_label, param)
+        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgPath, netParamsSavePath)
 
         jobString = """#!/bin/bash 
 #SBATCH --job-name=%s
@@ -145,7 +170,6 @@ wait
         with open(batchfile, 'w') as text_file:
             text_file.write("%s" % jobString)
 
-        print(batchfile)
         # subprocess.call
         #proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
         #(output, input) = (proc.stdin, proc.stdout)
@@ -241,12 +265,12 @@ class Batch(object):
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
-
+        
         # make dir
-        try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
+        if not os.path.exists(folder):
+            try:
+                os.mkdir(folder)
+            except OSError:
                 print ' Could not create', folder
 
         odict = deepcopy(self.__dict__)
@@ -293,6 +317,17 @@ class Batch(object):
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
             seed_file.write(str(self.seed))
+            
+        # import cfg
+        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+        cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+        
+        if hasattr(cfgModule, 'cfg'):
+            self.cfg = cfgModule.cfg
+        else:
+            self.cfg = cfgModule.simConfig
+            
+        self.cfg.checkErrors = False  # avoid error checking during batch
 
 
     def openFiles2SaveStats(self):
@@ -316,24 +351,19 @@ class Batch(object):
 
 
     def run(self):
+        import os
         # create main sim directory and save scripts
         self.saveScripts()
-        
+
         # -------------------------------------------------------------------------------
         # Evolutionary optimization
         # -------------------------------------------------------------------------------
         if self.method in ['grid','list']:
             import glob
-            # import cfg
-            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-            self.cfg = cfgModule.cfg
-            self.cfg.checkErrors = False  # avoid error checking during batch
-
             # set initial cfg initCfg
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.iteritems():
-                    self.setCfgNestedParam(paramLabel, paramVal)
+                    self.setCfgNestedParam(self.cfg, paramLabel, paramVal)
               
 
             # iterate over all param combinations
@@ -388,7 +418,7 @@ class Batch(object):
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
-                        self.setCfgNestedParam(paramLabel, paramVal)
+                        self.setCfgNestedParam(self.cfg, paramLabel, paramVal)
 
                         print str(paramLabel)+' = '+str(paramVal)
                         
@@ -580,12 +610,14 @@ wait
             ea.terminator = [generation_termination]
             
             # gather **kwargs
-            kwargs = {}
+            kwargs = {'cfg': self.cfg}
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
             kwargs['cfgSavePath'] = self.cfgFile
             kwargs['simDataFolder'] = self.saveFolder
             kwargs['netParamsSavePath'] = self.netParamsFile
+            kwargs['setCfgNestedParam'] = self.setCfgNestedParam
+            
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value
             for key, value in self.runCfg.iteritems(): 

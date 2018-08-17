@@ -12,7 +12,7 @@ def batchEvol():
 		'script': 'init.py',
 		'numproc': 2,
 		'mpiCommand': 'mpiexec',
-		'paramNames': ['prob', 'weight', 'delay'],
+		'paramLabels': ['prob', 'weight', 'delay'],
 		'nodes': 1,
 		'coresPerNode': 8,
 		'allocation': 'myUser',

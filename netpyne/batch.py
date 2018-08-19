@@ -12,7 +12,7 @@ import logging
 import datetime
 from neuron import h
 from netpyne import specs
-from netpyne.utils import bashTemplate
+from utils import bashTemplate
 from random import Random
 from time import sleep, time
 from itertools import izip, product
@@ -40,7 +40,16 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
-
+# -------------------------------------------------------------------------------
+# function to create a folder if it does not exist
+# -------------------------------------------------------------------------------
+def createFolder(folder):
+    import os
+    if not os.path.exists(folder):
+        try:
+            os.mkdir(folder)
+        except OSError:
+            print ' Could not create %s' %(folder)
 # -------------------------------------------------------------------------------
 # function to convert tuples to strings (avoids erro when saving/loading)
 # -------------------------------------------------------------------------------
@@ -102,7 +111,7 @@ def evaluator(candidates, args):
     custom = args.get('custom', '')
     folder = args.get('folder', '.')
     email = args.get('email', 'a@b.c')
-    walltime = args.get('walltime', '00:30:00')
+    walltime = args.get('walltime', '00:01:00')
     reservation = args.get('reservation', None)
     allocation = args.get('allocation', 'csd403') # NSG account
 
@@ -116,12 +125,8 @@ def evaluator(candidates, args):
     # read params or set defaults
     sleepInterval = args.get('sleepInterval', 0.2)
     
-    # create a folder for this generation
-    if not os.path.exists(simDataFolder):
-        try:
-            os.mkdir(simDataFolder)
-        except OSError:
-            print ' Could not create %s' %(simDataFolder)
+    # create folder if it does not exist
+    createFolder(simDataFolder)
     
     # remember pids in a list
     pids = list()
@@ -129,24 +134,26 @@ def evaluator(candidates, args):
     for candidate_index, candidate in enumerate(candidates):
         # required for slurm
         sleep(sleepInterval)
+        
         # name and path
         jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
         simDataPath = simDataFolder + '/' + jobName
+        
         # modify cfg instance with candidate values
         for label, value in zip(paramLabels, candidate):
             setCfgNestedParam(cfg, label, value)
-            print 'set param %s=%s' % (label, value)
+            print 'set %s=%s' % (label, value)
+        
         # change output name
         setCfgNestedParam(cfg, "filename", jobName)
         
         # save cfg instance to file
-        cfgPath = jobName + '_cfg.json'
         cfg.save(simDataPath + '_cfg.json')
         
         # ----------------------------------------------------------------------
         # MPI job commnand
         # ----------------------------------------------------------------------
-        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgPath, netParamsSavePath)
+        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, jobName+'_cfg.json', netParamsSavePath)
         # ----------------------------------------------------------------------
         # run on local machine with <nodes*coresPerNode> cores
         # ----------------------------------------------------------------------
@@ -167,9 +174,9 @@ def evaluator(candidates, args):
             executer = 'qsub'
             queueName = args.get('queueName', 'default')
             nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
-            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, simDataPath, simDataPath, custom, command)
         # ----------------------------------------------------------------------
-        # continue
+        # save job and run
         # ----------------------------------------------------------------------
         print 'Submitting job ', jobName
         print jobString
@@ -197,12 +204,17 @@ def evaluator(candidates, args):
         unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
         for candidate_index in unfinished:
             try: # load simData and evaluate fitness
+                print 'trying to open output'
+                print 'I am here: %s' %(os.getcwd())
+                print 'trying to open: %s' %(simDataPath+'.json')
                 simDataPath = simDataFolder + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
                 with open('%s.json'% (simDataPath)) as file:
                     simData = json.load(file)['simData']
                 targetFitness[candidate_index] = eval(fitness_expression)
                 jobs_completed += 1
+                print('success')
             except:
+                print('failure')
                 pass
         num_iters += 1
         if num_iters >= args.get('maxiter_wait', 5000): 
@@ -213,7 +225,10 @@ def evaluator(candidates, args):
                 
         sleep(args.get('time_sleep', 1))
     # kill all processes
-    for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
+    try: 
+        for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
+    except:
+        print 'SEEMS THE JOBS WHERE CLOSED ALREADY'
     # return
     print "DONE"
     return targetFitness

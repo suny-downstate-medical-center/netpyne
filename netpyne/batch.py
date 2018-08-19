@@ -12,6 +12,7 @@ import logging
 import datetime
 from neuron import h
 from netpyne import specs
+from netpyne.utils import bashTemplate
 from random import Random
 from time import sleep, time
 from itertools import izip, product
@@ -57,40 +58,42 @@ def tupleToStr (obj):
                 obj[str(key)] = obj.pop(key) 
     #print 'after:', obj
     return obj
-    
+# -------------------------------------------------------------------------------
+# function to modify parameter in object of type specs.SimConfig
+# -------------------------------------------------------------------------------
+def setCfgNestedParam(cfg, paramLabel, paramVal):
+    if isinstance(paramLabel, tuple):
+        container = cfg
+        for ip in range(len(paramLabel)-1):
+            if isinstance(container, specs.SimConfig):
+                container = getattr(container, paramLabel[ip])
+            else:
+                container = container[paramLabel[ip]]
+        container[paramLabel[-1]] = paramVal
+    else:
+        setattr(cfg, paramLabel, paramVal) # set simConfig params
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Parallel evaluation
 # -------------------------------------------------------------------------------
 def evaluator(candidates, args):
     import os
+    import signal
     global ngen
     ngen += 1
     total_jobs = 0
-    
-    def setCfgNestedParam(cfg, paramLabel, paramVal):
-        if isinstance(paramLabel, tuple):
-            container = cfg
-            for ip in range(len(paramLabel)-1):
-                if isinstance(container, specs.SimConfig):
-                    container = getattr(container, paramLabel[ip])
-                else:
-                    container = container[paramLabel[ip]]
-            container[paramLabel[-1]] = paramVal
-        else:
-            setattr(cfg, paramLabel, paramVal) # set simConfig params
 
-    # read params or set defaults
-    sleepInterval = args.get('sleepInterval', 1)
+    # options slurm, mpi
+    type = args.get('type', 'mpi_direct')
     
     # paths to required scripts
-    script = '../' + args.get('script', 'init.py')
+    script = '../../' + args.get('script', 'init.py')
     cfgSavePath = '../' + args.get('cfgSavePath')
-    netParamsSavePath = '../' + args.get('netParamsSavePath')
+    netParamsSavePath = '../../' + args.get('netParamsSavePath')
     simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
     
     # mpi command setup
     nodes = args.get('nodes', 1)
-    paramLabels = args.get('paramLabels')
+    paramLabels = args.get('paramLabels', [])
     coresPerNode = args.get('coresPerNode', 1)
     mpiCommand = args.get('mpiCommand', 'ibrun')
     numproc = nodes*coresPerNode
@@ -102,10 +105,6 @@ def evaluator(candidates, args):
     walltime = args.get('walltime', '00:30:00')
     reservation = args.get('reservation', None)
     allocation = args.get('allocation', 'csd403') # NSG account
-    if reservation:
-        res = '#SBATCH --res=%s'%(reservation)
-    else:  
-        res = ''
 
     # modules and functions
     cfg = args.get('cfg')
@@ -113,85 +112,96 @@ def evaluator(candidates, args):
     # fitness function
     fitness_expression = args.get('fitness')
     default_fitness = args.get('default_fitness')
-
+    
+    # read params or set defaults
+    sleepInterval = args.get('sleepInterval', 0.2)
+    
     # create a folder for this generation
     if not os.path.exists(simDataFolder):
         try:
             os.mkdir(simDataFolder)
         except OSError:
             print ' Could not create %s' %(simDataFolder)
-
+    
+    # remember pids in a list
+    pids = list()
     # create a job for each candidate
     for candidate_index, candidate in enumerate(candidates):
         # required for slurm
         sleep(sleepInterval)
-        # modify cfg instance with candidate values
-        for label, value in zip(paramLabels, candidate):
-            setCfgNestedParam(cfg, label, value)
-            print str(label) + ' = ' + str(value)
-
         # name and path
         jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
         simDataPath = simDataFolder + '/' + jobName
-
+        # modify cfg instance with candidate values
+        for label, value in zip(paramLabels, candidate):
+            setCfgNestedParam(cfg, label, value)
+            print 'set param %s=%s' % (label, value)
+        # change output name
+        setCfgNestedParam(cfg, "filename", jobName)
+        
         # save cfg instance to file
-        cfg.simLabel = jobName
         cfgPath = jobName + '_cfg.json'
         cfg.save(simDataPath + '_cfg.json')
-
-        #######################
-        # script to run with mpi
+        
+        # ----------------------------------------------------------------------
+        # MPI job commnand
+        # ----------------------------------------------------------------------
         command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgPath, netParamsSavePath)
-
-        jobString = """#!/bin/bash 
-#SBATCH --job-name=%s
-#SBATCH -A %s
-#SBATCH -t %s
-#SBATCH --nodes=%d
-#SBATCH --ntasks-per-node=%d
-#SBATCH -o %s.run
-#SBATCH -e %s.err
-#SBATCH --mail-user=%s
-#SBATCH --mail-type=end
-%s
-%s
-
-source ~/.bashrc
-cd %s
-%s
-wait
-        """  % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
-
-        # Send job_string to qsub
-        print 'Submitting job ',jobName
-        print jobString + '\n'
-
+        # ----------------------------------------------------------------------
+        # run on local machine with <nodes*coresPerNode> cores
+        # ----------------------------------------------------------------------
+        if type=='mpi_direct':
+            executer = '/bin/bash'
+            jobString = bashTemplate('mpi_direct') %(custom, simDataFolder, command)
+        # ----------------------------------------------------------------------
+        # run on HPC through slurm
+        # ----------------------------------------------------------------------
+        elif type=='hpc_slurm':
+            executer = 'sbatch'
+            res = '#SBATCH --res=%s' % (reservation) if reservation else ''
+            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
+        # ----------------------------------------------------------------------
+        # run on HPC through PBS
+        # ----------------------------------------------------------------------
+        elif type=='hpc_torque':
+            executer = 'qsub'
+            queueName = args.get('queueName', 'default')
+            nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
+            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+        # ----------------------------------------------------------------------
+        # continue
+        # ----------------------------------------------------------------------
+        print 'Submitting job ', jobName
+        print jobString
+        print '-'*80
+        # save file 
         batchfile = '%s.sbatch' % (simDataPath)
         with open(batchfile, 'w') as text_file:
             text_file.write("%s" % jobString)
-
-        # subprocess.call
-        #proc = Popen(['sbatch', bashFile], stdin=PIPE, stdout=PIPE)
-        #(output, input) = (proc.stdin, proc.stdout)
+        
+        with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
+            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
         total_jobs += 1
         sleep(0.1)
-
-    #read results from file
-    targetFitness = [None for cand in candidates]
-    jobs_completed = 0
+    # ----------------------------------------------------------------------
+    # gather data and compute fitness
+    # ----------------------------------------------------------------------
     num_iters = 0
+    jobs_completed = 0
+    targetFitness = [None for cand in candidates]
     # print outfilestem
-    print "jobs submitted for generation: %d/%d..." %(ngen, args.get('max_generations'))
+    print "waiting jobs from generation: %d/%d to finish..." %(ngen, args.get('max_generations'))
+    print "PID's: %r" %(pids)
     # start fitness calculation
     while jobs_completed < total_jobs:
         unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
-        for canditade_index in unfinished:
+        for candidate_index in unfinished:
             try: # load simData and evaluate fitness
                 simDataPath = simDataFolder + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
                 with open('%s.json'% (simDataPath)) as file:
                     simData = json.load(file)['simData']
-                    targetFitness[candidate_index] = eval(fitness_expression)
-                    jobs_completed += 1
+                targetFitness[candidate_index] = eval(fitness_expression)
+                jobs_completed += 1
             except:
                 pass
         num_iters += 1
@@ -201,9 +211,11 @@ wait
                 targetFitness[canditade_index] = default_fitness
                 jobs_completed += 1
                 
-        sleep(args.get('time_sleep', 5))
+        sleep(args.get('time_sleep', 1))
+    # kill all processes
+    for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
+    # return
     print "DONE"
-    # fitness is computed when simData is accessed
     return targetFitness
     
 
@@ -225,12 +237,12 @@ def mutate(random, candidate, args):
     mutant = [i for i in candidate]
     exponent = args.get('mutation_strength', 0.65)
     for i, (c, lo, hi) in enumerate(zip(candidate, args.get('lower_bound'), args.get('upper_bound'))):
-        if random.random() <= args.get('mutation_rate', 0.2):
+        if random.random() <= args.get('mutation_rate', 0.1):
             if random.random() < 0.5:
                 new_value = c + (hi - c) * (1.0 - random.random() ** exponent)
             else:
                 new_value = c - (c - lo) * (1.0 - random.random() ** exponent)
-        mutant[i] = new_value
+            mutant[i] = new_value
         
     return mutant
 
@@ -458,20 +470,8 @@ class Batch(object):
                             numproc = nodes*ppn
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
-
-
-                            jobString = """#!/bin/bash 
-#PBS -N %s
-#PBS -l walltime=%s
-#PBS -q %s
-#PBS -l %s
-#PBS -o %s.run
-#PBS -e %s.err
-%s
-cd $PBS_O_WORKDIR
-echo $PBS_O_WORKDIR
-%s
-                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+                            # import job template from netpyne.utils.bashTemplate
+                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
                            # Send job_string to qsub
                             print 'Submitting job ',jobName
@@ -509,25 +509,8 @@ echo $PBS_O_WORKDIR
 
                             numproc = nodes*coresPerNode
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath) 
-
-                            jobString = """#!/bin/bash 
-#SBATCH --job-name=%s
-#SBATCH -A %s
-#SBATCH -t %s
-#SBATCH --nodes=%d
-#SBATCH --ntasks-per-node=%d
-#SBATCH -o %s.run
-#SBATCH -e %s.err
-#SBATCH --mail-user=%s
-#SBATCH --mail-type=end
-%s
-%s
-
-source ~/.bashrc
-cd %s
-%s
-wait
-                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
+                            # import job template from netpyne.utils.bashTemplate
+                            jobString = bashTemplate('hpc_slurm') % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
                             # Send job_string to qsub
                             print 'Submitting job ',jobName
@@ -585,7 +568,7 @@ wait
         # -------------------------------------------------------------------------------
         elif self.method=='evol':
             global ngen
-            ngen = 0
+            ngen = -1
             
             # log for simulation
             logger = self.createLogger()
@@ -627,7 +610,7 @@ wait
             final_pop = ea.evolve( generator=generator, evaluator=evaluator, 
                                 bounder=Bounder, **kwargs)
             # close file
-            stat_file.close()
+            stats_file.close()
             ind_stats_file.close()
             # print best and finish
             print('Best Solution: \n{0}'.format(str(max(final_pop))))

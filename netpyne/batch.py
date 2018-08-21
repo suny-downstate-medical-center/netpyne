@@ -34,14 +34,11 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # func needs to be outside of class
 def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
     print '\nJob in rank id: ',pc.id()
-    # print '\nJob in rank id: ',pc.id()
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
-    # print command+'\n'
+
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         Popen(command.split(' '), stdout=outf, stderr=errf)
     
-    # proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    # print proc.stdout.read()
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
     print '\nJob in rank id: ',pc.id()
@@ -140,12 +137,6 @@ def evaluator(candidates, args):
     
     # remember pids in a list
     pids = list()
-    
-    # if using pc bulletin board, initialize all workers
-    if 'type' == 'mpi_bulletin':
-        for iworker in range(int(pc.nhost())):
-            print 'number of hosts: %d' %(int(pc.nhost()))
-            pc.runworker()
             
     # create a job for each candidate
     for candidate_index, candidate in enumerate(candidates):
@@ -263,8 +254,9 @@ def evaluator(candidates, args):
         except:
             print 'SEEMS JOBS WHERE CLOSED ALREADY'
     # return
-    pc.done()
-    print "DONE"
+    print "#"*80
+    print "  GENERATION DONE  |"*4
+    print "#"*80
     return targetFitness
     
 
@@ -412,22 +404,40 @@ class Batch(object):
 
 
     def run(self):
-        import os
-        # create main sim directory and save scripts
-        self.saveScripts()
-
         # -------------------------------------------------------------------------------
-        # Evolutionary optimization
+        # Grid Search optimization
         # -------------------------------------------------------------------------------
         if self.method in ['grid','list']:
-            import glob
+            # create saveFolder
+            import os,glob
+            try:
+                os.mkdir(self.saveFolder)
+            except OSError:
+                if not os.path.exists(self.saveFolder):
+                    print ' Could not create', self.saveFolder
             
+            # save Batch dict as json
+            targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
+            self.save(targetFile)
+
+            # copy this batch script to folder
+            targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
+            os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
+ 
+            # copy netParams source to folder
             netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
             
+            # import cfg
+            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            self.cfg = cfgModule.cfg
+            self.cfg.checkErrors = False  # avoid error checking during batch
+
             # set initial cfg initCfg
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.iteritems():
-                    self.setCfgNestedParam(self.cfg, paramLabel, paramVal)
+                    self.setCfgNestedParam(paramLabel, paramVal)
               
 
             # iterate over all param combinations
@@ -498,7 +508,7 @@ class Batch(object):
                     elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
                         print 'Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom'])
                     else:
-                        # save simConfig json to saveFolder
+                        # save simConfig json to saveFolder                        
                         self.cfg.simLabel = simLabel
                         self.cfg.saveFolder = self.saveFolder
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
@@ -522,8 +532,20 @@ class Batch(object):
                             numproc = nodes*ppn
                             
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
-                            # import job template from netpyne.utils.bashTemplate
-                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+
+
+                            jobString = """#!/bin/bash 
+#PBS -N %s
+#PBS -l walltime=%s
+#PBS -q %s
+#PBS -l %s
+#PBS -o %s.run
+#PBS -e %s.err
+%s
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+%s
+                            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
                            # Send job_string to qsub
                             print 'Submitting job ',jobName
@@ -561,8 +583,25 @@ class Batch(object):
 
                             numproc = nodes*coresPerNode
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath) 
-                            # import job template from netpyne.utils.bashTemplate
-                            jobString = bashTemplate('hpc_slurm') % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
+
+                            jobString = """#!/bin/bash 
+#SBATCH --job-name=%s
+#SBATCH -A %s
+#SBATCH -t %s
+#SBATCH --nodes=%d
+#SBATCH --ntasks-per-node=%d
+#SBATCH -o %s.run
+#SBATCH -e %s.err
+#SBATCH --mail-user=%s
+#SBATCH --mail-type=end
+%s
+%s
+
+source ~/.bashrc
+cd %s
+%s
+wait
+                            """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
                             # Send job_string to qsub
                             print 'Submitting job ',jobName
@@ -589,7 +628,7 @@ class Batch(object):
 
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
                             
-                            print command + '\n'
+                            print command+'\n'
                             proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
                             #print proc.stdout.read()
                             
@@ -603,22 +642,17 @@ class Batch(object):
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                 
                     sleep(1) # avoid saturating scheduler
-
-            # wait for pc bulletin board jobs to finish
-            try:
-                while pc.working():
-                    sleep(1)
-                #pc.done()
-            except:
-                pass
-
-            sleep(10) # give time for last job to get on queue    
-
-
+            print "#"*80
+            print "   JOB  IS  DONE   |"*4
+            print "#"*80
         # -------------------------------------------------------------------------------
         # Evolutionary optimization
         # -------------------------------------------------------------------------------
         elif self.method=='evol':
+            import os
+            # create main sim directory and save scripts
+            self.saveScripts()
+
             global ngen
             ngen = -1
             
@@ -657,6 +691,11 @@ class Batch(object):
                 kwargs[key] = value
             for key, value in self.runCfg.iteritems(): 
                 kwargs[key] = value
+                
+            # if using pc bulletin board, initialize all workers
+            if self.runCfg.get('type', None) == 'mpi_bulletin':
+                for iworker in range(int(pc.nhost())):
+                    pc.runworker()
             
             # evolve
             final_pop = ea.evolve( generator=generator, evaluator=evaluator, 

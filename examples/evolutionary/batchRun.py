@@ -10,7 +10,7 @@ def batchEvol():
 	b.runCfg = {
 		'type': 'mpi_direct',
 		'script': 'init.py',
-		'mpiCommand': 'mpiexec',
+		'mpiCommand': 'mpi_bulletin',
 		'paramLabels': ['prob', 'weight', 'delay'],
 		'nodes': 1,
 		'coresPerNode': 1,

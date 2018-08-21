@@ -31,7 +31,7 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # -------------------------------------------------------------------------------
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # -------------------------------------------------------------------------------
-# func needs to be outside of class
+# func needs to be outside of class  gen_0_inv_0_cfg.json ../../init.py ../../netParams.py
 def runJob(script, cfgSavePath, netParamsSavePath):
     
     print '\nJob in rank id: ',pc.id()
@@ -150,44 +150,51 @@ def evaluator(candidates, args):
         # save cfg instance to file
         cfg.save(simDataPath + '_cfg.json')
         
-        # ----------------------------------------------------------------------
-        # MPI job commnand
-        # ----------------------------------------------------------------------
-        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, jobName+'_cfg.json', netParamsSavePath)
-        # ----------------------------------------------------------------------
-        # run on local machine with <nodes*coresPerNode> cores
-        # ----------------------------------------------------------------------
-        if type=='mpi_direct':
-            executer = '/bin/bash'
-            jobString = bashTemplate('mpi_direct') %(custom, simDataFolder, command)
-        # ----------------------------------------------------------------------
-        # run on HPC through slurm
-        # ----------------------------------------------------------------------
-        elif type=='hpc_slurm':
-            executer = 'sbatch'
-            res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
-        # ----------------------------------------------------------------------
-        # run on HPC through PBS
-        # ----------------------------------------------------------------------
-        elif type=='hpc_torque':
-            executer = 'qsub'
-            queueName = args.get('queueName', 'default')
-            nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
-            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, simDataPath, simDataPath, custom, command)
-        # ----------------------------------------------------------------------
-        # save job and run
-        # ----------------------------------------------------------------------
-        print 'Submitting job ', jobName
-        print jobString
-        print '-'*80
-        # save file 
-        batchfile = '%s.sbatch' % (simDataPath)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-        
-        with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
-            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+        if 'type'=='mpi_bulletin':
+            # ----------------------------------------------------------------------
+            # MPI master-slaves
+            # ----------------------------------------------------------------------
+            pc.submit(runJob, script.split('../../')[1], simDataPath+'/'+jobName+'_cfg.json', netParamsSavePath.split('../../')[1])
+            pids.append("-")
+        else:
+            # ----------------------------------------------------------------------
+            # MPI job commnand
+            # ----------------------------------------------------------------------
+            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, jobName+'_cfg.json', netParamsSavePath)
+            # ----------------------------------------------------------------------
+            # run on local machine with <nodes*coresPerNode> cores
+            # ----------------------------------------------------------------------
+            if type=='mpi_direct':
+                executer = '/bin/bash'
+                jobString = bashTemplate('mpi_direct') %(custom, simDataFolder, command)
+            # ----------------------------------------------------------------------
+            # run on HPC through slurm
+            # ----------------------------------------------------------------------
+            elif type=='hpc_slurm':
+                executer = 'sbatch'
+                res = '#SBATCH --res=%s' % (reservation) if reservation else ''
+                jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
+            # ----------------------------------------------------------------------
+            # run on HPC through PBS
+            # ----------------------------------------------------------------------
+            elif type=='hpc_torque':
+                executer = 'qsub'
+                queueName = args.get('queueName', 'default')
+                nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
+                jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, simDataPath, simDataPath, custom, command)
+            # ----------------------------------------------------------------------
+            # save job and run
+            # ----------------------------------------------------------------------
+            print 'Submitting job ', jobName
+            print jobString
+            print '-'*80
+            # save file 
+            batchfile = '%s.sbatch' % (simDataPath)
+            with open(batchfile, 'w') as text_file:
+                text_file.write("%s" % jobString)
+            
+            with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
+                pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
         total_jobs += 1
         sleep(0.1)
     # ----------------------------------------------------------------------
@@ -220,10 +227,11 @@ def evaluator(candidates, args):
                 
         sleep(args.get('time_sleep', 1))
     # kill all processes
-    try: 
-        for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
-    except:
-        print 'SEEMS JOBS WHERE CLOSED ALREADY'
+    if pids[0]!="-":
+        try: 
+            for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
+        except:
+            print 'SEEMS JOBS WHERE CLOSED ALREADY'
     # return
     print "DONE"
     return targetFitness
@@ -547,7 +555,7 @@ class Batch(object):
 
                             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
                             
-                            print command+'\n'
+                            print command + '\n'
                             proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
                             #print proc.stdout.read()
                             

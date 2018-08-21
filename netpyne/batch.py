@@ -31,8 +31,9 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # -------------------------------------------------------------------------------
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # -------------------------------------------------------------------------------
-# func needs to be outside of class  gen_0_inv_0_cfg.json init.py netParams.py
-def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+# func needs to be outside of class
+def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+    print '\nJob in rank id: ',pc.id()
     # print '\nJob in rank id: ',pc.id()
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     # print command+'\n'
@@ -41,6 +42,13 @@ def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
     
     # proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     # print proc.stdout.read()
+# func needs to be outside of class
+def runJob(script, cfgSavePath, netParamsSavePath):
+    print '\nJob in rank id: ',pc.id()
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
+    print command+'\n'
+    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+    print proc.stdout.read()
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -132,6 +140,13 @@ def evaluator(candidates, args):
     
     # remember pids in a list
     pids = list()
+    
+    # if using pc bulletin board, initialize all workers
+    if 'type' == 'mpi_bulletin':
+        for iworker in range(int(pc.nhost())):
+            print 'number of hosts: %d' %(int(pc.nhost()))
+            pc.runworker()
+            
     # create a job for each candidate
     for candidate_index, candidate in enumerate(candidates):
         # required for slurm
@@ -159,8 +174,8 @@ def evaluator(candidates, args):
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
-            pc.submit(runJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
-            pids.append("-")
+            pc.submit(runEvolJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
+            pids.append("x")
             print '-'*80
         else:
             # ----------------------------------------------------------------------
@@ -406,6 +421,9 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         if self.method in ['grid','list']:
             import glob
+            
+            netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            
             # set initial cfg initCfg
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.iteritems():
@@ -464,7 +482,7 @@ class Batch(object):
 
                     for i, paramVal in enumerate(pComb):
                         paramLabel = labelList[i]
-                        self.setCfgNestedParam(self.cfg, paramLabel, paramVal)
+                        self.setCfgNestedParam(paramLabel, paramVal)
 
                         print str(paramLabel)+' = '+str(paramVal)
                         

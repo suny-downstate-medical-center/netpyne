@@ -631,18 +631,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     print('Plotting raster...')
 
     # Select cells to include
-    t0 = time.time()
     cells, cellGids, netStimLabels = getCellsInclude(include)
 
     df = pd.DataFrame(cells)
     df = pd.concat([df.drop('tags', axis=1), pd.DataFrame(df['tags'].tolist())], axis=1)
-    df = df[['pop', 'gid', 'conns']]
-    df.set_index('gid', inplace=True)
-    print('getCellsInclude: %.14f'%(time.time() - t0))
+    keep = ['pop', 'gid', 'conns']
+    if isinstance(orderBy, list):
+        keep = keep + list(set(orderBy) - set(keep))
+    elif orderBy not in keep:
+        keep.append(orderBy)
+    print(keep)
+    df = df[keep]
 
-    t0 = time.time()
-    # selectedPops = [cell['tags']['pop'] for cell in cells]
-    # popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
 
     if netStimLabels: popLabels.append('NetStims')
@@ -657,82 +657,54 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             import sys
             print(sys.exc_info())
             spkgids, spkts = [], []
-        # spkgidColors = [gidColors[spkgid] for spkgid in spkgids]
-        print(sel.head())
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
+        df.set_index('gid', inplace=True)
 
-    print('Set colors: %.14f'%(time.time() - t0))
     # Order by
-
-    t0 = time.time()
     if len(cellGids) > 0:
         if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
             orderBy = 'gid'
         elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
             orderBy = 'gid'
         ylabelText = 'Cells (ordered by %s)'%(orderBy)
-        #
-        # if orderBy == 'gid':
-        #     t1 = time.time()
-        #     yorder = [cell[orderBy] for cell in cells]
-        #     print('\t yorder: %.14f'%(time.time() - t1))
-        #     #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
-        #     t1 = time.time()
-        #     sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
-        #     print('\t sortedGids: %.14f'%(time.time() - t1))
-        #
-        # elif isinstance(orderBy, basestring):
-        #     yorder = [cell['tags'][orderBy] for cell in cells]
-        #     #sortedGids = {gid:i for i,(y,gid) in enumerate(sorted(zip(yorder,cellGids)))}
-        #     sortedGids = [gid for y,gid in sorted(zip(yorder,cellGids))]
-        # elif isinstance(orderBy, list) and len(orderBy) == 2:
-        #     yorders = [[popLabels.index(cell['tags'][orderElem]) if orderElem=='pop' else cell['tags'][orderElem]
-        #                             for cell in cells] for orderElem in orderBy]
-        #     #sortedGids = {gid:i for i,  in enumerate(sorted(zip(yorders[0], yorders[1], cellGids)))}
-        #     sortedGids = [gid for (y0, y1, gid) in sorted(zip(yorders[0], yorders[1], cellGids))]
-        #
-        # # sortedGids = {gid:i for i, (y, gid) in enumerate(sorted(zip(yorder, cellGids)))}
-        # t1 = time.time()
-        # spkinds = [sortedGids.index(gid)  for gid in spkgids]
-        # print('\t spkinds1: %.14f'%(time.time() - t1))
 
         t1 = time.time()
         df = df.sort_values(by=orderBy)
         print('\t sorting: %.14f'%(time.time() - t1))
         t1 = time.time()
-        # l = df['gid'].tolist()
-        # print('\t tolist: %.14f'%(time.time() - t1))
-        # t1 = time.time()
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
         spkinds = [df.index.get_loc(gid)  for gid in spkgids]
-        # Could use df.loc[spkgid[0]] etc
         print('\t spkinds: %.14f'%(time.time() - t1))
 
     else:
-        spkts = []
-        spkinds = []
-        spkgidColors = []
+        # spkts = []
+        # spkinds = []
+        # spkgidColors = []
+        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
         ylabelText = ''
-    print('Order cells: %.14f'%(time.time() - t0))
 
 
     # Add NetStim spikes
-    t0 = time.time()
-    spkts,spkgidColors = list(spkts), sel['spkgidColor'].tolist()
-    numCellSpks = len(spkts)
+    # spkts,spkgidColors = sel['spkt'].tolist(), sel['spkgidColor'].tolist()
+    # numCellSpks = len(spkts)
+    numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
         netStimSpks = [spk for cell,stims in sim.allSimData['stims'].iteritems() \
             for stimLabel,stimSpks in stims.iteritems() for spk in stimSpks if stimLabel == netStimLabel]
         if len(netStimSpks) > 0:
-            lastInd = max(spkinds) if len(spkinds)>0 else 0
+            # lastInd = max(spkinds) if len(spkinds)>0 else 0
+            lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
             spktsNew = netStimSpks
             spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
 ##### Should append this to the dataframe(sel) #####
-            spkts.extend(spktsNew)
-            spkinds.extend(spkindsNew)
-            for i in range(len(spktsNew)):
-                spkgidColors.append(popColors['NetStims'])
+            ns = pd.DataFrame(zip(spktsNew, spkindsNew), columns=['spkt', 'spkind'])
+            ns['spkgidColor'] = popColors['netStims']
+            sel = pd.concat([sel, ns])
+            # spkts.extend(spktsNew)
+            # spkinds.extend(spkindsNew)
+            # for i in range(len(spktsNew)):
+            #     spkgidColors.append(popColors['NetStims'])
             numNetStims += 1
         else:
             pass
@@ -745,18 +717,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if numCellSpks+numNetStims == 0:
         print 'No spikes available to plot raster'
         return None
-    print('NetStim spikes: %.14f'%(time.time() - t0))
 
 
     # Time Range
-    t0 = time.time()
+#### Time range is already queried in getSpktSpkid??? ####
     if timeRange == [0,sim.cfg.duration]:
         pass
     elif timeRange is None:
         timeRange = [0,sim.cfg.duration]
     else:
-        spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors)
-        if timeRange[0] <= spkt <= timeRange[1]])
+        sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
+        # spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors)
+        # if timeRange[0] <= spkt <= timeRange[1]])
 
     # Limit to maxSpikes
     if (len(spkts)>maxSpikes):
@@ -766,30 +738,25 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         spkts = spkts[:maxSpikes]
         spkinds = spkinds[:maxSpikes]
         spkgidColors = spkgidColors[:maxSpikes]
+        sel = sel.iloc[:maxSpikes]
         timeRange[1] =  max(spkts)
-    print('Limit time and spikes: %.14f'%(time.time() - t0))
 
     # Calculate spike histogram
-    t0 = time.time()
 
     if spikeHist:
-        histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
+        histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
     # Plot spikes
     fig,ax1 = plt.subplots(figsize=figSize)
     fontsiz = 12
 
-
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
-    # ax1.scatter(spkts, spkinds, lw=lw, s=markerSize, marker=marker, color = spkgidColors) # Create raster
     sel['spkt'] = sel['spkt'].apply(pd.to_numeric)
-    sel.plot.scatter(ax=ax1, x='spkt', y='spkind', lw=lw, s=markerSize, marker=marker, c=spkgidColors) # Create raster
+    sel.plot.scatter(ax=ax1, x='spkt', y='spkind', lw=lw, s=markerSize, marker=marker, c=sel['spkgidColor'].tolist()) # Create raster
     ax1.set_xlim(timeRange)
-
-
 
     # Plot stats
     # gidPops = [cell['tags']['pop'] for cell in cells]
@@ -875,12 +842,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         ax2.set_ylabel('Spike count', fontsize=fontsiz)
         ax2.set_xlim(timeRange)
 
-
     if orderInverse: plt.gca().invert_yaxis()
 
-    print('Graphing: %.14f'%(time.time() - t0))
-
-    t0 = time.time()
     # save figure data
     if saveData:
         figData = {'spkTimes': spkts, 'spkInds': spkinds, 'spkColors': spkgidColors, 'cellGids': cellGids, 'sortedGids': sortedGids, 'numNetStims': numNetStims,
@@ -899,7 +862,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # show fig
     if showFig: _showFigure()
-    print('Saving: %.14f'%(time.time() - t0))
 
     return fig
 

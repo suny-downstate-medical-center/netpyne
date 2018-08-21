@@ -8,9 +8,9 @@ def batchEvol():
 	b.batchLabel = 'dentateGyrus'
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'mpi_direct',
+		'type': 'mpi_bulletin',
 		'script': 'init.py',
-		'mpiCommand': 'mpi_bulletin',
+		'mpiCommand': 'mpiexec',
 		'paramLabels': ['prob', 'weight', 'delay'],
 		'nodes': 1,
 		'coresPerNode': 1,
@@ -20,7 +20,7 @@ def batchEvol():
 		'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users =)
 	}
 	b.evolCfg = {
-		'pop_size': 6,
+		'pop_size': 2,
 		'num_elites': 1, # keep this number of parent for next generation
 		'maximize': False, # maximize fitness function?
 		'mutation_rate': 0.1,
@@ -29,8 +29,8 @@ def batchEvol():
 		'upper_bound' : [0.5,   0.1,   20], # upper value limit for param 1, 2, ...
 		'lower_bound' : [0.01,  0.001,  1], # lower value limit for param 1, 2, ...
 		'fitness': 'abs(17 - float(len(simData["spkt"])) / 40)', # fitness extression. shoud read simData
-		'time_sleep': 4, # wait this time before checking again if sim is completed (for each generation)
-		'maxiter_wait': 4, # max number of times to check if sim is completed (for each generation)
+		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
+		'maxiter_wait': 40, # max number of times to check if sim is completed (for each generation)
 		'default_fitness': +10 # set fitness value in case simulation time is over
 	}
 	# Run batch simulations

@@ -31,14 +31,16 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # -------------------------------------------------------------------------------
 # function to run single job using ParallelContext bulletin board (master/slave) 
 # -------------------------------------------------------------------------------
-# func needs to be outside of class  gen_0_inv_0_cfg.json ../../init.py ../../netParams.py
-def runJob(script, cfgSavePath, netParamsSavePath):
-    
-    print '\nJob in rank id: ',pc.id()
+# func needs to be outside of class  gen_0_inv_0_cfg.json init.py netParams.py
+def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+    # print '\nJob in rank id: ',pc.id()
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
-    print command+'\n'
-    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print proc.stdout.read()
+    # print command+'\n'
+    with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
+        Popen(command.split(' '), stdout=outf, stderr=errf)
+    
+    # proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+    # print proc.stdout.read()
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -145,17 +147,21 @@ def evaluator(candidates, args):
             print 'set %s=%s' % (label, value)
         
         # change output name
-        setCfgNestedParam(cfg, "filename", jobName)
-        
+        if type=='mpi_bulletin':
+            setCfgNestedParam(cfg, "filename", simDataPath)
+        else:
+            setCfgNestedParam(cfg, "filename", jobName)
+            
         # save cfg instance to file
         cfg.save(simDataPath + '_cfg.json')
         
-        if 'type'=='mpi_bulletin':
+        if type=='mpi_bulletin':
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
-            pc.submit(runJob, script.split('../../')[1], simDataPath+'/'+jobName+'_cfg.json', netParamsSavePath.split('../../')[1])
+            pc.submit(runJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
             pids.append("-")
+            print '-'*80
         else:
             # ----------------------------------------------------------------------
             # MPI job commnand
@@ -200,6 +206,15 @@ def evaluator(candidates, args):
     # ----------------------------------------------------------------------
     # gather data and compute fitness
     # ----------------------------------------------------------------------
+    if type=='mpi_bulletin':
+        # wait for pc bulletin board jobs to finish
+        try:
+            while pc.working():
+                sleep(1)
+            #pc.done()
+        except:
+            pass
+            
     num_iters = 0
     jobs_completed = 0
     targetFitness = [None for cand in candidates]
@@ -224,7 +239,7 @@ def evaluator(candidates, args):
             for canditade_index in unfinished:
                 targetFitness[canditade_index] = default_fitness
                 jobs_completed += 1
-                
+        print 'completed: %d' %(jobs_completed)
         sleep(args.get('time_sleep', 1))
     # kill all processes
     if pids[0]!="-":
@@ -233,6 +248,7 @@ def evaluator(candidates, args):
         except:
             print 'SEEMS JOBS WHERE CLOSED ALREADY'
     # return
+    pc.done()
     print "DONE"
     return targetFitness
     

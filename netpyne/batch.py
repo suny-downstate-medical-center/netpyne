@@ -12,7 +12,7 @@ import logging
 import datetime
 from neuron import h
 from netpyne import specs
-from utils import bashTemplate
+from netpyne.utils import bashTemplate
 from random import Random
 from time import sleep, time
 from itertools import izip, product
@@ -204,17 +204,12 @@ def evaluator(candidates, args):
         unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
         for candidate_index in unfinished:
             try: # load simData and evaluate fitness
-                print 'trying to open output'
-                print 'I am here: %s' %(os.getcwd())
-                print 'trying to open: %s' %(simDataPath+'.json')
                 simDataPath = simDataFolder + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
                 with open('%s.json'% (simDataPath)) as file:
                     simData = json.load(file)['simData']
                 targetFitness[candidate_index] = eval(fitness_expression)
                 jobs_completed += 1
-                print('success')
             except:
-                print('failure')
                 pass
         num_iters += 1
         if num_iters >= args.get('maxiter_wait', 5000): 
@@ -228,7 +223,7 @@ def evaluator(candidates, args):
     try: 
         for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
     except:
-        print 'SEEMS THE JOBS WHERE CLOSED ALREADY'
+        print 'SEEMS JOBS WHERE CLOSED ALREADY'
     # return
     print "DONE"
     return targetFitness

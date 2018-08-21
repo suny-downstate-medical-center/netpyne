@@ -636,15 +636,19 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     df = pd.DataFrame(cells)
     df = pd.concat([df.drop('tags', axis=1), pd.DataFrame(df['tags'].tolist())], axis=1)
     keep = ['pop', 'gid', 'conns']
+
+    if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+        orderBy = 'gid'
+    elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
+        orderBy = 'gid'
+
     if isinstance(orderBy, list):
         keep = keep + list(set(orderBy) - set(keep))
     elif orderBy not in keep:
         keep.append(orderBy)
-    print(keep)
     df = df[keep]
 
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
-
     if netStimLabels: popLabels.append('NetStims')
     popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if popColors: popColorsTmp.update(popColors)
@@ -657,36 +661,22 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             import sys
             print(sys.exc_info())
             spkgids, spkts = [], []
+            sel = pd.DataFrame(columns=['spkt', 'spkid'])
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
+        df['gidColor'] = df['pop'].map(popColors)
         df.set_index('gid', inplace=True)
-
     # Order by
-    if len(cellGids) > 0:
-        if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
-            orderBy = 'gid'
-        elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
-            orderBy = 'gid'
+    if len(df) > 0:
         ylabelText = 'Cells (ordered by %s)'%(orderBy)
-
-        t1 = time.time()
         df = df.sort_values(by=orderBy)
-        print('\t sorting: %.14f'%(time.time() - t1))
-        t1 = time.time()
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
-        spkinds = [df.index.get_loc(gid)  for gid in spkgids]
-        print('\t spkinds: %.14f'%(time.time() - t1))
 
     else:
-        # spkts = []
-        # spkinds = []
-        # spkgidColors = []
         sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
         ylabelText = ''
 
 
     # Add NetStim spikes
-    # spkts,spkgidColors = sel['spkt'].tolist(), sel['spkgidColor'].tolist()
-    # numCellSpks = len(spkts)
     numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
@@ -697,14 +687,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
             spktsNew = netStimSpks
             spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
-##### Should append this to the dataframe(sel) #####
             ns = pd.DataFrame(zip(spktsNew, spkindsNew), columns=['spkt', 'spkind'])
             ns['spkgidColor'] = popColors['netStims']
             sel = pd.concat([sel, ns])
-            # spkts.extend(spktsNew)
-            # spkinds.extend(spkindsNew)
-            # for i in range(len(spktsNew)):
-            #     spkgidColors.append(popColors['NetStims'])
             numNetStims += 1
         else:
             pass
@@ -727,19 +712,15 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         timeRange = [0,sim.cfg.duration]
     else:
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
-        # spkinds,spkts,spkgidColors = zip(*[(spkind,spkt,spkgidColor) for spkind,spkt,spkgidColor in zip(spkinds,spkts,spkgidColors)
-        # if timeRange[0] <= spkt <= timeRange[1]])
+
 
     # Limit to maxSpikes
-    if (len(spkts)>maxSpikes):
-        print('  Showing only the first %i out of %i spikes' % (maxSpikes, len(spkts))) # Limit num of spikes
+    if (len(sel)>maxSpikes):
+        print('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
-            spkts, spkinds, spkgidColors = zip(*sorted(zip(spkts, spkinds, spkgidColors)))
-        spkts = spkts[:maxSpikes]
-        spkinds = spkinds[:maxSpikes]
-        spkgidColors = spkgidColors[:maxSpikes]
+            sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
-        timeRange[1] =  max(spkts)
+        timeRange[1] =  sel['spkt'].max()
 
     # Calculate spike histogram
 
@@ -759,10 +740,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     ax1.set_xlim(timeRange)
 
     # Plot stats
-    # gidPops = [cell['tags']['pop'] for cell in cells]
     gidPops = df['pop'].tolist()
     popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
-    totalSpikes = len(spkts)
+    totalSpikes = len(sel)
     totalConnections = sum([len(conns) for conns in df['conns']])
     numCells = len(cells)
     firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
@@ -783,12 +763,11 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Plot synchrony lines
     if syncLines:
-        for spkt in spkts:
+        for spkt in sel['spkt'].tolist():
             ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
         plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
-
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
     ax1.set_ylabel(ylabelText, fontsize=fontsiz)

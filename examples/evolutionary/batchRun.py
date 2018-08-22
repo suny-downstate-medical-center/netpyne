@@ -5,19 +5,20 @@ def batchEvol():
 	b = batch.Batch(cfgFile='simConfig.py', netParamsFile='netParams.py')
 	
 	# Set output folder, grid method (all param combinations), and run configuration
-	b.batchLabel = 'dentateGyrus'
+	b.batchLabel = 'simple_evol'
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'mpi_bulletin',
+		'type': 'hpc_slurm',#'mpi_bulletin',
 		'script': 'init.py',
-		'mpiCommand': 'mpiexec',
+		'mpiCommand': 'mpirun',
 		'paramLabels': ['prob', 'weight', 'delay'],
 		'nodes': 1,
-		'coresPerNode': 1,
-		'allocation': 'csd403',
-		'email': 'frodriguez4600@gmail.com',
+		'coresPerNode': 2,
+		'allocation': 'default',
+		'email': 'salvadordura@gmail.com',
 		'reservation': None,
-		'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users =)
+		'folder': '/home/salvadord/evol'
+		#'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users =)
 	}
 	b.evolCfg = {
 		'pop_size': 10,

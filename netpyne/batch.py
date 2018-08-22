@@ -168,17 +168,20 @@ def evaluator(candidates, args):
             pc.submit(runEvolJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
             pids.append("x")
             print '-'*80
+
         else:
             # ----------------------------------------------------------------------
             # MPI job commnand
             # ----------------------------------------------------------------------
             command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, jobName+'_cfg.json', netParamsSavePath)
+            
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores
             # ----------------------------------------------------------------------
             if type=='mpi_direct':
                 executer = '/bin/bash'
                 jobString = bashTemplate('mpi_direct') %(custom, simDataFolder, command)
+            
             # ----------------------------------------------------------------------
             # run on HPC through slurm
             # ----------------------------------------------------------------------
@@ -186,6 +189,7 @@ def evaluator(candidates, args):
                 executer = 'sbatch'
                 res = '#SBATCH --res=%s' % (reservation) if reservation else ''
                 jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
+            
             # ----------------------------------------------------------------------
             # run on HPC through PBS
             # ----------------------------------------------------------------------
@@ -194,6 +198,7 @@ def evaluator(candidates, args):
                 queueName = args.get('queueName', 'default')
                 nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
                 jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, simDataPath, simDataPath, custom, command)
+            
             # ----------------------------------------------------------------------
             # save job and run
             # ----------------------------------------------------------------------
@@ -207,8 +212,11 @@ def evaluator(candidates, args):
             
             with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
                 pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                #print jobString
         total_jobs += 1
         sleep(0.1)
+
+
     # ----------------------------------------------------------------------
     # gather data and compute fitness
     # ----------------------------------------------------------------------
@@ -294,11 +302,11 @@ def mutate(random, candidate, args):
 class Batch(object):
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
-        if not self.batchLabel: self.batchLabel = 'batch_'+str(datetime.date.today())
+        self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
-        self.saveFolder = './' + self.batchLabel
+        
         self.method = 'grid'
         self.runCfg = {}
         self.evolCfg = {}
@@ -352,6 +360,7 @@ class Batch(object):
 
     def saveScripts(self):
         import os
+
         # create Folder to save simulation
         if not os.path.exists(self.saveFolder):
             try:
@@ -407,6 +416,8 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         # Grid Search optimization
         # -------------------------------------------------------------------------------
+        self.saveFolder = './' + self.batchLabel
+
         if self.method in ['grid','list']:
             # create saveFolder
             import os,glob
@@ -650,7 +661,7 @@ wait
         # -------------------------------------------------------------------------------
         # Evolutionary optimization
         # -------------------------------------------------------------------------------
-        elif self.method=='evol':
+        elif self.method == 'evol':
             import os
             # create main sim directory and save scripts
             self.saveScripts()

@@ -188,7 +188,7 @@ def evaluator(candidates, args):
             elif type=='hpc_slurm':
                 executer = 'sbatch'
                 res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-                jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, simDataFolder, command)
+                jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, folder+'/'+simDataFolder, command)
             
             # ----------------------------------------------------------------------
             # run on HPC through PBS

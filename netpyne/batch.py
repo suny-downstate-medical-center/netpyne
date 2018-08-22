@@ -252,11 +252,11 @@ def evaluator(candidates, args):
         try: 
             for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
         except:
-            print 'SEEMS JOBS WHERE CLOSED ALREADY'
+            pass
     # return
-    print "#"*80
-    print "  GENERATION DONE  |"*4
-    print "#"*80
+    print "-"*80
+    print "  Completed a generation  "
+    print "-"*80
     return targetFitness
     
 
@@ -294,7 +294,7 @@ def mutate(random, candidate, args):
 class Batch(object):
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
-        self.batchLabel = 'batch_'+str(datetime.date.today())
+        if not self.batchLabel: self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
@@ -642,9 +642,11 @@ wait
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                 
                     sleep(1) # avoid saturating scheduler
-            print "#"*80
-            print "   JOB  IS  DONE   |"*4
-            print "#"*80
+            print "-"*80
+            print "   Finished submitting jobs for grid parameter exploration   "
+            print "-"*80
+
+
         # -------------------------------------------------------------------------------
         # Evolutionary optimization
         # -------------------------------------------------------------------------------
@@ -705,4 +707,6 @@ wait
             ind_stats_file.close()
             # print best and finish
             print('Best Solution: \n{0}'.format(str(max(final_pop))))
-            print "JOB FINISHED"
+            print "-"*80
+            print "   Completed evolutionary algorithm parameter optimization   "
+            print "-"*80

@@ -20,7 +20,7 @@ def batchEvol():
 		'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users =)
 	}
 	b.evolCfg = {
-		'pop_size': 2,
+		'pop_size': 10,
 		'num_elites': 1, # keep this number of parent for next generation
 		'maximize': False, # maximize fitness function?
 		'mutation_rate': 0.1,

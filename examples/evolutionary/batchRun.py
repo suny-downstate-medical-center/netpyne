@@ -1,17 +1,21 @@
 from netpyne import specs, batch
 
 def batchEvol():
+	params = specs.ODict()
+	params['prob'] = [0.01, 0.5]
+	params['weight'] = [0.001, 0.1]
+	params['delay'] = [1, 20]
+		
 	# create Batch object with paramaters to modify, and specifying files to use
-	b = batch.Batch(cfgFile='simConfig.py', netParamsFile='netParams.py')
+	b = batch.Batch(params=params)
 	
 	# Set output folder, grid method (all param combinations), and run configuration
 	b.batchLabel = 'simple_evol'
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'hpc_slurm',#'mpi_bulletin',
+		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',
 		'script': 'init.py',
 		'mpiCommand': 'mpirun',
-		'paramLabels': ['prob', 'weight', 'delay'],
 		'nodes': 1,
 		'coresPerNode': 2,
 		'allocation': 'default',
@@ -27,12 +31,10 @@ def batchEvol():
 		'mutation_rate': 0.1,
 		'max_generations': 5,
 		'mutation_strength': 0.65, # <1 mutation is close to original. >1 mutation is far from original. 
-		'upper_bound' : [0.5,   0.1,   20], # upper value limit for param 1, 2, ...
-		'lower_bound' : [0.01,  0.001,  1], # lower value limit for param 1, 2, ...
 		'fitness': 'abs(17 - float(len(simData["spkt"])) / 40)', # fitness extression. shoud read simData
 		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
 		'maxiter_wait': 40, # max number of times to check if sim is completed (for each generation)
-		'default_fitness': +10 # set fitness value in case simulation time is over
+		'default_fitness': 15000 # set fitness value in case simulation time is over
 	}
 	# Run batch simulations
 	b.run()

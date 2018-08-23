@@ -47,6 +47,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print proc.stdout.read()
 
+
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
 # -------------------------------------------------------------------------------
@@ -57,6 +58,8 @@ def createFolder(folder):
             os.mkdir(folder)
         except OSError:
             print ' Could not create %s' %(folder)
+
+
 # -------------------------------------------------------------------------------
 # function to convert tuples to strings (avoids erro when saving/loading)
 # -------------------------------------------------------------------------------
@@ -74,6 +77,8 @@ def tupleToStr (obj):
                 obj[str(key)] = obj.pop(key) 
     #print 'after:', obj
     return obj
+
+
 # -------------------------------------------------------------------------------
 # function to modify parameter in object of type specs.SimConfig
 # -------------------------------------------------------------------------------
@@ -88,6 +93,8 @@ def setCfgNestedParam(cfg, paramLabel, paramVal):
         container[paramLabel[-1]] = paramVal
     else:
         setattr(cfg, paramLabel, paramVal) # set simConfig params
+
+
 # -------------------------------------------------------------------------------
 # Evolutionary optimization: Parallel evaluation
 # -------------------------------------------------------------------------------
@@ -166,7 +173,6 @@ def evaluator(candidates, args):
             # MPI master-slaves
             # ----------------------------------------------------------------------
             pc.submit(runEvolJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
-            pids.append("x")
             print '-'*80
 
         else:
@@ -234,7 +240,7 @@ def evaluator(candidates, args):
     targetFitness = [None for cand in candidates]
     # print outfilestem
     print "waiting jobs from generation: %d/%d to finish..." %(ngen, args.get('max_generations'))
-    print "PID's: %r" %(pids)
+    #print "PID's: %r" %(pids)
     # start fitness calculation
     while jobs_completed < total_jobs:
         unfinished = [i for i, x in enumerate(targetFitness) if x is None ]
@@ -693,6 +699,9 @@ wait
             
             # gather **kwargs
             kwargs = {'cfg': self.cfg}
+            kwargs['paramLabels'] = [x['label'] for x in self.params]
+            kwargs['upper_bound'] = [x['values'][0] for x in self.params]
+            kwargs['lower_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
             kwargs['cfgSavePath'] = self.cfgFile

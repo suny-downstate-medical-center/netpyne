@@ -1,5 +1,7 @@
 # Version 0.8.0
 
+- cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
 
 

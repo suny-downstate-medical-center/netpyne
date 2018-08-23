@@ -27,6 +27,7 @@ def batchEvol():
 	pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
 	
 	## complex net
+	pops = {} 
 	pops['E2'] = {'target': 5, 'width': 2, 'min': 1}
 	pops['I2'] = {'target': 10, 'width': 5, 'min': 2}
 	pops['E4'] = {'target': 30, 'width': 10, 'min': 1}
@@ -51,7 +52,7 @@ def batchEvol():
 	b = batch.Batch(params=params)
 	
 	# Set output folder, grid method (all param combinations), and run configuration
-	b.batchLabel = 'simple_evol'
+	b.batchLabel = 'complex_evol'
 	b.method = 'evol'
 	b.runCfg = {
 		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',

@@ -31,12 +31,13 @@ if cfg.networkType == 'simple':
 # Complex network
 # --------------------------------------------------------
 elif cfg.networkType == 'complex':
-	simConfig.duration = 1*1e3           # Duration of the simulation, in ms
-	simConfig.dt = 0.1                # Internal integration timestep to use
-	simConfig.verbose = False            # Show detailed messages 
-	simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-	simConfig.filename = 'complex_net'   # Set file output name
-
+	cfg.duration = 1*1e3           # Duration of the simulation, in ms
+	cfg.dt = 0.1                # Internal integration timestep to use
+	cfg.verbose = False            # Show detailed messages 
+	cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
+	cfg.filename = 'complex_net'   # Set file output name
+	cfg.saveDataInclude = ['simData']
+	cfg.saveJson = True
 	cfg.printPopAvgRates = [100, cfg.duration]
 
 	# Variable parameters (used in netParams)

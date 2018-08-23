@@ -1435,7 +1435,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "str"
+                                "type": ""
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",
@@ -1555,7 +1555,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",
@@ -1640,7 +1640,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",
@@ -1732,7 +1732,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",
@@ -1812,7 +1812,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list(float)"
+                                "type": ""
                             },
                             "timeRange": {
                                 "label": "Time range [min,max] (ms)",
@@ -1999,14 +1999,14 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "includePost": {
                                 "label": "population (or cell by index) to postsyn",
                                 "suggestions": "",
                                 "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "synStyle": {
                                 "label": "synaptic marker style",
@@ -2130,7 +2130,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "showConns": {
                                 "label": "show connections",
@@ -2191,7 +2191,7 @@ metadata = {
                                 "suggestions": "",
                                 "help": "List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": ""
                             },
                             "feature": {
                                 "label": "feature to show",
@@ -2273,14 +2273,14 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "str"
                             },
                             "cells2": {
                                 "label": "population (or cell by index cell) to subset 2",
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "str"
                             },
                             "spks1": {
                                 "label": "spike times to train 1",
@@ -2365,14 +2365,14 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "str"
                             },
                             "cell2": {
                                 "label": "Cell Subset 2",
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "list"
+                                "type": "str"
                             },
                             "spks1": {
                                 "label": "Spike train 1",

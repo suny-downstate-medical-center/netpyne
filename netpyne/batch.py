@@ -199,7 +199,7 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         # Grid Search optimization
         # -------------------------------------------------------------------------------
-        if not self.saveFolder: self.saveFolder = './' + self.batchLabel
+        if not getattr(self, 'saveFolder', None): self.saveFolder = './' + self.batchLabel
 
         if self.method in ['grid','list']:
             # create saveFolder

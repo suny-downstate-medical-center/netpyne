@@ -78,24 +78,6 @@ def tupleToStr (obj):
 
 
 # -------------------------------------------------------------------------------
-# function to modify parameter in object of type specs.SimConfig
-# -------------------------------------------------------------------------------
-def setCfgNestedParam(cfg, paramLabel, paramVal):
-    if isinstance(paramLabel, tuple):
-        container = cfg
-        for ip in range(len(paramLabel)-1):
-            if isinstance(container, specs.SimConfig):
-                container = getattr(container, paramLabel[ip])
-            else:
-                container = container[paramLabel[ip]]
-        container[paramLabel[-1]] = paramVal
-    else:
-        setattr(cfg, paramLabel, paramVal) # set simConfig params
-
-
-
-
-# -------------------------------------------------------------------------------
 # Batch class
 # -------------------------------------------------------------------------------
 class Batch(object):
@@ -464,13 +446,7 @@ wait
         # -------------------------------------------------------------------------------
         elif self.method == 'evol':
             import sys
-            from inspyred.ec import Bounder
-            from inspyred.ec import EvolutionaryComputation
-            from inspyred.ec.terminators import generation_termination
-            from inspyred.ec.replacers import generational_replacement
-            from inspyred.ec.variators import uniform_crossover, mutator
-            from inspyred.ec.observers import stats_observer, file_observer
-            from inspyred.ec.selectors import default_selection, tournament_selection
+            import inspyred
 
             # -------------------------------------------------------------------------------
             # Evolutionary optimization: Parallel evaluation
@@ -534,14 +510,14 @@ wait
                     
                     # modify cfg instance with candidate values
                     for label, value in zip(paramLabels, candidate):
-                        setCfgNestedParam(cfg, label, value)
+                        self.setCfgNestedParam(label, value)
                         print 'set %s=%s' % (label, value)
                     
                     # change output name
                     if type=='mpi_bulletin':
-                        setCfgNestedParam(cfg, "filename", simDataPath)
+                        self.setCfgNestedParam("filename", simDataPath)
                     else:
-                        setCfgNestedParam(cfg, "filename", jobName)
+                        self.setCfgNestedParam("filename", jobName)
                         
                     # save cfg instance to file
                     cfg.save(simDataPath + '_cfg.json')
@@ -677,26 +653,6 @@ wait
 
 
             # -------------------------------------------------------------------------------
-            # Evolutionary optimization: Mutation of candidates
-            # -------------------------------------------------------------------------------
-            @mutator
-            def mutate(random, candidate, args):
-                # if mutation_strenght is < 1, mutation will move closer to candidate
-                # if mutation_strenght is >1, mutation will move further away from candidate
-                # not bound required. otherwise: bounder = args.get('_ec').bounder
-                mutant = [i for i in candidate]
-                exponent = args.get('mutation_strength', 0.65)
-                for i, (c, lo, hi) in enumerate(zip(candidate, args.get('lower_bound'), args.get('upper_bound'))):
-                    if random.random() <= args.get('mutation_rate', 0.1):
-                        if random.random() < 0.5:
-                            new_value = c + (hi - c) * (1.0 - random.random() ** exponent)
-                        else:
-                            new_value = c - (c - lo) * (1.0 - random.random() ** exponent)
-                        mutant[i] = new_value
-                    
-                return mutant
-
-            # -------------------------------------------------------------------------------
             # Evolutionary optimization: Main code
             # -------------------------------------------------------------------------------
             import os
@@ -713,33 +669,26 @@ wait
             rand = Random()
             rand.seed(self.seed) 
             
-            # create Inspyred.evolutionary_computation instance
-            ea = EvolutionaryComputation(rand)
-            # selects all elements in population
-            ea.selector = default_selection
-            # applied one after another in pipeline fashion
-            ea.variator = [uniform_crossover, mutate]
-            # replace all parents except for elit_num if fitness is bigger
-            ea.replacer = generational_replacement
-            # all elements will be called in secuence
-            ea.observer = [stats_observer, file_observer]
+            # Evolution strategy
+            ea = inspyred.ec.ES(rand)
+            ea.terminator = inspyred.ec.terminators.generation_termination
+            ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
             # create file handlers for observers
             stats_file, ind_stats_file = self.openFiles2SaveStats()
-            # all elements will be combined via logical "or" operation
-            ea.terminator = [generation_termination]
+
             
             # gather **kwargs
             kwargs = {'cfg': self.cfg}
+            kwargs['num_inputs'] = len(self.params)
             kwargs['paramLabels'] = [x['label'] for x in self.params]
-            kwargs['upper_bound'] = [x['values'][0] for x in self.params]
-            kwargs['lower_bound'] = [x['values'][1] for x in self.params]
+            kwargs['lower_bound'] = [x['values'][0] for x in self.params]
+            kwargs['upper_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
             kwargs['cfgSavePath'] = self.cfgFile
             kwargs['simDataFolder'] = self.saveFolder
             kwargs['netParamsSavePath'] = self.netParamsFile
-            kwargs['setCfgNestedParam'] = self.setCfgNestedParam
-            
+
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value
             for key, value in self.runCfg.iteritems(): 
@@ -749,10 +698,13 @@ wait
             if self.runCfg.get('type', None) == 'mpi_bulletin':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
-            
-            # evolve
-            final_pop = ea.evolve( generator=generator, evaluator=evaluator, 
-                                bounder=Bounder, **kwargs)
+
+
+            final_pop = ea.evolve(generator=generator, 
+                                evaluator=evaluator,
+                                bounder=inspyred.ec.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
+                                **kwargs)
+
             # close file
             stats_file.close()
             ind_stats_file.close()

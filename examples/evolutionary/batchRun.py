@@ -72,9 +72,7 @@ def batchEvol():
 		'pop_size': 10,
 		'num_elites': 1, # keep this number of parents for next generation if they are fitter than children
 		'maximize': False, # maximize fitness function?
-		'mutation_rate': 0.1, 
 		'max_generations': 20,
-		'mutation_strength': 0.65, # <1 mutation moves closer to candidate. >1 mutation moves away from candidate 
 		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
 		'maxiter_wait': 40, # max number of times to check if sim is completed (for each generation)
 		'default_fitness': 1000 # set fitness value in case simulation time is over

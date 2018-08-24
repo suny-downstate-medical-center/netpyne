@@ -607,7 +607,8 @@ wait
                             jobs_completed += 1
                             print '  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index])
                         except:
-                            print 'Error evaluating fitness of candidate %d'%(candidate_index)
+                            pass
+                            #print 'Error evaluating fitness of candidate %d'%(candidate_index)
                     num_iters += 1
                     if num_iters >= args.get('maxiter_wait', 5000): 
                         print "max iterations reached -- remaining jobs set to default fitness"

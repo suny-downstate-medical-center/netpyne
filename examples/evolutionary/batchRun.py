@@ -53,10 +53,10 @@ def batchEvol():
 	
 	# Set output folder, grid method (all param combinations), and run configuration
 	b.batchLabel = 'complex_evol'
-	b.saveFolder = '.'
+	b.saveFolder = '../data/'
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',
+		'type': 'hpc_slurm',#'hpc_slurm',#'mpi_bulletin',
 		'script': 'init.py',
 		'mpiCommand': 'mpirun',
 		'nodes': 1,

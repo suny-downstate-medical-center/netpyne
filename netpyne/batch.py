@@ -155,9 +155,14 @@ class Batch(object):
         self.save(self.saveFolder+'/'+self.batchLabel+'_batch.json')
         
         # copy this batch script to folder, netParams and simConfig
-        os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/_netParams.py')
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/_batchScript.py')
+        #os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
+
+        netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
         
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
+        
+            
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
@@ -199,7 +204,7 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         # Grid Search optimization
         # -------------------------------------------------------------------------------
-        if not getattr(self, 'saveFolder', None): self.saveFolder = './' + self.batchLabel
+        self.saveFolder = self.saveFolder + self.batchLabel
 
         if self.method in ['grid','list']:
             # create saveFolder
@@ -462,9 +467,9 @@ wait
                 type = args.get('type', 'mpi_direct')
                 
                 # paths to required scripts
-                script = '../../' + args.get('script', 'init.py')
-                cfgSavePath = '../' + args.get('cfgSavePath')
-                netParamsSavePath = '../../' + args.get('netParamsSavePath')
+                script = args.get('script', 'init.py')
+                #cfgSavePath = args.get('cfgSavePath')
+                netParamsSavePath =  args.get('netParamsSavePath')
                 simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
                 
                 # mpi command setup
@@ -520,13 +525,15 @@ wait
                         self.setCfgNestedParam("filename", jobName)
                         
                     # save cfg instance to file
-                    cfg.save(simDataPath + '_cfg.json')
+                    cfgSavePath = self.saveFolder+'/'+jobName+'_cfg.json'
+                    self.cfg.save(cfgSavePath)
+                    #cfg.save(simDataPath + '_cfg.json')
                     
                     if type=='mpi_bulletin':
                         # ----------------------------------------------------------------------
                         # MPI master-slaves
                         # ----------------------------------------------------------------------
-                        pc.submit(runEvolJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
+                        pc.submit(runEvolJob, script, cfgSavePath, netParamsSavePath, simDataPath)
                         print '-'*80
 
                     else:
@@ -571,8 +578,8 @@ wait
                             text_file.write("%s" % jobString)
                         
                         with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
-                            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            #print jobString
+                            #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            print jobString
                     total_jobs += 1
                     sleep(0.1)
 
@@ -580,7 +587,7 @@ wait
                 # ----------------------------------------------------------------------
                 # gather data and compute fitness
                 # ----------------------------------------------------------------------
-                if type=='mpi_bulletin':
+                if type == 'mpi_bulletin':
                     # wait for pc bulletin board jobs to finish
                     try:
                         while pc.working():
@@ -686,7 +693,9 @@ wait
             kwargs['upper_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
+            
             kwargs['cfgSavePath'] = self.cfgFile
+
             kwargs['simDataFolder'] = self.saveFolder
             kwargs['netParamsSavePath'] = self.netParamsFile
 

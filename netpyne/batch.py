@@ -540,7 +540,7 @@ wait
                         # ----------------------------------------------------------------------
                         # MPI job commnand
                         # ----------------------------------------------------------------------
-                        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, jobName+'_cfg.json', netParamsSavePath)
+                        command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
                         
                         # ----------------------------------------------------------------------
                         # run on local machine with <nodes*coresPerNode> cores
@@ -555,7 +555,7 @@ wait
                         elif type=='hpc_slurm':
                             executer = 'sbatch'
                             res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, folder+'/'+simDataFolder, command)
+                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, folder, command)
                         
                         # ----------------------------------------------------------------------
                         # run on HPC through PBS
@@ -697,7 +697,7 @@ wait
             kwargs['cfgSavePath'] = self.cfgFile
 
             kwargs['simDataFolder'] = self.saveFolder
-            kwargs['netParamsSavePath'] = self.netParamsFile
+            kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
 
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value

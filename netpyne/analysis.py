@@ -633,8 +633,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
 
-    df = pd.DataFrame(cells)
-    df = pd.concat([df.drop('tags', axis=1), pd.DataFrame(df['tags'].tolist())], axis=1)
+
+    df = pd.DataFrame.from_records(cells)
+    df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
+
     keep = ['pop', 'gid', 'conns']
 
     if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid

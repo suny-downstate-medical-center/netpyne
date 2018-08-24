@@ -27,12 +27,16 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # -------------------------------------------------------------------------------
 # func needs to be outside of class
 def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+    import os
     print '\nJob in rank id: ',pc.id()
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
-        Popen(command.split(' '), stdout=outf, stderr=errf)
+        pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
     
+    with open('./pids.pid', 'a') as file:
+        file.write(str(pid) + ' ')
+        
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
     print '\nJob in rank id: ',pc.id()
@@ -459,7 +463,7 @@ wait
         # Evolutionary optimization
         # -------------------------------------------------------------------------------
         elif self.method == 'evol':
-
+            import sys
             from inspyred.ec import Bounder
             from inspyred.ec import EvolutionaryComputation
             from inspyred.ec.terminators import generation_termination
@@ -547,7 +551,6 @@ wait
                         # MPI master-slaves
                         # ----------------------------------------------------------------------
                         pc.submit(runEvolJob, './'+script.split('../../')[1], simDataPath+'_cfg.json', './'+netParamsSavePath.split('../../')[1], simDataPath)
-                        pids.append('-')
                         print '-'*80
 
                     else:
@@ -636,8 +639,23 @@ wait
                             jobs_completed += 1
                     print 'completed: %d' %(jobs_completed)
                     sleep(args.get('time_sleep', 1))
+                
                 # kill all processes
-                if pids[0]!="-":
+                if type=='mpi_bulletin':
+                    try:
+                        with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
+                            pids = [int(i) for i in file.read().split(' ')[:-1]]
+                        
+                        with open("./pids.pid", 'w') as file: # delete content
+                            pass
+                        for pid in pids:
+                            try:
+                                os.killpg(os.getpgid(pid), signal.SIGTERM)
+                            except:
+                                pass
+                    except:
+                        pass
+                else:
                     try: 
                         for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
                     except:
@@ -737,8 +755,10 @@ wait
             # close file
             stats_file.close()
             ind_stats_file.close()
+            
             # print best and finish
             print('Best Solution: \n{0}'.format(str(max(final_pop))))
             print "-"*80
             print "   Completed evolutionary algorithm parameter optimization   "
             print "-"*80
+            sys.exit()

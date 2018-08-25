@@ -87,7 +87,7 @@ class Batch(object):
         self.cfgFile = cfgFile
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
-        
+        self.saveFolder = '/'+self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
         self.evolCfg = {}
@@ -152,8 +152,13 @@ class Batch(object):
                 print ' Could not create %s' %(self.saveFolder)
         
         # save Batch dict as json
-        self.save(self.saveFolder+'/'+self.batchLabel+'_batch.json')
-        
+        targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
+        self.save(targetFile)
+
+        # copy this batch script to folder
+        targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
+
         # copy this batch script to folder, netParams and simConfig
         #os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
 
@@ -162,7 +167,6 @@ class Batch(object):
         
         os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
         
-            
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
@@ -189,7 +193,7 @@ class Batch(object):
     
     def createLogger(self):
         # Logger for evolutionary optimization
-        logger = logging.getLogger('inspyred.ec')
+        logger = logging.getLogger('EC')
         logger.setLevel(logging.DEBUG)
         file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='w')
         file_handler.setLevel(logging.DEBUG)
@@ -204,8 +208,6 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         # Grid Search optimization
         # -------------------------------------------------------------------------------
-        self.saveFolder = self.saveFolder + self.batchLabel
-
         if self.method in ['grid','list']:
             # create saveFolder
             import os,glob
@@ -451,7 +453,7 @@ wait
         # -------------------------------------------------------------------------------
         elif self.method == 'evol':
             import sys
-            import inspyred
+            import inspyred.ec as EC
 
             # -------------------------------------------------------------------------------
             # Evolutionary optimization: Parallel evaluation
@@ -470,7 +472,7 @@ wait
                 script = args.get('script', 'init.py')
                 #cfgSavePath = args.get('cfgSavePath')
                 netParamsSavePath =  args.get('netParamsSavePath')
-                simDataFolder = args.get('simDataFolder') + '/gen_' + str(ngen)
+                genFolderPath = args.get('saveFolder') + '/gen_' + str(ngen)
                 
                 # mpi command setup
                 nodes = args.get('nodes', 1)
@@ -499,7 +501,7 @@ wait
                 sleepInterval = args.get('sleepInterval', 0.2)
                 
                 # create folder if it does not exist
-                createFolder(simDataFolder)
+                createFolder(genFolderPath)
                 
                 # remember pids in a list
                 pids = list()
@@ -511,29 +513,25 @@ wait
                     
                     # name and path
                     jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
-                    simDataPath = simDataFolder + '/' + jobName
+                    jobPath = genFolderPath + '/' + jobName
                     
                     # modify cfg instance with candidate values
                     for label, value in zip(paramLabels, candidate):
                         self.setCfgNestedParam(label, value)
                         print 'set %s=%s' % (label, value)
                     
-                    # change output name
-                    if type=='mpi_bulletin':
-                        self.setCfgNestedParam("filename", simDataPath)
-                    else:
-                        self.setCfgNestedParam("filename", jobName)
-                        
+                    self.setCfgNestedParam("filename", jobPath)
+                                            
                     # save cfg instance to file
-                    cfgSavePath = self.saveFolder+'/'+jobName+'_cfg.json'
+                    cfgSavePath = jobPath + '_cfg.json' 
                     self.cfg.save(cfgSavePath)
-                    #cfg.save(simDataPath + '_cfg.json')
+                    #cfg.save(jobPath + '_cfg.json')                      
                     
                     if type=='mpi_bulletin':
                         # ----------------------------------------------------------------------
                         # MPI master-slaves
                         # ----------------------------------------------------------------------
-                        pc.submit(runEvolJob, script, cfgSavePath, netParamsSavePath, simDataPath)
+                        pc.submit(runEvolJob, script, cfgSavePath, netParamsSavePath, jobPath)
                         print '-'*80
 
                     else:
@@ -547,7 +545,7 @@ wait
                         # ----------------------------------------------------------------------
                         if type=='mpi_direct':
                             executer = '/bin/bash'
-                            jobString = bashTemplate('mpi_direct') %(custom, simDataFolder, command)
+                            jobString = bashTemplate('mpi_direct') %(custom, folder, command)
                         
                         # ----------------------------------------------------------------------
                         # run on HPC through slurm
@@ -555,7 +553,7 @@ wait
                         elif type=='hpc_slurm':
                             executer = 'sbatch'
                             res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, simDataPath, simDataPath, email, res, custom, folder, command)
+                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobNamePath, jobNamePath, email, res, custom, folder, command)
                         
                         # ----------------------------------------------------------------------
                         # run on HPC through PBS
@@ -564,7 +562,7 @@ wait
                             executer = 'qsub'
                             queueName = args.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
-                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, simDataPath, simDataPath, custom, command)
+                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobNamePath, jobNamePath, custom, command)
                         
                         # ----------------------------------------------------------------------
                         # save job and run
@@ -573,11 +571,11 @@ wait
                         print jobString
                         print '-'*80
                         # save file 
-                        batchfile = '%s.sbatch' % (simDataPath)
+                        batchfile = '%s.sbatch' % (jobNamePath)
                         with open(batchfile, 'w') as text_file:
                             text_file.write("%s" % jobString)
                         
-                        with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
+                        with open(jobNamePath+'.run', 'w') as outf, open(jobNamePath+'.err', 'w') as errf:
                             #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
                             print jobString
                     total_jobs += 1
@@ -607,8 +605,8 @@ wait
                     unfinished = [i for i, x in enumerate(fitness) if x is None ]
                     for candidate_index in unfinished:
                         try: # load simData and evaluate fitness
-                            simDataPath = simDataFolder + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
-                            with open('%s.json'% (simDataPath)) as file:
+                            jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
+                            with open('%s.json'% (jobNamePath)) as file:
                                 simData = json.load(file)['simData']
                             fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                             jobs_completed += 1
@@ -678,9 +676,9 @@ wait
             rand.seed(self.seed) 
             
             # Evolution strategy
-            ea = inspyred.ec.ES(rand)
-            ea.terminator = inspyred.ec.terminators.generation_termination
-            ea.observer = [inspyred.ec.observers.stats_observer, inspyred.ec.observers.file_observer]
+            ea = EC.ES(rand)
+            ea.terminator = EC.terminators.generation_termination
+            ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
             # create file handlers for observers
             stats_file, ind_stats_file = self.openFiles2SaveStats()
 
@@ -696,7 +694,7 @@ wait
             
             kwargs['cfgSavePath'] = self.cfgFile
 
-            kwargs['simDataFolder'] = self.saveFolder
+            kwargs['saveFolder'] = self.saveFolder
             kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
 
             for key, value in self.evolCfg.iteritems(): 
@@ -712,7 +710,7 @@ wait
 
             final_pop = ea.evolve(generator=generator, 
                                 evaluator=evaluator,
-                                bounder=inspyred.ec.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
+                                bounder=EC.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
                                 **kwargs)
 
             # close file

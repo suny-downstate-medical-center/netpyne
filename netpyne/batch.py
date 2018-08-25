@@ -109,11 +109,7 @@ class Batch(object):
         ext = basename.split('.')[1]
         
         # make dir
-        if not os.path.exists(folder):
-            try:
-                os.mkdir(folder)
-            except OSError:
-                print ' Could not create', folder
+        createFolder(folder)
 
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
@@ -145,11 +141,8 @@ class Batch(object):
         import os
 
         # create Folder to save simulation
-        if not os.path.exists(self.saveFolder):
-            try:
-                os.mkdir(self.saveFolder)
-            except OSError:
-                print ' Could not create %s' %(self.saveFolder)
+        createFolder(self.saveFolder)
+        createFolder(self.saveFolder+'/'+self.batchLabel)
         
         # save Batch dict as json
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
@@ -470,9 +463,8 @@ wait
                 
                 # paths to required scripts
                 script = args.get('script', 'init.py')
-                #cfgSavePath = args.get('cfgSavePath')
                 netParamsSavePath =  args.get('netParamsSavePath')
-                genFolderPath = args.get('saveFolder') + '/gen_' + str(ngen)
+                genFolderPath = self.saveFolder + '/' + self.batchLabel + '/gen_' + str(ngen)
                 
                 # mpi command setup
                 nodes = args.get('nodes', 1)
@@ -488,9 +480,6 @@ wait
                 walltime = args.get('walltime', '00:01:00')
                 reservation = args.get('reservation', None)
                 allocation = args.get('allocation', 'csd403') # NSG account
-
-                # modules and functions
-                cfg = args.get('cfg')
 
                 # fitness function
                 fitnessFunc = args.get('fitnessFunc')
@@ -525,7 +514,7 @@ wait
                     # save cfg instance to file
                     cfgSavePath = jobPath + '_cfg.json' 
                     self.cfg.save(cfgSavePath)
-                    #cfg.save(jobPath + '_cfg.json')                      
+                    
                     
                     if type=='mpi_bulletin':
                         # ----------------------------------------------------------------------
@@ -553,7 +542,7 @@ wait
                         elif type=='hpc_slurm':
                             executer = 'sbatch'
                             res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobNamePath, jobNamePath, email, res, custom, folder, command)
+                            jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobPath, jobPath, email, res, custom, folder, command)
                         
                         # ----------------------------------------------------------------------
                         # run on HPC through PBS
@@ -562,7 +551,7 @@ wait
                             executer = 'qsub'
                             queueName = args.get('queueName', 'default')
                             nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
-                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobNamePath, jobNamePath, custom, command)
+                            jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobPath, jobPath, custom, command)
                         
                         # ----------------------------------------------------------------------
                         # save job and run
@@ -571,13 +560,13 @@ wait
                         print jobString
                         print '-'*80
                         # save file 
-                        batchfile = '%s.sbatch' % (jobNamePath)
+                        batchfile = '%s.sbatch' % (jobPath)
                         with open(batchfile, 'w') as text_file:
                             text_file.write("%s" % jobString)
                         
-                        with open(jobNamePath+'.run', 'w') as outf, open(jobNamePath+'.err', 'w') as errf:
-                            #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            print jobString
+                        with open(jobPath+'.run', 'w') as outf, open(jobPath+'.err', 'w') as errf:
+                            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            #print jobString
                     total_jobs += 1
                     sleep(0.1)
 
@@ -682,7 +671,6 @@ wait
             # create file handlers for observers
             stats_file, ind_stats_file = self.openFiles2SaveStats()
 
-            
             # gather **kwargs
             kwargs = {'cfg': self.cfg}
             kwargs['num_inputs'] = len(self.params)
@@ -691,11 +679,7 @@ wait
             kwargs['upper_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
-            
-            kwargs['cfgSavePath'] = self.cfgFile
-
-            kwargs['saveFolder'] = self.saveFolder
-            kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'/netParams.py'
 
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value

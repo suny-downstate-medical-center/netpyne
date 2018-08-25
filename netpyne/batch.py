@@ -508,8 +508,10 @@ wait
                         self.setCfgNestedParam(label, value)
                         print 'set %s=%s' % (label, value)
                     
-                    self.setCfgNestedParam("filename", jobPath)
-                                            
+                    #self.setCfgNestedParam("filename", jobPath)
+                    self.cfg.simLabel = jobName
+                    self.cfg.saveFolder = genFolderPath
+
                     # save cfg instance to file
                     cfgSavePath = jobPath + '_cfg.json' 
                     self.cfg.save(cfgSavePath)

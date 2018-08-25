@@ -56,7 +56,7 @@ def batchEvol():
 	b.saveFolder = '../data/'+b.batchLabel
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'hpc_slurm',#'hpc_slurm',#'mpi_bulletin',
+		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',
 		'script': 'init.py',
 		'mpiCommand': 'mpirun',
 		'nodes': 1,

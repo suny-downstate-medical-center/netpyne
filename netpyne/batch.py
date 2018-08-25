@@ -588,7 +588,7 @@ wait
                 jobs_completed = 0
                 fitness = [None for cand in candidates]
                 # print outfilestem
-                print "waiting jobs from generation: %d/%d to finish..." %(ngen, args.get('max_generations'))
+                print "Waiting for jobs from generation %d/%d ..." %(ngen, args.get('max_generations'))
                 #print "PID's: %r" %(pids)
                 # start fitness calculation
                 while jobs_completed < total_jobs:

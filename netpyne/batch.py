@@ -142,7 +142,6 @@ class Batch(object):
 
         # create Folder to save simulation
         createFolder(self.saveFolder)
-        createFolder(self.saveFolder+'/'+self.batchLabel)
         
         # save Batch dict as json
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
@@ -464,7 +463,7 @@ wait
                 # paths to required scripts
                 script = args.get('script', 'init.py')
                 netParamsSavePath =  args.get('netParamsSavePath')
-                genFolderPath = self.saveFolder + '/' + self.batchLabel + '/gen_' + str(ngen)
+                genFolderPath = self.saveFolder + '/gen_' + str(ngen)
                 
                 # mpi command setup
                 nodes = args.get('nodes', 1)
@@ -565,8 +564,8 @@ wait
                             text_file.write("%s" % jobString)
                         
                         with open(jobPath+'.run', 'w') as outf, open(jobPath+'.err', 'w') as errf:
-                            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            #print jobString
+                            #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            print jobString
                     total_jobs += 1
                     sleep(0.1)
 
@@ -679,7 +678,7 @@ wait
             kwargs['upper_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
-            kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'/netParams.py'
+            kwargs['netParamsSavePath'] = self.saveFolder+'/netParams.py'
 
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value

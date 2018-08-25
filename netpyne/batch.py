@@ -678,7 +678,7 @@ wait
             kwargs['upper_bound'] = [x['values'][1] for x in self.params]
             kwargs['statistics_file'] = stats_file
             kwargs['individuals_file'] = ind_stats_file
-            kwargs['netParamsSavePath'] = self.saveFolder+'/netParams.py'
+            kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
 
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value

@@ -555,7 +555,7 @@ wait
                         
                         with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                             #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+                            proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
                             sleep(1)
                             read = proc.stdout.read()                            
                             #read=outf.readline()

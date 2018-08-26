@@ -581,15 +581,16 @@ wait
                 while jobs_completed < total_jobs:
                     unfinished = [i for i, x in enumerate(fitness) if x is None ]
                     for candidate_index in unfinished:
-                        try: # load simData and evaluate fitness
+                        #try: # load simData and evaluate fitness
                             jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
+                            print jobNamePath
                             with open('%s.json'% (jobNamePath)) as file:
                                 simData = json.load(file)['simData']
                             fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                             jobs_completed += 1
                             print '  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index])
-                        except:
-                            pass
+                        #except:
+                        #    pass
                             #print 'Error evaluating fitness of candidate %d'%(candidate_index)
                     num_iters += 1
                     if num_iters >= args.get('maxiter_wait', 5000): 

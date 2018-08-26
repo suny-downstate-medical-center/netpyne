@@ -43,9 +43,13 @@ def batchEvol():
 		import numpy as np
 		pops = kwargs['pops']
 		maxFitness = kwargs['maxFitness']
-		fitness = np.mean([min(np.exp(abs(v['target'] - simData['popRates'][k])/v['width']), maxFitness) 
-				if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.iteritems()])
-		print 'fitness = %f'%(fitness)
+		popFitness = [min(np.exp(abs(v['target'] - simData['popRates'][k])/v['width']), maxFitness) 
+				if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.iteritems()]
+		fitness = np.mean(popFitness)
+
+		popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(simData['popRates'].keys(), simData['popRates'].values(), popFitness)])
+		print '  '+popInfo
+		#print 'Fitness = %f'%(fitness)
 		return fitness
 		
 	# create Batch object with paramaters to modify, and specifying files to use
@@ -56,7 +60,7 @@ def batchEvol():
 	b.saveFolder = '../data/'+b.batchLabel
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'hpc_slurm',#'hpc_slurm',#'mpi_bulletin',
+		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',
 		'script': 'init.py',
 		'mpiCommand': 'mpirun',
 		'nodes': 1,

@@ -182,19 +182,6 @@ class Batch(object):
         
         return open(stat_file_name, 'w'), open(ind_file_name, 'w')
 
-    
-    def createLogger(self):
-        # Logger for evolutionary optimization
-        logger = logging.getLogger('EC')
-        logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='w')
-        file_handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-        
-        return logger
-
 
     def run(self):
         # -------------------------------------------------------------------------------
@@ -566,8 +553,8 @@ wait
                             text_file.write("%s" % jobString)
                         
                         with open(jobPath+'.run', 'w') as outf, open(jobPath+'.err', 'w') as errf:
-                            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            #print jobString
+                            #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            print jobString
                     total_jobs += 1
                     sleep(0.1)
 
@@ -658,9 +645,15 @@ wait
             global ngen
             ngen = -1
             
-            # log for simulation
-            logger = self.createLogger()
-            
+            # log for simulation      
+            logger = logging.getLogger('inspyred.ec')
+            logger.setLevel(logging.DEBUG)
+            file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='a')
+            file_handler.setLevel(logging.DEBUG)
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)    
+
             # create randomizer instance
             rand = Random()
             rand.seed(self.seed) 
@@ -696,6 +689,7 @@ wait
             final_pop = ea.evolve(generator=generator, 
                                 evaluator=evaluator,
                                 bounder=EC.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
+                                logger=logger,
                                 **kwargs)
 
             # close file

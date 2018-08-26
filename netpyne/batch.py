@@ -596,12 +596,12 @@ wait
                             #pass
                             #print 'Error evaluating fitness of candidate %d'%(candidate_index)
                     num_iters += 1
+                    print 'completed: %d' %(jobs_completed)
                     if num_iters >= args.get('maxiter_wait', 5000): 
-                        print "max iterations reached -- remaining jobs set to default fitness"
+                        print "Max iterations reached -- the %d remaining jobs will be set to default fitness" % (len(unfinished))
                         for canditade_index in unfinished:
                             fitness[canditade_index] = defaultFitness
-                            jobs_completed += 1
-                    print 'completed: %d' %(jobs_completed)
+                            jobs_completed += 1                    
                     sleep(args.get('time_sleep', 1))
                 
                 # kill all processes

@@ -478,8 +478,9 @@ wait
                 # create folder if it does not exist
                 createFolder(genFolderPath)
                 
-                # remember pids in a list
-                pids = list()
+                # remember pids and jobids in a list
+                pids = []
+                jobids = {}
                         
                 # create a job for each candidate
                 for candidate_index, candidate in enumerate(candidates):
@@ -554,6 +555,9 @@ wait
                         
                         with open(jobPath+'.run', 'w') as outf, open(jobPath+'.err', 'w') as errf:
                             pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            with open (outf, 'r') as f:
+                                jobid = int(f.readline().split()[-1])
+                            jobids[candidate_index] = jobid
                             #print jobString
                     total_jobs += 1
                     sleep(0.1)
@@ -598,10 +602,11 @@ wait
                     num_iters += 1
                     print 'completed: %d' %(jobs_completed)
                     if num_iters >= args.get('maxiter_wait', 5000): 
-                        print "Max iterations reached -- the %d remaining jobs will be set to default fitness" % (len(unfinished))
+                        print "Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished))
                         for canditade_index in unfinished:
                             fitness[canditade_index] = defaultFitness
                             jobs_completed += 1                    
+                            os.system('scancel %d'%(jobids[candidate_index]))  # terminate unfinished job
                     sleep(args.get('time_sleep', 1))
                 
                 # kill all processes
@@ -619,11 +624,12 @@ wait
                                 pass
                     except:
                         pass
-                else:
-                    try: 
-                        for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
-                    except:
-                        pass
+                # don't want to to this for hpcs since jobs are running on compute nodes not master 
+                # else: 
+                #     try: 
+                #         for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
+                #     except:
+                #         pass
                 # return
                 print "-"*80
                 print "  Completed a generation  "

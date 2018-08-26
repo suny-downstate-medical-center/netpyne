@@ -2273,14 +2273,14 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "str"
+                                "type": ""
                             },
                             "cells2": {
                                 "label": "population (or cell by index cell) to subset 2",
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "str"
+                                "type": ""
                             },
                             "spks1": {
                                 "label": "spike times to train 1",
@@ -2365,14 +2365,14 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "str"
+                                "type": ""
                             },
                             "cell2": {
                                 "label": "Cell Subset 2",
                                 "suggestions": "",
                                 "help": "Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]).",
                                 "hintText": "",
-                                "type": "str"
+                                "type": ""
                             },
                             "spks1": {
                                 "label": "Spike train 1",

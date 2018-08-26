@@ -554,14 +554,16 @@ wait
                             text_file.write("%s" % jobString)
                         
                         with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
-                            pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            #pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                            proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
                             sleep(1)
-                            read=outf.readline()
+                            read = proc.stdout.read()                            
+                            #read=outf.readline()
                             print read
                             if len(read) > 0:
                                 jobid = int(read.split()[-1])
                                 jobids[candidate_index] = jobid
-                                print jobids
+                            print 'jobids', jobids
                     total_jobs += 1
                     sleep(0.1)
 

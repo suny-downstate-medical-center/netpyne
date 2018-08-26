@@ -80,7 +80,7 @@ def batchEvol():
 		'max_generations': 20,
 		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
 		'maxiter_wait': 40, # max number of times to check if sim is completed (for each generation)
-		'default_fitness': 1000 # set fitness value in case simulation time is over
+		'defaultFitness': 1000 # set fitness value in case simulation time is over
 	}
 	# Run batch simulations
 	b.run()

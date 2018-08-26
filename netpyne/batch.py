@@ -555,8 +555,11 @@ wait
                         
                         with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                             pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
-                            jobid = int(outf.readline().split()[-1])
-                            jobids[candidate_index] = jobid
+                            print outf.readline()
+                            sleep(1)
+                            print outf.readline()
+                            #jobid = int(outf.readline().split()[-1])
+                            #jobids[candidate_index] = jobid
                             #print jobString
                     total_jobs += 1
                     sleep(0.1)

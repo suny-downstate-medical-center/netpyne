@@ -553,7 +553,7 @@ wait
                         with open(batchfile, 'w') as text_file:
                             text_file.write("%s" % jobString)
                         
-                        with open(jobPath+'.run', 'r+') as outf, open(jobPath+'.err', 'w') as errf:
+                        with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                             pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
                             jobid = int(outf.readline().split()[-1])
                             jobids[candidate_index] = jobid

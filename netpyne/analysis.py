@@ -626,13 +626,12 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
         - Returns figure handle
     '''
-    import sim, pandas as pd, time
+    import sim, pandas as pd
 
     print('Plotting raster...')
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
-
 
     df = pd.DataFrame.from_records(cells)
     df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
@@ -667,6 +666,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
         df['gidColor'] = df['pop'].map(popColors)
         df.set_index('gid', inplace=True)
+
     # Order by
     if len(df) > 0:
         ylabelText = 'Cells (ordered by %s)'%(orderBy)
@@ -676,7 +676,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     else:
         sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
         ylabelText = ''
-
 
     # Add NetStim spikes
     numCellSpks = len(sel)
@@ -704,7 +703,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if numCellSpks+numNetStims == 0:
         print 'No spikes available to plot raster'
         return None
-
 
     # Time Range
 #### Time range is already queried in getSpktSpkid??? ####
@@ -827,7 +825,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # save figure data
     if saveData:
-        figData = {'spkTimes': spkts, 'spkInds': spkinds, 'spkColors': spkgidColors, 'cellGids': cellGids, 'sortedGids': sortedGids, 'numNetStims': numNetStims,
+        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
         'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
         'syncLines': syncLines}
 

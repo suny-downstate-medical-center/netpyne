@@ -828,7 +828,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'include': include, 'spkts': spkts, 'spkinds': spkinds, 'timeRange': timeRange}
 
 
 ######################################################################################################################################################
@@ -1010,7 +1010,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {'histData': histData, 'histoT': histoT}
+    return fig, {'include': include, 'histData': histData, 'histoT': histoT, 'timeRange': timeRange}
 
 
 
@@ -1367,7 +1367,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # show fig 
         if showFig: _showFigure()
 
-    return fig, {'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
+    return fig, {'include': include, 'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
 
 
 
@@ -1705,7 +1705,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # show fig 
     if showFig: _showFigure()
 
-    return figs, {}
+    return figs, {'tracesData': tracesData, 'include': include}
 
 def invertDictMapping(d):
     """ Invert mapping of dictionary (i.e. map values to list of keys) """
@@ -2215,7 +2215,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs, data
+    return figs, {'LFP': lfp, 'electrodes': electrodes, 'saveData': saveData}
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object
@@ -2853,7 +2853,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy, 'includePre': includePre, 'includePost': includePost}
 
 
 ######################################################################################################################################################
@@ -2988,7 +2988,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
@@ -3414,4 +3414,4 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
     # show fig 
     if showFig: _showFigure()
     
-    return fig, {}
+    return fig, {data: species[region].states3d[:].mean(plane2mean[plane])}

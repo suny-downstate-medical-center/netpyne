@@ -11,8 +11,9 @@ import json
 import logging
 import datetime
 from neuron import h
+from copy import copy
 from netpyne import specs
-from netpyne.utils import bashTemplate
+from utils import bashTemplate
 from random import Random
 from time import sleep, time
 from itertools import izip, product
@@ -179,8 +180,11 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        
-        return open(stat_file_name, 'w'), open(ind_file_name, 'w')
+        individual = open(ind_file_name, 'w')
+        stats = open(stat_file_name, 'w')
+        stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
+        individual.write('#gen  #ind  fitness  [candidate]\n')
+        return stats, individual
 
 
     def run(self):
@@ -481,7 +485,7 @@ wait
                 # remember pids and jobids in a list
                 pids = []
                 jobids = {}
-                        
+                
                 # create a job for each candidate
                 for candidate_index, candidate in enumerate(candidates):
                     # required for slurm
@@ -587,7 +591,7 @@ wait
                 fitness = [None for cand in candidates]
                 # print outfilestem
                 print "Waiting for jobs from generation %d/%d ..." %(ngen, args.get('max_generations'))
-                #print "PID's: %r" %(pids)
+                # print "PID's: %r" %(pids)
                 # start fitness calculation
                 while jobs_completed < total_jobs:
                     unfinished = [i for i, x in enumerate(fitness) if x is None ]
@@ -653,8 +657,33 @@ wait
             def generator(random, args):
                 # generate initial values for candidates
                 return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
-
-
+            # -------------------------------------------------------------------------------
+            # Mutator
+            # -------------------------------------------------------------------------------
+            @EC.variators.mutator
+            def nonuniform_bounds_mutation(random, candidate, args):
+                """Return the mutants produced by nonuniform mutation on the candidates.
+                .. Arguments:
+                   random -- the random number generator object
+                   candidate -- the candidate solution
+                   args -- a dictionary of keyword arguments
+                Required keyword arguments in args:
+                Optional keyword arguments in args:
+                - *mutation_strength* -- the strength of the mutation, where higher
+                  values correspond to greater variation (default 1)
+                """
+                lower_bound = args.get('lower_bound')
+                upper_bound = args.get('upper_bound')
+                strength = args.setdefault('mutation_strength', 1)
+                mutant = copy(candidate)
+                for i, (c, lo, hi) in enumerate(zip(candidate, lower_bound, upper_bound)):
+                    if random.random() <= 0.5:
+                        new_value = c + (hi - c) * (1.0 - random.random() ** strength)
+                    else:
+                        new_value = c - (c - lo) * (1.0 - random.random() ** strength)
+                    mutant[i] = new_value
+                
+                return mutant
             # -------------------------------------------------------------------------------
             # Evolutionary optimization: Main code
             # -------------------------------------------------------------------------------
@@ -678,10 +707,6 @@ wait
             rand = Random()
             rand.seed(self.seed) 
             
-            # Evolution strategy
-            ea = EC.ES(rand)
-            ea.terminator = EC.terminators.generation_termination
-            ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
             # create file handlers for observers
             stats_file, ind_stats_file = self.openFiles2SaveStats()
 
@@ -697,15 +722,69 @@ wait
 
             for key, value in self.evolCfg.iteritems(): 
                 kwargs[key] = value
+            if not 'maximize' in kwargs: kwargs['maximize'] = False
+            
             for key, value in self.runCfg.iteritems(): 
                 kwargs[key] = value
-                
+            
             # if using pc bulletin board, initialize all workers
             if self.runCfg.get('type', None) == 'mpi_bulletin':
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-
+            ####################################################################
+            #                       Evolution strategy
+            ####################################################################
+            # Custom algorithm based on Krichmar's params
+            if self.evolCfg['evolAlgorithm'] == 'krichmarCustom':
+                ea = EC.EvolutionaryComputation(rand)
+                ea.selector = EC.selectors.tournament_selection
+                ea.variator = [EC.variators.uniform_crossover, nonuniform_bounds_mutation] 
+                ea.replacer = EC.replacers.generational_replacement
+                if not 'tournament_size' in kwargs: kwargs['tournament_size'] = 2
+                if not 'num_selected' in kwargs: kwargs['num_selected'] = kwargs['pop_size']
+            
+            # Genetic
+            elif self.evolCfg['evolAlgorithm'] == 'genetic':
+                ea = EC.GA(rand)
+            
+            # Evolution Strategy
+            elif self.evolCfg['evolAlgorithm'] == 'evolutionStrategy':
+                ea = EC.ES(rand)
+            
+            # Simulated Annealing
+            elif self.evolCfg['evolAlgorithm'] == 'simulatedAnnealing':
+                ea = EC.SA(rand)
+            
+            # Differential Evolution
+            elif self.evolCfg['evolAlgorithm'] == 'diffEvolution':
+                ea = EC.DEA(rand)
+            
+            # Estimation of Distribution
+            elif self.evolCfg['evolAlgorithm'] == 'estimationDist':
+                ea = EC.EDA(rand)
+            
+            # Particle Swarm optimization
+            elif self.evolCfg['evolAlgorithm'] == 'particleSwarm':
+                from inspyred import swarm 
+                ea = swarm.PSO(rand)
+                ea.topology = swarm.topologies.ring_topology
+            
+            # Ant colony optimization (requires components)
+            elif self.evolCfg['evolAlgorithm'] == 'antColony':
+                from inspyred import swarm
+                if not 'components' in kwargs: raise ValueError("%s requires components" %(self.evolCfg['evolAlgorithm']))
+                ea = swarm.ACS(rand, self.evolCfg['components'])
+                ea.topology = swarm.topologies.ring_topology
+            
+            else:
+                raise ValueError("%s is not a valid strategy" %(self.evolCfg['evolAlgorithm']))
+            ####################################################################
+            ea.terminator = EC.terminators.generation_termination
+            ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
+            # -------------------------------------------------------------------------------
+            # Run algorithm
+            # ------------------------------------------------------------------------------- 
             final_pop = ea.evolve(generator=generator, 
                                 evaluator=evaluator,
                                 bounder=EC.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),

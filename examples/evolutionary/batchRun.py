@@ -1,5 +1,5 @@
-from netpyne import specs, batch
-
+from netpyne import specs
+from batch import Batch
 def batchEvol():
 	# parameters space to explore
 	
@@ -10,13 +10,13 @@ def batchEvol():
 	params['delay'] = [1, 20]
 
 	## complex net
-	params = specs.ODict()
-	params['probEall'] = [0.05, 0.2] # 0.1
-	params['weightEall'] = [0.0025, 0.0075] #5.0
-	params['probIE'] = [0.2, 0.6] #0.4
-	params['weightIE'] = [0.0005, 0.002]
-	params['probLengthConst'] = [100,200]
-	params['stimWeight'] = [0.05, 0.2]
+	# params = specs.ODict()
+	# params['probEall'] = [0.05, 0.2] # 0.1
+	# params['weightEall'] = [0.0025, 0.0075] #5.0
+	# params['probIE'] = [0.2, 0.6] #0.4
+	# params['weightIE'] = [0.0005, 0.002]
+	# params['probLengthConst'] = [100,200]
+	# params['stimWeight'] = [0.05, 0.2]
 
 	# fitness function
 	fitnessFuncArgs = {}
@@ -27,13 +27,13 @@ def batchEvol():
 	pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
 	
 	## complex net
-	pops = {} 
-	pops['E2'] = {'target': 5, 'width': 2, 'min': 1}
-	pops['I2'] = {'target': 10, 'width': 5, 'min': 2}
-	pops['E4'] = {'target': 30, 'width': 10, 'min': 1}
-	pops['I4'] = {'target': 10, 'width': 3, 'min': 2}
-	pops['E5'] = {'target': 40, 'width': 4, 'min': 1}
-	pops['I5'] = {'target': 25, 'width': 5, 'min': 2}
+	# pops = {} 
+	# pops['E2'] = {'target': 5, 'width': 2, 'min': 1}
+	# pops['I2'] = {'target': 10, 'width': 5, 'min': 2}
+	# pops['E4'] = {'target': 30, 'width': 10, 'min': 1}
+	# pops['I4'] = {'target': 10, 'width': 3, 'min': 2}
+	# pops['E5'] = {'target': 40, 'width': 4, 'min': 1}
+	# pops['I5'] = {'target': 25, 'width': 5, 'min': 2}
 
 	
 	fitnessFuncArgs['pops'] = pops
@@ -43,21 +43,23 @@ def batchEvol():
 		import numpy as np
 		pops = kwargs['pops']
 		maxFitness = kwargs['maxFitness']
-		popFitness = [min(np.exp(abs(v['target'] - simData['popRates'][k])/v['width']), maxFitness) 
+		popFitness = [None for i in pops.iteritems()]
+		popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
 				if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.iteritems()]
+		print(popFitness)
 		fitness = np.mean(popFitness)
-
+		print 
 		popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(simData['popRates'].keys(), simData['popRates'].values(), popFitness)])
 		print '  '+popInfo
 		#print 'Fitness = %f'%(fitness)
 		return fitness
 		
 	# create Batch object with paramaters to modify, and specifying files to use
-	b = batch.Batch(params=params)
+	b = Batch(params=params)
 	
 	# Set output folder, grid method (all param combinations), and run configuration
-	b.batchLabel = 'complex_evol'
-	b.saveFolder = '../data/'+b.batchLabel
+	b.batchLabel = 'simple'
+	b.saveFolder = './'+b.batchLabel
 	b.method = 'evol'
 	b.runCfg = {
 		'type': 'mpi_bulletin',#'hpc_slurm',#'mpi_bulletin',
@@ -72,12 +74,13 @@ def batchEvol():
 		#'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users
 	}
 	b.evolCfg = {
+		'evolAlgorithm': 'particleSwarm',
 		'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
 		'fitnessFuncArgs': fitnessFuncArgs,
-		'pop_size': 10,
-		'num_elites': 1, # keep this number of parents for next generation if they are fitter than children
+		'pop_size': 6,
+		'num_elites': 0, # keep this number of parents for next generation if they are fitter than children
 		'maximize': False, # maximize fitness function?
-		'max_generations': 20,
+		'max_generations': 4,
 		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
 		'maxiter_wait': 40, # max number of times to check if sim is completed (for each generation)
 		'defaultFitness': 1000 # set fitness value in case simulation time is over

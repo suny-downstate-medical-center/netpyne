@@ -1,5 +1,5 @@
-from netpyne import specs
-from batch import Batch
+from netpyne import specs, Batch
+
 def batchEvol():
 	# parameters space to explore
 	

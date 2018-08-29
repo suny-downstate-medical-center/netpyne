@@ -13,7 +13,7 @@ import datetime
 from neuron import h
 from copy import copy
 from netpyne import specs
-from utils import bashTemplate
+from netpyne.utils import bashTemplate
 from random import Random
 from time import sleep, time
 from itertools import izip, product

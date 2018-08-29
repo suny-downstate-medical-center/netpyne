@@ -46,9 +46,7 @@ def batchEvol():
 		popFitness = [None for i in pops.iteritems()]
 		popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
 				if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.iteritems()]
-		print(popFitness)
 		fitness = np.mean(popFitness)
-		print 
 		popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(simData['popRates'].keys(), simData['popRates'].values(), popFitness)])
 		print '  '+popInfo
 		#print 'Fitness = %f'%(fitness)

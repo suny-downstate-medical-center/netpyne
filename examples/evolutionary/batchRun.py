@@ -1,4 +1,5 @@
-from netpyne import specs, Batch
+from netpyne import specs
+from netpyne.batch import Batch
 
 def batchEvol():
 	# parameters space to explore
@@ -72,11 +73,13 @@ def batchEvol():
 		#'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users
 	}
 	b.evolCfg = {
-		'evolAlgorithm': 'particleSwarm',
+		'evolAlgorithm': 'krichmarCustom',
 		'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
 		'fitnessFuncArgs': fitnessFuncArgs,
 		'pop_size': 6,
-		'num_elites': 0, # keep this number of parents for next generation if they are fitter than children
+		'num_elites': 1, # keep this number of parents for next generation if they are fitter than children
+		'mutation_rate': 0.4,
+		'crossover': 0.5,
 		'maximize': False, # maximize fitness function?
 		'max_generations': 4,
 		'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)

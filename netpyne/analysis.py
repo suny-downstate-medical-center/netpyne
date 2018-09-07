@@ -828,7 +828,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return fig, {'include': include, 'spkts': spkts, 'spkinds': spkinds, 'timeRange': timeRange}
 
 
 ######################################################################################################################################################
@@ -1010,7 +1010,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig 
     if showFig: _showFigure()
 
-    return fig, histData, histoT
+    return fig, {'include': include, 'histData': histData, 'histoT': histoT, 'timeRange': timeRange}
 
 
 
@@ -1367,7 +1367,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # show fig 
         if showFig: _showFigure()
 
-    return fig, statData, gidsData, ynormsData
+    return fig, {'include': include, 'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
 
 
 
@@ -1519,7 +1519,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # show fig 
     if showFig: _showFigure()
 
-    return fig, allSignal, allPower, allFreqs
+    return fig, {'allSignal': allSignal, 'allPower': allPower, 'allFreqs':allFreqs}
 
 
 
@@ -1705,7 +1705,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # show fig 
     if showFig: _showFigure()
 
-    return figs
+    return figs, {'tracesData': tracesData, 'include': include}
 
 def invertDictMapping(d):
     """ Invert mapping of dictionary (i.e. map values to list of keys) """
@@ -1896,7 +1896,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             fig.printfile(filename)
 
 
-    return fig
+    return fig, {}
 
 
 ######################################################################################################################################################
@@ -2215,7 +2215,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs, data
+    return figs,  {'LFP': lfp, 'electrodes': electrodes, 'saveData': saveData}
 
 ######################################################################################################################################################
 ## Support function for plotConn() - calculate conn using data from sim object
@@ -2853,7 +2853,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return fig, {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy, 'includePre': includePre, 'includePost': includePost}
 
 
 ######################################################################################################################################################
@@ -2988,7 +2988,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     # show fig 
     if showFig: _showFigure()
 
-    return fig
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
@@ -3232,7 +3232,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
                     spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
                     spkts.extend(spktsNew)
@@ -3266,23 +3266,22 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
 
         spks2 = list(spkts)
 
-
     # time range
     if timeRange is None:
         if getattr(sim, 'cfg', None):
             timeRange = [0,sim.cfg.duration]
         else:
             timeRange = [0, max(spks1+spks2)]
-
+    
     histo1 = np.histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
     histoCount1 = histo1[0] 
 
     histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
     histoCount2 = histo2[0] 
 
-    fs = 1000/binSize
-    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, fs/2)
-
+    fs = int(1000/binSize)
+    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
+    
 
     # plot granger
     fig = -1
@@ -3312,7 +3311,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         # show fig 
         if showFig: _showFigure()
 
-    return F, Fx2y[0],Fy2x[0], Fxy[0], fig
+    return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
 
 
 
@@ -3414,4 +3413,4 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
     # show fig 
     if showFig: _showFigure()
     
-    return fig
+    return fig, {'data': species[region].states3d[:].mean(plane2mean[plane])}

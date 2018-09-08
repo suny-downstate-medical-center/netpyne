@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/stats.mod
+/usr/local/site/nrniv/local/mod/stats.mod

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/samnutils.mod
+/usr/local/site/nrniv/local/mod/samnutils.mod

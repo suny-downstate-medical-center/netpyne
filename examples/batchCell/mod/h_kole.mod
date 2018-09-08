@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/h_kole.mod
+/usr/local/site/nrniv/local/mod/h_kole.mod

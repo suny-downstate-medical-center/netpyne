@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/kBK.mod
+/usr/local/site/nrniv/local/mod/kBK.mod

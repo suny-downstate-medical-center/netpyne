@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/izhi2007a.mod
+/usr/local/site/nrniv/local/mod/izhi2007a.mod

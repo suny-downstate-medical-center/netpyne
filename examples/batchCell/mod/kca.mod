@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/kca.mod
+/usr/local/site/nrniv/local/mod/kca.mod

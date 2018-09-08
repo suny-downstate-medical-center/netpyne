@@ -7614,7 +7614,7 @@ def genLFP (lrec,lx,ly,lz,elx,ely,elz):
   vlfp.mul(1.0/(4.0*pi*sigma))
   return vlfp
   
-* 18dec02 Implementing RxD
+* 17Dec02 Implementing RxD
 ** celParams data model (inside cellParams)
 - cellParams['rule1'] (dict)
 -- ['rxd'] (dict)

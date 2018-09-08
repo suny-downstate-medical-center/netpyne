@@ -736,7 +736,7 @@ wait
             #                       Evolution strategy
             ####################################################################
             # Custom algorithm based on Krichmar's params
-            if self.evolCfg['evolAlgorithm'] == 'krichmarCustom':
+            if self.evolCfg['evolAlgorithm'] == 'custom':
                 ea = EC.EvolutionaryComputation(rand)
                 ea.selector = EC.selectors.tournament_selection
                 ea.variator = [EC.variators.uniform_crossover, nonuniform_bounds_mutation] 

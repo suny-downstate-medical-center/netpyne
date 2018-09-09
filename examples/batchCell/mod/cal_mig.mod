@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/cal_mig.mod
+/usr/local/site/nrniv/local/mod/cal_mig.mod

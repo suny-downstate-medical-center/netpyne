@@ -61,7 +61,7 @@ script:
     # LFP recording
     - cd ../LFPrecording
     - $NEURON_HOME/bin/nrnivmodl mod
-    - python cell_lfp.py -nogui
+    - python cell_lfp.py -nogui 
     # - cd ../RL_arm
     # - $NEURON_HOME/bin/nrnivmodl
     # - python main.py

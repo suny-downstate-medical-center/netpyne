@@ -8,8 +8,8 @@ def checkOutput(modelName, verbose=False):
 	expectedAll = {'numSyns': {}, 'numSpikes': {}}
 
 	# tut2 expected output 
-	expectedAll['numSyns']['tut2'] = 253
-	expectedAll['numSpikes']['tut2'] = 949
+	expectedAll['numSyns']['tut2'] = 252
+	expectedAll['numSpikes']['tut2'] = 944
 
 	# tut3 expected output 
 	expectedAll['numSyns']['tut3'] = 252
@@ -80,7 +80,7 @@ def checkOutput(modelName, verbose=False):
 		# numSpikes
 		if feature == 'numSpikes':
 			try:				
-				actual = len(sim.totalSpikes)
+				actual = sim.totalSpikes
 				assert expected[modelName] == actual
 			except:
 				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName]))

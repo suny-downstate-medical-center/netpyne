@@ -18,7 +18,7 @@ from .simFuncs import *
 from .neuromlFuncs import *
 from .wrappers import *
 from . import analysis
-from . import Network
+from .network import Network
 from .cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
 from .pop import Pop
 from . import utils

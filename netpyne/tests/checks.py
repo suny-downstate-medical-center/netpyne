@@ -15,6 +15,27 @@ def checkOutput(modelName, verbose=False):
 	expectedAll['numSyns']['tut3'] = 252
 	expectedAll['numSpikes']['tut3'] = 559
 
+	# tut4 expected output 
+	expectedAll['numSyns']['tut4'] = 78
+	expectedAll['numSpikes']['tut4'] = 1194
+
+	# tut5 expected output 
+	expectedAll['numSyns']['tut5'] = 6897
+	expectedAll['numSpikes']['tut5'] = 4696
+
+	# tut6 expected output 
+	expectedAll['numSyns']['tut6'] = 16
+	expectedAll['numSpikes']['tut6'] = 146
+
+	# tut7 expected output 
+	expectedAll['numSyns']['tut7'] = 2500
+	expectedAll['numSpikes']['tut7'] = 332
+
+	# tut_import expected output 
+	expectedAll['numSyns']['tut_import'] = 340
+	expectedAll['numSpikes']['tut_import'] = 2828
+
+
 	# compare all features
 	for feature, expected in expectedAll.iteritems():
 		# numCells
@@ -24,7 +45,7 @@ def checkOutput(modelName, verbose=False):
 					actual = len(sim.net.allPops[pop]['cellGids'])
 					assert expected[modelName][pop] == actual
 				except:
-					print('\nMismatch: model %s population %s %s is %s but expected value is %s' %(modelName, pop, feature, actual, expected[pop]))
+					print('\nMismatch: model %s population %s %s is %s but expected value is %s' %(modelName, pop, feature, actual, expected[modelName][pop]))
 					raise
 
 		# numConns
@@ -33,7 +54,7 @@ def checkOutput(modelName, verbose=False):
 				actual = sim.totalSynapses
 				assert expected[modelName] == actual
 			except:
-				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected))
+				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName]))
 				raise
 
 		# numCells
@@ -42,7 +63,7 @@ def checkOutput(modelName, verbose=False):
 				actual = len(sim.totalSpikes)
 				assert expected[modelName] == actual
 			except:
-				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected))
+				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName]))
 				raise
 
 	return True

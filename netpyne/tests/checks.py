@@ -35,6 +35,26 @@ def checkOutput(modelName, verbose=False):
 	expectedAll['numSyns']['tut_import'] = 340
 	expectedAll['numSpikes']['tut_import'] = 2828
 
+	# HHTut expected output 
+	expectedAll['numSyns']['HHTut'] = 1839
+	expectedAll['numSpikes']['HHTut'] = 2052
+
+	# HybridTut expected output 
+	expectedAll['numSyns']['HybridTut'] = 386
+	expectedAll['numSpikes']['HybridTut'] = 2713
+
+	# M1 expected output 
+	expectedAll['numSyns']['M1'] = 4843
+	expectedAll['numSpikes']['M1'] = 60272
+
+	# PTcell expected output 
+	expectedAll['numSyns']['PTcell'] = 1
+	expectedAll['numSpikes']['PTcell'] = 4
+
+	# cell_lfp expected output 
+	expectedAll['numSyns']['cell_lfp'] = 1
+	expectedAll['numSpikes']['cell_lfp'] = 1
+
 
 	# compare all features
 	for feature, expected in expectedAll.iteritems():
@@ -57,8 +77,8 @@ def checkOutput(modelName, verbose=False):
 				print('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName]))
 				raise
 
-		# numCells
-		if feature == 'numCells':
+		# numSpikes
+		if feature == 'numSpikes':
 			try:				
 				actual = len(sim.totalSpikes)
 				assert expected[modelName] == actual

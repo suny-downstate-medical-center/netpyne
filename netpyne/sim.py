@@ -16,7 +16,7 @@ if '-nogui' in sys.argv:
 # import all required modules
 from .simFuncs import *
 from .neuromlFuncs import *
-from wrappers import *
+from .wrappers import *
 from . import analysis
 from .network import Network
 from .cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource

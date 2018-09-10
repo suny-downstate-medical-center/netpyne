@@ -19,7 +19,8 @@ from neuron import h # Import NEURON
 ###############################################################################
 
 class Pop (object):
-    ''' Python class used to instantiate the network population '''
+    ''' Python class to instantiate the network population '''
+    
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['pop'] = label
@@ -29,6 +30,7 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
+        ''' distribute cells across compute nodes using round-robin'''
         import sim
             
         hostCells = {}
@@ -47,8 +49,8 @@ class Pop (object):
         return hostCells
 
 
-    # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
+        '''Function to instantiate Cell objects based on the characteristics of this population'''
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -357,17 +359,6 @@ class Pop (object):
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
 
-    def __getstate__ (self): 
-        import sim
-        
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
-        odict['cellModelClass'] = str(odict['cellModelClass'])
-        del odict['rand']
-        return odict
-
-
     def calcRelativeSegCoords(self):   
         """Calculate segment coordinates from 3d point coordinates
         Used for LFP calc (one per population cell; assumes same morphology)"""
@@ -436,4 +427,16 @@ class Pop (object):
         self._morphSegCoords['d1'] = d1
 
         return self._morphSegCoords
+
+
+    def __getstate__ (self): 
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        
+        import sim
+        
+        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
+        odict['cellModelClass'] = str(odict['cellModelClass'])
+        del odict['rand']
+        return odict
 

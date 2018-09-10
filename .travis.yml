@@ -24,7 +24,7 @@ virtualenv:
 install:
     - pip install scipy
     # Install OMV to facilitate installation of packages below
-    - pip install git+https://github.com/Neurosim-lab/osb-model-validation
+    - pip install git+https://github.com/OpenSourceBrain/osb-model-validation
     # Need to pre install NEURON so nrnivmodl can be run targeting mod files in a different directory
     - omv install NEURON
     # Need to pre install pyNeuroML to test export to NeuroML 2

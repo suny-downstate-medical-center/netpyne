@@ -24,4 +24,5 @@ from .pop import Pop
 from . import utils
 from neuron import h
 from . import tests
+from .tests.checks import checkOutput
 from .tests.tests import SimTestObj

@@ -27,3 +27,9 @@ This example generates a simple network with 3 populations and 3 connectivity ru
 - **out_V_cell0.png**: Voltage trace recodrding of cell 0.
 
 - **out_net2D.png**: 2D representation of network cells and connections.
+
+## Data structure
+
+- **netParams** and **simConfig**: See metadata description here https://github.com/Neurosim-lab/netpyne/blob/development/netpyne/metadata/metadata.py
+
+- **net**: See http://neurosimlab.com/netpyne/reference.html#netpyne-data-model-structure-of-instantiated-network-and-output-data

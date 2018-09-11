@@ -1,5 +1,11 @@
 # Version 0.8.0
 
+- Added option for filename to saveData()
+
+- Removed pop cellModelClass when saving
+
+- Removed cell h object keys when saving
+
 - Added support for evolutionary algorithm optimization (via Inspyred) and usage example
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)

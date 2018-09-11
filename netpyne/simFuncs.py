@@ -8,7 +8,7 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'copyRemoveItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
     'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
     'rename'])  # misc/utilities
 
@@ -554,6 +554,40 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
                 copyReplaceItemObj(val, keystart, newval, objCopy[key])
             elif key.startswith(keystart):
                 objCopy[key] = newval
+            else:
+                objCopy[key] = val
+    return objCopy
+
+
+###############################################################################
+### Remove item with specific key from dict or list (used to remove h objects)
+###############################################################################
+def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
+    if type(obj) == list:
+        if objCopy=='ROOT':
+            objCopy = []
+        for item in obj:
+            if isinstance(item, list):
+                objCopy.append([])
+                copyRemoveItemObj(item, keystart, objCopy[-1])
+            elif isinstance(item, (dict, Dict)):
+                objCopy.append({})
+                copyRemoveItemObj(item, keystart,  objCopy[-1])
+            else:
+                objCopy.append(item)
+
+    elif isinstance(obj, (dict, Dict)):
+        if objCopy == 'ROOT':
+            objCopy = Dict()
+        for key,val in obj.iteritems():
+            if type(val) in [list]:
+                objCopy[key] = []
+                copyRemoveItemObj(val, keystart, objCopy[key])
+            elif isinstance(val, (dict, Dict)):
+                objCopy[key] = {}
+                copyRemoveItemObj(val, keystart, objCopy[key])
+            elif key.startswith(keystart):
+                objCopy.pop(key, None)
             else:
                 objCopy[key] = val
     return objCopy
@@ -1526,7 +1560,7 @@ def distributedSaveHDF5():
 
     sim.compactConnFormat()
     conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
-    conns = sim.copyReplaceItemObj(conns, keystart='h', newval=[]) 
+    conns = sim.copyRemoveItemObj(conns, keystart='h', newval=[]) 
     connFormat = ['postGid']+sim.cfg.compactConnFormat
     with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
         hf.create_dataset('conns', data = conns)

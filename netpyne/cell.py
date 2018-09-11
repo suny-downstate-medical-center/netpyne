@@ -238,7 +238,7 @@ class Cell (object):
         import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyRemoveItemObj(odict, keystart='h') #, newval=None)  # replace h objects with None so can be pickled
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 

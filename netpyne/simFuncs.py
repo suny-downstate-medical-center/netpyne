@@ -1555,12 +1555,14 @@ def loadHDF5(filename):
 ###############################################################################
 ### Save data
 ###############################################################################
-def saveData (include = None):
+def saveData (include = None, filename = None):
     import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
     else: needGather = False
     if needGather: gatherData()
+
+    if filename: sim.cfg.filename = filename
 
     if sim.rank == 0:
         timing('start', 'saveTime')

@@ -935,6 +935,8 @@ class Network (object):
             randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
             # postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
             # postCellsSample[:] = [randSample[divergence] if x == preCellGid else x for x in postCellsSample]  # remove post gid
+
+            # TODO: check whether the preCellGid alternative is meant to be a randSample value rather than pulled from postCellsTagsKey
             postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]):0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
             # postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags

@@ -61,4 +61,4 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 
 # check model output
-sim.tests.checks.checkModel('tut3')
+sim.checkOutput('tut3')

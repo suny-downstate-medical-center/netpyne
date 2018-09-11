@@ -33,5 +33,5 @@ cfg.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 # Analysis and plotting 
 cfg.analysis['plotRaster'] = {'saveFig': 'out_raster.png'}  # Plot raster
 cfg.analysis['plotTraces'] = {'include': [0], 'saveFig': 'out_V_cell0.png'}  # Plot raster
-cfg.analysis['plot2Dnet'] = {'saveFig': 'out_net2D.png'}  # Plot 2D net cells and connections
+cfg.analysis['plot2Dnet'] = {'saveFig': 'out_net2D.png', 'figSize': (8,8)}  # Plot 2D net cells and connections
 

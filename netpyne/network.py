@@ -918,7 +918,13 @@ class Network (object):
         if sim.cfg.verbose: print 'Generating set of divergent connections (rule: %s) ...' % (connParam['label'])
          
         # get list of params that have a lambda function
-        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+        paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
+
+        # copy the vars into args immediately and work out which keys are associated with lambda functions only once per method
+        funcKeys = {}
+        for paramStrFunc in paramsStrFunc:
+            connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
+            funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
@@ -929,12 +935,17 @@ class Network (object):
             postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
             # postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             # for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
+
             for postCellGid, postCellTags in postCellsTags.iteritems():
                 if postCellGid not in postCellsSample or postCellGid not in self.lid2gid:
                     continue
                 
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                    connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}  
+                    # connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].iteritems()}
+
+                    # update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict
+                    for funcKey in funcKeys[paramStrFunc]:
+                        connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc+'Vars'][funcKey](preCellTags,postCellTags)
             
                 if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection

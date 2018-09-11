@@ -645,8 +645,11 @@ class NetParams (object):
             print('Error adding weightNorm: netParams.cellParams does not contain %s' % (label))
             return
 
-        with open(fileName, 'r') as fileObj:
-            weightNorm = pickle.load(fileObj)
+        with open(fileName, 'rb') as fileObj:
+            u = pickle._Unpickler(fileObj)
+            u.encoding = 'latin1'
+            weightNorm = u.load()
+            # weightNorm = pickle.load(fileObj)
 
         try:
             somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')),None)
@@ -672,7 +675,7 @@ class NetParams (object):
             return
 
         if ext == 'pkl':
-            with open(fileName, 'w') as fileObj:
+            with open(fileName, 'wb') as fileObj:
                 pickle.dump(cellRule, fileObj)
         elif ext == 'json':
             with open(fileName, 'w') as fileObj:
@@ -684,8 +687,10 @@ class NetParams (object):
 
         ext = os.path.basename(fileName).split('.')[1]
         if ext == 'pkl':
-            with open(fileName, 'r') as fileObj:
-                cellRule = pickle.load(fileObj)
+            with open(fileName, 'rb') as fileObj:
+                u = pickle._Unpickler(fileObj)
+                u.encoding = 'latin1'
+                cellRule = u.load()
         elif ext == 'json':
             with open(fileName, 'r') as fileObj:
                 cellRule = json.load(fileObj)

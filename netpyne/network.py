@@ -926,13 +926,17 @@ class Network (object):
             connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
             funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
+        postCellsTagsKeys = postCellsTags.keys()    # converted to list only once (in Python 3, need to wrap it with list function)
+
         for preCellGid, preCellTags in preCellsTags.iteritems():  # for each presyn cell
             divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
             divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
-            postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
-            postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
+            # postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
+            # postCellsSample[:] = [randSample[divergence] if x == preCellGid else x for x in postCellsSample]  # remove post gid
+            postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]):0
+                               for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
             # postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.iteritems() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
             # for postCellGid, postCellTags in postCellsDiv.iteritems():  # for each postsyn cell
 

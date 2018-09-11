@@ -1620,56 +1620,58 @@ def saveData (include = None, filename = None):
         if dataSave:
             if sim.cfg.timestampFilename:
                 timestamp = time()
-                timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
-                sim.cfg.filename = sim.cfg.filename+'-'+timestampStr
-
+                timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+            else:
+                timestampStr = ''
+            
+            filePath = sim.cfg.filename + timestampStr
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
                 dataSave = replaceDictODict(dataSave)
-                print('Saving output as %s ... ' % (sim.cfg.filename+'.pkl'))
-                with open(sim.cfg.filename+'.pkl', 'wb') as fileObj:
+                print('Saving output as %s ... ' % (file_path+'.pkl'))
+                with open(file_path+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to dpk file
             if sim.cfg.saveDpk:
                 import gzip
-                print('Saving output as %s ... ' % (sim.cfg.filename+'.dpk'))
-                fn=sim.cfg.filename #.split('.')
-                gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
+                print('Saving output as %s ... ' % (filePath+'.dpk'))
+                #fn=filePath #.split('.')
+                gzip.open(filePath, 'wb').write(pk.dumps(dataSave)) # write compressed string
                 print('Finished saving!')
 
             # Save to json file
             if sim.cfg.saveJson:
                 import json
                 #dataSave = replaceDictODict(dataSave)  # not required since json saves as dict
-                print('Saving output as %s ... ' % (sim.cfg.filename+'.json '))
-                with open(sim.cfg.filename+'.json', 'w') as fileObj:
+                print('Saving output as %s ... ' % (filePath+'.json '))
+                with open(filePath+'.json', 'w') as fileObj:
                     json.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to mat file
             if sim.cfg.saveMat:
                 from scipy.io import savemat
-                print('Saving output as %s ... ' % (sim.cfg.filename+'.mat'))
-                savemat(sim.cfg.filename+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                print('Saving output as %s ... ' % (filePath+'.mat'))
+                savemat(filePath+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
                 dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
                 import hdf5storage
-                print('Saving output as %s... ' % (sim.cfg.filename+'.hdf5'))
-                hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
+                print('Saving output as %s... ' % (filePath+'.hdf5'))
+                hdf5storage.writes(dataSaveUTF8, filename=filePath+'.hdf5')
                 print('Finished saving!')
 
             # Save to CSV file (currently only saves spikes)
             if sim.cfg.saveCSV:
                 if 'simData' in dataSave:
                     import csv
-                    print('Saving output as %s ... ' % (sim.cfg.filename+'.csv'))
-                    writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
+                    print('Saving output as %s ... ' % (filePath+'.csv'))
+                    writer = csv.writer(open(filePath+'.csv', 'wb'))
                     for dic in dataSave['simData']:
                         for values in dic:
                             writer.writerow(values)
@@ -1705,7 +1707,7 @@ def saveData (include = None, filename = None):
 
             # return full path
             import os
-            return os.getcwd()+'/'+sim.cfg.filename
+            return os.getcwd() + '/' + filePath
 
         else:
             print('Nothing to save')

@@ -7,11 +7,7 @@ Defines Network class which contains cell objects and network-realated methods
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy 
-from time import time, sleep
-from numbers import Number
-from copy import copy
-from specs import ODict
+from ..specs import ODict
 from neuron import h  # import NEURON
 
 class Network (object):
@@ -54,7 +50,7 @@ class Network (object):
     # Instantiate network populations (objects of class 'Pop')
     # -----------------------------------------------------------------------------
     def createPops (self):
-        import sim
+        from .. import sim
 
         for popLabel, popParam in self.params.popParams.iteritems(): # for each set of population paramseters 
             self.pops[popLabel] = sim.Pop(popLabel, popParam)  # instantiate a new object of class Pop and add to list pop
@@ -65,7 +61,7 @@ class Network (object):
     # Create Cells
     # -----------------------------------------------------------------------------
     def createCells (self):
-        import sim
+        from .. import sim
 
         sim.pc.barrier()
         sim.timing('start', 'createTime')
@@ -102,7 +98,7 @@ class Network (object):
     # -----------------------------------------------------------------------------
     # Import subconns methods
     # -----------------------------------------------------------------------------
-    from subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+    from subconns import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
     # Import shape methods

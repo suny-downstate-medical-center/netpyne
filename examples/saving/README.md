@@ -16,6 +16,8 @@ This example generates a simple network with 3 populations and 3 connectivity ru
 
 - **out_netInstanceCompact.json**: JSON with network instance using compact format: each conn is stored as a list instead of a dict. Note: connections are included within each postsynaptic cell.
 
+- **out_netParams_netInstance.json**: JSON with both network params and network instance
+
 - **out_simConfig.json**: JSON with simulation configuration options.
 
 - **out_simData.json**: JSON with simulation ouput data, including spike times and voltage traces.

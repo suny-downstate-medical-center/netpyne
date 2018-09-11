@@ -1,4 +1,7 @@
-# Saving different network components and their output format 
+# Example of saving and output data formats
+
+This example generates a simple network with 3 populations and 3 connectivity rules. It then simulates the networ, plots some figures, and saves teh differnet model components to JSON.
+
 ## List of files
 
 - **init.py**: python script to create network, run simulation, generate output figs, and save network components to different json files.

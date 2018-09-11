@@ -31,4 +31,4 @@ sim.saveData(include=['simData'], filename='out_simData')
 # save network instance with compact conn format (list instead of dict)
 sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
 sim.gatherData()
-sim.saveData(include=['net'], filename='out_netInstance_compact')
+sim.saveData(include=['net'], filename='out_netInstanceCompact')

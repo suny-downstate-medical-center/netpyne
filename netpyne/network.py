@@ -1006,15 +1006,20 @@ class Network (object):
         paramStrFunc = self.connStringFuncParams
         finalParam = {}
 
-        # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
-        args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
-        if 'rand' in args and connParam['connFunc'] not in ['convConn']:
-            self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
+        # # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
+        # args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
+        # if 'rand' in args and connParam['connFunc'] not in ['convConn']:
+        #     self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
+
+        randSeeded = False
 
         for param in paramStrFunc:
             if param+'List' in connParam:
                 finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
             elif param+'Func' in connParam:
+                if not randSeeded and connParam['connFunc'] not in ['convConn'] and 'rand' in connParam[param+'FuncArgs']:
+                    self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
+                    randSeeded = True
                 finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
             else:
                 finalParam[param] = connParam.get(param)

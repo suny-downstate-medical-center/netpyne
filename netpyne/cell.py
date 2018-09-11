@@ -1180,7 +1180,7 @@ class CompartCell (Cell):
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
+        elif isinstance(sim.net.params.scaleConnWeightModels, dict) and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params.scaleConnWeightModels[self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params.scaleConnWeight # use global scale factor
@@ -1613,7 +1613,7 @@ class PointCell (Cell):
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
+        elif isinstance(sim.net.params.scaleConnWeightModels, dict) and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params.scaleConnWeightModels[self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params.scaleConnWeight # use global scale factor

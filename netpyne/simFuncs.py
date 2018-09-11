@@ -1639,7 +1639,9 @@ def saveData (include = None, filename = None):
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
         
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
-        if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
+        if 'netParams' in include: 
+            sim.net.params.__dict__.pop('_labelid', None)
+            net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
         if 'netCells' in include: net['cells'] = sim.net.allCells
         if 'netPops' in include: net['pops'] = sim.net.allPops

@@ -424,7 +424,7 @@ class NetParams (object):
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
         self.scaleConnWeightNetStims = 1 # Connection weight scale factor for NetStims
-        self.scaleConnWeightModels = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
+        self.scaleConnWeightModels = False # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
         self.defaultWeight = 1  # default connection weight
         self.defaultDelay = 1  # default connection delay (ms)
         self.defaultThreshold = 10  # default Netcon threshold (mV)

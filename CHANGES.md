@@ -12,6 +12,10 @@
 
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
 
+- Fixed bug: removed '\_labelid' from netParams when saving
+
+- Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
+
 
 # Version 0.7.9
 

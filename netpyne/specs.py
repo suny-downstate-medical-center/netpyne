@@ -7,7 +7,6 @@ Contributors: salvadordura@gmail.com
 
 from collections import OrderedDict
 from netpyne import utils
-import sys
 
 ###############################################################################
 # Dict class (allows dot notation for dicts)

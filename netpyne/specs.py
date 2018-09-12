@@ -639,15 +639,12 @@ class NetParams (object):
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
-        import pickle
+        import pickle, sys
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
             print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
             return
-
-        # with open(fileName, 'r') as fileObj:
-        #     weightNorm = pickle.load(fileObj)
 
         with open(fileName, 'rb') as fileObj:
             if sys.version_info[0] == 2:
@@ -679,7 +676,7 @@ class NetParams (object):
             return
 
         if ext == 'pkl':
-            with open(fileName, 'w') as fileObj:
+            with open(fileName, 'wb') as fileObj:
                 pickle.dump(cellRule, fileObj)
         elif ext == 'json':
             with open(fileName, 'w') as fileObj:
@@ -687,12 +684,15 @@ class NetParams (object):
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle, json, os
+        import pickle, json, os, sys
 
         ext = os.path.basename(fileName).split('.')[1]
         if ext == 'pkl':
-            with open(fileName, 'r') as fileObj:
-                cellRule = pickle.load(fileObj)
+            with open(fileName, 'rb') as fileObj:
+                if sys.version_info[0] == 2:
+                    cellRule = pickle.load(fileObj)
+                else:
+                    cellRule = pickle.load(fileObj, encoding='latin1')
         elif ext == 'json':
             with open(fileName, 'r') as fileObj:
                 cellRule = json.load(fileObj)

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/savedist.mod
+/usr/local/site/nrniv/local/mod/savedist.mod

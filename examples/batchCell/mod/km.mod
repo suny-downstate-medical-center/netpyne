@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/km.mod
+/usr/local/site/nrniv/local/mod/km.mod

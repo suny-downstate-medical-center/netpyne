@@ -842,7 +842,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # show fig
     if showFig: _showFigure()
 
-    return fig
+    return fig, {}
 
 
 ######################################################################################################################################################
@@ -1024,7 +1024,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig
     if showFig: _showFigure()
 
-    return fig, histData, histoT
+    return fig, {'histData': histData, 'histoT': histoT}
 
 
 
@@ -1381,7 +1381,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # show fig
         if showFig: _showFigure()
 
-    return fig, statData, gidsData, ynormsData
+    return fig, {'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
 
 
 
@@ -1533,7 +1533,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # show fig
     if showFig: _showFigure()
 
-    return fig, allSignal, allPower, allFreqs
+    return fig, {'allSignal':allSignal, 'allPower':allPower, 'allFreqs':allFreqs}
 
 
 
@@ -1719,7 +1719,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # show fig
     if showFig: _showFigure()
 
-    return figs
+    return figs, {}
 
 def invertDictMapping(d):
     """ Invert mapping of dictionary (i.e. map values to list of keys) """
@@ -1910,7 +1910,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             fig.printfile(filename)
 
 
-    return fig
+    return fig, {}
 
 
 ######################################################################################################################################################
@@ -2214,7 +2214,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             cvals.extend(trSegs)
 
         includePost = [c.gid for c in sim.net.compartCells]
-        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)
+        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
         figs.append(fig)
 
 
@@ -2867,7 +2867,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # show fig
     if showFig: _showFigure()
 
-    return fig
+    return fig, {}
 
 
 ######################################################################################################################################################
@@ -3002,7 +3002,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     # show fig
     if showFig: _showFigure()
 
-    return fig
+    return fig, {}
 
 ######################################################################################################################################################
 ## Calculate number of disynaptic connections
@@ -3326,7 +3326,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         # show fig
         if showFig: _showFigure()
 
-    return F, Fx2y[0],Fy2x[0], Fxy[0], fig
+    return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
 
 
 
@@ -3402,7 +3402,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     # show fig
     if showFig: _showFigure()
 
-    return peaks, fig
+    return fig, {'peaks': peaks}
 
 ######################################################################################################################################################
 ## Plot RxD concentration
@@ -3427,5 +3427,5 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
 
     # show fig
     if showFig: _showFigure()
-
-    return fig
+    
+    return fig, {}

@@ -747,7 +747,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     numCells = len(cells)
     firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
-
+    
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
@@ -756,10 +756,10 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
                 if numCellSpks == 0:
                     avgRates[pop] = 0
                 else:
-                    avgRates[pop] = len([spkid for spkid in spkinds[:numCellSpks-1] if sim.net.allCells[sortedGids[int(spkid)]]['tags']['pop']==pop])/popNum/tsecs
+                    avgRates[pop] = len([spkid for spkid in sel['spkind'].iloc[:numCellSpks-1] if df['pop'].iloc[int(spkid)]==pop])/popNum/tsecs
         if numNetStims:
             popNumCells[-1] = numNetStims
-            avgRates['NetStims'] = len([spkid for spkid in spkinds[numCellSpks:]])/numNetStims/tsecs
+            avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
     # Plot synchrony lines
     if syncLines:

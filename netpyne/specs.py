@@ -7,6 +7,7 @@ Contributors: salvadordura@gmail.com
 
 from collections import OrderedDict
 from netpyne import utils
+import sys
 
 ###############################################################################
 # Dict class (allows dot notation for dicts)
@@ -645,8 +646,14 @@ class NetParams (object):
             print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
             return
 
-        with open(fileName, 'r') as fileObj:
-            weightNorm = pickle.load(fileObj)
+        # with open(fileName, 'r') as fileObj:
+        #     weightNorm = pickle.load(fileObj)
+
+        with open(fileName, 'rb') as fileObj:
+            if sys.version_info[0] == 2:
+                weightNorm = pickle.load(fileObj)
+            else:
+                weightNorm = pickle.load(fileObj, encoding='latin1')
 
         try:
             somaSec = next((k for k in weightNorm.keys() if k.startswith('soma')),None)

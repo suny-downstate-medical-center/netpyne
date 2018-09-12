@@ -399,8 +399,11 @@ def _loadFile (filename):
     if ext == 'pkl':
         import pickle
         print(('Loading file %s ... ' % (filename)))
-        with open(filename, 'r') as fileObj:
-            data = pickle.load(fileObj)
+        with open(filename, 'rb') as fileObj:
+            if sys.version_info[0] == 2:
+                data = pickle.load(fileObj)
+            else:
+                data = pickle.load(fileObj, encoding='latin1')
 
     # load dpk file
     elif ext == 'dpk':

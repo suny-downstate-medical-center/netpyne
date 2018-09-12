@@ -7,6 +7,7 @@ Contributors: salvadordura@gmail.com
 
 from collections import OrderedDict
 from netpyne import utils
+import sys
 
 ###############################################################################
 # Dict class (allows dot notation for dicts)
@@ -638,7 +639,7 @@ class NetParams (object):
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
-        import pickle
+        import pickle, sys
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
@@ -646,10 +647,10 @@ class NetParams (object):
             return
 
         with open(fileName, 'rb') as fileObj:
-            u = pickle._Unpickler(fileObj)
-            u.encoding = 'latin1'
-            weightNorm = u.load()
-            # weightNorm = pickle.load(fileObj)
+            if sys.version_info[0] == 2:
+                weightNorm = pickle.load(fileObj)
+            else:
+                weightNorm = pickle.load(fileObj, encoding='latin1')
 
         try:
             somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')),None)
@@ -683,14 +684,15 @@ class NetParams (object):
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle, json, os
+        import pickle, json, os, sys
 
         ext = os.path.basename(fileName).split('.')[1]
         if ext == 'pkl':
             with open(fileName, 'rb') as fileObj:
-                u = pickle._Unpickler(fileObj)
-                u.encoding = 'latin1'
-                cellRule = u.load()
+                if sys.version_info[0] == 2:
+                    cellRule = pickle.load(fileObj)
+                else:
+                    cellRule = pickle.load(fileObj, encoding='latin1')
         elif ext == 'json':
             with open(fileName, 'r') as fileObj:
                 cellRule = json.load(fileObj)

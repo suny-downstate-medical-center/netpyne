@@ -1,7 +1,7 @@
 """
-analysis.py
+analysis/network.py
 
-Functions to plot and analyse results
+Functions to plot and analyze connectivity-related results
 
 Contributors: salvadordura@gmail.com
 """
@@ -12,7 +12,8 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
-from utils import exception
+from utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags, list_of_dict_unique_by_index
+from utilist import _saveFigData, _showFigure
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Support function for plotConn() - calculate conn using data from sim object
@@ -786,6 +787,192 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     if showFig: _showFigure()
 
     return fig, {}
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot cell shape
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
+    iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
+    ''' 
+    Plot 3D cell shape using NEURON Interview PlotShape
+        - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
+        when plotting connections (default: ['all'])
+        - includePost: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells to show shape of (default: ['all'])
+        - showSyns (True|False): Show synaptic connections in 3D view (default: False)
+        - showElectrodes (True|False): Show LFP electrodes in 3D view (default: False)
+        - synStyle: Style of marker to show synapses (default: '.') 
+        - dist: 3D distance (like zoom) (default: 0.6)
+        - synSize: Size of marker to show synapses (default: 3)
+        - cvar: ('numSyns'|'weightNorm') Variable to represent in shape plot (default: None)
+        - cvals: List of values to represent in shape plot; must be same as num segments (default: None)
+        - iv: Use NEURON Interviews (instead of matplotlib) to show shape plot (default: None)
+        - ivprops: Dict of properties to plot using Interviews (default: None)
+        - includeAxon: Include axon in shape plot (default: True)
+        - bkgColor (list/tuple with 4 floats): RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (default: None) 
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+
+    import sim
+    from neuron import h
+
+    print('Plotting 3D cell shape ...')
+
+    cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
+    cellsPost = sim.getCellsList(includePost)
+
+    if not hasattr(sim.net, 'compartCells'): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
+    sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
+
+    if not iv: # plot using Python instead of interviews
+        from mpl_toolkits.mplot3d import Axes3D
+        from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
+        
+        # create secList from include
+        
+        secs = None
+
+        # Set cvals and secs
+        if not cvals and cvar:
+            cvals = []
+            secs = []
+            # weighNorm
+            if cvar == 'weightNorm':
+                for cellPost in cellsPost:
+                    cellSecs = cellPost.secs.values() if includeAxon else [s for s in cellPost.secs.values() if 'axon' not in s['hSec'].hname()] 
+                    for sec in cellSecs:
+                        if 'weightNorm' in sec:
+                            secs.append(sec['hSec'])
+                            cvals.extend(sec['weightNorm'])
+
+                cvals = np.array(cvals)
+                cvals = cvals/min(cvals)
+
+            # numSyns
+            elif cvar == 'numSyns':
+                for cellPost in cellsPost:
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.iteritems() if 'axon' not in s['hSec'].hname()}
+                    for secLabel,sec in cellSecs.iteritems():
+                        nseg=sec['hSec'].nseg
+                        nsyns = [0] * nseg
+                        secs.append(sec['hSec'])
+                        conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
+                        for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
+                        cvals.extend(nsyns)
+
+                cvals = np.array(cvals)
+
+        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in cellPost.secs.values()]
+        if not includeAxon:         
+            secs = [sec for sec in secs if 'axon' not in sec.hname()]
+
+        # Plot shapeplot
+        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
+        fig=plt.figure(figsize=figSize)
+        shapeax = plt.subplot(111, projection='3d')
+        shapeax.elev=90 # 90 
+        shapeax.azim=-90 # -90
+        shapeax.dist=dist*shapeax.dist
+        plt.axis('equal')
+        cmap=plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
+        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        if not cvals==None and len(cvals)>0: 
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
+            sm._A = []  # fake up the array of the scalar mappable
+            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
+
+        if bkgColor:
+            shapeax.w_xaxis.set_pane_color(bkgColor)
+            shapeax.w_yaxis.set_pane_color(bkgColor)
+            shapeax.w_zaxis.set_pane_color(bkgColor)
+        #shapeax.grid(False)
+
+        # Synapses
+        if showSyns:
+            synColor='red'
+            for cellPost in cellsPost:
+                for sec in cellPost.secs.values():
+                    for synMech in sec['synMechs']:
+                        morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+        # Electrodes
+        if showElectrodes:
+            ax = plt.gca()
+            colorOffset = 0
+            if 'avg' in showElectrodes:
+                showElectrodes.remove('avg')
+                colorOffset = 1
+            coords = sim.net.recXElectrode.pos.T[np.array(showElectrodes).astype(int),:]
+            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[colorOffset:len(coords)+colorOffset],
+                marker='v', depthshade=False, edgecolors='k', linewidth=2)
+            for i in range(coords.shape[0]):
+                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
+            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
+
+        #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
+        shapeax.set_xticklabels([])
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_shape.png'
+            plt.savefig(filename, dpi=dpi)
+
+        # show fig 
+        if showFig: _showFigure()
+
+    else:  # Plot using Interviews
+        # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
+        from neuron import gui
+        fig = h.Shape()
+        secList = h.SectionList()
+        if not ivprops:
+            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'O', 'siz':5}
+        
+        for cell in [c for c in cellsPost]: 
+            for sec in cell.secs.values():
+                if 'axon' in sec['hSec'].hname() and not includeAxon: continue
+                sec['hSec'].push()
+                secList.append()
+                h.pop_section()
+                if showSyns:
+                    for synMech in sec['synMechs']:
+                        if synMech['hSyn']:
+                            # find pre pop using conn[preGid]
+                            # create dict with color for each pre pop; check if exists; increase color counter
+                            # colorsPre[prePop] = colorCounter
+
+                            # find synMech using conn['loc'], conn['sec'] and conn['synMech']
+                            fig.point_mark(synMech['hSyn'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
+
+        fig.observe(secList)
+        fig.color_list(secList, ivprops['colorSecs'])
+        fig.flush()
+        fig.show(0) # show real diam
+            # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'shape.ps'
+            fig.printfile(filename)
+
+
+    return fig, {}
+
+
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Calculate number of disynaptic connections

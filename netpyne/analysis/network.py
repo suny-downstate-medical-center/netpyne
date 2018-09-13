@@ -12,7 +12,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
-from utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags, list_of_dict_unique_by_index
+from utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from utilist import _saveFigData, _showFigure
 
 # -------------------------------------------------------------------------------------------------------------------

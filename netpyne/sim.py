@@ -17,7 +17,7 @@ if '-nogui' in sys.argv:
 from .simFuncs import *
 from .neuromlFuncs import *
 from .wrappers import *
-from . import analysis
+from .analysis import analysis
 from .network.network import Network
 from .cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
 from .pop import Pop

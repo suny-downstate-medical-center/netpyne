@@ -9,7 +9,7 @@ Contributors: salvadordura@gmail.com
 from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON
-from specs import Dict
+from ..specs import Dict
 
 
 ###############################################################################

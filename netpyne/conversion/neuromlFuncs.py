@@ -29,7 +29,7 @@ except ImportError:
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-import specs
+from .. import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2

@@ -8,9 +8,9 @@ Contributors: salvadordura@gmail.com
 
 from copy import deepcopy
 from neuron import h # Import NEURON
-from specs import Dict
 import numpy as np
 from .cell import Cell
+from ..specs import Dict
 
 
 ###############################################################################

@@ -20,17 +20,14 @@ from neuron import h
 from .simFuncs import * 
 
 # import cell classes
-from .cell.compartCell import compartCell
-from .cell.pointCell import pointCell
-from .cell.NML2Cell import NML2Cell
-from .cell.NML2SpikeSource import NML2SpikeSource
+from .cell import CompartCell, PointCell, NML2Cell, NML2SpikeSource
 
 # import Network and Pop classes
-from .network.network import Network 
-from .network.pop import Pop 
+from .network import Network 
+from .pop import Pop 
 
 # import analysis-related module
-from .analysis import analysis 
+import analysis
 
 # import wrapper functions
 from .wrappers import *
@@ -44,4 +41,4 @@ from .tests.checks import checkOutput
 from .tests.tests import SimTestObj
 
 # import export/import-related functions
-from .conversion.neuroml import exportNeuroML2, importNeuroML2
+from .conversion.neuromlFuncs import * # exportNeuroML2, importNeuroML2

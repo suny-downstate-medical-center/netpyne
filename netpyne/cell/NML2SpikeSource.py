@@ -6,8 +6,8 @@ Contains pointCell class
 Contributors: salvadordura@gmail.com
 """
 from neuron import h # Import NEURON
-from specs import Dict
 from .compartCell import CompartCell
+from ..specs import Dict
 
 
 ###############################################################################

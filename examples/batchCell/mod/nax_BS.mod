@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/nax_BS.mod
+/usr/local/site/nrniv/local/mod/nax_BS.mod

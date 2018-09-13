@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/kv.mod
+/usr/local/site/nrniv/local/mod/kv.mod

@@ -238,7 +238,7 @@ class Cell (object):
         import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.copyReplaceItemObj(odict, keystart='h', newval=None)  # replace h objects with None so can be pickled
+        odict = sim.copyRemoveItemObj(odict, keystart='h') #, newval=None)  # replace h objects with None so can be pickled
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict
 
@@ -1180,7 +1180,7 @@ class CompartCell (Cell):
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
+        elif isinstance(sim.net.params.scaleConnWeightModels, dict) and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params.scaleConnWeightModels[self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params.scaleConnWeight # use global scale factor
@@ -1613,7 +1613,7 @@ class PointCell (Cell):
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
+        elif isinstance(sim.net.params.scaleConnWeightModels, dict) and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None:
             scaleFactor = sim.net.params.scaleConnWeightModels[self.tags['cellModel']]  # use scale factor specific for this cell model
         else:
             scaleFactor = sim.net.params.scaleConnWeight # use global scale factor

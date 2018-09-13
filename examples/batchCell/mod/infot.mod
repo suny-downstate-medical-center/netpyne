@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/infot.mod
+/usr/local/site/nrniv/local/mod/infot.mod

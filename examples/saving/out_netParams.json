@@ -1,0 +1,191 @@
+{
+  "netpyne_version": "0.7.9",
+  "net": {
+    "params": {
+      "defineCellShapes": false,
+      "connParams": {
+        "E->RS": {
+          "preConds": {
+            "pop": "Epop"
+          },
+          "probability": 0.1,
+          "weight": 0.02,
+          "delay": 5,
+          "synMech": "AMPA",
+          "postConds": {
+            "pop": "RSpop"
+          }
+        },
+        "E->FS": {
+          "preConds": {
+            "pop": "Epop"
+          },
+          "probability": 0.1,
+          "weight": 0.02,
+          "delay": 5,
+          "synMech": "AMPA",
+          "postConds": {
+            "cellType": "FS"
+          }
+        },
+        "I->E": {
+          "preConds": {
+            "cellType": [
+              "RS",
+              "FS"
+            ]
+          },
+          "probability": 0.2,
+          "weight": 0.1,
+          "delay": 5,
+          "synMech": "GABA",
+          "postConds": {
+            "pop": "Epop"
+          }
+        }
+      },
+      "scaleConnWeightNetStims": 1,
+      "popParams": {
+        "Epop": {
+          "cellModel": "HH",
+          "cellType": "E",
+          "pop": "Epop",
+          "numCells": 80
+        },
+        "RSpop": {
+          "cellModel": "HH",
+          "cellType": "RS",
+          "pop": "RSpop",
+          "numCells": 30
+        },
+        "FSpop": {
+          "cellModel": "HH",
+          "cellType": "FS",
+          "pop": "FSpop",
+          "numCells": 30
+        }
+      },
+      "scaleConnWeight": 1,
+      "shape": "cuboid",
+      "stimTargetParams": {
+        "bkg->PYR1": {
+          "loc": null,
+          "conds": {
+            "pop": "Epop"
+          },
+          "weight": 0.1,
+          "delay": 5,
+          "source": "bkg",
+          "sec": null
+        }
+      },
+      "popTagsCopiedToCells": [
+        "cellModel",
+        "cellType"
+      ],
+      "scale": 1,
+      "defaultWeight": 1,
+      "synMechParams": {
+        "AMPA": {
+          "tau2": 1.0,
+          "tau1": 0.1,
+          "e": 0,
+          "mod": "Exp2Syn"
+        },
+        "GABA": {
+          "tau2": 2.0,
+          "tau1": 0.2,
+          "e": -70,
+          "mod": "Exp2Syn"
+        }
+      },
+      "defaultThreshold": 10,
+      "cellParams": {
+        "E": {
+          "secs": {
+            "soma": {
+              "mechs": {
+                "hh": {
+                  "gnabar": 0.12,
+                  "gl": 0.003,
+                  "gkbar": 0.036,
+                  "el": -70
+                }
+              },
+              "geom": {
+                "diam": 18.8,
+                "L": 18.8,
+                "Ra": 123.0
+              }
+            }
+          },
+          "conds": {
+            "cellType": "E"
+          }
+        },
+        "RS": {
+          "secs": {
+            "soma": {
+              "mechs": {
+                "hh": {
+                  "gnabar": 0.13,
+                  "gl": 0.003,
+                  "gkbar": 0.036,
+                  "el": -80
+                }
+              },
+              "geom": {
+                "diam": 15.8,
+                "L": 15.8,
+                "Ra": 110.0
+              }
+            }
+          },
+          "conds": {
+            "cellType": "RS"
+          }
+        },
+        "FS": {
+          "secs": {
+            "soma": {
+              "mechs": {
+                "hh": {
+                  "gnabar": 0.11,
+                  "gl": 0.003,
+                  "gkbar": 0.036,
+                  "el": -75
+                }
+              },
+              "geom": {
+                "diam": 12.8,
+                "L": 12.8,
+                "Ra": 115.0
+              }
+            }
+          },
+          "conds": {
+            "cellType": "FS"
+          }
+        }
+      },
+      "scaleConnWeightModels": false,
+      "stimSourceParams": {
+        "bkg": {
+          "start": 1,
+          "rate": 20,
+          "noise": 0.5,
+          "type": "NetStim"
+        }
+      },
+      "subConnParams": {},
+      "correctBorder": false,
+      "sizeX": 100,
+      "sizeY": 100,
+      "sizeZ": 100,
+      "defaultDelay": 1,
+      "propVelocity": 500.0,
+      "rotateCellsRandomly": false
+    }
+  },
+  "netpyne_changeset": "f979890"
+}

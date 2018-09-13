@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/naz.mod
+/usr/local/site/nrniv/local/mod/naz.mod

@@ -22,7 +22,7 @@ def runBatch(b, label):
 	b.batchLabel = label
 	b.saveFolder = 'data/'+b.batchLabel
 	b.method = 'grid'
-	b.runCfg = {'type': 'mpi', 
+	b.runCfg = {'type': 'mpi_bulletin', 
 				'script': 'init.py', 
 				'skip': True}
 	

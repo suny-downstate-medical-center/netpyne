@@ -1,6 +1,20 @@
 # Version 0.8.0
 
+- Added option for filename to saveData()
+
+- Removed pop cellModelClass when saving
+
+- Removed cell h object keys when saving
+
+- Added support for evolutionary algorithm optimization (via Inspyred) and usage example
+
+- cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
+
+- Fixed bug: removed '\_labelid' from netParams when saving
+
+- Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
 
 
 # Version 0.7.9

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/na2_mh.mod
+/usr/local/site/nrniv/local/mod/na2_mh.mod

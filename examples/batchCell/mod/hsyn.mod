@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/hsyn.mod
+/usr/local/site/nrniv/local/mod/hsyn.mod

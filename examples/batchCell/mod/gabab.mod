@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/gabab.mod
+/usr/local/site/nrniv/local/mod/gabab.mod

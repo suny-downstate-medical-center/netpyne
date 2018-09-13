@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/HCN1.mod
+/usr/local/site/nrniv/local/mod/HCN1.mod

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/IC.mod
+/usr/local/site/nrniv/local/mod/IC.mod

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/cat_traub.mod
+/usr/local/site/nrniv/local/mod/cat_traub.mod

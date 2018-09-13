@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/Nca.mod
+/usr/local/site/nrniv/local/mod/Nca.mod

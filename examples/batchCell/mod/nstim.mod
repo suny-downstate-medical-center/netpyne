@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/nstim.mod
+/usr/local/site/nrniv/local/mod/nstim.mod

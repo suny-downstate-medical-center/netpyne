@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/nap_sidi.mod
+/usr/local/site/nrniv/local/mod/nap_sidi.mod

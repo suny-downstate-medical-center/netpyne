@@ -424,7 +424,7 @@ class NetParams (object):
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
         self.scaleConnWeightNetStims = 1 # Connection weight scale factor for NetStims
-        self.scaleConnWeightModels = {} # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
+        self.scaleConnWeightModels = False # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
         self.defaultWeight = 1  # default connection weight
         self.defaultDelay = 1  # default connection delay (ms)
         self.defaultThreshold = 10  # default Netcon threshold (mV)
@@ -638,15 +638,18 @@ class NetParams (object):
 
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
-        import pickle
+        import pickle, sys
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
             print 'Error adding weightNorm: netParams.cellParams does not contain %s' % (label)
             return
 
-        with open(fileName, 'r') as fileObj:
-            weightNorm = pickle.load(fileObj)
+        with open(fileName, 'rb') as fileObj:
+            if sys.version_info[0] == 2:
+                weightNorm = pickle.load(fileObj)
+            else:
+                weightNorm = pickle.load(fileObj, encoding='latin1')
 
         try:
             somaSec = next((k for k in weightNorm.keys() if k.startswith('soma')),None)
@@ -672,7 +675,7 @@ class NetParams (object):
             return
 
         if ext == 'pkl':
-            with open(fileName, 'w') as fileObj:
+            with open(fileName, 'wb') as fileObj:
                 pickle.dump(cellRule, fileObj)
         elif ext == 'json':
             with open(fileName, 'w') as fileObj:
@@ -680,12 +683,15 @@ class NetParams (object):
 
 
     def loadCellParamsRule(self, label, fileName):
-        import pickle, json, os
+        import pickle, json, os, sys
 
         ext = os.path.basename(fileName).split('.')[1]
         if ext == 'pkl':
-            with open(fileName, 'r') as fileObj:
-                cellRule = pickle.load(fileObj)
+            with open(fileName, 'rb') as fileObj:
+                if sys.version_info[0] == 2:
+                    cellRule = pickle.load(fileObj)
+                else:
+                    cellRule = pickle.load(fileObj, encoding='latin1')
         elif ext == 'json':
             with open(fileName, 'r') as fileObj:
                 cellRule = json.load(fileObj)

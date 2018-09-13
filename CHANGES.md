@@ -18,6 +18,8 @@
 
 - Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
 
+- Fixed bug in Pickle file encoding so works in Python3 
+
 
 # Version 0.7.9
 

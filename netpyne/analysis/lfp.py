@@ -13,7 +13,7 @@ if __gui__:
     from matplotlib import mlab
 import numpy as np
 from numbers import Number
-from utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
+from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 
 
 # -------------------------------------------------------------------------------------------------------------------

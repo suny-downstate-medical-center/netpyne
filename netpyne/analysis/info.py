@@ -11,7 +11,7 @@ from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
-from utils import exception, _saveFigData, _showFigure, getCellsInclude
+from .utils import exception, _saveFigData, _showFigure, getCellsInclude
 
 
 # -------------------------------------------------------------------------------------------------------------------

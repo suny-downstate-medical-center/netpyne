@@ -12,8 +12,8 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
-from utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
-from utilist import _saveFigData, _showFigure
+from .utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
+from .utils import _saveFigData, _showFigure
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Support function for plotConn() - calculate conn using data from sim object

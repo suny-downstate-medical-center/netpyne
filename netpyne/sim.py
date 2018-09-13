@@ -46,4 +46,4 @@ from .tests.checks import checkOutput
 from .tests.tests import SimTestObj
 
 # import export/import-related functions
-from .neuromlFuncs import *
+from .conversion.neuroml import exportNeuroML2, importNeuroML2

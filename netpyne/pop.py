@@ -430,13 +430,13 @@ class Pop (object):
 
 
     def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        
         import sim
         
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
-        odict['cellModelClass'] = str(odict['cellModelClass'])
+        #odict['cellModelClass'] = str(odict['cellModelClass'])
+        del odict['cellModelClass']
         del odict['rand']
         return odict
 

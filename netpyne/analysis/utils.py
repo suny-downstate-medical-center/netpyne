@@ -41,7 +41,7 @@ def exception(function):
         except Exception as e:
             # print 
             err = "There was an exception in %s():"%(function.__name__)
-            print("%s \n %s"%(err,e))
+            print("%s \n %s \n%s"%(err,e,sys.exc_info()))
             return -1
  
     return wrapper
@@ -294,4 +294,23 @@ def invertDictMapping(d):
         inv_map[v] = inv_map.get(v, [])
         inv_map[v].append(k)
     return inv_map
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
+# -------------------------------------------------------------------------------------------------------------------
+def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
+    '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
+    import pandas as pd, sim
+    df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    if timeRange:
+        min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
+    else: # timeRange None or empty list means all times
+        min, max = 0, len(df)
+    if len(cellGids)==0 or allCells: # get all by either using flag or giving empty list -- can get rid of the flag
+        sel = df[min:max]
+    else:
+        sel = df[min:max].query('spkid in @cellGids')
+    return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
+
 

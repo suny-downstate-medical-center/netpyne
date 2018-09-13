@@ -25,11 +25,9 @@ from .cell.pointCell import pointCell
 from .cell.NML2Cell import NML2Cell
 from .cell.NML2SpikeSource import NML2SpikeSource
 
-# import Pop class
-from .pop import Pop 
-
-# import Network class
+# import Network and Pop classes
 from .network.network import Network 
+from .network.pop import Pop 
 
 # import analysis-related module
 from .analysis import analysis 

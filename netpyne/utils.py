@@ -5,7 +5,7 @@ Useful functions
 
 Contributors: salvador dura@gmail.com
 """
-import os, sys
+import os, sys, signal
 from numbers import Number
 from neuron import h
 import importlib

@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/h_harnett.mod
+/usr/local/site/nrniv/local/mod/h_harnett.mod

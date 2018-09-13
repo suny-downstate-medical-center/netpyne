@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/kap_BS.mod
+/usr/local/site/nrniv/local/mod/kap_BS.mod

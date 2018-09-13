@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/vecst.mod
+/usr/local/site/nrniv/local/mod/vecst.mod

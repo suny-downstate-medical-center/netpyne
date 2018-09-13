@@ -1,1 +1,1 @@
-/usr/site/nrniv/local/mod/cagk.mod
+/usr/local/site/nrniv/local/mod/cagk.mod

@@ -3280,8 +3280,8 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
     histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
     histoCount2 = histo2[0] 
 
-    fs = 1000/binSize
-    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, fs/2)
+    fs = int(1000/binSize)
+    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
 
 
     # plot granger

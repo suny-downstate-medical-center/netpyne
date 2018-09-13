@@ -1,5 +1,7 @@
 # Version 0.8.0
 
+- Optimized implementation of raste and spikeHist plotting using Pandas
+
 - Added option for filename to saveData()
 
 - Removed pop cellModelClass when saving

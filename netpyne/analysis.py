@@ -615,7 +615,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - lw (integer): Line width for each spike (default: 2)
         - marker (char): Marker for each spike (default: '|')
-        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - dpi (int): Dots per inch to save fig (default: 100)
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;

@@ -705,7 +705,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         return None
 
     # Time Range
-#### Time range is already queried in getSpktSpkid??? ####
+    #### Time range is already queried in getSpktSpkid??? ####
     if timeRange == [0,sim.cfg.duration]:
         pass
     elif timeRange is None:

@@ -1,6 +1,6 @@
 
 """
-network/conns.py 
+network/conn.py 
 
 Network class methods to create connections 
 

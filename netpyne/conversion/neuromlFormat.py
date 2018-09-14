@@ -1,10 +1,11 @@
 """
-neuromlFuncs.py 
+conversion/neuromlFormat.py 
 
 Contains functions related to neuroml conversion (import from and export to) 
 
 Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 try:
     import neuroml
@@ -14,8 +15,11 @@ try:
     min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
     
     if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
-        print('\n*******\n  Error: pyNeuroML version %s is installed but at least v%s is required!\n*******\n'%(pynml_ver,min_pynml_ver_required))
-        neuromlExists = False
+        from neuron import h
+        pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+        if int(pc.id()) == 0: 
+            print('\n*******\n  Error: pyNeuroML version %s is installed but at least v%s is required!\n*******\n'%(pynml_ver,min_pynml_ver_required))
+            neuromlExists = False
     else:
         neuromlExists = True
         

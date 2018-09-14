@@ -9,4 +9,3 @@ Contributors: salvadordura@gmail.com
 from .dicts import Dict, ODict
 from .netParams import NetParams
 from .simConfig import SimConfig
-

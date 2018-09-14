@@ -84,21 +84,21 @@ class Network (object):
         return self.cells
 
     # -----------------------------------------------------------------------------
-    # Import stims methods
+    # Import stim methods
     # -----------------------------------------------------------------------------
-    from stims import addStims, _addCellStim, _stimStrToFunc
+    from stim import addStims, _addCellStim, _stimStrToFunc
 
     # -----------------------------------------------------------------------------
-    # Import conns methods
+    # Import conn methods
     # -----------------------------------------------------------------------------
-    from conns import connectCells, _findPrePostCellsCondition, _connStrToFunc 
-    from conns import fullConn, probConn, randUniqueInt, convConn, divConn, fromListConn, _addCellConn
-    from conns import _disynapticBiasProb, _disynapticBiasProb2
+    from conn import connectCells, _findPrePostCellsCondition, _connStrToFunc, \
+        fullConn, probConn, randUniqueInt, convConn, divConn, fromListConn, _addCellConn, \
+        _disynapticBiasProb, _disynapticBiasProb2
 
     # -----------------------------------------------------------------------------
-    # Import subconns methods
+    # Import subconn methods
     # -----------------------------------------------------------------------------
-    from subconns import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+    from subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
     # Import shape methods

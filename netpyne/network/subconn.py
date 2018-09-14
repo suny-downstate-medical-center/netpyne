@@ -1,6 +1,6 @@
 
 """
-subconns.py 
+subconn.py 
 
 Methods to distribute synapses at the subcellular level (e.g. dendritic) in the network
 

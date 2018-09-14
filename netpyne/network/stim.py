@@ -1,6 +1,6 @@
 
 """
-stims.py 
+stim.py 
 
 Methods to create stims in the network
 

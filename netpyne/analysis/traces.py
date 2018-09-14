@@ -11,7 +11,7 @@ from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
-from .utils import colorList, exception, getCellsInclude
+from .utils import colorList, _showFigure, exception, getCellsInclude
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
         - Returns figure handles
     '''
-    import sim
+    from .. import sim
 
     print('Plotting recorded cell traces ...')
 
@@ -204,7 +204,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 @exception
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
 
-    import sim
+    from .. import sim
 
     print('Plotting EPSP amplitudes...')
 

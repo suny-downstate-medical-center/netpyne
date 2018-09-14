@@ -25,7 +25,7 @@ class PointCell (Cell):
     '''
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
-        import sim
+        from .. import sim
 
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
@@ -38,7 +38,7 @@ class PointCell (Cell):
 
 
     def createNEURONObj (self):
-        import sim
+        from .. import sim
 
         # add point processes
         try:
@@ -220,7 +220,7 @@ class PointCell (Cell):
 
 
     def associateGid (self, threshold = None):
-        import sim
+        from .. import sim
 
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -237,7 +237,7 @@ class PointCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams):
-        import sim
+        from .. import sim
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
@@ -255,7 +255,7 @@ class PointCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        import sim
+        from .. import sim
 
         #threshold = params.get('threshold', sim.net.params.defaultThreshold)  # if no threshold specified, set default
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default

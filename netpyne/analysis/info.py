@@ -34,7 +34,7 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 
     from neuron import h
     import netpyne
-    import sim
+    from .. import sim
     import os
             
     root = os.path.dirname(netpyne.__file__)
@@ -155,7 +155,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
             fig: Figure handle 
     '''
     
-    import sim
+    from .. import sim
     import numpy as np
     from netpyne.support.bsmart import pwcausalr
 

@@ -12,7 +12,7 @@ from netpyne import __gui__
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
 def plotData ():
-    import sim
+    from .. import sim
 
     ## Plotting
     if sim.rank == 0 and __gui__:

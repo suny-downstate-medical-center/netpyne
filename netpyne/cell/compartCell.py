@@ -34,7 +34,7 @@ class CompartCell (Cell):
 
 
     def create (self):
-        import sim
+        from .. import sim
 
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
@@ -75,7 +75,7 @@ class CompartCell (Cell):
 
 
     def modify (self, prop):
-        import sim
+        from .. import sim
 
         conditionsMet = 1
         for (condKey,condVal) in prop['conds'].iteritems():  # check if all conditions are met
@@ -104,7 +104,7 @@ class CompartCell (Cell):
 
 
     def createPyStruct (self, prop):
-        import sim
+        from .. import sim
 
         # set params for all sections
         for sectName,sectParams in prop['secs'].iteritems(): 
@@ -210,7 +210,7 @@ class CompartCell (Cell):
 
 
     def createNEURONObj (self, prop):
-        import sim
+        from .. import sim
 
         # set params for all sections
         for sectName,sectParams in prop['secs'].iteritems(): 
@@ -345,7 +345,7 @@ class CompartCell (Cell):
         # Note: loading connections to point process (eg. Izhi2007a) not yet supported
         # Note: assumes weight is in index 0 (netcon.weight[0])
         
-        import sim
+        from .. import sim
 
         # assumes python structure exists
         for conn in self.conns:
@@ -386,7 +386,7 @@ class CompartCell (Cell):
 
 
     def associateGid (self, threshold = None):
-        import sim
+        from .. import sim
 
         if self.secs:
             if sim.cfg.createNEURONObj: 
@@ -416,7 +416,7 @@ class CompartCell (Cell):
 
 
     def addSynMech (self, synLabel, secLabel, loc):
-        import sim
+        from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
@@ -464,7 +464,7 @@ class CompartCell (Cell):
 
 
     def modifySynMechs (self, params):
-        import sim
+        from .. import sim
 
         conditionsMet = 1
         if 'cellConds' in params:
@@ -517,7 +517,7 @@ class CompartCell (Cell):
 
 
     def addConn (self, params, netStimParams = None):
-        import sim
+        from .. import sim
 
         # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
@@ -683,7 +683,7 @@ class CompartCell (Cell):
 
 
     def modifyConns (self, params):
-        import sim
+        from .. import sim
 
         for conn in self.conns:
             conditionsMet = 1
@@ -743,7 +743,7 @@ class CompartCell (Cell):
 
 
     def modifyStims (self, params):
-        import sim
+        from .. import sim
 
         conditionsMet = 1
         if 'cellConds' in params:
@@ -810,7 +810,7 @@ class CompartCell (Cell):
 
 
     def addStim (self, params):
-        import sim
+        from .. import sim
 
         if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in self.secs.keys()+self.secLists.keys()):  
             if sim.cfg.verbose: print '  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, self.secs.keys(),params)
@@ -910,7 +910,7 @@ class CompartCell (Cell):
 
 
     def _setConnSections (self, params):
-        import sim
+        from .. import sim
 
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in self.secs.keys()+self.secLists.keys()):  
@@ -948,7 +948,7 @@ class CompartCell (Cell):
 
 
     def _setConnWeights (self, params, netStimParams, secLabels):
-        import sim
+        from .. import sim
 
         if netStimParams:
             scaleFactor = sim.net.params.scaleConnWeightNetStims
@@ -967,7 +967,7 @@ class CompartCell (Cell):
 
 
     def _setConnPointP(self, params, secLabels, weightIndex):
-        import sim
+        from .. import sim
 
         # Find if any point process with V not calculated in section (artifical cell, eg. Izhi2007a)
         pointp = None
@@ -990,7 +990,7 @@ class CompartCell (Cell):
 
 
     def _setConnSynMechs (self, params, secLabels):
-        import sim
+        from .. import sim
 
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
@@ -1037,7 +1037,7 @@ class CompartCell (Cell):
 
 
     def _distributeSynsUniformly (self, secList, numSyns):
-        import sim
+        from .. import sim
 
         from numpy import cumsum
         if 'L' in self.secs[secList[0]]['geom']:
@@ -1062,7 +1062,7 @@ class CompartCell (Cell):
 
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
-        import sim
+        from .. import sim
 
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
@@ -1109,7 +1109,7 @@ class CompartCell (Cell):
     
     def calcAbsSegCoords(self):
         ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
-        import sim
+        from .. import sim
 
         p3dsoma = self.getSomaPos()
         pop = self.tags['pop']

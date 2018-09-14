@@ -12,7 +12,7 @@ Contributors: salvadordura@gmail.com
 # Modify cell params
 # -----------------------------------------------------------------------------
 def modifyCells (self, params, updateMasterAllCells=False):
-    import sim
+    from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyCellsTime')
@@ -33,7 +33,7 @@ def modifyCells (self, params, updateMasterAllCells=False):
 # Modify synMech params
 # -----------------------------------------------------------------------------
 def modifySynMechs (self, params, updateMasterAllCells=False):
-    import sim
+    from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifySynMechsTime')
@@ -54,7 +54,7 @@ def modifySynMechs (self, params, updateMasterAllCells=False):
 # Modify conn params
 # -----------------------------------------------------------------------------
 def modifyConns (self, params, updateMasterAllCells=False):
-    import sim
+    from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyConnsTime')
@@ -75,7 +75,7 @@ def modifyConns (self, params, updateMasterAllCells=False):
 # Modify stim source params
 # -----------------------------------------------------------------------------
 def modifyStims (self, params, updateMasterAllCells=False):
-    import sim
+    from .. import sim
     
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyStimsTime')

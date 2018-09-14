@@ -17,7 +17,7 @@ from .utils import exception, _showFigure
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
-    import sim
+    from .. import sim
     species = sim.net.rxd['species'][speciesLabel]
     region = sim.net.rxd['regions'][regionLabel]
     fig=plt.figure(figsize=(4,10))

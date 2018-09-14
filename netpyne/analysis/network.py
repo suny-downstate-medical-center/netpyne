@@ -21,7 +21,7 @@ from .utils import _saveFigData, _showFigure
 
 def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech):
 
-    import sim
+    from .. import sim
 
     def list_of_dict_unique_by_key(seq, key):
         seen = set()
@@ -324,7 +324,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 
 def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile):
     
-    import sim
+    from .. import sim
     import json
     from time import time    
 
@@ -523,7 +523,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         - Returns figure handles
     '''
     
-    import sim
+    from .. import sim
 
     print('Plotting connectivity matrix...')
 
@@ -675,7 +675,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 
         - Returns figure handles
     '''
-    import sim
+    from .. import sim
 
     print('Plotting 2D representation of network cell locations and connections...')
 
@@ -821,7 +821,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         - Returns figure handles
     '''
 
-    import sim
+    from .. import sim
     from neuron import h
 
     print('Plotting 3D cell shape ...')
@@ -983,7 +983,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
 
     import json
     from time import time
-    import sim
+    from .. import sim
 
     numDis = 0
     totCon = 0

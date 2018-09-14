@@ -4,13 +4,49 @@ Contains functions related to the simulation (eg. setupRecording, runSim)
 Contributors: salvadordura@gmail.com
 """
 
-__all__ = []
-__all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
-__all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
-__all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'copyRemoveItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
-    'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
-    'rename'])  # misc/utilities
+# # setup.py
+# 'initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', \
+# 'setupRecording', 'setupRecordLFP'
+# 'setGlobals',
+# 'readCmdLineArgs',
+
+
+# # run.py
+# 'preRun', 'runSim', 'runSimWithIntervalFunc',
+# 'loadBalance'
+# 'calculateLFP',
+
+
+# # gather.py
+# '_gatherAllCellTags', '_gatherAllCellConnPreGids', \
+# '_gatherCells', 'gatherData'])  # run and gather
+
+
+# # save.py
+# 'saveData',
+# 'distributedSaveHDF5',
+# 'compactConnFormat'
+
+# # load.py
+# __all__.extend([ 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', \
+#  'loadHDF5']) 
+
+# # utils.py
+#  'copyReplaceItemObj', 'copyRemoveItemObj', 
+# 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
+# 'timing',  'version', 'gitChangeset'
+#  'decimalToFloat', 'unique', 'rename',
+#  'clearAll', 'clearObj'
+
+#  'id32',
+# '_init_stim_randomizer', 
+# 'cellByGid',
+
+# # LEFT
+# 'popAvgRates',  # move to analysis
+# 'getCellsList',
+
+
 
 import sys
 import os
@@ -27,11 +63,11 @@ from .. import specs
 from ..specs import Dict, ODict
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # initialize variables and MPI
-###############################################################################
+#------------------------------------------------------------------------------
 def initialize (netParams = None, simConfig = None, net = None):
-    import sim
+    from .. import sim
 
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
@@ -87,19 +123,19 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.timing('stop', 'initialTime')
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Set network object to use in simulation
-###############################################################################
+#------------------------------------------------------------------------------
 def setNet (net):
-    import sim
+    from .. import sim
     sim.net = net
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Set network params to use in simulation
-###############################################################################
+#------------------------------------------------------------------------------
 def setNetParams (params):
-    import sim
+    from .. import sim
 
     if params and isinstance(params, specs.NetParams):
         paramsDict = replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
@@ -110,11 +146,11 @@ def setNetParams (params):
     else:
         sim.net.params = specs.NetParams()
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Set simulation config
-###############################################################################
+#------------------------------------------------------------------------------
 def setSimCfg (cfg):
-    import sim
+    from .. import sim
 
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set
@@ -127,11 +163,11 @@ def setSimCfg (cfg):
         sim.cfg.filename = sim.cfg.saveFolder+'/'+sim.cfg.simLabel
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Create parallel context
-###############################################################################
+#------------------------------------------------------------------------------
 def createParallelContext ():
-    import sim
+    from .. import sim
 
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     sim.pc.done()
@@ -142,9 +178,9 @@ def createParallelContext ():
         sim.pc.gid_clear()
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load netParams from cell
-###############################################################################
+#------------------------------------------------------------------------------
 def loadNetParams (filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
@@ -159,9 +195,9 @@ def loadNetParams (filename, data=None, setLoaded=True):
     pass
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Convert compact (list-based) to long (dict-based) conn format
-###############################################################################
+#------------------------------------------------------------------------------
 def compactToLongConnFormat(cells, connFormat):
     
     formatIndices = {key: connFormat.index(key) for key in connFormat}
@@ -175,11 +211,11 @@ def compactToLongConnFormat(cells, connFormat):
         return cells
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load cells and pops from file and create NEURON objs
-###############################################################################
+#------------------------------------------------------------------------------
 def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
-    import sim
+    from .. import sim
 
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
@@ -257,9 +293,9 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
         print('  netCells and/or netPops not found in file %s'%(filename))
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load simulation config from file
-###############################################################################
+#------------------------------------------------------------------------------
 def loadSimCfg (filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading simConfig...')
@@ -273,11 +309,11 @@ def loadSimCfg (filename, data=None, setLoaded=True):
     pass
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load netParams from cell
-###############################################################################
+#------------------------------------------------------------------------------
 def loadSimData (filename, data=None):
-    import sim
+    from .. import sim
 
     if not data: data = _loadFile(filename)
     print('Loading simData...')
@@ -289,11 +325,11 @@ def loadSimData (filename, data=None):
     pass
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load all data in file
-###############################################################################
+#------------------------------------------------------------------------------
 def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
-    import sim 
+    from .. import sim 
 
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
@@ -308,18 +344,18 @@ def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
     loadSimData(filename, data=data)
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Fast function to find unique elements in sequence and preserve order
-###############################################################################
+#------------------------------------------------------------------------------
 def unique(seq):
     seen = set()
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Support funcs to load from mat
-###############################################################################
+#------------------------------------------------------------------------------
 def _mat2dict(obj): 
     '''
     A recursive function which constructs from matobjects nested dictionaries
@@ -369,11 +405,11 @@ def _mat2dict(obj):
     return out
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Load data from file
-###############################################################################
+#------------------------------------------------------------------------------
 def _loadFile (filename):
-    import sim
+    from .. import sim
     import os
 
     def _byteify(data, ignore_dicts = False):
@@ -473,11 +509,11 @@ def _loadFile (filename):
 
     return data
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Clear all sim objects in memory
-###############################################################################
+#------------------------------------------------------------------------------
 def clearAll ():
-    import sim
+    from .. import sim
 
     # clean up
     sim.pc.barrier()
@@ -512,26 +548,26 @@ def clearAll ():
 
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Hash function to obtain random value
-###############################################################################
+#------------------------------------------------------------------------------
 def id32 (obj):
     #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Initialize the stim randomizer
-###############################################################################
+#------------------------------------------------------------------------------
 def _init_stim_randomizer(rand, stimType, gid, seed):
-    import sim
+    from .. import sim
 
     rand.Random123(sim.id32(stimType), gid, seed)
 
 
-###############################################################################
-### Replace item with specific key from dict or list (used to remove h objects)
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace item with specific key from dict or list (used to remove h objects)
+#------------------------------------------------------------------------------
 def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
     if type(obj) == list:
         if objCopy=='ROOT':
@@ -563,9 +599,9 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
     return objCopy
 
 
-###############################################################################
-### Remove item with specific key from dict or list (used to remove h objects)
-###############################################################################
+#------------------------------------------------------------------------------
+# Remove item with specific key from dict or list (used to remove h objects)
+#------------------------------------------------------------------------------
 def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
     if type(obj) == list:
         if objCopy=='ROOT':
@@ -597,9 +633,9 @@ def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
     return objCopy
 
 
-###############################################################################
-### Rename objects
-###############################################################################
+#------------------------------------------------------------------------------
+# Rename objects
+#------------------------------------------------------------------------------
 def rename (obj, old, new, label=None):
     try:
         return obj.rename(old, new, label)
@@ -612,9 +648,9 @@ def rename (obj, old, new, label=None):
 
 
 
-###############################################################################
-### Recursively remove items of an object (used to avoid mem leaks)
-###############################################################################
+#------------------------------------------------------------------------------
+# Recursively remove items of an object (used to avoid mem leaks)
+#------------------------------------------------------------------------------
 def clearObj (obj):
     if type(obj) == list:
         for item in obj:
@@ -630,9 +666,9 @@ def clearObj (obj):
             del obj[key]
     return obj
 
-###############################################################################
-### Replace item with specific key from dict or list (used to remove h objects)
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace item with specific key from dict or list (used to remove h objects)
+#------------------------------------------------------------------------------
 def replaceItemObj (obj, keystart, newval):
     if type(obj) == list:
         for item in obj:
@@ -648,9 +684,9 @@ def replaceItemObj (obj, keystart, newval):
     return obj
 
 
-###############################################################################
-### Recursivele replace dict keys
-###############################################################################
+#------------------------------------------------------------------------------
+# Recursivele replace dict keys
+#------------------------------------------------------------------------------
 def replaceKeys (obj, oldkey, newkey):
     if type(obj) == list:
         for item in obj:
@@ -667,9 +703,9 @@ def replaceKeys (obj, oldkey, newkey):
     return obj
 
 
-###############################################################################
-### Replace functions from dict or list with function string (so can be pickled)
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace functions from dict or list with function string (so can be pickled)
+#------------------------------------------------------------------------------
 def replaceFuncObj (obj):
     if type(obj) == list:
         for item in obj:
@@ -685,9 +721,9 @@ def replaceFuncObj (obj):
     return obj
 
 
-###############################################################################
-### Replace None from dict or list with [](so can be saved to .mat)
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace None from dict or list with [](so can be saved to .mat)
+#------------------------------------------------------------------------------
 def replaceNoneObj (obj):
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
@@ -705,9 +741,9 @@ def replaceNoneObj (obj):
     return obj
 
 
-###############################################################################
-### Replace Dict with dict and Odict with OrderedDict
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace Dict with dict and Odict with OrderedDict
+#------------------------------------------------------------------------------
 def replaceDictODict (obj):
     if type(obj) == list:
         for item in obj:
@@ -729,9 +765,9 @@ def replaceDictODict (obj):
 
     return obj
 
-###############################################################################
-### Replace tuples with str
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace tuples with str
+#------------------------------------------------------------------------------
 def tupleToList (obj):
     if type(obj) == list:
         for item in obj:
@@ -749,9 +785,9 @@ def tupleToList (obj):
     return obj
 
 
-###############################################################################
-### Replace Decimal with float
-###############################################################################
+#------------------------------------------------------------------------------
+# Replace Decimal with float
+#------------------------------------------------------------------------------
 def decimalToFloat (obj):
     from decimal import Decimal
     if type(obj) == list:
@@ -770,9 +806,9 @@ def decimalToFloat (obj):
     return obj
 
 
-###############################################################################
-### Convert dict strings to utf8 so can be saved in HDF5 format
-###############################################################################
+#------------------------------------------------------------------------------
+# Convert dict strings to utf8 so can be saved in HDF5 format
+#------------------------------------------------------------------------------
 def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     #print obj
@@ -791,21 +827,21 @@ def _dict2utf8 (obj):
         return obj
 
 
-###############################################################################
-### Convert dict strings to utf8 so can be saved in HDF5 format
-###############################################################################
+#------------------------------------------------------------------------------
+# Convert dict strings to utf8 so can be saved in HDF5 format
+#------------------------------------------------------------------------------
 def cellByGid (gid):
-    import sim
+    from .. import sim
 
     cell = next((c for c in sim.net.cells if c.gid==gid), None)
     return cell
 
 
-###############################################################################
-### Read simConfig and netParams from command line arguments
-###############################################################################
+#------------------------------------------------------------------------------
+# Read simConfig and netParams from command line arguments
+#------------------------------------------------------------------------------
 def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
-    import sim
+    from .. import sim
     import imp, __main__
 
     if len(sys.argv) > 1:
@@ -847,11 +883,11 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     return cfg, netParams
 
-###############################################################################
-### Calculate LFP (fucntion called at every time step)      
-###############################################################################
+#------------------------------------------------------------------------------
+# Calculate LFP (fucntion called at every time step)      
+#------------------------------------------------------------------------------
 def calculateLFP():
-    import sim    
+    from .. import sim    
 
     # Set pointers to i_membrane in each cell (required form LFP calc )        
     for cell in sim.net.compartCells:
@@ -869,11 +905,11 @@ def calculateLFP():
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
 
-###############################################################################
-### Setup LFP Recording
-###############################################################################
+#------------------------------------------------------------------------------
+# Setup LFP Recording
+#------------------------------------------------------------------------------
 def setupRecordLFP():
-    import sim
+    from .. import sim
     from netpyne.support.recxelectrode import RecXElectrode
     
     nsites = len(sim.cfg.recordLFP)
@@ -898,11 +934,11 @@ def setupRecordLFP():
         sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
         
 
-###############################################################################
-### Setup Recording
-###############################################################################
+#------------------------------------------------------------------------------
+# Setup Recording
+#------------------------------------------------------------------------------
 def setupRecording ():
-    import sim
+    from .. import sim
 
     timing('start', 'setrecordTime')
 
@@ -978,11 +1014,11 @@ def setupRecording ():
     return sim.simData
 
 
-###############################################################################
-### Get cells list for recording based on set of conditions
-###############################################################################
+#------------------------------------------------------------------------------
+# Get cells list for recording based on set of conditions
+#------------------------------------------------------------------------------
 def getCellsList (include):
-    import sim
+    from .. import sim
 
     if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
         allCellTags = sim._gatherAllCellTags()
@@ -1015,11 +1051,11 @@ def getCellsList (include):
     return cells
 
 
-###############################################################################
-### Get cells list for recording based on set of conditions
-###############################################################################
+#------------------------------------------------------------------------------
+# Get cells list for recording based on set of conditions
+#------------------------------------------------------------------------------
 def setGlobals ():
-    import sim
+    from .. import sim
 
     hParams = sim.cfg.hParams
     # iterate globals dic in each cellParams
@@ -1052,11 +1088,11 @@ def setGlobals ():
             print '\nError: could not set global %s = %s' % (key, str(val))
 
 
-###############################################################################
-### Commands required just before running simulation
-###############################################################################
+#------------------------------------------------------------------------------
+# Commands required just before running simulation
+#------------------------------------------------------------------------------
 def preRun ():
-    import sim
+    from .. import sim
 
     # set initial v of cells
     for cell in sim.net.cells:
@@ -1127,11 +1163,11 @@ def preRun ():
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
 
-###############################################################################
-### Run Simulation
-###############################################################################
+#------------------------------------------------------------------------------
+# Run Simulation
+#------------------------------------------------------------------------------
 def runSim ():
-    import sim
+    from .. import sim
 
     sim.pc.barrier()
     timing('start', 'runTime')
@@ -1149,11 +1185,11 @@ def runSim ():
             (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
-###############################################################################
-### Run Simulation
-###############################################################################
+#------------------------------------------------------------------------------
+# Run Simulation
+#------------------------------------------------------------------------------
 def runSimWithIntervalFunc (interval, func):
-    import sim
+    from .. import sim
 
     sim.pc.barrier()
     timing('start', 'runTime')
@@ -1172,11 +1208,11 @@ def runSimWithIntervalFunc (interval, func):
             (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
-###############################################################################
-### Gather tags from cells
-###############################################################################
+#------------------------------------------------------------------------------
+# Gather tags from cells
+#------------------------------------------------------------------------------
 def _gatherAllCellTags ():
-    import sim
+    from .. import sim
 
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
@@ -1198,11 +1234,11 @@ def _gatherAllCellTags ():
     return allCellTags
 
 
-###############################################################################
-### Gather tags from cells
-###############################################################################
+#------------------------------------------------------------------------------
+# Gather tags from cells
+#------------------------------------------------------------------------------
 def _gatherAllCellConnPreGids ():
-    import sim
+    from .. import sim
 
     data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
     gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
@@ -1224,11 +1260,11 @@ def _gatherAllCellConnPreGids ():
     return allCellConnPreGids
 
 
-###############################################################################
-### Gather data from nodes
-###############################################################################
+#------------------------------------------------------------------------------
+# Gather data from nodes
+#------------------------------------------------------------------------------
 def gatherData (gatherLFP = True):
-    import sim
+    from .. import sim
 
     timing('start', 'gatherTime')
     ## Pack data from all hosts
@@ -1452,7 +1488,7 @@ def gatherData (gatherLFP = True):
             print('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
             	trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.popAvgRates(trange=trange)
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
             print('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
             print('  Run time: %0.2f s' % (sim.timingData['runTime']))
 
@@ -1461,40 +1497,13 @@ def gatherData (gatherLFP = True):
         return sim.allSimData
 
 
-###############################################################################
-### Calculate and print avg pop rates
-###############################################################################
-def popAvgRates (trange = None, show = True):
-    import sim
-
-    if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
-        print 'Error: sim.allSimData not available; please call sim.gatherData()'
-        return None
-
-    spkts = sim.allSimData['spkt']
-    spkids = sim.allSimData['spkid']
-
-    if not trange:
-        trange = [0, sim.cfg.duration]
-    else:
-        spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]])
-
-    avgRates = Dict()
-    for pop in sim.net.allPops:
-        numCells = float(len(sim.net.allPops[pop]['cellGids']))
-        if numCells > 0:
-            tsecs = float((trange[1]-trange[0]))/1000.0
-            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-            print '   %s : %.3f Hz'%(pop, avgRates[pop])
-
-    return avgRates
 
 
-###############################################################################
-### Calculate and print load balance
-###############################################################################
+#------------------------------------------------------------------------------
+# Calculate and print load balance
+#------------------------------------------------------------------------------
 def loadBalance ():
-    import sim
+    from .. import sim
 
     computation_time = sim.pc.step_time()
     max_comp_time = sim.pc.allreduce(computation_time, 2)
@@ -1513,11 +1522,11 @@ def loadBalance ():
     return [max_comp_time, min_comp_time, avg_comp_time, load_balance]
 
 
-###############################################################################
-### Gather data from nodes
-###############################################################################
+#------------------------------------------------------------------------------
+# Gather data from nodes
+#------------------------------------------------------------------------------
 def _gatherCells ():
-    import sim
+    from .. import sim
 
     ## Pack data from all hosts
     if sim.rank==0:
@@ -1553,11 +1562,11 @@ def _gatherCells ():
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
 
 
-###############################################################################
-### Save distributed data using HDF5 (only conns for now)
-###############################################################################
+#------------------------------------------------------------------------------
+# Save distributed data using HDF5 (only conns for now)
+#------------------------------------------------------------------------------
 def distributedSaveHDF5():
-    import sim
+    from .. import sim
     import h5py
 
     if sim.rank == 0: timing('start', 'saveTimeHDF5')
@@ -1572,11 +1581,11 @@ def distributedSaveHDF5():
 
     if sim.rank == 0: timing('stop', 'saveTimeHDF5')
 
-###############################################################################
-### load HDF5 (conns for now)
-###############################################################################
+#------------------------------------------------------------------------------
+# load HDF5 (conns for now)
+#------------------------------------------------------------------------------
 def loadHDF5(filename):
-    import sim
+    from .. import sim
     import h5py
 
     if sim.rank == 0: timing('start', 'loadTimeHDF5')
@@ -1590,11 +1599,11 @@ def loadHDF5(filename):
     return conns, connsFormat
 
 
-###############################################################################
-### Save data
-###############################################################################
+#------------------------------------------------------------------------------
+# Save data
+#------------------------------------------------------------------------------
 def saveData (include = None, filename = None):
-    import sim
+    from .. import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
     else: needGather = False
@@ -1753,12 +1762,12 @@ def saveData (include = None, filename = None):
             print('Nothing to save')
 
 
-###############################################################################
-### Load cell tags and conns using ijson (faster!) 
-###############################################################################
+#------------------------------------------------------------------------------
+# Load cell tags and conns using ijson (faster!) 
+#------------------------------------------------------------------------------
 def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
     # requires: 1) pip install ijson, 2) brew install yajl
-    import sim
+    from .. import sim
     import ijson.backends.yajl2_cffi as ijson
     import json
     from time import time
@@ -1818,11 +1827,11 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     return tags, conns
 
 
-###############################################################################
-### Convet connections in long dict format to compact list format 
-###############################################################################
+#------------------------------------------------------------------------------
+# Convet connections in long dict format to compact list format 
+#------------------------------------------------------------------------------
 def compactConnFormat():
-    import sim
+    from .. import sim
 
     if type(sim.cfg.compactConnFormat) is not list:
         if len(sim.net.params.stimTargetParams) > 0:  # if have stims, then require preLabel field
@@ -1839,11 +1848,11 @@ def compactConnFormat():
  
 
 
-###############################################################################
-### Timing - Stop Watch
-###############################################################################
+#------------------------------------------------------------------------------
+# Timing - Stop Watch
+#------------------------------------------------------------------------------
 def timing (mode, processName):
-    import sim
+    from .. import sim
 
     if sim.rank == 0 and sim.cfg.timing:
         if mode == 'start':
@@ -1852,22 +1861,22 @@ def timing (mode, processName):
             sim.timingData[processName] = time() - sim.timingData[processName]
 
 
-###############################################################################
-### Print netpyne version
-###############################################################################
+#------------------------------------------------------------------------------
+# Print netpyne version
+#------------------------------------------------------------------------------
 def version (show=True):
-    import sim
+    from .. import sim
     from netpyne import __version__
     if show:
         print(__version__)
     return __version__
 
 
-###############################################################################
-### Print github version
-###############################################################################
+#------------------------------------------------------------------------------
+# Print github version
+#------------------------------------------------------------------------------
 def gitChangeset (show=True):
-    import sim
+    from .. import sim
     import netpyne, os, subprocess 
     
     currentPath = os.getcwd()
@@ -1884,11 +1893,11 @@ def gitChangeset (show=True):
 
     return changeset
 
-###############################################################################
-### Print github version
-###############################################################################
+#------------------------------------------------------------------------------
+# Print github version
+#------------------------------------------------------------------------------
 def checkMemory ():
-    import sim
+    from .. import sim
     
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:

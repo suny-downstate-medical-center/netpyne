@@ -22,7 +22,7 @@ class Cell (object):
     ''' Generic class for neuron models '''
     
     def __init__ (self, gid, tags):
-        import sim
+        from .. import sim
 
         self.gid = gid  # global cell id 
         self.tags = tags  # dictionary of cell tags/attributes 
@@ -35,7 +35,7 @@ class Cell (object):
 
 
     def recordStimSpikes (self):
-        import sim
+        from .. import sim
 
         sim.simData['stims'].update({'cell_'+str(self.gid): Dict()})
         for conn in self.conns:
@@ -46,7 +46,7 @@ class Cell (object):
 
 
     def calculateCorrectBorderDist (self):
-        import sim
+        from .. import sim
 
         pop = self.tags['pop']
         popParams = sim.net.params.popParams
@@ -114,7 +114,7 @@ class Cell (object):
 
 
     def addNetStim (self, params, stimContainer=None):
-        import sim
+        from .. import sim
 
         if not stimContainer:
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
@@ -149,7 +149,7 @@ class Cell (object):
 
 
     def recordTraces (self):
-        import sim
+        from .. import sim
 
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.iteritems():
@@ -232,7 +232,7 @@ class Cell (object):
 
     def __getstate__ (self): 
         ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        import sim
+        from .. import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.copyRemoveItemObj(odict, keystart='h') #, newval=None)  # replace h objects with None so can be pickled

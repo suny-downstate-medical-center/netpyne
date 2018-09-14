@@ -40,7 +40,7 @@ from .. import specs
 ###############################################################################  
 def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
-    import sim
+    from .. import sim
 
     nn = {}
 
@@ -135,7 +135,7 @@ if neuromlExists:
     ############################################################################### 
     def _export_synapses (net, nml_doc):
 
-        import sim
+        from .. import sim
 
         syn_types = {}
         for id,syn in net.params.synMechParams.iteritems():
@@ -215,7 +215,7 @@ if neuromlExists:
     ###############################################################################         
     def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
 
-        import sim
+        from .. import sim
 
         net = sim.net
         
@@ -1295,7 +1295,7 @@ if neuromlExists:
     ###############################################################################
     def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
 
-        import sim
+        from .. import sim
 
         netParams = specs.NetParams()
 

@@ -23,7 +23,7 @@ class NML2SpikeSource (CompartCell):
     '''
         
     def associateGid (self, threshold = 10.0):
-        import sim
+        from .. import sim
         
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
@@ -37,7 +37,7 @@ class NML2SpikeSource (CompartCell):
         sim.net.lid2gid.append(self.gid) # index = local id; value = global id
         
     def initRandom(self):
-        import sim
+        from .. import sim
         
         rand = h.Random()
         self.stims.append(Dict())  # add new stim to Cell object

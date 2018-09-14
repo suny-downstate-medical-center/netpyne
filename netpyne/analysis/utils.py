@@ -11,6 +11,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 import functools
+import sys
 
 # -------------------------------------------------------------------------------------------------------------------
 # Define list of colors
@@ -67,7 +68,7 @@ def _showFigure():
 ## Save figure data
 # -------------------------------------------------------------------------------------------------------------------
 def _saveFigData(figData, fileName=None, type=''):
-    import sim
+    from .. import sim
 
     if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
@@ -152,7 +153,7 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
 def getCellsInclude(include):
-    import sim
+    from .. import sim
 
     allCells = sim.net.allCells
     allNetStimLabels = sim.net.params.stimSourceParams.keys()
@@ -272,7 +273,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 ## Synchrony measure
 # -------------------------------------------------------------------------------------------------------------------
 def syncMeasure ():
-    import sim
+    from .. import sim
 
     t0=-1 
     width=1 

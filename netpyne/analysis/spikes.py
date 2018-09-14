@@ -12,7 +12,8 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
-from .utils import colorList, exception, getCellsInclude, _showFigure, _saveFigData
+import pandas as pd
+from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -29,7 +30,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
         - Returns list with rates
     '''
 
-    import sim
+    from .. import sim
 
     print('Calculating avg and peak firing rates ...')
 
@@ -111,7 +112,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 
         - Returns figs
     '''
-    import sim
+    from .. import sim
 
     if not colors: colors = colorList
 
@@ -217,7 +218,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 
         - Returns figs
     '''
-    import sim
+    from .. import sim
 
     if not colors: colors = colorList
 
@@ -270,7 +271,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 # -------------------------------------------------------------------------------------------------------------------
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
         spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None,
         showFig = True):
@@ -298,7 +299,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - showFig (True|False): Whether to show the figure or not (default: True)
         - Returns figure handle
     '''
-    import sim, pandas as pd
+    from .. import sim
 
     print('Plotting raster...')
 
@@ -338,6 +339,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
         df['gidColor'] = df['pop'].map(popColors)
         df.set_index('gid', inplace=True)
+
+    from IPython import embed; embed()
 
     # Order by
     if len(df) > 0:
@@ -543,7 +546,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         - Returns figure handle
     '''
 
-    import sim
+    from .. import sim
 
     print('Plotting spike histogram...')
 
@@ -723,7 +726,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         - Returns figure handle and statData
     '''
 
-    import sim
+    from .. import sim
 
     print('Plotting spike stats...')
 
@@ -1082,7 +1085,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - Returns figure handle
     '''
 
-    import sim
+    from .. import sim
 
     print('Plotting firing rate power spectral density (PSD) ...')
     
@@ -1203,3 +1206,32 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     return fig, {'allSignal':allSignal, 'allPower':allPower, 'allFreqs':allFreqs}
 
+
+#------------------------------------------------------------------------------
+# Calculate and print avg pop rates
+#------------------------------------------------------------------------------
+@exception
+def popAvgRates (trange = None, show = True):
+    from .. import sim
+
+    if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
+        print 'Error: sim.allSimData not available; please call sim.gatherData()'
+        return None
+
+    spkts = sim.allSimData['spkt']
+    spkids = sim.allSimData['spkid']
+
+    if not trange:
+        trange = [0, sim.cfg.duration]
+    else:
+        spkids,spkts = zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]])
+
+    avgRates = Dict()
+    for pop in sim.net.allPops:
+        numCells = float(len(sim.net.allPops[pop]['cellGids']))
+        if numCells > 0:
+            tsecs = float((trange[1]-trange[0]))/1000.0
+            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+            print '   %s : %.3f Hz'%(pop, avgRates[pop])
+
+    return avgRates

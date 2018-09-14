@@ -13,15 +13,37 @@ if '-nogui' in sys.argv:
     import netpyne
     netpyne.__gui__ = False
 
+
 # import NEURON module
 from neuron import h
 
 #------------------------------------------------------------------------------
-# Import simulation-related functions from sim subpackage
+# Import simulation-related functions from this subpackage (/sim)
 #------------------------------------------------------------------------------
+
+# import setup functions
+from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelContext, \
+	readCmdLineArgs, setupRecording, setupRecordLFP, setGlobals
+
+# import run functions
+from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
+
+# import gather functions
+from .gather import gatherData
+
+# import saving functions
+from .save import saveData, distributedSaveHDF5, compactConnFormat
+
+# import loading functions
+
+
+# import utils functions (useful globally)
+from .utils import timing
 
 # import wrapper functions
 from .simFuncs import * 
+
+
 
 # import wrapper functions
 from .wrappers import create, simulate, analyze, createSimulate, \

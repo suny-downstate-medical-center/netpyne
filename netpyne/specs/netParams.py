@@ -8,7 +8,7 @@ Contributors: salvadordura@gmail.com
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
-from . import utils
+from .. import conversion
 
 # ----------------------------------------------------------------------------
 # PopParams class

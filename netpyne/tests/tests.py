@@ -13,7 +13,7 @@ import os
 import traceback
 import numpy
 from neuron import h
-from ..conversion.neuron import mechVarList
+from ..conversion import mechVarList
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', 'cylinder']
 POP_NUMCELLS_PARAMS = ['density', 'numCells', 'gridSpacing', 'cellsList']

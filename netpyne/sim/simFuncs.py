@@ -21,10 +21,11 @@ import cPickle as pk
 import hashlib
 from numbers import Number
 from copy import copy
-from specs import Dict, ODict
 from collections import OrderedDict
 from neuron import h, init # Import NEURON
-import specs
+from .. import specs
+from ..specs import Dict, ODict
+
 
 ###############################################################################
 # initialize variables and MPI

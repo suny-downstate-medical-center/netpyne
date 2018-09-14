@@ -302,7 +302,8 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
     '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
-    import pandas as pd, sim
+    import pandas as pd
+    from .. import sim
     df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
     if timeRange:
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query

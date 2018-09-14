@@ -271,7 +271,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 # -------------------------------------------------------------------------------------------------------------------
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
         spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None,
         showFig = True):
@@ -299,6 +299,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - showFig (True|False): Whether to show the figure or not (default: True)
         - Returns figure handle
     '''
+
+    pass
+
     from .. import sim
 
     print('Plotting raster...')
@@ -340,7 +343,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         df['gidColor'] = df['pop'].map(popColors)
         df.set_index('gid', inplace=True)
 
-    from IPython import embed; embed()
 
     # Order by
     if len(df) > 0:
@@ -380,7 +382,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         return None
 
     # Time Range
-#### Time range is already queried in getSpktSpkid??? ####
     if timeRange == [0,sim.cfg.duration]:
         pass
     elif timeRange is None:

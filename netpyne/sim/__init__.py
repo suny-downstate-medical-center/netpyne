@@ -37,12 +37,13 @@ from .save import saveData, distributedSaveHDF5, compactConnFormat
 # import loading functions
 from .save import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
 
-# import utils functions (useful globally)
-from .utils import timing
+# import utils functions (general)
+from .utils import cellByGid, getCellsList, timing, version, gitChangeset, id32,\
+	_init_stim_randomizer, unique, checkMemory 
 
-# import wrapper functions
-from .simFuncs import * 
-
+# import utils functions to manipulate objects
+from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, rename, \
+	clearObj, clearAll
 
 
 # import wrapper functions

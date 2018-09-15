@@ -216,19 +216,6 @@ def compactConnFormat():
 
 
 
-#------------------------------------------------------------------------------
-# Convert compact (list-based) to long (dict-based) conn format
-#------------------------------------------------------------------------------
-def compactToLongConnFormat(cells, connFormat):
-    
-    formatIndices = {key: connFormat.index(key) for key in connFormat}
-    try:
-        for cell in cells:
-            for iconn, conn in enumerate(cell['conns']):
-                cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
-        return cells
-    except:
-        print("Error converting conns from compact to long format")
-        return cells
+
 
  

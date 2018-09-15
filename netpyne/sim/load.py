@@ -282,3 +282,90 @@ def compactToLongConnFormat(cells, connFormat):
     except:
         print("Error converting conns from compact to long format")
         return cells
+
+
+#------------------------------------------------------------------------------
+# load HDF5 (conns for now)
+#------------------------------------------------------------------------------
+def loadHDF5(filename):
+    from .. import sim
+    import h5py
+
+    if sim.rank == 0: timing('start', 'loadTimeHDF5')
+
+    connsh5 = h5py.File(filename, 'r')
+    conns = [list(x) for x in connsh5['conns']]
+    connsFormat = list(connsh5['connsFormat'])
+
+    if sim.rank == 0: timing('stop', 'loadTimeHDF5')
+
+    return conns, connsFormat
+
+
+
+#------------------------------------------------------------------------------
+# Load cell tags and conns using ijson (faster!) 
+#------------------------------------------------------------------------------
+def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
+    # requires: 1) pip install ijson, 2) brew install yajl
+    from .. import sim
+    import ijson.backends.yajl2_cffi as ijson
+    import json
+    from time import time
+
+    tags, conns = {}, {}
+
+    if connFormat:
+        conns['format'] = connFormat
+    if tagFormat:
+        tags['format'] = tagFormat
+
+    with open(filename, 'r') as fd:
+        start = time()
+        print 'Loading data ...'
+        objs = ijson.items(fd, 'net.cells.item')
+        if loadTags and loadConns:
+            print 'Storing tags and conns ...'
+            for cell in objs:
+                if tagsGidRange==None or cell['gid'] in tagsGidRange:
+                    print 'Cell gid: %d'%(cell['gid'])
+                    if tagFormat:
+                        tags[int(cell['gid'])] = [cell['tags'][param] for param in tagFormat]
+                    else:
+                        tags[int(cell['gid'])] = cell['tags']
+                    if connsGidRange==None or cell['gid'] in connsGidRange:
+                        if connFormat:
+                            conns[int(cell['gid'])] = [[conn[param] for param in connFormat] for conn in cell['conns']]
+                        else:
+                            conns[int(cell['gid'])] = cell['conns']
+        elif loadTags:
+            print 'Storing tags ...'
+            if tagFormat:
+                tags.update({int(cell['gid']): [cell['tags'][param] for param in tagFormat] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
+            else:
+                tags.update({int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
+        elif loadConns:             
+            print 'Storing conns...'
+            if connFormat:
+                conns.update({int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
+            else:
+                conns.update({int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
+
+        print 'time ellapsed (s): ', time() - start
+
+    tags = utils.decimalToFloat(tags)
+    conns = utils.decimalToFloat(conns)
+
+    if saveTags and tags:
+        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        print 'Saving tags to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+    if saveConns and conns:
+        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        print 'Saving conns to %s ...' % (outFilename)
+        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+
+    return tags, conns
+
+
+

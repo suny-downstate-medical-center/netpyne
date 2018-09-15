@@ -47,7 +47,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     '''
 
     from .. import sim
-    from support.scalebar import add_scalebar
+    from ..support.scalebar import add_scalebar
 
     print('Plotting LFP ...')
 

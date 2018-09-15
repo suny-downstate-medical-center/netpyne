@@ -15,6 +15,7 @@ import numpy as np
 from numbers import Number
 import pandas as pd
 import scipy
+from ..specs import Dict
 from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData, syncMeasure
 
 

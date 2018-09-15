@@ -12,7 +12,7 @@ import numpy as np
 from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
-from .. import utils
+from . import utils
 
 #------------------------------------------------------------------------------
 # initialize variables and MPI

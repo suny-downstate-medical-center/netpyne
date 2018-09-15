@@ -651,7 +651,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy, 'includePre': includePre, 'includePost': includePost}
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -786,7 +786,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 
 # -------------------------------------------------------------------------------------------------------------------

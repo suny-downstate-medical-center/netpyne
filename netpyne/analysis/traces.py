@@ -196,7 +196,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # show fig 
     if showFig: _showFigure()
 
-    return figs, {}
+    return figs, {'tracesData': tracesData, 'include': include}
 
 # -------------------------------------------------------------------------------------------------------------------
 ## EPSPs amplitude

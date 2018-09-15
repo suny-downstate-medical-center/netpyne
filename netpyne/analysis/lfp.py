@@ -332,5 +332,5 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs, data
+    return figs, {'LFP': lfp, 'electrodes': electrodes, 'saveData': saveData}
 

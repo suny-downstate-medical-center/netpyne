@@ -36,6 +36,6 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
     # show fig 
     if showFig: _showFigure()
     
-    return fig, {}
+    return fig, {'data': species[region].states3d[:].mean(plane2mean[plane])}
 
 

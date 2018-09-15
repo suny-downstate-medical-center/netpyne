@@ -10,10 +10,12 @@ from netpyne import __gui__
 
 if __gui__:
     import matplotlib.pyplot as plt
+    from matplotlib import gridspec
 import numpy as np
 from numbers import Number
 import pandas as pd
-from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData
+import scipy
+from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData, syncMeasure
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -518,7 +520,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # show fig
     if showFig: _showFigure()
 
-    return fig, {}
+    return fig, {'include': include, 'spkts': spkts, 'spkinds': spkinds, 'timeRange': timeRange}
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -699,7 +701,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig
     if showFig: _showFigure()
 
-    return fig, {'histData': histData, 'histoT': histoT}
+    return fig, {'include': include, 'histData': histData, 'histoT': histoT, 'timeRange': timeRange}
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike statistics
@@ -1054,7 +1057,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # show fig 
         if showFig: _showFigure()
 
-    return fig, {'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
+    return fig, {'include': include, 'statData': statData, 'gidsData':gidsData, 'ynormsData':ynormsData}
 
 
 # -------------------------------------------------------------------------------------------------------------------

@@ -18,7 +18,7 @@ try:
         from neuron import h
         pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
         if int(pc.id()) == 0: 
-            print('  Note: pyNeuroML version %s is installed but at least v%s is required'%(pynml_ver,min_pynml_ver_required))
+            print('Note: pyNeuroML version %s is installed but at least v%s is required'%(pynml_ver,min_pynml_ver_required))
             neuromlExists = False
     else:
         neuromlExists = True
@@ -27,7 +27,7 @@ except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if int(pc.id()) == 0:  # only print for master node
-        print('  Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
+        print('Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
     neuromlExists = False
 
 import pprint; pp = pprint.PrettyPrinter(depth=6)

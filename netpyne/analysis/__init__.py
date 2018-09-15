@@ -30,7 +30,7 @@ from network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromF
 # -------------------------------------------------------------------------------------------------------------------
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, plotRatePSD
+from spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, plotRatePSD, popAvgRates
 
 
 # -------------------------------------------------------------------------------------------------------------------

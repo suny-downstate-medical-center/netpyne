@@ -35,7 +35,7 @@ from .gather import gatherData
 from .save import saveData, distributedSaveHDF5, compactConnFormat
 
 # import loading functions
-
+from .save import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
 
 # import utils functions (useful globally)
 from .utils import timing

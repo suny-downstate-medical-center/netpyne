@@ -6,211 +6,279 @@ Functions related to loading
 Contributors: salvadordura@gmail.com
 """
 
-from time import time
-from datetime import datetime
-import cPickle as pk
-from . import gather
+import sys
+from collections import OrderedDict
+from ..specs import Dict, ODict
+from .. import specs
 from . import utils
+from . import setup
 
 #------------------------------------------------------------------------------
-# Save data
+# Load data from file
 #------------------------------------------------------------------------------
-def saveData (include = None, filename = None):
+def _loadFile (filename):
     from .. import sim
+    import os
 
-    if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
-    else: needGather = False
-    if needGather: gather.gatherData()
+    def _byteify(data, ignore_dicts = False):
+        # if this is a unicode string, return its string representation
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        # if this is a list of values, return list of byteified values
+        if isinstance(data, list):
+            return [ _byteify(item, ignore_dicts=True) for item in data ]
+        # if this is a dictionary, return dictionary of byteified keys and values
+        # but only if we haven't already byteified it
+        if isinstance(data, dict) and not ignore_dicts:
+            return OrderedDict({
+                _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+                for key, value in data.iteritems()
+            })
+        # if it's anything else, return it in its original form
+        return data
 
-    if filename: sim.cfg.filename = filename
+    if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
+    ext = os.path.basename(filename).split('.')[1]
 
-    if sim.rank == 0:
-        sim.timing('start', 'saveTime')
-        import os
-
-        # copy source files
-        if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:
-            simName = sim.cfg.simLabel if sim.cfg.simLabel else os.path.basename(sim.cfg.filename)
-            print('Copying cfg file %s ... ' % simName)
-            source = sim.cfg.backupCfgFile[0]
-            targetFolder = sim.cfg.backupCfgFile[1]
-            # make dir
-            try:
-                os.mkdir(targetFolder)
-            except OSError:
-                if not os.path.exists(targetFolder):
-                    print ' Could not create target folder: %s' % (targetFolder)
-            # copy file
-            targetFile = targetFolder + '/' + simName + '_cfg.py'
-            if os.path.exists(targetFile):
-                print ' Removing prior cfg file' , targetFile
-                os.system('rm ' + targetFile)
-            os.system('cp ' + source + ' ' + targetFile)
-
-
-        # create folder if missing
-        targetFolder = os.path.dirname(sim.cfg.filename)
-        if targetFolder and not os.path.exists(targetFolder):
-            try:
-                os.mkdir(targetFolder)
-            except OSError:
-                print ' Could not create target folder: %s' % (targetFolder)
-
-        # saving data
-        if not include: include = sim.cfg.saveDataInclude
-        dataSave = {}
-        net = {}
-
-        dataSave['netpyne_version'] = sim.version(show=False)
-        dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
-        
-        if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
-        if 'netParams' in include: 
-            sim.net.params.__dict__.pop('_labelid', None)
-            net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
-        if 'net' in include: include.extend(['netPops', 'netCells'])
-        if 'netCells' in include: net['cells'] = sim.net.allCells
-        if 'netPops' in include: net['pops'] = sim.net.allPops
-        if net: dataSave['net'] = net
-        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-        if 'simData' in include: 
-            if 'LFP' in sim.allSimData: 
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
-            dataSave['simData'] = sim.allSimData
-
-
-        if dataSave:
-            if sim.cfg.timestampFilename:
-                timestamp = time()
-                timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+    # load pickle file
+    if ext == 'pkl':
+        import pickle
+        print('Loading file %s ... ' % (filename))
+        with open(filename, 'rb') as fileObj:
+            if sys.version_info[0] == 2:
+                data = pickle.load(fileObj)
             else:
-                timestampStr = ''
-            
-            filePath = sim.cfg.filename + timestampStr
-            # Save to pickle file
-            if sim.cfg.savePickle:
-                import pickle
-                dataSave = utils.replaceDictODict(dataSave)
-                print('Saving output as %s ... ' % (filePath+'.pkl'))
-                with open(filePath+'.pkl', 'wb') as fileObj:
-                    pickle.dump(dataSave, fileObj)
-                print('Finished saving!')
+                data = pickle.load(fileObj, encoding='latin1')
 
-            # Save to dpk file
-            if sim.cfg.saveDpk:
-                import gzip
-                print('Saving output as %s ... ' % (filePath+'.dpk'))
-                #fn=filePath #.split('.')
-                gzip.open(filePath, 'wb').write(pk.dumps(dataSave)) # write compressed string
-                print('Finished saving!')
+    # load dpk file
+    elif ext == 'dpk':
+        import gzip
+        print('Loading file %s ... ' % (filename))
+        #fn=sim.cfg.filename #.split('.')
+        #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
+        print('NOT IMPLEMENTED!')
 
-            # Save to json file
-            if sim.cfg.saveJson:
-                import json
-                #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
-                print('Saving output as %s ... ' % (filePath+'.json '))
-                with open(filePath+'.json', 'w') as fileObj:
-                    json.dump(dataSave, fileObj)
-                print('Finished saving!')
+    # load json file
+    elif ext == 'json':
+        import json
+        print('Loading file %s ... ' % (filename))
+        with open(filename, 'r') as fileObj:
+            data = json.load(fileObj, object_hook=_byteify)
 
-            # Save to mat file
-            if sim.cfg.saveMat:
-                from scipy.io import savemat
-                print('Saving output as %s ... ' % (filePath+'.mat'))
-                savemat(filePath+'.mat', utils.tupleToList(utils.replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
-                print('Finished saving!')
+    # load mat file
+    elif ext == 'mat':
+        from scipy.io import loadmat
+        print('Loading file %s ... ' % (filename))
+        dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
+        data = utils._mat2dict(dataraw)
+        #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
+        print('Finished saving!')
 
-            # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-            if sim.cfg.saveHDF5:
-                dataSaveUTF8 = utils._dict2utf8(utils.replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
-                import hdf5storage
-                print('Saving output as %s... ' % (filePath+'.hdf5'))
-                hdf5storage.writes(dataSaveUTF8, filename=filePath+'.hdf5')
-                print('Finished saving!')
+    # load HDF5 file (uses very inefficient hdf5storage module which supports dicts)
+    elif ext == 'saveHDF5':
+        #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+        import hdf5storage
+        print('Loading file %s ... ' % (filename))
+        #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
+        print('NOT IMPLEMENTED!')
 
-            # Save to CSV file (currently only saves spikes)
-            if sim.cfg.saveCSV:
-                if 'simData' in dataSave:
-                    import csv
-                    print('Saving output as %s ... ' % (filePath+'.csv'))
-                    writer = csv.writer(open(filePath+'.csv', 'wb'))
-                    for dic in dataSave['simData']:
-                        for values in dic:
-                            writer.writerow(values)
-                    print('Finished saving!')
+    # load CSV file (currently only saves spikes)
+    elif ext == 'csv':
+        import csv
+        print('Loading file %s ... ' % (filename))
+        writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
+        #for dic in dataSave['simData']:
+        #    for values in dic:
+        #        writer.writerow(values)
+        print('NOT IMPLEMENTED!')
 
-            # Save to Dat file(s)
-            if sim.cfg.saveDat:
-                traces = sim.cfg.recordTraces
-                for ref in traces.keys():
-                    for cellid in sim.allSimData[ref].keys():
-                        dat_file_name = '%s_%s.dat'%(ref,cellid)
-                        dat_file = open(dat_file_name, 'w')
-                        trace = sim.allSimData[ref][cellid]
-                        print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
-                        for i in range(len(trace)):
-                            dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
+    # load Dat file(s)
+    elif ext == 'dat':
+        print('Loading file %s ... ' % (filename))
+        print('NOT IMPLEMENTED!')
+        # traces = sim.cfg.recordTraces
+        # for ref in traces.keys():
+        #     for cellid in sim.allSimData[ref].keys():
+        #         dat_file_name = '%s_%s.dat'%(ref,cellid)
+        #         dat_file = open(dat_file_name, 'w')
+        #         trace = sim.allSimData[ref][cellid]
+        #         print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+        #         for i in range(len(trace)):
+        #             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
-                print('Finished saving!')
+    else:
+        print('Format not recognized for file %s'%(filename))
+        return
 
-            # Save timing
-            if sim.cfg.timing:
-                sim.timing('stop', 'saveTime')
-                print('  Done; saving time = %0.2f s.' % sim.timingData['saveTime'])
-            if sim.cfg.timing and sim.cfg.saveTiming:
-                import pickle
-                with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
+    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing:
+        sim.timing('stop', 'loadFileTime')
+        print('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
 
 
-            # clean to avoid mem leaks
-            for key in dataSave.keys():
-                del dataSave[key]
-            del dataSave
+    return data
 
-            # return full path
-            import os
-            return os.getcwd() + '/' + filePath
 
+#------------------------------------------------------------------------------
+# Load simulation config from file
+#------------------------------------------------------------------------------
+def loadSimCfg (filename, data=None, setLoaded=True):
+    if not data: data = _loadFile(filename)
+    print('Loading simConfig...')
+    if 'simConfig' in data:
+        if setLoaded:
+            setup.setSimCfg(data['simConfig'])
         else:
-            print('Nothing to save')
+            return specs.SimConfig(data['simConfig'])
+    else:
+        print('  simConfig not found in file %s'%(filename))
+    pass
 
 
 #------------------------------------------------------------------------------
-# Save distributed data using HDF5 (only conns for now)
+# Load netParams from cell
 #------------------------------------------------------------------------------
-def distributedSaveHDF5():
-    from .. import sim
-    import h5py
+def loadNetParams (filename, data=None, setLoaded=True):
+    if not data: data = _loadFile(filename)
+    print('Loading netParams...')
+    if 'net' in data and 'params' in data['net']:
+        if setLoaded:
+            setup.setNetParams(data['net']['params'])
+        else:
+            return specs.NetParams(data['net']['params'])
+    else:
+        print('netParams not found in file %s'%(filename))
 
-    if sim.rank == 0: sim.timing('start', 'saveTimeHDF5')
-
-    sim.compactConnFormat()
-    conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
-    conns = sim.copyRemoveItemObj(conns, keystart='h', newval=[]) 
-    connFormat = ['postGid']+sim.cfg.compactConnFormat
-    with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
-        hf.create_dataset('conns', data = conns)
-        hf.create_dataset('connsFormat', data = connFormat)
-
-    if sim.rank == 0: sim.timing('stop', 'saveTimeHDF5')
+    pass
 
 
 #------------------------------------------------------------------------------
-# Convet connections in long dict format to compact list format 
+# Load cells and pops from file and create NEURON objs
 #------------------------------------------------------------------------------
-def compactConnFormat():
+def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
     from .. import sim
 
-    if type(sim.cfg.compactConnFormat) is not list:
-        if len(sim.net.params.stimTargetParams) > 0:  # if have stims, then require preLabel field
-            sim.cfg.compactConnFormat = ['preGid', 'preLabel', 'sec', 'loc', 'synMech', 'weight', 'delay']
-        else:
-            sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
+    if not data: data = _loadFile(filename)
+    if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
+        if sim.rank == 0:
+            sim.timing('start', 'loadNetTime')
+            print('Loading net...')
+            if compactConnFormat: 
+                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
+            sim.net.allPops = data['net']['pops']
+            sim.net.allCells = data['net']['cells']
+        if instantiate:
+            # calculate cells to instantiate in this node
+            if isinstance(instantiate, list):
+                cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+            else:
+                cellsNode = [data['net']['cells'][i] for i in xrange(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
+            if sim.cfg.createPyStruct:
+                for popLoadLabel, popLoad in data['net']['pops'].iteritems():
+                    pop = sim.Pop(popLoadLabel, popLoad['tags'])
+                    pop.cellGids = popLoad['cellGids']
+                    sim.net.pops[popLoadLabel] = pop
+                for cellLoad in cellsNode:
+                    # create new CompartCell object and add attributes, but don't create sections or associate gid yet
+                    # TO DO: assumes CompartCell -- add condition to load PointCell
+                    cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
+                    try:
+                        if sim.cfg.saveCellSecs:
+                            cell.secs = Dict(cellLoad['secs'])
+                        else:
+                            createNEURONObjorig = sim.cfg.createNEURONObj
+                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
+                            cell.create()
+                            sim.cfg.createNEURONObj = createNEURONObjorig
+                    except:
+                        if sim.cfg.verbose: print(' Unable to load cell secs')
+
+                    try:
+                        cell.conns = [Dict(conn) for conn in cellLoad['conns']]
+                    except:
+                        if sim.cfg.verbose: print(' Unable to load cell conns')
+
+                    try:
+                        cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                    except:
+                        if sim.cfg.verbose: print(' Unable to load cell stims')
+
+                    sim.net.cells.append(cell)
+                print('  Created %d cells' % (len(sim.net.cells)))
+                print('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
+                print('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells])))
+
+                # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
+                if sim.cfg.createNEURONObj:
+                    if sim.cfg.verbose: print("  Adding NEURON objects...")
+                    # create NEURON sections, mechs, syns, etc; and associate gid
+                    for cell in sim.net.cells:
+                        prop = {'secs': cell.secs}
+                        cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs
+                        cell.associateGid()  # can only associate once the hSection obj has been created
+                    # create all NEURON Netcons, NetStims, etc
+                    sim.pc.barrier()
+                    for cell in sim.net.cells:
+                        try:
+                            cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                            cell.addConnsNEURONObj()
+                        except:
+                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
+
+                    print('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
+
+            if sim.rank == 0 and sim.cfg.timing:
+                sim.timing('stop', 'loadNetTime')
+                print('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
+    else:
+        print('  netCells and/or netPops not found in file %s'%(filename))
+
+
+#------------------------------------------------------------------------------
+# Load netParams from cell
+#------------------------------------------------------------------------------
+def loadSimData (filename, data=None):
+    from .. import sim
+
+    if not data: data = _loadFile(filename)
+    print('Loading simData...')
+    if 'simData' in data:
+        sim.allSimData = data['simData']
+    else:
+        print('  simData not found in file %s'%(filename))
+
+    pass
+
+
+#------------------------------------------------------------------------------
+# Load all data in file
+#------------------------------------------------------------------------------
+def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
+    from .. import sim 
+
+    if not data: data = _loadFile(filename)
+    loadSimCfg(filename, data=data)
+    sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
+    loadNetParams(filename, data=data)
+    if hasattr(sim.cfg, 'compactConnFormat'): 
+        connFormat = sim.cfg.compactConnFormat
+    else:
+        print 'Error: no connFormat provided in simConfig'
+        sys.exit()
+    loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
+    loadSimData(filename, data=data)
+
+
+#------------------------------------------------------------------------------
+# Convert compact (list-based) to long (dict-based) conn format
+#------------------------------------------------------------------------------
+def compactToLongConnFormat(cells, connFormat):
     
-
-    connFormat = sim.cfg.compactConnFormat
-    for cell in sim.net.cells:
-        newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
-        del cell.conns
-        cell.conns = newConns
- 
+    formatIndices = {key: connFormat.index(key) for key in connFormat}
+    try:
+        for cell in cells:
+            for iconn, conn in enumerate(cell['conns']):
+                cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.iteritems()}
+        return cells
+    except:
+        print("Error converting conns from compact to long format")
+        return cells

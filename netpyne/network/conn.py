@@ -9,6 +9,7 @@ Contributors: salvadordura@gmail.com
 
 import numpy as np 
 from numbers import Number
+from matplotlib.pylab import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy 
 
 
 # -----------------------------------------------------------------------------

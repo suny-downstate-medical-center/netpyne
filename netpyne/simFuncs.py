@@ -277,14 +277,15 @@ def loadSimCfg (filename, data=None, setLoaded=True):
 ###############################################################################
 def loadSimData (filename, data=None):
     from . import sim
-
-    if not data: data = _loadFile(filename)
+    if not data: 
+        data = _loadFile(filename)
     print('Loading simData...')
     if 'simData' in data:
         sim.allSimData = data['simData']
+        print('done')
     else:
+        print(6)
         print(('  simData not found in file %s'%(filename)))
-
     pass
 
 
@@ -293,8 +294,8 @@ def loadSimData (filename, data=None):
 ###############################################################################
 def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
     from . import sim 
-
     if not data: data = _loadFile(filename)
+    
     loadSimCfg(filename, data=data)
     sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
@@ -418,7 +419,7 @@ def _loadFile (filename):
         import json
         print(('Loading file %s ... ' % (filename)))
         with open(filename, 'r') as fileObj:
-            data = json.load(fileObj, object_hook=_byteify)
+            data = json.load(fileObj)
 
     # load mat file
     elif ext == 'mat':
@@ -483,8 +484,9 @@ def clearAll ():
     sim.pc.gid_clear()                    # clear previous gid settings
 
     # clean cells and simData in all nodes
-    sim.clearObj([cell.__dict__ for cell in sim.net.cells])
-    sim.clearObj([stim for stim in sim.simData['stims']])
+    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
+    if 'stims' in list(sim.simData.keys()):
+        sim.clearObj([stim for stim in sim.simData['stims']])
     for key in list(sim.simData.keys()): del sim.simData[key]
     for c in sim.net.cells: del c
     for p in sim.net.pops: del p
@@ -493,8 +495,10 @@ def clearAll ():
 
     # clean cells and simData gathered in master node
     if sim.rank == 0:
-        sim.clearObj([cell.__dict__ for cell in sim.net.allCells])
-        sim.clearObj([stim for stim in sim.allSimData['stims']])
+        if hasattr(sim.net, 'allCells'):
+            sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
+        if hasattr(sim, 'allSimData') and 'stims' in list(sim.allSimData.keys()):
+            sim.clearObj([stim for stim in sim.allSimData['stims']])
         for key in list(sim.allSimData.keys()): del sim.allSimData[key]
         for c in sim.net.allCells: del c
         for p in sim.net.allPops: del p
@@ -590,7 +594,7 @@ def clearObj (obj):
     elif isinstance(obj, (dict, Dict, ODict)):
         for key in list(obj.keys()):
             val = obj[key]
-            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
+            if isinstance(val, (list, dict, Dict, ODict)):
                 clearObj(val)
             del obj[key]
     return obj

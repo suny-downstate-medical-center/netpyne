@@ -13,7 +13,7 @@ import os
 import traceback
 import numpy
 from neuron import h
-from netpyne import utils
+from ..conversion import mechVarList
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', 'cylinder']
 POP_NUMCELLS_PARAMS = ['density', 'numCells', 'gridSpacing', 'cellsList']
@@ -341,8 +341,8 @@ class TestTypeObj(object):
                 #     if isinstance (value, dict):
                 #         print ( 'cellModel' + str(value['cellModel']) )
                 pointpsValues = []
-                if 'pointps' in utils.mechVarList() and isinstance(utils.mechVarList()['pointps'], dict):
-                    pointpsValues = list(utils.mechVarList()['pointps'].keys())
+                if 'pointps' in mechVarList() and isinstance(mechVarList()['pointps'], dict):
+                    pointpsValues = list(mechVarList()['pointps'].keys())
                 if 'cellModel' in paramValues:
                     if paramValues['cellModel'] in pointpsValues:
                         stimParamsAllowed = True
@@ -526,7 +526,7 @@ class TestTypeObj(object):
         mechsWarningFlagList = []
 
         try:
-            mechs = utils.mechVarList()["mechs"]
+            mechs = mechVarList()["mechs"]
             if 'secs' in paramValues:
                 for key, value in list(paramValues['secs'].items()):
                     if 'mechs' in value:
@@ -573,7 +573,7 @@ class TestTypeObj(object):
 
         try:
             pointpsValid = True
-            mechs = utils.mechVarList()["mechs"]
+            mechs = mechVarList()["mechs"]
 
             if 'secs' in paramValues:
                 for key, value in list(paramValues['secs'].items()):
@@ -1032,7 +1032,7 @@ class TestTypeObj(object):
         try:
 
             simType =  ''
-            mechVarList = utils.mechVarList()
+            mechVarList = mechVarList()
             allKeys = []
             validTypes = []
             if simType in paramValues['type']:
@@ -3043,8 +3043,8 @@ class SimTestObj(object):
 
                 mechVarListString = ''
 
-                if 'mechs' in utils.mechVarList():
-                    mechVarListString = str(utils.mechVarList()['mechs'])
+                if 'mechs' in mechVarList():
+                    mechVarListString = str(mechVarList()['mechs'])
 
                 if isinstance(params, dict):
 

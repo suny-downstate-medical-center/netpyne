@@ -20,7 +20,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 0.5*1e3
+cfg.duration = 0.1*1e3
 cfg.dt = 0.05
 cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
 cfg.hParams = {'celsius': 34, 'v_init': -80}  
@@ -67,7 +67,7 @@ cfg.saveCellConns = True
 # Analysis and plotting 
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']
-cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,100], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
 cfg.analysis['plotLFP'] = {'separation': 1.0, 'plots': ['timeSeries', 'locations']}
 
 #------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 ccopy_reg
 _reconstructor
 p0
-(cnetpyne.specs
+(cnetpyne.specs.dicts
 Dict
 p1
 c__builtin__

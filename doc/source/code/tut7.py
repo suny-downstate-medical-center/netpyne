@@ -109,7 +109,8 @@ if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
 
-
+# check model output
+sim.checkOutput('tut7')
 
 
 

@@ -394,7 +394,7 @@ def clearObj (obj):
     elif isinstance(obj, (dict, Dict, ODict)):
         for key in obj.keys():
             val = obj[key]
-            if isinstance(item, (dict, Dict))(val, (list, dict, Dict, ODict)):
+            if isinstance(val, (list, dict, Dict, ODict)):
                 clearObj(val)
             del obj[key]
     return obj
@@ -484,8 +484,10 @@ def clearAll ():
     sim.pc.gid_clear()                    # clear previous gid settings
 
     # clean cells and simData in all nodes
-    sim.clearObj([cell.__dict__ for cell in sim.net.cells])
-    sim.clearObj([stim for stim in sim.simData['stims']])
+    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
+    if 'stims' in list(sim.simData.keys()):
+        sim.clearObj([stim for stim in sim.simData['stims']])
+
     for key in sim.simData.keys(): del sim.simData[key]
     for c in sim.net.cells: del c
     for p in sim.net.pops: del p
@@ -494,8 +496,11 @@ def clearAll ():
 
     # clean cells and simData gathered in master node
     if sim.rank == 0:
-        sim.clearObj([cell.__dict__ for cell in sim.net.allCells])
-        sim.clearObj([stim for stim in sim.allSimData['stims']])
+        if hasattr(sim.net, 'allCells'):
+            sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
+        if hasattr(sim, 'allSimData') and 'stims' in list(sim.allSimData.keys()):
+            sim.clearObj([stim for stim in sim.allSimData['stims']])
+
         for key in sim.allSimData.keys(): del sim.allSimData[key]
         for c in sim.net.allCells: del c
         for p in sim.net.allPops: del p

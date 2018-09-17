@@ -521,7 +521,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # show fig
     if showFig: _showFigure()
 
-    return fig, {'include': include, 'spkts': spkts, 'spkinds': spkinds, 'timeRange': timeRange}
+    return fig, {'include': include, 'spkts': spkts, 'spkinds': sel['spkind'].tolist(), 'timeRange': timeRange}
 
 
 # -------------------------------------------------------------------------------------------------------------------

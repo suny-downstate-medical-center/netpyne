@@ -744,6 +744,8 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     
 
     plt.scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
+    posXpre, posYpre = [], []
+    posXpost, posYpost = [], []
     if showConns and not tagsFile:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells

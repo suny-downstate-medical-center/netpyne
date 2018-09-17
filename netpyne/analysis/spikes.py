@@ -11,6 +11,7 @@ from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
     from matplotlib import gridspec
+    from matplotlib import mlab
 import numpy as np
 from numbers import Number
 import pandas as pd
@@ -760,7 +761,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
     for stat in stats:
         # create fig
-        fig,ax1 = plt.subplots(figsize=figSize)
+        fig, ax1 = plt.subplots(figsize=figSize)
         fontsiz = fontsize 
         xlabel = xlabels[stat]
 

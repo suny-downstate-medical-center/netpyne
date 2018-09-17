@@ -1,10 +1,11 @@
 """
-neuromlFuncs.py 
+conversion/neuromlFormat.py 
 
 Contains functions related to neuroml conversion (import from and export to) 
 
 Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 try:
     import neuroml
@@ -14,8 +15,11 @@ try:
     min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
     
     if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
-        print('\n*******\n  Error: pyNeuroML version %s is installed but at least v%s is required!\n*******\n'%(pynml_ver,min_pynml_ver_required))
-        neuromlExists = False
+        from neuron import h
+        pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+        if int(pc.id()) == 0: 
+            print('Note: pyNeuroML version %s is installed but at least v%s is required'%(pynml_ver,min_pynml_ver_required))
+            neuromlExists = False
     else:
         neuromlExists = True
         
@@ -23,20 +27,20 @@ except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if int(pc.id()) == 0:  # only print for master node
-        print('\n*******\n  Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  Install the pyNeuroML & libNeuroML Python packages: https://www.neuroml.org/getneuroml\n*******\n')
+        print('Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
     neuromlExists = False
 
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-import specs
+from .. import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
 def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 
-    import sim
+    from .. import sim
 
     nn = {}
 
@@ -131,7 +135,7 @@ if neuromlExists:
     ############################################################################### 
     def _export_synapses (net, nml_doc):
 
-        import sim
+        from .. import sim
 
         syn_types = {}
         for id,syn in net.params.synMechParams.iteritems():
@@ -211,7 +215,7 @@ if neuromlExists:
     ###############################################################################         
     def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
 
-        import sim
+        from .. import sim
 
         net = sim.net
         
@@ -1291,7 +1295,7 @@ if neuromlExists:
     ###############################################################################
     def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
 
-        import sim
+        from .. import sim
 
         netParams = specs.NetParams()
 

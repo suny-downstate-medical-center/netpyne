@@ -1,263 +1,18 @@
 """
-specs.py
-NetParams is a class containing a set of network parameters using a standardized structure
-SimConfig is a class containing a set of simulation configurations using a standardized structure
+specs/netParams.py
+
+NetParams class includes high-level network parameters and methods
+
 Contributors: salvadordura@gmail.com
 """
 
 from collections import OrderedDict
-from netpyne import utils
+from .dicts import Dict, ODict
+from .. import conversion
 
-###############################################################################
-# Dict class (allows dot notation for dicts)
-###############################################################################
-
-class Dict(dict):
-
-    __slots__ = []
-
-    def __init__(*args, **kwargs):
-        self = args[0]
-        args = args[1:]
-        if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
-        if args:
-            self.update(self.dotify(args[0]))
-        if len(kwargs):
-            self.update(self.dotify(kwargs))
-
-    # only called if k not found in normal places
-    def __getattr__(self, k):
-        try:
-            # Throws exception if not in prototype chain
-            return object.__getattribute__(self, k)
-        except AttributeError:
-            try:
-                return self[k]
-            except KeyError:
-                raise AttributeError(k)
-
-    def __setattr__(self, k, v):
-        try:
-            # Throws exception if not in prototype chain
-            object.__getattribute__(self, k)
-        except AttributeError:
-            try:
-                self[k] = v
-            except:
-                raise AttributeError(k)
-        else:
-            object.__setattr__(self, k, v)
-
-    def __delattr__(self, k):
-        try:
-            # Throws exception if not in prototype chain
-            object.__getattribute__(self, k)
-        except AttributeError:
-            try:
-                del self[k]
-            except KeyError:
-                raise AttributeError(k)
-        else:
-            object.__delattr__(self, k)
-
-
-    def todict(self):
-        return self.undotify(self)
-
-    def fromdict(self, d):
-        d = self.dotify(d)
-        for k,v in d.iteritems():
-            self[k] = v
-
-    def __repr__(self):
-        keys = self.keys()
-        args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
-        return '{%s}' % (args)
-
-
-    def dotify(self, x):
-        if isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, (list, tuple)):
-            return type(x)( self.dotify(v) for v in x )
-        else:
-            return x
-
-    def undotify(self, x):
-        if isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, (list, tuple)):
-            return type(x)( self.undotify(v) for v in x )
-        else:
-            return x
-
-    def __rename__(self, old, new, label=None):
-        '''
-        old (string): old dict key
-        new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
-        returns: True if successful, False otherwse
-        '''
-        obj = self
-        if isinstance(label, (tuple, list)):
-            for ip in range(len(label)):
-                try:
-                    obj = obj[label[ip]] 
-                except:
-                    return False 
-
-        if old in obj:
-            obj[new] = obj.pop(old)  # replace
-            return True
-        else:
-            return False
-
-    def rename(self, *args, **kwargs):
-        self.__rename__(*args, **kwargs)
-
-    def __missing__(self, key):
-        if key and not key.startswith('_ipython'):
-            value = self[key] = Dict()
-            return value
-
-    def __getstate__ (self):
-        return self.todict()
-
-    def __setstate__ (self, d):
-        self = self.fromdict(d)
-
-
-###############################################################################
-# ODict class (allows dot notation for ordered dicts)
-###############################################################################
-
-class ODict(OrderedDict):
-
-    __slots__ = []
-
-    def __init__(self, *args, **kwargs):
-        super(ODict, self).__init__(*args, **kwargs)
-
-    def __contains__(self, k):
-        try:
-            return hasattr(self, k) or dict.__contains__(self, k)
-        except:
-            return False
-
-    # only called if k not found in normal places
-    def __getattr__(self, k):
-        try:
-            # Throws exception if not in prototype chain
-            return super(ODict, self).__getattr__(k)
-        except AttributeError:
-            try:
-                return super(ODict, self).__getitem__(k)
-            except KeyError:
-                raise AttributeError(k)
-
-
-    def __setattr__(self, k, v):
-        if k.startswith('_OrderedDict'):
-            super(ODict, self).__setattr__(k,v)
-        else:
-            try:
-                super(ODict, self).__setitem__(k,v)
-            except:
-                raise AttributeError(k)
-
-
-    def __getitem__(self, k):
-        return super(ODict, self).__getitem__(k)
-
-
-    def __setitem__(self, k, v):
-        super(ODict, self).__setitem__(k,v)
-
-    def __delattr__(self, k):
-        try:
-            # Throws exception if not in prototype chain
-            object.__getattribute__(self, k)
-        except AttributeError:
-            try:
-                super(ODict, self).__delattr__(k)
-            except KeyError:
-                raise AttributeError(k)
-        else:
-            object.__delattr__(self, k)
-
-    def toOrderedDict(self):
-        return self.undotify(self)
-
-    def fromOrderedDict(self, d):
-        d = self.dotify(d)
-        for k,v in d.iteritems():
-            self[k] = v
-
-    def __repr__(self):
-        keys = self.keys()
-        args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
-        return '{%s}' % (args)
-
-
-    def dotify(self, x):
-        if isinstance(x, OrderedDict):
-            return ODict( (k, self.dotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, (list, tuple)):
-            return type(x)( self.dotify(v) for v in x )
-        else:
-            return x
-
-    def undotify(self, x):
-        if isinstance(x, OrderedDict):
-            return OrderedDict( (k, self.undotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.iteritems() )
-        elif isinstance(x, (list, tuple)):
-            return type(x)( self.undotify(v) for v in x )
-        else:
-            return x
-
-    def __rename__(self, old, new, label=None):
-        '''
-        old (string): old dict key
-        new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
-        returns: True if successful, False otherwse
-        '''
-        obj = self
-        if isinstance(label, (tuple, list)):
-            for ip in range(len(label)):
-                try:
-                    obj = obj[label[ip]] 
-                except:
-                    return False 
-
-        if old in obj:
-            obj[new] = obj.pop(old)  # replace
-            return True
-        else:
-            return False
-
-    def rename(self, *args, **kwargs):
-        self.__rename__(*args, **kwargs)
-        
-    def __getstate__ (self):
-        return self.toOrderedDict()
-
-    def __setstate__ (self, d):
-        self = self.fromOrderedDict(d)
-
-
-###############################################################################
+# ----------------------------------------------------------------------------
 # PopParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class PopParams (ODict):
     def setParam(self, label, param, value):
@@ -278,9 +33,9 @@ class PopParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # CellParams class
-###############################################################################
+# ----------------------------------------------------------------------------
     
 class CellParams (ODict):
     def setParam(self, label, param, value):
@@ -308,9 +63,9 @@ class CellParams (ODict):
             return False
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # ConnParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class ConnParams (ODict):
     def setParam(self, label, param, value):
@@ -327,9 +82,9 @@ class ConnParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # SynMechParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class SynMechParams (ODict):
     def setParam(self, label, param, value):
@@ -346,9 +101,9 @@ class SynMechParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # SubConnParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class SubConnParams (ODict):
     def setParam(self, label, param, value):
@@ -365,9 +120,9 @@ class SubConnParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # StimSourceParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class StimSourceParams (ODict):
     def setParam(self, label, param, value):
@@ -384,9 +139,9 @@ class StimSourceParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # StimTargetParams class
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class StimTargetParams (ODict):
     def setParam(self, label, param, value):
@@ -403,9 +158,9 @@ class StimTargetParams (ODict):
         return self.__rename__(old, new, label)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # NETWORK PARAMETERS CLASS
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class NetParams (object):
 
@@ -546,7 +301,7 @@ class NetParams (object):
         if not label:
             label = int(self._labelid)
             self._labelid += 1
-        secs, secLists, synMechs, globs = utils.importCell(fileName, cellName, cellArgs, cellInstance)
+        secs, secLists, synMechs, globs = conversion.importCell(fileName, cellName, cellArgs, cellInstance)
         cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globals': globs}
 
         # adjust cell 3d points so that soma is at location 0,0,0
@@ -570,7 +325,7 @@ class NetParams (object):
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
-        utils.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
+        conversion.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
         return self.cellParams
 
 
@@ -700,13 +455,13 @@ class NetParams (object):
 
 
     def todict(self):
-        from sim import replaceDictODict
+        from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
 
 
-###############################################################################
+# ----------------------------------------------------------------------------
 # SIMULATION CONFIGURATION CLASS
-###############################################################################
+# ----------------------------------------------------------------------------
 
 class SimConfig (object):
 

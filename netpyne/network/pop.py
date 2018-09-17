@@ -19,7 +19,8 @@ from neuron import h # Import NEURON
 ###############################################################################
 
 class Pop (object):
-    ''' Python class used to instantiate the network population '''
+    ''' Python class to instantiate the network population '''
+    
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['pop'] = label
@@ -29,7 +30,8 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
-        import sim
+        ''' distribute cells across compute nodes using round-robin'''
+        from .. import sim
             
         hostCells = {}
         for i in range(sim.nhosts):
@@ -47,8 +49,8 @@ class Pop (object):
         return hostCells
 
 
-    # Function to instantiate Cell objects based on the characteristics of this population
     def createCells(self):
+        '''Function to instantiate Cell objects based on the characteristics of this population'''
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -76,7 +78,7 @@ class Pop (object):
 
     def createCellsFixedNum (self):
         ''' Create population cells based on fixed number of cells'''
-        import sim
+        from .. import sim
 
         cells = []
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
@@ -144,7 +146,7 @@ class Pop (object):
                 
     def createCellsDensity (self):
         ''' Create population cells based on density'''
-        import sim
+        from .. import sim
 
         cells = []
         shape = sim.net.params.shape
@@ -260,7 +262,7 @@ class Pop (object):
 
     def createCellsList (self):
         ''' Create population cells based on list of individual cells'''
-        import sim
+        from .. import sim
         
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
@@ -289,7 +291,7 @@ class Pop (object):
 
     def createCellsGrid (self):
         ''' Create population cells based on fixed number of cells'''
-        import sim
+        from .. import sim
 
         cells = []
         
@@ -330,7 +332,7 @@ class Pop (object):
 
     def _setCellClass (self):
         ''' Set cell class (CompartCell, PointCell, etc)'''
-        import sim
+        from .. import sim
         
         # Check whether it's a NeuroML2 based cell
         if 'originalFormat' in self.tags:
@@ -357,23 +359,11 @@ class Pop (object):
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
 
-    def __getstate__ (self): 
-        import sim
-        
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
-        odict = self.__dict__.copy() # copy the dict since we change it
-        odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
-        #odict['cellModelClass'] = str(odict['cellModelClass'])
-        del odict['cellModelClass']
-        del odict['rand']
-        return odict
-
-
     def calcRelativeSegCoords(self):   
         """Calculate segment coordinates from 3d point coordinates
         Used for LFP calc (one per population cell; assumes same morphology)"""
 
-        import sim
+        from .. import sim
 
         localPopGids = list(set(sim.net.gid2lid.keys()).intersection(set(self.cellGids)))
         if localPopGids: 
@@ -437,4 +427,16 @@ class Pop (object):
         self._morphSegCoords['d1'] = d1
 
         return self._morphSegCoords
+
+
+    def __getstate__ (self): 
+        from .. import sim
+        
+        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
+        #odict['cellModelClass'] = str(odict['cellModelClass'])
+        del odict['cellModelClass']
+        del odict['rand']
+        return odict
 

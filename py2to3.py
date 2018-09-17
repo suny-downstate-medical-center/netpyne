@@ -2,7 +2,7 @@
 from subprocess import call
 
 py2_root = '../netpyne_temp'
-py2_branch = 'master'
+py2_branch = 'development'
 folders = ['netpyne', 'doc', 'examples']
 files = ['CHANGES.md', 'README.md', 'sdnotes.org', '.gitignore']
 

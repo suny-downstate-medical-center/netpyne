@@ -8,7 +8,7 @@ __all__ = []
 __all__.extend(['initialize', 'setNet', 'setNetParams', 'setSimCfg', 'createParallelContext', 'setupRecording', 'setupRecordLFP', 'calculateLFP', 'clearAll', 'setGlobals']) # init and setup
 __all__.extend(['preRun', 'runSim', 'runSimWithIntervalFunc', '_gatherAllCellTags', '_gatherAllCellConnPreGids', '_gatherCells', 'gatherData'])  # run and gather
 __all__.extend(['saveData', 'loadSimCfg', 'loadNetParams', 'loadNet', 'loadSimData', 'loadAll', 'ijsonLoad', 'compactConnFormat', 'distributedSaveHDF5', 'loadHDF5']) # saving and loading
-__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
+__all__.extend(['popAvgRates', 'id32', 'copyReplaceItemObj', 'copyRemoveItemObj', 'clearObj', 'replaceItemObj', 'replaceNoneObj', 'replaceFuncObj', 'replaceDictODict', 
     'readCmdLineArgs', 'getCellsList', 'cellByGid','timing',  'version', 'gitChangeset', 'loadBalance','_init_stim_randomizer', 'decimalToFloat', 'unique',
     'rename'])  # misc/utilities
 
@@ -277,15 +277,16 @@ def loadSimCfg (filename, data=None, setLoaded=True):
 ###############################################################################
 def loadSimData (filename, data=None):
     from . import sim
+
     if not data: 
         data = _loadFile(filename)
     print('Loading simData...')
     if 'simData' in data:
         sim.allSimData = data['simData']
-        print('done')
+        print('Done')
     else:
-        print(6)
         print(('  simData not found in file %s'%(filename)))
+
     pass
 
 
@@ -294,8 +295,8 @@ def loadSimData (filename, data=None):
 ###############################################################################
 def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
     from . import sim 
+
     if not data: data = _loadFile(filename)
-    
     loadSimCfg(filename, data=data)
     sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
@@ -419,7 +420,7 @@ def _loadFile (filename):
         import json
         print(('Loading file %s ... ' % (filename)))
         with open(filename, 'r') as fileObj:
-            data = json.load(fileObj)
+            data = json.load(fileObj, object_hook=_byteify)
 
     # load mat file
     elif ext == 'mat':
@@ -487,6 +488,7 @@ def clearAll ():
     sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
     if 'stims' in list(sim.simData.keys()):
         sim.clearObj([stim for stim in sim.simData['stims']])
+
     for key in list(sim.simData.keys()): del sim.simData[key]
     for c in sim.net.cells: del c
     for p in sim.net.pops: del p
@@ -499,6 +501,7 @@ def clearAll ():
             sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
         if hasattr(sim, 'allSimData') and 'stims' in list(sim.allSimData.keys()):
             sim.clearObj([stim for stim in sim.allSimData['stims']])
+
         for key in list(sim.allSimData.keys()): del sim.allSimData[key]
         for c in sim.net.allCells: del c
         for p in sim.net.allPops: del p
@@ -567,6 +570,40 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 
 
 ###############################################################################
+### Remove item with specific key from dict or list (used to remove h objects)
+###############################################################################
+def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
+    if type(obj) == list:
+        if objCopy=='ROOT':
+            objCopy = []
+        for item in obj:
+            if isinstance(item, list):
+                objCopy.append([])
+                copyRemoveItemObj(item, keystart, objCopy[-1])
+            elif isinstance(item, (dict, Dict)):
+                objCopy.append({})
+                copyRemoveItemObj(item, keystart,  objCopy[-1])
+            else:
+                objCopy.append(item)
+
+    elif isinstance(obj, (dict, Dict)):
+        if objCopy == 'ROOT':
+            objCopy = Dict()
+        for key,val in obj.items():
+            if type(val) in [list]:
+                objCopy[key] = []
+                copyRemoveItemObj(val, keystart, objCopy[key])
+            elif isinstance(val, (dict, Dict)):
+                objCopy[key] = {}
+                copyRemoveItemObj(val, keystart, objCopy[key])
+            elif key.startswith(keystart):
+                objCopy.pop(key, None)
+            else:
+                objCopy[key] = val
+    return objCopy
+
+
+###############################################################################
 ### Rename objects
 ###############################################################################
 def rename (obj, old, new, label=None):
@@ -578,7 +615,6 @@ def rename (obj, old, new, label=None):
             return True
         else:
             return False
-
 
 
 ###############################################################################
@@ -779,7 +815,6 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     if len(sys.argv) > 1:
         print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
-
     cfgPath = None
     netParamsPath = None
 
@@ -1421,7 +1456,8 @@ def gatherData (gatherLFP = True):
         if 'runTime' in sim.timingData:
             print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-                sim.allSimData['popRates'] = sim.popAvgRates()
+                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                sim.allSimData['popRates'] = sim.popAvgRates(trange=trange)
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
@@ -1533,7 +1569,7 @@ def distributedSaveHDF5():
 
     sim.compactConnFormat()
     conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
-    conns = sim.copyReplaceItemObj(conns, keystart='h', newval=[]) 
+    conns = sim.copyRemoveItemObj(conns, keystart='h', newval=[]) 
     connFormat = ['postGid']+sim.cfg.compactConnFormat
     with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
         hf.create_dataset('conns', data = conns)
@@ -1562,12 +1598,14 @@ def loadHDF5(filename):
 ###############################################################################
 ### Save data
 ###############################################################################
-def saveData (include = None):
+def saveData (include = None, filename = None):
     from . import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
     else: needGather = False
     if needGather: gatherData()
+
+    if filename: sim.cfg.filename = filename
 
     if sim.rank == 0:
         timing('start', 'saveTime')
@@ -1610,7 +1648,9 @@ def saveData (include = None):
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
         
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
-        if 'netParams' in include: net['params'] = replaceFuncObj(sim.net.params.__dict__)
+        if 'netParams' in include: 
+            sim.net.params.__dict__.pop('_labelid', None)
+            net['params'] = replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
         if 'netCells' in include: net['cells'] = sim.net.allCells
         if 'netPops' in include: net['pops'] = sim.net.allPops
@@ -1625,56 +1665,58 @@ def saveData (include = None):
         if dataSave:
             if sim.cfg.timestampFilename:
                 timestamp = time()
-                timestampStr = datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
-                sim.cfg.filename = sim.cfg.filename+'-'+timestampStr
-
+                timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
+            else:
+                timestampStr = ''
+            
+            filePath = sim.cfg.filename + timestampStr
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
                 dataSave = replaceDictODict(dataSave)
-                print(('Saving output as %s ... ' % (sim.cfg.filename+'.pkl')))
-                with open(sim.cfg.filename+'.pkl', 'wb') as fileObj:
+                print(('Saving output as %s ... ' % (file_path+'.pkl')))
+                with open(file_path+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to dpk file
             if sim.cfg.saveDpk:
                 import gzip
-                print(('Saving output as %s ... ' % (sim.cfg.filename+'.dpk')))
-                fn=sim.cfg.filename #.split('.')
-                gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
+                print(('Saving output as %s ... ' % (filePath+'.dpk')))
+                #fn=filePath #.split('.')
+                gzip.open(filePath, 'wb').write(pk.dumps(dataSave)) # write compressed string
                 print('Finished saving!')
 
             # Save to json file
             if sim.cfg.saveJson:
                 import json
                 #dataSave = replaceDictODict(dataSave)  # not required since json saves as dict
-                print(('Saving output as %s ... ' % (sim.cfg.filename+'.json ')))
-                with open(sim.cfg.filename+'.json', 'w') as fileObj:
+                print(('Saving output as %s ... ' % (filePath+'.json ')))
+                with open(filePath+'.json', 'w') as fileObj:
                     json.dump(dataSave, fileObj)
                 print('Finished saving!')
 
             # Save to mat file
             if sim.cfg.saveMat:
                 from scipy.io import savemat
-                print(('Saving output as %s ... ' % (sim.cfg.filename+'.mat')))
-                savemat(sim.cfg.filename+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                print(('Saving output as %s ... ' % (filePath+'.mat')))
+                savemat(filePath+'.mat', tupleToList(replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
                 dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
                 import hdf5storage
-                print(('Saving output as %s... ' % (sim.cfg.filename+'.hdf5')))
-                hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
+                print(('Saving output as %s... ' % (filePath+'.hdf5')))
+                hdf5storage.writes(dataSaveUTF8, filename=filePath+'.hdf5')
                 print('Finished saving!')
 
             # Save to CSV file (currently only saves spikes)
             if sim.cfg.saveCSV:
                 if 'simData' in dataSave:
                     import csv
-                    print(('Saving output as %s ... ' % (sim.cfg.filename+'.csv')))
-                    writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
+                    print(('Saving output as %s ... ' % (filePath+'.csv')))
+                    writer = csv.writer(open(filePath+'.csv', 'wb'))
                     for dic in dataSave['simData']:
                         for values in dic:
                             writer.writerow(values)
@@ -1710,7 +1752,7 @@ def saveData (include = None):
 
             # return full path
             import os
-            return os.getcwd()+'/'+sim.cfg.filename
+            return os.getcwd() + '/' + filePath
 
         else:
             print('Nothing to save')

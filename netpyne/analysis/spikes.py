@@ -10,8 +10,7 @@ from netpyne import __gui__
 
 if __gui__:
     import matplotlib.pyplot as plt
-    from matplotlib import gridspec
-    from matplotlib import mlab
+    from matplotlib import gridspec, mlab
 import numpy as np
 from numbers import Number
 import pandas as pd

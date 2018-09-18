@@ -236,14 +236,15 @@ class Batch(object):
                         groupedParams = True
 
                 if ungroupedParams:
-                    labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False]))
+                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in p in self.params if p['group'] == False])
+                    valueCombinations = list(product(*(valuesList)))
+                    indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
                 else:
                     labelList = ()
                     valuesList = ()
+                    valueCombinations = [(0,)] # this is a hack -- improve!
+                    indexCombinations = [(0,)]
 
-                labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False]))
-                valueCombinations = list(product(*(valuesList)))
-                indexCombinations = list(product(*[list(range(len(x))) for x in valuesList]))
 
                 if groupedParams:
                     labelListGroup, valuesListGroup = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True]))
@@ -424,6 +425,11 @@ wait
                             print('Submitting job ',jobName)
                             # master/slave bulletin board schedulling of jobs
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
+                        
+                        else:
+                            print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
+                            import sys
+                            sys.exit(0)
                 
                     sleep(1) # avoid saturating scheduler
             print("-"*80)

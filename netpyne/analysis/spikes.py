@@ -11,12 +11,13 @@ from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
     from matplotlib import gridspec
+    from matplotlib import mlab
 import numpy as np
 from numbers import Number
 import pandas as pd
 import scipy
 from ..specs import Dict
-from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData, syncMeasure
+from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData, syncMeasure, _smooth1d
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -1064,7 +1065,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+exception
 def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, 
     popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 

@@ -319,12 +319,12 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 def generateRandsPrePost(self, pre, post):
     from .. import sim
     
-    if hasattr(sim.cfg, 'useOldProbConn') and sim.cfg.usePy2ProbConn == False:
+    if hasattr(sim.cfg, 'useOldProbConn') and sim.cfg.useOldProbConn:
         if sim.cfg.verbose:
             print(' Creating probabilistic connections using deprecated method (only useful to replicate results from versions < 0.8.0).')
     else:
-        pre = pre.sort()     
-        post = post.sort()
+        pre = sorted(pre)     
+        post = sorted(post)
 
     # Create an array of random numbers for checking each connection 
     allRands = {(preGid, postGid): self.rand.uniform(0,1) for preGid in pre for postGid in post}
@@ -341,7 +341,7 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
-    allRands = generateRandsPrePost(preCellsTags.keys(), postCellsTags.keys())
+    allRands = self.generateRandsPrePost(preCellsTags.keys(), postCellsTags.keys())
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 

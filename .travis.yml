@@ -65,20 +65,20 @@ script:
     - python tut5.py -nogui
     - python tut6.py -nogui
     - python tut7.py -nogui
-    - python tut_import.py
+    #- python tut_import.py
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
     - cd ../HybridTut
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl
     - python HybridTut_run.py -nogui
     - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl
     - python M1_run.py -nogui
     - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl
     - python M1_run.py -nogui
     - cd ../RL_arm
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl
     - python main.py
     
     - cd ../..

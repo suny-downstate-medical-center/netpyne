@@ -49,7 +49,7 @@ install:
     - make --silent install -j4
     - cd src/nrnpython
     - python setup.py install
-    - export PATH='$NEURON_HOME/x86_64/bin:${PATH}'
+    - export PATH='$NEURON_HOME/x86_64/bin:$PATH'
     - export PYTHONPATH='$PYTHONPATH:$NEURON_HOME/lib/python/'
 
 script:

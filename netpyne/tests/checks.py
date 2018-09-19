@@ -44,8 +44,8 @@ def checkOutput(modelName, verbose=False):
 	expectedAll['numSpikes']['HybridTut'] = 2766
 
 	# M1 expected output 
-	expectedAll['numSyns']['M1'] = 4843
-	expectedAll['numSpikes']['M1'] = 60272
+	expectedAll['numSyns']['M1'] = 4851
+	expectedAll['numSpikes']['M1'] = 68831
 
 	# PTcell expected output 
 	expectedAll['numSyns']['PTcell'] = 1

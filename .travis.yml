@@ -66,20 +66,25 @@ script:
     - python tut6.py -nogui
     - python tut7.py -nogui
     #- python tut_import.py
+    # HHTut example
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
+    # HybridTut example
     - cd ../HybridTut
-    - $NEURON_HOME/x86_64/bin/nrnivmodl
+    - $NEURON_HOME/bin/nrnivmodl .
     - python HybridTut_run.py -nogui
+    # M1 example
     - cd ../M1
-    - $NEURON_HOME/x86_64/bin/nrnivmodl
+    - $NEURON_HOME/bin/nrnivmodl .
     - python M1_run.py -nogui
-    - cd ../M1
-    - $NEURON_HOME/x86_64/bin/nrnivmodl
-    - python M1_run.py -nogui
-    - cd ../RL_arm
-    - $NEURON_HOME/x86_64/bin/nrnivmodl
-    - python main.py
+    # PTcell example
+    - cd ../PTcell
+    - $NEURON_HOME/bin/nrnivmodl mod
+    - python init.py -nogui
+    # LFP recording
+    - cd ../LFPrecording
+    - $NEURON_HOME/bin/nrnivmodl mod
+    - python cell_lfp.py -nogui 
     
     - cd ../..
 

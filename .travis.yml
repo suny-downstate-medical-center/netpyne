@@ -8,9 +8,9 @@ git:
 addons:
   apt:
     packages:
-    - python-numpy 
-    - python-scipy 
-    - python-matplotlib 
+    # - python-numpy 
+    # - python-scipy 
+    # - python-matplotlib 
     - python-tk
     - python-sympy
     - python-tables 
@@ -37,13 +37,14 @@ addons:
     #- libpng-dev
 
 language: python
-python: 3.6
+python: 3.4
 
-# virtualenv:
-#    system_site_packages: true  
+virtualenv:
+    system_site_packages: true  
 
 install:
     - cd ..
+    - pip install numpy matplotlib scipy pandas 
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
     - ./build.sh

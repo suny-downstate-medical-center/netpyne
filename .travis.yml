@@ -21,17 +21,17 @@ addons:
     - cython 
     - libx11-dev 
     - git 
-    - bison 
+    #- bison 
     - flex 
     - automake  
     - libtool  
     - libxext-dev 
     - libncurses-dev 
-    - libopenmpi-dev 
+    #- libopenmpi-dev 
     - make 
-    - zlib1g-dev 
-    - unzip 
-    - libpng-dev
+    #- zlib1g-dev 
+    #- unzip 
+    #- libpng-dev
 
 language: python
 python: 3.4
@@ -49,29 +49,42 @@ install:
     - make --silent install -j4
     - cd src/nrnpython
     - python setup.py install
-    #- export PATH='$NEURON_HOME/x86_64/bin:$PATH'
-    - export PYTHONPATH='$PYTHONPATH:$NEURON_HOME/lib/python/'
+    - export PATH=$PATH:~/virtualenv/python3.4_with_system_site_packages/bin/:$NEURON_HOME/x86_64/bin
+    - export PYTHONPATH=$PYTHONPATH:$NEURON_HOME/lib/python/
 
 script:
-    - cd doc/source/code/
-    - $NEURON_HOME/bin/nrnivmodl mod
-    - python tut2.py -nogui
-    - python tut3.py -nogui
-    - python tut5.py -nogui
-    - python tut6.py -nogui
-    - python tut7.py -nogui
-    # - python tut_import.py
-    - cd ../../../examples/HHTut
-    - python HHTut_run.py -nogui
-    - cd ../HybridTut
-    - $NEURON_HOME/bin/nrnivmodl
-    - python HybridTut_run.py -nogui
-    - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
-    - python M1_run.py -nogui
-    - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
-    - python M1_run.py -nogui
+    - pwd 
+    - echo $PATH
+    - echp $PYTHONPATH
+    - ls $NEURON_HOME/nrn/
+    - ls $NEURON_HOME/bin/
+    - ls $NEURON_HOME/bin/nrnivmodl
+    - ls ~
+    - ls ~/virtualenv/python3.4_with_system_site_packages
+    - ls ~/virtualenv/python3.4_with_system_site_packages/netpyne
+    - ls ~/virtualenv/python3.4_with_system_site_packages/Neurosimlab-lab/netpyne
+    - ls ~/netpyne
+    - ls ~/Neurosimlab-lab/netpyne
+ 
+    # - cd doc/source/code/
+    # - $NEURON_HOME/bin/nrnivmodl mod
+    # - python tut2.py -nogui
+    # - python tut3.py -nogui
+    # - python tut5.py -nogui
+    # - python tut6.py -nogui
+    # - python tut7.py -nogui
+    # # - python tut_import.py
+    # - cd ../../../examples/HHTut
+    # - python HHTut_run.py -nogui
+    # - cd ../HybridTut
+    # - $NEURON_HOME/bin/nrnivmodl
+    # - python HybridTut_run.py -nogui
+    # - cd ../M1
+    # - $NEURON_HOME/bin/nrnivmodl
+    # - python M1_run.py -nogui
+    # - cd ../M1
+    # - $NEURON_HOME/bin/nrnivmodl
+    # - python M1_run.py -nogui
     # - cd ../RL_arm
     # - $NEURON_HOME/bin/nrnivmodl
     # - python main.py

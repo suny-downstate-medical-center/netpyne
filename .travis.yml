@@ -37,10 +37,10 @@ addons:
     #- libpng-dev
 
 language: python
-python: 3.4
+python: 3.6
 
-virtualenv:
-    system_site_packages: true  
+# virtualenv:
+#     system_site_packages: true  
 
 install:
     - cd ..

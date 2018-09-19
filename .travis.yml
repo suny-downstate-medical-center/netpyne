@@ -58,8 +58,11 @@ install:
     - export PYTHONPATH=$PYTHONPATH:$NEURON_HOME/lib/python/
 
 script:
+    - cd $TRAVIS_BUILD_DIR
+    - pwd
+    - ls
     - ls ~/virtualenv
-    - cd ~/Neurosim-lab/netpyne/doc/source/code/
+    - cd $TRAVIS_BUILD_DIR/doc/source/code/
     - $NEURON_HOME/x86_64/bin/nrnivmodl mod
     - python tut2.py -nogui
     - python tut3.py -nogui

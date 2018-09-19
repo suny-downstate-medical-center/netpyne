@@ -2,12 +2,15 @@
 
 sudo: false
 
+git:
+  depth: false
+
 addons:
   apt:
     packages:
-    - python-numpy 
-    - python-scipy 
-    - python-matplotlib 
+    # - python-numpy 
+    # - python-scipy 
+    # - python-matplotlib 
     - python-tk
     - python-sympy
     - python-tables 
@@ -21,25 +24,27 @@ addons:
     - cython 
     - libx11-dev 
     - git 
-    - bison 
+    #- bison 
     - flex 
     - automake  
     - libtool  
     - libxext-dev 
     - libncurses-dev 
-    - libopenmpi-dev 
+    #- libopenmpi-dev 
     - make 
-    - zlib1g-dev 
-    - unzip 
-    - libpng-dev
+    #- zlib1g-dev 
+    #- unzip 
+    #- libpng-dev
 
 language: python
-python: 3.4
+python: 3.6
 
-virtualenv:
-   system_site_packages: true  
+# virtualenv:
+#     system_site_packages: true  
 
 install:
+    - cd ..
+    - pip install numpy matplotlib scipy pandas 
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
     - ./build.sh
@@ -49,32 +54,37 @@ install:
     - make --silent install -j4
     - cd src/nrnpython
     - python setup.py install
-    - export PATH='$NEURON_HOME/x86_64/bin:${PATH}'
-    - export PYTHONPATH='$PYTHONPATH:$NEURON_HOME/lib/python/'
+    - export PATH=$PATH:$NEURON_HOME/x86_64/bin
+    - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR:$NEURON_HOME/lib/python/
 
 script:
-    - cd doc/source/code/
-    - $NEURON_HOME/bin/nrnivmodl mod
+    - cd $TRAVIS_BUILD_DIR/doc/source/code/
+    - $NEURON_HOME/x86_64/bin/nrnivmodl mod
     - python tut2.py -nogui
     - python tut3.py -nogui
     - python tut5.py -nogui
     - python tut6.py -nogui
     - python tut7.py -nogui
-    # - python tut_import.py
+    #- python tut_import.py
+    # HHTut example
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
+    # HybridTut example
     - cd ../HybridTut
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python HybridTut_run.py -nogui
+    # M1 example
     - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
+    - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python M1_run.py -nogui
-    - cd ../M1
-    - $NEURON_HOME/bin/nrnivmodl
-    - python M1_run.py -nogui
-    # - cd ../RL_arm
-    # - $NEURON_HOME/bin/nrnivmodl
-    # - python main.py
+    # PTcell example
+    - cd ../PTcell
+    - $NEURON_HOME/x86_64/bin/nrnivmodl mod
+    - python init.py -nogui
+    # LFP recording
+    - cd ../LFPrecording
+    - $NEURON_HOME/x86_64/bin/nrnivmodl mod
+    - python cell_lfp.py -nogui 
     
     - cd ../..
 

@@ -447,6 +447,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
 
         # PERFORMANCE: postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
         # PERFORMANCE: postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
+        # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
         postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]): 0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
 
@@ -522,14 +523,19 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
     finalParam = {}
 
     # initialize randomizer for string-based funcs that use rand (except for conv conn which already init)
-    args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
-    if 'rand' in args and connParam['connFunc'] not in ['convConn']:
-        self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
+    # PERFORMANCE:
+    # args = [x for param in paramStrFunc if param+'FuncArgs' in connParam for x in connParam[param+'FuncArgs'] ]
+    # if 'rand' in args and connParam['connFunc'] not in ['convConn']:
+    #     self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn']) 
 
+    randSeeded = False
     for param in paramStrFunc:
         if param+'List' in connParam:
             finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
         elif param+'Func' in connParam:
+            if not randSeeded and connParam['connFunc'] not in ['convConn'] and 'rand' in connParam[param+'FuncArgs']:
+                self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
+                randSeeded = True
             finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
         else:
             finalParam[param] = connParam.get(param)

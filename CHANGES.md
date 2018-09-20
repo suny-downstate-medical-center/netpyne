@@ -1,5 +1,9 @@
 # Version 0.8.0
 
+- Major code refactor to split functions across modules and subpackages
+
+- Switched to Python 3 as the default development environment
+
 - Optimized implementation of raste and spikeHist plotting using Pandas
 
 - Added option for filename to saveData()

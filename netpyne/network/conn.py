@@ -429,25 +429,48 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
 
+    # PERFORMANCE: copy the vars into args immediately and work out which keys are associated with lambda functions only once per method
+    funcKeys = {}
+    for paramStrFunc in paramsStrFunc:
+        connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
+        funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
+
+    # PERFORMANCE: converted to list only once 
+    postCellsTagsKeys = list(postCellsTags.keys())    
+
     for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
         divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
         divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
         self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
         randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
-        postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
-        postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
-        #postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
-        #for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
+        
+
+        # PERFORMANCE: postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
+        # PERFORMANCE: postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
+        postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]): 0
+                               for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
+
+        # PERFORMANCE: postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+        # PERFORMANCE: for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
         for postCellGid, postCellTags in postCellsTags.items():
             if postCellGid not in postCellsSample or postCellGid not in self.lid2gid:
                 continue
             
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
+                # PERFORMANCE: connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
         
+                # PERFORMANCE: update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict
+                for funcKey in funcKeys[paramStrFunc]:
+                    connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc+'Vars'][funcKey](preCellTags,postCellTags)
+
             if preCellGid != postCellGid: # if not self-connection
                 self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
+
+            # postCellsSample = [postCellsTags.keys()[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
+            # postCellsSample[:] = [randSample[divergence] if x == preCellGid else x for x in postCellsSample]  # remove post gid
+            postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]):0
+                               for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
                 
 # -----------------------------------------------------------------------------
 # From list connectivity 

@@ -24,6 +24,8 @@
 
 - Fixed bug in Pickle file encoding so works in Python3 
 
+- Fixed bug in divergence conn when repicking a value if postGid=preGid is randomly selected
+
 - Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
 
 NOTE on backward replicability: Due to this improvement it won't be possible to ensure replication of the results of some models 

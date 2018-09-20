@@ -448,7 +448,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         # PERFORMANCE: postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
         # PERFORMANCE: postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
         # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
-        postCellsSample = {(randSample[divergence] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]): 0
+        postCellsSample = {(postCellsTagsKeys[randSample[divergence]] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]): 0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed post (pre?) gid
 
         # PERFORMANCE: postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags

@@ -448,7 +448,7 @@ class NetParams (object):
                 else:
                     cellRule = pickle.load(fileObj, encoding='latin1')
         elif ext == 'json':
-            with open(fileName, 'r') as fileObj:
+            with open(fileName, 'rb') as fileObj:
                 cellRule = json.load(fileObj)
         
         self.cellParams[label] = cellRule

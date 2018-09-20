@@ -62,7 +62,7 @@ def _loadFile (filename):
     elif ext == 'json':
         import json
         print(('Loading file %s ... ' % (filename)))
-        with open(filename, 'r') as fileObj:
+        with open(filename, 'rb') as fileObj:
             data = json.load(fileObj, object_hook=_byteify)  # This doesn't work with py3 so need to find solution for both py2 and py3
 
     # load mat file
@@ -321,7 +321,7 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     if tagFormat:
         tags['format'] = tagFormat
 
-    with open(filename, 'r') as fd:
+    with open(filename, 'rb') as fd:
         start = time()
         print('Loading data ...')
         objs = ijson.items(fd, 'net.cells.item')

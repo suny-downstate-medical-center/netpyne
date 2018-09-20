@@ -437,8 +437,11 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
         postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
         postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
-        postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
-        for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
+#        postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+#        for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
+        for postCellGid, postCellTags in postCellsTags.iteritems():
+            if postCellGid not in postCellsSample or postCellGid not in self.lid2gid:
+                continue
             
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                 connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  

@@ -215,7 +215,6 @@ def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
 
         elif paramStrFunc in ['convergence']:
             # replace function with dict of values derived from function (one per post cell)
-
             connParam[paramStrFunc+'Func'] = {postGid: lambdaFunc(
                 **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellTags) for strVar in strVars}) 
                 for postGid,postCellTags in postCellsTags.items()}
@@ -437,9 +436,9 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
         postCellsSample = [list(postCellsTags.keys())[i] for i in randSample[0:divergence]]  # selected gids of postsyn cells
         postCellsSample[:] = [randSample[divergence] if x==preCellGid else x for x in postCellsSample] # remove post gid  
-#        postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
-#        for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
-        for postCellGid, postCellTags in postCellsTags.iteritems():
+        #postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+        #for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
+        for postCellGid, postCellTags in postCellsTags.items():
             if postCellGid not in postCellsSample or postCellGid not in self.lid2gid:
                 continue
             

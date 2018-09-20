@@ -407,7 +407,7 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
             self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1) 
             preCellsSample = [list(preCellsTags.keys())[i] for i in randSample][0:convergence]  # selected gids of presyn cells
-            preCellsSample[:] = [randSample[convergence] if x==postCellGid else x for x in preCellsSample] # remove post gid  
+            preCellsSample[:] = [list(preCellsTags.keys())[randSample[convergence]] if x==postCellGid else x for x in preCellsSample] # remove post gid  
             preCellsConv = {k:v for k,v in preCellsTags.items() if k in preCellsSample}  # dict of selected presyn cells tags
             for preCellGid, preCellTags in preCellsConv.items():  # for each presyn cell
          

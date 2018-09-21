@@ -29,7 +29,7 @@ def checkOutput(modelName, verbose=False):
 
 		# tut7 expected output 
 		expectedAll['numSyns']['tut7'] = 2500
-		expectedAll['numSpikes']['tut7'] = 583
+		expectedAll['numSpikes']['tut7'] = 332
 
 		# tut_import expected output 
 		expectedAll['numSyns']['tut_import'] = 340

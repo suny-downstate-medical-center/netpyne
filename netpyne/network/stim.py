@@ -178,7 +178,7 @@ def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
 
         # replace lambda function (with args as dict of lambda funcs) with list of values
         strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].items()})  
-                for postGid,postCellTags in postCellsTags.items()}
+                for postGid,postCellTags in sorted(postCellsTags.items())}
 
     return strParams
 

@@ -319,14 +319,18 @@ def generateRandsPrePost(self, pre, post):
     from .. import sim
     
     if hasattr(sim.cfg, 'useOldProbConn') and sim.cfg.useOldProbConn:
+        # Use the previous deprecated method which relied on the order of dicts being same across platforms; 
+        # kept for replicability of old results
         if sim.cfg.verbose:
             print(' Creating probabilistic connections using deprecated method (only useful to replicate results from versions < 0.8.0).')
+        allRands = {(preGid, postGid): self.rand.uniform(0,1) for preGid in pre for postGid in post}
     else:
-        pre = sorted(pre)     
-        post = sorted(post)
-
-    # Create an array of random numbers for checking each connection 
-    allRands = {(preGid, postGid): self.rand.uniform(0,1) for preGid in pre for postGid in post}
+        # Initialize randomizer every time so values depend on pre and post gid
+        allRands = {}
+        for preGid in pre:
+            for postGid in post:
+                self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
+                allRands[(preGid, postGid)] = self.rand.uniform(0,1)
 
     return allRands
 
@@ -365,7 +369,7 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     # standard probabilistic conenctions   
     else:
         # calculate the conn preGids of the each pre and post cell
-        for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
+        for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
             if postCellGid in self.lid2gid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
@@ -407,7 +411,7 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # PERFORMANCE: converted to list only once 
-    preCellsTagsKeys = list(preCellsTags.keys())  
+    preCellsTagsKeys = sorted(list(preCellsTags.keys()))
 
     for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
         if postCellGid in self.lid2gid:  # check if postsyn is in this node
@@ -420,9 +424,8 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
             # preCellsSample = [list(preCellsTags.keys())[i] for i in randSample][0:convergence]  # selected gids of presyn cells
             # preCellsSample[:] = [list(preCellsTags.keys())[randSample[convergence]] if x==postCellGid else x for x in preCellsSample] # remove post gid  
             # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
-            preCellsSample = {preCellsTagsKeys[randSample[convergence]] if preCellsTagsKeys[i]==postCellGid else preCellsTagsKeys[i]: 0
+            preCellsSample = {preCellsTagsKeys[randSample[convergence]] if preCellsTagsKeys[i]==postCellGid else preCellsTagsKeys[i]:0
                                    for i in randSample[0:convergence]}  # dict of selected gids of postsyn cells with removed post gid
-
             preCellsConv = {k:v for k,v in preCellsTags.items() if k in preCellsSample}  # dict of selected presyn cells tags
 
             for preCellGid, preCellTags in preCellsConv.items():  # for each presyn cell
@@ -456,7 +459,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # PERFORMANCE: converted to list only once 
-    postCellsTagsKeys = list(postCellsTags.keys())    
+    postCellsTagsKeys = sorted(list(postCellsTags.keys()))    
 
     for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
         divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell

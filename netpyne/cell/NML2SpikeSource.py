@@ -33,8 +33,7 @@ class NML2SpikeSource (CompartCell):
             #### nc.threshold = threshold  # not used....
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
             del nc # discard netcon
-        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
-        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+        sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
         
     def initRandom(self):
         from .. import sim

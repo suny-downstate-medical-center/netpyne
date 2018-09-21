@@ -84,7 +84,7 @@ def connectCells (self):
 
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
         for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-            if preGapParams['gid'] in self.lid2gid:  # only cells in this rank
+            if preGapParams['gid'] in self.gid2lid:  # only cells in this rank
                 cell = self.cells[self.gid2lid[preGapParams['gid']]] 
                 cell.addConn(preGapParams)
 
@@ -307,7 +307,7 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
             for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
     
     for postCellGid in postCellsTags:  # for each postsyn cell
-        if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
+        if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                 self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -351,7 +351,7 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
         probMatrix = {(preCellGid,postCellGid): connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
                                             for postCellGid,postCellTags in postCellsTags.items() # for each postsyn cell
                                             for preCellGid, preCellTags in preCellsTags.items()  # for each presyn cell
-                                            if postCellGid in self.lid2gid}  # check if postsyn is in this node
+                                            if postCellGid in self.gid2lid}  # check if postsyn is in this node
         
         connGids = self._disynapticBiasProb2(probMatrix, allRands, connParam['disynapticBias'], prePreGids, postPreGids)
         for preCellGid, postCellGid in connGids:
@@ -363,7 +363,7 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     else:
         # calculate the conn preGids of the each pre and post cell
         for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
-            if postCellGid in self.lid2gid:  # check if postsyn is in this node
+            if postCellGid in self.gid2lid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
                     if probability >= allRands[preCellGid,postCellGid]: 
@@ -407,7 +407,7 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
     preCellsTagsKeys = sorted(list(preCellsTags.keys()))
 
     for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
-        if postCellGid in self.lid2gid:  # check if postsyn is in this node
+        if postCellGid in self.gid2lid:  # check if postsyn is in this node
             convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)-1), 0)
             self.rand.Random123(sim.id32('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
@@ -466,10 +466,10 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         postCellsSample = {postCellsTagsKeys[randSample[divergence]] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]: 0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed pre gid
 
-        # PERFORMANCE: postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.lid2gid}  # dict of selected postsyn cells tags
+        # PERFORMANCE: postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.gid2lid}  # dict of selected postsyn cells tags
         # PERFORMANCE: for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
         for postCellGid, postCellTags in postCellsTags.items():
-            if postCellGid not in postCellsSample or postCellGid not in self.lid2gid:
+            if postCellGid not in postCellsSample or postCellGid not in self.gid2lid:
                 continue
             
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
@@ -512,7 +512,7 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
         preCellGid = orderedPreGids[relativePreId]     
         postCellGid = orderedPostGids[relativePostId]
-        if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
+        if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             
             if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn] 
             if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]

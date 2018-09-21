@@ -60,7 +60,7 @@ def addStims (self):
 
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
-                if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
+                if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
                     postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
 
                     # stim target params

@@ -113,7 +113,7 @@ def subcellularConn(self, allCellTags, allPopTags):
         if preCellsTags and postCellsTags:
             # iterate over postsyn cells to redistribute synapses
             for postCellGid in postCellsTags:  # for each postsyn cell
-                if postCellGid in self.lid2gid:
+                if postCellGid in self.gid2lid:
                     postCell = self.cells[self.gid2lid[postCellGid]] 
                     allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
                     if 'NetStim' in [x['cellModel'] for x in list(preCellsTags.values())]: # temporary fix to include netstim conns 

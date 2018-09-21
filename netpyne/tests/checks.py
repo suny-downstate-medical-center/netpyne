@@ -20,8 +20,8 @@ def checkOutput(modelName, verbose=False):
 		expectedAll['numSpikes']['tut4'] = 1210
 
 		# tut5 expected output 
-		expectedAll['numSyns']['tut5'] = 6897
-		expectedAll['numSpikes']['tut5'] = 4696
+		expectedAll['numSyns']['tut5'] = 7040
+		expectedAll['numSpikes']['tut5'] = 4659
 
 		# tut6 expected output 
 		expectedAll['numSyns']['tut6'] = 16
@@ -29,7 +29,7 @@ def checkOutput(modelName, verbose=False):
 
 		# tut7 expected output 
 		expectedAll['numSyns']['tut7'] = 2500
-		expectedAll['numSpikes']['tut7'] = 332
+		expectedAll['numSpikes']['tut7'] = 583
 
 		# tut_import expected output 
 		expectedAll['numSyns']['tut_import'] = 340
@@ -44,8 +44,8 @@ def checkOutput(modelName, verbose=False):
 		expectedAll['numSpikes']['HybridTut'] = 2766
 
 		# M1 expected output 
-		expectedAll['numSyns']['M1'] = 4851
-		expectedAll['numSpikes']['M1'] = 68831
+		expectedAll['numSyns']['M1'] = 4836
+		expectedAll['numSpikes']['M1'] = 59755
 
 		# PTcell expected output 
 		expectedAll['numSyns']['PTcell'] = 1

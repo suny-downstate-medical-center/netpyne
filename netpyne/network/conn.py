@@ -468,10 +468,9 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
 
         # PERFORMANCE: postCellsDiv = {postGid:postConds  for postGid,postConds in postCellsTags.items() if postGid in postCellsSample and postGid in self.gid2lid}  # dict of selected postsyn cells tags
         # PERFORMANCE: for postCellGid, postCellTags in postCellsDiv.items():  # for each postsyn cell
-        for postCellGid, postCellTags in postCellsTags.items():
-            if postCellGid not in postCellsSample or postCellGid not in self.gid2lid:
-                continue
-            
+        #for postCellGid, postCellTags in postCellsTags.items():
+        for postCellGid in [c for c in postCellsSample if c in self.gid2lid]:            
+            postCellTags = postCellsTags[postCellGid]
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                 # PERFORMANCE: connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
         

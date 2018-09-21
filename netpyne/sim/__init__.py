@@ -29,7 +29,7 @@ from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelCo
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells
 
 # import saving functions
 from .save import saveData, distributedSaveHDF5, compactConnFormat

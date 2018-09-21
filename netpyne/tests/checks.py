@@ -8,16 +8,16 @@ def checkOutput(modelName, verbose=False):
 		expectedAll = {'numSyns': {}, 'numSpikes': {}}
 
 		# tut2 expected output 
-		expectedAll['numSyns']['tut2'] = 252
-		expectedAll['numSpikes']['tut2'] = 946
+		expectedAll['numSyns']['tut2'] = 254
+		expectedAll['numSpikes']['tut2'] = 944
 
 		# tut3 expected output 
-		expectedAll['numSyns']['tut3'] = 252
-		expectedAll['numSpikes']['tut3'] = 548
+		expectedAll['numSyns']['tut3'] = 254
+		expectedAll['numSpikes']['tut3'] = 538
 
 		# tut4 expected output 
-		expectedAll['numSyns']['tut4'] = 78
-		expectedAll['numSpikes']['tut4'] = 1198
+		expectedAll['numSyns']['tut4'] = 73
+		expectedAll['numSpikes']['tut4'] = 1210
 
 		# tut5 expected output 
 		expectedAll['numSyns']['tut5'] = 6897

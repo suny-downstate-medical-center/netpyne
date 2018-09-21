@@ -31,9 +31,8 @@
 - Fixed bug in rand initialization for string-based func with div conn
 
 - Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
-NOTE on backward replicability: Due to this improvement it won't be possible to ensure replication of the results of some models 
-that included probabilistic connections in previous versions. However, if using Python 2, you can set cfg.useOldProbConn=True to use 
-the old implementation and replicate previous results. 
+
+NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions. 
 
 
 # Version 0.7.9

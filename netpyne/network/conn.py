@@ -318,19 +318,12 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 def generateRandsPrePost(self, pre, post):
     from .. import sim
     
-    if hasattr(sim.cfg, 'useOldProbConn') and sim.cfg.useOldProbConn:
-        # Use the previous deprecated method which relied on the order of dicts being same across platforms; 
-        # kept for replicability of old results
-        if sim.cfg.verbose:
-            print(' Creating probabilistic connections using deprecated method (only useful to replicate results from versions < 0.8.0).')
-        allRands = {(preGid, postGid): self.rand.uniform(0,1) for preGid in pre for postGid in post}
-    else:
-        # Initialize randomizer every time so values depend on pre and post gid
-        allRands = {}
-        for preGid in pre:
-            for postGid in post:
-                self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
-                allRands[(preGid, postGid)] = self.rand.uniform(0,1)
+    # Initialize randomizer every time so values depend on pre and post gid
+    allRands = {}
+    for preGid in pre:
+        for postGid in post:
+            self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
+            allRands[(preGid, postGid)] = self.rand.uniform(0,1)
 
     return allRands
 

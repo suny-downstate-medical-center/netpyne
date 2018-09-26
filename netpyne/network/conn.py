@@ -466,7 +466,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
     # converted to list only once 
     postCellsTagsKeys = sorted(list(postCellsTags.keys()))    
 
-    for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
+    for preCellGid in preCellsTags:  # for each presyn cell
         divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
         divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
         self.rand.Random123(sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
@@ -476,7 +476,8 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         postCellsSample = {postCellsTagsKeys[randSample[divergence]] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]: 0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed pre gid
 
-        for postCellGid in [c for c in postCellsSample if c in self.gid2lid]:            
+        for postCellGid in [c for c in postCellsSample if c in self.gid2lid]:
+            preCellTags = preCellsTags[preCellGid]
             postCellTags = postCellsTags[postCellGid]
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                 # update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict

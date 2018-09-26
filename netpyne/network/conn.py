@@ -320,10 +320,14 @@ def generateRandsPrePost(self, pre, post):
     
     # Initialize randomizer every time so values depend on pre and post gid
     allRands = {}
+    randArray = np.random.uniform(0,1,len(pre)*len(post))
+    j = 0
     for preGid in pre:
         for postGid in post:
             # self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
-            allRands[(preGid, postGid)] = self.rand.uniform(0,1)
+            # allRands[(preGid, postGid)] = self.rand.uniform(0,1)
+            allRands[(preGid, postGid)] = randArray[j]
+            j += 1
 
     return allRands
 

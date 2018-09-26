@@ -344,7 +344,13 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
 
     # get list of params that have a lambda function
-    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
+
+    # copy the vars into args immediately and work out which keys are associated with lambda functions only once per method
+    funcKeys = {}
+    for paramStrFunc in paramsStrFunc:
+        connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
+        funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # probabilistic connections with disynapticBias  
     if isinstance(connParam.get('disynapticBias', None), Number):  
@@ -366,13 +372,19 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     # standard probabilistic conenctions   
     else:
         # calculate the conn preGids of the each pre and post cell
-        for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
+        # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
+        for postCellGid in postCellsTags:  # for each postsyn cell
             if postCellGid in self.gid2lid:  # check if postsyn is in this node
-                for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
+                for preCellGid in preCellsTags:  # for each presyn cell
                     probability = connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
-                    if probability >= allRands[preCellGid,postCellGid]: 
+                    if probability >= allRands[preCellGid,postCellGid]:
+                        postCellTags = postCellsTags[postCellGid]   # grab values by key as necessary rather than calling items()
+                        preCellTags = preCellsTags[preCellGid]
                         for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                            connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}  
+                            # update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict
+                            for funcKey in funcKeys[paramStrFunc]:
+                                connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc + 'Vars'][funcKey](preCellTags, postCellTags)
+                            # connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}
                         self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 

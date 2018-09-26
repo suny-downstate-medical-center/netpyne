@@ -322,7 +322,7 @@ def generateRandsPrePost(self, pre, post):
     allRands = {}
     for preGid in pre:
         for postGid in post:
-            self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
+            # self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
             allRands[(preGid, postGid)] = self.rand.uniform(0,1)
 
     return allRands
@@ -337,7 +337,7 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
     ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
-    allRands = self.generateRandsPrePost(preCellsTags.keys(), postCellsTags.keys())
+    allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 

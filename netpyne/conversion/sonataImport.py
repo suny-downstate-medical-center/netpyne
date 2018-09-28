@@ -6,7 +6,7 @@ Functions to import/export to SONATA format
 Contributors: salvadordura@gmail.com
 """
 
-import tables
+import tables  # requires installing hdf5 via brew and tables via pip!
 import os
 from sonata import utils # if can't include as a dependency via pip; include in /support folder for now
 from .. import specs
@@ -263,7 +263,7 @@ class SONATAImporter():
             
             node_set = info['node_set']
             node_info = self.cell_info[node_set]
-            print node_info
+            print(node_info)
             from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
             
             ids_times = read_sonata_spikes_hdf5_file(info['input_file'])

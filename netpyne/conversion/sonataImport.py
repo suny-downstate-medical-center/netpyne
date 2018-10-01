@@ -6,10 +6,12 @@ Functions to import/export to SONATA format
 Contributors: salvadordura@gmail.com
 """
 
-import tables  # requires installing hdf5 via brew and tables via pip!
 import os
-from sonata import utils # if can't include as a dependency via pip; include in /support folder for now
-from .. import specs
+import sys
+import tables  # requires installing hdf5 via brew and tables via pip!
+from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+from . import neuromlFormat # import NetPyNEBuilder
+from .. import sim, specs
 
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
@@ -25,7 +27,7 @@ pp = pprint.PrettyPrinter(depth=6)
 def subs(path, substitutes):
     #print_v('Checking for %s in %s'%(substitutes.keys(),path))
     for s in substitutes:
-        if s in path:
+        if path.startswith(s):
             path = path.replace(s,substitutes[s])
     return path
 
@@ -56,6 +58,21 @@ def load_csv_props(info_file):
     return info
 
 
+def ascii_encode_dict(data):
+    ascii_encode = lambda x: x.encode('ascii') if (sys.version_info[0]==2 and isinstance(x, unicode)) else x
+    return dict(map(ascii_encode, pair) for pair in data.items()) 
+
+
+def load_json(filename):
+    import json
+
+    with open(filename, 'r') as f:
+        
+        data = json.load(f, object_hook=ascii_encode_dict)
+        
+    return data
+
+
 # ------------------------------------------------------------------------------------------------------------
 # Import SONATA 
 # ------------------------------------------------------------------------------------------------------------
@@ -70,17 +87,23 @@ class SONATAImporter():
         self.parameters = parameters
         self.current_node = None
         self.current_node_group = None
+        self.current_edge = None
+
+        # check which are used
         self.cell_info = {}
         self.pop_comp_info = {}
         self.syn_comp_info = {}
         self.input_comp_info = {}
         self.edges_info = {}
         self.conn_info = {}
-        
-        self.current_edge = None
+        self.nodes_info = {}
         
         self.pre_pop = None
         self.post_pop = None
+
+        # added by salva
+        self.pop_cell_template = {}
+        self.cfg = specs.SimConfig()
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -92,34 +115,34 @@ class SONATAImporter():
         filename = os.path.abspath(configFile)
         rootFolder = os.path.dirname(configFile)
         
-        self.config = utils.config.load_json(filename)
-        self.substitutes = {'./': '%s/'%rootFolder,
-                       '${configdir}': '%s'%rootFolder,
-                       '../': '%s/'%rootFolder}
-        
+        self.config = load_json(filename)
+        self.substitutes = {'../': '%s/../'%rootFolder,
+                            './': '%s/'%rootFolder,
+                       '${configdir}': '%s'%rootFolder}
 
         if 'network' in self.config:
-            self.network_config = utils.config.load_json(subs(self.config['network']))
+            self.network_config = load_json(subs(self.config['network'], self.substitutes))
         else:
             self.network_config = self.config
             
         if 'simulation' in self.config:
-            self.simulation_config = utils.config.load_json(subs(self.config['simulation']))
+            self.simulation_config = load_json(subs(self.config['simulation'], self.substitutes))
         else:
             self.simulation_config = None
             
         for m in self.network_config['manifest']:
-            path = subs(self.network_config['manifest'][m])
+            path = subs(self.network_config['manifest'][m], self.substitutes)
+            print(m, path)
             self.substitutes[m] = path
 
         # create netpyne simConfig 
         cfg = self.createSimulationConfig()
+
+        # create pops
+        cells = self.createPops()
         
         # create cells
         cells = self.createCells()
-
-        # # create populations
-        # pops = self.createPops()
 
         # # create connections
         # cells = self.createConns()
@@ -133,15 +156,18 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     def createSimulationConfig(self):
         print("\nCreating simulation configuratoon from %s"%(self.config['simulation']))
-        cfg = specs.SimConfig()
-        cfg.duration = self.simulation_config['run']['tstart']
+        self.cfg.duration = self.simulation_config['run']
+
 
 
     # ------------------------------------------------------------------------------------------------------------
-    # Create cells
+    # Create populations
     # ------------------------------------------------------------------------------------------------------------
-    def createCells(self):
-         #  Get info from nodes files    
+    def createPops(self):
+        
+        self.pops = specs.ODict()
+
+        #  Get info from nodes files    
         for n in self.network_config['networks']['nodes']:
             nodes_file = subs(n['nodes_file'], self.substitutes)
             node_types_file = subs(n['node_types_file'], self.substitutes)
@@ -157,14 +183,10 @@ class SONATAImporter():
             self.current_node = None
 
 
-    # ------------------------------------------------------------------------------------------------------------
-    # Create populations
-    # ------------------------------------------------------------------------------------------------------------
-    def createPops(self):
-        
         #  Use extracted node/cell info to create populations
         for node in self.cell_info:
             types_vs_pops = {}
+            # iterate over cell types -- will make one netpyne population per cell type
             for type in self.cell_info[node]['type_numbers']:
                 info = self.nodes_info[node][type]
                 pop_name = info['pop_name'] if 'pop_name' in info else None
@@ -181,14 +203,50 @@ class SONATAImporter():
                 print(" - Adding population: %s which has model info: %s"%(pop_id, info))
                 
                 size = self.cell_info[node]['type_numbers'][type]
-                
+
+                # create netpyne pop
+                popTags = {}
+                popTags['cellModel'] = model_type
+                popTags['cellType'] = info['model_name'] if 'model_name' in info else pop_id
+                popTags['numCells'] = size
+                popTags['pop'] = pop_id
+                popTags['ei'] = info['ei'] if 'ei' in info else ''
+                self.pops[pop_id] = sim.Pop(pop_id, popTags)
+
+                # create population cell template (sections) from morphology and dynamics params files
+                if model_type == 'biophysical':
+                    self.pop_cell_template[pop_id] = specs.Dict()
+
+                    dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
+                    if info['model_template'].startswith('nml'):
+                        dynamics_params_file = dynamics_params_file.replace('nml:', '')
+                        netParamsTemp = specs.NetParams()    
+                        nmlHandler = neuromlFormat.NetPyNEBuilder(netParamsTemp, simConfig=self.cfg, verbose=1)     
+                        currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+                        currParser.parse(dynamics_params_file)
+                        nmlHandler.finalise()
+                        
+                        from IPython import embed; embed()
+                        
+                        
+
+                    elif info['dynamics_params'].startswith('json'):
+                        dynamics_params = load_json(dynamics_params_file)
+
+                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology']
+                    #morphology_params = 
+
+                    # 
+
+
+                '''
                 if model_type=='point_process' and model_template=='nrn:IntFire1':
                     pop_comp = model_template.replace(':','_')
                     self.pop_comp_info[pop_comp] = {}
                     self.pop_comp_info[pop_comp]['model_type'] = model_type
                     
                     dynamics_params_file = subs(self.network_config['components']['point_neuron_models_dir'],self.substitutes) +'/'+info['dynamics_params']
-                    self.pop_comp_info[pop_comp]['dynamics_params'] = utils.config.load_json(dynamics_params_file)
+                    self.pop_comp_info[pop_comp]['dynamics_params'] = load_json(dynamics_params_file)
                     
                 properties = {}
 
@@ -224,7 +282,7 @@ class SONATAImporter():
                                                  pos['z'] if 'z' in pos else 0)
                 
                 self.cell_info[node]['pop_count'][pop]+=1
-                
+            '''                   
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -296,7 +354,7 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
 
 
-    def parse_group(self, g, current):
+    def parse_group(self, g):
         print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
 
         for node in g:

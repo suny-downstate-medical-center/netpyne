@@ -11,7 +11,11 @@ import sys
 import tables  # requires installing hdf5 via brew and tables via pip!
 from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 from . import neuromlFormat # import NetPyNEBuilder
+from . import neuronPyHoc
 from .. import sim, specs
+from neuron import h
+h.load_file('stdgui.hoc')
+h.load_file('import3d.hoc')
 
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
@@ -72,6 +76,9 @@ def load_json(filename):
         
     return data
 
+
+class EmptyCell():
+    pass
 
 # ------------------------------------------------------------------------------------------------------------
 # Import SONATA 
@@ -217,6 +224,32 @@ class SONATAImporter():
                 if model_type == 'biophysical':
                     self.pop_cell_template[pop_id] = specs.Dict()
 
+                    # morphology
+                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
+                    cellMorph = EmptyCell()
+                    swcData = h.Import3d_SWC_read()
+                    swcData.input(morphology_file)
+                    swcSecs = h.Import3d_GUI(swcData, 0)
+                    swcSecs.instantiate(cellMorph)
+                    secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
+                    conds = {}
+                    cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globals': globs}
+
+                    # clean up before next import
+                    del swcSecs, cellMorph
+                    for sec in h.allsec():
+                        try:
+                            if h.cas()!=sec: sec.push()
+                            h.delete_section()
+                            h.pop_section()
+                        except:
+                            pass
+                    h.initnrn()
+                    
+                    from IPython import embed; embed()
+
+
+                    # dynamics params
                     dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
                     if info['model_template'].startswith('nml'):
                         dynamics_params_file = dynamics_params_file.replace('nml:', '')
@@ -225,16 +258,9 @@ class SONATAImporter():
                         currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
                         currParser.parse(dynamics_params_file)
                         nmlHandler.finalise()
-                        
-                        from IPython import embed; embed()
-                        
-                        
-
                     elif info['dynamics_params'].startswith('json'):
                         dynamics_params = load_json(dynamics_params_file)
 
-                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology']
-                    #morphology_params = 
 
                     # 
 

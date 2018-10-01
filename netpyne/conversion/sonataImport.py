@@ -110,6 +110,7 @@ class SONATAImporter():
 
         # added by salva
         self.pop_cell_template = {}
+        self.pop_id_from_type = {}
         self.cfg = specs.SimConfig()
 
 
@@ -192,7 +193,6 @@ class SONATAImporter():
 
         #  Use extracted node/cell info to create populations
         for node in self.cell_info:
-            types_vs_pops = {}
             # iterate over cell types -- will make one netpyne population per cell type
             for type in self.cell_info[node]['type_numbers']:
                 info = self.nodes_info[node][type]
@@ -206,6 +206,8 @@ class SONATAImporter():
                     pop_id = '%s_%s'%(node,pop_name) 
                 else:
                     pop_id = '%s_%s_%s'%(node,ref,type) 
+
+                self.pop_id_from_type[(node,type)] = pop_id 
                     
                 print(" - Adding population: %s which has model info: %s"%(pop_id, info))
                 
@@ -222,7 +224,6 @@ class SONATAImporter():
 
                 # create population cell template (sections) from morphology and dynamics params files
                 if model_type == 'biophysical':
-                    self.pop_cell_template[pop_id] = specs.Dict()
 
                     # morphology
                     morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
@@ -232,24 +233,17 @@ class SONATAImporter():
                     swcSecs = h.Import3d_GUI(swcData, 0)
                     swcSecs.instantiate(cellMorph)
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
-                    conds = {}
-                    cellRule = {'conds': conds, 'secs': secs, 'secLists': secLists, 'globals': globs}
+                    cellRule = {'conds': {}, 'secs': secs, 'secLists': secLists, 'globals': globs}
+                    self.pop_cell_template[pop_id] = cellRule 
 
                     # clean up before next import
                     del swcSecs, cellMorph
-                    # for sec in h.allsec():
-                    #     try:
-                    #         if h.cas()!=sec: sec.push()
-                    #         h.delete_section()
-                    #         h.pop_section()
-                    #     except:
-                    #         pass
                     h.initnrn()
                     
-                    from IPython import embed; embed()
 
 
                     # dynamics params
+                    '''
                     dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
                     if info['model_template'].startswith('nml'):
                         dynamics_params_file = dynamics_params_file.replace('nml:', '')
@@ -260,36 +254,13 @@ class SONATAImporter():
                         nmlHandler.finalise()
                     elif info['dynamics_params'].startswith('json'):
                         dynamics_params = load_json(dynamics_params_file)
+                    '''
 
 
-                    # 
+                    #
 
 
-                '''
-                if model_type=='point_process' and model_template=='nrn:IntFire1':
-                    pop_comp = model_template.replace(':','_')
-                    self.pop_comp_info[pop_comp] = {}
-                    self.pop_comp_info[pop_comp]['model_type'] = model_type
-                    
-                    dynamics_params_file = subs(self.network_config['components']['point_neuron_models_dir'],self.substitutes) +'/'+info['dynamics_params']
-                    self.pop_comp_info[pop_comp]['dynamics_params'] = load_json(dynamics_params_file)
-                    
-                properties = {}
-
-                properties['type_id'] = type
-                properties['node_id'] = node
-                properties['region'] = node
-                for i in info:
-                    properties[i] = info[i]
-                    if i == 'ei':
-                        properties['type']=info[i].upper()
-                        
-
-            self.cell_info[node]['pop_count'] = {}  
-            self.cell_info[node]['pop_map'] = {}   
-            
-            for i in self.cell_info[node]['types']:
-                
+                '''                
                 pop = types_vs_pops[self.cell_info[node]['types'][i]]
                 
                 if not pop in self.cell_info[node]['pop_count']:
@@ -309,6 +280,49 @@ class SONATAImporter():
                 
                 self.cell_info[node]['pop_count'][pop]+=1
             '''                   
+    # ------------------------------------------------------------------------------------------------------------
+    # Create cells
+    # ------------------------------------------------------------------------------------------------------------
+    def createCells(self):
+        self.cells = []
+        cellTypes = self.cell_info['internal']['types']
+        cellLocs = self.cell_info['internal']['0']['locations']
+        numCells = len(self.cell_info['internal']['types'])
+
+        for icell in range(numCells):
+            gid = self.lastGid+icell
+            self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
+            cellTags['pop'] = self.tags['pop']
+            cellTags['xnorm'] = randLocs[i,0] # set x location (um)
+            cellTags['ynorm'] = randLocs[i,1] # set y location (um)
+            cellTags['znorm'] = randLocs[i,2] # set z location (um)
+            cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
+            cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
+            cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)            
+            if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
+                if isinstance(self.tags['spkTimes'][0], list):
+                    try:
+                        cellTags['params']['spkTimes'] = self.tags['spkTimes'][i] # 2D list
+                    except:
+                        pass
+                else:
+                    cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+
+
+            # get info from pop
+            cellType = cellTypes[icell]
+            pop_id = self.pop_id_from_type[('internal', cellType)]
+            self.pops[pop_id]
+            self.pop_cell_template[pop_id]
+
+            self.cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+
+            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
+        sim.net.lastGid = sim.net.lastGid + self.tags['numCells'] 
+
+
+        from IPython import embed; embed()
 
 
     # ------------------------------------------------------------------------------------------------------------

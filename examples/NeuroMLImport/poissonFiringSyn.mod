@@ -12,6 +12,7 @@ ENDCOMMENT
 NEURON {
     POINT_PROCESS poissonFiringSyn
     ELECTRODE_CURRENT i
+    RANGE weight                            : property
     RANGE averageRate                       : parameter
     RANGE averageIsi                        : parameter
     
@@ -26,6 +27,7 @@ NEURON {
     RANGE syn0_g                            : exposure
     
     RANGE syn0_i                            : exposure
+    RANGE iSyn                              : derived variable
     : Based on netstim.mod
     THREADSAFE : only true if every instance has its own distinct Random
     POINTER donotuse
@@ -51,6 +53,7 @@ UNITS {
 
 PARAMETER {
     
+    weight = 1
     averageRate = 0.05 (kHz)
     averageIsi = 20 (ms)
     syn0_tauRise = 0.5 (ms)
@@ -68,6 +71,8 @@ ASSIGNED {
     syn0_g (uS)                            : derived variable
     
     syn0_i (nA)                            : derived variable
+    
+    iSyn (nA)                              : derived variable
     
     i (nA)                                 : derived variable
     rate_tsince (ms/ms)
@@ -125,11 +130,11 @@ NET_RECEIVE(flag) {
         : This child is a synapse; defining weight
         weight = 1
     
-        : paramMappings are: {poissonFiringSyn={tsince=tsince, isi=isi, averageRate=averageRate, averageIsi=averageIsi, i=i}, syn0={A=syn0_A, B=syn0_B, tauRise=syn0_tauRise, tauDecay=syn0_tauDecay, peakTime=syn0_peakTime, waveformFactor=syn0_waveformFactor, gbase=syn0_gbase, erev=syn0_erev, g=syn0_g, i=syn0_i}}
+        : paramMappings are: {poissonFiringSyn={tsince=tsince, isi=isi, weight=weight, averageRate=averageRate, averageIsi=averageIsi, i=i, iSyn=iSyn}, syn0={A=syn0_A, B=syn0_B, tauRise=syn0_tauRise, tauDecay=syn0_tauDecay, peakTime=syn0_peakTime, waveformFactor=syn0_waveformFactor, gbase=syn0_gbase, erev=syn0_erev, g=syn0_g, i=syn0_i}}
         : state_discontinuity(syn0_A, syn0_A  + (weight *  syn0_waveformFactor ))
         syn0_A = syn0_A  + (weight *  syn0_waveformFactor )
     
-        : paramMappings are: {poissonFiringSyn={tsince=tsince, isi=isi, averageRate=averageRate, averageIsi=averageIsi, i=i}, syn0={A=syn0_A, B=syn0_B, tauRise=syn0_tauRise, tauDecay=syn0_tauDecay, peakTime=syn0_peakTime, waveformFactor=syn0_waveformFactor, gbase=syn0_gbase, erev=syn0_erev, g=syn0_g, i=syn0_i}}
+        : paramMappings are: {poissonFiringSyn={tsince=tsince, isi=isi, weight=weight, averageRate=averageRate, averageIsi=averageIsi, i=i, iSyn=iSyn}, syn0={A=syn0_A, B=syn0_B, tauRise=syn0_tauRise, tauDecay=syn0_tauDecay, peakTime=syn0_peakTime, waveformFactor=syn0_waveformFactor, gbase=syn0_gbase, erev=syn0_erev, g=syn0_g, i=syn0_i}}
         : state_discontinuity(syn0_B, syn0_B  + (weight *  syn0_waveformFactor ))
         syn0_B = syn0_B  + (weight *  syn0_waveformFactor )
     
@@ -153,8 +158,9 @@ PROCEDURE rates() {
     syn0_g = syn0_gbase  * ( syn0_B  -  syn0_A ) ? evaluable
     syn0_i = syn0_g  * ( syn0_erev  - v) ? evaluable
     ? DerivedVariable is based on path: synapse/i, on: Component(id=poissonFiringSyn type=poissonFiringSynapse), from synapse; Component(id=syn0 type=expTwoSynapse)
-    i = syn0_i ? path based, prefix = 
+    iSyn = syn0_i ? path based, prefix = 
     
+    i = weight  *  iSyn ? evaluable
     rate_tsince = 1 ? Note units of all quantities used here need to be consistent!
     
      

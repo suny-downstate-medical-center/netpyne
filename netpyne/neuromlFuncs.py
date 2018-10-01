@@ -756,7 +756,7 @@ if neuromlExists:
         #    
         def handle_population(self, population_id, component, size, component_obj, properties={}):
 
-            if self.verbose: print("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+            if self.verbose: print("NetPyNE handling population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
             
             self.pop_ids_vs_components[population_id] = component_obj
 
@@ -1095,7 +1095,7 @@ if neuromlExists:
                 
                 popInfo['cellType'] = component
                 
-                if self.verbose: print("Abstract cell: %s"%(isinstance(component_obj,BaseCell)))
+                if self.verbose: print("Abstract cell: %s (%s)"%(isinstance(component_obj,BaseCell), type(component_obj)))
                 
                 if hasattr(component_obj,'thresh'):
                     threshold = pynml.convert_to_units(component_obj.thresh,'mV')
@@ -1204,7 +1204,7 @@ if neuromlExists:
         #
         def handle_projection(self, projName, prePop, postPop, synapse, hasWeights=False, hasDelays=False, type="projection", synapse_obj=None, pre_synapse_obj=None):
 
-            if self.verbose: print("A projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
+            if self.verbose: print("NetPyNE handling projection: %s (%s) from %s -> %s with syn: %s" % (projName, type, prePop, postPop, synapse))
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
@@ -1239,7 +1239,8 @@ if neuromlExists:
         #  Overridden from DefaultNetworkHandler
         #    
         def handle_input_list(self, inputListId, population_id, component, size, input_comp_obj=None):
-            DefaultNetworkHandler.print_input_information(self,inputListId, population_id, component, size)
+            
+            if self.verbose: print("NetPyNE handling input list: %s to %s, component: %s, size: %i, object: %s" % (inputListId, population_id, component, size, input_comp_obj))
             
             import neuroml
             
@@ -1299,7 +1300,8 @@ if neuromlExists:
             if weight!=1:
                 self.stimLists[stimId]['weight'] = weight
                         
-            if self.verbose: print("Input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s; weight: %s" % (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId, weight))
+            if self.verbose: print("NetPyNE handling single input: %s[%s] on %s, cellId: %i, seg: %i (nrn: %s), fract: %f (nrn: %f); ref: %s; weight: %s" % \
+                                   (inputListId,id,pop_id,cellId,segId,nrn_sec,fract,nrn_fract,stimId, weight))
             
             # TODO: build just one stimLists/stimSources entry for the inputList
             # Issue: how to specify the sec/loc per individual stim??

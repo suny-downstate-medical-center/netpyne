@@ -237,13 +237,13 @@ class SONATAImporter():
 
                     # clean up before next import
                     del swcSecs, cellMorph
-                    for sec in h.allsec():
-                        try:
-                            if h.cas()!=sec: sec.push()
-                            h.delete_section()
-                            h.pop_section()
-                        except:
-                            pass
+                    # for sec in h.allsec():
+                    #     try:
+                    #         if h.cas()!=sec: sec.push()
+                    #         h.delete_section()
+                    #         h.pop_section()
+                    #     except:
+                    #         pass
                     h.initnrn()
                     
                     from IPython import embed; embed()

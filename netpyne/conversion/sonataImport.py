@@ -121,7 +121,7 @@ class SONATAImporter():
     def importNet(self, configFile):
 
         #from .. import sim
-
+        self.configFile = configFile
         # read config files
         filename = os.path.abspath(configFile)
         rootFolder = os.path.dirname(configFile)
@@ -151,7 +151,6 @@ class SONATAImporter():
         
         # create netpyne simConfig 
         self.createSimulationConfig()
-        sim.cfg.simLabel = os.path.abspath(configFile)
 
         # add compiled mod folder
         modFolder = subs(self.network_config['components']['mechanisms_dir'], self.substitutes)+'/modfiles'
@@ -189,13 +188,14 @@ class SONATAImporter():
         sim.cfg.hParams = self.simulation_config['conditions']
 
         # node sets
-        sim.cfg.node_sets = load_json(self.simulation_config['node_sets_file']) 
+        sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
         
         # inputs - add as 'spkTimes' to external population
 
-        # outputs
-        sim.cfg.log_file = self.simulation_config['conditions']['log_file']
-        sim.saveFolder = self.simulation_config['conditions']['output_dir']
+        # output
+        sim.cfg.log_file = self.simulation_config['output']['log_file']
+        sim.cfg.simLabel = os.path.abspath(self.configFile)
+        sim.saveFolder = self.simulation_config['output']['output_dir']
         sim.saveJson = True
 
         # recording
@@ -468,11 +468,11 @@ class SONATAImporter():
                 popTags['pop'] = pop_id
                 popTags['ei'] = info['ei'] if 'ei' in info else ''
                 sim.net.pops[pop_id] = sim.Pop(pop_id, popTags)
-                sim.net.pops[pop_id].cellModelClass = sim.CompartCell
 
                 # create population cell template (sections) from morphology and dynamics params files
                 if model_type == 'biophysical':
-
+                    sim.net.pops[pop_id].cellModelClass = sim.CompartCell
+                    
                     # morphology
                     morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
                     cellMorph = EmptyCell()
@@ -504,20 +504,10 @@ class SONATAImporter():
                     del swcSecs, cellMorph
                     h.initnrn()
 
+                # create population of virtual cells (VecStims so can add spike times)
                 elif model_type == 'virtual':
-                    pass
-                    '''
-                      "inputs": {
-                        "external_spike_trains": {
-                          "input_type": "spikes",
-                          "module": "h5",
-                          "input_file": "$INPUT_DIR/external_spike_trains.h5",
-                          "node_set": "external"
-                        }
-                      },
-                    '''
-
-
+                    popTags['cellModel'] = 'VecStim'
+                    sim.net.pops[pop_id].cellModelClass = sim.pointCell
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -531,7 +521,7 @@ class SONATAImporter():
 
             #from IPython import embed; embed()
 
-            for icell in range(numCells):
+            for icell in sim.pop._distributeCells(numCells)[sim.rank]:
                 # set gid
                 gid = sim.net.lastGid+icell
                 
@@ -545,39 +535,37 @@ class SONATAImporter():
                 model_type = pop.tags['cellModel']
 
                 # set cell tags
+                cellTags = {k: v for (k, v) in pop.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
+                cellTags['pop'] = pop.tags['pop']
+
                 if model_type == 'biophysical':
-                    cellTags = {k: v for (k, v) in pop.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-                    
-                    cellTags['pop'] = pop.tags['pop']
-                    
                     cellTags['x'] = cellLocs[icell]['x'] # set x location (um)
                     cellTags['y'] = cellLocs[icell]['y'] # set y location (um)
                     cellTags['z'] = cellLocs[icell]['z'] # set z location (um)
                     cellTags['xnorm'] = cellTags['x'] / sim.net.params.sizeX # set x location (um)
                     cellTags['ynorm'] = cellTags['y'] / sim.net.params.sizeY # set y location (um)
                     cellTags['znorm'] = cellTags['z'] / sim.net.params.sizeZ # set z location (um)
-                    cellTags['rot_y'] = cellLocs[icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation missing!)
+                    cellTags['rot_y'] = cellLocs[icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation MISSING!)
                     cellTags['rot_z'] = cellLocs[icell]['rotation_angle_zaxis']  # set z-axis rotation
 
-                    sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
-
-                    sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing)
+                    # sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing) MISSING!
                     
-
                 elif model_type == 'virtual':
-                    # if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
-                    #     if isinstance(self.tags['spkTimes'][0], list):
-                    #         try:
-                    #             cellTags['params']['spkTimes'] = self.tags['spkTimes'][i] # 2D list
-                    #         except:
-                    #             pass
-                    #     else:
-                    #         cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+
+                    if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
+                        if isinstance(self.tags['spkTimes'][0], list):
+                            try:
+                                cellTags['params']['spkTimes'] = self.tags['spkTimes'][icell] # 2D list
+                            except:
+                                pass
+                        else:
+                            cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
 
                     pass
 
-
+                sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
                 print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
+
             sim.net.lastGid = sim.net.lastGid + numCells 
 
 
@@ -606,8 +594,17 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     def createStims(self):
         #  Extract info from inputs in simulation_config
-        
-        pp.pprint(self.simulation_config)
+        '''
+          "inputs": {
+            "external_spike_trains": {
+              "input_type": "spikes",
+              "module": "h5",
+              "input_file": "$INPUT_DIR/external_spike_trains.h5",
+              "node_set": "external"
+            }
+          },
+        '''
+
         
         for input in self.simulation_config['inputs']:
             info = self.simulation_config['inputs'][input]
@@ -620,7 +617,13 @@ class SONATAImporter():
             print(node_info)
             from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
             
-            ids_times = read_sonata_spikes_hdf5_file(info['input_file'])
+            ids_times = read_sonata_spikes_hdf5_file(os.path.dirname(self.configFile)+'/'+info['input_file'])
+
+            pop_id = 0
+            spkTimes = [[]]
+            sim.net.pops[pop_id]['tags']['spkTimes'] = spkTimes
+
+            '''
             for id in ids_times:
                 times = ids_times[id]
                 pop_id, cell_id = node_info['pop_map'][id] 
@@ -631,6 +634,8 @@ class SONATAImporter():
                 self.input_comp_info[input][component] ={'id': cell_id, 'times': times}
                 
                 input_list_id = 'il_%s_%i'%(input,cell_id)
+
+
                 self.handler.handle_input_list(input_list_id, 
                                                pop_id, 
                                                component, 
@@ -641,7 +646,7 @@ class SONATAImporter():
                                                   cellId = cell_id, 
                                                   segId = 0, 
                                                   fract = 0.5)
-            
+            '''
 
 
 

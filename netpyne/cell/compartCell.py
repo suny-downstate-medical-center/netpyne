@@ -241,7 +241,11 @@ class CompartCell (Cell):
                 for mechName,mechParams in sectParams['mechs'].items(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
-                    sec['hSec'].insert(mechName)
+                    try:
+                        sec['hSec'].insert(mechName)
+                    except:
+                        print('# Error inserting %s mechanims in %s section!'%(mechName, sectName)) 
+                        continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
@@ -258,7 +262,11 @@ class CompartCell (Cell):
                 for ionName,ionParams in sectParams['ions'].items(): 
                     if ionName not in sec['ions']: 
                         sec['ions'][ionName] = Dict()
-                    sec['hSec'].insert(ionName+'_ion')    # insert mechanism
+                    try:
+                        sec['hSec'].insert(ionName+'_ion')    # insert mechanism
+                    except:
+                        print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
+                        continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment

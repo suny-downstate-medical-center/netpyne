@@ -151,6 +151,7 @@ class SONATAImporter():
         
         # create netpyne simConfig 
         self.createSimulationConfig()
+        sim.cfg.simLabel = os.path.abspath(configFile)
 
         # add compiled mod folder
         modFolder = subs(self.network_config['components']['mechanisms_dir'], self.substitutes)+'/modfiles'
@@ -176,7 +177,31 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     def createSimulationConfig(self):
         print("\nCreating simulation configuratoon from %s"%(self.config['simulation']))
-        sim.cfg.duration = self.simulation_config['run']
+
+        # run
+        sim.cfg.duration = self.simulation_config['run']['tstop']
+        sim.cfg.dt = self.simulation_config['run']['dt']
+        sim.cfg.dL = self.simulation_config['run']['dL']  # used to calculate nseg = 1 + 2int(L/(2dL)); for all sections?
+        sim.net.params.defaultThreshold = self.simulation_config['run']['spike_threshold']
+        sim.cfg.nsteps_block = self.simulation_config['run']['nsteps_block']
+        
+        # conditions
+        sim.cfg.hParams = self.simulation_config['conditions']
+
+        # node sets
+        sim.cfg.node_sets = load_json(self.simulation_config['node_sets_file']) 
+        
+        # inputs - add as 'spkTimes' to external population
+
+        # outputs
+        sim.cfg.log_file = self.simulation_config['conditions']['log_file']
+        sim.saveFolder = self.simulation_config['conditions']['output_dir']
+        sim.saveJson = True
+
+        # recording
+        for k,v in self.simulation_config['reports'].items():
+            sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
+            sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']]}
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -481,6 +506,17 @@ class SONATAImporter():
 
                 elif model_type == 'virtual':
                     pass
+                    '''
+                      "inputs": {
+                        "external_spike_trains": {
+                          "input_type": "spikes",
+                          "module": "h5",
+                          "input_file": "$INPUT_DIR/external_spike_trains.h5",
+                          "node_set": "external"
+                        }
+                      },
+                    '''
+
 
 
 
@@ -543,9 +579,6 @@ class SONATAImporter():
 
                 print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
             sim.net.lastGid = sim.net.lastGid + numCells 
-
-
-
 
 
     # ------------------------------------------------------------------------------------------------------------

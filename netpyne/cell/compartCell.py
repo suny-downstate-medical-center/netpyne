@@ -244,7 +244,7 @@ class CompartCell (Cell):
                     try:
                         sec['hSec'].insert(mechName)
                     except:
-                        print('# Error inserting %s mechanims in %s section!'%(mechName, sectName)) 
+                        print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue

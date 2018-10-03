@@ -27,16 +27,7 @@ pp = pprint.PrettyPrinter(depth=6)
 # Helper functions (some adapted from https://github.com/NeuroML/NeuroMLlite/)
 # ------------------------------------------------------------------------------------------------------------
 
-'''
-    Search the strings in a config file for a substitutable value, e.g. 
-    "morphologies_dir": "$COMPONENT_DIR/morphologies",
-'''
-def subs(path, substitutes):
-    #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-    for s in substitutes:
-        if path.startswith(s):
-            path = path.replace(s,substitutes[s])
-    return path
+
 
 def _parse_entry(w):
     try:
@@ -150,21 +141,21 @@ class SONATAImporter():
                        '${configdir}': '%s'%rootFolder}
 
         if 'network' in self.config:
-            self.network_config = load_json(subs(self.config['network'], self.substitutes))
+            self.network_config = load_json(self.subs(self.config['network']))
         else:
             self.network_config = self.config
             
         if 'simulation' in self.config:
-            self.simulation_config = load_json(subs(self.config['simulation'], self.substitutes))
+            self.simulation_config = load_json(self.subs(self.config['simulation']))
         else:
             self.simulation_config = None
             
         for m in self.network_config['manifest']:
-            path = subs(self.network_config['manifest'][m], self.substitutes)
+            path = self.subs(self.network_config['manifest'][m])
             self.substitutes[m] = path
 
         for m in self.simulation_config['manifest']:
-            path = subs(self.simulation_config['manifest'][m], self.substitutes)
+            path = self.subs(self.simulation_config['manifest'][m])
             self.substitutes[m] = path
 
         # create and initialize sim object
@@ -174,7 +165,7 @@ class SONATAImporter():
         self.createSimulationConfig()
 
         # add compiled mod folder
-        modFolder = subs(self.network_config['components']['mechanisms_dir'], self.substitutes)+'/modfiles'
+        modFolder = self.subs(self.network_config['components']['mechanisms_dir'])+'/modfiles'
         neuron.load_mechanisms(str(modFolder))
 
         # create pops
@@ -238,8 +229,8 @@ class SONATAImporter():
         
         #  Get info from nodes files    
         for n in self.network_config['networks']['nodes']:
-            nodes_file = subs(n['nodes_file'], self.substitutes)
-            node_types_file = subs(n['node_types_file'], self.substitutes)
+            nodes_file = self.subs(n['nodes_file'])
+            node_types_file = self.subs(n['node_types_file'])
             
             print("\nLoading nodes from %s and %s"%(nodes_file, node_types_file))
 
@@ -276,20 +267,21 @@ class SONATAImporter():
                 size = self.cell_info[sonata_pop]['type_numbers'][type]
 
                 # create netpyne pop
+                # Note: alternatively could create sim.net.params.popParams and then call sim.createPops()
                 popTags = {}
                 popTags['cellModel'] = model_type
                 popTags['cellType'] = info['model_name'] if 'model_name' in info else pop_id
                 popTags['numCells'] = size
                 popTags['pop'] = pop_id
                 popTags['ei'] = info['ei'] if 'ei' in info else ''
-                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags)
+                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags) 
 
                 # create population cell template (sections) from morphology and dynamics params files
                 if model_type == 'biophysical':
                     sim.net.pops[pop_id].cellModelClass = sim.CompartCell
                     
                     # morphology
-                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
+                    morphology_file = self.subs(self.network_config['components']['morphologies_dir']) +'/'+info['morphology'] + '.swc'
                     cellMorph = EmptyCell()
                     swcData = h.Import3d_SWC_read()
                     swcData.input(morphology_file)
@@ -300,7 +292,7 @@ class SONATAImporter():
                     
 
                     # dynamics params
-                    dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
+                    dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template']) 
                     if info['model_template'].startswith('nml'):
                         dynamics_params_file = dynamics_params_file.replace('nml:', '')
                         nml_doc = read_neuroml2_file(dynamics_params_file)
@@ -334,6 +326,8 @@ class SONATAImporter():
             cellLocs = self.cell_info[sonata_pop]['0']['locations']
             numCells = len(self.cell_info[sonata_pop]['types'])
 
+            self.cell_info[sonata_pop]['gid_from_id'] = {} # keep track of gid as func of cell id
+
             for icell in _distributeCells(numCells)[sim.rank]:
                 # set gid
                 gid = sim.net.lastGid+icell
@@ -344,6 +338,7 @@ class SONATAImporter():
                 pop_id = self.pop_id_from_type[(sonata_pop, cellType)]
                 pop = sim.net.pops[pop_id]
                 pop.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+                self.cell_info[sonata_pop]['gid_from_id'][icell] = gid
 
                 model_type = pop.tags['cellModel']
 
@@ -388,72 +383,79 @@ class SONATAImporter():
     # Create connections
     # ------------------------------------------------------------------------------------------------------------
     def createConns(self):
+        # SONATA method - works but same results as NeuroMLlite
+        '''
+        from sonata.io import File, Edge
+        data = File(data_files=[self.subs('$NETWORK_DIR/excvirt_cortex_edges.h5')],
+                data_type_files=[self.subs('$NETWORK_DIR/excvirt_cortex_edge_types.csv')])
+        '''
+
+        # NeuroMLlite Method
         self.edges_info = {}
         self.conn_info = {}
         
-        for e in self.network_config['networks']['edges']:
-            edges_file = subs(e['edges_file'],self.substitutes)
-            edge_types_file = subs(e['edge_types_file'],self.substitutes)
-            
-            print("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
+        if 'edges' in self.network_config['networks']:
+            for e in self.network_config['networks']['edges']:
+                edges_file = self.subs(e['edges_file'])
+                edge_types_file = self.subs(e['edge_types_file'])
 
-            h5file=tables.open_file(edges_file,mode='r')
+                print("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
 
-            print("Opened HDF5 file: %s"%(h5file.filename))
-            self.parse_group(h5file.root.edges)
-            h5file.close()
-            self.edges_info[self.current_edge] = load_csv_props(edge_types_file)
-            self.current_edge = None
+                h5file=tables.open_file(edges_file,mode='r')
 
-        from IPython import embed; embed()
+                print("Opened HDF5 file: %s"%(h5file.filename))
+                self.parse_group(h5file.root.edges)
+                h5file.close()
+                self.edges_info[self.current_edge] = load_csv_props(edge_types_file)
+                self.current_edge = None
 
-        #  Use extracted edge info to create connections
-        projections_created = []
         for conn in self.conn_info:
             
             pre_node = self.conn_info[conn]['pre_node']
             post_node = self.conn_info[conn]['post_node']
             
+            # add all synMechs in this projection to netParams.synMechParams
+
+            for type in self.edges_info[conn]:
+                syn_label = self.edges_info[conn][type]['dynamics_params'].split('.')[0]
+                if syn_label not in sim.net.params.synMechParams:
+                    dynamics_params_file = self.subs(self.network_config['components']['synaptic_models_dir']) +'/'+self.edges_info[conn][type]['dynamics_params']        
+                    syn_dyn_params = load_json(dynamics_params_file)
+                    synMechParams = dict(syn_dyn_params)
+                    synMechParams.pop('level_of_detail')
+                    synMechParams['mod'] = self.edges_info[conn][type]['dynamics_params']['model_template']
+                    sim.net.params.synMechParmas[syn_label] = synMechParams
+
+            # add individual connections in this projection
             for i in range(len(self.conn_info[conn]['pre_id'])):
                 pre_id = self.conn_info[conn]['pre_id'][i]
                 post_id = self.conn_info[conn]['post_id'][i]
-                type = self.conn_info[conn]['edge_type_id'][i]
-                # print('   Conn (%s) %s(%s) -> %s(%s)'%(type,pre_node,pre_id,post_node,post_id))
-                pre_pop,pre_i = self.cell_info[pre_node]['pop_map'][pre_id]
-                post_pop,post_i = self.cell_info[post_node]['pop_map'][post_id]
-                # print('   Mapped: Conn %s(%s) -> %s(%s)'%(pre_pop,pre_i,post_pop,post_i))
-                # print self.edges_info[conn][type]
-                
-                synapse = self.edges_info[conn][type]['dynamics_params'].split('.')[0]
-                self.syn_comp_info[synapse] = {}
-                #print self.edges_info[conn][type]
-                dynamics_params_file = subs(self.network_config['components']['synaptic_models_dir'],self.substitutes) +'/'+self.edges_info[conn][type]['dynamics_params']
-                
-                
-                #TODO: don't load this file every connection!!!
-                self.syn_comp_info[synapse]['dynamics_params'] = load_json(dynamics_params_file)
-                proj_id = '%s_%s_%s'%(pre_pop,post_pop,synapse)
-                
-                sign = self.syn_comp_info[synapse]['dynamics_params']['sign']
-                
-                if not proj_id in projections_created:
+                pre_gid = self.cell_info[pre_node]['gid_from_id'][pre_id] 
+                post_gid = self.cell_info[post_node]['gid_from_id'][post_id]
+
+                if post_gid in sim.net.lid2gid:
+                    type = self.conn_info[conn]['edge_type_id'][i]
+
+                    print('   Conn (%s) %s(%s) -> %s(%s)'%(type,pre_node,pre_id,post_node,post_id))
+                    print('   Mapped: Conn from cell gid %s -> cell gid %s'%(pre_gid,post_gid))
+                    print(self.edges_info[conn][type])
                     
-                    self.handler.handle_projection(proj_id, 
-                                         pre_pop, 
-                                         post_pop, 
-                                         synapse)
-                                         
-                    projections_created.append(proj_id)
+                    connParams = {}
+                    connParams['synMech'] = self.edges_info[conn][type]['dynamics_params'].split('.')[0]                
+                    sign = syn_dyn_params['sign'] if 'sign' in syn_dyn_params else 1
+                    weight = self.edges_info[conn][type]['syn_weight'] if 'syn_weight' in self.edges_info[conn][type] else 1.0
+                    connParams['weight'] = sign*weight
+                    connParams['delay'] = self.edges_info[conn][type]['delay'] if 'delay' in self.edges_info[conn][type] else 0
+                    connParams['loc'] = 0.5  # need to read from file!
+                    connParams['sec'] = 'soma_0'  # need to read from file!     
+                    connParams['preGid'] = pre_gid
                     
-                self.handler.handle_connection(proj_id, 
-                                             i, 
-                                             pre_pop, 
-                                             post_pop, 
-                                             synapse, \
-                                             pre_i, \
-                                             post_i, \
-                                             weight=sign * self.edges_info[conn][type]['syn_weight'], \
-                                             delay=self.edges_info[conn][type]['delay'])
+                    postCell = sim.net.cells[sim.net.gid2lid[post_gid]]
+                    postCell.addConn(connParams)
+    
+                from IPython import embed; embed()
+                
+
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -473,7 +475,7 @@ class SONATAImporter():
             
             # get stpikes
             from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
-            ids_times = read_sonata_spikes_hdf5_file(subs(info['input_file'], self.substitutes))
+            ids_times = read_sonata_spikes_hdf5_file(self.subs(info['input_file']))
             spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
             
             # add spikes to vecstim pop
@@ -696,15 +698,16 @@ class SONATAImporter():
     # Parse SONATA hdf5
     # ------------------------------------------------------------------------------------------------------------
     def parse_group(self, g):
-        #print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
+        print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
 
         for node in g:
-            #print("   ------Sub node: %s, class: %s, name: %s (parent: %s)"   % (node,node._c_classid,node._v_name, g._v_name))
+            print("   ------Sub node: %s, class: %s, name: %s (parent: %s)"   % (node,node._c_classid,node._v_name, g._v_name))
 
             if node._c_classid == 'GROUP':
                 if g._v_name=='nodes':
                     node_id = node._v_name.replace('-','_')
                     self.current_node = node_id
+                    print('# CURRENT NODE: %s'%(self.current_node))
                     self.cell_info[self.current_node] = {}
                     self.cell_info[self.current_node]['types'] = {}
                     self.cell_info[self.current_node]['type_numbers'] = {}
@@ -713,12 +716,13 @@ class SONATAImporter():
                 if g._v_name==self.current_node:
                     node_group = node._v_name
                     self.current_node_group = node_group
+                    print('# CURRENT NODE GROUP: %s'%(self.current_node))
                     self.cell_info[self.current_node][self.current_node_group] = {}
                     self.cell_info[self.current_node][self.current_node_group]['locations'] = {}
                     
                 if g._v_name=='edges':
                     edge_id = node._v_name.replace('-','_')
-                    # print('  Found edge: %s'%edge_id)
+                    print('  Found edge: %s'%edge_id)
                     self.current_edge = edge_id
                     self.conn_info[self.current_edge] = {}
                 
@@ -726,7 +730,7 @@ class SONATAImporter():
                     
                     self.current_pre_node = g._v_name.split('_to_')[0]
                     self.current_post_node = g._v_name.split('_to_')[1]
-                    # print('  Found edge %s -> %s'%(self.current_pre_node, self.current_post_node))
+                    print('  Found edge %s -> %s'%(self.current_pre_node, self.current_post_node))
                     self.conn_info[self.current_edge]['pre_node'] = self.current_pre_node
                     self.conn_info[self.current_edge]['post_node'] = self.current_post_node
                     
@@ -782,6 +786,16 @@ class SONATAImporter():
             print("Unhandled dataset: %s"%d.name)
 
 
+    '''
+        Search the strings in a config file for a substitutable value, e.g. 
+        "morphologies_dir": "$COMPONENT_DIR/morphologies",
+    '''
+    def subs(self, path):
+        #print_v('Checking for %s in %s'%(substitutes.keys(),path))
+        for s in self.substitutes:
+            if path.startswith(s):
+                path = path.replace(s,self.substitutes[s])
+        return path
 
 # # main code
 # if __name__ == '__main__':
@@ -789,8 +803,6 @@ class SONATAImporter():
 #     sonataImporter.importNet('/u/salvadord/Documents/ISB/Models/sonata/examples/9_cells/config.json')
 
 
-
-# USE CLASS AS PADRAIG TO AVOID REINVENTING THE WHEEL!
 
 
 '''

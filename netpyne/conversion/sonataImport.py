@@ -146,6 +146,7 @@ class SONATAImporter():
         self.config = load_json(filename)
         self.substitutes = {'../': '%s/../'%rootFolder,
                             './': '%s/'%rootFolder,
+                            '.': '%s/'%rootFolder,
                        '${configdir}': '%s'%rootFolder}
 
         if 'network' in self.config:
@@ -185,8 +186,8 @@ class SONATAImporter():
         # create cells
         self.createCells()
 
-        # # create connections
-        # cells = self.createConns()
+        # create connections
+        self.createConns()
 
 
 
@@ -207,7 +208,12 @@ class SONATAImporter():
         sim.cfg.hParams = self.simulation_config['conditions']
 
         # node sets
-        sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
+        if 'node_sets_file' in self.simulation_config:
+            sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
+        elif 'node_sets' in self.simulation_config:
+            sim.cfg.node_sets = self.simulation_config['node_sets']
+        else:
+            sim.cfg.node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
 
@@ -220,7 +226,258 @@ class SONATAImporter():
         # recording
         for k,v in self.simulation_config['reports'].items():
             sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
-            sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']]}
+            sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']]}  # use 'conds' so works for 'model_type' # UPDATE!
+
+
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Create populations
+    # ------------------------------------------------------------------------------------------------------------
+    def createPops(self):
+        
+        #  Get info from nodes files    
+        for n in self.network_config['networks']['nodes']:
+            nodes_file = subs(n['nodes_file'], self.substitutes)
+            node_types_file = subs(n['node_types_file'], self.substitutes)
+            
+            print("\nLoading nodes from %s and %s"%(nodes_file, node_types_file))
+
+            h5file = tables.open_file(nodes_file,mode='r')
+
+            self.parse_group(h5file.root.nodes)
+            h5file.close()
+            self.nodes_info[self.current_node] = load_csv_props(node_types_file)
+            self.current_node = None
+
+        pp.pprint(self.nodes_info)
+
+
+        #  Use extracted node/cell info to create populations
+        for sonata_pop in self.cell_info:
+            # iterate over cell types -- will make one netpyne population per cell type
+            for type in self.cell_info[sonata_pop]['type_numbers']:
+                info = self.nodes_info[sonata_pop][type]
+                pop_name = info['pop_name'] if 'pop_name' in info else None
+                
+                ref = info['model_name'] if 'model_name' in info else info['model_type']
+                model_type = info['model_type']
+                model_template = info['model_template'] if 'model_template' in info else '- None -'
+                
+                if pop_name:
+                    pop_id = '%s_%s'%(sonata_pop, pop_name) 
+                else:
+                    pop_id = '%s_%s_%s'%(sonata_pop,ref,type) 
+
+                self.pop_id_from_type[(sonata_pop, type)] = pop_id 
+                    
+                print(" - Adding population: %s which has model info: %s"%(pop_id, info))
+                
+                size = self.cell_info[sonata_pop]['type_numbers'][type]
+
+                # create netpyne pop
+                popTags = {}
+                popTags['cellModel'] = model_type
+                popTags['cellType'] = info['model_name'] if 'model_name' in info else pop_id
+                popTags['numCells'] = size
+                popTags['pop'] = pop_id
+                popTags['ei'] = info['ei'] if 'ei' in info else ''
+                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags)
+
+                # create population cell template (sections) from morphology and dynamics params files
+                if model_type == 'biophysical':
+                    sim.net.pops[pop_id].cellModelClass = sim.CompartCell
+                    
+                    # morphology
+                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
+                    cellMorph = EmptyCell()
+                    swcData = h.Import3d_SWC_read()
+                    swcData.input(morphology_file)
+                    swcSecs = h.Import3d_GUI(swcData, 0)
+                    swcSecs.instantiate(cellMorph)
+                    secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
+                    cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
+                    
+
+                    # dynamics params
+                    dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
+                    if info['model_template'].startswith('nml'):
+                        dynamics_params_file = dynamics_params_file.replace('nml:', '')
+                        nml_doc = read_neuroml2_file(dynamics_params_file)
+                        cell_dynamic_params = nml_doc.cells[0]
+                        cellRule = self.setCellRuleDynamicParamsFromNeuroml(cell_dynamic_params, cellRule)
+
+                    elif info['dynamics_params'].startswith('json'):
+                        dynamics_params = load_json(dynamics_params_file)
+                        pass
+
+                                    
+                    # set extracted cell params in cellParams rule
+                    sim.net.params.cellParams[pop_id] = cellRule
+
+                    # clean up before next import
+                    del swcSecs, cellMorph
+                    h.initnrn()
+
+                # create population of virtual cells (VecStims so can add spike times)
+                elif model_type == 'virtual':
+                    popTags['cellModel'] = 'VecStim'
+                    sim.net.pops[pop_id].cellModelClass = sim.PointCell
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Create cells
+    # ------------------------------------------------------------------------------------------------------------
+    def createCells(self):
+        for sonata_pop in self.cell_info:
+            cellTypes = self.cell_info[sonata_pop]['types']
+            cellLocs = self.cell_info[sonata_pop]['0']['locations']
+            numCells = len(self.cell_info[sonata_pop]['types'])
+
+            for icell in _distributeCells(numCells)[sim.rank]:
+                # set gid
+                gid = sim.net.lastGid+icell
+                
+                # get info from pop
+                cellTags = {}
+                cellType = cellTypes[icell]
+                pop_id = self.pop_id_from_type[(sonata_pop, cellType)]
+                pop = sim.net.pops[pop_id]
+                pop.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
+
+                model_type = pop.tags['cellModel']
+
+                # set cell tags
+                cellTags = {k: v for (k, v) in pop.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
+                cellTags['pop'] = pop.tags['pop']
+
+                if model_type == 'biophysical':
+                    cellTags['x'] = cellLocs[icell]['x'] # set x location (um)
+                    cellTags['y'] = cellLocs[icell]['y'] # set y location (um)
+                    cellTags['z'] = cellLocs[icell]['z'] # set z location (um)
+                    cellTags['xnorm'] = cellTags['x'] / sim.net.params.sizeX # set x location (um)
+                    cellTags['ynorm'] = cellTags['y'] / sim.net.params.sizeY # set y location (um)
+                    cellTags['znorm'] = cellTags['z'] / sim.net.params.sizeZ # set z location (um)
+                    if 'rotation_angle_yaxis' in cellLocs[icell]:
+                        cellTags['rot_y'] = cellLocs[icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation MISSING!)
+                    if 'rotation_angle_zaxis' in cellLocs[icell]:
+                        cellTags['rot_z'] = cellLocs[icell]['rotation_angle_zaxis']  # set z-axis rotation
+
+                    # sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing) MISSING!
+                    
+                elif model_type in ['virtual', 'VecStim', 'NetStim']:
+
+                    if 'spkTimes' in pop.tags:  # if VecStim, copy spike times to params
+                        cellTags['params'] = {}
+                        if isinstance(pop.tags['spkTimes'][0], list):
+                            try:
+                                cellTags['params']['spkTimes'] = pop.tags['spkTimes'][icell] # 2D list
+                            except:
+                                pass
+                        else:
+                            cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
+
+
+                sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
+                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
+
+            sim.net.lastGid = sim.net.lastGid + numCells 
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Create connections
+    # ------------------------------------------------------------------------------------------------------------
+    def createConns(self):
+        self.edges_info = {}
+        self.conn_info = {}
+        
+        for e in self.network_config['networks']['edges']:
+            edges_file = subs(e['edges_file'],self.substitutes)
+            edge_types_file = subs(e['edge_types_file'],self.substitutes)
+            
+            print("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
+
+            h5file=tables.open_file(edges_file,mode='r')
+
+            print("Opened HDF5 file: %s"%(h5file.filename))
+            self.parse_group(h5file.root.edges)
+            h5file.close()
+            self.edges_info[self.current_edge] = load_csv_props(edge_types_file)
+            self.current_edge = None
+
+        from IPython import embed; embed()
+
+        #  Use extracted edge info to create connections
+        projections_created = []
+        for conn in self.conn_info:
+            
+            pre_node = self.conn_info[conn]['pre_node']
+            post_node = self.conn_info[conn]['post_node']
+            
+            for i in range(len(self.conn_info[conn]['pre_id'])):
+                pre_id = self.conn_info[conn]['pre_id'][i]
+                post_id = self.conn_info[conn]['post_id'][i]
+                type = self.conn_info[conn]['edge_type_id'][i]
+                # print('   Conn (%s) %s(%s) -> %s(%s)'%(type,pre_node,pre_id,post_node,post_id))
+                pre_pop,pre_i = self.cell_info[pre_node]['pop_map'][pre_id]
+                post_pop,post_i = self.cell_info[post_node]['pop_map'][post_id]
+                # print('   Mapped: Conn %s(%s) -> %s(%s)'%(pre_pop,pre_i,post_pop,post_i))
+                # print self.edges_info[conn][type]
+                
+                synapse = self.edges_info[conn][type]['dynamics_params'].split('.')[0]
+                self.syn_comp_info[synapse] = {}
+                #print self.edges_info[conn][type]
+                dynamics_params_file = subs(self.network_config['components']['synaptic_models_dir'],self.substitutes) +'/'+self.edges_info[conn][type]['dynamics_params']
+                
+                
+                #TODO: don't load this file every connection!!!
+                self.syn_comp_info[synapse]['dynamics_params'] = load_json(dynamics_params_file)
+                proj_id = '%s_%s_%s'%(pre_pop,post_pop,synapse)
+                
+                sign = self.syn_comp_info[synapse]['dynamics_params']['sign']
+                
+                if not proj_id in projections_created:
+                    
+                    self.handler.handle_projection(proj_id, 
+                                         pre_pop, 
+                                         post_pop, 
+                                         synapse)
+                                         
+                    projections_created.append(proj_id)
+                    
+                self.handler.handle_connection(proj_id, 
+                                             i, 
+                                             pre_pop, 
+                                             post_pop, 
+                                             synapse, \
+                                             pre_i, \
+                                             post_i, \
+                                             weight=sign * self.edges_info[conn][type]['syn_weight'], \
+                                             delay=self.edges_info[conn][type]['delay'])
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Create stimulation
+    # ------------------------------------------------------------------------------------------------------------
+    def createStims(self):
+        for input in self.simulation_config['inputs']:
+            
+            # get input info from sim config
+            info = self.simulation_config['inputs'][input]
+            print(" - Adding input: %s which has info: %s"%(input, info)) 
+            node_set = info['node_set']
+
+            # get cell type and pop_id
+            cellType = self.cell_info[node_set]['types'][0]
+            pop_id = self.pop_id_from_type[(node_set, cellType)]
+            
+            # get stpikes
+            from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
+            ids_times = read_sonata_spikes_hdf5_file(subs(info['input_file'], self.substitutes))
+            spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
+            
+            # add spikes to vecstim pop
+            sim.net.pops[pop_id].tags['spkTimes'] = spkTimes
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -436,207 +693,10 @@ class SONATAImporter():
 
 
     # ------------------------------------------------------------------------------------------------------------
-    # Create populations
+    # Parse SONATA hdf5
     # ------------------------------------------------------------------------------------------------------------
-    def createPops(self):
-        
-        #  Get info from nodes files    
-        for n in self.network_config['networks']['nodes']:
-            nodes_file = subs(n['nodes_file'], self.substitutes)
-            node_types_file = subs(n['node_types_file'], self.substitutes)
-            
-            print("\nLoading nodes from %s and %s"%(nodes_file, node_types_file))
-
-            h5file = tables.open_file(nodes_file,mode='r')
-
-            self.parse_group(h5file.root.nodes)
-            h5file.close()
-            self.nodes_info[self.current_node] = load_csv_props(node_types_file)
-            self.current_node = None
-
-        pp.pprint(self.nodes_info)
-
-
-        #  Use extracted node/cell info to create populations
-        for sonata_pop in self.cell_info:
-            # iterate over cell types -- will make one netpyne population per cell type
-            for type in self.cell_info[sonata_pop]['type_numbers']:
-                info = self.nodes_info[sonata_pop][type]
-                pop_name = info['pop_name'] if 'pop_name' in info else None
-                
-                ref = info['model_name'] if 'model_name' in info else info['model_type']
-                model_type = info['model_type']
-                model_template = info['model_template'] if 'model_template' in info else '- None -'
-                
-                if pop_name:
-                    pop_id = '%s_%s'%(sonata_pop, pop_name) 
-                else:
-                    pop_id = '%s_%s_%s'%(sonata_pop,ref,type) 
-
-                self.pop_id_from_type[(sonata_pop, type)] = pop_id 
-                    
-                print(" - Adding population: %s which has model info: %s"%(pop_id, info))
-                
-                size = self.cell_info[sonata_pop]['type_numbers'][type]
-
-                # create netpyne pop
-                popTags = {}
-                popTags['cellModel'] = model_type
-                popTags['cellType'] = info['model_name'] if 'model_name' in info else pop_id
-                popTags['numCells'] = size
-                popTags['pop'] = pop_id
-                popTags['ei'] = info['ei'] if 'ei' in info else ''
-                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags)
-
-                # create population cell template (sections) from morphology and dynamics params files
-                if model_type == 'biophysical':
-                    sim.net.pops[pop_id].cellModelClass = sim.CompartCell
-                    
-                    # morphology
-                    morphology_file = subs(self.network_config['components']['morphologies_dir'], self.substitutes) +'/'+info['morphology'] + '.swc'
-                    cellMorph = EmptyCell()
-                    swcData = h.Import3d_SWC_read()
-                    swcData.input(morphology_file)
-                    swcSecs = h.Import3d_GUI(swcData, 0)
-                    swcSecs.instantiate(cellMorph)
-                    secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
-                    cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
-                    
-
-                    # dynamics params
-                    dynamics_params_file = subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template'], self.substitutes) 
-                    if info['model_template'].startswith('nml'):
-                        dynamics_params_file = dynamics_params_file.replace('nml:', '')
-                        nml_doc = read_neuroml2_file(dynamics_params_file)
-                        cell_dynamic_params = nml_doc.cells[0]
-                        cellRule = self.setCellRuleDynamicParamsFromNeuroml(cell_dynamic_params, cellRule)
-
-                    elif info['dynamics_params'].startswith('json'):
-                        dynamics_params = load_json(dynamics_params_file)
-                        pass
-
-                                    
-                    # set extracted cell params in cellParams rule
-                    sim.net.params.cellParams[pop_id] = cellRule
-
-                    # clean up before next import
-                    del swcSecs, cellMorph
-                    h.initnrn()
-
-                # create population of virtual cells (VecStims so can add spike times)
-                elif model_type == 'virtual':
-                    popTags['cellModel'] = 'VecStim'
-                    sim.net.pops[pop_id].cellModelClass = sim.PointCell
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Create cells
-    # ------------------------------------------------------------------------------------------------------------
-    def createCells(self):
-        for sonata_pop in self.cell_info:
-            cellTypes = self.cell_info[sonata_pop]['types']
-            cellLocs = self.cell_info[sonata_pop]['0']['locations']
-            numCells = len(self.cell_info[sonata_pop]['types'])
-
-            for icell in _distributeCells(numCells)[sim.rank]:
-                # set gid
-                gid = sim.net.lastGid+icell
-                
-                # get info from pop
-                cellTags = {}
-                cellType = cellTypes[icell]
-                pop_id = self.pop_id_from_type[(sonata_pop, cellType)]
-                pop = sim.net.pops[pop_id]
-                pop.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-
-                model_type = pop.tags['cellModel']
-
-                # set cell tags
-                cellTags = {k: v for (k, v) in pop.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-                cellTags['pop'] = pop.tags['pop']
-
-                if model_type == 'biophysical':
-                    cellTags['x'] = cellLocs[icell]['x'] # set x location (um)
-                    cellTags['y'] = cellLocs[icell]['y'] # set y location (um)
-                    cellTags['z'] = cellLocs[icell]['z'] # set z location (um)
-                    cellTags['xnorm'] = cellTags['x'] / sim.net.params.sizeX # set x location (um)
-                    cellTags['ynorm'] = cellTags['y'] / sim.net.params.sizeY # set y location (um)
-                    cellTags['znorm'] = cellTags['z'] / sim.net.params.sizeZ # set z location (um)
-                    cellTags['rot_y'] = cellLocs[icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation MISSING!)
-                    cellTags['rot_z'] = cellLocs[icell]['rotation_angle_zaxis']  # set z-axis rotation
-
-                    # sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing) MISSING!
-                    
-                elif model_type in ['virtual', 'VecStim', 'NetStim']:
-
-                    if 'spkTimes' in pop.tags:  # if VecStim, copy spike times to params
-                        cellTags['params'] = {}
-                        if isinstance(pop.tags['spkTimes'][0], list):
-                            try:
-                                cellTags['params']['spkTimes'] = pop.tags['spkTimes'][icell] # 2D list
-                            except:
-                                pass
-                        else:
-                            cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
-
-
-                sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
-                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
-
-            sim.net.lastGid = sim.net.lastGid + numCells 
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Create connections
-    # ------------------------------------------------------------------------------------------------------------
-    def createConns(self):
-        #  Get info from edges files    
-        for e in self.network_config['networks']['edges']:
-            edges_file = subs(e['edges_file'], self.substitutes)
-            edge_types_file = subs(e['edge_types_file'], self.substitutes)
-            
-            print("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
-
-            h5file=tables.open_file(edges_file,mode='r')
-
-            print("Opened HDF5 file: %s" % (h5file.filename))
-            self.parse_group(h5file.root.edges)
-            h5file.close()
-            self.edges_info[self.current_edge] = load_csv_props(edge_types_file)
-            self.current_edge = None
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Create stimulation
-    # ------------------------------------------------------------------------------------------------------------
-    def createStims(self):
-        for input in self.simulation_config['inputs']:
-            
-            # get input info from sim config
-            info = self.simulation_config['inputs'][input]
-            print(" - Adding input: %s which has info: %s"%(input, info)) 
-            node_set = info['node_set']
-
-            # get cell type and pop_id
-            cellType = self.cell_info[node_set]['types'][0]
-            pop_id = self.pop_id_from_type[(node_set, cellType)]
-            
-            # get stpikes
-            from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
-            ids_times = read_sonata_spikes_hdf5_file(os.path.dirname(self.configFile)+'/'+subs(info['input_file'], self.substitutes))
-            spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
-            
-            # add spikes to vecstim pop
-            sim.net.pops[pop_id].tags['spkTimes'] = spkTimes
-
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Create configuration 
-    # ------------------------------------------------------------------------------------------------------------
-
-
     def parse_group(self, g):
-        print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
+        #print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
 
         for node in g:
             #print("   ------Sub node: %s, class: %s, name: %s (parent: %s)"   % (node,node._c_classid,node._v_name, g._v_name))
@@ -723,10 +783,10 @@ class SONATAImporter():
 
 
 
-# main code
-if __name__ == '__main__':
-    sonataImporter = SONATAImporter()
-    sonataImporter.importNet('/u/salvadord/Documents/ISB/Models/sonata/examples/300_cells/config.json')
+# # main code
+# if __name__ == '__main__':
+#     sonataImporter = SONATAImporter()
+#     sonataImporter.importNet('/u/salvadord/Documents/ISB/Models/sonata/examples/9_cells/config.json')
 
 
 

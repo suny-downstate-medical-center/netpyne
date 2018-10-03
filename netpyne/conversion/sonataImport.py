@@ -287,6 +287,7 @@ class SONATAImporter():
                     swcData.input(morphology_file)
                     swcSecs = h.Import3d_GUI(swcData, 0)
                     swcSecs.instantiate(cellMorph)
+
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
                     cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
                     
@@ -393,6 +394,9 @@ class SONATAImporter():
         # NeuroMLlite Method
         self.edges_info = {}
         self.conn_info = {}
+
+        synMechSubs = {'level_of_detail': 'mod', 
+                        'erev': 'e'}
         
         if 'edges' in self.network_config['networks']:
             for e in self.network_config['networks']['edges']:
@@ -414,17 +418,21 @@ class SONATAImporter():
             pre_node = self.conn_info[conn]['pre_node']
             post_node = self.conn_info[conn]['post_node']
             
-            # add all synMechs in this projection to netParams.synMechParams
+            print('   Adding projection %s: %s -> %s '%(conn, pre_node, post_node))
 
+            # add all synMechs in this projection to netParams.synMechParams
             for type in self.edges_info[conn]:
                 syn_label = self.edges_info[conn][type]['dynamics_params'].split('.')[0]
                 if syn_label not in sim.net.params.synMechParams:
                     dynamics_params_file = self.subs(self.network_config['components']['synaptic_models_dir']) +'/'+self.edges_info[conn][type]['dynamics_params']        
                     syn_dyn_params = load_json(dynamics_params_file)
                     synMechParams = dict(syn_dyn_params)
-                    synMechParams.pop('level_of_detail')
-                    synMechParams['mod'] = self.edges_info[conn][type]['dynamics_params']['model_template']
-                    sim.net.params.synMechParmas[syn_label] = synMechParams
+                    for k in synMechParams:  # replace keys
+                        if k in synMechSubs:
+                            synMechParams[synMechSubs[k]] = synMechParams.pop(k) 
+                    synMechParams['mod'] = self.edges_info[conn][type]['model_template']
+                    sim.net.params.synMechParams[syn_label] = synMechParams
+                    print('   Added synMech %s '%(syn_label))
 
             # add individual connections in this projection
             for i in range(len(self.conn_info[conn]['pre_id'])):
@@ -433,31 +441,48 @@ class SONATAImporter():
                 pre_gid = self.cell_info[pre_node]['gid_from_id'][pre_id] 
                 post_gid = self.cell_info[post_node]['gid_from_id'][post_id]
 
+
                 if post_gid in sim.net.lid2gid:
+
                     type = self.conn_info[conn]['edge_type_id'][i]
 
-                    print('   Conn (%s) %s(%s) -> %s(%s)'%(type,pre_node,pre_id,post_node,post_id))
-                    print('   Mapped: Conn from cell gid %s -> cell gid %s'%(pre_gid,post_gid))
-                    print(self.edges_info[conn][type])
+                    print('   Conn: type %s pop %s (id %s) -> pop %s (id %s) MAPPED TO: cell gid %s -> cell gid %s'%(type,pre_node,pre_id,post_node,post_id, pre_gid,post_gid))
+                    #print(self.edges_info[conn][type])
                     
                     connParams = {}
-                    connParams['synMech'] = self.edges_info[conn][type]['dynamics_params'].split('.')[0]                
-                    sign = syn_dyn_params['sign'] if 'sign' in syn_dyn_params else 1
-                    weight = self.edges_info[conn][type]['syn_weight'] if 'syn_weight' in self.edges_info[conn][type] else 1.0
-                    connParams['weight'] = sign*weight
-                    connParams['delay'] = self.edges_info[conn][type]['delay'] if 'delay' in self.edges_info[conn][type] else 0
-                    connParams['loc'] = 0.5  # need to read from file!
-                    connParams['sec'] = 'soma_0'  # need to read from file!     
-                    connParams['preGid'] = pre_gid
-                    
                     postCell = sim.net.cells[sim.net.gid2lid[post_gid]]
+
+                    # preGid
+                    connParams['preGid'] = pre_gid
+
+                    # synMech
+                    connParams['synMech'] = self.edges_info[conn][type]['dynamics_params'].split('.')[0]                
+                    
+                    # weight
+                    sign = syn_dyn_params['sign'] if 'sign' in syn_dyn_params else 1
+                    try:
+                        weight = self.conn_info[conn]['syn_weight'][i] 
+                    except:
+                        weight = self.edges_info[conn][type]['syn_weight'] if 'syn_weight' in self.edges_info[conn][type] else 1.0
+                    connParams['weight'] = sign*weight
+                    
+                    # delay
+                    connParams['delay'] = self.edges_info[conn][type]['delay'] if 'delay' in self.edges_info[conn][type] else 0
+                    
+                    # sec 
+                    sec_id = self.conn_info[conn]['sec_id'][i] 
+                    connParams['sec'] = list(postCell.secs)[sec_id]  # Get proper mapping when import SWC
+
+                    # loc
+                    connParams['loc'] = self.conn_info[conn]['sec_x'][i] 
+
+                    # add connection
+                    
                     postCell.addConn(connParams)
     
-                from IPython import embed; embed()
-                
 
-
-
+                    # from IPython import embed; embed()
+                    
     # ------------------------------------------------------------------------------------------------------------
     # Create stimulation
     # ------------------------------------------------------------------------------------------------------------
@@ -614,7 +639,6 @@ class SONATAImporter():
                         for fract in [(2*i+1.0)/(2*nseg) for i in range(nseg)]:
                             
                             p = path_start + fract*(path_end-path_start)
-                            
                             
                             gmax_i = pynml.convert_to_units('%s S_per_m2'%eval(expr),'S_per_cm2')
                             #print("     Point %s at %s = %s"%(p,fract, gmax_i))
@@ -781,7 +805,12 @@ class SONATAImporter():
             self.conn_info[self.current_edge]['edge_type_id'] = [int(i) for i in d]
         elif d.name=='target_node_id':
             self.conn_info[self.current_edge]['post_id'] = [i for i in d]
-              
+        elif d.name=='sec_id':
+            self.conn_info[self.current_edge]['sec_id'] = [i for i in d]
+        elif d.name=='sec_x':
+            self.conn_info[self.current_edge]['sec_x'] = [i for i in d]        
+        elif d.name=='syn_weight':
+            self.conn_info[self.current_edge]['syn_weight'] = [i for i in d]
         else:
             print("Unhandled dataset: %s"%d.name)
 
@@ -803,87 +832,3 @@ class SONATAImporter():
 #     sonataImporter.importNet('/u/salvadord/Documents/ISB/Models/sonata/examples/9_cells/config.json')
 
 
-
-
-'''
-#------------------------------------------------------------------------------
-# Load cells and pops from file and create NEURON objs
-#------------------------------------------------------------------------------
-def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
-    from .. import sim
-
-    if not data: data = _loadFile(filename)
-    if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
-        if sim.rank == 0:
-            sim.timing('start', 'loadNetTime')
-            print('Loading net...')
-            if compactConnFormat: 
-                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
-            sim.net.allPops = data['net']['pops']
-            sim.net.allCells = data['net']['cells']
-        if instantiate:
-            # calculate cells to instantiate in this node
-            if isinstance(instantiate, list):
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
-            else:
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
-            if sim.cfg.createPyStruct:
-                for popLoadLabel, popLoad in data['net']['pops'].items():
-                    pop = sim.Pop(popLoadLabel, popLoad['tags'])
-                    pop.cellGids = popLoad['cellGids']
-                    sim.net.pops[popLoadLabel] = pop
-                for cellLoad in cellsNode:
-                    # create new CompartCell object and add attributes, but don't create sections or associate gid yet
-                    # TO DO: assumes CompartCell -- add condition to load PointCell
-                    cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
-                    try:
-                        if sim.cfg.saveCellSecs:
-                            cell.secs = Dict(cellLoad['secs'])
-                        else:
-                            createNEURONObjorig = sim.cfg.createNEURONObj
-                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
-                            cell.create()
-                            sim.cfg.createNEURONObj = createNEURONObjorig
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell secs')
-
-                    try:
-                        cell.conns = [Dict(conn) for conn in cellLoad['conns']]
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell conns')
-
-                    try:
-                        cell.stims = [Dict(stim) for stim in cellLoad['stims']]
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell stims')
-
-                    sim.net.cells.append(cell)
-                print(('  Created %d cells' % (len(sim.net.cells))))
-                print(('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells]))))
-                print(('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells]))))
-
-                # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
-                if sim.cfg.createNEURONObj:
-                    if sim.cfg.verbose: print("  Adding NEURON objects...")
-                    # create NEURON sections, mechs, syns, etc; and associate gid
-                    for cell in sim.net.cells:
-                        prop = {'secs': cell.secs}
-                        cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs
-                        cell.associateGid()  # can only associate once the hSection obj has been created
-                    # create all NEURON Netcons, NetStims, etc
-                    sim.pc.barrier()
-                    for cell in sim.net.cells:
-                        try:
-                            cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
-                            cell.addConnsNEURONObj()
-                        except:
-                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
-
-                    print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
-
-            if sim.rank == 0 and sim.cfg.timing:
-                sim.timing('stop', 'loadNetTime')
-                print(('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime']))
-    else:
-        print(('  netCells and/or netPops not found in file %s'%(filename)))
-'''

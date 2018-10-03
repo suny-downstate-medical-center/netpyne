@@ -98,7 +98,8 @@ def gatherData (gatherLFP = True):
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
                 if len(sim.allSimData['spkt']) > 0:
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid'])))) # sort spks
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
                 sim.net.allPops = ODict() # pops
                 for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
@@ -156,7 +157,8 @@ def gatherData (gatherLFP = True):
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
 
                 if len(sim.allSimData['spkt']) > 0:
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid'])))) # sort spks
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
                 sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
 

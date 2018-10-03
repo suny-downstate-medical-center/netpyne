@@ -47,7 +47,10 @@ class PointCell (Cell):
             print("Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid))
             return 
 
-        # if rate is list with 2 items generate random value from uniform distribution
+        # if rate is list with 2 items generate random value from uniform 
+        
+        #from IPython import embed; embed()
+
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
             rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
@@ -354,7 +357,6 @@ class PointCell (Cell):
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i])))
                 except:
                     print(('  Created connection preGid=%s' % (preGid)))
-
 
 
     def initV (self):

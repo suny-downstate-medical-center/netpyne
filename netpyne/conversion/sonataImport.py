@@ -24,7 +24,7 @@ import pprint
 pp = pprint.PrettyPrinter(depth=6)
 
 # ------------------------------------------------------------------------------------------------------------
-# Helper functions copied from https://github.com/NeuroML/NeuroMLlite/blob/master/neuromllite/SonataReader.py
+# Helper functions (some adapted from https://github.com/NeuroML/NeuroMLlite/)
 # ------------------------------------------------------------------------------------------------------------
 
 '''
@@ -72,16 +72,33 @@ def ascii_encode_dict(data):
 
 def load_json(filename):
     import json
-
     with open(filename, 'r') as f:
-        
         data = json.load(f, object_hook=ascii_encode_dict)
-        
     return data
-
 
 class EmptyCell():
     pass
+
+
+def _distributeCells(numCellsPop):
+    ''' distribute cells across compute nodes using round-robin'''
+    from .. import sim
+        
+    hostCells = {}
+    for i in range(sim.nhosts):
+        hostCells[i] = []
+        
+    for i in range(numCellsPop):
+        hostCells[sim.nextHost].append(i)
+        
+        sim.nextHost+=1
+        if sim.nextHost>=sim.nhosts:
+            sim.nextHost=0
+    
+    if sim.cfg.verbose: 
+        print(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
+    return hostCells
+
 
 # ------------------------------------------------------------------------------------------------------------
 # Import SONATA 
@@ -145,6 +162,9 @@ class SONATAImporter():
             path = subs(self.network_config['manifest'][m], self.substitutes)
             self.substitutes[m] = path
 
+        for m in self.simulation_config['manifest']:
+            path = subs(self.simulation_config['manifest'][m], self.substitutes)
+            self.substitutes[m] = path
 
         # create and initialize sim object
         sim.initialize() 
@@ -159,16 +179,15 @@ class SONATAImporter():
         # create pops
         self.createPops()
         
+        # create stimulation (before createCells since spkTimes added to pops)
+        self.createStims()
+
         # create cells
         self.createCells()
 
         # # create connections
         # cells = self.createConns()
 
-        # # create stimulation
-        # cells = self.createStims()
-
-        # Add extracted network to NetPyNE's sim object
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -507,7 +526,7 @@ class SONATAImporter():
                 # create population of virtual cells (VecStims so can add spike times)
                 elif model_type == 'virtual':
                     popTags['cellModel'] = 'VecStim'
-                    sim.net.pops[pop_id].cellModelClass = sim.pointCell
+                    sim.net.pops[pop_id].cellModelClass = sim.PointCell
 
 
     # ------------------------------------------------------------------------------------------------------------
@@ -519,9 +538,7 @@ class SONATAImporter():
             cellLocs = self.cell_info[sonata_pop]['0']['locations']
             numCells = len(self.cell_info[sonata_pop]['types'])
 
-            #from IPython import embed; embed()
-
-            for icell in sim.pop._distributeCells(numCells)[sim.rank]:
+            for icell in _distributeCells(numCells)[sim.rank]:
                 # set gid
                 gid = sim.net.lastGid+icell
                 
@@ -550,18 +567,18 @@ class SONATAImporter():
 
                     # sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing) MISSING!
                     
-                elif model_type == 'virtual':
+                elif model_type in ['virtual', 'VecStim', 'NetStim']:
 
-                    if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
-                        if isinstance(self.tags['spkTimes'][0], list):
+                    if 'spkTimes' in pop.tags:  # if VecStim, copy spike times to params
+                        cellTags['params'] = {}
+                        if isinstance(pop.tags['spkTimes'][0], list):
                             try:
-                                cellTags['params']['spkTimes'] = self.tags['spkTimes'][icell] # 2D list
+                                cellTags['params']['spkTimes'] = pop.tags['spkTimes'][icell] # 2D list
                             except:
                                 pass
                         else:
-                            cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+                            cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
 
-                    pass
 
                 sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
                 print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
@@ -593,61 +610,24 @@ class SONATAImporter():
     # Create stimulation
     # ------------------------------------------------------------------------------------------------------------
     def createStims(self):
-        #  Extract info from inputs in simulation_config
-        '''
-          "inputs": {
-            "external_spike_trains": {
-              "input_type": "spikes",
-              "module": "h5",
-              "input_file": "$INPUT_DIR/external_spike_trains.h5",
-              "node_set": "external"
-            }
-          },
-        '''
-
-        
         for input in self.simulation_config['inputs']:
+            
+            # get input info from sim config
             info = self.simulation_config['inputs'][input]
             print(" - Adding input: %s which has info: %s"%(input, info)) 
-            
-            self.input_comp_info[input] = {}
-            
             node_set = info['node_set']
-            node_info = self.cell_info[node_set]
-            print(node_info)
-            from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
+
+            # get cell type and pop_id
+            cellType = self.cell_info[node_set]['types'][0]
+            pop_id = self.pop_id_from_type[(node_set, cellType)]
             
-            ids_times = read_sonata_spikes_hdf5_file(os.path.dirname(self.configFile)+'/'+info['input_file'])
-
-            pop_id = 0
-            spkTimes = [[]]
-            sim.net.pops[pop_id]['tags']['spkTimes'] = spkTimes
-
-            '''
-            for id in ids_times:
-                times = ids_times[id]
-                pop_id, cell_id = node_info['pop_map'][id] 
-                print("Cell %i in Sonata node set %s (cell %s in nml pop %s) has %i spikes"%(id, node_set, pop_id, cell_id, len(times)))
-                
-                component = '%s_timedInputs_%i'%(input,cell_id)
-                
-                self.input_comp_info[input][component] ={'id': cell_id, 'times': times}
-                
-                input_list_id = 'il_%s_%i'%(input,cell_id)
-
-
-                self.handler.handle_input_list(input_list_id, 
-                                               pop_id, 
-                                               component, 
-                                               1)
-                
-                self.handler.handle_single_input(input_list_id, 
-                                                  0, 
-                                                  cellId = cell_id, 
-                                                  segId = 0, 
-                                                  fract = 0.5)
-            '''
-
+            # get stpikes
+            from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
+            ids_times = read_sonata_spikes_hdf5_file(os.path.dirname(self.configFile)+'/'+subs(info['input_file'], self.substitutes))
+            spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
+            
+            # add spikes to vecstim pop
+            sim.net.pops[pop_id].tags['spkTimes'] = spkTimes
 
 
     # ------------------------------------------------------------------------------------------------------------

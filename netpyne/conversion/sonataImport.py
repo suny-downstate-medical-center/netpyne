@@ -814,7 +814,6 @@ class SONATAImporter():
         else:
             print("Unhandled dataset: %s"%d.name)
 
-
     '''
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
@@ -826,9 +825,5 @@ class SONATAImporter():
                 path = path.replace(s,self.substitutes[s])
         return path
 
-# # main code
-# if __name__ == '__main__':
-#     sonataImporter = SONATAImporter()
-#     sonataImporter.importNet('/u/salvadord/Documents/ISB/Models/sonata/examples/9_cells/config.json')
 
 

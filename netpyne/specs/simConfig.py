@@ -111,5 +111,5 @@ class SimConfig (object):
         self.analysis[func] =  params
 
     def todict(self):
-        from sim import replaceDictODict
+        from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)

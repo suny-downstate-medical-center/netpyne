@@ -63,10 +63,11 @@ def _loadFile (filename):
         import json
         print(('Loading file %s ... ' % (filename)))
         with open(filename, 'rb') as fileObj:
-            if sys.version[0]=='3':
-                data = json.load(fileObj)
-            else:
+            if sys.version_info[0] =='2':
                 data = json.load(fileObj, object_hook=_byteify)
+            else:
+                data = json.load(fileObj)
+                
     # load mat file
     elif ext == 'mat':
         from scipy.io import loadmat

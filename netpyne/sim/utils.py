@@ -514,4 +514,5 @@ def clearAll ():
     del sim.net
 
     import gc; gc.collect()
+    
 

@@ -47,9 +47,9 @@ from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replac
 
 
 # import wrapper functions
-from .wrappers import create, simulate, analyze, createSimulate, \
+from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \
 	createSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
-	createExportNeuroML2, importNeuroML2SimulateAnalyze 
+	createExportNeuroML2, importNeuroML2SimulateAnalyze, intervalCreateSimulateAnalyze 
 
 
 #------------------------------------------------------------------------------

@@ -96,7 +96,13 @@ def gatherData (gatherLFP = True):
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
-
+                            
+                if sim.cfg.interval:
+                    import pandas as pd
+                    df = _gatherDist('temp')
+                    for k in df.keys():
+                        sim.allSimData[k] = df[k].tolist()
+                
                 if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -201,7 +207,12 @@ def gatherData (gatherLFP = True):
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else:
                     sim.allSimData[key] = val           # update simData dicts which are not Vectors
-
+        
+        if sim.cfg.interval:
+            import pandas as pd
+            df = _gatherDist('temp')
+            for k in df.keys():
+                sim.allSimData[k] = df[k].tolist()
     ## Print statistics
     sim.pc.barrier()
     if sim.rank == 0:
@@ -340,3 +351,20 @@ def _gatherCells ():
     else:  # if single node, save data in same format as for multiple nodes for consistency
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
 
+#------------------------------------------------------------------------------
+# Gather data from distributed save, then remove temporary dir
+#------------------------------------------------------------------------------    
+def _gatherDist(dir):
+    import pandas as pd
+    import os
+    df = pd.DataFrame()
+    to_df = []
+    for f in os.listdir(dir):
+        if f.endswith('.h5'):
+            temp = pd.read_hdf(dir +'/'+ f, 'df', append=True)
+            to_df.append(temp)
+            os.remove(dir +'/'+ f)
+    df = pd.concat(to_df)
+    os.rmdir(dir)
+    
+    return df 

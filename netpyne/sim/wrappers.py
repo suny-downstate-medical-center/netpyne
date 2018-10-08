@@ -36,7 +36,15 @@ def simulate ():
     sim.runSim()                      # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     
-
+#------------------------------------------------------------------------------
+# Wrapper to simulate network
+#------------------------------------------------------------------------------
+def intervalSimulate (interval, func):
+    ''' Sequence of commands to simulate network '''
+    from .. import sim
+    sim.runSimWithIntervalFunc(interval, func)                      # run parallel Neuron simulation  
+    sim.gatherData()                  # gather spiking data and cell info from each node
+    
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
@@ -67,6 +75,33 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
     from .. import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
+    sim.analyze()
+
+    if output: return (pops, cells, conns, stims, simData)
+    
+    
+#------------------------------------------------------------------------------
+# Wrapper to create, simulate, and analyse network
+#------------------------------------------------------------------------------
+def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=5, func=None):
+    ''' Sequence of commands create, simulate and analyse network '''
+    from .. import sim
+    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
+    # Make sure to delete folder at the end
+    if func:
+        import os
+        # Create a temp folder to keep interval saves
+        try:
+            os.mkdir('temp')
+            sim.intervalSimulate(interval, func)
+        except OSError:
+            if not os.path.exists('temp'):
+                print(' Could not create temp folder, running without intervals ...')
+                sim.simulate() 
+    else:
+        print('No function provided for interval simulate, running sim without interval function')
+        sim.simulate() 
+        
     sim.analyze()
 
     if output: return (pops, cells, conns, stims, simData)

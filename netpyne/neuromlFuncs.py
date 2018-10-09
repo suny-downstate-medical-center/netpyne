@@ -1327,7 +1327,25 @@ if neuromlExists:
         
         verbose = False
 
-        if fileName.endswith(".nml"):
+        if fileName.endswith(".h5"):
+
+            import logging
+            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+            from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
+
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
+
+            currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+            currParser.parse(fileName)
+
+            nmlHandler.finalise()
+
+            print('Finished import: %s'%nmlHandler.gids)
+            #print('Connections: %s'%nmlHandler.connections)
+            
+        else: # Assume: fileName.endswith(".nml")...
 
             import logging
             logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
@@ -1348,23 +1366,6 @@ if neuromlExists:
                 print('   %s: %s'%(pop, g if len(g)<10 else str(g[:8]).replace(']',', ..., %s]'%g[-1])))
             #print('Connections: %s'%nmlHandler.connections)
 
-        if fileName.endswith(".h5"):
-
-            import logging
-            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
-
-            from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
-
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
-
-            currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
-
-            currParser.parse(fileName)
-
-            nmlHandler.finalise()
-
-            print('Finished import: %s'%nmlHandler.gids)
-            #print('Connections: %s'%nmlHandler.connections)
 
 
         sim.initialize(netParams, simConfig)  # create network object and set cfg and net params

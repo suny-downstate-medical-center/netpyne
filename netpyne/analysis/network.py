@@ -549,7 +549,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
-        plt.hold(True)
+        # plt.hold(True)
         if groupBy == 'cell':
             cellsPre, cellsPost = pre, post
 

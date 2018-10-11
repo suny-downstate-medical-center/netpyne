@@ -8,10 +8,9 @@ Contributors: salvador dura@gmail.com
 from numbers import Number
 from neuron import h
 
-        
 def validateFunction(strFunc, netParamsVars):
     ''' returns True if "strFunc" can be evaluated'''
-    from math import exp, log, sqrt, int, sin, cos, tan, asin, acos, atan, sinh, cosh, tangh, pi, e 
+    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e 
     rand = h.Random()
     stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 
         'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']

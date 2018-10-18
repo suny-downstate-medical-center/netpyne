@@ -97,7 +97,7 @@ def gatherData (gatherLFP = True):
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
                             
-                if sim.cfg.interval:
+                if hasattr(sim.cfg, 'interval'):
                     import pandas as pd
                     df = _gatherDist('temp')
                     for k in df.keys():
@@ -208,7 +208,7 @@ def gatherData (gatherLFP = True):
                 else:
                     sim.allSimData[key] = val           # update simData dicts which are not Vectors
         
-        if sim.cfg.interval:
+        if hasattr(sim.cfg, 'interval'):
             import pandas as pd
             df = _gatherDist('temp')
             for k in df.keys():
@@ -361,9 +361,10 @@ def _gatherDist(dir):
     to_df = []
     for f in os.listdir(dir):
         if f.endswith('.h5'):
-            temp = pd.read_hdf(dir +'/'+ f, 'df', append=True)
+            name = dir +'/'+ f
+            temp = pd.read_hdf(name, 'df', append=True)
             to_df.append(temp)
-            os.remove(dir +'/'+ f)
+            os.remove(name)
     df = pd.concat(to_df)
     os.rmdir(dir)
     

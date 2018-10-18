@@ -12,7 +12,6 @@ def saveAndClear(t):
     del df
     # count spikes then clear them see if it adds up to number
 
-
 sim.intervalCreateSimulateAnalyze(netParams = M1.netParams, simConfig = M1.simConfig, interval=10000, func=saveAndClear)
 
 # check model output

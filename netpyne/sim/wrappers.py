@@ -88,6 +88,7 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
     from .. import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
     # Make sure to delete folder at the end
+    print('created now running')
     if func:
         import os
         # Create a temp folder to keep interval saves

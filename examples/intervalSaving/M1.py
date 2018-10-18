@@ -26,7 +26,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 20*1e3 # Duration of the simulation, in ms
+simConfig.duration = 30*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
@@ -55,7 +55,7 @@ simConfig.saveTxt = False # save to txt file
 simConfig.saveDpk = False # save to .dpk pickled file
 simConfig.saveHDF5 = False # save to HDF5 file 
 
-simConfig.interval=True # save in intervals during the simulation, used for large simulations
+simConfig.interval= True # save in intervals during the simulation, used for large simulations
 
 # Analysis and plotting 
 simConfig.addAnalysis('plotRaster', {'saveFig' : 'raster.png'}) # Whether or not to plot a raster

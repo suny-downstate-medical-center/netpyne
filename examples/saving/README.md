@@ -1,6 +1,6 @@
 # Example of saving and output data formats
 
-This example generates a simple network with 3 populations and 3 connectivity rules. It then simulates the networ, plots some figures, and saves the differnet model components to JSON.
+This example generates a simple network with 3 populations and 3 connectivity rules. It then simulates the network, plots some figures, and saves the different model components to JSON.
 
 ## List of files
 
@@ -20,7 +20,7 @@ This example generates a simple network with 3 populations and 3 connectivity ru
 
 - **out_simConfig.json**: JSON with simulation configuration options.
 
-- **out_simData.json**: JSON with simulation ouput data, including spike times and voltage traces.
+- **out_simData.json**: JSON with simulation output data, including spike times and voltage traces.
 
 - **out_raster.png**: Raster plot.
 

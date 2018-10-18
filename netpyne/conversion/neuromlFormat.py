@@ -1415,13 +1415,13 @@ if neuromlExists:
 
                 connParam['synMech'] = synapse
 
-                if post_id in sim.net.lid2gid:  # check if postsyn is in this node's list of gids
+                if post_id in sim.net.gid2lid:  # check if postsyn is in this node's list of gids
                     sim.net._addCellConn(connParam, pre_id, post_id)
                     
         
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
         for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-            if preGapParams['gid'] in sim.net.lid2gid:  # only cells in this rank
+            if preGapParams['gid'] in sim.net.gid2lid:  # only cells in this rank
                 cell = sim.net.cells[sim.net.gid2lid[preGapParams['gid']]] 
                 cell.addConn(preGapParams)
                 

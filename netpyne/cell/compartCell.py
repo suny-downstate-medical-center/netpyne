@@ -237,14 +237,14 @@ class CompartCell (Cell):
         try:
             sec['hSec'].insert('dipole')
         except:
-            print 'Error inserting dipole mechanism'
+            print('Error inserting dipole mechanism')
             return -1
 
         # insert Dipole point process (dipole_pp.mod)
         try: 
             sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hSec'])
         except:
-            print 'Error inserting Dipole point process'
+            print('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
         # assign internal resistance values to dipole point process (dpp)
@@ -387,7 +387,7 @@ class CompartCell (Cell):
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        for sectName,sectParams in prop['secs'].iteritems():
+        for sectName,sectParams in prop['secs'].items():
             sec = self.secs[sectName]
             if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section

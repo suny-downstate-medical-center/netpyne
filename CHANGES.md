@@ -8,6 +8,8 @@
 
 - Optimized implementation of raster and spikeHist plotting using Pandas
 
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
+
 - Added option for filename to saveData()
 
 - Removed pop cellModelClass when saving

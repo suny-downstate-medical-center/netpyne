@@ -216,7 +216,12 @@ def setupRecording ():
 
     # spike recording
     sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})  # initialize
-    sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
+    if sim.cfg.recordCellsSpikes == -1:
+        sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
+    else:
+        recordGidsSpikes = utils.getCellsList(sim.cfg.recordCellsSpikes, returnGids=True)
+        for gid in recordGidsSpikes:
+            sim.pc.spike_record(float(gid), sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:

@@ -60,6 +60,9 @@ simConfig.printSynsAfterRule = True
 simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
 simConfig.saveJson=1
 
+simConfig.recordCellsSpikes = ['I2', 'input']
+
+
 lfp=0
 if lfp:
   #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'plots': ['timeSeries'], 'NFFT': 256*2, 'noverlap': 128*2, 'nperseg': 132*2, 'saveFig': True} 

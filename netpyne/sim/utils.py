@@ -32,7 +32,7 @@ def cellByGid (gid):
 #------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 #------------------------------------------------------------------------------
-def getCellsList (include):
+def getCellsList (include, returnGids=False):
     from .. import sim
 
     if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
@@ -62,8 +62,11 @@ def getCellsList (include):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
-    return cells
+    if returnGids:
+        return cellGids
+    else:
+        cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
+        return cells
 
 
 #------------------------------------------------------------------------------

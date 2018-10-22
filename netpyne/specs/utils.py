@@ -8,7 +8,6 @@ Contributors: salvador dura@gmail.com
 from numbers import Number
 from neuron import h
 
-        
 def validateFunction(strFunc, netParamsVars):
     ''' returns True if "strFunc" can be evaluated'''
     from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e

@@ -217,8 +217,10 @@ class SONATAImporter():
         # recording
         for k,v in self.simulation_config['reports'].items():
             sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
-            sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']]}  # use 'conds' so works for 'model_type' # UPDATE!
-
+            try:
+                sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']].values()}  # use 'conds' so works for 'model_type' # UPDATE!
+            except:
+                pass
 
 
 
@@ -289,6 +291,7 @@ class SONATAImporter():
                     swcSecs.instantiate(cellMorph)
 
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
+                    secLists['SONATA_sec_id'] = [sim.conversion.getSecName(sec) for sec in cellMorph.all]
                     cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
                     
 
@@ -471,7 +474,7 @@ class SONATAImporter():
                     
                     # sec 
                     sec_id = self.conn_info[conn]['sec_id'][i] 
-                    connParams['sec'] = list(postCell.secs)[sec_id]  # Get proper mapping when import SWC
+                    connParams['sec'] = postCell.secLists['SONATA_sec_id'][sec_id]
 
                     # loc
                     connParams['loc'] = self.conn_info[conn]['sec_x'][i] 
@@ -481,7 +484,7 @@ class SONATAImporter():
                     postCell.addConn(connParams)
     
 
-                    # from IPython import embed; embed()
+        from IPython import embed; embed()
                     
     # ------------------------------------------------------------------------------------------------------------
     # Create stimulation
@@ -751,7 +754,6 @@ class SONATAImporter():
                     self.conn_info[self.current_edge] = {}
                 
                 if g._v_name==self.current_edge:
-                    
                     self.current_pre_node = g._v_name.split('_to_')[0]
                     self.current_post_node = g._v_name.split('_to_')[1]
                     print('  Found edge %s -> %s'%(self.current_pre_node, self.current_post_node))
@@ -765,6 +767,7 @@ class SONATAImporter():
                 
         self.current_population = None
         self.current_node_group = None
+        self.current_edge_group = None ## added to support multiple edge groups
     
 
     def _is_dataset(self, node):
@@ -786,19 +789,22 @@ class SONATAImporter():
             
             if d.name=='node_group_id':
                 for i in range(0, d.shape[0]):
-                    if not d[i]==0:
-                        raise Exception("Error: only support node_group_id==0!")
+                    pass # read this info to support multiple node groups
+                #     if not d[i]==0:
+                #         raise Exception("Error: only support node_group_id==0!")
             if d.name=='node_id':
-                for i in range(0, d.shape[0]):
-                    if not d[i]==i:
-                        raise Exception("Error: only support dataset node_id when index is same as node_id (fails in %s)...!"%d)
+                pass # read this info to support multiple node groups
+                # for i in range(0, d.shape[0]):
+                #     if not d[i]==i:
+                #         raise Exception("Error: only support dataset node_id when index is same as node_id (fails in %s)...!"%d)
             if d.name=='node_type_id':
                 for i in range(0, d.shape[0]):
                     self.cell_info[self.current_node]['types'][i] = d[i]
                     if not d[i] in self.cell_info[self.current_node]['type_numbers']:
                         self.cell_info[self.current_node]['type_numbers'][d[i]]=0
                     self.cell_info[self.current_node]['type_numbers'][d[i]]+=1
-           
+        
+        # TODO: adde here: 'elif self.current_edge_group:' -- to support multiple edge group 
         elif d.name=='source_node_id':
             self.conn_info[self.current_edge]['pre_id'] = [i for i in d]
         elif d.name=='edge_type_id':

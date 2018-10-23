@@ -91,6 +91,48 @@ def _distributeCells(numCellsPop):
     return hostCells
 
 
+# replace axon with AIS stub
+def fix_axon_peri(hobj):
+    """Replace reconstructed axon with a stub
+    :param hobj: hoc object
+    """
+    for i,sec in enumerate(hobj.axon):
+        hobj.axon[i] = None
+
+    for i,sec in enumerate(hobj.all):
+        if 'axon' in sec.name():
+            hobj.all[i] = None
+
+    hobj.all = [sec for sec in hobj.all if sec is not None]
+
+    hobj.axon = None
+
+    #h.execute('create axon[2]', hobj)
+    hobj.axon = [h.Section(name='axon[0]'), h.Section(name='axon[1]')]
+    hobj.axonal = []
+
+    for sec in hobj.axon:
+        sec.L = 30
+        sec.diam = 1
+        hobj.axonal.append(sec)
+        hobj.all.append(sec)  # need to remove this comment
+
+    hobj.axon[0].connect(hobj.soma[0], 0.5, 0)
+    hobj.axon[1].connect(hobj.axon[0], 1, 0)
+
+    h.define_shape()
+
+
+def fix_sec_nseg(secs, dL):
+    """ Set nseg of sections based on dL param: section.nseg = 1 + 2 * int(section.L / (2*dL))
+    :param secs: netpyne dictionary with all sections 
+    :param dL: dL from config file
+    """
+
+    for secName in secs:
+        secs['sec']['geom']['nseg'] = 1 + 2 * int(secs['sec']['geom']['L'] / (2*dL))
+
+
 # ------------------------------------------------------------------------------------------------------------
 # Import SONATA 
 # ------------------------------------------------------------------------------------------------------------
@@ -126,10 +168,11 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     # Import a network by reading all the SONATA files and creating the NetPyNE structures
     # ------------------------------------------------------------------------------------------------------------
-    def importNet(self, configFile):
+    def importNet(self, configFile, replaceAxon=True, setdLNseg=True):
 
-        #from .. import sim
         self.configFile = configFile
+        self.replaceAxon = replaceAxon
+
         # read config files
         filename = os.path.abspath(configFile)
         rootFolder = os.path.dirname(configFile)
@@ -180,7 +223,8 @@ class SONATAImporter():
         # create connections
         self.createConns()
 
-
+        print('STOP HERE TO AVOID SIMULATING')
+        from IPython import embed; embed()
 
     # ------------------------------------------------------------------------------------------------------------
     # create simulation config 
@@ -290,11 +334,21 @@ class SONATAImporter():
                     swcSecs = h.Import3d_GUI(swcData, 0)
                     swcSecs.instantiate(cellMorph)
 
+                    # replace axon with AIS stub
+                    if self.replaceAxon:
+                        fix_axon_peri(cellMorph)
+
+                    # extract netpyne parameters
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
+
+                    if self.setdLNseg:
+                        fix_sec_nseg(secs, sim.cfg.dL)
+
+                    # create mapping of sec ids
                     secLists['SONATA_sec_id'] = [sim.conversion.getSecName(sec) for sec in cellMorph.all]
+
                     cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
                     
-
                     # dynamics params
                     dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template']) 
                     if info['model_template'].startswith('nml'):
@@ -306,7 +360,6 @@ class SONATAImporter():
                     elif info['dynamics_params'].startswith('json'):
                         dynamics_params = load_json(dynamics_params_file)
                         pass
-
                                     
                     # set extracted cell params in cellParams rule
                     sim.net.params.cellParams[pop_id] = cellRule
@@ -484,7 +537,7 @@ class SONATAImporter():
                     postCell.addConn(connParams)
     
 
-        from IPython import embed; embed()
+        #from IPython import embed; embed()
                     
     # ------------------------------------------------------------------------------------------------------------
     # Create stimulation

@@ -130,7 +130,7 @@ def fix_sec_nseg(secs, dL):
     """
 
     for secName in secs:
-        secs['sec']['geom']['nseg'] = 1 + 2 * int(secs['sec']['geom']['L'] / (2*dL))
+        secs[secName]['geom']['nseg'] = 1 + 2 * int(secs[secName]['geom']['L'] / (2*dL))
 
 
 # ------------------------------------------------------------------------------------------------------------
@@ -172,6 +172,7 @@ class SONATAImporter():
 
         self.configFile = configFile
         self.replaceAxon = replaceAxon
+        self.setdLNseg = setdLNseg
 
         # read config files
         filename = os.path.abspath(configFile)

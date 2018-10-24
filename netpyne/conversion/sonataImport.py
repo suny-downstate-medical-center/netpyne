@@ -168,7 +168,7 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     # Import a network by reading all the SONATA files and creating the NetPyNE structures
     # ------------------------------------------------------------------------------------------------------------
-    def importNet(self, configFile, replaceAxon=True, setdLNseg=True):
+    def importNet(self, configFile, replaceAxon=False, setdLNseg=False):
 
         self.configFile = configFile
         self.replaceAxon = replaceAxon
@@ -380,8 +380,14 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     def createCells(self):
         for sonata_pop in self.cell_info:
-            cellTypes = self.cell_info[sonata_pop]['types']
-            cellLocs = self.cell_info[sonata_pop]['0']['locations']
+            # find unique groups in order
+            lookup = set()  # a temporary lookup set
+            sonata_groups = [str(x) for x in self.cell_info[sonata_pop]['node_group_id'].values() if str(x) not in lookup and lookup.add(str(x)) is None]
+            cellLocs = {}
+            for sonata_group in sonata_groups:
+                cellLocs[sonata_group] = self.cell_info[sonata_pop][sonata_group]['locations']
+
+            cellTypes = self.cell_info[sonata_pop]['types']            
             numCells = len(self.cell_info[sonata_pop]['types'])
 
             self.cell_info[sonata_pop]['gid_from_id'] = {} # keep track of gid as func of cell id
@@ -390,6 +396,9 @@ class SONATAImporter():
                 # set gid
                 gid = sim.net.lastGid+icell
                 
+                # get node_group info
+                node_group_id = str(self.cell_info[sonata_pop]['node_group_id'][icell])
+
                 # get info from pop
                 cellTags = {}
                 cellType = cellTypes[icell]
@@ -405,16 +414,16 @@ class SONATAImporter():
                 cellTags['pop'] = pop.tags['pop']
 
                 if model_type == 'biophysical':
-                    cellTags['x'] = cellLocs[icell]['x'] # set x location (um)
-                    cellTags['y'] = cellLocs[icell]['y'] # set y location (um)
-                    cellTags['z'] = cellLocs[icell]['z'] # set z location (um)
+                    cellTags['x'] = cellLocs[node_group_id][icell]['x'] # set x location (um)
+                    cellTags['y'] = cellLocs[node_group_id][icell]['y'] # set y location (um)
+                    cellTags['z'] = cellLocs[node_group_id][icell]['z'] # set z location (um)
                     cellTags['xnorm'] = cellTags['x'] / sim.net.params.sizeX # set x location (um)
                     cellTags['ynorm'] = cellTags['y'] / sim.net.params.sizeY # set y location (um)
                     cellTags['znorm'] = cellTags['z'] / sim.net.params.sizeZ # set z location (um)
-                    if 'rotation_angle_yaxis' in cellLocs[icell]:
-                        cellTags['rot_y'] = cellLocs[icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation MISSING!)
-                    if 'rotation_angle_zaxis' in cellLocs[icell]:
-                        cellTags['rot_z'] = cellLocs[icell]['rotation_angle_zaxis']  # set z-axis rotation
+                    if 'rotation_angle_yaxis' in cellLocs[node_group_id][icell]:
+                        cellTags['rot_y'] = cellLocs[node_group_id][icell]['rotation_angle_yaxis']  # set y-axis rotation (implementation MISSING!)
+                    if 'rotation_angle_zaxis' in cellLocs[node_group_id][icell]:
+                        cellTags['rot_z'] = cellLocs[node_group_id][icell]['rotation_angle_zaxis']  # set z-axis rotation
 
                     # sim.net.cells[-1].randrandRotationAngle = cellTags['rot_z']  # rotate cell in z-axis (y-axis rot missing) MISSING!
                     
@@ -429,7 +438,6 @@ class SONATAImporter():
                                 pass
                         else:
                             cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
-
 
                 sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
                 print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
@@ -534,7 +542,6 @@ class SONATAImporter():
                     connParams['loc'] = self.conn_info[conn]['sec_x'][i] 
 
                     # add connection
-                    
                     postCell.addConn(connParams)
     
 
@@ -792,6 +799,9 @@ class SONATAImporter():
                     self.cell_info[self.current_node] = {}
                     self.cell_info[self.current_node]['types'] = {}
                     self.cell_info[self.current_node]['type_numbers'] = {}
+                    self.cell_info[self.current_node]['node_id'] = {}
+                    self.cell_info[self.current_node]['node_group_id'] = {}
+                    self.cell_info[self.current_node]['node_group_index'] = {}
                     #self.pop_locations[self.current_population] = {}
                     
                 if g._v_name==self.current_node:
@@ -840,17 +850,15 @@ class SONATAImporter():
                 self.cell_info[self.current_node][self.current_node_group]['locations'][i][d.name] = d[i]
                 
         elif self.current_node:
-            
+            if d.name=='node_id':
+                for i in range(0, d.shape[0]):
+                    self.cell_info[self.current_node]['node_id'][i] = d[i]            
             if d.name=='node_group_id':
                 for i in range(0, d.shape[0]):
-                    pass # read this info to support multiple node groups
-                #     if not d[i]==0:
-                #         raise Exception("Error: only support node_group_id==0!")
-            if d.name=='node_id':
-                pass # read this info to support multiple node groups
-                # for i in range(0, d.shape[0]):
-                #     if not d[i]==i:
-                #         raise Exception("Error: only support dataset node_id when index is same as node_id (fails in %s)...!"%d)
+                    self.cell_info[self.current_node]['node_group_id'][i] = d[i]
+            if d.name=='node_group_index':
+                for i in range(0, d.shape[0]):
+                    self.cell_info[self.current_node]['node_group_index'][i] = d[i]
             if d.name=='node_type_id':
                 for i in range(0, d.shape[0]):
                     self.cell_info[self.current_node]['types'][i] = d[i]

@@ -14,7 +14,7 @@ Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-
 
 
 .. image:: figs/netpyne_gui.png
-   :width: 65% 
+   :width: 70% 
    :align: center
 
 Table of Contents

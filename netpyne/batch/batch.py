@@ -16,7 +16,7 @@ from netpyne import specs
 from .utils import bashTemplate
 from random import Random
 from time import sleep, time
-from itertools import izip, product
+from itertools import product
 from subprocess import Popen, PIPE
 
 
@@ -250,8 +250,8 @@ class Batch(object):
 
                 if groupedParams:
                     labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
-                    valueCombGroups = izip(*(valuesListGroup))
-                    indexCombGroups = izip(*[range(len(x)) for x in valuesListGroup])
+                    valueCombGroups = zip(*(valuesListGroup))
+                    indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
                     labelList = labelListGroup+labelList
                 else:
                     valueCombGroups = [(0,)] # this is a hack -- improve!

@@ -123,6 +123,21 @@ def fix_axon_peri(hobj):
     h.define_shape()
 
 
+# replace axon with AIS stub (keep order)
+def fix_axon_peri_v2(hobj):
+    """Replace reconstructed axon with a stub
+    :param hobj: hoc object
+    """
+    for i,sec in enumerate(hobj.axon):
+        if i < 2:
+            sec.L = 30
+            sec.diam = 1
+        else:
+            sec.L = 1e-6
+            sec.diam = 1
+
+    h.define_shape()
+
 def fix_sec_nseg(secs, dL):
     """ Set nseg of sections based on dL param: section.nseg = 1 + 2 * int(section.L / (2*dL))
     :param secs: netpyne dictionary with all sections 
@@ -168,7 +183,7 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     # Import a network by reading all the SONATA files and creating the NetPyNE structures
     # ------------------------------------------------------------------------------------------------------------
-    def importNet(self, configFile, replaceAxon=False, setdLNseg=False):
+    def importNet(self, configFile, replaceAxon=True, setdLNseg=True):
 
         self.configFile = configFile
         self.replaceAxon = replaceAxon
@@ -337,7 +352,7 @@ class SONATAImporter():
 
                     # replace axon with AIS stub
                     if self.replaceAxon:
-                        fix_axon_peri(cellMorph)
+                        fix_axon_peri_v2(cellMorph)
 
                     # extract netpyne parameters
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)

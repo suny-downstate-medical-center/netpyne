@@ -38,7 +38,7 @@ from .save import saveData, distributedSaveHDF5, compactConnFormat
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
 
 # import utils functions (general)
-from .utils import cellByGid, getCellsList, timing, version, gitChangeset, id32,\
+from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList,\
 	_init_stim_randomizer, unique, checkMemory 
 
 # import utils functions to manipulate objects

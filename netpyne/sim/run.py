@@ -58,7 +58,7 @@ def preRun ():
     # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
-            #cell.hRandom.Random123(sim.id32('NetStim'), cell.gid, cell.params['seed'])
+            #cell.hRandom.Random123(sim.hashStr('NetStim'), cell.gid, cell.params['seed'])
             utils._init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
@@ -69,7 +69,7 @@ def preRun ():
         else:
             for stim in cell.stims:
                 if 'hRandom' in stim:
-                    #stim['hRandom'].Random123(sim.id32(stim['source']), cell.gid, stim['seed'])
+                    #stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
                     utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                     stim['hRandom'].negexp(1)
                     # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219

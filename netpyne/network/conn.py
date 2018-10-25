@@ -320,9 +320,15 @@ def generateRandsPrePost(self, pre, post):
     
     # Initialize randomizer every time so values depend on pre and post gid
     allRands = {}
+    # Using single seeding is abou 15% faster (270s/310s)
+    # self.rand.Random123(sim.id32('%d%d'%(len(pre), sum(pre))), sim.id32('%d%d'%(len(post), sum(post))), sim.cfg.seeds['conn'])  # init randomizer - 269.77sec / 273sec
+    # 1 core: 21232
+    # 3 cores: 21073
     for preGid in pre:
         for postGid in post:
-            self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer
+            self.rand.Random123(preGid, postGid, sim.cfg.seeds['conn'])   # init randomizer / 313.71 s. -- 5 531 597 
+            # 1 core: 21186
+            # 3 cores: 21183
             allRands[(preGid, postGid)] = self.rand.uniform(0,1)
 
     return allRands

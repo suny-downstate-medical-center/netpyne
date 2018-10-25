@@ -236,17 +236,13 @@ class Batch(object):
 
                 if ungroupedParams:
                     labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
-                else:
-                    labelList = ()
-                    valuesList = ()
-
-                if ungroupedParams:
-                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in p in self.params if p['group'] == False])
                     valueCombinations = list(product(*(valuesList)))
                     indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
                 else:
                     valueCombinations = [(0,)] # this is a hack -- improve!
                     indexCombinations = [(0,)]
+                    labelList = ()
+                    valuesList = ()
 
                 if groupedParams:
                     labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])

@@ -11,7 +11,7 @@ from __future__ import division
 from __future__ import absolute_import
 from builtins import range
 from builtins import dict
-from builtins import int
+# from builtins import int  # removed since yields error in NEURON 
 from builtins import zip
 from builtins import str
 from future import standard_library

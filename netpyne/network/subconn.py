@@ -13,7 +13,7 @@ from __future__ import absolute_import
 
 from builtins import zip
 from builtins import range
-from builtins import int
+# from builtins import int  # removed since yields error in NEURON 
 from builtins import round
 from builtins import next
 from builtins import str

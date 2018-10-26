@@ -14,7 +14,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 
-from builtins import int
+# from builtins import int  # removed since yields error in NEURON 
 from builtins import next
 from builtins import dict
 from builtins import map

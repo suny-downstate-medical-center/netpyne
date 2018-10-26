@@ -13,7 +13,7 @@ from __future__ import absolute_import
 from builtins import super
 from builtins import zip
 from builtins import range
-from builtins import int
+# from builtins import int  # removed since yields error in NEURON 
 from future import standard_library
 standard_library.install_aliases()
 from copy import deepcopy

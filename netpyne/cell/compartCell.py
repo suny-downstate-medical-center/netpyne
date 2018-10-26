@@ -14,7 +14,7 @@ from builtins import super
 from builtins import next
 from builtins import zip
 from builtins import range
-from builtins import int
+# from builtins import int  # removed since yields error in NEURON 
 from builtins import round
 from builtins import str
 from future import standard_library
@@ -47,8 +47,9 @@ class CompartCell (Cell):
         self.secLists = Dict()  # dict of sectionLists
 
         if create: self.create()  # create cell 
+        print('1')
         if associateGid: self.associateGid() # register cell for this node
-
+        print('2')
 
     def create (self):
         from .. import sim
@@ -490,7 +491,11 @@ class CompartCell (Cell):
 
         if self.secs:
             if sim.cfg.createNEURONObj: 
+                print(1.1)
+                print(type(self.gid))
+                print(type(sim.rank))
                 sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                print(1.11)
                 sec = next((secParams for secName,secParams in self.secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
@@ -509,6 +514,7 @@ class CompartCell (Cell):
                 if 'threshold' in sec: threshold = sec['threshold'] 
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
+                print(1.2)
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)

@@ -53,7 +53,9 @@ def addStims (self):
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if gid in gidList}
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.hashStr('stim_'+source['type']), sim.hashStr('%d%d'%(len(postCellsTags), sum(postCellsTags))), sim.cfg.seeds['stim'])
+            self.rand.Random123(sim.hashStr('stim_'+source['type']), 
+                                sim.hashList(postCellsTags), 
+                                sim.cfg.seeds['stim'])
 
             # calculate params if string-based funcs
             strParams = self._stimStrToFunc(postCellsTags, source, target)

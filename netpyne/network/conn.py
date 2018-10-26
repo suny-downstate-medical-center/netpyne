@@ -58,7 +58,7 @@ def connectCells (self):
         if preCellsTags and postCellsTags:
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
             self.rand.Random123(sim.hashStr('conn_'+connParam['connFunc']), 
-                                sim.hashStr('%d%d%d%d'%(len(preCellsTags), len(postCellsTags), sum(preCellsTags), sum(postCellsTags))), 
+                                sim.hashList(list(preCellsTags)+list(postCellsTags)), 
                                 sim.cfg.seeds['conn'])
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
@@ -328,7 +328,8 @@ def generateRandsPrePost(self, pre, post):
     vec = sim.h.Vector(lenPre*lenPost)  # create Vector
     self.rand.uniform(0,1)  # set unfiform distribution
     vecList = list(vec.setrand(self.rand))  # fill in vector 
-    allRands = {(preGid,postGid): vecList[(ipre*lenPost)+ipost] for ipre,preGid in enumerate(pre) for ipost,postGid in enumerate(post)}  # convert to dict
+    allRands = {(preGid,postGid): vecList[(ipre*lenPost)+ipost] 
+        for ipre,preGid in enumerate(sorted(pre)) for ipost,postGid in enumerate(sorted(post))}  # convert to dict
 
     return allRands
 
@@ -391,7 +392,6 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
 # Generate random unique integers 
 # -----------------------------------------------------------------------------
 def randUniqueInt(self, r, N, vmin, vmax):
-
     r.discunif(vmin,vmax)
     out = []
     while len(out)<N:
@@ -421,11 +421,14 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
     # converted to list only once 
     preCellsTagsKeys = sorted(list(preCellsTags.keys()))
 
+    # calculate hash for post cell gids
+    hashPreCells = sim.hashList(preCellsTagsKeys)
+
     for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell
         if postCellGid in self.gid2lid:  # check if postsyn is in this node
             convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)-1), 0)
-            self.rand.Random123(sim.hashStr('%d%d'%(len(preCellsTags), sum(preCellsTags))), postCellGid, sim.cfg.seeds['conn'])  # init randomizer
+            self.rand.Random123(hashPreCells, postCellGid, sim.cfg.seeds['conn'])  # init randomizer
             randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1)             
 
             # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
@@ -465,10 +468,13 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
     # converted to list only once 
     postCellsTagsKeys = sorted(list(postCellsTags.keys()))    
 
+    # calculate hash for post cell gids
+    hashPostCells = sim.hashList(postCellsTagsKeys)
+
     for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
         divergence = connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']  # num of presyn conns / postsyn cell
         divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
-        self.rand.Random123(sim.hashStr('%d%d'%(len(postCellsTags), sum(postCellsTags))), preCellGid, sim.cfg.seeds['conn'])  # init randomizer
+        self.rand.Random123(hashPostCells, preCellGid, sim.cfg.seeds['conn'])  # init randomizer
         randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
         
         # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 

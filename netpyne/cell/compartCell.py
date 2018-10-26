@@ -14,7 +14,7 @@ from builtins import super
 from builtins import next
 from builtins import zip
 from builtins import range
-# from builtins import int  # removed since yields error in NEURON 
+
 from builtins import round
 from builtins import str
 from future import standard_library

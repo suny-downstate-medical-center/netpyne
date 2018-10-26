@@ -12,7 +12,7 @@ from __future__ import absolute_import
 
 
 from builtins import str
-# from builtins import int  # removed since yields error in NEURON 
+
 from builtins import range
 from future import standard_library
 standard_library.install_aliases()

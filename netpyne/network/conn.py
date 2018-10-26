@@ -58,7 +58,7 @@ def connectCells (self):
         if preCellsTags and postCellsTags:
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
             self.rand.Random123(sim.hashStr('conn_'+connParam['connFunc']), 
-                                sim.hashList(list(preCellsTags)+list(postCellsTags)), 
+                                sim.hashList(sorted(preCellsTags)+sorted(postCellsTags)), 
                                 sim.cfg.seeds['conn'])
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
@@ -319,8 +319,10 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 def generateRandsPrePost(self, pre, post):
     from .. import sim
 
+    sortedPre = sorted(pre)
+    sortedPost = sorted(post)
     # initialize randomizer using unique hash of pre and post gids and global conn seed
-    self.rand.Random123(sim.hashList(sorted(pre)), sim.hashList(sorted(post)), sim.cfg.seeds['conn'])  #
+    self.rand.Random123(sim.hashList(sortedPre), sim.hashList(sortedPost), sim.cfg.seeds['conn'])  #
     
     # obtain rand value for pre,post pairs
     lenPre = len(pre)
@@ -329,7 +331,7 @@ def generateRandsPrePost(self, pre, post):
     self.rand.uniform(0,1)  # set unfiform distribution
     vecList = list(vec.setrand(self.rand))  # fill in vector 
     allRands = {(preGid,postGid): vecList[(ipre*lenPost)+ipost] 
-        for ipre,preGid in enumerate(sorted(pre)) for ipost,postGid in enumerate(sorted(post))}  # convert to dict
+        for ipre,preGid in enumerate(sortedPre) for ipost,postGid in enumerate(sortedPost)}  # convert to dict
 
     return allRands
 
@@ -419,7 +421,7 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # converted to list only once 
-    preCellsTagsKeys = sorted(list(preCellsTags.keys()))
+    preCellsTagsKeys = sorted(preCellsTags)
 
     # calculate hash for post cell gids
     hashPreCells = sim.hashList(preCellsTagsKeys)
@@ -466,7 +468,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # converted to list only once 
-    postCellsTagsKeys = sorted(list(postCellsTags.keys()))    
+    postCellsTagsKeys = sorted(postCellsTags)    
 
     # calculate hash for post cell gids
     hashPostCells = sim.hashList(postCellsTagsKeys)
@@ -515,8 +517,8 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
     if 'loc' in connParam and isinstance(connParam['loc'], list): 
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
     
-    orderedPreGids = sorted(preCellsTags.keys())
-    orderedPostGids = sorted(postCellsTags.keys())
+    orderedPreGids = sorted(preCellsTags)
+    orderedPostGids = sorted(postCellsTags)
 
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
         preCellGid = orderedPreGids[relativePreId]     
@@ -541,16 +543,20 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
     paramStrFunc = self.connStringFuncParams
     finalParam = {}
 
-    # initialize randomizer for string-based funcs that use rand (except for conv and div conn which already init)
+    # Set final parameter values; initialize randomizer for string-based funcs that use rand to ensue replicability
+    # Note: could potentially speed up by generating list of values for all rand funcs used (e.g. rand.uniform()) 
+    # and then selecting a value from list based of pre- and post- gid -- that way only seed once at beginning in connectCells()
+    # Howeve, not clear if faster in all cases since need to generate values for len(pre)*len(post), whereas here only a subset
     randSeeded = False
     for param in paramStrFunc:
         if param+'List' in connParam:
             finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
         elif param+'Func' in connParam:
-            if not randSeeded and connParam['connFunc'] not in ['convConn', 'divConn'] and 'rand' in connParam[param+'FuncArgs']:
+            if not randSeeded and 'rand' in connParam[param+'FuncArgs']:
                 self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
                 randSeeded = True
             finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
+            from IPython import embed; embed()
         else:
             finalParam[param] = connParam.get(param)
 

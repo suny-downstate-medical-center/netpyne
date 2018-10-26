@@ -6,8 +6,14 @@ It is imported as "sim" from all other file,  so that any variable or module can
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 # check for -nogui option
+from future import standard_library
+standard_library.install_aliases()
 import sys
 if '-nogui' in sys.argv:
     import netpyne

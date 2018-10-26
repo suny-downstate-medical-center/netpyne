@@ -6,7 +6,19 @@ Methods to distribute synapses at the subcellular level (e.g. dendritic) in the 
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import zip
+from builtins import range
+from builtins import int
+from builtins import round
+from builtins import next
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import numpy as np
 from neuron import h
 

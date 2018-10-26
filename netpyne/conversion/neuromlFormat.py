@@ -5,8 +5,17 @@ Contains functions related to neuroml conversion (import from and export to)
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
 
+from builtins import str
+from builtins import int
+from builtins import range
+from future import standard_library
+standard_library.install_aliases()
 try:
     import neuroml
     from pyneuroml import pynml

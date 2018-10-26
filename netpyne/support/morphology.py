@@ -1,6 +1,16 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 # Code adapted from https://github.com/ahwillia/PyNeuron-Toolbox under MIT license
 
 
+from builtins import zip
+from builtins import range
+from builtins import int
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import numpy as np
 import pylab as plt
 from matplotlib.pyplot import cm
@@ -12,7 +22,7 @@ import numbers
 h.load_file('stdlib.hoc')
 h.load_file('import3d.hoc')
 
-class Cell:
+class Cell(object):
     def __init__(self,name='neuron',soma=None,apic=None,dend=None,axon=None):
         self.soma = soma if soma is not None else []
         self.apic = apic if apic is not None else []

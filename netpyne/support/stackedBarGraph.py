@@ -20,6 +20,15 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from builtins import range
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 __author__ = "Michael Imelfort; modified by salvadordura@gmail.com"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
@@ -36,7 +45,7 @@ from matplotlib import pyplot as plt
 
 ###############################################################################
 
-class StackedBarGrapher:
+class StackedBarGrapher(object):
     """Container class"""
     def __init__(self): pass
 

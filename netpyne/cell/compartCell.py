@@ -5,7 +5,20 @@ Contains compartCell class
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import super
+from builtins import next
+from builtins import zip
+from builtins import range
+from builtins import int
+from builtins import round
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON

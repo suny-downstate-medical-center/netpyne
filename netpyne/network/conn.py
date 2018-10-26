@@ -556,7 +556,6 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
                 self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
                 randSeeded = True
             finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
-            from IPython import embed; embed()
         else:
             finalParam[param] = connParam.get(param)
 

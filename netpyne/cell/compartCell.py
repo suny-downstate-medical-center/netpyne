@@ -1109,7 +1109,7 @@ class CompartCell (Cell):
             if sim.cfg.connRandomSecFromList and len(synMechSecs)>1:
                 rand = h.Random()
                 preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
-                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
+                rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
                 pos = int(rand.discunif(0, len(synMechSecs)-1))
                 synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
                 if len(synMechLocs)>1: 

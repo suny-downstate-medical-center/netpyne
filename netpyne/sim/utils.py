@@ -12,6 +12,7 @@ Contributors: salvadordura@gmail.com
 
 from time import time
 import hashlib
+import array
 from numbers import Number
 from collections import OrderedDict
 from neuron import h# Import NEURON
@@ -114,11 +115,18 @@ def gitChangeset (show=True):
 
 
 #------------------------------------------------------------------------------
-# Hash function to obtain random value
+# Hash function for string
 #------------------------------------------------------------------------------
-def id32 (obj):
+def hashStr (obj):
     #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+
+
+#------------------------------------------------------------------------------
+# Hash function for list of values
+#------------------------------------------------------------------------------
+def hashList(obj):
+    return int(hashlib.md5(array.array('L', obj)).hexdigest()[0:8],16)
 
 
 #------------------------------------------------------------------------------
@@ -127,7 +135,7 @@ def id32 (obj):
 def _init_stim_randomizer(rand, stimType, gid, seed):
     from .. import sim
 
-    rand.Random123(sim.id32(stimType), gid, seed)
+    rand.Random123(sim.hashStr(stimType), gid, seed)
 
 
 #------------------------------------------------------------------------------

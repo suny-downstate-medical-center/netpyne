@@ -37,7 +37,9 @@ addons:
     #- libpng-dev
 
 language: python
-python: 3.6
+python: 
+    - 2.7
+    - 3.6
 
 # virtualenv:
 #     system_site_packages: true  
@@ -49,7 +51,7 @@ install:
     - cd nrn
     - ./build.sh
     - export NEURON_HOME=~/neuron
-    - ./configure --without-x --with-nrnpython=python3 --prefix=$NEURON_HOME --without-paranrn --without-iv  # --prefix='/home/jovyan/work/nrn/'
+    - ./configure --without-x --with-nrnpython=dynamic --prefix=$NEURON_HOME --without-paranrn --without-iv  # --prefix='/home/jovyan/work/nrn/'
     - make --silent -j4
     - make --silent install -j4
     - cd src/nrnpython

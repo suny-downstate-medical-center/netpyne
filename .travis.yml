@@ -40,6 +40,7 @@ language: python
 python: 
     - 2.7
     - 3.6
+    - 3.7
 
 # virtualenv:
 #     system_site_packages: true  
@@ -51,7 +52,9 @@ install:
     - cd nrn
     - ./build.sh
     - export NEURON_HOME=~/neuron
-    - ./configure --without-x --with-nrnpython=dynamic --prefix=$NEURON_HOME --without-paranrn --without-iv  # --prefix='/home/jovyan/work/nrn/'
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./configure --without-x --with-nrnpython=python2 --prefix=$NEURON_HOME --without-paranrn --without-iv ; fi  # --prefix='/home/jovyan/work/nrn/'
+    - if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then ./configure --without-x --with-nrnpython=python3 --prefix=$NEURON_HOME --without-paranrn --without-iv ; fi  # --prefix='/home/jovyan/work/nrn/'
+    - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then ./configure --without-x --with-nrnpython=python3 --prefix=$NEURON_HOME --without-paranrn --without-iv ; fi  # --prefix='/home/jovyan/work/nrn/'
     - make --silent -j4
     - make --silent install -j4
     - cd src/nrnpython

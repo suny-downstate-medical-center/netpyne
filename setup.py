@@ -74,7 +74,7 @@ else:
         # your project is installed. For an analysis of "install_requires" vs pip's
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
-        install_requires=['numpy', 'scipy', 'matplotlib', 'pandas>=0.23'],
+        install_requires=['numpy', 'scipy', 'matplotlib', 'future', 'pandas>=0.23'],
 
      # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,

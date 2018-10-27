@@ -10,7 +10,7 @@ Contributors: salvadordura@gmail.com
 from netpyne import sim
 
 sonataConfigFile = '/u/salvadord/Documents/ISB/Models/sonata/examples/300_cells/config.json'
-sonataImporter = sim.conversion.SONATAImporter()
+sonataImporter = sim.conversion.sonataImport.SONATAImporter()
 sonataImporter.importNet(sonataConfigFile, replaceAxon=True, setdLNseg=True)
 sim.cfg.recordTraces = {'V_soma':{'sec':'soma_0','loc':0.5,'var':'v'}}
 sim.cfg.recordCells = range(10)

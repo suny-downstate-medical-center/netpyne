@@ -61,6 +61,9 @@ def checkOutput(modelName, verbose=False):
 		expectedAll['numSyns']['cell_lfp'] = 1
 		expectedAll['numSpikes']['cell_lfp'] = 1
 
+		# saving expected output 
+		expectedAll['numSyns']['saving'] = 1538
+		expectedAll['numSpikes']['saving'] = 3699
 
 		# compare all features
 		for feature, expected in expectedAll.items():

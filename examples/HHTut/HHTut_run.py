@@ -5,10 +5,3 @@ sim.createSimulateAnalyze(netParams = HHTut.netParams, simConfig = HHTut.simConf
 
 # check model output
 sim.checkOutput('HHTut')
-
-import json
-
-with open('temp.json') as f:
-	d=json.load(f)
-
-print(d.keys())

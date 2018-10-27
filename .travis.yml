@@ -88,6 +88,10 @@ script:
     - cd ../LFPrecording
     - $NEURON_HOME/x86_64/bin/nrnivmodl mod
     - python cell_lfp.py -nogui 
+    # LFP recording
+    - cd ../saving
+    - python init.py -nogui 
+
     
     - cd ../..
 

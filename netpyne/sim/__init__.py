@@ -38,7 +38,7 @@ from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateL
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells
 
 # import saving functions
-from .save import saveData, distributedSaveHDF5, compactConnFormat
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad

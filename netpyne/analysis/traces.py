@@ -20,7 +20,7 @@ from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
-from .utils import colorList, _showFigure, exception, getCellsInclude
+from .utils import colorList, _showFigure, _saveFigData, exception, getCellsInclude
 
 
 # -------------------------------------------------------------------------------------------------------------------

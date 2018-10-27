@@ -16,7 +16,7 @@ from netpyne import __gui__
 
 if __gui__:
     import matplotlib.pyplot as plt
-from .utils import exception, _showFigure
+from .utils import exception, _showFigure, _saveFigData
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot RxD concentration

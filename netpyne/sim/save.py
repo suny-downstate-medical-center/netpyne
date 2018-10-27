@@ -14,16 +14,31 @@ from builtins import range
 from builtins import open
 from future import standard_library
 standard_library.install_aliases()
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
 from time import time
 from datetime import datetime
 import pickle as pk
 from . import gather
 from . import utils
 
-try:
-    to_unicode = unicode
-except NameError:
-    to_unicode = str
+
+#------------------------------------------------------------------------------
+# Save JSON (Python 2/3 compatible)
+#------------------------------------------------------------------------------
+def saveJSON(fileName, data):
+    import json, io
+    with io.open(fileName, 'w', encoding='utf8') as fileObj:
+        str_ = json.dumps(data,
+                          indent=4, sort_keys=True,
+                          separators=(',', ': '), ensure_ascii=False)
+        fileObj.write(to_unicode(str_))
+
 
 #------------------------------------------------------------------------------
 # Save data
@@ -120,17 +135,9 @@ def saveData (include = None, filename = None):
             # Save to json file
             if sim.cfg.saveJson:
                 # Make it work for Python 2+3 and with Unicode
-                import io,json
-
-                #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 print(('Saving output as %s ... ' % (filePath+'.json ')))
-                # Write JSON file
-                with io.open(filePath+'.json', 'w', encoding='utf8') as fileObj:
-                    str_ = json.dumps(dataSave,
-                                      indent=4, sort_keys=True,
-                                      separators=(',', ': '), ensure_ascii=False)
-                    fileObj.write(to_unicode(str_))
-
+                #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
+                sim.saveJSON(filePath+'.json', dataSave)
                 print('Finished saving!')
 
             # Save to mat file

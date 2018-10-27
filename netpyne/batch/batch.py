@@ -17,6 +17,13 @@ from builtins import open
 from builtins import str
 from future import standard_library
 standard_library.install_aliases()
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
 import imp
 import json
 import logging
@@ -128,13 +135,11 @@ class Batch(object):
             odict['evolCfg']['fitnessFunc'] = 'removed'
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
-            import json
+            import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
-            with open(filename, 'w') as fileObj:
-                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
-
+            sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
         if isinstance(paramLabel, tuple):

@@ -316,8 +316,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - Returns figure handle
     '''
 
-    pass
-
     from .. import sim
 
     print('Plotting raster...')
@@ -520,7 +518,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
         'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
         'syncLines': syncLines}
-
         _saveFigData(figData, saveData, 'raster')
 
     # save figure

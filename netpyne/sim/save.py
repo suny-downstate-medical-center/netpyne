@@ -20,6 +20,11 @@ import pickle as pk
 from . import gather
 from . import utils
 
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
@@ -114,11 +119,18 @@ def saveData (include = None, filename = None):
 
             # Save to json file
             if sim.cfg.saveJson:
-                import json
+                # Make it work for Python 2+3 and with Unicode
+                import io,json
+
                 #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 print(('Saving output as %s ... ' % (filePath+'.json ')))
-                with open(filePath+'.json', 'w') as fileObj:
-                    json.dump(dataSave, fileObj)
+                # Write JSON file
+                with io.open(filePath+'.json', 'w', encoding='utf8') as fileObj:
+                    str_ = json.dumps(dataSave,
+                                      indent=4, sort_keys=True,
+                                      separators=(',', ': '), ensure_ascii=False)
+                    fileObj.write(to_unicode(str_))
+
                 print('Finished saving!')
 
             # Save to mat file

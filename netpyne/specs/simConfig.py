@@ -117,7 +117,7 @@ class SimConfig (object):
 
         # Save to json file
         if ext == 'json':
-            import sim
+            from .. import sim
             print(('Saving simConfig to %s ... ' % (filename)))
             sim.saveJSON(filename, dataSave)
 

@@ -37,7 +37,6 @@ from time import sleep, time
 from itertools import product
 from subprocess import Popen, PIPE
 
-
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
 
@@ -135,7 +134,7 @@ class Batch(object):
             odict['evolCfg']['fitnessFunc'] = 'removed'
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
-            import sim
+            from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
@@ -274,20 +273,17 @@ class Batch(object):
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            #if 1:
-                #for iComb, pComb in zip(indexCombinations, valueCombinations):
-
             for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
                 for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
                     if groupedParams and ungroupedParams: # temporary hack - improve
                         iComb = iCombG+iCombNG
                         pComb = pCombG+pCombNG
                     elif ungroupedParams:
-                        iComb = iCombG
-                        pComb = pCombG
-                    elif groupedParams:
                         iComb = iCombNG
                         pComb = pCombNG
+                    elif groupedParams:
+                        iComb = iCombG
+                        pComb = pCombG
                     else:
                         iComb = []
                         pComb = []

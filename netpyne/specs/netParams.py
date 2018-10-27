@@ -233,7 +233,7 @@ class NetParams (object):
 
     def save(self, filename):
         import os
-        import sim
+        from .. import sim
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]

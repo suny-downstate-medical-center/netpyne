@@ -332,27 +332,34 @@ class CompartCell (Cell):
             # add distributed mechanisms 
             if 'mechs' in sectParams:
                 for mechName,mechParams in sectParams['mechs'].items(): 
-                    if mechName not in excludeMechs: 
-                        if mechName not in sec['mechs']: 
-                            sec['mechs'][mechName] = Dict()
+                    if mechName not in sec['mechs']: 
+                        sec['mechs'][mechName] = Dict()
+                    try:
                         sec['hSec'].insert(mechName)
-                        for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                            mechParamValueFinal = mechParamValue
-                            for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
-                                if type(mechParamValue) in [list]: 
-                                    if len(mechParamValue) == 1: 
-                                        mechParamValueFinal = mechParamValue[0]
-                                    else:
-                                        mechParamValueFinal = mechParamValue[iseg]
-                                if mechParamValueFinal is not None:  # avoid setting None values
-                                    setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                    except:
+                        print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
+                        continue
+                    for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
+                        mechParamValueFinal = mechParamValue
+                        for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
+                            if type(mechParamValue) in [list]: 
+                                if len(mechParamValue) == 1: 
+                                    mechParamValueFinal = mechParamValue[0]
+                                else:
+                                    mechParamValueFinal = mechParamValue[iseg]
+                            if mechParamValueFinal is not None:  # avoid setting None values
+                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                             
             # add ions
             if 'ions' in sectParams:
                 for ionName,ionParams in sectParams['ions'].items(): 
                     if ionName not in sec['ions']: 
                         sec['ions'][ionName] = Dict()
-                    sec['hSec'].insert(ionName+'_ion')    # insert mechanism
+                    try:
+                        sec['hSec'].insert(ionName+'_ion')    # insert mechanism
+                    except:
+                        print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
+                        continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
                         for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment

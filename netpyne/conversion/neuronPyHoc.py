@@ -424,7 +424,9 @@ def getCellParams(cell, varList={}, origGlob={}):
         secListDic = {}
 
     # globals
-    globs = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()), origGlob=origGlob)
+    mechsList = list(varList['mechs'].keys()) if 'mechs' in varList else []
+    pointpsList = list(varList['pointps'].keys()) if 'pointps' in varList else []
+    globs = getGlobals(mechsList+pointpsList, origGlob=origGlob)
     if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
         for sec in list(secDic.values()): sec['vinit'] = globs['v_init']  
 

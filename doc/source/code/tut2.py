@@ -25,7 +25,7 @@ netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType':
 netParams.connParams['S->M'] = { 	#  S -> M label
 	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
 	'postConds': {'pop': 'M'}, # conditions of postsyn cells
-	'probability': 0.5, 			# probability of connection
+	'divergence': 12, 			# probability of connection
 	'weight': 0.01, 				# synaptic weight
 	'delay': 5,						# transmission delay (ms)
 	'synMech': 'exc'}   			# synaptic mechanism
@@ -36,7 +36,7 @@ simConfig = specs.SimConfig()		# object of class SimConfig to store simulation c
 
 simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
 simConfig.dt = 0.025 				# Internal integration timestep to use
-simConfig.verbose = 0	 			# Show detailed messages
+simConfig.verbose = False  			# Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name

@@ -12,6 +12,7 @@ Contributors: salvadordura@gmail.com
 
 from time import time
 import hashlib
+import array
 from numbers import Number
 from collections import OrderedDict
 from neuron import h# Import NEURON
@@ -32,7 +33,7 @@ def cellByGid (gid):
 #------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 #------------------------------------------------------------------------------
-def getCellsList (include):
+def getCellsList (include, returnGids=False):
     from .. import sim
 
     if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
@@ -62,8 +63,11 @@ def getCellsList (include):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
 
     cellGids = list(set(cellGids))  # unique values
-    cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
-    return cells
+    if returnGids:
+        return cellGids
+    else:
+        cells = [cell for cell in sim.net.cells if cell.gid in cellGids]
+        return cells
 
 
 #------------------------------------------------------------------------------
@@ -111,11 +115,18 @@ def gitChangeset (show=True):
 
 
 #------------------------------------------------------------------------------
-# Hash function to obtain random value
+# Hash function for string
 #------------------------------------------------------------------------------
-def id32 (obj):
+def hashStr (obj):
     #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
+
+
+#------------------------------------------------------------------------------
+# Hash function for list of values
+#------------------------------------------------------------------------------
+def hashList(obj):
+    return int(hashlib.md5(array.array('L', obj)).hexdigest()[0:8],16)
 
 
 #------------------------------------------------------------------------------
@@ -124,7 +135,7 @@ def id32 (obj):
 def _init_stim_randomizer(rand, stimType, gid, seed):
     from .. import sim
 
-    rand.Random123(sim.id32(stimType), gid, seed)
+    rand.Random123(sim.hashStr(stimType), gid, seed)
 
 
 #------------------------------------------------------------------------------

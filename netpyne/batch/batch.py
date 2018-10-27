@@ -222,7 +222,6 @@ class Batch(object):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.items():
                     self.setCfgNestedParam(paramLabel, paramVal)
-              
 
             # iterate over all param combinations
             if self.method == 'grid':
@@ -236,20 +235,19 @@ class Batch(object):
                         groupedParams = True
 
                 if ungroupedParams:
-                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in p in self.params if p['group'] == False])
+                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
                     valueCombinations = list(product(*(valuesList)))
                     indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
                 else:
-                    labelList = ()
-                    valuesList = ()
                     valueCombinations = [(0,)] # this is a hack -- improve!
                     indexCombinations = [(0,)]
-
+                    labelList = ()
+                    valuesList = ()
 
                 if groupedParams:
-                    labelListGroup, valuesListGroup = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True]))
+                    labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
                     valueCombGroups = zip(*(valuesListGroup))
-                    indexCombGroups = zip(*[list(range(len(x))) for x in valuesListGroup])
+                    indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
                     labelList = labelListGroup+labelList
                 else:
                     valueCombGroups = [(0,)] # this is a hack -- improve!
@@ -265,14 +263,19 @@ class Batch(object):
 
             for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
                 for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-                    if groupedParams: # temporary hack - improve
+                    if groupedParams and ungroupedParams: # temporary hack - improve
                         iComb = iCombG+iCombNG
                         pComb = pCombG+pCombNG
-
-                    else:
+                    elif ungroupedParams:
+                        iComb = iCombG
+                        pComb = pCombG
+                    elif groupedParams:
                         iComb = iCombNG
                         pComb = pCombNG
-                    
+                    else:
+                        iComb = []
+                        pComb = []
+                        
                     print(iComb, pComb)
 
                     for i, paramVal in enumerate(pComb):

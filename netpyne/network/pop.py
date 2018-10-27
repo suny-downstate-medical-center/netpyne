@@ -7,7 +7,7 @@ Contains Population related classes
 Contributors: salvadordura@gmail.com
 """
 
-from matplotlib.pylab import  pi, sqrt, sin, cos, arccos
+from numpy import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
 

@@ -53,14 +53,16 @@ def addStims (self):
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if gid in gidList}
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.id32('stim_'+source['type']), sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), sim.cfg.seeds['stim'])
+            self.rand.Random123(sim.hashStr('stim_'+source['type']), 
+                                sim.hashList(sorted(postCellsTags)), 
+                                sim.cfg.seeds['stim'])
 
             # calculate params if string-based funcs
             strParams = self._stimStrToFunc(postCellsTags, source, target)
 
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
-                if postCellGid in self.lid2gid:  # check if postsyn is in this node's list of gids
+                if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
                     postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
 
                     # stim target params
@@ -178,7 +180,7 @@ def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
 
         # replace lambda function (with args as dict of lambda funcs) with list of values
         strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].items()})  
-                for postGid,postCellTags in postCellsTags.items()}
+                for postGid,postCellTags in sorted(postCellsTags.items())}
 
     return strParams
 

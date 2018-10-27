@@ -1,10 +1,14 @@
 # Version 0.8.0
 
+- Improved performanced (speed) of connectivity algorithms 
+
 - Major code refactor to split functions across modules and subpackages
 
 - Switched to Python 3 as the default development environment
 
-- Optimized implementation of raste and spikeHist plotting using Pandas
+- Optimized implementation of raster and spikeHist plotting using Pandas
+
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
 
 - Added option for filename to saveData()
 
@@ -16,6 +20,8 @@
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
 
+- Fixed bug in batch to allow having only grouped params
+
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
 
 - Fixed bug: removed '\_labelid' from netParams when saving
@@ -24,11 +30,14 @@
 
 - Fixed bug in Pickle file encoding so works in Python3 
 
+- Fixed bug in convergence and divergence conn when repicking a value if postGid=preGid is randomly selected
+
+- Fixed bug in rand initialization for string-based func with div conn
+
 - Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
 
-NOTE on backward replicability: Due to this improvement it won't be possible to ensure replication of the results of some models 
-that included probabilistic connections in previous versions. However, if using Python 2, you can set cfg.useOldProbConn=True to use 
-the old implementation and replicate previous results. 
+NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions. 
+
 
 # Version 0.7.9
 

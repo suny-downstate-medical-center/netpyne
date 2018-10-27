@@ -21,6 +21,10 @@ from ..specs import Dict
 #
 ###############################################################################
 
+# --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
+# global variables for dipole calculation, should be node-independent 
+h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
+
 class CompartCell (Cell):
     ''' Class for section-based neuron models '''
     
@@ -209,9 +213,86 @@ class CompartCell (Cell):
                 sec['hSec'].v = sec['vinit']
 
 
+
+
+    # Create dictionary of section names with entries to scale section lengths to length along z-axis
+    def __dipoleGetSecLength (self, secName):
+        L = 1
+        # basal_2 and basal_3 at 45 degree angle to z-axis.
+        if 'basal_2' in secName:
+            L = np.sqrt(2) / 2.
+        elif 'basal_3' in secName:
+            L = np.sqrt(2) / 2.
+        # apical_oblique at 90 perpendicular to z-axis
+        elif 'apical_oblique' in secName:
+            L = 0.
+        # All basalar dendrites extend along negative z-axis
+        if 'basal' in secName:
+            L = -L
+        return L
+
+    # insert dipole in section
+    def __dipoleInsert(self, secName, sec):
+        # insert dipole mech (dipole.mod)
+        try:
+            sec['hSec'].insert('dipole')
+        except:
+            print('Error inserting dipole mechanism')
+            return -1
+
+        # insert Dipole point process (dipole_pp.mod)
+        try: 
+            sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hSec'])
+        except:
+            print('Error inserting Dipole point process')
+            return -1
+        dpp = sec['hDipole_pp']
+        # assign internal resistance values to dipole point process (dpp)
+        dpp.ri = h.ri(1, sec=sec['hSec'])
+        # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
+        h.setpointer(sec['hSec'](0.99)._ref_v, 'pv', dpp)
+        if self.tags['cellType'].startswith('L2'):
+            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
+        elif self.tags['cellType'].startswith('L5'):
+            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
+
+        # gives INTERNAL segments of the section, non-endpoints
+        # creating this because need multiple values simultaneously
+        loc = np.array([seg.x for seg in sec['hSec']])
+        # these are the positions, including 0 but not L
+        pos = np.array([seg.x for seg in sec['hSec'].allseg()])
+        # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
+        y_scale = (self.__dipoleGetSecLength(secName) * sec['hSec'].L) * pos
+        # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
+        # diff values calculate length between successive section points
+        y_diff = np.diff(y_scale)
+        for i in range(len(loc)):
+            # assign the ri value to the dipole
+            sec['hSec'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hSec'])
+            # range variable 'dipole'
+            # set pointers to previous segment's voltage, with boundary condition
+            if i > 0:
+                h.setpointer(sec['hSec'](loc[i-1])._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
+            else:
+                h.setpointer(sec['hSec'](0)._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
+            # set aggregate pointers
+            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hSec'](loc[i]).dipole)
+            if self.tags['cellType'].startswith('L2'):
+                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hSec'](loc[i]).dipole)
+            elif self.tags['cellType'].startswith('L5'):
+                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hSec'](loc[i]).dipole)
+            # add ztan values
+            sec['hSec'](loc[i]).dipole.ztan = y_diff[i]
+        # set the pp dipole's ztan value to the last value from y_diff
+        dpp.ztan = y_diff[-1]
+
+
+
     def createNEURONObj (self, prop):
         from .. import sim
 
+        excludeMechs = ['dipole']  # dipole is special case 
+        
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
             # create section
@@ -305,13 +386,18 @@ class CompartCell (Cell):
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
 
-
         # set topology 
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+
+        # add dipoles
+        for sectName,sectParams in prop['secs'].items():
+            sec = self.secs[sectName]
+            if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
+               self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
 
     def addSynMechsNEURONObj(self):
@@ -419,9 +505,7 @@ class CompartCell (Cell):
                 nc.threshold = threshold
                 sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
                 del nc # discard netcon
-        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
-        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
-
+        sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
     def addSynMech (self, synLabel, secLabel, loc):
         from .. import sim
@@ -1032,7 +1116,7 @@ class CompartCell (Cell):
             if sim.cfg.connRandomSecFromList and len(synMechSecs)>1:
                 rand = h.Random()
                 preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
-                rand.Random123(sim.id32('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
+                rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
                 pos = int(rand.discunif(0, len(synMechSecs)-1))
                 synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
                 if len(synMechLocs)>1: 

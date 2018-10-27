@@ -53,7 +53,7 @@ class PointCell (Cell):
 
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
-            rand.Random123(sim.id32('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+            rand.Random123(sim.hashStr('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
             self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
  
         # set pointp params - for PointCells these are stored in self.params
@@ -110,7 +110,7 @@ class PointCell (Cell):
                 else:
                     # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                     rand = h.Random()
-                    rand.Random123(sim.id32('vecstim_spkt'), self.gid, self.params['seed'])
+                    rand.Random123(sim.hashStr('vecstim_spkt'), self.gid, self.params['seed'])
 
                     # Method 1: vec length depends on duration -- not reproducible
                     # vec = h.Vector(numSpks)
@@ -235,8 +235,7 @@ class PointCell (Cell):
             nc.threshold = threshold
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
             del nc # discard netcon
-        sim.net.gid2lid[self.gid] = len(sim.net.lid2gid)
-        sim.net.lid2gid.append(self.gid) # index = local id; value = global id
+        sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
 
     def _setConnWeights (self, params, netStimParams):

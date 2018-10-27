@@ -20,7 +20,7 @@ netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of ce
 
 
 ## Synaptic mechanism parameters
-netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
  
 
 # Stimulation parameters

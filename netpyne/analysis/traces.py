@@ -5,13 +5,22 @@ Functions to plot and analyze traces-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import range
+from builtins import str
+
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
-from .utils import colorList, _showFigure, exception, getCellsInclude
+from .utils import colorList, _showFigure, _saveFigData, exception, getCellsInclude
 
 
 # -------------------------------------------------------------------------------------------------------------------

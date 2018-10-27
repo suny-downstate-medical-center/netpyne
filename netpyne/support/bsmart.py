@@ -39,6 +39,10 @@ polynomial order p. Larger values of p give less-smooth spectra.
 
 Version: 2011feb11 by Cliff Kerr (cliffk@neurosim.downstate.edu)
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
 # ARMORF -- AR parameter estimation via LWR method modified by Morf. 
 #
@@ -60,6 +64,9 @@ Version: 2011feb11 by Cliff Kerr (cliffk@neurosim.downstate.edu)
 #        S. Haykin, Nonlinear Methods of Spectral Analysis, 2nd Ed. 
 #              Springer-Verlag, 1983, Chapter 2 
 
+from builtins import range
+from future import standard_library
+standard_library.install_aliases()
 def timefreq(x,fs=200):
     """
     TIMEFREQ

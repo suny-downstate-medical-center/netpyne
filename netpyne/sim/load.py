@@ -5,7 +5,22 @@ Functions related to loading
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import open
+from builtins import range
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
+from future import standard_library
+standard_library.install_aliases()
 import sys
 from collections import OrderedDict
 from ..specs import Dict, ODict
@@ -360,11 +375,11 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     if saveTags and tags:
         outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
         print('Saving tags to %s ...' % (outFilename))
-        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+        sim.saveJSON(outFilename, {'tags': tags})         
     if saveConns and conns:
         outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
         print('Saving conns to %s ...' % (outFilename))
-        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+        sim.saveJSON(outFilename, {'conns': conns})
 
     return tags, conns
 

@@ -5,7 +5,19 @@ Functions to plot and analyze spike-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import dict
+from builtins import round
+from builtins import str
+from builtins import range
+from builtins import zip
+
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -304,8 +316,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - Returns figure handle
     '''
 
-    pass
-
     from .. import sim
 
     print('Plotting raster...')
@@ -508,7 +518,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
         'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
         'syncLines': syncLines}
-
         _saveFigData(figData, saveData, 'raster')
 
     # save figure

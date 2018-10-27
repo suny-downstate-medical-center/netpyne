@@ -6,10 +6,16 @@ Contains wrapper functions to create, load, simulate, analyze etc the network
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 #------------------------------------------------------------------------------
 # Wrapper to create network
 #------------------------------------------------------------------------------
+from future import standard_library
+standard_library.install_aliases()
 def create (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands to create network '''
     from .. import sim

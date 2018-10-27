@@ -1,5 +1,11 @@
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 # checks.py 
 
+from future import standard_library
+standard_library.install_aliases()
 def checkOutput(modelName, verbose=False):
 	''' Compare output of models with expected results'''
 
@@ -55,6 +61,9 @@ def checkOutput(modelName, verbose=False):
 		expectedAll['numSyns']['cell_lfp'] = 1
 		expectedAll['numSpikes']['cell_lfp'] = 1
 
+		# saving expected output 
+		expectedAll['numSyns']['saving'] = 1538
+		expectedAll['numSpikes']['saving'] = 3699
 
 		# compare all features
 		for feature, expected in expectedAll.items():

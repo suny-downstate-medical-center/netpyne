@@ -6,11 +6,18 @@ Testing code for Validation class
 
 Contributors: mitra.sidddhartha@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 from .tests import *
 import netpyne.specs as specs
 
-class ParamsObj():
+class ParamsObj(object):
 
         """Set of possible parameters"""
 
@@ -19,7 +26,7 @@ class ParamsObj():
             self.simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
             self.netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-class RunNetPyneTests():
+class RunNetPyneTests(object):
 
         """Set of possible parameters"""
 

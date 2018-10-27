@@ -46,7 +46,7 @@ python:
 
 install:
     - cd ..
-    - pip install numpy matplotlib scipy pandas future
+    - pip install numpy matplotlib scipy pandas future tables
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
     - ./build.sh

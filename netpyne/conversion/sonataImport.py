@@ -8,11 +8,19 @@ Contributors: salvadordura@gmail.com
 
 import os
 import sys
-import tables  # requires installing hdf5 via brew and tables via pip!
-from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
-from neuroml.loaders import read_neuroml2_file
-from pyneuroml import pynml
-from . import neuromlFormat # import NetPyNEBuilder
+
+try:
+    import tables  # requires installing hdf5 via brew and tables via pip!
+    from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+    from neuroml.loaders import read_neuroml2_file
+    from pyneuroml import pynml
+    from . import neuromlFormat # import NetPyNEBuilder
+except ImportError:
+    from neuron import h
+    pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    if int(pc.id()) == 0:  # only print for master node
+        print('Note: SONATA import failed; import/export functions for SONATA will not be available. \n  Make sure the hdf5 and tables packages are installed')
+
 from . import neuronPyHoc
 from .. import sim, specs
 import neuron

@@ -106,6 +106,11 @@ class Network (object):
     from .subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
+    # Import rxd methods
+    # -----------------------------------------------------------------------------
+    from .netrxd import addRxD
+
+    # -----------------------------------------------------------------------------
     # Import shape methods
     # -----------------------------------------------------------------------------
     from .shape import calcSegCoords, defineCellShapes

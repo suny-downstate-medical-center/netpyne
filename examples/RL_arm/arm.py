@@ -281,12 +281,12 @@ class Arm:
                 if cell.gid in self.targetCells:  # for each rand cell selected
                     for stim in cell.stims:
                         if stim['source'] == 'stimEM':
-                            stim['hNetStim'].interval = 1000/self.randRate
+                            stim['hObj'].interval = 1000/self.randRate
                             break
                 else: # if not stimulated
                     for stim in cell.stims:
                         if stim['source'] == 'stimEM':
-                            stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
+                            stim['hObj'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                             break
             f.timeoflastexplor = t
             if f.rank==0 and f.cfg.verbose: 
@@ -302,7 +302,7 @@ class Arm:
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 for stim in cell.stims:
                     if stim['source'] == 'stimEM':
-                        stim['hNetStim'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
+                        stim['hObj'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                         break
             f.timeoflastexplor = t
 
@@ -349,24 +349,24 @@ class Arm:
             if (self.ang[SH] >= cell.prange[0] and self.ang[SH] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
                     if stim['source'] == 'stimPsh':
-                        stim['hNetStim'].interval = 1000/self.maxPrate # interval in ms as a function of rate
+                        stim['hObj'].interval = 1000/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
                     if stim['source'] == 'stimPsh':
-                        stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
+                        stim['hObj'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
         for cell in [c for c in f.net.cells if c.gid in f.pop_el]:   # elbow
             if (self.ang[EL] >= cell.prange[0] and self.ang[EL] < cell.prange[1]):  # in angle in range -> high firing rate
                 for stim in cell.stims:
                     if stim['source'] == 'stimPel':
-                        stim['hNetStim'].interval = 1000.0/self.maxPrate # interval in ms as a function of rate
+                        stim['hObj'].interval = 1000.0/self.maxPrate # interval in ms as a function of rate
                         break
             else: # if angle not in range -> low firing rate
                 for stim in cell.stims:
                     if stim['source'] == 'stimPel':
-                        stim['hNetStim'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
+                        stim['hObj'].interval = 1000.0/self.minPrate # interval in ms as a function of rate
                         break
 
 
@@ -385,7 +385,7 @@ class Arm:
         #     for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
         #         for stim in cell.stims:
         #             if stim['source'] == 'backgroundE':
-        #                 stim['hNetcon'].weight[stim['weightIndex']] = self.origMotorBackgroundWeight
+        #                 stim['hObj'].weight[stim['weightIndex']] = self.origMotorBackgroundWeight
         #                 break
         if f.trialReset:
             f.timeoflastreset = 0

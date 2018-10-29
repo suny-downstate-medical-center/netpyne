@@ -320,7 +320,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if not includeAxon:
                 i = 0
                 for secName, sec in cell.secs.items():
-                    nseg = sec['hSec'].nseg #.geom.nseg
+                    nseg = sec['hObj'].nseg #.geom.nseg
                     if 'axon' in secName:
                         for j in range(i,i+nseg): del trSegs[j] 
                     i+=nseg

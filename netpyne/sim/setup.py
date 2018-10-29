@@ -60,14 +60,6 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
-    if sim.cfg.enableRxD:
-        try:
-            global rxd
-            from neuron import crxd as rxd 
-            sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
-        except:
-            print('cRxD module not available')
-
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 
     if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters

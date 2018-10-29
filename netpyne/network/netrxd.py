@@ -50,19 +50,25 @@ def addRxD (self):
         allCellTags = {cell.gid: cell.tags for cell in self.cells}
     allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
 
-    for rxdParamLabel,rxdParam in self.params.rxdParams.items():  # for each conn rule or parameter set
-        if rxdParamLabel == 'species':
-            self.addSpecies(rxdParam)
-        elif rxdParamLabel == 'region':
-            self.addRegions(rxdParam)
-        elif rxdParamLabel == 'reaction':
-            self.addReactions(rxdParam)
-        elif rxdParamLabel == 'multicompartmentReaction':
-            self.addMulticompartmentReactions(rxdParam)
-        elif rxdParamLabel == 'rate':
-            self.addRates(rxdParam)
-        elif rxdParamLabel == 'extracellular':
-            self.addExtracellular(rxdParam)
+    # make copy of Python structure
+    #if sim.cfg.createPyStruct: -- don't make conditional since need to have Python structure
+    sim.net.rxd = sim.net.params.rxdParams
+
+    # add NEURON objects
+    if sim.cfg.createNEURONObj:
+        for rxdParamLabel,rxdParam in self.params.rxdParams.items():  # for each conn rule or parameter set
+            if rxdParamLabel == 'species':
+                self.addSpecies(rxdParam)
+            elif rxdParamLabel == 'region':
+                self.addRegions(rxdParam)
+            elif rxdParamLabel == 'reaction':
+                self.addReactions(rxdParam)
+            elif rxdParamLabel == 'multicompartmentReaction':
+                self.addMulticompartmentReactions(rxdParam)
+            elif rxdParamLabel == 'rate':
+                self.addRates(rxdParam)
+            elif rxdParamLabel == 'extracellular':
+                self.addExtracellular(rxdParam)
 
     sim.pc.barrier()
     sim.timing('stop', 'add RxD')
@@ -79,6 +85,7 @@ def addSpecies(params):
 
     for speciesLabel, speciesParams in params:
 
+secs=None, nrn_region=None, geometry=None, dimension=None, dx=None, name=None
 
 
 

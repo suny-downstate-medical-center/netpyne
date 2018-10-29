@@ -17,6 +17,8 @@ from builtins import range
 from builtins import round
 from future import standard_library
 standard_library.install_aliases()
+import copy
+import imp
 import numpy as np 
 
 
@@ -29,8 +31,8 @@ def addRxD (self):
 
     if len(self.params.rxdParams):
         try:
-            global nrnRxD
-            from neuron import crxd as nrnRxD 
+            global rxd
+            from neuron import crxd as rxd 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
         except:
             print('cRxD module not available')
@@ -46,26 +48,26 @@ def addRxD (self):
 
     # make copy of Python structure
     #if sim.cfg.createPyStruct: -- don't make conditional since need to have Python structure
-    sim.net.rxd = sim.net.params.rxdParams
+    sim.net.rxd = copy.deepcopy(sim.net.params.rxdParams)
 
     # add NEURON objects
     if sim.cfg.createNEURONObj:
-        for rxdParamLabel,rxdParam in self.params.rxdParams.items():  # for each conn rule or parameter set
-            if rxdParamLabel == 'region':
-                self.addRegions(rxdParam)
-            elif rxdParamLabel == 'species':
-                self.addSpecies(rxdParam)
-            elif rxdParamLabel == 'reaction':
-                self.addReactions(rxdParam)
-            elif rxdParamLabel == 'multicompartmentReaction':
-                self.addMulticompartmentReactions(rxdParam)
-            elif rxdParamLabel == 'rate':
-                self.addRates(rxdParam)
-            elif rxdParamLabel == 'extracellular':
-                self.addExtracellular(rxdParam)
+        rxdParams = sim.net.params.rxdParams
+        if 'regions' in rxdParams:
+            self.addRegions(rxdParams['regions'])
+        if 'species' in rxdParams:
+            self.addSpecies(rxdParams['species'])
+        if 'reactions' in rxdParams:
+            self.addReactions(rxdParams['regions'])
+        if 'multicompartmentReactions' in rxdParams:
+            self.addMulticompartmentReactions(rxdParams['multicompartmentReactions'])
+        if 'rates' in rxdParams:
+            self.addRates(rxdParams['rate'])
+        if 'extracellular' in rxdParams:
+            self.addExtracellular(rxdParams['extracellular'])
 
     sim.pc.barrier()
-    sim.timing('stop', 'add RxD')
+    sim.timing('stop', 'rxdTime')
     if sim.rank == 0 and sim.cfg.timing: print(('  Done; RxD setup time = %0.2f s.' % sim.timingData['rxdTime']))
 
     return sim.net.rxd
@@ -81,8 +83,7 @@ def addRegions(self, params):
     for label, param in params.items():
         # cells
         if 'cells' not in param:
-            param['cells'] = 'all' 
-            cells = sim.getCellsList(param['cells'])
+            param['cells'] = 'all'
         # secs
         if 'secs' not in param:
             param['secs'] = ['all']
@@ -90,11 +91,18 @@ def addRegions(self, params):
             param['secs'] = [param['secs']] 
         # nrn_region
         if 'nrn_region' not in param:
-            param['nrn_region'] == None
+            param['nrn_region'] = None
         # geomery
         if 'geometry' not in param:
-            param['geometry'] == None
-            #             class neuron.rxd.geometry.FixedCrossSection(cross_area, surface_area=0) 
+            param['geometry'] = None
+        if isinstance(param['geometry'], dict):
+            try:
+                param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+            except:
+                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class'])) 
+            
+            # List of allowed geometry classes: 
+            # class neuron.rxd.geometry.FixedCrossSection(cross_area, surface_area=0) 
             # __call__() 
             # calling returns self to allow for rxd.inside or rxd.inside()
 
@@ -111,15 +119,16 @@ def addRegions(self, params):
             # calling returns self to allow for rxd.inside or rxd.inside()
         # geomery
         if 'dimension' not in param:
-            param['dimension'] == None
+            param['dimension'] = None
         # geomery
         if 'dx' not in param:
-            param['dx'] == None
+            param['dx'] = None
 
         # get list of h.Sections() based on cells and secs
-        if 'cells' == 'all' and 'secs' == 'all':
-            nrnSecs = list(sim.h.allSec())
+        if 'all' in param['cells'] and 'all' in param['secs']:
+            nrnSecs = list(sim.h.allsec())
         else:
+            cells = sim.getCellsList(param['cells'])
             nrnSecs = []
             for cell in cells:
                 for secName,sec in cell.secs.items():
@@ -127,37 +136,73 @@ def addRegions(self, params):
                         nrnSecs.append(sec['hObj'])
 
         # call rxd method to create Region
-        self.rxd['regions'][label] = nrnRxD.Region(secs=nrnSecs, 
+        self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
                                                 nrn_region=param['nrn_region'], 
-                                                geometry=param['geometry'], 
+                                                geometry=param['geometry']['hObj'], 
                                                 dimension=param['dimension'], 
                                                 dx=param['dx'], 
                                                 name=label)
+        print('  Created Region %s'%(label))
 
 
 # -----------------------------------------------------------------------------
 # Add RxD species
 # -----------------------------------------------------------------------------
-def addSpecies(params):
+def addSpecies(self, params):
     from .. import sim
-
-    #regions=None, d=0, name=None, charge=0, initial=None, atolscale=1
 
     for label, param in params.items():
         # regions
         if 'regions' not in param:
-            print('  Species %s not added because "regions" was missing'%(label))
+            print('  Error creating Species %s: "regions" parameter was missing'%(label))
+            continue
+        if not isinstance(param['regions'], list):
+            param['regions'] = [param['regions']]
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+        except:
+           print('  Error creating Species %s: could not find regions %s'%(label, param['regions']))
         # d
         if 'd' not in param:
             param['d'] = 0
-        # nrn_region
-        if 'charge' not in params:
-            params['charge'] == 0
-        # nrn_region
+        # charge
+        if 'charge' not in param:
+            param['charge'] == 0
+        # initial
         if 'initial' not in param:
-            params['initial'] == None
+            param['initial'] == None
+        if isinstance(param['initial'], str):  # string-based func
+            funcStr = param['initial']
+            # replace constants
+            constants = [c for c in self.params.rxdParams['constants'] if c in param['initial']]  # get list of variables used (eg. post_ynorm or dist_xyz)  
+            for constant in constants:
+                funcStr = funcStr.replace(constant, 'sim.net.rxd["constants"]["%s"]'%(constant))
+            # replace regions
+            for region in self.rxd['regions']:
+                funcStr = funcStr.replace(region, 'sim.net.rxd["regions"]["%s"]["hObj"]'%(region))
+            # create final function dynamically from string
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            afterDefStr = 'sim.net.rxd["species"][label]["initialFunc"] = initial'
+            funcStr = 'def initial (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
+            try:
+                exec(funcStr, {'rxd': rxd}, {'sim': sim, 'label': label})        
+                initial = sim.net.rxd["species"][label]["initialFunc"]
+            except:
+                print('  Error creating Species %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                continue
+        else:
+            initial = param['initial']
         # atolscale
         if 'atolscale' not in param:
-            params['atolscale'] == 1
+            param['atolscale'] = 1
+
+        # call rxd method to create Region
+        self.rxd['species'][label] = rxd.Species(regions=nrnRegions, 
+                                                d=param['d'], 
+                                                charge=param['charge'], 
+                                                initial=initial, 
+                                                atolscale=param['atolscale'], 
+                                                name=label)
+        print('  Created Species %s'%(label))
 
 

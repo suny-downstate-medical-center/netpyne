@@ -103,7 +103,7 @@ def saveData (include = None, filename = None):
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include: 
             if 'LFP' in sim.allSimData: 
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+                sim.allSimData['LFP'] = list(sim.allSimData['LFP']) 
             dataSave['simData'] = sim.allSimData
 
 

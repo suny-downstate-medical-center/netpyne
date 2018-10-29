@@ -1,5 +1,4 @@
 from netpyne import specs
-import sys; reload(sys)
 
 from cfg import cfg
 
@@ -26,7 +25,7 @@ netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 10, 'ynormRange': [0.6
 netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 10, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 
 ## Cell property rules
-netParams.loadCellParamsRule(label='CellRule', fileName='cells/CSTR_rxd_cellParams.json')
+netParams.loadCellParamsRule(label='CellRule', fileName='CSTR_cellParams.json')
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
@@ -55,13 +54,38 @@ netParams.connParams['I->E'] = {
 
 
 
-fc = 0.1
+constants = {'ip3_init': 0.0,  # Change value between 0 and 1: high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing
+            'caDiff': 0.08,  # calcium diffusion coefficient
+            'ip3Diff': 1.41,  # ip3 diffusion coefficient
+            'caci_init': 1e-5,  # intracellular calcium initial concentration
+            'caco_init': 2.0,   # extracellular calcium initial concentration
+            'gip3r': 12040 * 100,  # ip3 receptors density
+            'gserca': 0.3913,  # SERCA conductance
+            'gleak': 6.020,   # ER leak channel conductance
+            'kserca': 0.1,  # SERCA reaction constant
+            'kip3': 0.15,  # ip3 reaction constant
+            'kact': 0.4,  #
+            'ip3rtau': 2000,  # ip3 receptors time constant
+            'fc': 0.8,  # fraction of cytosol
+            'fe': 0.2,  # fraction of ER
+            'margin': 20}  # extracellular volume additional margin 
+
+netParams.rxdParams['constants'] = constants
 netParams.rxdParams['regions'] = {}
 netParams.rxdParams['regions']['cyt'] = {'cells': 'all', 
                                         'secs': 'all',
                                         'nrn_region': 'i', 
-                                        'geometry': {'fractionalVolume': {'volume_fraction': fc, 'surface_fraction': 1}}
+                                        'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fc'], 'surface_fraction': 1}}}
+netParams.rxdParams['regions']['er'] = {'cells': 'all', 
+                                        'secs': 'all',
+                                        'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fe']}}}
 
+netParams.rxdParams['species'] = {}
+netParams.rxdParams['species']['ca'] = {'regions': ['cyt'], 
+                                        'd': constants['caDiff'], 
+                                        'charge': 2,
+                                        'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) '+  # use plus to split str in 2 lines
+                                                'else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
 
 
 # # ---------------------

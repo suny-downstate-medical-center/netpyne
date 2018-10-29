@@ -1,5 +1,7 @@
-from netpyne import specs, sim
+from netpyne import specs
 import sys; reload(sys)
+
+from cfg import cfg
 
 #------------------------------------------------------------------------------
 #
@@ -52,54 +54,53 @@ netParams.connParams['I->E'] = {
   'synMech': 'inh'}                                     # synaptic mechanism 
 
 
-# Simulation configuration
-simConfig = specs.SimConfig()       # object of class SimConfig to store simulation configuration
-simConfig.duration = 1.0*1e3        # Duration of the simulation, in ms
-simConfig.hParams['v_init'] = -65   # set v_init to -65 mV
-simConfig.dt = 0.1                  # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
-simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'net_lfp'   # Set file output name
-simConfig.enableRxD = True      # enable RxD
-simConfig.recordTraces = {'V_soma':{'sec': 'soma','loc': 0.5,'var': 'v'},
-                          'ik_soma': {'sec': 'soma', 'loc': 0.5, 'var': 'ik'},
-                          'cai_soma': {'sec': 'soma', 'loc':0.5, 'var': 'cai'},
-                          'cao_soma': {'sec': 'soma', 'loc':0.5, 'var': 'cao'}}
 
+# # ---------------------
+# # rxd intracellular and extracellular
+# # ---------------------
 
-simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(netParams.sizeY/3, netParams.sizeY, netParams.sizeY/3)]
+# rxd.nthread(4)
 
-simConfig.analysis['plotTraces']={'include': [0]}
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True, 'figSize': (9,3)}      # Plot a raster
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
-simConfig.analysis['plotRxDConcentration'] = {'speciesLabel': 'ca', 'regionLabel': 'extracellular'}
+# # parameters
+# ip3_init = 0.0  # Change value between 0 and 1: high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing
+# caDiff = 0.08  # calcium diffusion coefficient
+# ip3Diff = 1.41  # ip3 diffusion coefficient
+# caci_init = 1e-5  # intracellular calcium initial concentration
+# caco_init = 2.0   # extracellular calcium initial concentration
+# gip3r = 12040 * 100  # ip3 receptors density
+# gserca = 0.3913  # SERCA conductance
+# gleak = 6.020   # ER leak channel conductance
+# kserca = 0.1  # SERCA reaction constant
+# kip3 = 0.15  # ip3 reaction constant
+# kact = 0.4  #
+# ip3rtau = 2000  # ip3 receptors time constant
+# fc = 0.8  # fraction of cytosol
+# fe = 0.2  # fraction of ER
+# margin = 20  # extracellular volume additional margin 
+# x, y, z = [0-margin, 100+margin], [-500-margin, 0+margin], [0-margin, 100+margin]
 
+# # create intracellular region
+# cyt = rxd.Region(h.allsec(), nrn_region='i', geometry=rxd.FractionalVolume(fc, surface_fraction=1))
+# er = rxd.Region(h.allsec(), geometry=rxd.FractionalVolume(fe))
+# cyt_er_membrane = rxd.Region(h.allsec(), geometry=rxd.ScalableBorder(1, on_cell_surface=False))
 
-#### BELOW THIS LINE SHOULD BE DONE VIA NETPYNE-UI AND JUPYTER NB #####
+# # create extracellular region
+# rxd.options.enable.extracellular = True
+# extracellular = rxd.Extracellular(xlo=x[0], ylo=y[0], zlo=z[0], xhi=x[1], yhi=y[1], zhi=z[1], dx=5, volume_fraction=0.2, tortuosity=1.6) #vol_fraction and tortuosity associated w region 
 
-testing = 0
-if testing:
-    # --------------------------------
-    # Instantiate network (VIA NETPYNE-UI)
-    # --------------------------------
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    sim.net.createPops()                  # instantiate network populations
-    sim.net.createCells()                 # instantiate network cells based on defined populations
-    sim.net.connectCells()                # create connections between cells based on params
-    sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+# # create Species 
+# ca = rxd.Species([cyt, er, extracellular], d=caDiff, name='ca', charge=2, 
+#       initial=lambda nd: caco_init if isinstance(nd,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if nd.region == er else caci_init)
+# ip3 = rxd.Species(cyt, d=ip3Diff, name='ip3', initial=ip3_init)
+# ip3r_gate_state = rxd.State(cyt_er_membrane, initial=0.8)
 
-    # --------------------------------
-    # Add RxD objects (VIA JUPYTER NB)
-    # --------------------------------
+# # create Reactions 
+# serca = rxd.MultiCompartmentReaction(ca[cyt], ca[er], gserca / ((kserca / (1000. * ca[cyt])) ** 2 + 1), membrane=cyt_er_membrane, custom_dynamics=True)
+# leak = rxd.MultiCompartmentReaction(ca[er], ca[cyt], gleak, gleak, membrane=cyt_er_membrane)
 
-    import gui_tut3_rxd
-    sim.net.rxd['species']['ca'] = gui_tut3_rxd.ca
-    sim.net.rxd['regions']['extracellular'] = gui_tut3_rxd.extracellular
+# minf = ip3[cyt] * 1000. * ca[cyt] / (ip3[cyt] + kip3) / (1000. * ca[cyt] + kact)
+# h_gate = ip3r_gate_state[cyt_er_membrane]
+# kip3 = gip3r * (minf * h_gate) ** 3
+# ip3r = rxd.MultiCompartmentReaction(ca[er], ca[cyt], kip3, kip3, membrane=cyt_er_membrane)
+# ip3rg = rxd.Rate(h_gate, (1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / ip3rtau)
 
-    # --------------------------------
-    # Simulate and analyze network (VIA NETPYNE-UI)
-    # --------------------------------
-    sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
-    sim.simulate()
-    sim.analyze()      
-    sim.analyze()

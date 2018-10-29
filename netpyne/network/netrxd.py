@@ -84,8 +84,8 @@ def addSpecies(params):
     from .. import sim
 
     for speciesLabel, speciesParams in params:
-
-secs=None, nrn_region=None, geometry=None, dimension=None, dx=None, name=None
+        pass
+    #secs=None, nrn_region=None, geometry=None, dimension=None, dx=None, name=None
 
 
 

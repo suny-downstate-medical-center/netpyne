@@ -108,7 +108,7 @@ class Network (object):
     # -----------------------------------------------------------------------------
     # Import rxd methods
     # -----------------------------------------------------------------------------
-    from .netrxd import addRxD
+    from .netrxd import addRxD, addSpecies, addRegions
 
     # -----------------------------------------------------------------------------
     # Import shape methods

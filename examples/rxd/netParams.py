@@ -55,6 +55,15 @@ netParams.connParams['I->E'] = {
 
 
 
+fc = 0.1
+netParams.rxdParams['regions'] = {}
+netParams.rxdParams['regions']['cyt'] = {'cells': 'all', 
+                                        'secs': 'all',
+                                        'nrn_region': 'i', 
+                                        'geometry': {'fractionalVolume': {'volume_fraction': fc, 'surface_fraction': 1}}
+
+
+
 # # ---------------------
 # # rxd intracellular and extracellular
 # # ---------------------

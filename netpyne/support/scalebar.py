@@ -3,6 +3,12 @@
 # Adapted from mpl_toolkits.axes_grid1
 # LICENSE: Python Software Foundation (http://docs.python.org/license.html)
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 from matplotlib.offsetbox import AnchoredOffsetbox
 class AnchoredScaleBar(AnchoredOffsetbox):
     def __init__(self, transform, sizex=0, sizey=0, labelx=None, labely=None, loc=4,

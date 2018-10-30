@@ -17,19 +17,19 @@ version = netpyne.__version__
 
 import sys
 if 'upload_via_twine' in sys.argv:
-    system('twine upload dist/netpyne_py3-'+version+'-py3-none-any.whl')
+    system('twine upload dist/netpyne-'+version+'-none-any.whl')
 elif 'upload_via_twine_testpypi' in sys.argv:
-    system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-py3-none-any.whl')
+    system('twine upload --repository pypitest dist/netpyne-'+version+'-none-any.whl')
 else:
     
     setup(
-        name = 'netpyne_py3',
+        name = 'netpyne',
         
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
         long_description = long_description,
 
-        python_requires='>3.6',
+        python_requires='>2.7, >3.6',
         
         # The project's main homepage.
         url = 'https://github.com/Neurosim-lab/netpyne',
@@ -58,6 +58,8 @@ else:
 
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
+            'Programming Language :: Python :: 2',
+            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
@@ -74,7 +76,7 @@ else:
         # your project is installed. For an analysis of "install_requires" vs pip's
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
-        install_requires=['numpy', 'scipy', 'matplotlib', 'pandas>=0.23'],
+        install_requires=['numpy', 'scipy', 'matplotlib', 'future', 'tables', 'pandas>=0.23'],
 
      # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,

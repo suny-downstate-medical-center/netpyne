@@ -6,7 +6,9 @@
 
 - Switched to Python 3 as the default development environment
 
-- Optimized implementation of raste and spikeHist plotting using Pandas
+- Optimized implementation of raster and spikeHist plotting using Pandas
+
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
 
 - Added option for filename to saveData()
 
@@ -17,6 +19,8 @@
 - Added support for evolutionary algorithm optimization (via Inspyred) and usage example
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
+- Fixed bug in batch to allow having only grouped params
 
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
 

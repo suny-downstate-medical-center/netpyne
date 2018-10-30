@@ -5,6 +5,20 @@ SimConfig class includes simulation configuration parameters and methods
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
@@ -44,8 +58,9 @@ class SimConfig (object):
         self.verbose = False  # show detailed messages
 
         # Recording
-        self.recordCells = []  # what cells to record from (eg. 'all', 5, or 'PYR')
+        self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
+        self.recordCellsSpikes = -1  # cells to record spike times from (-1 to record from all)
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = [] # list of 3D locations to record LFP from
         self.saveLFPCells = False  # Store LFP generate individually by each cell 
@@ -102,10 +117,9 @@ class SimConfig (object):
 
         # Save to json file
         if ext == 'json':
-            import json
+            from .. import sim
             print(('Saving simConfig to %s ... ' % (filename)))
-            with open(filename, 'w') as fileObj:
-                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
+            sim.saveJSON(filename, dataSave)
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params

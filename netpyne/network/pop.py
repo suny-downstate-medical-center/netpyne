@@ -6,8 +6,17 @@ Contains Population related classes
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
-from matplotlib.pylab import  pi, sqrt, sin, cos, arccos
+from builtins import map
+from builtins import range
+
+from future import standard_library
+standard_library.install_aliases()
+from numpy import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
 

@@ -5,6 +5,24 @@ Class to setup and run batch simulations
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
+from builtins import zip
+
+from builtins import range
+from builtins import open
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
 
 import imp
 import json
@@ -18,7 +36,6 @@ from random import Random
 from time import sleep, time
 from itertools import product
 from subprocess import Popen, PIPE
-
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -117,13 +134,11 @@ class Batch(object):
             odict['evolCfg']['fitnessFunc'] = 'removed'
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
-            import json
+            from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
-            with open(filename, 'w') as fileObj:
-                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
-
+            sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
         if isinstance(paramLabel, tuple):
@@ -222,7 +237,6 @@ class Batch(object):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.items():
                     self.setCfgNestedParam(paramLabel, paramVal)
-              
 
             # iterate over all param combinations
             if self.method == 'grid':
@@ -236,20 +250,19 @@ class Batch(object):
                         groupedParams = True
 
                 if ungroupedParams:
-                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in p in self.params if p['group'] == False])
+                    labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
                     valueCombinations = list(product(*(valuesList)))
                     indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
                 else:
-                    labelList = ()
-                    valuesList = ()
                     valueCombinations = [(0,)] # this is a hack -- improve!
                     indexCombinations = [(0,)]
-
+                    labelList = ()
+                    valuesList = ()
 
                 if groupedParams:
-                    labelListGroup, valuesListGroup = list(zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True]))
+                    labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
                     valueCombGroups = zip(*(valuesListGroup))
-                    indexCombGroups = zip(*[list(range(len(x))) for x in valuesListGroup])
+                    indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
                     labelList = labelListGroup+labelList
                 else:
                     valueCombGroups = [(0,)] # this is a hack -- improve!
@@ -260,19 +273,21 @@ class Batch(object):
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            #if 1:
-                #for iComb, pComb in zip(indexCombinations, valueCombinations):
-
             for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
                 for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-                    if groupedParams: # temporary hack - improve
+                    if groupedParams and ungroupedParams: # temporary hack - improve
                         iComb = iCombG+iCombNG
                         pComb = pCombG+pCombNG
-
-                    else:
+                    elif ungroupedParams:
                         iComb = iCombNG
                         pComb = pCombNG
-                    
+                    elif groupedParams:
+                        iComb = iCombG
+                        pComb = pCombG
+                    else:
+                        iComb = []
+                        pComb = []
+                        
                     print(iComb, pComb)
 
                     for i, paramVal in enumerate(pComb):

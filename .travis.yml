@@ -37,19 +37,22 @@ addons:
     #- libpng-dev
 
 language: python
-python: 3.6
+python: 
+    - 2.7
+    - 3.6
 
 # virtualenv:
 #     system_site_packages: true  
 
 install:
     - cd ..
-    - pip install numpy matplotlib scipy pandas 
+    - pip install numpy matplotlib scipy pandas future tables
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
     - ./build.sh
     - export NEURON_HOME=~/neuron
-    - ./configure --without-x --with-nrnpython=python3 --prefix=$NEURON_HOME --without-paranrn --without-iv  # --prefix='/home/jovyan/work/nrn/'
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then ./configure --without-x --with-nrnpython=python2 --prefix=$NEURON_HOME --without-paranrn --without-iv ; fi  # --prefix='/home/jovyan/work/nrn/'
+    - if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then ./configure --without-x --with-nrnpython=python3 --prefix=$NEURON_HOME --without-paranrn --without-iv ; fi  # --prefix='/home/jovyan/work/nrn/'
     - make --silent -j4
     - make --silent install -j4
     - cd src/nrnpython
@@ -85,6 +88,10 @@ script:
     - cd ../LFPrecording
     - $NEURON_HOME/x86_64/bin/nrnivmodl mod
     - python cell_lfp.py -nogui 
+    # LFP recording
+    - cd ../saving
+    - python init.py -nogui 
+
     
     - cd ../..
 

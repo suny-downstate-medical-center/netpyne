@@ -53,7 +53,9 @@ netParams.connParams['I->E'] = {
   'synMech': 'inh'}                                     # synaptic mechanism 
 
 
+## RxD params
 
+### constants
 constants = {'ip3_init': 0.0,  # Change value between 0 and 1: high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing
             'caDiff': 0.08,  # calcium diffusion coefficient
             'ip3Diff': 1.41,  # ip3 diffusion coefficient
@@ -71,21 +73,41 @@ constants = {'ip3_init': 0.0,  # Change value between 0 and 1: high ip3 -> ER Ca
             'margin': 20}  # extracellular volume additional margin 
 
 netParams.rxdParams['constants'] = constants
+
+### regions
 netParams.rxdParams['regions'] = {}
 netParams.rxdParams['regions']['cyt'] = {'cells': 'all', 
                                         'secs': 'all',
                                         'nrn_region': 'i', 
                                         'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fc'], 'surface_fraction': 1}}}
+
 netParams.rxdParams['regions']['er'] = {'cells': 'all', 
                                         'secs': 'all',
                                         'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fe']}}}
 
+netParams.rxdParams['regions']['cyt_er_membrane'] = {'cells': 'all', 
+                                                    'secs': 'all',
+                                                    'geometry': {'class': 'ScalableBorder', 'args': {'volume_fraction': 1, 'on_cell_surface': False}}}
+
+### species
 netParams.rxdParams['species'] = {}
 netParams.rxdParams['species']['ca'] = {'regions': ['cyt'], 
                                         'd': constants['caDiff'], 
                                         'charge': 2,
-                                        'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) '+  # use plus to split str in 2 lines
-                                                'else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
+                                        'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
+netParams.rxdParams['species']['ip3'] = {'regions': ['cyt'], 
+                                        'd': constants['ip3Diff'], 
+                                        'initial': constants['ip3_init']}
+
+
+### reactions
+netParams.rxdParams['multicompartmentReactions']['ca_leak'] = {'reactant': 'ca[er]', 
+                                                                'product': 'ca[cyt]',
+                                                                'rate_f': constants['gleak'], 
+                                                                'rate_b': constants['gleak'],
+                                                                'membrante': 'cyt_er_membrane'}
+
+# leak = rxd.MultiCompartmentReaction(ca[er], ca[cyt], gleak, gleak, membrane=cyt_er_membrane)
 
 
 # # ---------------------

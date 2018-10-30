@@ -275,10 +275,43 @@ def addReactions(self, params, multicompartment=False):
 # -----------------------------------------------------------------------------
 # Add RxD reactions
 # -----------------------------------------------------------------------------
-def addReactions(self, params, multicompartment=False):
+def addRates(self, params):
     from .. import sim
 
-species, rate, regions=None, membrane_flux=False
+    for label, param in params.items():
+        # species
+        if 'species' not in param:
+            print('  Error creating Rate %s: "species" parameter was missing'%(label))
+            continue
+        if isinstance(param['species']) and param['species'] in self.rxd['species']:
+            species = self.rxd['species']['hObj']
+        else:
+            print('  Error creating Rate %s: "species" parameter is invalid (%s)'%(param['species'], label))
+            continue
+
+        # rate
+        if 'rate' not in param:
+            print('  Error creating Rate %s: "rate" parameter was missing'%(label))
+            continue
+        if isinstance(param['rate'], str):
+            rate = self.replaceRxDStr(param['rate'])
+
+        # regions
+        if not isinstance(param['regions'], list):
+            param['regions'] = [param['regions']]
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+        except:
+           print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
+
+        # membrane_flux
+        if 'membrane_flux' not in param:
+            param['membrane_flux'] = False
+
+        self.rxd['rates'][label]['hObj'] = rxd.Rate(species,
+                                                    eval(rate), 
+                                                    regions=nrnRegions, 
+                                                    membrane_flux=param['membrane_flux'])
 
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression

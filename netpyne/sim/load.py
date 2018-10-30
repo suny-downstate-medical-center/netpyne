@@ -77,8 +77,8 @@ def _loadFile (filename):
     elif ext == 'json':
         import json
         print(('Loading file %s ... ' % (filename)))
-        with open(filename, 'rb') as fileObj:
-            data = json.load(fileObj, object_hook=_byteify)  # This doesn't work with py3 so need to find solution for both py2 and py3
+        with open(filename, 'r') as fileObj:
+            data = json.load(fileObj) #, object_hook=_byteify)  # This doesn't work with py3 so need to find solution for both py2 and py3
 
     # load mat file
     elif ext == 'mat':

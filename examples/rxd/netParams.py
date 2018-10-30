@@ -87,11 +87,11 @@ netParams.rxdParams['regions']['er'] = {'cells': 'all',
 
 netParams.rxdParams['regions']['cyt_er_membrane'] = {'cells': 'all', 
                                                     'secs': 'all',
-                                                    'geometry': {'class': 'ScalableBorder', 'args': {'volume_fraction': 1, 'on_cell_surface': False}}}
+                                                    'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}
 
 ### species
 netParams.rxdParams['species'] = {}
-netParams.rxdParams['species']['ca'] = {'regions': ['cyt'], 
+netParams.rxdParams['species']['ca'] = {'regions': ['cyt', 'er'], 
                                         'd': constants['caDiff'], 
                                         'charge': 2,
                                         'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
@@ -101,11 +101,12 @@ netParams.rxdParams['species']['ip3'] = {'regions': ['cyt'],
 
 
 ### reactions
+netParams.rxdParams['multicompartmentReactions'] = {}
 netParams.rxdParams['multicompartmentReactions']['ca_leak'] = {'reactant': 'ca[er]', 
                                                                 'product': 'ca[cyt]',
                                                                 'rate_f': constants['gleak'], 
                                                                 'rate_b': constants['gleak'],
-                                                                'membrante': 'cyt_er_membrane'}
+                                                                'membrane': 'cyt_er_membrane'}
 
 # leak = rxd.MultiCompartmentReaction(ca[er], ca[cyt], gleak, gleak, membrane=cyt_er_membrane)
 

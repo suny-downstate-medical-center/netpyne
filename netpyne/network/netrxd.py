@@ -201,6 +201,49 @@ def addSpecies(self, params):
 
 
 # -----------------------------------------------------------------------------
+# Add RxD states
+# -----------------------------------------------------------------------------
+def addState(self, params):
+    from .. import sim
+
+    for label, param in params.items():
+        # regions
+        if 'regions' not in param:
+            print('  Error creating State %s: "regions" parameter was missing'%(label))
+            continue
+        if not isinstance(param['regions'], list):
+            param['regions'] = [param['regions']]
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+        except:
+           print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
+        
+        # initial
+        if 'initial' not in param:
+            param['initial'] == None
+        if isinstance(param['initial'], str):  # string-based func
+            funcStr = self.replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
+
+            # create final function dynamically from string
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            afterDefStr = 'sim.net.rxd["states"]["%s"]["initialFunc"] = initial' % (label)
+            funcStr = 'def initial (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
+            try:
+                exec(funcStr, {'rxd': rxd}, {'sim': sim})        
+                initial = sim.net.rxd["species"][label]["initialFunc"]
+            except:
+                print('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                continue
+        else:
+            initial = param['initial']
+        
+        # call rxd method to create Region
+        self.rxd['states'][label]['hObj'] = rxd.State(region=nrnRegions, 
+                                                    initial=initial)
+        print('  Created State %s'%(label))
+
+
+# -----------------------------------------------------------------------------
 # Add RxD reactions
 # -----------------------------------------------------------------------------
 def addReactions(self, params, multicompartment=False):
@@ -309,9 +352,10 @@ def addRates(self, params):
             param['membrane_flux'] = False
 
         self.rxd['rates'][label]['hObj'] = rxd.Rate(species,
-                                                    eval(rate), 
-                                                    regions=nrnRegions, 
-                                                    membrane_flux=param['membrane_flux'])
+                                            eval(rate), 
+                                            regions=nrnRegions, 
+                                            membrane_flux=param['membrane_flux'])
+
 
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression

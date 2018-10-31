@@ -75,40 +75,42 @@ constants = {'ip3_init': 0.0,  # Change value between 0 and 1: high ip3 -> ER Ca
 netParams.rxdParams['constants'] = constants
 
 ### regions
-netParams.rxdParams['regions'] = {}
-netParams.rxdParams['regions']['cyt'] = {'cells': 'all', 
-                                        'secs': 'all',
-                                        'nrn_region': 'i', 
-                                        'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fc'], 'surface_fraction': 1}}}
+regions = {}
+regions['cyt'] = {'cells': 'all', 'secs': 'all', 'nrn_region': 'i', 'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fc'], 'surface_fraction': 1}}}
+regions['er'] = {'cells': 'all', 'secs': 'all', 'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fe']}}}
+regions['cyt_er_membrane'] = {'cells': 'all', 'secs': 'all', 'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}
+netParams.rxdParams['regions'] = regions
 
-netParams.rxdParams['regions']['er'] = {'cells': 'all', 
-                                        'secs': 'all',
-                                        'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fe']}}}
-
-netParams.rxdParams['regions']['cyt_er_membrane'] = {'cells': 'all', 
-                                                    'secs': 'all',
-                                                    'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}
+# extracellular = rxd.Extracellular(xlo=x[0], ylo=y[0], zlo=z[0], xhi=x[1], yhi=y[1], zhi=z[1], dx=5, volume_fraction=0.2, tortuosity=1.6) #vol_fraction and tortuosity associated w region 
 
 ### species
-netParams.rxdParams['species'] = {}
-netParams.rxdParams['species']['ca'] = {'regions': ['cyt', 'er'], 
-                                        'd': constants['caDiff'], 
-                                        'charge': 2,
-                                        'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
-netParams.rxdParams['species']['ip3'] = {'regions': ['cyt'], 
-                                        'd': constants['ip3Diff'], 
-                                        'initial': constants['ip3_init']}
+species = {}
+species['ca'] = {'regions': ['cyt', 'er'], 'd': constants['caDiff'], 'charge': 2,
+                'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
+species['ip3'] = {'regions': ['cyt'], 'd': constants['ip3Diff'], 'initial': constants['ip3_init']}
+
+netParams.rxdParams['species'] = species
+
+### states
+netParams.rxdParams['states']['ip3r_gate_state'] = {'regions': ['cyt_er_membrane'], 'initial': 0.8}
 
 
 ### reactions
-netParams.rxdParams['multicompartmentReactions'] = {}
-netParams.rxdParams['multicompartmentReactions']['ca_leak'] = {'reactant': 'ca[er]', 
-                                                                'product': 'ca[cyt]',
-                                                                'rate_f': constants['gleak'], 
-                                                                'rate_b': constants['gleak'],
-                                                                'membrane': 'cyt_er_membrane'}
+mcReactions = {}
+mcReactions['serca'] = {'reactant': 'ca[cyt]', 'product': 'ca[er]', 'rate_f': 'gserca / ((kserca / (1000. * ca[cyt])) ** 2 + 1)', 'membrane': 'cyt_er_membrane', 'custom_dynamics': True}
+mcReactions['leak'] = {'reactant': 'ca[er]', 'product': 'ca[cyt]', 'rate_f': constants['gleak'], 'rate_b': constants['gleak'], 'membrane': 'cyt_er_membrane'}
+netParams.rxdParams['multicompartmentReactions'] = mcReactions
 
-# leak = rxd.MultiCompartmentReaction(ca[er], ca[cyt], gleak, gleak, membrane=cyt_er_membrane)
+
+# minf = ip3[cyt] * 1000. * ca[cyt] / (ip3[cyt] + kip3) / (1000. * ca[cyt] + kact)
+# h_gate = ip3r_gate_state[cyt_er_membrane]
+# kip3 = gip3r * (minf * h_gate) ** 3
+# ip3r = rxd.MultiCompartmentReaction(ca[er], ca[cyt], kip3, kip3, membrane=cyt_er_membrane)
+# ip3rg = rxd.Rate(h_gate, (1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / ip3rtau)
+
+
+
+
 
 
 # # ---------------------

@@ -16,6 +16,7 @@ netParams.sizeZ = cfg.sizeZ # z-dimension (horizontal length) size in um
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
+#------------------------------------------------------------------------------
 ## Population parameters
 netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 10, 'yRange': [50,150], 'cellModel': 'HH'}
 netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 10, 'yRange': [50,150], 'cellModel': 'HH'}
@@ -24,17 +25,21 @@ netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 10, 'yRange': [150,300
 netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 10, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 10, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
 
+#------------------------------------------------------------------------------
 ## Cell property rules
 netParams.loadCellParamsRule(label='CellRule', fileName='CSTR_cellParams.json')
 
+#------------------------------------------------------------------------------
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
+#------------------------------------------------------------------------------
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
 netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'sec': 'soma', 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
+#------------------------------------------------------------------------------
 ## Cell connectivity rules
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [50,500]},  #  E -> all (100-1000 um)
@@ -53,10 +58,11 @@ netParams.connParams['I->E'] = {
   'synMech': 'inh'}                                     # synaptic mechanism 
 
 
+#------------------------------------------------------------------------------
 ## RxD params
 
 ### constants
-constants = {'ip3_init': 0.0,  # Change value between 0 and 1: high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing
+constants = {'ip3_init': cfg.ip3_init,  # initial ip3 concentration 
             'caDiff': 0.08,  # calcium diffusion coefficient
             'ip3Diff': 1.41,  # ip3 diffusion coefficient
             'caci_init': 1e-5,  # intracellular calcium initial concentration

@@ -32,8 +32,8 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
     #sb = scalebar.ScaleBar(1e-6)
     #sb.location='lower left'
     ax = plt.gca()
-    #ax.xaxis.set_visible(False)
-    #ax.yaxis.set_visible(False)
+    ax.xaxis.set_visible(False)
+    ax.yaxis.set_visible(False)
     plt.xlabel(plane[0])
     plt.ylabel(plane[1])
     #ax.add_artist(sb)

@@ -32,3 +32,8 @@ cfg.analysis['plotTraces']={'include': [0]}
 cfg.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True, 'figSize': (9,3)}      # Plot a raster
 cfg.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
 cfg.analysis['plotRxDConcentration'] = {'speciesLabel': 'ca', 'regionLabel': 'ecs'}
+
+# parameters
+## Change ip3_init from 0 to 0.1 to observe multiscale effect:  
+## high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing 
+cfg.ip3_init = 0.1  

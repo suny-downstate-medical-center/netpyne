@@ -88,26 +88,26 @@ species = {}
 species['ca'] = {'regions': ['cyt', 'er'], 'd': constants['caDiff'], 'charge': 2,
                 'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
 species['ip3'] = {'regions': ['cyt'], 'd': constants['ip3Diff'], 'initial': constants['ip3_init']}
-
 netParams.rxdParams['species'] = species
 
 ### states
-netParams.rxdParams['states']['ip3r_gate_state'] = {'regions': ['cyt_er_membrane'], 'initial': 0.8}
-
+netParams.rxdParams['states'] = {'ip3r_gate_state': {'regions': ['cyt_er_membrane'], 'initial': 0.8}}
 
 ### reactions
 mcReactions = {}
 mcReactions['serca'] = {'reactant': 'ca[cyt]', 'product': 'ca[er]', 'rate_f': 'gserca / ((kserca / (1000. * ca[cyt])) ** 2 + 1)', 'membrane': 'cyt_er_membrane', 'custom_dynamics': True}
 mcReactions['leak'] = {'reactant': 'ca[er]', 'product': 'ca[cyt]', 'rate_f': constants['gleak'], 'rate_b': constants['gleak'], 'membrane': 'cyt_er_membrane'}
+### rates
+minf = 'ip3[cyt] * 1000. * ca[cyt] / (ip3[cyt] + kip3) / (1000. * ca[cyt] + kact)'
+h_gate = 'ip3r_gate_state[cyt_er_membrane]'
+kip3 = 'gip3r * (%s * %s) ** 3' % (minf, h_gate)
+
+mcReactions['ip3r'] = {'reactant': 'ca[er]', 'product': 'ca[cyt]', 'rate_f': kip3, 'rate_b': kip3, 'membrane': 'cyt_er_membrane'}
+
 netParams.rxdParams['multicompartmentReactions'] = mcReactions
 
-
-# minf = ip3[cyt] * 1000. * ca[cyt] / (ip3[cyt] + kip3) / (1000. * ca[cyt] + kact)
-# h_gate = ip3r_gate_state[cyt_er_membrane]
-# kip3 = gip3r * (minf * h_gate) ** 3
-# ip3r = rxd.MultiCompartmentReaction(ca[er], ca[cyt], kip3, kip3, membrane=cyt_er_membrane)
-# ip3rg = rxd.Rate(h_gate, (1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / ip3rtau)
-
+netParams.rxdParams['rates'] = {'ip3rg': {'species': 'h_gate', 'rate': '(1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / ip3rtau'%(h_gate,)}}
+#ip3rg = rxd.Rate(h_gate, (1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / ip3rtau)
 
 
 

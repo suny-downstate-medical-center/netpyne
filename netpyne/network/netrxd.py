@@ -249,7 +249,6 @@ def addState(self, params):
 def addReactions(self, params, multicompartment=False):
     from .. import sim
 
-    #scheme, rate_f, rate_b=None, regions=None, custom_dynamics=False
     reactionStr = 'MulticompartmentReaction' if multicompartment else 'Reaction'
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 

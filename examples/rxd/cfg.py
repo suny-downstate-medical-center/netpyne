@@ -13,7 +13,7 @@ cfg.hParams['v_init'] = -65   # set v_init to -65 mV
 cfg.dt = 0.1                  # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'net_lfp'   # Set file output name
+cfg.filename = 'rxd_net'   # Set file output name
 
  # Network dimensions
 cfg.sizeX = 100
@@ -31,4 +31,4 @@ cfg.recordLFP = [[-15, y, 1.0*cfg.sizeZ] for y in range(int(cfg.sizeY/3), int(cf
 cfg.analysis['plotTraces']={'include': [0]}
 cfg.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True, 'figSize': (9,3)}      # Plot a raster
 cfg.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
-cfg.analysis['plotRxDConcentration'] = {'speciesLabel': 'ca', 'regionLabel': 'extracellular'}
+cfg.analysis['plotRxDConcentration'] = {'speciesLabel': 'ca', 'regionLabel': 'ecs'}

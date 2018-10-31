@@ -19,7 +19,7 @@ except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if int(pc.id()) == 0:  # only print for master node
-        print('Note: SONATA import failed; import/export functions for SONATA will not be available. \n  Make sure the hdf5 and tables packages are installed')
+        print('Note: SONATA import failed; import/export functions for SONATA will not be available. \n  To use this feature please install "HDF5" and the "tables" Python package.')
 
 from . import neuronPyHoc
 from .. import sim, specs

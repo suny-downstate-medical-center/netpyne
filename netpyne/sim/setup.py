@@ -251,7 +251,7 @@ def setupRecording ():
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
         # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
-        if len(sim.net.rxd) > 0:
+        if len(sim.net.params.rxdParams) > 0:
             h.finitialize()
 
         # get list of cells from argument of plotTraces function

@@ -1,4 +1,4 @@
-# RxD example
+# RxD network example
 ## Description
 A 3-layer network with intra- and extra-cellular RxD and LFP recording illustrating multiscale effects.
 
@@ -11,10 +11,11 @@ Developed using NetPyNE (www.netpyne.org)
 
 ## Setup and execution
 
-Requires NEURON with Python and MPI support. 
+Requires NEURON with RxD and Python. 
 
-1. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
-2. To run type: `./runsim [num_proc]' or the equivalent `mpiexec -np [num_proc] nrniv -python -mpi init.py`
+1. Type or ./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
+
+2. To run type: `python -i init.py`
 
 ## Overview of file structure:
 

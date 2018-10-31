@@ -59,7 +59,7 @@ def addRxD (self):
         if 'states' in rxdParams:
             self._addStates(rxdParams['states'])
         if 'reactions' in rxdParams:
-            self._addReactions(rxdParams['reaction'])
+            self._addReactions(rxdParams['reactions'])
         if 'multicompartmentReactions' in rxdParams:
             self._addReactions(rxdParams['multicompartmentReactions'], multicompartment=True)
         if 'rates' in rxdParams:
@@ -100,9 +100,11 @@ def _addRegions(self, params):
         # geomery
         if 'geometry' not in param:
             param['geometry'] = None
+            geometry = param['geometry']
         if isinstance(param['geometry'], dict):
             try:
                 param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                geometry = param['geometry']['hObj']
             except:
                 print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class'])) 
             
@@ -134,7 +136,7 @@ def _addRegions(self, params):
         # call rxd method to create Region
         self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
                                                 nrn_region=param['nrn_region'], 
-                                                geometry=param['geometry']['hObj'], 
+                                                geometry=geometry, 
                                                 dimension=param['dimension'], 
                                                 dx=param['dx'], 
                                                 name=label)
@@ -343,6 +345,7 @@ def _addReactions(self, params, multicompartment=False):
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane=nrnMembraneRegion)
 
+        print('  Created %s %s'%(reactionStr, label))
 
 # -----------------------------------------------------------------------------
 # Add RxD reactions
@@ -399,20 +402,21 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
     mapping = {}
 
     # replace constants
-    if constants:
+    if constants and 'constants' in self.rxd:
         constantsList = [c for c in self.params.rxdParams['constants'] if c in origStr]  # get list of variables used (eg. post_ynorm or dist_xyz)  
         for constantLabel in constantsList:
             mapping[constantLabel] = 'sim.net.rxd["constants"]["%s"]'%(constantLabel)
             
     # replace regions
-    if regions:
+    if regions and 'regions' in self.rxd:
         for regionLabel in self.rxd['regions']:
             mapping[regionLabel] = 'sim.net.rxd["regions"]["%s"]["hObj"]'%(regionLabel)
 
     # replace species
-    if species:
+    if species and 'species' in self.rxd:
         for speciesLabel in self.rxd['species']:
             mapping[speciesLabel] = 'sim.net.rxd["species"]["%s"]["hObj"]'%(speciesLabel)
+    if species and 'states' in self.rxd:
         for statesLabel in self.rxd['states']:
             mapping[statesLabel] = 'sim.net.rxd["states"]["%s"]["hObj"]'%(statesLabel)
 

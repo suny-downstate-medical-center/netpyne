@@ -80,8 +80,10 @@ def _addRegions(self, params):
     from .. import sim
 
     for label, param in params.items():
+
         if 'extracellular' in param and param['extracellular'] == True:
-            return self._addExtracellularRegion(label, param)
+            self._addExtracellularRegion(label, param)
+            continue
 
         # cells
         if 'cells' not in param:

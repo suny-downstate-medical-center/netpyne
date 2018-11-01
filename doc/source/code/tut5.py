@@ -80,3 +80,6 @@ simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+
+# check model output
+sim.checkOutput('tut5')

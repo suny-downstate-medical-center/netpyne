@@ -1,3 +1,52 @@
+# Version 0.9.0
+
+- Added support for reaction-diffusion (RxD) and usage examples
+
+- Improved performanced (speed) of connectivity algorithms 
+
+- Major code refactor to split functions across modules and subpackages
+
+- Switched to Python 3 as the default development environment
+
+- Optimized implementation of raster and spikeHist plotting using Pandas
+
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
+
+- Support for exporting to SONATA standardized network format (Beta) 
+
+- Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
+
+- Added option for filename to saveData()
+
+- Removed pop cellModelClass when saving
+
+- Removed cell h object keys when saving
+
+- Added support for evolutionary algorithm optimization (via Inspyred) and usage example
+
+- cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
+- All NEURON objects now accessible via ['hObj'] key within Python network structure
+
+- Fixed bug in batch to allow having only grouped params
+
+- Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
+
+- Fixed bug: removed '\_labelid' from netParams when saving
+
+- Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
+
+- Fixed bug in Pickle file encoding so works in Python3 
+
+- Fixed bug in convergence and divergence conn when repicking a value if postGid=preGid is randomly selected
+
+- Fixed bug in rand initialization for string-based func with div conn
+
+- Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
+
+NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions. 
+
+
 # Version 0.7.9
 
 - Extended metadata structure to interact with NetPyNE-UI

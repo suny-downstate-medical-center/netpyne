@@ -24,7 +24,7 @@ from netpyne import specs
 def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None, maxCombs=None, listCombs=None):
     # load from previously saved file with all data
     if loadAll:
-        print '\nLoading single file with all data...'
+        print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
             dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
@@ -32,7 +32,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         data = dataLoad['data']
         return params, data
 
-    if isinstance(listCombs, basestring):
+    if isinstance(listCombs, str):
         filename = str(listCombs)
         with open(filename, 'r') as fileObj:
             dataLoad = json.load(fileObj)
@@ -54,15 +54,15 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
 
     # read vars from all files - store in dict 
     if b['method'] == 'grid':
-        labelList, valuesList = zip(*[(p['label'], p['values']) for p in params])
+        labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in params]))
         valueCombinations = product(*(valuesList))
-        indexCombinations = product(*[range(len(x)) for x in valuesList])
+        indexCombinations = product(*[list(range(len(x))) for x in valuesList])
         data = {}
-        print 'Reading data...'
+        print('Reading data...')
         missing = 0
         for i,(iComb, pComb) in enumerate(zip(indexCombinations, valueCombinations)):
             if (not maxCombs or i<= maxCombs) and (not listCombs or list(pComb) in listCombs):
-                print i, iComb
+                print(i, iComb)
                 # read output file
                 iCombStr = ''.join([''.join('_'+str(i)) for i in iComb])
                 simLabel = b['batchLabel']+iCombStr
@@ -73,7 +73,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                     # save output file in data dict
                     data[iCombStr] = {}  
                     data[iCombStr]['paramValues'] = pComb  # store param values
-                    if not vars: vars = output.keys()
+                    if not vars: vars = list(output.keys())
 
                     for key in vars:
                         if isinstance(key, tuple):
@@ -82,21 +82,21 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                                 container = container[key[ikey]]
                             data[iCombStr][key[1]] = container[key[-1]]
 
-                        elif isinstance(key, basestring): 
+                        elif isinstance(key, str): 
                             data[iCombStr][key] = output[key]
 
                 except:
-                    print '... file missing'
+                    print('... file missing')
                     missing = missing + 1
                     output = {}
             else:
                 missing = missing + 1
 
-        print '%d files missing' % (missing)
+        print('%d files missing' % (missing))
 
         # save
         if saveAll:
-            print 'Saving to single file with all data'
+            print('Saving to single file with all data')
             filename = '%s/%s_allData.json' % (dataFolder, batchLabel)
             dataSave = {'params': params, 'data': data}
             with open(filename, 'w') as fileObj:
@@ -108,15 +108,15 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
 # Function to convert data to Pandas
 #--------------------------------------------------------------------
 def toPandas(params, data):
-    if 'simData' in data[data.keys()[0]]:
-        rows = [list(d['paramValues'])+[s for s in d['simData'].values()] for d in data.values()]
-        cols = [str(d['label']) for d in params]+[s for s in data[data.keys()[0]]['simData'].keys()]
+    if 'simData' in data[list(data.keys())[0]]:
+        rows = [list(d['paramValues'])+[s for s in list(d['simData'].values())] for d in list(data.values())]
+        cols = [str(d['label']) for d in params]+[s for s in list(data[list(data.keys())[0]]['simData'].keys())]
     else:
-        rows = [list(d['paramValues'])+[s for s in d.values()] for d in data.values()]
-        cols = [str(d['label']) for d in params]+[s for s in data[data.keys()[0]].keys()]
+        rows = [list(d['paramValues'])+[s for s in list(d.values())] for d in list(data.values())]
+        cols = [str(d['label']) for d in params]+[s for s in list(data[list(data.keys())[0]].keys())]
     
     df = pd.DataFrame(rows, columns=cols) 
-    df['simLabel'] = data.keys()
+    df['simLabel'] = list(data.keys())
 
     colRename=[]
     for col in list(df.columns):
@@ -125,7 +125,7 @@ def toPandas(params, data):
             colRename.append(colName)
         else: 
             colRename.append(col)
-    print colRename
+    print(colRename)
     df.columns = colRename
 
     return df
@@ -157,10 +157,10 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
 
     dfpop = df.iloc[:,0:5] # get param columns of all rows
     # dfpop['simLabel'] = df['simLabel']
-    for k in df.popRates[0].keys(): dfpop[k] = [r[k] for r in df.popRates] 
+    for k in list(df.popRates[0].keys()): dfpop[k] = [r[k] for r in df.popRates] 
     #return dfpop
 
-    print dfpop
+    print(dfpop)
     # if not valLabel: valLabel = val
     dfsubset = dfpop[[par1,par2,val]] 
         # dfgroup = dfsubset.groupby(by=[par1,par2])
@@ -188,7 +188,7 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
         else:
             plt.savefig(dataFolder+'/'+batchLabel+'_matrix_'+par1+'_'+par2+'_'+val+'.png')
     except:
-        print 'Error saving figure...'
+        print('Error saving figure...')
 
     plt.show()
 

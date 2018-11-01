@@ -116,7 +116,7 @@ class ITcell (Cell3D):
       sec.nseg = int((sec.L/(d_lambda*self.lambda_f(sec))+0.9)/2)*2 + 1
     for sec in self.all:
       after += sec.nseg 
-    print "geom_nseg: changed from ", before, " to ", after, " total segments"
+    print("geom_nseg: changed from ", before, " to ", after, " total segments")
 
   def lambda_f(self, section): 
     # these are reasonable values for most models
@@ -147,7 +147,7 @@ class ITcell (Cell3D):
     for sec in self.all:
       sec.Ra = rall
       sec.cm = cap
-    for i in xrange(2,len(self.apic),1): 
+    for i in range(2,len(self.apic),1): 
       self.apic[i].cm = spinecapfactor * self.apic[i].cm  	 # spinecapfactor * cm
       self.apic[i].g_pas = spinecapfactor / rm  # spinecapfactor * (1.0/rm)
     for sec in self.dend:  
@@ -174,7 +174,7 @@ class ITcell (Cell3D):
     self.apicchanprop()
     self.addbasalchan()
     self.basalchanprop()
-    for i in xrange(2,len(self.apic),1): 
+    for i in range(2,len(self.apic),1): 
       self.apic[i].cm = spinecapfactor * self.apic[i].cm  	 # spinecapfactor * cm
       self.apic[i].g_pas = spinecapfactor / rm  # spinecapfactor * (1.0/rm)
     for sec in self.dend:  

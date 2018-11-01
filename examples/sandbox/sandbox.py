@@ -10,23 +10,20 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.popParams['I2'] = {'cellType': 'SOM', 'numCells': 10, 'cellModel': 'HH_simple'}
-netParams.popParams['I3'] = {'cellType': 'PV', 'numCells': 10, 'cellModel': 'HH_simple'}
+netParams.popParams['I2'] = {'cellType': 'PYR', 'numCells': 40, 'cellModel': 'HH_simple'}
+netParams.popParams['I3'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH_simple'}
 
 netParams.popParams['input'] = {'numCells': 100, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
 netParams.popParams['input2'] = {'numCells': 50, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
 
 
 ## Cell property rules
-netParams.loadCellParamsRule(label='CellRule', fileName='IT2_reduced_cellParams.json')
-netParams.cellParams['CellRule']['conds'] = {'cellType': ['E','I']}
-
-#------------------------------------------------------------------------------
-# PV + SOMcell params (3-comp)
-
-ruleLabels = ['PV_simple', 'SOM_simple']
-for ruleLabel in ruleLabels:
-  netParams.loadCellParamsRule(label=ruleLabel, fileName=ruleLabel+'_cellParams.pkl')
+cellRule = {'conds': { 'cellType': 'PYR'},  'secs': {}}   # cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                   # soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['soma']['vinit'] = -71
+netParams.cellParams['PYR'] = cellRule                          # add dict to list of cell params
 
 
 # ## Synaptic mechanism parameters
@@ -35,8 +32,9 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e
 
 
 netParams.connParams['input->I'] = {
-  'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 'postConds': {'cellType': ['PV','SOM']},  #  E -> all (100-1000 um)
-  'probability': 0.5 ,                  # probability of connection
+  'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 
+  'postConds': {'cellType': ['PYR']},  #  E -> all (100-1000 um)
+  'divergence': '20*pre_ynorm',                  # probability of connection
   'weight': 0.5,         # synaptic wight 
   'delay': 2,      # transmission delay (ms) 
   'synMech': 'exc',
@@ -55,12 +53,15 @@ netParams.connParams['input->I'] = {
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 1.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
+simConfig.verbose = 0           # Show detailed messages 
 simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.printSynsAfterRule = True
 simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
 simConfig.saveJson=1
+
+simConfig.recordCellsSpikes = ['I2', 'input']
+
 
 lfp=0
 if lfp:

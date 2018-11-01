@@ -92,18 +92,18 @@ reducedSecList = {  # section Lists for reduced cell model
 	'apicdend': ['Adend1', 'Adend2', 'Adend3'],
 	'perisom': 	['soma']}
 
-for label, p in reducedCells.iteritems():  # create cell rules that were not loaded 
+for label, p in reducedCells.items():  # create cell rules that were not loaded 
 	if label not in loadCellParams:
 		cellRule = netParams.importCellParams(label=label, conds={'cellType': label[0:2], 'cellModel': 'HH_reduced', 'ynorm': layer[p['layer']]},
 	  	fileName='cells/'+p['cname']+'.py', cellName=p['cname'], cellArgs={'params': p['carg']} if p['carg'] else None)
 		dendL = (layer[p['layer']][0]+(layer[p['layer']][1]-layer[p['layer']][0])/2.0) * cfg.sizeY  # adapt dend L based on layer
 		for secName in ['Adend1', 'Adend2', 'Adend3', 'Bdend']: cellRule['secs'][secName]['geom']['L'] = dendL / 3.0  # update dend L
-		for k,v in reducedSecList.iteritems(): cellRule['secLists'][k] = v  # add secLists
+		for k,v in reducedSecList.items(): cellRule['secLists'][k] = v  # add secLists
 		netParams.addCellParamsWeightNorm(label, 'conn/'+label+'_weightNorm.pkl', threshold=cfg.weightNormThreshold)  # add weightNorm
 
 		if cfg.reduced3DGeom: # set 3D pt geom
 			offset, prevL = 0, 0
-			for secName, sec in netParams.cellParams[label]['secs'].iteritems():
+			for secName, sec in netParams.cellParams[label]['secs'].items():
 				sec['geom']['pt3d'] = []
 				if secName in ['soma', 'Adend1', 'Adend2', 'Adend3']:  # set 3d geom of soma and Adends
 					sec['geom']['pt3d'].append([offset+0, prevL, 0, sec['geom']['diam']])
@@ -134,7 +134,7 @@ if 'PT5B_full' not in loadCellParams:
 	cellRule['secLists']['spiny'] = [sec for sec in cellRule['secLists']['alldend'] if sec not in nonSpiny]
 	# Adapt ih params based on cfg param
 	for secName in cellRule['secs']:
-		for mechName,mech in cellRule['secs'][secName]['mechs'].iteritems():
+		for mechName,mech in cellRule['secs'][secName]['mechs'].items():
 			if mechName in ['ih','h','h15', 'hd']: 
 				mech['gbar'] = [g*cfg.ihGbar for g in mech['gbar']] if isinstance(mech['gbar'],list) else mech['gbar']*cfg.ihGbar
 				if cfg.ihModel == 'migliore':   
@@ -205,7 +205,7 @@ if 'SOM_simple' not in loadCellParams:
 ## load densities
 with open('cells/cellDensity.pkl', 'r') as fileObj: density = pickle.load(fileObj)['density']
 
-density = {k: [x * cfg.scaleDensity for x in v] for k,v in density.iteritems()}
+density = {k: [x * cfg.scaleDensity for x in v] for k,v in density.items()}
 
 ## Local populations
 netParams.popParams['IT2']  =	{'cellModel': cfg.cellmod['IT2'],  'cellType': 'IT', 'ynormRange': layer['2'], 'density': density[('M1','E')][0]}
@@ -225,7 +225,7 @@ netParams.popParams['SOM6'] =	{'cellModel': 'HH_simple', 	   	   'cellType': 'SO
 netParams.popParams['PV6']  =	{'cellModel': 'HH_simple',	 	   'cellType': 'PV', 'ynormRange': layer['6'],  'density': density[('M1','PV')][4]}
 
 if cfg.singleCellPops:
-	for pop in netParams.popParams.values(): pop['numCells'] = 1
+	for pop in list(netParams.popParams.values()): pop['numCells'] = 1
 
 #------------------------------------------------------------------------------
 ## Long-range input populations (VecStims)
@@ -527,9 +527,9 @@ if cfg.addSubConn:
 	# L2/3,TVL,S2,cM1,M2 -> PT (Suter, 2015)
 	lenY = 30 
 	spacing = 50
-	gridY = range(0, -spacing*lenY, -spacing)
+	gridY = list(range(0, -spacing*lenY, -spacing))
 	synDens, _, fixedSomaY = connDendPTData['synDens'], connDendPTData['gridY'], connDendPTData['fixedSomaY']
-	for k in synDens.keys():
+	for k in list(synDens.keys()):
 		prePop,postType = k.split('_')  # eg. split 'M2_PT'
 		if prePop == 'L2': prePop = 'IT2'  # include conns from layer 2/3 and 4
 		netParams.subConnParams[k] = {
@@ -544,9 +544,9 @@ if cfg.addSubConn:
 	# TPO, TVL, M2, OC  -> E (L2/3, L5A, L5B, L6) (Hooks 2013)
 	lenY = 26
 	spacing = 50
-	gridY = range(0, -spacing*lenY, -spacing)
+	gridY = list(range(0, -spacing*lenY, -spacing))
 	synDens, _, fixedSomaY = connDendITData['synDens'], connDendITData['gridY'], connDendITData['fixedSomaY']
-	for k in synDens.keys():
+	for k in list(synDens.keys()):
 		prePop,post = k.split('_')  # eg. split 'M2_L2'
 		postCellTypes = ['IT','PT','CT'] if prePop in ['OC','TPO'] else ['IT','CT']  # only OC,TPO include PT cells
 		postyRange = list(layer[post.split('L')[1]]) # get layer yfrac range 

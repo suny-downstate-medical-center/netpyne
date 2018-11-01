@@ -39,3 +39,6 @@ simConfig.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries',  
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 
+# check model output
+sim.checkOutput('cell_lfp')
+

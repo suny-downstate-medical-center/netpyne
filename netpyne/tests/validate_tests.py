@@ -6,11 +6,18 @@ Testing code for Validation class
 
 Contributors: mitra.sidddhartha@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
-from tests import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+from .tests import *
 import netpyne.specs as specs
 
-class ParamsObj():
+class ParamsObj(object):
 
         """Set of possible parameters"""
 
@@ -19,7 +26,7 @@ class ParamsObj():
             self.simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
             self.netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-class RunNetPyneTests():
+class RunNetPyneTests(object):
 
         """Set of possible parameters"""
 
@@ -2166,7 +2173,7 @@ class RunNetPyneTests():
         def runPopTestsWithParams(self):
             popParamsMap = self.paramsMap["pop"]
             # run the different tests for pop
-            for testName, paramObjList in popParamsMap.items():
+            for testName, paramObjList in list(popParamsMap.items()):
                 # run the test with different params
                 for paramsObj in paramObjList:
                     self.netPyneTestObj.netParams = paramsObj.netParams
@@ -2175,7 +2182,7 @@ class RunNetPyneTests():
         def runNetTestsWithParams(self):
             netParamsMap = self.paramsMap["net"]
             # run the different tests for net
-            for testName, paramObjList in netParamsMap.items():
+            for testName, paramObjList in list(netParamsMap.items()):
                 # run the test with different params
                 for paramsObj in paramObjList:
                     self.netPyneTestObj.netParams = paramsObj.netParams
@@ -2185,7 +2192,7 @@ class RunNetPyneTests():
             #print ( " run cell tests ")
             cellParamsMap = self.paramsMap["cell"]
             # run the different tests for cell
-            for testName, paramObjList in cellParamsMap.items():
+            for testName, paramObjList in list(cellParamsMap.items()):
                 for paramsObj in paramObjList:
                     self.netPyneTestObj.netParams = paramsObj.netParams
                     self.netPyneTestObj.runTests()
@@ -2195,7 +2202,7 @@ class RunNetPyneTests():
             connParamsMap = self.paramsMap["conn"]
             #print (" connParamsMap = " + str(connParamsMap))
             # run the different tests for conn
-            for testName, paramObjList in connParamsMap.items():
+            for testName, paramObjList in list(connParamsMap.items()):
                 for paramsObj in paramObjList:
                     #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
@@ -2205,7 +2212,7 @@ class RunNetPyneTests():
             #print ( " running conn tests " )
             stimSourceParamsMap = self.paramsMap["stimSource"]
             # run the different tests for conn
-            for testName, paramObjList in stimSourceParamsMap.items():
+            for testName, paramObjList in list(stimSourceParamsMap.items()):
                 for paramsObj in paramObjList:
                     #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
@@ -2215,7 +2222,7 @@ class RunNetPyneTests():
             #print ( " running conn tests " )
             stimTargetParamsMap = self.paramsMap["stimTarget"]
             # run the different tests for conn
-            for testName, paramObjList in stimTargetParamsMap.items():
+            for testName, paramObjList in list(stimTargetParamsMap.items()):
                 for paramsObj in paramObjList:
                     #print ( " calling tests")
                     self.netPyneTestObj.netParams = paramsObj.netParams
@@ -2225,7 +2232,7 @@ class RunNetPyneTests():
             #print ( " running conn tests " )
             simConfigParamsMap = self.paramsMap["simConfig"]
             # run the different tests for conn
-            for testName, paramObjList in simConfigParamsMap.items():
+            for testName, paramObjList in list(simConfigParamsMap.items()):
                 #print ( " calling tests 00 " + testName)
                 for paramsObj in paramObjList:
                     #print ( " calling tests " + testName)

@@ -16,7 +16,7 @@ def batchTauWeight():
 	b.batchLabel = 'tauWeight'
 	b.saveFolder = 'tut8_data'
 	b.method = 'grid'
-	b.runCfg = {'type': 'mpi', 
+	b.runCfg = {'type': 'mpi_bulletin', 
 				'script': 'tut8_init.py', 
 				'skip': True}
 

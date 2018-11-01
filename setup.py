@@ -23,7 +23,7 @@ elif 'upload_via_twine_testpypi' in sys.argv:
 else:
     
     setup(
-        name = 'netpyne-py3',
+        name = 'netpyne',
         
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',

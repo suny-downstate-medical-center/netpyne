@@ -19,11 +19,11 @@ import sys
 if 'upload_via_twine' in sys.argv:
     system('twine upload dist/netpyne-'+version+'-none-any.whl')
 elif 'upload_via_twine_testpypi' in sys.argv:
-    system('twine upload --repository pypitest dist/netpyne-'+version+'-none-any.whl')
+    system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-py3-none-any.whl')
 else:
     
     setup(
-        name = 'netpyne',
+        name = 'netpyne-py3',
         
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
@@ -34,7 +34,7 @@ else:
         # The project's main homepage.
         url = 'https://github.com/Neurosim-lab/netpyne',
 
-        #Author detials
+        #Author details
         author = 'Salvador Dura-Bernal (Neurosim lab)',
         author_email = 'salvadordura@gmail.com',
 

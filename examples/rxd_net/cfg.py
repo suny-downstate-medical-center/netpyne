@@ -36,4 +36,4 @@ cfg.analysis['plotRxDConcentration'] = {'speciesLabel': 'ca', 'regionLabel': 'ec
 # parameters
 ## Change ip3_init from 0 to 0.1 to observe multiscale effect:  
 ## high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing 
-cfg.ip3_init = 0.1  
+cfg.ip3_init = 0.0  

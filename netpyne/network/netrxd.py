@@ -287,24 +287,31 @@ def _addReactions(self, params, multicompartment=False):
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 
     for label, param in params.items():
+        dynamicVars = {'sim': sim}
         # reactant
         if 'reactant' not in param:
             print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
             continue
-        reactant = self._replaceRxDStr(param['reactant'])
+        reactantStr = self._replaceRxDStr(param['reactant'])
+        exec('reactant = ' + reactantStr, dynamicVars)
+        if 'reactant' not in dynamicVars: dynamicVars['reactant']  # fix for python 2
 
         # product
         if 'product' not in param:
             print('  Error creating %s %s: "product" parameter was missing'%(reactionStr,label))
             continue
-        product = self._replaceRxDStr(param['product'])
+        productStr = self._replaceRxDStr(param['product'])
+        exec('product = ' + productStr, dynamicVars)
+        if 'product' not in dynamicVars: dynamicVars['product']  # fix for python 2
 
         # rate_f
         if 'rate_f' not in param:
             print('  Error creating %s %s: "scheme" parameter was missing'%(reactionStr,label))
             continue
         if isinstance(param['rate_f'], str):
-            rate_f = self._replaceRxDStr(param['rate_f'])
+            rate_fStr = self._replaceRxDStr(param['rate_f'])
+            exec('rate_f = ' + rate_fStr, dynamicVars)
+            if 'rate_f' not in dynamicVars: dynamicVars['rate_f']  # fix for python 2
         else:
             rate_f = param['rate_f']
 
@@ -312,7 +319,9 @@ def _addReactions(self, params, multicompartment=False):
         if 'rate_b' not in param:
             param['rate_b'] = None 
         if isinstance(param['rate_b'], str):
-            rate_b = self._replaceRxDStr(param['rate_b'])
+            rate_bStr = self._replaceRxDStr(param['rate_b'])
+            exec('rate_b = ' + rate_bStr, dynamicVars)
+            if 'rate_b' not in dynamicVars: dynamicVars['rate_b']  # fix for python 2
         else:
             rate_b = param['rate_b']
 
@@ -339,10 +348,12 @@ def _addReactions(self, params, multicompartment=False):
         if 'custom_dynamics' not in param:
             param['custom_dynamics'] = False
 
-        self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(eval(reactant),
-                                                                            eval(product), 
-                                                                            eval(rate_f) if isinstance(rate_f, str) else rate_f, 
-                                                                            rate_b=eval(rate_b) if isinstance(rate_b, str) else rate_b, 
+        #import IPython; IPython.embed()
+
+        self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'], 
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f, 
+                                                                            rate_b=dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b, 
                                                                             regions=nrnRegions, 
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane=nrnMembraneRegion)
@@ -356,12 +367,15 @@ def _addRates(self, params):
     from .. import sim
 
     for label, param in params.items():
+        dynamicVars = {'sim': sim}
         # species
         if 'species' not in param:
             print('  Error creating Rate %s: "species" parameter was missing'%(label))
             continue
         if isinstance(param['species'], str):
-            species = self._replaceRxDStr(param['species'])
+            speciesStr = self._replaceRxDStr(param['species'])
+            exec('species = ' + speciesStr, dynamicVars)
+            if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
         else:
             print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
             continue
@@ -370,7 +384,9 @@ def _addRates(self, params):
             print('  Error creating Rate %s: "rate" parameter was missing'%(label))
             continue
         if isinstance(param['rate'], str):
-            rate = self._replaceRxDStr(param['rate'])
+            rateStr = self._replaceRxDStr(param['rate'])
+            exec('rate = ' + rateStr, dynamicVars)
+            if 'rate' not in dynamicVars: dynamicVars['rate']  # fix for python 2
 
         # regions
         if 'regions' not in param:
@@ -388,8 +404,8 @@ def _addRates(self, params):
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
 
-        self.rxd['rates'][label]['hObj'] = rxd.Rate(eval(species),
-                                                    eval(rate), 
+        self.rxd['rates'][label]['hObj'] = rxd.Rate(dynamicVars['species'],
+                                                    dynamicVars['rate'], 
                                                     regions=nrnRegions, 
                                                     membrane_flux=param['membrane_flux'])
 

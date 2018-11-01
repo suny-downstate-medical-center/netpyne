@@ -12,6 +12,10 @@
 
 - Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
 
+- Support for exporting to SONATA standardized network format (Beta) 
+
+- Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
+
 - Added option for filename to saveData()
 
 - Removed pop cellModelClass when saving

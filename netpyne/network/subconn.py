@@ -65,8 +65,8 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
     for secName in secList:
         sec = cell.secs[secName]
         segNumSyn[secName] = []
-        for seg in sec['hSec']:
-            x, y, z = self._posFromLoc(sec['hSec'], seg.x)
+        for seg in sec['hObj']:
+            x, y, z = self._posFromLoc(sec['hObj'], seg.x)
             if gridX and gridY: # 2D
                 distX = [abs(gx-x) for gx in gridX]
                 distY = [abs(gy-y) for gy in gridY]
@@ -101,7 +101,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                    # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
                    sigma = ((sigma_y1*abs(y2-y) + sigma_y2*abs(y-y1)) / abs(y2-y1))
 
-            numSyn = sigma * sec['hSec'].L / sec['hSec'].nseg  # return num syns 
+            numSyn = sigma * sec['hObj'].L / sec['hObj'].nseg  # return num syns 
             segNumSyn[secName].append(numSyn)
 
     return segNumSyn
@@ -164,7 +164,7 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         gridY = subConnParam['density']['gridY']
                         gridSigma = subConnParam['density']['gridValues']
-                        somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hSec'], 0.5) # get cell pos move method to Cell!
+                        somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hObj'], 0.5) # get cell pos move method to Cell!
                         if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                             fixedSomaY = subConnParam['density'].get('fixedSomaY')
                             gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
@@ -204,7 +204,7 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         newSecs, newLocs = [], []
                         for sec, nsyns in segNumSyn.items():
-                            for i, seg in enumerate(postCell.secs[sec]['hSec']):
+                            for i, seg in enumerate(postCell.secs[sec]['hObj']):
                                 for isyn in range(nsyns[i]):
                                     newSecs.append(sec)
                                     newLocs.append(seg.x)

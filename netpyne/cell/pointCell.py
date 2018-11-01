@@ -322,7 +322,7 @@ class PointCell (Cell):
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
                 #netcon.threshold = threshold # set Netcon threshold
-                self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+                self.conns[-1]['hObj'] = netcon  # add netcon object to dict in conns list
         
 
                 # Add time-dependent weight shaping

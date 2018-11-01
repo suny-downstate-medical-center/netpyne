@@ -222,7 +222,7 @@ class CompartCell (Cell):
     def initV (self): 
         for sec in list(self.secs.values()):
             if 'vinit' in sec:
-                sec['hSec'].v = sec['vinit']
+                sec['hObj'].v = sec['vinit']
 
 
 
@@ -247,22 +247,22 @@ class CompartCell (Cell):
     def __dipoleInsert(self, secName, sec):
         # insert dipole mech (dipole.mod)
         try:
-            sec['hSec'].insert('dipole')
+            sec['hObj'].insert('dipole')
         except:
             print('Error inserting dipole mechanism')
             return -1
 
         # insert Dipole point process (dipole_pp.mod)
         try: 
-            sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hSec'])
+            sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hObj'])
         except:
             print('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
         # assign internal resistance values to dipole point process (dpp)
-        dpp.ri = h.ri(1, sec=sec['hSec'])
+        dpp.ri = h.ri(1, sec=sec['hObj'])
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
-        h.setpointer(sec['hSec'](0.99)._ref_v, 'pv', dpp)
+        h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
         if self.tags['cellType'].startswith('L2'):
             h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
         elif self.tags['cellType'].startswith('L5'):
@@ -270,31 +270,31 @@ class CompartCell (Cell):
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
-        loc = np.array([seg.x for seg in sec['hSec']])
+        loc = np.array([seg.x for seg in sec['hObj']])
         # these are the positions, including 0 but not L
-        pos = np.array([seg.x for seg in sec['hSec'].allseg()])
+        pos = np.array([seg.x for seg in sec['hObj'].allseg()])
         # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
-        y_scale = (self.__dipoleGetSecLength(secName) * sec['hSec'].L) * pos
+        y_scale = (self.__dipoleGetSecLength(secName) * sec['hObj'].L) * pos
         # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
         # diff values calculate length between successive section points
         y_diff = np.diff(y_scale)
         for i in range(len(loc)):
             # assign the ri value to the dipole
-            sec['hSec'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hSec'])
+            sec['hObj'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hObj'])
             # range variable 'dipole'
             # set pointers to previous segment's voltage, with boundary condition
             if i > 0:
-                h.setpointer(sec['hSec'](loc[i-1])._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
+                h.setpointer(sec['hObj'](loc[i-1])._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             else:
-                h.setpointer(sec['hSec'](0)._ref_v, 'pv', sec['hSec'](loc[i]).dipole)
+                h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             # set aggregate pointers
-            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hSec'](loc[i]).dipole)
+            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
             if self.tags['cellType'].startswith('L2'):
-                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hSec'](loc[i]).dipole)
+                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
             elif self.tags['cellType'].startswith('L5'):
-                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hSec'](loc[i]).dipole)
+                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
             # add ztan values
-            sec['hSec'](loc[i]).dipole.ztan = y_diff[i]
+            sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
 
@@ -310,24 +310,24 @@ class CompartCell (Cell):
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
-            if 'hSec' not in self.secs[sectName] or self.secs[sectName]['hSec'] in [None, {}, []]: 
-                self.secs[sectName]['hSec'] = h.Section(name=sectName, cell=self)  # create h Section object
+            if 'hObj' not in self.secs[sectName] or self.secs[sectName]['hObj'] in [None, {}, []]: 
+                self.secs[sectName]['hObj'] = h.Section(name=sectName, cell=self)  # create h Section object
             sec = self.secs[sectName]  # pointer to section
 
             # set geometry params 
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].items():  
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec['hSec'], geomParamName, geomParamValue)
+                        setattr(sec['hObj'], geomParamName, geomParamValue)
 
                 # set 3d geometry
                 if 'pt3d' in sectParams['geom']:  
-                    h.pt3dclear(sec=sec['hSec'])
+                    h.pt3dclear(sec=sec['hObj'])
                     x = self.tags['x']
                     y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
-                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:
@@ -335,13 +335,13 @@ class CompartCell (Cell):
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
                     try:
-                        sec['hSec'].insert(mechName)
+                        sec['hObj'].insert(mechName)
                     except:
                         print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
-                        for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
+                        for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
                             if type(mechParamValue) in [list]: 
                                 if len(mechParamValue) == 1: 
                                     mechParamValueFinal = mechParamValue[0]
@@ -356,13 +356,13 @@ class CompartCell (Cell):
                     if ionName not in sec['ions']: 
                         sec['ions'][ionName] = Dict()
                     try:
-                        sec['hSec'].insert(ionName+'_ion')    # insert mechanism
+                        sec['hObj'].insert(ionName+'_ion')    # insert mechanism
                     except:
                         print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
                         continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
-                        for iseg,seg in enumerate(sec['hSec']):  # set ion params for each segment
+                        for iseg,seg in enumerate(sec['hObj']):  # set ion params for each segment
                             if type(ionParamValue) in [list]: 
                                 ionParamValueFinal = ionParamValue[iseg]
                             if ionParamName == 'e':
@@ -391,19 +391,19 @@ class CompartCell (Cell):
                         sec['pointps'][pointpName] = Dict() 
                     pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    sec['pointps'][pointpName]['hPointp'] = pointpObj(loc, sec = sec['hSec'])  # create h Pointp object (eg. h.Izhi2007b)
+                    sec['pointps'][pointpName]['hObj'] = pointpObj(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
                         if pointpParamValue == 'gid': 
                             pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
-                            setattr(sec['pointps'][pointpName]['hPointp'], pointpParamName, pointpParamValue)
+                            setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
 
         # set topology 
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
-                    sec['hSec'].connect(self.secs[sectParams['topol']['parentSec']]['hSec'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+                    sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
         for sectName,sectParams in prop['secs'].items():
@@ -430,8 +430,8 @@ class CompartCell (Cell):
                 self.addNetStim(stimParams, stimContainer=stimParams)
        
             elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
-                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hSec'](stimParams['loc']))
-                stimProps = {k:v for k,v in stimParams.items() if k not in ['label', 'type', 'source', 'loc', 'sec', 'h'+stimParams['type']]}
+                stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hObj'](stimParams['loc']))
+                stimProps = {k:v for k,v in stimParams.items() if k not in ['label', 'type', 'source', 'loc', 'sec', 'hObj']}
                 for stimPropName, stimPropValue in stimProps.items(): # set mechanism internal stimParams
                     if isinstance(stimPropValue, list):
                         if stimPropName == 'amp': 
@@ -443,7 +443,7 @@ class CompartCell (Cell):
                         #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                     else: 
                         setattr(stim, stimPropName, stimPropValue)
-                stimParams['h'+stimParams['type']] = stim  # add stim object to dict in stims list
+                stimParams['hObj'] = stim  # add stim object to dict in stims list
            
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -463,7 +463,7 @@ class CompartCell (Cell):
                 #continue  # go to next conn
 
             try:
-                postTarget = synMech['hSyn']
+                postTarget = synMech['hObj']
             except:
                 print('\nError: no synMech available for conn: ', conn)
                 print(' cell tags: ',self.tags)
@@ -473,7 +473,7 @@ class CompartCell (Cell):
 
             # create NetCon
             if conn['preGid'] == 'NetStim':
-                netstim = next((stim['hNetStim'] for stim in self.stims if stim['source']==conn['preLabel']), None)
+                netstim = next((stim['hObj'] for stim in self.stims if stim['source']==conn['preLabel']), None)
                 if netstim:
                     netcon = h.NetCon(netstim, postTarget)
                 else: continue
@@ -484,7 +484,7 @@ class CompartCell (Cell):
             netcon.weight[0] = conn['weight']
             netcon.delay = conn['delay']
             #netcon.threshold = conn.get('threshold', sim.net.params.defaultThreshold)
-            conn['hNetcon'] = netcon
+            conn['hObj'] = netcon
             
             # Add plasticity 
             if conn.get('plast'):
@@ -508,10 +508,10 @@ class CompartCell (Cell):
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                     for pointpName, pointpParams in sec['pointps'].items():
                         if 'vref' in pointpParams:
-                            nc = h.NetCon(getattr(sec['pointps'][pointpName]['hPointp'], '_ref_'+pointpParams['vref']), None, sec=sec['hSec'])
+                            nc = h.NetCon(getattr(sec['pointps'][pointpName]['hObj'], '_ref_'+pointpParams['vref']), None, sec=sec['hObj'])
                             break
                 if not nc:  # if still haven't created netcon  
-                    nc = h.NetCon(sec['hSec'](loc)._ref_v, None, sec=sec['hSec'])
+                    nc = h.NetCon(sec['hObj'](loc)._ref_v, None, sec=sec['hObj'])
                 if 'threshold' in sec: threshold = sec['threshold'] 
                 threshold = threshold if threshold is not None else sim.net.params.defaultThreshold
                 nc.threshold = threshold
@@ -546,22 +546,22 @@ class CompartCell (Cell):
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
-                if not synMech.get('hSyn'):  # if synMech doesn't have NEURON obj, then create
+                if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
                     synObj = getattr(h, synMechParams['mod'])
-                    synMech['hSyn'] = synObj(loc, sec=sec['hSec'])  # create h Syn object (eg. h.Exp2Syn)
+                    synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
                     for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
                         if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
-                            setattr(synMech['hSyn'], synParamName, synParamValue)
+                            setattr(synMech['hObj'], synParamName, synParamValue)
                         elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
                             secLabelNetCon = synParamValue.get('sec', 'soma')
                             locNetCon = synParamValue.get('loc', 0.5)
                             secNetCon = self.secs.get(secLabelNetCon, None)
-                            synMech['hNetcon'] = h.NetCon(secNetCon['hSec'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hSec'])
+                            synMech['hObj'] = h.NetCon(secNetCon['hObj'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hObj'])
                             for paramName,paramValue in synParamValue.items():
                                 if paramName == 'weight':
-                                    synMech['hNetcon'].weight[0] = paramValue
+                                    synMech['hObj'].weight[0] = paramValue
                                 elif paramName not in ['sec', 'loc']:
-                                    setattr(synMech['hNetcon'], paramName, paramValue)
+                                    setattr(synMech['hObj'], paramName, paramValue)
             else:
                 synMech = None
             return synMech
@@ -613,7 +613,7 @@ class CompartCell (Cell):
                                 synMech[synParamName] = synParamValue
                             if sim.cfg.createNEURONObj:
                                 try: 
-                                    setattr(synMech['hSyn'], synParamName, synParamValue)
+                                    setattr(synMech['hObj'], synParamName, synParamValue)
                                 except:
                                     print('Error setting %s=%s on synMech' % (synParamName, str(synParamValue)))
     
@@ -709,12 +709,12 @@ class CompartCell (Cell):
             if sim.cfg.createNEURONObj:
                 # gap junctions
                 if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
-                    synMechs[i]['hSyn'].weight = weights[i]
-                    sourceVar = self.secs[synMechSecs[i]]['hSec'](synMechLocs[i])._ref_v
-                    targetVar = synMechs[i]['hSyn']._ref_vpeer  # assumes variable is vpeer -- make a parameter
+                    synMechs[i]['hObj'].weight = weights[i]
+                    sourceVar = self.secs[synMechSecs[i]]['hObj'](synMechLocs[i])._ref_v
+                    targetVar = synMechs[i]['hObj']._ref_vpeer  # assumes variable is vpeer -- make a parameter
                     sec = self.secs[synMechSecs[i]]
                     sim.pc.target_var(targetVar, connParams['gapId'])
-                    self.secs[synMechSecs[i]]['hSec'].push()
+                    self.secs[synMechSecs[i]]['hObj'].push()
                     sim.pc.source_var(sourceVar, connParams['preGapId'])
                     h.pop_section()
                     netcon = None
@@ -723,10 +723,10 @@ class CompartCell (Cell):
                 else:  
                     if pointp:
                         sec = self.secs[secLabels[0]]
-                        postTarget = sec['pointps'][pointp]['hPointp'] #  local point neuron 
+                        postTarget = sec['pointps'][pointp]['hObj'] #  local point neuron 
                     else:
                         sec = self.secs[synMechSecs[i]]
-                        postTarget = synMechs[i]['hSyn'] # local synaptic mechanism
+                        postTarget = synMechs[i]['hObj'] # local synaptic mechanism
 
                     if netStimParams:
                         netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
@@ -736,7 +736,7 @@ class CompartCell (Cell):
                     netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                     netcon.delay = delays[i]  # set Netcon delay
                     #netcon.threshold = threshold  # set Netcon threshold
-                    self.conns[-1]['hNetcon'] = netcon  # add netcon object to dict in conns list
+                    self.conns[-1]['hObj'] = netcon  # add netcon object to dict in conns list
             
 
                 # Add time-dependent weight shaping
@@ -839,9 +839,9 @@ class CompartCell (Cell):
                     for paramName, paramValue in {k: v for k,v in params.items() if k not in ['conds','preConds','postConds']}.items():
                         try:
                             if paramName == 'weight':
-                                conn['hNetcon'].weight[0] = paramValue
+                                conn['hObj'].weight[0] = paramValue
                             else:
-                                setattr(conn['hNetcon'], paramName, paramValue)
+                                setattr(conn['hObj'], paramName, paramValue)
                         except:
                             print('Error setting %s=%s on Netcon' % (paramName, str(paramValue)))
 
@@ -895,19 +895,19 @@ class CompartCell (Cell):
                             try:
                                 if stim['type'] == 'NetStim':
                                     if paramName == 'weight':
-                                        conn['hNetcon'].weight[0] = paramValue
+                                        conn['hObj'].weight[0] = paramValue
                                     elif paramName in ['delay']:
-                                        setattr(conn['hNetcon'], paramName, paramValue)
+                                        setattr(conn['hObj'], paramName, paramValue)
                                     elif paramName in ['rate']: 
                                         stim['interval'] = 1.0/paramValue
-                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                        setattr(stim['hObj'], 'interval', stim['interval'])
                                     elif paramName in ['interval']: 
                                         stim['rate'] = 1.0/paramValue
-                                        setattr(stim['hNetStim'], 'interval', stim['interval'])
+                                        setattr(stim['hObj'], 'interval', stim['interval'])
                                     else:
-                                        setattr(stim['h'+stim['type']], paramName, paramValue)
+                                        setattr(stim['hObj'], paramName, paramValue)
                                 else:
-                                    setattr(stim['h'+stim['type']], paramName, paramValue)
+                                    setattr(stim['hObj'], paramName, paramValue)
                             except:
                                 print('Error setting %s=%s on stim' % (paramName, str(paramValue)))
 
@@ -957,7 +957,7 @@ class CompartCell (Cell):
 
         elif params['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
             sec = self.secs[params['sec']]
-            stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
+            stim = getattr(h, params['type'])(sec['hObj'](params['loc']))
             stimParams = {k:v for k,v in params.items() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.items(): # set mechanism internal params
@@ -973,7 +973,7 @@ class CompartCell (Cell):
                     setattr(stim, stimParamName, stimParamValue)
                     stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
             self.stims.append(Dict(params)) # add to python structure
-            self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
+            self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
 
             if sim.cfg.verbose: print(('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams)))
@@ -981,7 +981,7 @@ class CompartCell (Cell):
         else:
             if sim.cfg.verbose: print(('Adding exotic stim (NeuroML 2 based?): %s'% params))
             sec = self.secs[params['sec']]   
-            stim = getattr(h, params['type'])(sec['hSec'](params['loc']))
+            stim = getattr(h, params['type'])(sec['hObj'](params['loc']))
             stimParams = {k:v for k,v in params.items() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.items(): # set mechanism internal params
@@ -1008,7 +1008,7 @@ class CompartCell (Cell):
                         stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
                         
             self.stims.append(params) # add to python structure
-            self.stims[-1]['h'+params['type']] = stim  # add stim object to dict in stims list
+            self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
             if sim.cfg.verbose: print(('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
                 (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams)))
 
@@ -1146,8 +1146,8 @@ class CompartCell (Cell):
         from numpy import cumsum
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
-        elif getattr(self.secs[secList[0]]['hSec'], 'L', None):
-            secLengths = [self.secs[s]['hSec'].L for s in secList]
+        elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
+            secLengths = [self.secs[s]['hObj'].L for s in secList]
         else:
             secLengths = [1.0 for s in secList]
             if sim.cfg.verbose: 
@@ -1171,7 +1171,7 @@ class CompartCell (Cell):
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
             try:
-                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hSec'])  # create plasticity mechanism (eg. h.STDP)
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hObj'])  # create plasticity mechanism (eg. h.STDP)
                 for plastParamName,plastParamValue in plasticity['params'].items():  # add params of the plasticity mechanism
                     setattr(plastMech, plastParamName, plastParamValue)
                 if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
@@ -1195,7 +1195,7 @@ class CompartCell (Cell):
         n3dsoma = 0
         r3dsoma = np.zeros(3)
         for sec in [sec for secName, sec in self.secs.items() if 'soma' in secName]:
-            sec['hSec'].push()
+            sec['hObj'].push()
             n3d = int(h.n3d())  # get number of n3d points in each section
             r3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
             n3dsoma += n3d
@@ -1229,7 +1229,7 @@ class CompartCell (Cell):
         """Set PtrVector to point to the i_membrane_"""
         jseg = 0
         for sec in list(self.secs.values()):
-            hSec = sec['hSec']
+            hSec = sec['hObj']
             for iseg, seg in enumerate(hSec):
                 self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
                 jseg += 1
@@ -1250,13 +1250,13 @@ class CompartCell (Cell):
         for sec in list(self.secs.values()):
             if 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
                 sec['geom']['pt3d'] = []
-                sec['hSec'].push()
+                sec['hObj'].push()
                 n3d = int(h.n3d())  # get number of n3d points in each section
                 for i in range(n3d):
                     # by default L is added in x-axis; shift to y-axis; z increases 100um for each cell so set to 0
                     pt3d = [h.y3d(i), h.x3d(i), 0, h.diam3d(i)] 
                     sec['geom']['pt3d'].append(pt3d) 
-                    h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hSec'])
+                    h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
                 h.pop_section() 
 
         

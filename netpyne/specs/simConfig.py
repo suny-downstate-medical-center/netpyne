@@ -42,7 +42,6 @@ class SimConfig (object):
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
-        self.enableRxD = False  # import rxd module
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time

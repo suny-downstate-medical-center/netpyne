@@ -175,6 +175,24 @@ class StimTargetParams (ODict):
 
 
 # ----------------------------------------------------------------------------
+# RxD class
+# ----------------------------------------------------------------------------
+
+class RxDParams (ODict):
+    def setParam(self, label, param, value):
+        if label in self: 
+            d = self[label]
+        else:
+            return False
+
+        d[param] = value
+
+        return True
+
+    def rename(self, old, new, label=None):
+        return self.__rename__(old, new, label)
+
+# ----------------------------------------------------------------------------
 # NETWORK PARAMETERS CLASS
 # ----------------------------------------------------------------------------
 
@@ -220,6 +238,9 @@ class NetParams (object):
         # Stimulation source and target params dicts
         self.stimSourceParams = StimSourceParams()
         self.stimTargetParams = StimTargetParams()
+
+        # RxD params dicts
+        self.rxdParams = RxDParams()
 
         # fill in params from dict passed as argument
         if netParamsDict:

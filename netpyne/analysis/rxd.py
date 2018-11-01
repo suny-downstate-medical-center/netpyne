@@ -24,8 +24,8 @@ from .utils import exception, _showFigure, _saveFigData
 @exception
 def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
     from .. import sim
-    species = sim.net.rxd['species'][speciesLabel]
-    region = sim.net.rxd['regions'][regionLabel]
+    species = sim.net.rxd['species'][speciesLabel]['hObj']
+    region = sim.net.rxd['regions'][regionLabel]['hObj']
     fig=plt.figure(figsize=(4,10))
     plane2mean = {'xz': 1, 'xy': 2}
     plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper')  #  extent=k[extracellular].extent('xy')

@@ -957,7 +957,7 @@ Analysis-related functions
 		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
 		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
-		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hObj']]
 		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
 
 		# syn locations (using matplotlib) of cell with gid=0
@@ -1305,7 +1305,7 @@ Cell class
 				- ...
 		- 'synMechs' (list)
 			- [0] (Dict)
-				- 'hSyn': NEURON object
+				- 'hObj': NEURON object
 				- 'label'
 				- 'loc'
 

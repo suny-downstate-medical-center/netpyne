@@ -20,6 +20,8 @@
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
 
+- All NEURON objects now accessible via ['hObj'] key within Python network structure
+
 - Fixed bug in batch to allow having only grouped params
 
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example

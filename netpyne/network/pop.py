@@ -383,7 +383,7 @@ class Pop (object):
         ix = 0  # segment index
 
         p3dsoma = cell.getSomaPos()
-        nseg = sum([sec['hSec'].nseg for sec in list(cell.secs.values())])
+        nseg = sum([sec['hObj'].nseg for sec in list(cell.secs.values())])
         
         p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
         p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points
@@ -391,7 +391,7 @@ class Pop (object):
         d1 = np.zeros(nseg) 
 
         for sec in list(cell.secs.values()):
-            hSec = sec['hSec']
+            hSec = sec['hObj']
             hSec.push()
             n3d = int(h.n3d())  # get number of n3d points in each section
             p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section

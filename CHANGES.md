@@ -1,4 +1,4 @@
-# Version 0.8.0
+# Version 0.9.0
 
 - Added support for reaction-diffusion (RxD) and usage examples
 

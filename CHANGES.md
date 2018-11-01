@@ -1,5 +1,7 @@
 # Version 0.8.0
 
+- Added support for reaction-diffusion (RxD) and usage examples
+
 - Improved performanced (speed) of connectivity algorithms 
 
 - Major code refactor to split functions across modules and subpackages

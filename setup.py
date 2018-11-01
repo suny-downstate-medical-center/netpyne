@@ -19,7 +19,7 @@ import sys
 if 'upload_via_twine' in sys.argv:
     system('twine upload dist/netpyne-'+version+'-none-any.whl')
 elif 'upload_via_twine_testpypi' in sys.argv:
-    system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-none-any.whl')
+    system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-py2.py3-none-any.whl')
 else:
     
     setup(

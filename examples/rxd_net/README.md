@@ -5,7 +5,7 @@ A 3-layer network with intra- and extra-cellular RxD and LFP recording illustrat
 Changing the initial intracellular ip3 concentration leads to a chain of effects that reduces network firing and the LFP signal:
 high ip3 -> ER Ca released to Cyt -> kBK channels open -> less firing 
 
-![rxd_net](https://github.com/Neurosim-lab/netpyne/raw/examples/rxd_net/rxdfig.png)
+![rxd_net](https://github.com/Neurosim-lab/netpyne/blob/development/examples/rxd_net/rxdfig.png)
 
 Developed using NetPyNE (www.netpyne.org)
 

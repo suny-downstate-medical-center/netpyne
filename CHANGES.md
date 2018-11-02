@@ -1,3 +1,8 @@
+# Version 0.9.1
+
+- Add scalebar to rxd concentration plot
+
+
 # Version 0.9.0
 
 - Added support for reaction-diffusion (RxD) and usage examples

@@ -903,13 +903,13 @@ To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot f
 
 The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp.py>`) shows LFP recording for a single cell -- M1 corticospinal neuron --  with 700+ compartments (segments) and multiple somatic and dendritic ionic channels. The cell parameters are loaded from a .json file. The cell receives NetStim input to its soma via an excitatory synapse. Ten LFP electrodes are placed at both sides of the neuron at 5 different cortical depths. The soma voltage, LFP time-resolved signal and the 3D locations of the electrodes are plotted:
 
-.. image:: ../../examples/LFPrecording/lfp_cell.png
+.. image:: figs/lfp_cell.png
 	:width: 60%
 	:align: center
 
 The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
 
-.. image:: ../../examples/LFPrecording/lfp_net.png
+.. image:: figs/lfp_net.png
 	:width: 90%
 	:align: center
 	

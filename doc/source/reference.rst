@@ -681,13 +681,14 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 
 	* **reactions** - dictionary with RxD Reactions.
 
-	* ** multiCompartmentReaction** - dictionary with RxD MultiCompartmentReactions.
+	* ** multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
 
 	* **rates** - dictionary with RxD Rates.
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
 
 See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
+
 
 Simulation configuration
 --------------------------

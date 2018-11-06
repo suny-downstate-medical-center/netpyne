@@ -22,7 +22,7 @@ try:
     from pyneuroml import pynml
     from pyneuroml import __version__ as pynml_ver
     from distutils.version import StrictVersion
-    min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
+    min_pynml_ver_required = '0.3.13' # pyNeuroML will have a dependency on the correct version of libNeuroML...
     
     if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
         from neuron import h

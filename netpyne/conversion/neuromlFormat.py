@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from future.utils import bytes_to_native_str
 
 
 from builtins import str
@@ -627,10 +628,11 @@ if neuromlExists:
                     proj.connection_wds.append(connection)
 
 
-        nml_file_name = '%s.net.nml'%reference
+        # Because some versions of libNeuroML check that the argument is of type str (but will be unicode here...)
+        nml_file_name = bytes_to_native_str(b'%s.net.nml'%reference)
         
         if format=='xml':
-
+            print("Writing %s to %s (%s)"%(nml_doc, nml_file_name, nml_file_name.__class__))
             writers.NeuroMLWriter.write(nml_doc, nml_file_name)
         elif format=='hdf5':
             

@@ -104,6 +104,7 @@ script:
     - python init.py -nogui
     # NeuroML import example
     - cd ../NeuroMLImport/
+    - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python SimpleNet_import.py -nogui
 
     - cd ../..

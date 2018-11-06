@@ -72,14 +72,17 @@ script:
     # HHTut example
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
+    - python HHTut_export.py 
     # HybridTut example
     - cd ../HybridTut
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python HybridTut_run.py -nogui
+    - python HybridTut_export.py
     # M1 example
     - cd ../M1
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python M1_run.py -nogui
+    - python M1_export.py
     # PTcell example
     - cd ../PTcell
     - $NEURON_HOME/x86_64/bin/nrnivmodl mod
@@ -98,6 +101,9 @@ script:
     - cd ../rxd_net
     - $NEURON_HOME/x86_64/bin/nrnivmodl mod
     - python init.py -nogui
+    # NeuroML import example
+    - cd ../NeuroMLImport/
+    - python SimpleNet_import.py -nogui
 
     - cd ../..
 

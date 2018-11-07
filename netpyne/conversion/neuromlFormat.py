@@ -7,16 +7,13 @@ Contributors: salvadordura@gmail.com
 """
 from __future__ import print_function
 from __future__ import division
-from __future__ import unicode_literals
 from __future__ import absolute_import
-from future.utils import bytes_to_native_str
 
 
 from builtins import str
 
 from builtins import range
-from future import standard_library
-standard_library.install_aliases()
+
 try:
     import neuroml
     from pyneuroml import pynml
@@ -628,8 +625,7 @@ if neuromlExists:
                     proj.connection_wds.append(connection)
 
 
-        # Because some versions of libNeuroML check that the argument is of type str (but will be unicode here...)
-        nml_file_name = bytes_to_native_str(b'%s.net.nml'%reference)
+        nml_file_name = '%s.net.nml'%reference
         
         if format=='xml':
             print("Writing %s to %s (%s)"%(nml_doc, nml_file_name, nml_file_name.__class__))

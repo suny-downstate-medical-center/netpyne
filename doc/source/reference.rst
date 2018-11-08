@@ -681,7 +681,7 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 
 	* **reactions** - dictionary with RxD Reactions.
 
-	* ** multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
+	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
 
 	* **rates** - dictionary with RxD Rates.
 

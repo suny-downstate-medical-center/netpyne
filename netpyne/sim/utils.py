@@ -137,7 +137,7 @@ def hashStr (obj):
 # Hash function for list of values
 #------------------------------------------------------------------------------
 def hashList(obj):
-    return int(hashlib.md5(array.array('L', obj)).hexdigest()[0:8],16)
+    return int(hashlib.md5(array.array(chr(ord('L')), obj)).hexdigest()[0:8],16)
 
 
 #------------------------------------------------------------------------------

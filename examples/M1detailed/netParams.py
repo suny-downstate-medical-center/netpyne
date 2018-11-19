@@ -232,7 +232,7 @@ if cfg.singleCellPops:
 if cfg.addLongConn:
 	## load experimentally based parameters for long range inputs
 	with open('conn/conn_long.pkl', 'rb') as fileObj: 
-		connLongData = pickle.load(fileObj)
+		connLongData = pickle.load(fileObj, encoding='latin1')
 	#ratesLong = connLongData['rates']
 
 	numCells = cfg.numCellsLong
@@ -331,7 +331,7 @@ if cfg.addNetStim:
 #------------------------------------------------------------------------------
 # Local connectivity parameters
 #------------------------------------------------------------------------------
-with open('conn/conn.pkl', 'r') as fileObj: connData = pickle.load(fileObj)
+with open('conn/conn.pkl', 'rb') as fileObj: connData = pickle.load(fileObj, encoding='latin1')
 pmat = connData['pmat']
 wmat = connData['wmat']
 bins = connData['bins']

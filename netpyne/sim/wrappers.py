@@ -33,17 +33,19 @@ def create (netParams=None, simConfig=None, output=False):
 def simulate ():
     ''' Sequence of commands to simulate network '''
     from .. import sim
-    sim.runSim()                      # run parallel Neuron simulation  
+    sim.runSim()         
+    print('running a regular simulate?')             # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
-def intervalSimulate (interval, func):
+def intervalSimulate (interval):
     ''' Sequence of commands to simulate network '''
     from .. import sim
-    sim.runSimWithIntervalFunc(interval, func)                      # run parallel Neuron simulation  
-    sim.gatherData()                  # gather spiking data and cell info from each node
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
+    #this gather is justa merging of files
+    sim.fileGather()                  # gather spiking data and cell info from each node
     
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
@@ -70,43 +72,28 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
+def createSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
     ''' Sequence of commands create, simulate and analyse network '''
     from .. import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
-    sim.analyze()
-
-    if output: return (pops, cells, conns, stims, simData)
-    
-    
-#------------------------------------------------------------------------------
-# Wrapper to create, simulate, and analyse network
-#------------------------------------------------------------------------------
-def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=5, func=None):
-    ''' Sequence of commands create, simulate and analyse network '''
-    from .. import sim
-    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
-    # Make sure to delete folder at the end
-    print('created now running')
-    if func:
+    if interval:
         import os
-        # Create a temp folder to keep interval saves
         try:
-            os.mkdir('temp')
-            sim.intervalSimulate(interval, func)
+            if sim.rank==0:
+                os.mkdir('temp')
+            sim.intervalSimulate(interval)
+            
         except OSError:
             if not os.path.exists('temp'):
                 print(' Could not create temp folder, running without intervals ...')
-                sim.simulate() 
-    else:
-        print('No function provided for interval simulate, running sim without interval function')
-        sim.simulate() 
-        
+                return
+    else:   
+        sim.simulate()
+    sim.pc.barrier()
     sim.analyze()
 
     if output: return (pops, cells, conns, stims, simData)
-
+    
 
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation

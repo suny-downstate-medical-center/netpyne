@@ -31,7 +31,11 @@ def validateFunction(strFunc, netParamsVars):
         "post_xnorm" : 1, "post_ynorm"  : 1, "post_znorm" : 1,
         "dist_xnorm" : 1, "dist_ynorm"  : 1, "dist_znorm" : 1,
         "dist_3D"    : 1, "dist_3D_border" : 1, "dist_2D" : 1,
-        "dist_norm3D": 1, "dist_norm2D" : 1, "rand": rand
+        "dist_norm3D": 1, "dist_norm2D" : 1, "rand": rand,
+        "exp": exp, "log":log, "sqrt": sqrt,
+        "sin":sin, "cos":cos, "tan":tan, "asin":asin, 
+        "acos":acos, "atan":atan, "sinh":sinh, "cosh":cosh, 
+        "tanh":tanh, "pi":pi,"e": e
     }
     
     # add netParams variables

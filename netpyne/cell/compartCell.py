@@ -1248,7 +1248,7 @@ class CompartCell (Cell):
         z = self.tags['z']
                 
         for sec in list(self.secs.values()):
-            if 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
+            if 'geom' in sec and 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
                 sec['geom']['pt3d'] = []
                 sec['hObj'].push()
                 n3d = int(h.n3d())  # get number of n3d points in each section

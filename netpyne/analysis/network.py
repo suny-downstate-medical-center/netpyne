@@ -14,6 +14,10 @@ from builtins import open
 from builtins import next
 from builtins import range
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 from builtins import zip
 
 from builtins import round
@@ -72,7 +76,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     else:
         cellsPost, cellGidsPost, netStimPopsPost = getCellsInclude(includePost) 
 
-    if isinstance(synMech, str): synMech = [synMech]  # make sure synMech is a list
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
@@ -390,7 +394,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         print(missing)
         return None, None, None 
 
-    if isinstance(synMech, str): synMech = [synMech]  # make sure synMech is a list
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
@@ -657,7 +661,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
@@ -764,7 +768,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     if showConns and not tagsFile:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
                     color='red'
@@ -794,7 +798,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'2Dnet.png'
@@ -940,7 +944,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
@@ -979,7 +983,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         fig.show(0) # show real diam
             # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'shape.ps'

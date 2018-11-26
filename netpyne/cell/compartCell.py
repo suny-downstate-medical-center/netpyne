@@ -17,6 +17,11 @@ from builtins import range
 
 from builtins import round
 from builtins import str
+try:
+  basestring
+except NameError:
+  basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
@@ -71,8 +76,9 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal[0], str):
+                    elif isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
+                            print('CONDITION NOT MET')
                             conditionsMet = 0
                             break 
                 elif self.tags.get(condKey) != condVal: 
@@ -104,7 +110,7 @@ class CompartCell (Cell):
                     if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                         conditionsMet = 0
                         break
-                elif isinstance(condVal[0], str):
+                elif isinstance(condVal[0], basestring):
                     if self.tags.get(condKey) not in condVal:
                         conditionsMet = 0
                         break 
@@ -598,7 +604,7 @@ class CompartCell (Cell):
                                 if synMech.get(condKey) < condVal[0] or synMech.get(condKey) > condVal[1]:
                                     conditionsMet = 0
                                     break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                                 if synMech.get(condKey) not in condVal:
                                     conditionsMet = 0
                                     break 
@@ -805,7 +811,7 @@ class CompartCell (Cell):
                         if compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
                             break 
@@ -820,7 +826,7 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
@@ -873,7 +879,7 @@ class CompartCell (Cell):
                             if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                                 conditionsMet = 0
                                 break
-                        elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                             if stim.get(condKey) not in condVal:
                                 conditionsMet = 0
                                 break 
@@ -916,7 +922,7 @@ class CompartCell (Cell):
     def addStim (self, params):
         from .. import sim
 
-        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):  
+        if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, list(self.secs.keys()),params))
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -1017,7 +1023,7 @@ class CompartCell (Cell):
         from .. import sim
 
         # if no section specified or single section specified does not exist
-        if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):  
+        if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid))
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists

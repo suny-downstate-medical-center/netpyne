@@ -13,6 +13,10 @@ from __future__ import absolute_import
 from builtins import range
 from builtins import round
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 
 from future import standard_library
 standard_library.install_aliases()
@@ -167,7 +171,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp.png'
@@ -246,7 +250,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_psd.png'
@@ -305,7 +309,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_timefreq.png'

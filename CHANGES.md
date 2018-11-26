@@ -2,6 +2,10 @@
 
 - Add scalebar to rxd concentration plot
 
+- Fixed bug so comparisons to basestring work in Python 2 and 3
+
+- Fixed bug in string-based expressions representation in GUI
+
 
 # Version 0.9.0
 

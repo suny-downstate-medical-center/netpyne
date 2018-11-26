@@ -14,6 +14,10 @@ from __future__ import absolute_import
 from builtins import zip
 from builtins import next
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
@@ -136,7 +140,7 @@ class Cell (object):
             rand = h.Random()
             stimContainer['hRandom'] = rand  # add netcon object to dict in conns list
 
-            if isinstance(params['rate'], str):
+            if isinstance(params['rate'], basestring):
                 if params['rate'] == 'variable':
                     try:
                         netstim = h.NSLOC()
@@ -179,7 +183,7 @@ class Cell (object):
                         if compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
                             break 

@@ -309,7 +309,8 @@ class CompartCell (Cell):
         from .. import sim
 
         excludeMechs = ['dipole']  # dipole is special case 
-        
+        mechInsertError = False  # flag to print error inserting mechanisms
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
             # create section
@@ -342,7 +343,9 @@ class CompartCell (Cell):
                     try:
                         sec['hObj'].insert(mechName)
                     except:
-                        print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
+                        mechInsertError = True
+                        if sim.cfg.verbose: 
+                            print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
@@ -363,7 +366,9 @@ class CompartCell (Cell):
                     try:
                         sec['hObj'].insert(ionName+'_ion')    # insert mechanism
                     except:
-                        print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
+                        mechInsertError = True
+                        if sim.cfg.verbose:
+                            print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
                         continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
@@ -416,6 +421,9 @@ class CompartCell (Cell):
             if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
+        # Print message about error inserting mechanisms
+        if mechInsertError:
+            print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
     def addSynMechsNEURONObj(self):
         # set params for all sections

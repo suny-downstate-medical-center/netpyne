@@ -78,7 +78,6 @@ class CompartCell (Cell):
                             break
                     elif isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
-                            print('CONDITION NOT MET')
                             conditionsMet = 0
                             break 
                 elif self.tags.get(condKey) != condVal: 

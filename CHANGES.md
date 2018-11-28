@@ -1,5 +1,7 @@
 # Version 0.9.1
 
+- Updates to NeuroML converter
+
 - Add scalebar to rxd concentration plot
 
 - Fixed bug so comparisons to basestring work in Python 2 and 3

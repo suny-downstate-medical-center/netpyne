@@ -1,6 +1,6 @@
 # Version 0.9.1
 
-- Updates to NeuroML converter
+- Updates to NeuroML converter 
 
 - Add scalebar to rxd concentration plot
 

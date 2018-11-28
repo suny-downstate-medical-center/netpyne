@@ -13,6 +13,10 @@ from __future__ import absolute_import
 from builtins import dict
 from builtins import round
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 from builtins import range
 from builtins import zip
 
@@ -164,7 +168,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'avgRates.png'
@@ -192,7 +196,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'peakRates.png'
@@ -264,7 +268,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'sync.png'
@@ -328,9 +332,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     keep = ['pop', 'gid', 'conns']
 
-    if isinstance(orderBy, str) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+    if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
         orderBy = 'gid'
-    elif isinstance(orderBy, str) and not isinstance(cells[0]['tags'][orderBy], Number):
+    elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
         orderBy = 'gid'
 
     if isinstance(orderBy, list):
@@ -522,7 +526,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # save figure
     if saveFig:
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'raster.png'
@@ -703,7 +707,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     # save figure
     if saveFig:
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikeHist.png'
@@ -1059,7 +1063,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
             else:
                 filename = sim.cfg.filename+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
@@ -1194,7 +1198,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            color = popColors[subset] if isinstance(subset, str) and subset in popColors else colorList[i%len(colorList)] 
+            color = popColors[subset] if isinstance(subset, basestring) and subset in popColors else colorList[i%len(colorList)] 
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
@@ -1210,7 +1214,7 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'spikePSD.png'

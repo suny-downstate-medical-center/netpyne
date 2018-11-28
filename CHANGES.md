@@ -1,3 +1,14 @@
+# Version 0.9.1
+
+- Updates to NeuroML converter 
+
+- Add scalebar to rxd concentration plot
+
+- Fixed bug so comparisons to basestring work in Python 2 and 3
+
+- Fixed bug in string-based functions representation in GUI
+
+
 # Version 0.9.0
 
 - Added support for reaction-diffusion (RxD) and usage examples

@@ -12,7 +12,10 @@ from __future__ import absolute_import
 
 from builtins import range
 from builtins import str
-
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
@@ -191,7 +194,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
@@ -270,7 +273,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
 
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'EPSPamp_'+amp+'.png'

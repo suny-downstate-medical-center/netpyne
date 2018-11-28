@@ -11,6 +11,10 @@ from __future__ import division
 from __future__ import absolute_import
 
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 import unittest
@@ -323,7 +327,7 @@ class TestTypeObj(object):
             #print ( "2")
             #print ( " in val list test" + str(paramDict) + " :: " + str(valList))
             if isinstance(paramDict, dict) and isinstance(valList, list):
-                if isinstance(valList, str):
+                if isinstance(valList, basestring):
                     valList = eval(valList)
                 assert (all([x in valList for x in list(paramDict.keys())])), " contains invalid key '" + str(list(paramDict.keys())[[x in valList for x in list(paramDict.keys())].index(False)]) + "': Valid values are: " + str(valList) + "."
                 #assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str("") + ". Keys provided are " + str(paramDict.keys()) + "."
@@ -1167,10 +1171,10 @@ class TestTypeObj(object):
 
                         if 'popRates' in plotRaster:
 
-                            if not isinstance( plotRaster['popRates'], str) and not isinstance( plotRaster['popRates'], bool):
+                            if not isinstance( plotRaster['popRates'], basestring) and not isinstance( plotRaster['popRates'], bool):
                                 errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a string or boolean. Value provided is " + str(plotRaster['popRates']) + ".")
                             else:
-                                if (isinstance( plotRaster['popRates'], str) ) and (x not in ['legend', 'overlay'] ):
+                                if (isinstance( plotRaster['popRates'], basestring) ) and (x not in ['legend', 'overlay'] ):
                                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
                         # if 'popRates' in plotRaster:

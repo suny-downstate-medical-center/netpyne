@@ -9,6 +9,8 @@ Although NEURON already enables multiscale simulation ranging from the molecular
 
 For a more detailed overview of NetPyNE see:
 
+- `BioRxiv paper <https://www.biorxiv.org/content/early/2018/11/03/461137>`_
+
 - `SLIDES for Computational Neuroscience conference CNS17 <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_
 
 - `POSTER for Computational Neuroscience conference CNS16 <http://it.neurosim.downstate.edu/salvadord/CNS16_poster.pdf>`_ 
@@ -105,6 +107,8 @@ Publications
 
 About NetPyNE 
 ^^^^^^^^^^^^^^^^
+
+- Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2018) NetPyNE: a tool for data-driven multiscale modeling of brain circuits. `bioRxiv 461137 <https://www.biorxiv.org/content/early/2018/11/03/461137>`_
 
 - Dura-Bernal S, Suter BA, Quintana A, Cantarelli M, Gleeson P, Rodriguez F, Neymotin SA, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a GUI-based tool to build, simulate and analyze large-scale, data-driven network models in parallel NEURON.** *Society for Neuroscience (SfN), 2018*.
 

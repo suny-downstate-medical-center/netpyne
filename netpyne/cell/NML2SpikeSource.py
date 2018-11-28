@@ -33,8 +33,8 @@ class NML2SpikeSource (CompartCell):
         
         if sim.cfg.createNEURONObj: 
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
-         
-            nc = h.NetCon(self.secs['soma']['pointps'][self.tags['cellType']].hPointp, None)
+           
+            nc = h.NetCon(self.secs['soma']['pointps'][self.tags['cellType']].hObj, None)
                 
             #### nc.threshold = threshold  # not used....
             sim.pc.cell(self.gid, nc, 1)  # associate a particular output stream of events
@@ -51,7 +51,7 @@ class NML2SpikeSource (CompartCell):
         randContainer['type'] = self.tags['cellType'] 
         seed = sim.cfg.seeds['stim']
         randContainer['seed'] = seed 
-        self.secs['soma']['pointps'][self.tags['cellType']].hPointp.noiseFromRandom(rand)  # use random number generator 
+        self.secs['soma']['pointps'][self.tags['cellType']].hObj.noiseFromRandom(rand)  # use random number generator 
         sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))

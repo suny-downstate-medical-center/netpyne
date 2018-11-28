@@ -15,6 +15,10 @@ from builtins import dict
 from builtins import range
 
 from builtins import round
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 import copy
@@ -204,7 +208,7 @@ def _addSpecies(self, params):
         # initial
         if 'initial' not in param:
             param['initial'] == None
-        if isinstance(param['initial'], str):  # string-based func
+        if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
@@ -255,7 +259,7 @@ def _addStates(self, params):
         # initial
         if 'initial' not in param:
             param['initial'] == None
-        if isinstance(param['initial'], str):  # string-based func
+        if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
@@ -308,7 +312,7 @@ def _addReactions(self, params, multicompartment=False):
         if 'rate_f' not in param:
             print('  Error creating %s %s: "scheme" parameter was missing'%(reactionStr,label))
             continue
-        if isinstance(param['rate_f'], str):
+        if isinstance(param['rate_f'], basestring):
             rate_fStr = self._replaceRxDStr(param['rate_f'])
             exec('rate_f = ' + rate_fStr, dynamicVars)
             if 'rate_f' not in dynamicVars: dynamicVars['rate_f']  # fix for python 2
@@ -318,7 +322,7 @@ def _addReactions(self, params, multicompartment=False):
         # rate_b
         if 'rate_b' not in param:
             param['rate_b'] = None 
-        if isinstance(param['rate_b'], str):
+        if isinstance(param['rate_b'], basestring):
             rate_bStr = self._replaceRxDStr(param['rate_b'])
             exec('rate_b = ' + rate_bStr, dynamicVars)
             if 'rate_b' not in dynamicVars: dynamicVars['rate_b']  # fix for python 2
@@ -372,7 +376,7 @@ def _addRates(self, params):
         if 'species' not in param:
             print('  Error creating Rate %s: "species" parameter was missing'%(label))
             continue
-        if isinstance(param['species'], str):
+        if isinstance(param['species'], basestring):
             speciesStr = self._replaceRxDStr(param['species'])
             exec('species = ' + speciesStr, dynamicVars)
             if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
@@ -383,7 +387,7 @@ def _addRates(self, params):
         if 'rate' not in param:
             print('  Error creating Rate %s: "rate" parameter was missing'%(label))
             continue
-        if isinstance(param['rate'], str):
+        if isinstance(param['rate'], basestring):
             rateStr = self._replaceRxDStr(param['rate'])
             exec('rate = ' + rateStr, dynamicVars)
             if 'rate' not in dynamicVars: dynamicVars['rate']  # fix for python 2

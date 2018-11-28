@@ -13,7 +13,10 @@ from __future__ import absolute_import
 
 from builtins import map
 from builtins import range
-
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 from numpy import  pi, sqrt, sin, cos, arccos
@@ -180,7 +183,7 @@ class Pop (object):
                 volume = volume * (maxv-minv)
 
         funcLocs = None  # start with no locations as a function of density function
-        if isinstance(self.tags['density'], str): # check if density is given as a function 
+        if isinstance(self.tags['density'], basestring): # check if density is given as a function 
             if shape == 'cuboid':  # only available for cuboids
                 strFunc = self.tags['density']  # string containing function
                 strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used 

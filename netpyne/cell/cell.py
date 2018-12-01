@@ -164,7 +164,6 @@ class Cell (object):
 
     def recordTraces (self):
         from .. import sim
-
         # set up voltagse recording; recdict will be taken from global context
         for key, params in sim.cfg.recordTraces.items():
             
@@ -195,6 +194,7 @@ class Cell (object):
                 try:
                     ptr = None
                     if 'loc' in params and params['sec'] in self.secs:
+
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
                             #print params['var'], ptr

@@ -1,3 +1,8 @@
+# Version 0.9.1.1
+
+- Fixed minor bug - plot font size changed from 12 to 2
+
+
 # Version 0.9.1
 
 - Updates to NeuroML converter 

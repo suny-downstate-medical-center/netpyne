@@ -264,7 +264,8 @@ def setupRecording ():
         cellsRecord = utils.getCellsList(sim.cfg.recordCells)+cellsPlot
 
         for key in list(sim.cfg.recordTraces.keys()): sim.simData[key] = Dict()  # create dict to store traces
-        for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+        for cell in cellsRecord: 
+            cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
         if sim.cfg.recordTime and len(sim.simData) > 0:
